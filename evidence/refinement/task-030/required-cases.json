@@ -112,6 +112,11 @@
         },
         {
           "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 a For Time partial is in round 1 only for a single-pass block; a multi-round race takes its round from a recorded completed-rounds count, or has none",
+          "criterion": "AC-R030-03"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
           "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them",
           "criterion": "AC-R030-03"
         }

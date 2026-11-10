@@ -42,6 +42,7 @@ import type { BlockOutcome } from '../state/block-completion'
 import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
 import type { PrescribedColumns } from '../state/prescription'
 import { incrementFor } from '../state/progression'
+import type { WorkoutBlockRow } from '../state/schemas'
 import { setLogViolation, type SetLogEntry } from '../state/set-logging'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -225,6 +226,8 @@ const HISTORY_READER: SourceRef = { module: SESSION_DETAIL, name: 'sessionDetail
 const HISTORY_SET_READER: SourceRef = { module: SESSION_DETAIL, name: 'loggedSet' }
 const HISTORY_OUTCOME_READER: SourceRef = { module: SESSION_DETAIL, name: 'blockOutcome' }
 const SET_ROW_READING: SourceRef = { module: 'src/ui/set-effort.tsx', name: 'SetEffortReading' }
+/** `conditioning_history` (20260921000012) → the like-for-like score and trend read every outcome column. */
+const CONDITIONING_READER: SourceRef = { module: 'src/state/conditioning.ts', name: 'timedOutcome' }
 
 const SET_SCHEMAS: readonly SourceRef[] = [
   schema('exerciseSetLogRowSchema'),
@@ -339,7 +342,9 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
       'exercise_set_logs.weight_unit',
       'exercise_set_logs.effort',
     ],
-    nullMeans: `${SET_NULL}; weight is offered only for a loaded prescription (incrementFor(equipment_used) is not null)`,
+    nullMeans:
+      `${SET_NULL}; weight is offered for a loaded prescription (incrementFor(equipment_used) is not null), and on an ` +
+      'unloaded one only when a weight is carried forward from this movement’s earlier set or the set being corrected has one (showLoad)',
   }),
   setMoment('distance-movement', 'Distance movement', 'Distance movement', {
     fields: [
@@ -534,7 +539,10 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     schemas: BLOCK_SCHEMAS,
     validators: [...BLOCK_VALIDATORS, { module: 'src/state/for-time.ts', name: 'forTimeOutcome' }],
     writer: BLOCK_WRITER,
-    identity: `${BLOCK_IDENTITY}; forTimeOutcome reports elapsedSeconds and the completion answer`,
+    identity:
+      `${BLOCK_IDENTITY}; forTimeOutcome reports elapsedSeconds and the completion answer, and no rounds count; ` +
+      'workout_blocks.rounds may be null, 1 or more, so a proposed partial has round 1 only for a single pass and none for a ' +
+      'multi-round race until a completed-rounds count is recorded (TASK-015)',
     fields: ['block_results.elapsed_seconds', 'block_results.completed_under_cap'],
     proposed: ['block_results.notes', ...TIMED_PROPOSED_COMMON, ...TIMED_PARTIALS],
     nullMeans: 'completed_under_cap is null before the race ends, with no cap, or when recorded mid-race; Finish alone never claims the work',
@@ -543,7 +551,7 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     draft: 'clear.workout-for-time (clock stamps and workCompleted); the effort faces are memory only and not saved',
     readback: {
       workout: 'the For Time card; completion chips are disabled once the row is saved',
-      history: 'History reads Elapsed and Cap · Finished under the cap / Stopped at the cap / Incomplete',
+      history: 'History reads Elapsed and Cap · Finished under the cap / Stopped at the cap / Incomplete (no rounds reading)',
     },
     readers: TIMED_READERS,
     owners: TIMED_OWNERS,
@@ -613,6 +621,7 @@ function blockField(
   nullMeans: string,
   zeroMeans: string | null,
   owners: readonly DependentTask[] = ['TASK-031', 'TASK-047'],
+  readers: readonly SourceRef[] = [HISTORY_OUTCOME_READER, CONDITIONING_READER],
 ): FieldContract {
   return {
     id: `block_results.${column}`,
@@ -626,7 +635,7 @@ function blockField(
     update: BLOCK_UPDATE,
     validators: [...BLOCK_VALIDATORS, schema('blockResultRowSchema')],
     writer: BLOCK_WRITER,
-    readers: [HISTORY_OUTCOME_READER],
+    readers,
     migration: null,
     owners,
   }
@@ -711,11 +720,17 @@ export const LOGGING_FIELDS: readonly FieldContract[] = [
   blockField(
     'rounds_completed',
     'int',
-    'AMRAP and circuit rounds the athlete recorded',
+    'AMRAP and circuit rounds the athlete recorded; conditioning also scores a capped For Time from it (with partial_round_reps), which the current For Time card never writes',
     'not recorded (an AMRAP left blank; a circuit with no recorded round)',
     'AMRAP: an explicit 0 rounds',
   ),
-  blockField('partial_round_reps', 'int', 'AMRAP: reps into the next round, one count for the block', 'not recorded', 'an explicit 0'),
+  blockField(
+    'partial_round_reps',
+    'int',
+    'AMRAP: reps into the next round, one count for the block; conditioning also reads it for a capped For Time, which the current For Time card never writes',
+    'not recorded',
+    'an explicit 0',
+  ),
   {
     ...blockField(
       'minutes_completed',
@@ -756,6 +771,7 @@ export const LOGGING_FIELDS: readonly FieldContract[] = [
     'nothing written (a blank note is not reported)',
     null,
     ['TASK-015', 'TASK-031', 'TASK-046', 'TASK-047'],
+    [HISTORY_OUTCOME_READER],
   ),
   // ── MIG-A — categorical block effort ──
   {
@@ -778,7 +794,7 @@ export const LOGGING_FIELDS: readonly FieldContract[] = [
   movementField(
     'round_number',
     'int > 0',
-    'the round (AMRAP round, ladder rung; 1 for a For Time pass) the partial amounts belong to: partialRoundFor',
+    'the round the partial amounts belong to (partialRoundFor): AMRAP round, ladder rung; For Time round 1 only for a single-pass block, else the round after a recorded completed-rounds count (none without one)',
     null,
     'no amount recorded (a load-only row)',
   ),
@@ -954,7 +970,9 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
   {
     id: 'timed-entry',
     kind: 'draft',
-    summary: 'per-movement partial and load entry, effort and notes in the timed log, truthful across edit and retry',
+    summary:
+      'per-movement partial and load entry, effort and notes in the timed log, truthful across edit and retry; for a multi-round ' +
+      'For Time, decide whether a completed-rounds count is recorded and whether a movement amount is in-round or a total (open)',
     basis: 'partialRoundFor, loadApplies and movementActualFromDraft below',
     ref: { module: 'src/ui/refinements/timed-result-log.tsx', name: 'TimedResultLog', extendedBy: 'TASK-015' },
     owner: 'TASK-015',
@@ -970,16 +988,22 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
   {
     id: 'visible-proof',
     kind: 'read-model',
-    summary: 'Workout → Summary → History save, retry and reload proof of the richer timed results on the disposable test lane',
-    basis: 'PRE-001 plus MIG-A/MIG-B applied to the disposable test project',
+    summary: 'Workout → Summary → History save, retry and reload proof of the richer timed results on the real test lane (disposable namespaced users)',
+    basis: 'PRE-001 plus MIG-A/MIG-B applied to the project that lane writes to (LIVE-PRE-1)',
     ref: null,
     owner: 'TASK-047',
   },
   {
     id: 'LIVE-PRE-1',
     kind: 'live-authority',
-    summary: 'apply MIG-A and MIG-B to the disposable test project before TASK-047’s real lane, and to production only as a release decision',
-    basis: 'no task in this body is authorised to change a hosted database; TASK-030 changes none',
+    summary:
+      'owner decision: apply MIG-A and MIG-B to the hosted project TASK-047’s real lane writes to. The repository documents one ' +
+      'hosted project, the reused live Supabase project, where the test lane uses disposable namespaced users rather than a ' +
+      'separate database; unless the owner names another project, that is a production schema change, not test-lane setup',
+    basis:
+      'IMPLEMENTATION_PLAN.md and CATALOG_MIGRATION_SCOPE.md (the rebuild runs on the reused live project), e2e/README.md ' +
+      '(namespaced disposable users in that project); no repository workflow applies a migration; no task in this body is ' +
+      'authorised to change a hosted database; TASK-030 changes none and reads no private configuration',
     ref: null,
     owner: 'owner',
   },
@@ -995,12 +1019,15 @@ export type TimedFamily = 'emom' | 'amrap' | 'for_time' | 'ladder'
 /**
  * What the round identity of a per-movement partial is read from: the block's
  * own reported outcome (`amrapOutcome`, `forTimeOutcome`, the ladder's
- * outcome), never a planned target.
+ * outcome), never a planned target. The ladder's rung count and the For Time
+ * block's `workout_blocks.rounds` are the block's structure — how many rungs
+ * or passes exist — read only to know whether a round is left (and, for For
+ * Time, whether the race is a single pass); neither ever supplies the round.
  */
 export type PartialRoundInput =
   | { readonly family: 'emom' }
   | { readonly family: 'amrap'; readonly outcome: BlockOutcome }
-  | { readonly family: 'for_time'; readonly outcome: BlockOutcome }
+  | { readonly family: 'for_time'; readonly outcome: BlockOutcome; readonly block: Pick<WorkoutBlockRow, 'rounds'> }
   | { readonly family: 'ladder'; readonly outcome: BlockOutcome; readonly rungCount: number }
 
 /**
@@ -1011,8 +1038,16 @@ export type PartialRoundInput =
  *   · AMRAP: the round after the recorded rounds. Unrecorded rounds give no
  *     identity — a partial cannot be attached to a round nobody counted, and
  *     null is never read as zero. An explicit 0 rounds gives round 1.
- *   · For Time: the one pass (1) when the athlete answered Incomplete; none
- *     when Complete or unanswered.
+ *   · For Time, only when the athlete answered Incomplete (none when Complete
+ *     or unanswered). `workout_blocks.rounds` is nullable and unrestricted for
+ *     For Time, so a race may have several rounds:
+ *       – with a recorded completed-rounds count (`roundsCompleted`, which
+ *         `conditioningScore` already reads for a capped For Time), the round
+ *         after it, while one is left;
+ *       – with none, round 1 only for a single pass (`rounds` null or 1) — the
+ *         one round there is. A multi-round race with no recorded count has
+ *         no identity: `forTimeOutcome` records no count today, and where the
+ *         athlete stopped is never guessed (TASK-015's open decision).
  *   · Ladder: the rung after the last completed one, when one is left; none
  *     when Complete (the top rung) or when no rung was recorded.
  */
@@ -1024,8 +1059,14 @@ export function partialRoundFor(input: PartialRoundInput): number | null {
       const rounds = input.outcome.roundsCompleted
       return rounds === undefined ? null : rounds + 1
     }
-    case 'for_time':
-      return input.outcome.completedUnderCap === false ? 1 : null
+    case 'for_time': {
+      if (input.outcome.completedUnderCap !== false) return null
+      const passes = input.block.rounds ?? 1
+      const through = input.outcome.roundsCompleted
+      if (through === undefined) return passes === 1 ? 1 : null
+      const next = through + 1
+      return next <= passes ? next : null
+    }
     case 'ladder': {
       const through = input.outcome.highestRung
       if (through === undefined) return null
@@ -1036,10 +1077,18 @@ export function partialRoundFor(input: PartialRoundInput): number | null {
 }
 
 /**
- * Whether an actual load can attach to this movement: the set logger's own
- * rule (`SetMeasureFields` `showLoad`), so a timed movement and a set of the
- * same movement agree. The accepted gallery's predicate was an approximation of
- * it; this one is the application's.
+ * Whether an actual load can attach to this movement: the set logger's base
+ * rule for load fields (`incrementFor(equipment_used)` not null — loaded
+ * equipment), so a timed movement and a set of the same movement agree. The
+ * accepted gallery's predicate was an approximation of it; this one is the
+ * application's.
+ *
+ * The set logger's `showLoad` also shows load fields on unloaded equipment when
+ * a weight is carried forward from that movement's earlier set or the set being
+ * corrected already has one, so a recorded weight stays visible and correctable.
+ * That exception has no counterpart here: a timed attempt has no earlier
+ * movement row to carry a weight from, and because this rule refuses a weight
+ * on unloaded equipment, no saved movement row can hold one to correct.
  */
 export function loadApplies(prescription: Pick<PrescribedColumnsWithEquipment, 'equipment_used'>): boolean {
   return incrementFor(prescription.equipment_used, 'kg') !== null

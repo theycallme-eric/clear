@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-030/required-cases.json",
-    "sha256": "0f85605df329e9ecf9b355003fa51655da9f6f34c9c8ee95db924ef69cbf5454"
+    "sha256": "90e3ec57ebcfb854faa0f68483d303d32df4d68bc99e7a7d685f3d7b78ed5dfd"
   },
   "targets": [
     {
       "path": "src/data/refinement-logging-contract.test.ts",
-      "sha256": "9a1b0ae1e11b36015ef7a0f5dfab795fe13540103508bd789abe79d98a765c45"
+      "sha256": "30cc79a548b0d8ca950bc79873fac006f60ef59f983c7e457032c8be5ec16011"
     }
   ],
   "requiredCases": [
@@ -76,17 +76,22 @@
     },
     {
       "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 a For Time partial is in round 1 only for a single-pass block; a multi-round race takes its round from a recorded completed-rounds count, or has none",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
       "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them",
       "status": "passed"
     }
   ],
   "totals": {
-    "total": 11,
-    "passed": 11,
+    "total": 12,
+    "passed": 12,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 11
+    "executed": 12
   },
   "problems": []
 }

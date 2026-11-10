@@ -42,7 +42,7 @@ import {
 } from './refinement-logging-contract'
 import { amrapOutcome, amrapView, type AmrapState } from '../state/amrap'
 import { blockResultInsert, isPerceivedEffort, type BlockCompletion } from '../state/block-completion'
-import { conditioningTrend, type ConditioningSectionRead } from '../state/conditioning'
+import { conditioningTrend, likeForLike, type ConditioningSectionRead } from '../state/conditioning'
 import { d5MissedReps } from '../state/deload'
 import { ErrorCode, ok, type Result } from '../state/errors'
 import { forTimeOutcome, forTimeView, type ForTimeState } from '../state/for-time'
@@ -51,6 +51,7 @@ import { moodStep } from '../state/mood'
 import { sessionDebriefSchema, setEffortSchema, type SessionSnapshot, type WorkoutExerciseRow } from '../state/schemas'
 import { sessionDetail, type SessionDetailView } from '../state/session-detail'
 import { setObservationMutation } from '../state/set-observation-mutation'
+import { sessionProgress } from '../state/workout-progress'
 import { isRecordedEffort, loggedSetFromRow, setLogViolation, type SetLogEntry } from '../state/set-logging'
 import {
   BLOCK_RESULT_COLUMNS,
@@ -773,11 +774,14 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
     expect(partialRoundFor({ family: 'amrap', outcome: amrapAt({ roundsCompleted: 0 }) })).toBe(1)
     expect(partialRoundFor({ family: 'amrap', outcome: amrapAt({}) })).toBeNull()
     expect(partialRoundFor({ family: 'amrap', outcome: amrapAt({ roundsCompleted: 3 }, 120) })).toBeNull() // still running
-    // For Time: the one pass when Incomplete; none when Complete or not ended.
-    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({}, undefined, 900) })).toBe(1) // the cap
-    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({ finishedAt: '2026-09-24T09:05:00+00:00' }) })).toBeNull()
-    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({ finishedAt: '2026-09-24T09:05:00+00:00' }, false) })).toBe(1)
-    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({}, undefined, 120) })).toBeNull()
+    // For Time, a single-pass block (workout_blocks.rounds null): round 1 when
+    // Incomplete; none when Complete or not ended. Multi-round races: the next case.
+    const pass = at.forTime.block
+    expect(pass.rounds).toBeNull()
+    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({}, undefined, 900), block: pass })).toBe(1) // the cap
+    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({ finishedAt: '2026-09-24T09:05:00+00:00' }), block: pass })).toBeNull()
+    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({ finishedAt: '2026-09-24T09:05:00+00:00' }, false), block: pass })).toBe(1)
+    expect(partialRoundFor({ family: 'for_time', outcome: raceAt({}, undefined, 120), block: pass })).toBeNull()
     // Ladder: the rung after the last completed one; none when complete or unanswered.
     expect(partialRoundFor({ family: 'ladder', outcome: { highestRung: 2 }, rungCount: rungs })).toBe(3)
     expect(partialRoundFor({ family: 'ladder', outcome: { highestRung: 0 }, rungCount: rungs })).toBe(1)
@@ -823,6 +827,99 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
       [at.amrapSwing.id]: { amount: '', weight: '24' },
       [at.amrapBurpee.id]: { amount: '', weight: '' },
     })
+  })
+
+  it('AC-R030-03 a For Time partial is in round 1 only for a single-pass block; a multi-round race takes its round from a recorded completed-rounds count, or has none', () => {
+    // workout_blocks.rounds is nullable and unrestricted for For Time
+    // (20260921000003): a race may be one pass or several.
+    const race = (rounds: number | null) => {
+      const snapshot = snapshotFixture({
+        userId: USER_ID,
+        startedAt: STARTED_AT,
+        sections: [{
+          title: 'Conditioning',
+          sectionType: 'conditioning',
+          blocks: [{
+            structureType: 'for_time',
+            timerType: 'count_up',
+            timerSeconds: 600,
+            rounds,
+            exercises: [
+              { prescription: { exercise_id: 'wall-ball', sets: null, target_value: 10, equipment_used: 'medicine_ball', load_type: 'absolute', load_value: 9 } },
+              { prescription: { exercise_id: 'burpee', sets: null, target_value: 10, equipment_used: 'bodyweight', load_type: 'bodyweight' } },
+            ],
+          }],
+        }],
+      })
+      const [entry] = snapshot.sections[0].blocks
+      return {
+        block: entry.block,
+        progress: sessionProgress(snapshot).sections[0].blocks[0],
+        wallBall: entry.exercises[0].exercise,
+      }
+    }
+    const end = (state: Partial<ForTimeState>, answer?: boolean, now = 0) =>
+      forTimeOutcome(forTimeView({ startedAt: STARTED_AT, finishedAt: null, ...state }, { capSeconds: 600, size: 2 }, now), answer)
+    const capped = end({}, undefined, 600)
+    const stoppedIncomplete = end({ finishedAt: '2026-09-24T09:07:00+00:00' }, false)
+    const complete = end({ finishedAt: '2026-09-24T09:07:00+00:00' })
+    expect([capped.completedUnderCap, stoppedIncomplete.completedUnderCap, complete.completedUnderCap]).toEqual([false, false, true])
+
+    const single = race(null)
+    const one = race(1)
+    const three = race(3)
+    expect([single.block.rounds, one.block.rounds, three.block.rounds]).toEqual([null, 1, 3])
+
+    // A single pass has one round to be in: round 1 when Incomplete, however it ended.
+    for (const outcome of [capped, stoppedIncomplete]) {
+      expect(partialRoundFor({ family: 'for_time', outcome, block: single.block })).toBe(1)
+      expect(partialRoundFor({ family: 'for_time', outcome, block: one.block })).toBe(1)
+    }
+
+    // Today's For Time records no completed-rounds count, so a multi-round race
+    // stopped anywhere — round 3 included — has no round identity: never round 1 by default.
+    expect(capped).not.toHaveProperty('roundsCompleted')
+    expect(stoppedIncomplete).not.toHaveProperty('roundsCompleted')
+    expect(partialRoundFor({ family: 'for_time', outcome: capped, block: three.block })).toBeNull()
+    expect(partialRoundFor({ family: 'for_time', outcome: stoppedIncomplete, block: three.block })).toBeNull()
+
+    // With a recorded count it is the round after that count, never past the last round:
+    // 2 rounds done, stopped in round 3.
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...capped, roundsCompleted: 2 }, block: three.block })).toBe(3)
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...capped, roundsCompleted: 1 }, block: three.block })).toBe(2)
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...capped, roundsCompleted: 0 }, block: three.block })).toBe(1)
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...capped, roundsCompleted: 3 }, block: three.block })).toBeNull()
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...capped, roundsCompleted: 0 }, block: single.block })).toBe(1)
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...capped, roundsCompleted: 1 }, block: single.block })).toBeNull()
+    // Complete claims no partial, whatever the rounds.
+    expect(partialRoundFor({ family: 'for_time', outcome: complete, block: three.block })).toBeNull()
+    expect(partialRoundFor({ family: 'for_time', outcome: { ...complete, roundsCompleted: 2 }, block: three.block })).toBeNull()
+    expect(partialRoundFor({ family: 'for_time', outcome: complete, block: single.block })).toBeNull()
+
+    // So a multi-round race with no count refuses a movement amount (no guessed
+    // round) and still takes an actual load, which has no round.
+    const noRound = partialRoundFor({ family: 'for_time', outcome: capped, block: three.block })
+    const actual = (partialRound: number | null, amount: string, weight: string) =>
+      movementActualFromDraft({
+        id: fixtureId('f', 2), workoutExerciseId: three.wallBall.id, prescription: three.wallBall, partialRound, weightUnit: 'kg', draft: { amount, weight },
+      }, 'for_time')
+    const refusal = actual(noRound, '7', '')
+    expect(refusal.ok ? null : refusal.error.details?.field).toBe('round_number')
+    expect(actual(noRound, '', '9')).toMatchObject({ ok: true, value: { round_number: null, actual_reps: null, weight: 9 } })
+    expect(actual(3, '7', '9')).toMatchObject({ ok: true, value: { round_number: 3, actual_reps: 7, weight: 9 } })
+
+    // The conditioning score already reads a capped multi-round For Time as
+    // rounds_completed × reps per round + partial_round_reps (20 a round here);
+    // today's card records neither count, so that race scores nothing.
+    expect(likeForLike(three.progress, capped, null).score).toBeNull()
+    expect(likeForLike(three.progress, { ...capped, roundsCompleted: 2, partialRoundReps: 5 }, null).score).toMatchObject({
+      format: 'for_time', unit: 'reps_per_minute', value: 4.5, completedUnderCap: false,
+    })
+
+    // The specification states the same rule and leaves the amount's meaning open for TASK-015.
+    const spec = read('docs/specs/LOGGING_FIELD_CONTRACT.md')
+    expect(spec).toContain('For Time: round `1` only for a single-pass block')
+    expect(spec).toMatch(/Open, for TASK-015[^\n]*multi-round For Time/)
   })
 
   it('AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them', async () => {

@@ -119,15 +119,18 @@ TASK-019.
 
 ### `timed-movement`
 
-Modality `time`: `actual_duration_seconds`. Weight and unit are offered only for a loaded
-prescription — the set logger's own rule, `incrementFor(equipment_used)` not null — so a plank has
-no load fields. Owners: TASK-043, TASK-019.
+Modality `time`: `actual_duration_seconds`. Weight and unit follow the set logger's load rule
+(`ExerciseSetLogger` / `SupersetRoundSheet` `showLoad`): they are offered for a loaded prescription
+(`incrementFor(equipment_used)` not null); on unloaded equipment (a plank) they appear only when a
+weight is carried forward from this movement's earlier set (`prefillFrom`) or the set being
+corrected already has one, so a recorded weight stays visible and correctable. A plank with no
+recorded weight has no load fields. Owners: TASK-043, TASK-019.
 
 ### `distance-movement`
 
 Modality `distance`: `actual_distance` with `actual_distance_unit` = the prescription's own unit
-(`distance_has_unit`; a distance without a unit is refused), plus weight and unit where loaded.
-Owners: TASK-043, TASK-019.
+(`distance_has_unit`; a distance without a unit is refused), plus weight and unit under the same
+load rule as `timed-movement`. Owners: TASK-043, TASK-019.
 
 ### `extra-set`
 
@@ -257,8 +260,17 @@ Today: `forTimeOutcome` reports `elapsedSeconds` and the completion answer as `c
 the athlete's Complete/Incomplete is kept as `workCompleted` on `clear.workout-for-time` (TASK-010);
 null before the end, with no cap, or when recorded mid-race. The effort faces are memory-only and
 not saved. History reads `Elapsed` and `Cap · Finished under the cap / Stopped at the cap /
-Incomplete`. Proposed: notes (reuse), block effort (MIG-A), per-movement amounts when Incomplete and
-loads (MIG-B). Owners: TASK-031, TASK-015, TASK-046, TASK-047, TASK-019.
+Incomplete` (no rounds reading). Proposed: notes (reuse), block effort (MIG-A), per-movement amounts
+when Incomplete and loads (MIG-B). Owners: TASK-031, TASK-015, TASK-046, TASK-047, TASK-019.
+
+Rounds. `workout_blocks.rounds` is a nullable int with no For Time restriction (20260921000003
+`workout_blocks_rounds_positive`; the generation contract's `rounds` is fixed rounds or null), so a
+race may be one pass or several. `forTimeOutcome` records no rounds count, while the conditioning
+reader already scores a capped For Time as `rounds_completed` × reps per round +
+`partial_round_reps` (`conditioningScore`, read back from `conditioning_history`; a finished race
+uses reps per round × `rounds`). A capped For Time therefore has no like-for-like score today. The
+proposed partial's round follows from that (§6): round 1 only for a single pass, otherwise only
+from a recorded completed-rounds count.
 
 ### `ladder`
 
@@ -277,7 +289,8 @@ Status: `existing` (written today), `legacy` (kept for history; the current UI w
 `prescription` (read by logging, never written by it), `proposed-migration` (needs MIG-A or MIG-B).
 Writers: S = `setLogs.mutate`, B = `blockResults.record`, N = `exercises.saveNotes`,
 D = `saveDebrief`, R = `mark`. History: H = `sessionDetail` (`loggedSet` / `blockOutcome`),
-W = Workout set row (`loggedSetFromRow`).
+W = Workout set row (`loggedSetFromRow`); conditioning = `conditioning_history` (20260921000012) read
+by `timedOutcome` / `conditioningScore` / `conditioningTrend` (like-for-like score and trend).
 
 | Field | Status | Type | Meaning | Null | Zero | Update / correction | Writer | Validator | Readback | Migration | Owners |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -289,16 +302,16 @@ W = Workout set row (`loggedSetFromRow`).
 | `exercise_set_logs.weight_unit` | `existing` | weight_unit NOT NULL | stamped at write time | never null | — | restated by correct | S | `setLogViolation` | W, H | — | TASK-043, TASK-044 |
 | `exercise_set_logs.effort` | `existing` | set_effort | per-set category, never a number, never rpe | unanswered (every older set) | — | another category or null by correct | S | `isRecordedEffort`, `setEffortSchema` | W (`SetEffortReading`); not History | — | TASK-043, TASK-044 |
 | `exercise_set_logs.rpe` | `legacy` | numeric(3,1), 1–10 | historical per-set RPE; the UI writes null; older queued entries replay theirs | not recorded | refused | immutable | none | `exerciseSetLogRowSchema` | H (`RPE N`), anchors | — | — |
-| `block_results.elapsed_seconds` | `existing` | int ≥ 0 | For Time / AMRAP clock actually run | not observed | measured | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Elapsed` | — | TASK-031, TASK-047 |
-| `block_results.completed_under_cap` | `existing` | boolean | For Time Complete (true) / Incomplete (false); older rows: before the cap | no answer (not ended, no cap, mid-race) | — | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Cap` | — | TASK-031, TASK-047 |
-| `block_results.rounds_completed` | `existing` | int ≥ 0 | AMRAP and circuit rounds recorded | not recorded | AMRAP explicit 0 (circuit never writes 0) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Rounds` | — | TASK-031, TASK-047 |
-| `block_results.partial_round_reps` | `existing` | int ≥ 0 | AMRAP reps into the next round, one count | not recorded | explicit 0 | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Partial round` | — | TASK-031, TASK-047 |
-| `block_results.minutes_completed` | `legacy` | int ≥ 0 | older EMOM minutes tally; no current EMOM writes it | every current ending | older 0 of M | insert-once | none | `blockResultRowSchema` | H `Minutes` | — | — |
-| `block_results.highest_rung` | `existing` | int ≥ 0 | ladder: last completed rung, 1-based | unanswered or no rung chosen | no rung completed (not written today) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Highest rung` | — | TASK-013, TASK-031, TASK-032, TASK-047 |
+| `block_results.elapsed_seconds` | `existing` | int ≥ 0 | For Time / AMRAP clock actually run | not observed | measured | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Elapsed`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.completed_under_cap` | `existing` | boolean | For Time Complete (true) / Incomplete (false); older rows: before the cap | no answer (not ended, no cap, mid-race) | — | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Cap`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.rounds_completed` | `existing` | int ≥ 0 | AMRAP and circuit rounds recorded; conditioning also scores a capped For Time from it, which the current For Time card never writes | not recorded | AMRAP explicit 0 (circuit never writes 0) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Rounds`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.partial_round_reps` | `existing` | int ≥ 0 | AMRAP reps into the next round, one count; conditioning also reads it for a capped For Time (never written by For Time today) | not recorded | explicit 0 | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Partial round`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.minutes_completed` | `legacy` | int ≥ 0 | older EMOM minutes tally; no current EMOM writes it | every current ending | older 0 of M | insert-once | none | `blockResultRowSchema` | H `Minutes`, conditioning | — | — |
+| `block_results.highest_rung` | `existing` | int ≥ 0 | ladder: last completed rung, 1-based | unanswered or no rung chosen | no rung completed (not written today) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Highest rung`, conditioning | — | TASK-013, TASK-031, TASK-032, TASK-047 |
 | `block_results.perceived_effort` | `legacy` | smallint, 1–10 | historical block RPE; every current row null; `conditioningTrend` reads ≤ 7 as easy | not answered, never low | refused | insert-once | none | `isPerceivedEffort` | H `N of 10`, conditioning | — | — |
 | `block_results.notes` | `existing` | text | the athlete's words about the block; EMOM writes it; AMRAP / For Time / ladder reuse it | nothing written | — | insert-once; correction TASK-031 | B | `blockResultInsert` | H block notes | — | TASK-015, TASK-031, TASK-046, TASK-047 |
 | `block_results.effort` | `proposed-migration` | set_effort | optional categorical effort for the whole timed block | unanswered (every older row) | — | with the row; corrected with it; null clears | B (extended) | `isRecordedEffort`, `setEffortSchema` | H category word (TASK-031) | MIG-A | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.round_number` | `proposed-migration` | int > 0 | round the amounts belong to (`partialRoundFor`) | no amount (load-only row) | — | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.round_number` | `proposed-migration` | int > 0 | round the amounts belong to (`partialRoundFor`; For Time: 1 only for a single pass, else after a recorded rounds count) | no amount (load-only row) | — | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
 | `block_movement_results.actual_reps` | `proposed-migration` | int ≥ 0 | reps of this movement in that round | not recorded | measured | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
 | `block_movement_results.actual_duration_seconds` | `proposed-migration` | int ≥ 0 | seconds of this movement in that round | not recorded | measured | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
 | `block_movement_results.actual_distance` | `proposed-migration` | numeric ≥ 0 | distance of this movement in that round | not recorded; needs its unit | measured | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
@@ -350,15 +363,16 @@ the `set_effort` type.
 | Notes for AMRAP, For Time, ladder | **Reuse** `block_results.notes` and `BlockOutcome.notes` (no migration) | The column exists, `blockResultInsert` maps it, EMOM already writes it (TASK-011), History reads every block's notes. |
 | Correction of a saved timed result | **Reuse** (no migration): a new client method, `block-result-correction` | `grant select, insert, update, delete on public.block_results to authenticated` and the `block_results_update_own` policy (20260921000004). |
 | Block categorical effort | **Migration MIG-A** | §4: no categorical column on `block_results`; every candidate column has a different meaning. |
-| Per-movement partials (AMRAP next round, ladder next rung, For Time Incomplete) and per-movement loads | **Migration MIG-B** (a new table) | See below. |
+| Per-movement partials (AMRAP next round, ladder next rung, For Time Incomplete — single pass, or after a recorded rounds count) and per-movement loads | **Migration MIG-B** (a new table) | See below. |
 | Durable ladder progress, draft, Finish checkpoint, original cap | **Reuse** the local persistence owner (`src/state/workout-persistence.ts`); not a database field | Saved `block_results` stay authoritative; TASK-032. |
 | Ordered ladder progress | **Reuse** `highest_rung` (last completed rung, 0 admitted) | 20260921000004 CHECK `highest_rung >= 0`; TASK-013 owns the live check-off. |
 
 Why per-movement timed partials and loads cannot reuse `exercise_set_logs` (rehearsed in check-02
 with the real readers):
 
-1. **It changes adaptive behaviour.** `anchor_evidence` (20260921000011) reads every set log of a
-   completed, non-deload session on a loaded reps prescription, with no filter on the block's
+1. **It changes adaptive behaviour.** `anchor_evidence` (20260921000011, redefined by
+   20260921000014 to read only the active prescription) reads every working set log of a completed,
+   non-deload session on an active, loaded reps prescription, with no filter on the block's
    structure. A next-round partial is by definition short of the prescribed reps (5 of 12), so it
    becomes a short working set: `d5MissedReps` raises the missed-rep deload (D5) and the e1RM sees
    it. R63/R84 forbid new adaptive consequences.
@@ -379,15 +393,24 @@ Implemented as pure functions in the typed contract and proven in check-02.
   - AMRAP: `rounds_completed + 1` once the window has closed. Unrecorded rounds give **no** identity —
     a partial is never attached to a round nobody counted (an explicit 0 gives round 1). The
     accepted gallery treated an unanswered count as zero; that is not adopted.
-  - For Time: `1` (the single pass) when the athlete answered Incomplete; none when Complete or not
-    ended.
+  - For Time: round `1` only for a single-pass block (`workout_blocks.rounds` null or 1), when the
+    athlete answered Incomplete; none when Complete or not ended. A multi-round race
+    (`rounds` > 1) takes its round only from a recorded completed-rounds count
+    (`roundsCompleted` + 1 while a round is left, so 2 rounds done in a 3-round race is round 3);
+    without one it has **no** identity. `forTimeOutcome` records no count today, so every
+    multi-round partial amount is refused (`round_number`) and only loads can be entered until
+    TASK-015 records one. `rounds` is the block's structure, read only to know whether a single
+    pass exists and to bound a recorded count — never to supply the round.
   - Ladder: `highest_rung + 1` while a rung is left; none when Complete or when no rung was
     recorded. An Incomplete ladder must record its completed-through count (0 allowed) before
     partials can attach (TASK-013 / TASK-015).
-- **Applicable load — `loadApplies`.** The set logger's own rule (`incrementFor(equipment_used)` not
-  null), so a timed movement and a set of the same movement agree. One actual load per movement per
-  attempt; a load that changed between rounds is not representable (a product question, not
-  decided here).
+- **Applicable load — `loadApplies`.** The set logger's base load rule (`incrementFor(equipment_used)`
+  not null), so a timed movement and a set of the same movement agree. The set logger also shows
+  load fields on unloaded equipment when a weight is carried forward or already recorded; that
+  exception has no counterpart here, because a timed attempt has no earlier movement row to carry a
+  weight from and `loadApplies` admits no weight on unloaded equipment, so none can be saved to
+  correct. One actual load per movement per attempt; a load that changed between rounds is not
+  representable (a product question, not decided here).
 - **Values — `movementActualFromDraft`.** The amount goes to the column of the prescription's
   modality, with its own distance unit, bounded exactly as a set (`setLogViolation`): whole
   non-negative reps and seconds, non-negative distance and weight. Blank is null; `0` is kept. An
@@ -406,6 +429,15 @@ Implemented as pure functions in the typed contract and proven in check-02.
 - **Open, for TASK-015 (not decided here):** whether the AMRAP keeps its single "Reps into the next
   round" count (`partial_round_reps`) once per-movement next-round amounts exist. Neither may be
   derived from the other; `conditioning`'s like-for-like score reads only `partial_round_reps`.
+- **Open, for TASK-015 (not decided here): the multi-round For Time amount.** Whether the For Time
+  log records a completed-rounds count at all (the existing `rounds_completed` column, which
+  conditioning already reads for a capped For Time but no For Time writes, or none); whether a
+  movement's amount is the reps of the round the athlete stopped in (as `round_number` implies) or a
+  total across rounds; and whether `partial_round_reps` is written beside the per-movement amounts.
+  Neither count may be derived from the per-movement amounts or the reverse, and no count may be
+  filled from the plan. Until TASK-015 decides and records a count, a multi-round For Time has no
+  round identity and no movement amount; a single pass keeps round 1, where in-round and total are
+  the same thing.
 
 ## 7. Isolated prerequisites (AC-R030-03)
 
@@ -423,11 +455,30 @@ is touched, and no writer is added.
 | `timed-read-model` | read model | History readings for block effort and movement actuals | MIG-A, MIG-B | TASK-031 |
 | `timed-entry` | draft | per-movement partial and load entry, effort and notes, truthful across edit and retry | §6 | TASK-015 |
 | `ladder-durable-draft` | draft | durable ladder progress, draft, Finish checkpoint and original cap | `workout-persistence.ts` | TASK-032 |
-| `visible-proof` | read model | Workout → Summary → History save, retry and reload proof on the disposable lane | PRE-001 + `LIVE-PRE-1` | TASK-047 |
-| `LIVE-PRE-1` | live authority | apply MIG-A and MIG-B to the disposable test project before TASK-047's real lane; to production only as a release decision | no task in this body is authorised to change a hosted database | owner |
+| `visible-proof` | read model | Workout → Summary → History save, retry and reload proof on the real test lane (disposable namespaced users) | PRE-001 + `LIVE-PRE-1` | TASK-047 |
+| `LIVE-PRE-1` | live authority | owner decision: apply MIG-A and MIG-B to the hosted project TASK-047's real lane writes to — per the repository's docs, the reused live (production) project | no task in this body is authorised to change a hosted database | owner |
 
 `LIVE-PRE-1` is not covered by PRE-001 (which checks only Auth health and REST availability).
 Without it TASK-047 cannot prove a real write of these fields.
+
+What applying MIG-A/MIG-B for TASK-047 would touch, as the repository documents it (stated for the
+owner's decision; not resolved here):
+
+- The repository documents **one** hosted Supabase project: the backend target is the reused live
+  project `qxckevxniacktaqecypl` (`docs/process/IMPLEMENTATION_PLAN.md`), and "the rebuild runs on
+  the same project" (`docs/process/CATALOG_MIGRATION_SCOPE.md`; `docs/process/HUMAN_GATES.md`).
+- The "disposable" test lane is disposable **users and data inside that project**, not a separate
+  database: the e2e harness creates and deletes namespaced `clear-e2e-<namespace>-*` users through
+  the admin API (`e2e/README.md`), and the overnight envelope allows "disposable Supabase test users
+  and test data in the existing project" (`docs/process/CLEAR-OVERNIGHT-VIBE-PREFLIGHT.md`).
+- So, unless the owner names a separate project, applying MIG-A/MIG-B so that TASK-047 can prove a
+  real write **is a schema change to the live production project**, not test-lane setup. TASK-030
+  reads no private configuration (no `.env*` file), so which project PRE-001's private configuration
+  points at is for the owner to confirm.
+- Nothing applies a migration automatically: no repository workflow pushes migrations (CI only
+  checks `database.types.ts` against the migration files, `npm run gen:types -- --check`).
+  TASK-031 can therefore land the migration files, schemas, writers and double-based tests without
+  applying anything; only TASK-047's real lane waits on `LIVE-PRE-1`.
 
 ```sql
 -- DRAFT MIG-A — not a migration. Owner: TASK-031. Never applied by TASK-030.
@@ -512,7 +563,8 @@ grant all on public.block_movement_results to service_role;
 
 - **check-01** (`src/state/schemas.test.ts`, describe "TASK-030 logging field ownership at the
   schema boundary"): the schemas each moment validates with keep null distinct from zero for every
-  column the matrix names; `perceived_effort` keeps its 1–10 number and refuses every category;
+  column the matrix names; `perceived_effort` keeps its 1–10 number at both ends (the writer's
+  `isPerceivedEffort` agrees with the column at every boundary) and refuses every category;
   per-set effort is exactly the three categories beside an untouched `rpe`; mood is 1–5; the
   rest-day and debrief bounds; and every schema the matrix names is a real export.
 - **check-02** (`src/data/refinement-logging-contract.test.ts`): the 16-moment inventory and its
@@ -522,9 +574,12 @@ grant all on public.block_movement_results to service_role;
   over the migration-transcribed double (sets, corrections and clears, block outcomes with refused
   save and retry, notes, debrief and rest days); categorical effort never becoming a number; the
   anchor/deload consequence of reusing set logs; the proposed identities from the real outcome
-  functions; and the isolation of the drafts.
-- **Not proven here:** that Postgres agrees with the double (the disposable lane is TASK-047's),
-  any proposed write (no table exists), or any route behaviour.
+  functions, including For Time by the block's real `rounds` (round 1 only for a single pass; a
+  3-round race stopped in round 3 has no round without a recorded count, and round 3 with a count
+  of 2), beside `conditioningScore`'s reading of a capped For Time; and the isolation of the
+  drafts.
+- **Not proven here:** that Postgres agrees with the double (the real lane is TASK-047's, behind
+  `LIVE-PRE-1`), any proposed write (no table exists), or any route behaviour.
 
 ## 9. Gallery disposition: not applicable
 
@@ -541,7 +596,9 @@ writer is added to the gallery or anywhere else.
 - A block result is insert-once: a retry with changed values after a lost answer is absorbed by the
   409 rule. Corrections need TASK-031's writer, not a re-insert.
 - `src/ui/block-renderers.tsx`, `block-completion-control.tsx` and `block-completion.ts` still say an
-  EMOM supplies `minutes_completed`; none has since REQ-014/E01 (first recorded by TASK-011).
+  EMOM supplies `minutes_completed`; none has since REQ-014/E01 (first recorded by TASK-011). Those
+  comments are left; `DATA_MODEL.md` §8's timer-contract line said the same and is corrected by this
+  task (documentation only).
 - The EMOM note and the ladder answer are memory-only drafts today (TASK-011, TASK-010); durability is
   TASK-032 (ladder) and TASK-031/TASK-047 (results).
 
@@ -554,7 +611,7 @@ writer is added to the gallery or anywhere else.
 - `ref:accepted-gallery/src/ui/refinements/timed-result-log.tsx` sha256 `a293b6741a7a3e39aaffa5d68c211c19b259c54f7f0d222768b2799d69ed098f`
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/authority/CURRENT-REQUIREMENTS-AUTHORITY.md` sha256 `6916f4a3c2d798807792e7ff80fed684985cd5a7f8e8cb4ef651bb997d3b194c`
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/authority/INDIVIDUAL-CORRECTION-REGISTER-2026-11-03.md` sha256 `82b1daa663ff4d8001b78e40cfaef73ecba48f71e65000e397ff34caf9698de5` (R43, R62, R63, R69, R76, R80, R84, R112, R115, R116)
-- Repository: `supabase/migrations/20260921000003`, `…0004`, `…0010`, `…0011`, `…0012`, `…0015`,
+- Repository: `supabase/migrations/20260921000003`, `…0004`, `…0010`, `…0011`, `…0012`, `…0014`, `…0015`,
   `20261027000027`, `20261027000028`; `src/state/schemas.ts`; `src/data/database.types.ts`;
   `src/data/workout.ts`, `summary.ts`, `rest-days.ts`, `exercises.ts`, `anchors.ts`;
   `src/state/block-completion*.ts*`, `set-logging*.ts*`, `set-observation-mutation.ts`,

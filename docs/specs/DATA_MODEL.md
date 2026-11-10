@@ -456,7 +456,7 @@ CREATE TABLE block_results (
 
 Keyed to **block**, not section — a conditioning section with an EMOM and an AMRAP records both.
 
-Timer contracts map onto specific fields: count-up and For Time write `elapsed_seconds` and `completed_under_cap`; countdown and AMRAP write `rounds_completed` and `partial_round_reps`; EMOM writes `minutes_completed`.
+Timer contracts map onto specific fields: count-up and For Time write `elapsed_seconds` and `completed_under_cap`; countdown and AMRAP write `rounds_completed` and `partial_round_reps`; an EMOM writes no count — `minutes_completed` stays null for every current ending (REQ-014/E01; TASK-011, R84: the schedule is assumed done and an exception is the athlete's `notes`), and only older EMOM rows carry minutes.
 
 `perceived_effort` is retained because `EXE-04` specifies the UI captures section RPE at completion — the collection point exists in the spec, so this is not speculative storage.
 

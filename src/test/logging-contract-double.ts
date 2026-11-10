@@ -26,9 +26,11 @@
  *   · `session_snapshot` / `session_as_performed` (20260921000006,
  *     20260921000010): rows assembled with `to_jsonb`, so a column that exists
  *     reaches every reader.
- *   · `anchor_evidence` (20260921000011): every set log of a completed,
- *     non-deload, non-recovery session on a loaded reps prescription, whatever
- *     its block's structure.
+ *   · `anchor_evidence` as currently defined (20260921000011, redefined by
+ *     20260921000014 to read only the active prescription, EXE-06): every
+ *     working set log of a completed, non-deload, non-recovery session on an
+ *     active, loaded reps prescription, whatever its block's structure. Its
+ *     row order is not modelled: no rehearsal here reads more than one row.
  *
  * A table or column the migrations do not create is answered the way PostgREST
  * answers it (404 PGRST205 / 400 PGRST204), which is how a test shows that a
@@ -441,6 +443,8 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
       .flatMap((row) => {
         const exercise = exercises.get(row.workout_exercise_id)
         if (exercise === undefined) return []
+        // 20260921000014 (EXE-06): the prescription that still stands, and no other.
+        if (exercise.revision_status !== 'active') return []
         if (exercise.modality !== 'reps' || exercise.load_type === 'bodyweight' || exercise.equipment_used === 'bodyweight') return []
         const prescribed =
           exercise.target_kind === 'fixed'

@@ -24,6 +24,7 @@ import { restore } from './favorites'
 import { isLadderScheme } from './ladder'
 import { savedWorkoutFixture } from '../test/workout-double'
 import { LOGGING_FIELDS, LOGGING_MOMENTS } from '../data/refinement-logging-contract'
+import { PERCEIVED_EFFORT_MAX, PERCEIVED_EFFORT_MIN, isPerceivedEffort } from './block-completion'
 import {
   makeLadderTimingBlock,
   makeSessionAcceptance,
@@ -1062,6 +1063,16 @@ describe('TASK-030 logging field ownership at the schema boundary', () => {
     }
     for (const outOfRange of [0, 11, 6.5, '7']) {
       expect(blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: outOfRange }).success, String(outOfRange)).toBe(false)
+    }
+
+    // The legacy scale is exactly 1–10 at both ends, and the writer's pre-send
+    // check (isPerceivedEffort, named by the matrix) agrees with the column at
+    // every boundary: 0 is not "very easy", and nothing beyond 10 exists.
+    expect([PERCEIVED_EFFORT_MIN, PERCEIVED_EFFORT_MAX]).toEqual([1, 10])
+    for (const value of [-1, 0, 0.5, 1, 1.5, 9.5, 10, 10.5, 11]) {
+      const column = blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: value }).success
+      expect(isPerceivedEffort(value), String(value)).toBe(column)
+      expect(column, String(value)).toBe(value === 1 || value === 10)
     }
 
     // No categorical block column exists to read yet (MIG-A is TASK-031's):
