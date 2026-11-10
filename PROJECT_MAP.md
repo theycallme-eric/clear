@@ -302,6 +302,14 @@ and an AMRAP records both. Null, zero and skipped stay three different observati
 column has a default, every one of them admits zero, and a skip is `execution_status` one level up.
 Reading it back is `session_performed`, a `SECURITY INVOKER` view — "as performed" is a view rather
 than a join, because set logs alone cannot show a skipped exercise or a block's own outcome.
+TASK-031 (MIG-A, MIG-B; declared in the repository, not yet applied to the hosted project — the
+owner's LIVE-PRE-1) adds the richer timed side: `block_results.effort`, the block's categorical
+effort beside the legacy 1–10 number, and `block_movement_results`, one row per movement per timed
+block attempt (its round partial and actual load) — deliberately not a set, so anchors, deload and
+History set counts never read it. The `session_as_*` reconstructions carry it per exercise as
+`movement_result`; History reads both through `sessionDetail` (`effort`, `movementActuals`), and
+`src/state/timed-results.ts` is the save provider (draft → rows, idempotent retry, draft kept on
+failure) that no shipped path calls yet.
 
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and

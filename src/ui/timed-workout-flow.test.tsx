@@ -1171,7 +1171,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     const row = (minutes: number | null, notes: string | null): BlockResultRow => ({
       id: '00000000-0000-4000-8000-000000000911', block_id: blockRow.id, elapsed_seconds: null,
       completed_under_cap: null, rounds_completed: null, partial_round_reps: null, minutes_completed: minutes,
-      highest_rung: null, perceived_effort: null, notes, created_at: '2026-11-01T09:30:00+00:00',
+      highest_rung: null, perceived_effort: null, notes, created_at: '2026-11-01T09:30:00+00:00', effort: null,
     })
     expect(blockOutcome(blockRow, row(8, null))).toEqual([{ label: 'Minutes', value: '8 of 10' }])
     expect(blockOutcome(blockRow, row(10, null))).toEqual([{ label: 'Minutes', value: '10 of 10' }])

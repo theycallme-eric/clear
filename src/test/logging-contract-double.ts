@@ -32,16 +32,39 @@
  *     active, loaded reps prescription, whatever its block's structure. Its
  *     row order is not modelled: no rehearsal here reads more than one row.
  *
- * A table or column the migrations do not create is answered the way PostgREST
- * answers it (404 PGRST205 / 400 PGRST204), which is how a test shows that a
- * proposed field cannot be written today. It does not prove Postgres agrees,
+ * TASK-031 extends it with what MIG-A and MIG-B declare
+ * (20261110000029, 20261110000030):
+ *
+ *   · `block_results.effort` (the `set_effort` enum) and an owner-scoped
+ *     PATCH of a saved row (`block_results_update_own`, the table-level grant).
+ *   · `block_movement_results`: its columns, the insert and update column
+ *     grants (a column outside them is 42501), the owner-only policies through
+ *     exercise → block → section → session, the composite foreign key to an
+ *     active prescription, every CHECK, NOT NULL `weight_unit`, the primary
+ *     key and UNIQUE (workout_exercise_id) answered as 409 / 23505, delete,
+ *     and `updated_at` stamped on update.
+ *   · `session_as_performed` carrying each exercise's `movement_result`.
+ *
+ * `schema: 'hosted-before-timed-actuals'` answers as the hosted project does
+ * until the owner applies MIG-A and MIG-B (LIVE-PRE-1): no `effort` column, no
+ * `block_movement_results` table, and reconstructions without
+ * `movement_result`. That is how a test shows the shipped saves still work on
+ * the current hosted schema and the new writers refuse explicitly there.
+ *
+ * A table or column the schema does not have is answered the way PostgREST
+ * answers it (404 PGRST205 / 400 PGRST204). It does not prove Postgres agrees,
  * and nothing here should be read as claiming that; the deployed-database proof
  * is the disposable test lane's (TASK-047).
+ *
+ * Failures a test can ask for: `refuseNext` (the request is refused and
+ * nothing is applied) and `loseNextAnswer` (the request is applied and then the
+ * answer is lost in transit, as a dropped connection does).
  *
  * Deterministic: ids and timestamps come from counters.
  */
 import { Constants } from '../data/database.types'
 import type {
+  BlockMovementResultRow,
   BlockResultRow,
   ExerciseSetLogRow,
   RestDayRow,
@@ -67,7 +90,34 @@ export const BLOCK_RESULT_COLUMNS = [
   'perceived_effort',
   'notes',
   'created_at',
+  'effort',
 ] as const
+
+/** `block_movement_results`' columns, as 20261110000030 (MIG-B) creates them. */
+export const BLOCK_MOVEMENT_RESULT_COLUMNS = [
+  'id',
+  'workout_exercise_id',
+  'prescription_revision_status',
+  'round_number',
+  'actual_reps',
+  'actual_duration_seconds',
+  'actual_distance',
+  'actual_distance_unit',
+  'weight',
+  'weight_unit',
+  'created_at',
+  'updated_at',
+] as const
+
+/** MIG-B's column grants to `authenticated`. */
+const MOVEMENT_INSERT_GRANT = [
+  'id', 'workout_exercise_id', 'round_number', 'actual_reps', 'actual_duration_seconds',
+  'actual_distance', 'actual_distance_unit', 'weight', 'weight_unit',
+]
+const MOVEMENT_UPDATE_GRANT = MOVEMENT_INSERT_GRANT.slice(2)
+
+/** Which schema the double answers as. */
+export type LoggingDoubleSchema = 'repository' | 'hosted-before-timed-actuals'
 
 /** `exercise_set_logs`' columns, through 20261027000028. */
 export const SET_LOG_COLUMNS = [
@@ -127,17 +177,34 @@ export interface LoggingDouble {
   /** Every request answered, in order — the test's view of what was sent. */
   readonly requests: LoggingDoubleRequest[]
   blockResults(): BlockResultRow[]
+  /** TASK-031: the stored `block_movement_results` rows. */
+  movementResults(): BlockMovementResultRow[]
   setLogs(): ExerciseSetLogRow[]
   restDays(): RestDayRow[]
   session(): WorkoutSessionRow
-  /** Answer the next request to this path with this status: a refused save. */
-  refuseNext(path: string, status: number): void
+  /**
+   * Answer the next request to this path (and method, when given) with this
+   * status: a refused save, nothing applied.
+   */
+  refuseNext(path: string, status: number, method?: string): void
+  /**
+   * Apply the next request to this path (and method, when given), then lose
+   * its answer: the fetch rejects as a dropped connection does, after the
+   * write landed.
+   */
+  loseNextAnswer(path: string, method?: string): void
 }
 
 export interface LoggingDoubleOptions {
   readonly snapshot: SessionSnapshot
   /** The authenticated user; the session's owner by default. */
   readonly userId?: string
+  /**
+   * `repository` (the default): every migration in `supabase/migrations/`,
+   * MIG-A and MIG-B included. `hosted-before-timed-actuals`: the hosted
+   * project as it stands until LIVE-PRE-1 — without MIG-A and MIG-B.
+   */
+  readonly schema?: LoggingDoubleSchema
 }
 
 type Json = Record<string, unknown>
@@ -151,6 +218,10 @@ const inEnum = (values: readonly string[], value: unknown) => typeof value === '
 export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDouble {
   const snapshot = structuredClone(options.snapshot)
   const userId = options.userId ?? snapshot.session.user_id
+  const migrated = (options.schema ?? 'repository') === 'repository'
+  const blockResultColumns: readonly string[] = migrated
+    ? BLOCK_RESULT_COLUMNS
+    : BLOCK_RESULT_COLUMNS.filter((column) => column !== 'effort')
   let session: WorkoutSessionRow = snapshot.session
 
   const blocks = new Map(snapshot.sections.flatMap((section) => section.blocks.map((entry) => [entry.block.id, entry.block] as const)))
@@ -161,6 +232,7 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
   )
 
   const blockResults = new Map<string, BlockResultRow>()
+  const movementResults = new Map<string, BlockMovementResultRow>()
   const setLogs = new Map<string, ExerciseSetLogRow>(
     snapshot.sections.flatMap((section) =>
       section.blocks.flatMap((entry) => entry.exercises.flatMap(({ set_logs }) => set_logs.map((row) => [row.id, row] as const))),
@@ -170,6 +242,7 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
   const restDays = new Map<string, RestDayRow>()
   const requests: LoggingDoubleRequest[] = []
   const refusals = new Map<string, number>()
+  const losses = new Set<string>()
 
   let sequence = 0
   const nextId = (prefix: string) => {
@@ -207,7 +280,7 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
   function insertBlockResults(rows: Json[]): Response {
     const stored: BlockResultRow[] = []
     for (const row of rows) {
-      const unknown = Object.keys(row).find((key) => !(BLOCK_RESULT_COLUMNS as readonly string[]).includes(key))
+      const unknown = Object.keys(row).find((key) => !blockResultColumns.includes(key))
       if (unknown !== undefined) {
         return problem(400, 'PGRST204', `Could not find the '${unknown}' column of 'block_results' in the schema cache`)
       }
@@ -222,6 +295,9 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
       }
       for (const column of ['elapsed_seconds', 'rounds_completed', 'partial_round_reps', 'minutes_completed', 'highest_rung']) {
         if (!nonNegativeIntOrNull(row[column])) return problem(400, '23514', `block_results_${column}_non_negative`)
+      }
+      if (row.effort !== undefined && row.effort !== null && !inEnum(Constants.public.Enums.set_effort, row.effort)) {
+        return problem(400, '22P02', 'invalid input value for enum set_effort')
       }
       if (blockResults.has(blockId) || stored.some((candidate) => candidate.block_id === blockId)) {
         return problem(409, '23505', 'duplicate key value violates unique constraint "block_results_block_id_key"')
@@ -239,10 +315,144 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
         perceived_effort: value('perceived_effort') as number | null,
         notes: value('notes') as string | null,
         created_at: nextInstant(),
+        effort: value('effort') as BlockResultRow['effort'],
       })
     }
     for (const row of stored) blockResults.set(row.block_id, row)
     return respond(201, stored)
+  }
+
+  /** `block_results_*_own`: the block's session belongs to the caller. */
+  const ownsSession = () => session.user_id === userId
+
+  /** PATCH /block_results?block_id=eq.… — the correction (table-level update grant). */
+  function updateBlockResults(blockId: string, patch: Json): Response {
+    const unknown = Object.keys(patch).find((key) => !blockResultColumns.includes(key))
+    if (unknown !== undefined) {
+      return problem(400, 'PGRST204', `Could not find the '${unknown}' column of 'block_results' in the schema cache`)
+    }
+    const existing = blockResults.get(blockId)
+    // RLS USING: a row the caller does not own is not there to update.
+    if (existing === undefined || !ownsSession()) return respond(200, [])
+    const next = { ...existing, ...(patch as Partial<BlockResultRow>) }
+    const effort = next.perceived_effort
+    if (effort !== null && !isInt(effort)) return problem(400, '22P02', 'invalid input syntax for type smallint')
+    if (effort !== null && (effort < 1 || effort > 10)) return problem(400, '23514', 'block_results_perceived_effort_range')
+    for (const column of ['elapsed_seconds', 'rounds_completed', 'partial_round_reps', 'minutes_completed', 'highest_rung'] as const) {
+      if (!nonNegativeIntOrNull(next[column])) return problem(400, '23514', `block_results_${column}_non_negative`)
+    }
+    if (next.effort !== null && !inEnum(Constants.public.Enums.set_effort, next.effort)) {
+      return problem(400, '22P02', 'invalid input value for enum set_effort')
+    }
+    if (next.block_id !== blockId || next.id !== existing.id) return problem(409, '23505', 'block_results identity changed')
+    blockResults.set(blockId, next)
+    return respond(200, [next])
+  }
+
+  // ── block_movement_results (MIG-B) ─────────────────────────────────────────
+
+  /** `block_movement_results_*_own`: exercise → block → section → session → owner. */
+  const ownsExercise = (exerciseId: string) => exercises.has(exerciseId) && ownsSession()
+
+  /** MIG-B's CHECKs and types on a whole row, or the refusal. */
+  function movementRowProblem(row: BlockMovementResultRow): Response | null {
+    if (!(row.round_number === null || (isInt(row.round_number) && row.round_number > 0))) {
+      return problem(400, '23514', 'block_movement_results_round_positive')
+    }
+    for (const column of ['actual_reps', 'actual_duration_seconds'] as const) {
+      if (row[column] !== null && !isInt(row[column])) return problem(400, '22P02', 'invalid input syntax for type integer')
+    }
+    if (!nonNegativeIntOrNull(row.actual_reps)) return problem(400, '23514', 'block_movement_results_reps_non_negative')
+    if (!nonNegativeIntOrNull(row.actual_duration_seconds)) return problem(400, '23514', 'block_movement_results_duration_non_negative')
+    if (!nonNegativeOrNull(row.actual_distance)) return problem(400, '23514', 'block_movement_results_distance_non_negative')
+    if (!nonNegativeOrNull(row.weight)) return problem(400, '23514', 'block_movement_results_weight_non_negative')
+    if (row.weight_unit === null || row.weight_unit === undefined) return problem(400, '23502', 'null value in column "weight_unit"')
+    if (!inEnum(Constants.public.Enums.weight_unit, row.weight_unit)) return problem(400, '22P02', 'invalid input value for enum weight_unit')
+    if (row.actual_distance_unit !== null && !inEnum(Constants.public.Enums.distance_unit, row.actual_distance_unit)) {
+      return problem(400, '22P02', 'invalid input value for enum distance_unit')
+    }
+    const amount = row.actual_reps !== null || row.actual_duration_seconds !== null || row.actual_distance !== null
+    if (amount && row.round_number === null) return problem(400, '23514', 'block_movement_results_amount_needs_round')
+    if (!amount && row.weight === null) return problem(400, '23514', 'block_movement_results_observed')
+    if (row.actual_distance !== null && row.actual_distance_unit === null) {
+      return problem(400, '23514', 'block_movement_results_distance_has_unit')
+    }
+    return null
+  }
+
+  function insertMovementResults(rows: Json[]): Response {
+    const stored: BlockMovementResultRow[] = []
+    for (const row of rows) {
+      const unknown = Object.keys(row).find((key) => !(BLOCK_MOVEMENT_RESULT_COLUMNS as readonly string[]).includes(key))
+      if (unknown !== undefined) {
+        return problem(400, 'PGRST204', `Could not find the '${unknown}' column of 'block_movement_results' in the schema cache`)
+      }
+      const ungranted = Object.keys(row).find((key) => !MOVEMENT_INSERT_GRANT.includes(key))
+      if (ungranted !== undefined) return problem(403, '42501', 'permission denied for table block_movement_results')
+      const exerciseId = String(row.workout_exercise_id)
+      if (!exercises.has(exerciseId)) return problem(409, '23503', 'block_movement_results_prescription_fkey')
+      // RLS WITH CHECK before the row's own constraints.
+      if (!ownsExercise(exerciseId)) return problem(403, '42501', 'new row violates row-level security policy for table "block_movement_results"')
+      if ((exercises.get(exerciseId) as WorkoutExerciseRow).revision_status !== 'active') {
+        return problem(409, '23503', 'block_movement_results_prescription_fkey')
+      }
+      const value = (key: string) => (row[key] === undefined ? null : row[key])
+      const stamp = nextInstant()
+      const candidate: BlockMovementResultRow = {
+        id: String(row.id),
+        workout_exercise_id: exerciseId,
+        prescription_revision_status: 'active',
+        round_number: value('round_number') as number | null,
+        actual_reps: value('actual_reps') as number | null,
+        actual_duration_seconds: value('actual_duration_seconds') as number | null,
+        actual_distance: value('actual_distance') as number | null,
+        actual_distance_unit: value('actual_distance_unit') as BlockMovementResultRow['actual_distance_unit'],
+        weight: value('weight') as number | null,
+        weight_unit: value('weight_unit') as BlockMovementResultRow['weight_unit'],
+        created_at: stamp,
+        updated_at: stamp,
+      }
+      const refused = movementRowProblem(candidate)
+      if (refused !== null) return refused
+      const taken = [...movementResults.values(), ...stored]
+      if (taken.some((other) => other.id === candidate.id)) {
+        return problem(409, '23505', 'duplicate key value violates unique constraint "block_movement_results_pkey"')
+      }
+      if (taken.some((other) => other.workout_exercise_id === exerciseId)) {
+        return problem(409, '23505', 'duplicate key value violates unique constraint "block_movement_results_one_per_movement"')
+      }
+      stored.push(candidate)
+    }
+    for (const row of stored) movementResults.set(row.id, row)
+    return respond(201, stored)
+  }
+
+  const movementMatches = (url: URL) => {
+    const by = (column: string) => (url.searchParams.get(column) ?? '').replace(/^eq\./, '')
+    return [...movementResults.values()].filter(
+      (row) =>
+        (url.searchParams.has('id') ? row.id === by('id') : true) &&
+        (url.searchParams.has('workout_exercise_id') ? row.workout_exercise_id === by('workout_exercise_id') : true) &&
+        ownsExercise(row.workout_exercise_id),
+    )
+  }
+
+  function updateMovementResults(url: URL, patch: Json): Response {
+    const unknown = Object.keys(patch).find((key) => !(BLOCK_MOVEMENT_RESULT_COLUMNS as readonly string[]).includes(key))
+    if (unknown !== undefined) {
+      return problem(400, 'PGRST204', `Could not find the '${unknown}' column of 'block_movement_results' in the schema cache`)
+    }
+    const ungranted = Object.keys(patch).find((key) => !MOVEMENT_UPDATE_GRANT.includes(key))
+    if (ungranted !== undefined) return problem(403, '42501', 'permission denied for table block_movement_results')
+    const updated: BlockMovementResultRow[] = []
+    for (const row of movementMatches(url)) {
+      const next: BlockMovementResultRow = { ...row, ...(patch as Partial<BlockMovementResultRow>), updated_at: nextInstant() }
+      const refused = movementRowProblem(next)
+      if (refused !== null) return refused
+      updated.push(next)
+    }
+    for (const row of updated) movementResults.set(row.id, row)
+    return respond(200, updated)
   }
 
   // ── mutate_set_observation ────────────────────────────────────────────────
@@ -420,14 +630,25 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
         section: section.section,
         blocks: section.blocks.map((entry) => ({
           block: entry.block,
-          ...(withResults ? { block_result: blockResults.get(entry.block.id) ?? null } : {}),
+          ...(withResults ? { block_result: blockResultAsStored(entry.block.id) } : {}),
           exercises: entry.exercises.map(({ exercise }) => ({
             exercise: exercises.get(exercise.id),
             set_logs: logsFor(exercise.id),
+            // MIG-B's reconstruction; the hosted function has no such key yet.
+            ...(withResults && migrated
+              ? { movement_result: [...movementResults.values()].find((row) => row.workout_exercise_id === exercise.id) ?? null }
+              : {}),
           })),
         })),
       })),
     }
+  }
+
+  /** `to_jsonb(br)`: only the columns the schema has. */
+  function blockResultAsStored(blockId: string): Json | null {
+    const row = blockResults.get(blockId)
+    if (row === undefined) return null
+    return Object.fromEntries(Object.entries(row).filter(([key]) => blockResultColumns.includes(key)))
   }
 
   // ── anchor_evidence ─────────────────────────────────────────────────────
@@ -505,16 +726,39 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
       return problem(401, '42501', 'not authenticated')
     }
 
-    const refusal = refusals.get(path)
-    if (refusal !== undefined) {
-      refusals.delete(path)
-      return problem(refusal, 'PGRST000', 'refused by the double')
+    for (const key of [`${method} ${path}`, path]) {
+      const refusal = refusals.get(key)
+      if (refusal !== undefined) {
+        refusals.delete(key)
+        return problem(refusal, 'PGRST000', 'refused by the double')
+      }
     }
+    const lose = [`${method} ${path}`, path].find((key) => losses.has(key))
+    if (lose !== undefined) {
+      losses.delete(lose)
+      route(method, path, url, body)
+      throw new TypeError('Failed to fetch (the double lost the answer after applying the request)')
+    }
+    return route(method, path, url, body)
+  }
 
+  function route(method: string, path: string, url: URL, body: unknown): Response {
     const filterId = (url.searchParams.get('id') ?? '').replace(/^eq\./, '')
     const args = (body ?? {}) as Json
 
     if (method === 'POST' && path === '/block_results') return insertBlockResults(body as Json[])
+    if (method === 'PATCH' && path === '/block_results') {
+      return updateBlockResults((url.searchParams.get('block_id') ?? '').replace(/^eq\./, ''), args)
+    }
+    if (migrated && path === '/block_movement_results') {
+      if (method === 'POST') return insertMovementResults(body as Json[])
+      if (method === 'PATCH') return updateMovementResults(url, args)
+      if (method === 'DELETE') {
+        for (const row of movementMatches(url)) movementResults.delete(row.id)
+        return respond(204, undefined)
+      }
+      if (method === 'GET') return respond(200, movementMatches(url))
+    }
     if (method === 'POST' && path === '/rpc/mutate_set_observation') return mutateSetObservation(args)
     if (method === 'POST' && path === '/rpc/session_snapshot') {
       return respond(200, args.p_session_id === session.id ? assembled(false) : null)
@@ -565,11 +809,15 @@ export function createLoggingDouble(options: LoggingDoubleOptions): LoggingDoubl
     fetch: fetchImpl,
     requests,
     blockResults: () => [...blockResults.values()],
+    movementResults: () => [...movementResults.values()],
     setLogs: () => [...setLogs.values()],
     restDays: () => [...restDays.values()],
     session: () => session,
-    refuseNext(path, status) {
-      refusals.set(path, status)
+    refuseNext(path, status, method) {
+      refusals.set(method === undefined ? path : `${method} ${path}`, status)
+    },
+    loseNextAnswer(path, method) {
+      losses.add(method === undefined ? path : `${method} ${path}`)
     },
   }
 }

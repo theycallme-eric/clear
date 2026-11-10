@@ -1,0 +1,82 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-031",
+  "description": "Provide richer timed-result writers and read models (REQ-031; TASK-AC-1D3D95F6D419, TASK-AC-FCFBE3CD46A6, TASK-AC-D37D178270A8). Foundation provider for JOURNEY-031 (not claimed complete; TASK-047 owns it). Lands MIG-A (supabase/migrations/20261110000029_block_result_effort.sql) and MIG-B (supabase/migrations/20261110000030_block_movement_results.sql) as repository migrations that are NOT applied to any hosted project (the owner's LIVE-PRE-1), the generated types, blockResultRowSchema.effort and blockMovementResultRowSchema, the correction writer createWorkoutClients().blockResults.correct, the movement writer blockResults.recordMovements, the save provider src/state/timed-results.ts (timedResultDraft, timedResultRequest, saveTimedResult, timedSaveSettled) and the History read model (BlockDetailView.effort, movementActuals via movementActualReadings). check-01 proves, through the app's own clients and readers over the migration-transcribed in-memory PostgREST (src/test/logging-contract-double.ts, also answering as the hosted schema before LIVE-PRE-1): typed per-movement/round/block mappings, category versus legacy numeric effort, notes, null/zero/unreported, correction identity, the TASK-030 For Time round rule, retained errors with the draft kept, idempotent retry without duplicate rows (refusals, lost answers, 23505), the hosted-schema degradation, History reading actual entries rather than planned values, the separately exposed migration and live authority, and that no shipped path adopts the providers yet. Explicit non-gallery disposition. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-031 --check check-01 -- npx vitest run src/data/refinement-timed-actuals.test.ts --passWithNoTests=false",
+      "criteria": [
+        "TASK-AC-1D3D95F6D419",
+        "TASK-AC-FCFBE3CD46A6",
+        "TASK-AC-D37D178270A8"
+      ],
+      "files": [
+        "src/data/refinement-timed-actuals.test.ts"
+      ],
+      "cases": [
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-1D3D95F6D419 the landed MIG-A and MIG-B schema is one contract across the migrations, the generated types, the row schemas and the double",
+          "criterion": "TASK-AC-1D3D95F6D419"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-1D3D95F6D419 an AMRAP, a single-pass For Time, a ladder and an EMOM save their per-movement partials, loads, effort and notes with the right block, round and movement identity, and History reads back the entries, not the plan",
+          "criterion": "TASK-AC-1D3D95F6D419"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-1D3D95F6D419 categorical section effort is never coerced into the legacy 1-10 number, and the legacy number keeps its reading and meaning",
+          "criterion": "TASK-AC-1D3D95F6D419"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-1D3D95F6D419 null, zero and unreported stay distinct: blank is no row and no reading, zero is stored and read as zero, and an unrecorded round attaches no amount",
+          "criterion": "TASK-AC-1D3D95F6D419"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-1D3D95F6D419 the For Time round rule is kept: a single pass is round 1, a multi-round race takes the round after a recorded count, and without one only loads are saved",
+          "criterion": "TASK-AC-1D3D95F6D419"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-1D3D95F6D419 a correction keeps the identity of the saved rows: the block row and each movement row are restated in place, a cleared movement is removed, and changed progress clears amounts but keeps loads",
+          "criterion": "TASK-AC-1D3D95F6D419"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-FCFBE3CD46A6 a refused save keeps the draft and the error, sends nothing the table would refuse, and the retry writes each row exactly once",
+          "criterion": "TASK-AC-FCFBE3CD46A6"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-FCFBE3CD46A6 a retry after lost answers is idempotent: writes that landed but whose answers were lost are corrected through the 23505, never duplicated, and repeating the save changes nothing",
+          "criterion": "TASK-AC-FCFBE3CD46A6"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-FCFBE3CD46A6 the client and read-model boundary refuses what does not belong to the caller or the block and never reads a malformed stored row as recorded",
+          "criterion": "TASK-AC-FCFBE3CD46A6"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-FCFBE3CD46A6 on the hosted schema before LIVE-PRE-1 the shipped saves and History keep working, and the new writers refuse explicitly, naming the missing migration, with the draft kept",
+          "criterion": "TASK-AC-FCFBE3CD46A6"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-FCFBE3CD46A6 the required migrations and their live authority are exposed separately: which files, which environment, who decides, and that it was not taken",
+          "criterion": "TASK-AC-FCFBE3CD46A6"
+        },
+        {
+          "file": "src/data/refinement-timed-actuals.test.ts",
+          "name": "TASK-031 richer timed-result writers and read models > TASK-AC-D37D178270A8 the data providers exist for TASK-015, TASK-019, TASK-026 and TASK-047, no shipped route or renderer adopts them yet, and JOURNEY-031 is not claimed",
+          "criterion": "TASK-AC-D37D178270A8"
+        }
+      ]
+    }
+  }
+}

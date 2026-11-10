@@ -357,6 +357,7 @@ export function savedOverviewRecord(options: SavedOverviewOptions = {}): Session
                   exercise_notes: null,
                 },
                 set_logs: [],
+                movement_result: null,
               }
             }),
           }

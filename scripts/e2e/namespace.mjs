@@ -128,6 +128,7 @@ export function fixtureIds(namespace = NAMESPACE) {
     forgedWorkoutExercise: { a: id(9, 'a', namespace), b: id(9, 'b', namespace) },
     forgedSetLog: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
     forgedSavedWorkout: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
+    forgedMovementResult: { a: id(5, 'a', namespace), b: id(5, 'b', namespace) },
   }
 }
 
@@ -197,6 +198,9 @@ export function rowSelector(table, slot, userId) {
       return { id: `eq.${FIXTURE_IDS.setLog[slot]}` }
     case 'set_observation_mutations':
       return { mutation_id: `eq.${FIXTURE_IDS.setObservationMutation[slot]}` }
+    case 'block_movement_results':
+      // UNIQUE per movement, so the seeded exercise addresses at most one row.
+      return { workout_exercise_id: `eq.${FIXTURE_IDS.workoutExercise[slot]}` }
     case 'load_anchors':
       return { user_id: `eq.${userId}` }
     case 'saved_workouts':
@@ -285,6 +289,12 @@ export function forgedRow(table, slot, userId) {
       id: FIXTURE_IDS.forgedSetLog[slot],
       workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
       set_number: 2,
+      weight_unit: 'lb',
+    },
+    block_movement_results: {
+      id: FIXTURE_IDS.forgedMovementResult[slot],
+      workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
+      weight: 1,
       weight_unit: 'lb',
     },
     set_observation_mutations: {

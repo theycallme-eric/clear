@@ -1055,7 +1055,52 @@ export const blockResultRowSchema = z.object({
   perceived_effort: z.int().min(1).max(10).nullable(),
   notes: z.string().nullable(),
   created_at: timestamp,
+  // TASK-031 (MIG-A). The optional categorical effort for the whole block —
+  // the set's three categories, never a number and never `perceived_effort`.
+  // A row with no `effort` key at all — read from a project MIG-A has not
+  // reached (LIVE-PRE-1) — is a block nobody was asked about, which is exactly
+  // what `null` says. An unknown category is still refused.
+  effort: setEffortSchema.nullable().default(null),
 })
+
+/**
+ * `block_movement_results` (TASK-031, MIG-B). One movement's actuals in one
+ * timed block attempt: the round its partial amount belongs to and the actual
+ * load. The set log's measurement vocabulary and null/zero rule, keyed to the
+ * movement rather than a set number — it is not a set, and nothing that reads
+ * sets reads it. Mirrors the migration's CHECKs, so a row the table would
+ * refuse cannot be read back as recorded either.
+ */
+export const blockMovementResultRowSchema = z
+  .object({
+    id: z.uuid(),
+    workout_exercise_id: z.uuid(),
+    prescription_revision_status: revisionStatusSchema,
+    round_number: positiveInt.nullable(),
+    actual_reps: nonNegativeInt.nullable(),
+    actual_duration_seconds: nonNegativeInt.nullable(),
+    actual_distance: z.number().min(0).nullable(),
+    actual_distance_unit: distanceUnitSchema.nullable(),
+    weight: z.number().min(0).nullable(),
+    weight_unit: weightUnitSchema,
+    created_at: timestamp,
+    updated_at: timestamp,
+  })
+  .refine(
+    (row) =>
+      row.round_number !== null ||
+      (row.actual_reps === null && row.actual_duration_seconds === null && row.actual_distance === null),
+    { message: 'an amount needs its round (block_movement_results_amount_needs_round)', path: ['round_number'] },
+  )
+  .refine(
+    (row) =>
+      row.actual_reps !== null || row.actual_duration_seconds !== null || row.actual_distance !== null || row.weight !== null,
+    { message: 'a row records something (block_movement_results_observed)', path: ['weight'] },
+  )
+  .refine((row) => row.actual_distance === null || row.actual_distance_unit !== null, {
+    message: 'a distance needs its unit (block_movement_results_distance_has_unit)',
+    path: ['actual_distance_unit'],
+  })
 
 /**
  * The coaching half of an `exercise_definitions` row (DATA-01a), as EXE-05's
@@ -1173,6 +1218,11 @@ export const sessionReconstructionSchema = z.object({
             z.object({
               exercise: workoutExerciseRowSchema,
               set_logs: z.array(exerciseSetLogRowSchema),
+              // TASK-031 (MIG-B): this movement's timed actuals, or null. A
+              // reconstruction from a project MIG-B has not reached
+              // (LIVE-PRE-1) carries no key, which reads as nothing recorded —
+              // never as a zero.
+              movement_result: blockMovementResultRowSchema.nullable().default(null),
             }),
           ),
         }),
@@ -1700,6 +1750,7 @@ export type WorkoutBlockRow = z.infer<typeof workoutBlockRowSchema>
 export type WorkoutExerciseRow = z.infer<typeof workoutExerciseRowSchema>
 export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
 export type BlockResultRow = z.infer<typeof blockResultRowSchema>
+export type BlockMovementResultRow = z.infer<typeof blockMovementResultRowSchema>
 export type ExerciseDefinitionRow = z.infer<typeof exerciseDefinitionRowSchema>
 export type ExerciseCatalogRow = z.infer<typeof exerciseCatalogRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
