@@ -312,6 +312,36 @@
   padding-inline: var(--spacing-100) !important;
 }
 
+/* Quiet Undo — TimedResultLog's completion action (TASK-014: C39, C60; R124,
+ * R130, R141; P04; accepted `.clr-timed-undo`). The existing small quiet
+ * button, below Complete / Incomplete and before Rounds completed,
+ * left-aligned. Its visible text starts where the dynamic rounds-completed
+ * count's text starts — the result group's content edge: the inherited
+ * quiet-button inset (`--spacing-300`, set inline by the component, hence
+ * `!important`) is replaced by `--spacing-200`, and the same amount is taken
+ * back outside the box, so no inset is left on the text. The accepted recipe
+ * removed the padding outright, which put the doubled focus frame and the
+ * hover fill on the first and last letters; this keeps the same text start
+ * and the same look at rest (quiet: no frame, no fill) while the focus frame
+ * clears the text and the target grows (R141: dimensions flexible). Its block
+ * size is untouched: the shared control height. Tokens only. */
+.clr-timed-undo {
+  display: flex;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.clr-timed-undo > .clr-bleed {
+  margin-inline: calc(var(--spacing-200) * -1);
+}
+
+.clr-timed-undo button {
+  justify-content: flex-start;
+  margin: 0;
+  padding-inline: var(--spacing-200) !important;
+  text-align: start;
+}
+
 /* The framed quantity — QuantitySelector (TASK-009: C27, C28; R52, R56, R79,
  * R83). One wide soft-cornered structure frame, the selected roomier one:
  * the framed minus and plus at the shared control height in its outer

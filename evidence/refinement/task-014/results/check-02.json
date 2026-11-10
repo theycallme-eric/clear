@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-014",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-014.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-014/required-cases.json",
+    "sha256": "35ee23dd36bf10cbfbedfab61698ce36b3b155de61836a5f126cb8cdd8971aca"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-014.spec.ts",
+      "sha256": "147f998838e2ae6a9580bcfe80b6efab472059b67bd84868834623680662e73b"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 phone-320 touch: the quiet Undo's text starts at the rounds-completed count's left edge for one- and two-digit ladders, and Undo returns the same attempt running or paused within its original cap; Finish again and the save records one truthful row each",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 phone-390 touch: the quiet Undo's text starts at the rounds-completed count's left edge for one- and two-digit ladders, and Undo returns the same attempt running or paused within its original cap; Finish again and the save records one truthful row each",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 keyboard phone-390 reduced motion: the Undo is one tab stop between the answer and the first round, shows its focus, needs no confirmation, and hands the focus back to the restored Pause or Resume",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 recovery phone-390: the original cap withdraws Undo unprompted; a reload and a failed save keep it and the draft; a successful save ends it for good, even when a reload cannot read the row back",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 gallery ladder-4 and ladder-12 at phone-320 and phone-390: the actual ladder renderer draws the aligned quiet Undo and brings the same attempt back, over memory only",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

@@ -23,6 +23,12 @@
  * `LadderCompletion` tiles — the reference's `completedThrough` / `onProgress`
  * and `LadderCompletion`, adopted by the actual consumer, its attempt kept by
  * TASK-032's durable owner (`usePersistedLadder`) over this mount's memory.
+ * Since TASK-014 (C38, C39, C60; R124, R130, R141; P04) the same route block's
+ * log offers the reference's quiet `Undo finish · Resume ladder` after the
+ * athlete's Finish — under Complete / Incomplete, before Rounds completed, its
+ * text at the count's left edge — and Undo returns the same attempt (its
+ * clock running on, or paused again, with its checked rounds) until the
+ * accepted 07:00 cap would be passed: the route's own Undo, not a copy.
  *
  * Memory only. The ladder's attempt — its clock, checked progress and draft —
  * is stored in an in-memory `ShellStorage` for this mount; the block reports to the shell's own `BlockCompletionProvider`, which
@@ -32,9 +38,8 @@
  * (`GalleryCoachingClients`). Nothing reaches the network or the route's
  * storage, and no performed work is written anywhere.
  *
- * Not composed here, and owned by later tasks: the reference's quiet Undo
- * (TASK-014), its focused logging dialog, Save and per-movement next-round
- * entries (TASK-015, TASK-046). The whole-timer frame (TASK-007) and the
+ * Not composed here, and owned by later tasks: the reference's focused logging
+ * dialog, Save and per-movement next-round entries (TASK-015, TASK-046). The whole-timer frame (TASK-007) and the
  * warning (TASK-008) are the route's own here.
  */
 import { useState } from 'react'
@@ -47,6 +52,7 @@ import { finishLabel, type TimedLifecyclePhase } from '../state/timed-lifecycle'
 import type { ShellStorage } from '../state/workout-persistence'
 import { LadderBlock } from '../ui/ladder-block'
 import { LadderCompletion, LadderPrescription, LadderRounds } from '../ui/refinements/ladder'
+import { TimedResultLog } from '../ui/refinements/timed-result-log'
 import { TimedWorkoutActions } from '../ui/timed-workout-flow'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
 import {
@@ -230,4 +236,53 @@ export function LadderCompletionTwelve() {
 /** Nothing stated yet: no tile pressed, and the count says so rather than reading zero. */
 export function LadderCompletionUnstated() {
   return <MemoryLadderCompletion rounds={12} initial={null} />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Register specimen: the log's quiet Undo (TASK-014)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The ladder's log just after an athlete's Finish, with the quiet Undo under
+ * Complete / Incomplete and before Rounds completed, its text at the count's
+ * left edge (C39, C60; P04). Memory only: Undo here returns the log to its
+ * state before Finish — unanswered, no rounds claimed — as the route's attempt
+ * does; on the route it also resumes the attempt's clock
+ * (`?state=ladder-4` / `ladder-12`).
+ */
+export function TimedResultLogLadderUndo() {
+  const [block] = useState(() => galleryLadderProgress(4))
+  const rungs = ladderRungs(block.exercises)
+  const [finished, setFinished] = useState(true)
+  const [completedThrough, setCompletedThrough] = useState<number | null>(3)
+  const completed = finished ? completedThrough === rungs.length : null
+  return (
+    <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
+      <TimedResultLog
+        format="ladder"
+        value={{ completed, effort: null }}
+        rounds={
+          completed === null
+            ? null
+            : {
+                rungs,
+                unit: ladderUnit(block.exercises),
+                completedThrough,
+                partialRound: completed ? null : ladderPartialRound(completedThrough, rungs.length),
+                onChange: setCompletedThrough,
+              }
+        }
+        completionAction={finished ? { label: 'Undo finish · Resume ladder', onAction: () => setFinished(false) } : null}
+        onChange={(next) => {
+          if (next.completed === true) setCompletedThrough(rungs.length)
+          if (next.completed === false && completed !== false) setCompletedThrough(null)
+        }}
+      />
+      {!finished && (
+        <Button variant="quiet" size="sm" onClick={() => setFinished(true)}>
+          Show again
+        </Button>
+      )}
+    </div>
+  )
 }

@@ -1,0 +1,110 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-014",
+  "description": "Accidental Finish recovery with aligned quiet Undo (REQ-014; C38, C39, C60; R124, R130, R141, R145; P04) delivered through TimedResultLog's completion action (src/ui/refinements/timed-result-log.tsx, recipe .clr-timed-undo in src/ui/refinements/presentation.css), the shared TimedWorkoutActions lead control (src/ui/timed-workout-flow.tsx) and the route consumer LadderBlock (src/ui/ladder-block.tsx) over TASK-032's durable ladder attempt (usePersistedLadder: undoFinish, and markRecorded fed by the shell's BlockCompletionProvider onBlockRecorded) on the real /workout route and the ladder end log (JOURNEY-014): after an athlete's Finish the quiet Undo finish · Resume ladder sits below Complete / Incomplete and before Rounds completed, its visible text (a Range over its text node) starting at the dynamic rounds-completed count's left edge with no inherited quiet-button inset, at the shared control height, with no confirmation; Undo returns the same attempt - a running clock on from the same start (the time spent finished counts, none granted), a paused one paused again at the same moment, live progress from the log's rounds, the log's entries kept and the answer back to before Finish - within the original cap, withdrawn the moment undoing would resume at or past that cap, kept through a reload and a failed save, and ended at once and durably by a successful save (even when a reload cannot read the row back); Finish again and save writes exactly one row per ladder with the truthful highest_rung; Finish and Undo never complete or leave the workout; For Time's Finish offers no Undo and no older For Time answer becomes the ladder's. Two differently shaped ladders (twelve rungs of kettlebell swing 3-36 reps with a fixed row under one 09:00 cap; four rungs of plank 5-20 sec under a 15:00 cap, TASK-013's fixture), a legacy direct mount and the accepted gallery states /gallery/refinements?state=ladder-4 and ?state=ladder-12 (reference eded158cfd928d382c9a9409e2c372270312741d) drawing the actual LadderBlock, at 320 and 390, touch and keyboard, reduced motion, axe with no exception. Every declared case must execute and pass; the earlier cases in the same file whose names carry 'resume' or 'cap' (TASK-006, TASK-011, TASK-013) are selected by the pattern and must pass too, but are not declared here.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-014 --check check-01 -- npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C38-01",
+        "AC-C39-01",
+        "AC-C60-01",
+        "AC-R014-01",
+        "AC-R014-02",
+        "AC-R014-03",
+        "JOURNEY-014"
+      ],
+      "files": [
+        "src/ui/timed-workout-flow.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)",
+          "criterion": "AC-R014-03"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed",
+          "criterion": "AC-C38-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved",
+          "criterion": "AC-R014-03"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back",
+          "criterion": "AC-R014-03"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)",
+          "criterion": "AC-R014-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only",
+          "criterion": "JOURNEY-014"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo",
+          "criterion": "AC-R014-03"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-014 --check check-02 -- npx playwright test e2e/refinement/task-014.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C38-01",
+        "AC-C39-01",
+        "AC-C60-01",
+        "AC-R014-01",
+        "AC-R014-02",
+        "AC-R014-03",
+        "JOURNEY-014"
+      ],
+      "files": [
+        "e2e/refinement/task-014.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-014.spec.ts",
+          "project": "mobile",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 phone-320 touch: the quiet Undo's text starts at the rounds-completed count's left edge for one- and two-digit ladders, and Undo returns the same attempt running or paused within its original cap; Finish again and the save records one truthful row each",
+          "criterion": "AC-C60-01"
+        },
+        {
+          "file": "e2e/refinement/task-014.spec.ts",
+          "project": "mobile",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 phone-390 touch: the quiet Undo's text starts at the rounds-completed count's left edge for one- and two-digit ladders, and Undo returns the same attempt running or paused within its original cap; Finish again and the save records one truthful row each",
+          "criterion": "AC-C39-01"
+        },
+        {
+          "file": "e2e/refinement/task-014.spec.ts",
+          "project": "mobile",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 keyboard phone-390 reduced motion: the Undo is one tab stop between the answer and the first round, shows its focus, needs no confirmation, and hands the focus back to the restored Pause or Resume",
+          "criterion": "AC-R014-02"
+        },
+        {
+          "file": "e2e/refinement/task-014.spec.ts",
+          "project": "mobile",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 recovery phone-390: the original cap withdraws Undo unprompted; a reload and a failed save keep it and the draft; a successful save ends it for good, even when a reload cannot read the row back",
+          "criterion": "AC-R014-03"
+        },
+        {
+          "file": "e2e/refinement/task-014.spec.ts",
+          "project": "mobile",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet Undo > JOURNEY-014 gallery ladder-4 and ladder-12 at phone-320 and phone-390: the actual ladder renderer draws the aligned quiet Undo and brings the same attempt back, over memory only",
+          "criterion": "JOURNEY-014"
+        }
+      ]
+    }
+  }
+}

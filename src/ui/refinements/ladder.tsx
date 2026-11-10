@@ -52,8 +52,9 @@
  * Presentation over a controller it does not own: no draft, storage key or
  * writer here (LOGGING-FIELDS.md). The progress and the answer are the route
  * consumer's — `ladder-block.tsx`, over TASK-032's durable ladder attempt.
- * Quiet Undo (`completionAction`) is TASK-014; per-movement partial and load
- * entry for the next round is TASK-015.
+ * The quiet Undo between the answer and these tiles is `TimedResultLog`'s
+ * completion action (TASK-014), aligned with `LadderCount`'s text; per-movement
+ * partial and load entry for the next round is TASK-015.
  */
 import type { CSSProperties } from 'react'
 

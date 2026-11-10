@@ -21,6 +21,14 @@
  *     block whose row already exists — written before a reload, or by an
  *     attempt whose answer was lost — counts as recorded rather than as a
  *     failure, because `block_results.block_id` is unique and the row is there.
+ *   · **Owns** saying so at once (TASK-014, AC-R014-03). The moment a block's
+ *     row is known to exist — this device's insert answered, a row already
+ *     there, or the performed read — `onBlockRecorded` listeners for it are
+ *     called in the same act, before `isBlockRecorded` renders and before the
+ *     forward action moves on, so a renderer's durable record of the attempt
+ *     (the ladder's Undo checkpoint) is closed even if the section is left in
+ *     that same render. It is the same fact as `isBlockRecorded`, not a
+ *     second writer and not a save receipt per device (TASK-048's).
  *   · **Does not own** what a block's outcome *is*. A renderer supplies the
  *     fields its structure actually observed and nothing else; an absent field
  *     is `null` in the row rather than a zero nobody measured.
@@ -83,6 +91,8 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
   const written = useRef(new Set<string>())
   const outcomes = useRef(new Map<string, BlockOutcome>())
   const inFlight = useRef<Promise<Result<undefined>> | null>(null)
+  // TASK-014: renderers told the moment a block's row is known to exist.
+  const recordedListeners = useRef(new Map<string, Set<() => void>>())
   const latest = useRef({ blocks, blockResults, onRecorded })
   useEffect(() => {
     latest.current = { blocks, blockResults, onRecorded }
@@ -91,8 +101,23 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
   const remember = useCallback((blockId: string) => {
     if (written.current.has(blockId)) return
     written.current.add(blockId)
+    // In the same act, before the state below renders and before a forward
+    // action moves on: a renderer keeping a durable record closes it now.
+    for (const listener of [...(recordedListeners.current.get(blockId) ?? [])]) listener()
     setRecorded(new Set(written.current))
     latest.current.onRecorded?.(blockId)
+  }, [])
+
+  const onBlockRecorded = useCallback((blockId: string, listener: () => void) => {
+    const listeners = recordedListeners.current.get(blockId) ?? new Set<() => void>()
+    listeners.add(listener)
+    recordedListeners.current.set(blockId, listeners)
+    return () => {
+      listeners.delete(listener)
+      if (listeners.size === 0 && recordedListeners.current.get(blockId) === listeners) {
+        recordedListeners.current.delete(blockId)
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -172,8 +197,9 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
       reportOutcome,
       isBlockRecorded: (blockId) => recorded.has(blockId),
       sessionId,
+      onBlockRecorded,
     }),
-    [recorded, reportOutcome, sessionId],
+    [onBlockRecorded, recorded, reportOutcome, sessionId],
   )
 
   const section = useMemo<SectionCompletionApi>(

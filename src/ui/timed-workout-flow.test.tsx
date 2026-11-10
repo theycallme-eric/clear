@@ -40,6 +40,21 @@
  * check-01 selects them with `--testNamePattern "ladder|rung|handoff"` (with
  * TASK-006's three ladder-named cases beside them, which must pass too). No
  * TASK-013 name carries "EMOM".
+ *
+ * TASK-014 (REQ-014; C38, C39, C60; R124, R130, R141; P04; AC-C38-01,
+ * AC-C39-01, AC-C60-01, AC-R014-01, AC-R014-02, AC-R014-03; JOURNEY-014) —
+ * accidental Finish recovery with an aligned quiet Undo, through
+ * `TimedResultLog`'s completion action, the ladder renderer (`LadderBlock`)
+ * over TASK-032's durable attempt and the shell's completion provider
+ * (`onBlockRecorded`), on the same real `/workout` route over TASK-013's
+ * fixture (two differently shaped ladders, a cooldown after), plus a direct
+ * mount and the accepted gallery states. Its cases live in their own describe
+ * block, whose title carries "undo": TASK-014's check-01 selects them with
+ * `--testNamePattern "undo|resume|cap"` (with the earlier cases whose names
+ * carry "resume" or "cap", which must pass too). No TASK-014 name carries
+ * "EMOM", "ladder", "rung" or "handoff", so TASK-011's and TASK-013's patterns
+ * do not select them. Browser geometry (the text-start alignment) is
+ * `e2e/refinement/task-014.spec.ts`.
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -1911,4 +1926,560 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
     }
     expect(fetch).not.toHaveBeenCalled()
   }, LADDER_TIMEOUT)
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-014 — accidental Finish recovery with an aligned quiet Undo (C38, C39, C60)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Heavier journeys: several close/reopen cycles of the whole app. */
+const UNDO_TIMEOUT = 45_000
+
+/** The accepted quiet action's words (reference `GalleryLadderFlow`), which are also its name. */
+const UNDO_FINISH = 'Undo finish · Resume ladder'
+
+/** The quiet Undo in an attempt's log, or null when it is not offered. */
+function undoOf(key: LadderKey): HTMLElement | null {
+  return within(ladderLog(key)).queryByRole('button', { name: UNDO_FINISH })
+}
+
+/** The attempt's clock: its reading, its phase in words and the cap line while it runs or is paused. */
+function attemptClock(key: LadderKey): { reading: string; words: string; cap: string | null } {
+  const timer = within(ladderStackOf(key)).getByRole('timer')
+  const card = timer.closest<HTMLElement>('.clr-card')!
+  return {
+    reading: /\d{2}:\d{2}/.exec(timer.textContent ?? '')?.[0] ?? '',
+    words: within(card).getByRole('status').textContent ?? '',
+    cap: /Cap in \d{2}:\d{2}/.exec(card.textContent ?? '')?.[0] ?? null,
+  }
+}
+
+/** The race's Start / Pause / Resume / Finish controls in the card, by name. */
+function lifecycleControls(key: LadderKey): string[] {
+  return within(ladderCardOf(key))
+    .queryAllByRole('button', { name: /^(Start ladder|Pause|Resume|Finish)$/ })
+    .map((button) => button.textContent ?? '')
+}
+
+/** The log's effort face that is chosen, if any. */
+function effortOf(key: LadderKey): string[] {
+  return ['Too hard', 'About right', 'Too easy'].filter(
+    (name) => within(ladderLog(key)).getByRole('radio', { name }).getAttribute('aria-checked') === 'true',
+  )
+}
+
+/** The durable attempt as the route stored it, typed for the fields Undo restores. */
+interface StoredAttempt {
+  identity: { sessionId: string; blockId: string; attemptId: string }
+  originalCapSeconds: number | null
+  clock: { startedAt: string | null; finishedAt: string | null; pausedAt?: string }
+  progress: number | null
+  draft: { completed: boolean | null; highestRung: number | null } | null
+  endCarried: boolean
+  checkpoint: { pausedAt: string | null; progress: number | null; completed: boolean | null } | null
+  save: { status: string; source?: string }
+}
+
+function attemptRecord(blockId: string): StoredAttempt {
+  const record = ladderRecord(blockId)
+  if (record === undefined) throw new Error(`no stored attempt for ${blockId}`)
+  return record as unknown as StoredAttempt
+}
+
+/** Reopens the app after the section was saved: the shell comes back on its cooldown. */
+async function reopenAtCooldown(options: Omit<WorkoutDoubleOptions, 'session'> = {}) {
+  const double = createWorkoutDouble({ session: LADDER_SESSION(), ...options })
+  const router = createMemoryRouter(routes, { initialEntries: ['/', '/workout'], initialIndex: 1 })
+  const view = render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  await screen.findByRole('navigation', { name: 'Workout sections' })
+  await screen.findByRole('heading', { name: HANDOFF_COOLDOWN_TITLE })
+  return { double, view }
+}
+
+describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () => {
+  it('AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)', async () => {
+    const user = userEvent.setup()
+    const { double, long, short } = await openLadders()
+
+    // The twelve-round attempt: three rounds checked, then Finish at 03:00.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(60)
+    await user.click(liveToggles('long')[2])
+    advance(120)
+    const before = attemptRecord(long.blockId)
+    await user.click(ladderButton('long', 'Finish'))
+    expect(attemptClock('long')).toMatchObject({ reading: '03:00', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(3))
+    // The athlete's log: the rounds corrected to four, an effort face.
+    await user.click(resultTile('long', 4))
+    await user.click(within(ladderLog('long')).getByRole('radio', { name: 'Too hard' }))
+    expect(lifecycleControls('long')).toEqual([])
+
+    // Thirty seconds later: Undo.
+    advance(30)
+    await user.click(undoOf('long')!)
+    // The same attempt, running from the same start: the thirty seconds
+    // spent finished count, and the cap left is the original cap's.
+    expect(attemptClock('long')).toEqual({ reading: '03:30', words: 'Racing the clock', cap: 'Cap in 05:30' })
+    expect(lifecycleControls('long')).toEqual(['Pause', 'Finish'])
+    expect(undoOf('long')).toBeNull()
+    // Progress from the log's rounds; the log's entries kept; the answer as
+    // it was before Finish — none — so no rounds are claimed in the log.
+    expect(livePressed('long')).toEqual(through(4))
+    expect(liveCount('long')).toBe(`4 of ${LONG_ROUNDS} rounds completed`)
+    expect(answerOf('long')).toEqual([])
+    expect(roundsGroup('long')).toBeNull()
+    expect(effortOf('long')).toEqual(['Too hard'])
+    const after = attemptRecord(long.blockId)
+    expect(after.identity).toEqual(before.identity)
+    expect(after.originalCapSeconds).toBe(9 * 60)
+    expect(after.clock).toEqual({ startedAt: before.clock.startedAt, finishedAt: null })
+    expect(after).toMatchObject({ progress: 4, checkpoint: null, endCarried: false, save: { status: 'unsaved' } })
+    expect(after.draft).toMatchObject({ completed: null, highestRung: 4 })
+    // No answer of another format is stored for it.
+    expect(stored(WORKOUT_FOR_TIME_STORAGE_KEY)).toEqual({})
+
+    // Within the original cap, never past it: running at 08:59, capped at 09:00.
+    advance(329)
+    expect(attemptClock('long')).toMatchObject({ reading: '08:59', words: 'Racing the clock' })
+    advance(1)
+    expect(attemptClock('long')).toMatchObject({ reading: '09:00', words: 'Cap reached' })
+    expect(lifecycleControls('long')).toEqual([])
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(4))
+    // The cap is not an accidental Finish: it is never undone.
+    expect(undoOf('long')).toBeNull()
+
+    // The four-round attempt, shaped otherwise: every round, Finish, Undo at once.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[3])
+    advance(45)
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+    await user.click(undoOf('short')!)
+    expect(attemptClock('short')).toEqual({ reading: '00:45', words: 'Racing the clock', cap: 'Cap in 14:15' })
+    expect(livePressed('short')).toEqual(through(SHORT_ROUNDS))
+    expect(answerOf('short')).toEqual([])
+    expect(attemptRecord(short.blockId).draft).toMatchObject({ completed: null, highestRung: SHORT_ROUNDS })
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+
+    // Neither Finish nor Undo completed or left the workout, or wrote a row.
+    expect(double.recorded()).toEqual([])
+    expect(double.completed()).toEqual([])
+    expect(screen.getByRole('button', { name: 'Next section' })).toBeInTheDocument()
+    expect(screen.getByText(LONG_TIMING_LINE)).toBeInTheDocument()
+  }, UNDO_TIMEOUT)
+
+  it('AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed', async () => {
+    const user = userEvent.setup()
+    const { double, long, short } = await openLadders()
+
+    // Two rounds checked, paused at 01:40, left paused for ten minutes, then Finish.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(60)
+    await user.click(liveToggles('long')[1])
+    advance(40)
+    await user.click(ladderButton('long', 'Pause'))
+    const paused = attemptRecord(long.blockId).clock
+    expect(paused.pausedAt).toBeDefined()
+    advance(600)
+    await user.click(ladderButton('long', 'Finish'))
+    // Finished where it stood: at the pause.
+    expect(attemptClock('long')).toMatchObject({ reading: '01:40', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(attemptRecord(long.blockId).checkpoint).toEqual({ pausedAt: paused.pausedAt, progress: 2, completed: null })
+
+    // A paused Finish never runs out: an hour later, Undo is still offered.
+    advance(3600)
+    await user.click(undoOf('long')!)
+    expect(attemptClock('long')).toEqual({ reading: '01:40', words: 'Paused', cap: 'Cap in 07:20' })
+    expect(lifecycleControls('long')).toEqual(['Resume', 'Finish'])
+    expect(livePressed('long')).toEqual(through(2))
+    expect(answerOf('long')).toEqual([])
+    expect(attemptRecord(long.blockId).clock).toEqual(paused)
+    // Still paused: no time passes for it.
+    advance(600)
+    expect(attemptClock('long').reading).toBe('01:40')
+
+    // Resumed from there; more rounds; Finish again.
+    await user.click(ladderButton('long', 'Resume'))
+    advance(60)
+    expect(attemptClock('long')).toMatchObject({ reading: '02:40', words: 'Racing the clock', cap: 'Cap in 06:20' })
+    await user.click(liveToggles('long')[5])
+    await user.click(ladderButton('long', 'Finish'))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(6))
+
+    // The four-round attempt: every round, Finish, Undo, round four taken
+    // back on the live check-off, Finish again.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[3])
+    advance(20)
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+    await user.click(undoOf('short')!)
+    expect(livePressed('short')).toEqual(through(SHORT_ROUNDS))
+    await user.click(liveToggles('short')[3])
+    expect(livePressed('short')).toEqual(through(3))
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Incomplete'])
+    expect(resultPressed('short')).toEqual(through(3))
+
+    // Saved: one row each, with the rounds actually completed through, and nothing else.
+    await saveLadders(user)
+    expect(double.recorded()).toHaveLength(2)
+    expect(ladderRow(double, long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 6 })
+    expect(ladderRow(double, short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 3 })
+    expect(attemptRecord(long.blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved', async () => {
+    const user = userEvent.setup()
+    const first = await openLadders()
+
+    // Finish at 08:20 of a 09:00 cap.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(500)
+    await user.click(liveToggles('long')[6])
+    await user.click(ladderButton('long', 'Finish'))
+    expect(undoOf('long')).not.toBeNull()
+    // Undoing at 08:59 would still resume inside the cap…
+    advance(39)
+    expect(undoOf('long')).not.toBeNull()
+    // …at 09:00 it would not: the action is gone, with nothing pressed.
+    advance(1)
+    expect(undoOf('long')).toBeNull()
+    expect(attemptClock('long')).toMatchObject({ reading: '08:20', words: 'Finished' })
+    expect(lifecycleControls('long')).toEqual([])
+    // The log is the athlete's still.
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    await user.click(resultTile('long', 8))
+    expect(resultPressed('long')).toEqual(through(8))
+
+    // For good: a reopen does not bring it back.
+    first.view.unmount()
+    clock += 60_000
+    const second = await openLadders()
+    expect(undoOf('long')).toBeNull()
+    expect(attemptClock('long')).toMatchObject({ reading: '08:20', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(8))
+
+    // The four-round attempt runs into its cap: never an Undo, before or after.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[1])
+    expect(undoOf('short')).toBeNull()
+    advance(SHORT_CAP_SECONDS)
+    expect(attemptClock('short')).toMatchObject({ words: 'Cap reached' })
+    expect(undoOf('short')).toBeNull()
+    expect(answerOf('short')).toEqual(['Incomplete'])
+    expect(resultPressed('short')).toEqual(through(2))
+
+    await saveLadders(user)
+    expect(ladderRow(second.double, second.long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 8 })
+    expect(ladderRow(second.double, second.short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 2 })
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back', async () => {
+    const user = userEvent.setup()
+    const rows: BlockCompletion[] = []
+    let refuse: (completion: BlockCompletion) => boolean = () => true
+    const record = vi.fn(async (completion: BlockCompletion) => {
+      if (refuse(completion)) return err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))
+      rows.push(completion)
+      return ok({} as BlockResultRow)
+    })
+    const first = await openLadders({ blockResults: { record } })
+
+    // Five rounds, Finish at 02:00, the log corrected to six.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(120)
+    await user.click(liveToggles('long')[4])
+    await user.click(ladderButton('long', 'Finish'))
+    await user.click(resultTile('long', 6))
+
+    // Closed and reopened: the same Finish, its log and its Undo.
+    first.view.unmount()
+    clock += 20_000
+    await openLadders({ blockResults: { record } })
+    expect(undoOf('long')).not.toBeNull()
+    expect(attemptClock('long')).toMatchObject({ reading: '02:00', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(6))
+
+    // The save fails: nothing is written, and nothing is discarded.
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const failed = await screen.findByRole('dialog')
+    expect(failed).toHaveTextContent('That didn’t save')
+    expect(record).toHaveBeenCalledTimes(1)
+    expect(rows).toEqual([])
+    await user.click(within(failed).getByRole('button', { name: 'Close' }))
+    expect(undoOf('long')).not.toBeNull()
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(6))
+    expect(attemptRecord(first.long.blockId).checkpoint).not.toBeNull()
+
+    // Closed and reopened again after the failure: still offered.
+    cleanup()
+    clock += 10_000
+    const third = await openLadders({ blockResults: { record } })
+    expect(undoOf('long')).not.toBeNull()
+    expect(resultPressed('long')).toEqual(through(6))
+
+    // Undo: the same attempt, running on from its start (02:00 + 30 s closed).
+    await user.click(undoOf('long')!)
+    expect(attemptClock('long')).toMatchObject({ reading: '02:30', words: 'Racing the clock' })
+    expect(livePressed('long')).toEqual(through(6))
+    await user.click(liveToggles('long')[7])
+    await user.click(ladderButton('long', 'Finish'))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(8))
+
+    // Its row saves, the next block's does not: the athlete stays on the
+    // section, and the saved attempt offers no Undo — at once.
+    refuse = (completion) => completion.blockId === third.short.blockId
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const partial = await screen.findByRole('dialog')
+    expect(record).toHaveBeenCalledTimes(3)
+    expect(rows.map((row) => [row.blockId, resultRow(row).highest_rung])).toEqual([[third.long.blockId, 8]])
+    await user.click(within(partial).getByRole('button', { name: 'Close' }))
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    expect(lifecycleControls('long')).toEqual([])
+    expect(attemptRecord(third.long.blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
+
+    // The retry saves the rest: one row each, the first never written twice.
+    refuse = () => false
+    await saveLadders(user)
+    expect(record).toHaveBeenCalledTimes(4)
+    expect(rows.map((row) => [row.blockId, resultRow(row).highest_rung])).toEqual([
+      [third.long.blockId, 8],
+      [third.short.blockId, null],
+    ])
+    // Closed in the same act as the save, before the section was left: no
+    // Undo checkpoint survives in the durable record of either attempt.
+    for (const blockId of [third.long.blockId, third.short.blockId]) {
+      expect(attemptRecord(blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
+    }
+
+    // Reopened where the saved row cannot be read back: still no Undo, no
+    // draft claimed over the saved row, nothing to choose or start.
+    third.view.unmount()
+    clock += 60_000
+    await reopenAtCooldown({
+      blockResults: { record },
+      sessions: { asPerformed: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)) },
+    })
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    await screen.findByText(LONG_TIMING_LINE)
+    for (const key of ['long', 'short'] as const) {
+      expect(undoOf(key)).toBeNull()
+      expect(answerOf(key)).toEqual([])
+      for (const radio of within(answerGroup(key)).getAllByRole('radio')) expect(radio).toBeDisabled()
+      expect(lifecycleControls(key)).toEqual([])
+      expect(liveToggles(key)).toEqual([])
+    }
+    expect(record).toHaveBeenCalledTimes(4)
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)', async () => {
+    const user = userEvent.setup()
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await openLadders()
+
+    // Never offered before an athlete's Finish: ready, running or paused.
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(90)
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    await user.click(ladderButton('long', 'Pause'))
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    await user.click(ladderButton('long', 'Resume'))
+    await user.click(liveToggles('long')[2])
+    await user.click(ladderButton('long', 'Finish'))
+
+    // One action, in the result group: after Work completed, before Rounds completed.
+    expect(screen.getAllByRole('button', { name: UNDO_FINISH })).toHaveLength(1)
+    const undo = undoOf('long')!
+    const group = answerGroup('long').closest<HTMLElement>('.clr-timed-log__group')!
+    const members = [...group.children]
+    const at = (node: Element) => members.findIndex((member) => member.contains(node))
+    expect([at(answerGroup('long')), at(undo), at(roundsGroup('long')!)]).toEqual([0, 1, 2])
+    expect(members).toHaveLength(3)
+    const wrapper = undo.closest<HTMLElement>('[data-timed-undo]')!
+    expect(wrapper.parentElement).toBe(group)
+    expect(wrapper).toHaveClass('clr-timed-undo')
+    // The count it aligns with follows it, in the rounds.
+    expect(within(roundsGroup('long')!).getByRole('status')).toHaveTextContent(`3 of ${LONG_ROUNDS} rounds completed`)
+
+    // The existing small quiet button: no frame, no glow, no glyph, the
+    // shared control height; its words are its name.
+    expect(undo.tagName).toBe('BUTTON')
+    expect(undo).toHaveAttribute('type', 'button')
+    expect(undo).toHaveClass('clr-btn', 'clr-btn--quiet', 'clr-chamfer--sm')
+    expect(undo).not.toHaveClass('clr-btn--primary')
+    expect(undo.textContent).toBe(UNDO_FINISH)
+    expect(undo.querySelector('svg')).toBeNull()
+    expect(undo.style.minHeight).toBe('var(--control-height)')
+    expect(undo.parentElement!.style.getPropertyValue('--bleed')).toBe('transparent')
+    expect(undo.parentElement).not.toHaveClass('clr-glow')
+
+    // The recipe: left-aligned, and the inherited inline inset replaced by a
+    // token that is given back outside the box — so no inset is left on the
+    // text — and nothing else: no size, colour, frame or type of its own.
+    expect(rule('.clr-timed-undo')).toMatch(/justify-content:\s*flex-start/)
+    const button = rule('.clr-timed-undo button')
+    const outside = rule('.clr-timed-undo > .clr-bleed')
+    const inset = /padding-inline:\s*var\((--[\w-]+)\)\s*!important/.exec(button)?.[1]
+    expect(inset).toMatch(/^--spacing-/)
+    expect(/margin-inline:\s*calc\(var\((--[\w-]+)\)\s*\*\s*-1\)/.exec(outside)?.[1]).toBe(inset)
+    expect(button).toMatch(/justify-content:\s*flex-start/)
+    expect(button).toMatch(/text-align:\s*start/)
+    for (const declared of [rule('.clr-timed-undo'), outside, button]) {
+      expect(declared).not.toMatch(/\d+px|height|color|background|border|font|letter-spacing|box-shadow|padding-block/)
+    }
+
+    // Keyboard: one tab stop after the answer, before the first round.
+    within(answerGroup('long')).getByRole('radio', { checked: true }).focus()
+    await user.tab()
+    expect(undo).toHaveFocus()
+    await user.tab()
+    expect(resultTile('long', 1)).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(undo).toHaveFocus()
+
+    // Pressed: the attempt is back at once — no confirmation, no dialog —
+    // and the focus moves to the restored lead control.
+    await user.keyboard('{Enter}')
+    expect(confirm).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    expect(lifecycleControls('long')).toEqual(['Pause', 'Finish'])
+    expect(ladderButton('long', 'Pause')).toHaveFocus()
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+
+    // Again by Space, from a paused Finish: the focus lands on Resume.
+    await user.click(ladderButton('long', 'Pause'))
+    await user.click(ladderButton('long', 'Finish'))
+    undoOf('long')!.focus()
+    await user.keyboard(' ')
+    expect(ladderButton('long', 'Resume')).toHaveFocus()
+    expect(confirm).not.toHaveBeenCalled()
+  }, UNDO_TIMEOUT)
+
+  it('JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only', async () => {
+    const user = userEvent.setup()
+    const fetch = vi.spyOn(globalThis, 'fetch')
+    for (const rounds of [4, 12] as const) {
+      render(
+        <MemoryRouter initialEntries={[`/gallery/refinements?state=ladder-${rounds}`]}>
+          <GalleryRefinements />
+        </MemoryRouter>,
+      )
+      const state = document.querySelector<HTMLElement>(`[data-refinement-state="ladder-${rounds}"]`)!
+      const card = state.querySelector<HTMLElement>('[data-workout-card="workout"]')!
+      const grid = within(card).getByRole('list', { name: LADDER_ROUNDS_LIST })
+      await user.click(within(card).getByRole('button', { name: 'Start ladder' }))
+      await user.click(within(grid).getAllByRole('button')[1])
+      await user.click(within(card).getByRole('button', { name: 'Finish' }))
+
+      // The route's log, with its Undo between the answer and the rounds.
+      const log = card.querySelector<HTMLElement>('form.clr-timed-log')!
+      const undo = within(log).getByRole('button', { name: UNDO_FINISH })
+      const answer = within(log).getByRole('group', { name: WORK_COMPLETED })
+      const tiles = within(log).getByRole('group', { name: ROUNDS_COMPLETED })
+      expect(follows(undo, answer)).toBe(true)
+      expect(follows(tiles, undo)).toBe(true)
+      expect(within(tiles).getByRole('status')).toHaveTextContent(`2 of ${rounds} rounds completed`)
+      expect(undo).toHaveClass('clr-btn--quiet')
+
+      // Undo: running again, the two rounds still checked, the log open again.
+      await user.click(undo)
+      expect(within(card).getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+      expect(within(grid).getAllByRole('button').map((tile) => tile.getAttribute('aria-pressed'))).toEqual(
+        through(rounds).map((n) => String(n <= 2)),
+      )
+      expect(within(card.querySelector<HTMLElement>('[data-ladder-prescription]')!).getByRole('status'))
+        .toHaveTextContent(`2 of ${rounds} rounds completed`)
+      expect(within(log).queryByRole('button', { name: UNDO_FINISH })).toBeNull()
+      expect(within(log).queryByRole('group', { name: ROUNDS_COMPLETED })).toBeNull()
+      // Finish again: the same two rounds, Incomplete.
+      advance(60)
+      await user.click(within(card).getByRole('button', { name: 'Finish' }))
+      expect(within(within(log).getByRole('group', { name: WORK_COMPLETED })).getByRole('radio', { name: 'Incomplete' }))
+        .toHaveAttribute('aria-checked', 'true')
+      // The accepted 07:00 cap: offered one second before it, withdrawn at it
+      // with nothing pressed — the attempt's own clock is the only one here.
+      advance(LADDER_CAP_SECONDS - 61)
+      expect(within(log).getByRole('button', { name: UNDO_FINISH })).toBeInTheDocument()
+      advance(1)
+      expect(within(log).queryByRole('button', { name: UNDO_FINISH })).toBeNull()
+      expect(within(within(state).getByRole('timer').closest<HTMLElement>('.clr-card')!).getByRole('status')).toHaveTextContent('Finished')
+      // Memory only: nothing under any route key.
+      expect(localStorage.length).toBe(0)
+      cleanup()
+    }
+    expect(fetch).not.toHaveBeenCalled()
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo', async () => {
+    const user = userEvent.setup()
+    const reports: { blockId: string; outcome: BlockOutcome }[] = []
+    const completion: BlockCompletionApi = {
+      reportOutcome: (blockId, outcome) => void reports.push({ blockId, outcome }),
+      isBlockRecorded: () => false,
+      sessionId: 'session-task-014',
+    }
+    const pullUps = { prescription: { exercise_id: 'pull-up', target_kind: 'sequence' as const, target_value: null, target_sequence: [1, 3, 5, 7, 9, 11] } }
+    const legacy = { structureType: 'for_time' as const, repScheme: 'ladder_up' as const, timerType: 'countdown' as const, timerSeconds: 600, exercises: [pullUps] }
+    const snapshot = snapshotFixture({ sections: [{ title: 'Ladder', sectionType: 'conditioning', blocks: [legacy] }] })
+    const block = sessionProgress(snapshot).sections[0].blocks[0]
+
+    // An older build's race record for this block: running two minutes,
+    // with a For Time "Complete" answer beside its clock.
+    const storage = memoryShellStorage()
+    const older = JSON.stringify({ [block.blockId]: { startedAt: new Date(clock - 120_000).toISOString(), finishedAt: null, workCompleted: true } })
+    storage.setItem(WORKOUT_FOR_TIME_STORAGE_KEY, older)
+    render(
+      <BlockCompletionContext value={completion}>
+        <LadderBlock block={block} storage={storage} now={() => clock} />
+      </BlockCompletionContext>,
+    )
+    const last = () => reports.filter((report) => report.blockId === block.blockId).at(-1)?.outcome
+    const grid = () => screen.getByRole('list', { name: LADDER_ROUNDS_LIST })
+    expect(screen.getByRole('timer')).toHaveTextContent('02:00')
+    await user.click(within(grid()).getAllByRole('button')[1])
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    // The carried progress is the answer — not the older record's Complete.
+    const answer = () => within(screen.getByRole('group', { name: WORK_COMPLETED })).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)
+    expect(answer()).toEqual(['Incomplete'])
+    expect(last()).toEqual({ highestRung: 2 })
+    await user.click(screen.getByRole('button', { name: UNDO_FINISH }))
+    // Back before Finish: no answer at all, the older Complete included.
+    expect(answer()).toEqual([])
+    expect(last()).toEqual({})
+    expect(screen.queryByRole('group', { name: ROUNDS_COMPLETED })).toBeNull()
+    expect(within(grid()).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toHaveLength(2)
+    expect(JSON.parse(storage.raw(WORKOUT_LADDER_STORAGE_KEY)!)[block.blockId].draft).toMatchObject({ completed: null, highestRung: 2 })
+    // The older record is left exactly as it was.
+    expect(storage.raw(WORKOUT_FOR_TIME_STORAGE_KEY)).toBe(older)
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(answer()).toEqual(['Incomplete'])
+    expect(last()).toEqual({ highestRung: 2 })
+    cleanup()
+
+    // For Time's Finish is the athlete's report that the work is done
+    // (TASK-010); it is not the accidental-Finish journey and offers no Undo.
+    await openWorkout()
+    await user.click(button('for_time', TIMED_START.for_time))
+    advance(90)
+    await user.click(button('for_time', TIMED_FINISH.for_time))
+    expect(within(cardOf('for_time')).getByRole('group', { name: WORK_COMPLETED })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button', { name: /undo/i })).toEqual([])
+  }, UNDO_TIMEOUT)
 })

@@ -57,6 +57,22 @@
  * clears the round to be stated again, and the round after the stated prefix
  * is named as where any partial work belongs (its entry is TASK-015's).
  *
+ * **Accidental Finish recovery** (TASK-014; C38, C39, C60; R124, R130, R141;
+ * P04). While the athlete's Finish can be undone (TASK-032's `undo`), the log
+ * offers the quiet `Undo finish · Resume ladder` under Complete / Incomplete
+ * and before Rounds completed, its text at the count's left edge, with no
+ * confirmation. It returns the same attempt as though Finish had not
+ * occurred (`undoFinish`): a running clock runs on from the same start, so
+ * the time spent finished counts and none is granted; a paused one is paused
+ * again at the same moment; live progress comes back from the log's rounds,
+ * the log's entries stay, and its ending answer goes back to what it was
+ * before Finish. The original cap stays the authority: the action is
+ * withdrawn the moment undoing would resume at or past it, and the cap itself
+ * is never undone. A saved result ends it: the shell's word that the row
+ * exists closes the durable attempt in the same act (`onBlockRecorded`), so a
+ * reload never finds a saved attempt open. Neither Finish nor Undo completes
+ * or leaves the workout: that stays the shell's forward action.
+ *
  * A scheduled ladder (`scheduled_starts`) keeps its start stamp, answer and
  * round in the same durable record, with no cap (TASK-032's
  * `ladderRaceCapSeconds` gives a schedule none, and none is invented here):
@@ -102,7 +118,7 @@
  * reached" (DATA_MODEL §`block_results`). The screen never says it that way:
  * a rung is identified to the user by its target, per the quickfix spec.
  */
-import { useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 
 import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
 import { forTimeTicking, type ForTimePhase } from '../state/for-time'
@@ -119,6 +135,7 @@ import {
   ladderAttemptView,
   ladderPartialRound,
   ladderRaceCapSeconds,
+  type LadderAttempt,
   type LadderAttemptView,
 } from '../state/ladder-recovery'
 import { scheduleIntervalDeadline } from '../state/countdown-urgency'
@@ -144,6 +161,12 @@ import { TimedWorkoutActions } from './timed-workout-flow'
  */
 const UNSCOPED_SESSION = 'unscoped-session'
 
+/**
+ * TASK-014 (C38, C39; R124, R130, R141): the accepted quiet action's words
+ * (reference `GalleryLadderFlow`), which are also its accessible name.
+ */
+const UNDO_FINISH_LABEL = 'Undo finish · Resume ladder'
+
 /** One ladder attempt, as every ladder renderer reads and moves it. */
 interface LadderAttemptHandle {
   /** TASK-032's durable attempt: the clock, ordered progress and the result draft. */
@@ -153,6 +176,23 @@ interface LadderAttemptHandle {
   readonly rungs: readonly LadderRung[]
   /** The server's word that the block's row exists (`isBlockRecorded`). */
   readonly recorded: boolean
+  /** TASK-014: undo the athlete's Finish, keeping the focus with the attempt. */
+  readonly undoFinish: () => void
+  /** TASK-014: the race's lead control (Pause or Resume once the attempt is back). */
+  readonly leadRef: RefObject<HTMLButtonElement | null>
+}
+
+/**
+ * TASK-014 (AC-R014-03): the stamp an Undo's clock runs from while that Undo
+ * can still run out — a running attempt finished under a cap — so the read
+ * model is re-derived each second and the action is withdrawn the moment
+ * undoing would resume the clock at or past its original cap. A paused
+ * Finish never runs out (its clock is not moving), and nothing ticks once Undo
+ * is unavailable.
+ */
+function undoExpiry(attempt: LadderAttempt, view: LadderAttemptView): string | null {
+  if (!view.undo.available || attempt.originalCapSeconds === null) return null
+  return attempt.checkpoint?.pausedAt === null ? attempt.clock.startedAt : null
 }
 
 /**
@@ -172,7 +212,7 @@ function useLadderAttempt(
   storage: ShellStorage | null | undefined,
   now: () => number,
 ): LadderAttemptHandle {
-  const { isBlockRecorded, sessionId } = useBlockCompletion()
+  const { isBlockRecorded, sessionId, onBlockRecorded } = useBlockCompletion()
   const recorded = isBlockRecorded(block.blockId)
   const rungs = ladderRungs(block.exercises)
   const ladder = usePersistedLadder({
@@ -184,9 +224,33 @@ function useLadderAttempt(
     storage,
     now,
   })
-  useElapsedSeconds(forTimeTicking(ladder.attempt.clock), now)
+  const { markRecorded, undoFinish: undo } = ladder
+
+  // TASK-014 (AC-R014-03): a successful save ends Undo. The shell says the
+  // row exists in the same act as its insert is answered, before the forward
+  // action moves on and this renderer unmounts, so the durable record is
+  // closed — not left open to an Undo after a reload.
+  useEffect(() => onBlockRecorded?.(block.blockId, markRecorded), [block.blockId, markRecorded, onBlockRecorded])
+
   const view = ladderAttemptView(ladder.attempt, { rungCount: rungs.length, now: now(), recorded })
-  return { ladder, view, rungs, recorded }
+  useElapsedSeconds(forTimeTicking(ladder.attempt.clock) ?? undoExpiry(ladder.attempt, view), now)
+
+  // TASK-014: the Undo the athlete pressed is gone once the attempt is back;
+  // when it held the focus, the focus goes to the race's lead control.
+  const leadRef = useRef<HTMLButtonElement>(null)
+  const refocus = useRef(false)
+  useEffect(() => {
+    if (!refocus.current) return
+    refocus.current = false
+    leadRef.current?.focus()
+  })
+  const undoFinish = useCallback(() => {
+    const focused = document.activeElement
+    refocus.current = focused instanceof Element && focused.closest('[data-timed-undo]') !== null
+    undo()
+  }, [undo])
+
+  return { ladder, view, rungs, recorded, undoFinish, leadRef }
 }
 
 /**
@@ -227,7 +291,7 @@ function liveProgress({ ladder, view, rungs }: LadderAttemptHandle): LadderRound
  */
 function useLadderResult(
   block: BlockRendererProps['block'],
-  { ladder, view, rungs, recorded }: LadderAttemptHandle,
+  { ladder, view, rungs, recorded, undoFinish }: LadderAttemptHandle,
   ended: boolean,
 ): { outcome: BlockOutcome; log: ReactNode } {
   const [effort, setEffort] = useState<SetEffort | null>(null)
@@ -256,6 +320,8 @@ function useLadderResult(
                   onChange: (through) => ladder.editDraft({ completed: through === rungs.length, highestRung: through }),
                 }
           }
+          // TASK-014 (C38, C39): while the athlete's Finish can be undone.
+          completionAction={view.undo.available ? { label: UNDO_FINISH_LABEL, onAction: undoFinish } : null}
           onChange={(next) => {
             if (next.completed !== null && next.completed !== completed) {
               // Complete is every round; Incomplete states its round again,
@@ -319,7 +385,7 @@ const LADDER_CLOCK_WORDS: Readonly<Record<ForTimePhase, string>> = {
  */
 function ladderRace(
   block: BlockRendererProps['block'],
-  { ladder, view }: LadderAttemptHandle,
+  { ladder, view, leadRef }: LadderAttemptHandle,
 ): { actions: ReactNode; timer: ReactNode } {
   if (block.exercises.length === 0) return { actions: null, timer: null }
   return {
@@ -333,6 +399,7 @@ function ladderRace(
         onPause={ladder.pause}
         onResume={ladder.resume}
         onFinish={ladder.finish}
+        leadRef={leadRef}
       />
     ),
     timer: view.clock.phase === 'ready' ? null : <ForTimeClock view={view.clock} words={LADDER_CLOCK_WORDS} />,

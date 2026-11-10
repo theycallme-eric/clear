@@ -639,7 +639,12 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     expect(await pressed(roundsOf(long))).toEqual(through(3))
 
     // The log by keyboard: the answer's one stop, then each round in order.
+    // TASK-014 (AC-C39-01, AC-R014-01): while this Finish can be undone, the
+    // quiet Undo sits below Complete / Incomplete and before Rounds completed,
+    // so it is the one stop between them.
     await completionOf(long).getByRole('radio', { name: 'Incomplete', exact: true }).focus()
+    await page.keyboard.press('Tab')
+    await expect(long.getByRole('button', { name: 'Undo finish · Resume ladder', exact: true })).toBeFocused()
     await page.keyboard.press('Tab')
     await expect(resultTile(long, 1, 'long')).toBeFocused()
     for (let step = 1; step < 7; step += 1) await page.keyboard.press('Tab')
