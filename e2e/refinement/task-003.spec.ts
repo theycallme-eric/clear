@@ -360,12 +360,14 @@ async function readLoads(page: Page, context: Context): Promise<FormatReading[][
       if (list === undefined) throw new Error(`No list ${lists[index]} in card ${index + 1}`)
       const identities = [...list.querySelectorAll(':scope > li [data-movement-identity]')]
       if (list.getAttribute('aria-label') === 'Rounds in this ladder') {
-        // The live ladder states its movement and load in each round's target line.
-        const loads = [...list.querySelectorAll(':scope > li')].map((round) =>
-          round.querySelector('[data-movement-load]')?.textContent ?? null)
-        if (new Set(loads).size !== 1) throw new Error(`Ladder rounds disagree: ${loads.join(', ')}`)
-        const name = list.querySelector(':scope > li p')?.textContent?.replace(/^\d+ \w+ /, '').replace(/ · .*$/, '') ?? ''
-        return [{ name, load: loads[0] }]
+        // TASK-012 (C35, R70, R72): the live ladder states each movement's load
+        // once, in its line of the compact prescription's summary; its rounds
+        // read `2 × dumbbell thruster` and repeat no load.
+        if (list.querySelector('[data-movement-load]') !== null) throw new Error('A ladder round repeats the load')
+        return [...card.querySelectorAll('[data-ladder-movement]')].map((line) => ({
+          name: line.querySelector('[data-movement-name]')?.textContent ?? '',
+          load: line.querySelector('[data-movement-load]')?.textContent ?? null,
+        }))
       }
       return identities.map((identity) => ({
         name: (identity.querySelector('[data-movement-name]')?.textContent ?? '').replace(/^\d+\.\s+/, ''),

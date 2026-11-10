@@ -769,7 +769,8 @@ describe('For Time with explicit ladder timing', () => {
     const block = timedLadder({ mode: 'for_time', rounds, interval_seconds: null, cap_seconds: null }, rungs)
     const reportOutcome = renderSlot(block)
 
-    expect(screen.getAllByRole('heading', { name: /^Round \d+$/ })).toHaveLength(rounds)
+    // TASK-012 (C35, R95): every round is a tile of the compact grid.
+    expect(within(screen.getByRole('list', { name: 'Rounds in this ladder' })).getAllByRole('listitem')).toHaveLength(rounds)
     expect(screen.getByText(`${rounds} rounds · for time, at your pace · 08:00 cap`)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Start For Time' })).not.toBeInTheDocument()
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
@@ -784,7 +785,8 @@ describe('For Time with explicit ladder timing', () => {
     renderSlot(block)
 
     expect(screen.getByText('4 rounds · 08:00 cap on the whole ladder')).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { name: /^Round \d+$/ })).toHaveLength(4)
+    // TASK-012 (C35, R95): every round is a tile of the compact grid.
+    expect(within(screen.getByRole('list', { name: 'Rounds in this ladder' })).getAllByRole('listitem')).toHaveLength(4)
   })
 
   it('a For Time block with no ladder timing keeps its race clock', () => {

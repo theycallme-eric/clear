@@ -182,22 +182,27 @@ function readings(list: HTMLElement): FormatReading[] {
   }))
 }
 
-/** The live ladder states its movement inside each round's target line. */
-function ladderRoundLoads(list: HTMLElement): (string | null)[] {
-  return [...list.querySelectorAll<HTMLElement>(':scope > li')].map(
-    (round) => round.querySelector('[data-movement-load]')?.textContent ?? null,
-  )
+/**
+ * The live ladder states each movement's prescribed load once, in its line of
+ * the compact prescription's summary (TASK-012: C35, R70, R72) — no longer
+ * repeated in every round's target line, which now reads `2 × dumbbell
+ * thruster` in the ×/· notation.
+ */
+function ladderSummaryReadings(list: HTMLElement): FormatReading[] {
+  const card = list.closest<HTMLElement>('[data-workout-card]')!
+  // The rounds themselves state no load.
+  expect(list.querySelector('[data-movement-load]'), 'no round repeats the load').toBeNull()
+  return [...card.querySelectorAll<HTMLElement>('[data-ladder-movement]')].map((line) => ({
+    name: line.querySelector('[data-movement-name]')?.textContent ?? '',
+    load: line.querySelector('[data-movement-load]')?.textContent ?? null,
+  }))
 }
 
 function contextReadings(context: Context): Record<FormatKey, FormatReading[]> {
   return Object.fromEntries(FORMAT_KEYS.map((key, index) => {
     const list = blockList(context, index)
-    if (context === 'workout' && key === 'ladder') {
-      // One reading per movement, as Review states it: the round lines repeat it.
-      const loads = ladderRoundLoads(list)
-      expect(new Set(loads).size, 'every round states the same prescribed load').toBe(1)
-      return [key, FORMAT_LOADS.ladder.map((movement) => ({ name: movement.name, load: loads[0] }))]
-    }
+    // One reading per movement, as Review states it.
+    if (context === 'workout' && key === 'ladder') return [key, ladderSummaryReadings(list)]
     return [key, readings(list)]
   })) as Record<FormatKey, FormatReading[]>
 }
@@ -480,7 +485,8 @@ describe('TASK-003 consistent format badges and truthful prescribed load', () =>
     expect(liveHeaders.map((header) => header.meta?.textContent ?? null)).toEqual(FORMAT_DETAILS.workout)
     expect(contextReadings('workout')).toEqual(before)
     // The load sits in the target row with the prescription, not on a row of its own.
-    // (A ladder round's target line states its movement and load together.)
+    // (TASK-012: a ladder's load sits in its movement's summary line, beside
+    // the movement's whole progression.)
     const loads = [...document.querySelectorAll<HTMLElement>('[data-workout-card="workout"] [data-movement-load]')]
     expect(loads.length).toBeGreaterThan(0)
     for (const load of loads) {
@@ -593,9 +599,12 @@ describe('TASK-003 consistent format badges and truthful prescribed load', () =>
       expect(source, consumer).toMatch(/from '\.\/refinements\/workout-card'/)
       expect(source, consumer).toMatch(/<WorkoutCard\b[^>]*\bstructure=/s)
     }
-    for (const consumer of ['src/ui/emom-block.tsx', 'src/ui/amrap-block.tsx', 'src/ui/for-time-block.tsx', 'src/ui/ladder-block.tsx']) {
+    // TASK-012 (C35): the ladder reads its movements through the shared
+    // compact prescription, which reads them through liveMovementReadings.
+    for (const consumer of ['src/ui/emom-block.tsx', 'src/ui/amrap-block.tsx', 'src/ui/for-time-block.tsx', 'src/ui/refinements/ladder.tsx']) {
       expect(readFileSync(resolve(ROOT, consumer), 'utf8'), consumer).toMatch(/liveMovementReadings\(/)
     }
+    expect(readFileSync(resolve(ROOT, 'src/ui/ladder-block.tsx'), 'utf8')).toMatch(/<LadderPrescription\b/)
   })
 })
 

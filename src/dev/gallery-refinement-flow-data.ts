@@ -78,10 +78,40 @@ export function timedLadderBlock(rounds: number): Block {
   }
 }
 
+/**
+ * TASK-012 (AC-R012-01): a ladder shaped unlike the accepted one, for the
+ * register's compact-prescription specimens — a 24 kg kettlebell swing falling
+ * three reps a round from 15, with a fixed 250 m row, five rounds raced For Time
+ * under the block's 10:00 cap. Nothing in it is the accepted screenshot's.
+ */
+export function loadedLadderBlock(): Block {
+  return {
+    structure_type: 'for_time',
+    rounds: null,
+    timer_type: 'countdown',
+    timer_seconds: 600,
+    round_rest_seconds: null,
+    rep_scheme: 'ladder_down',
+    block_notes: null,
+    ladder_timing: { mode: 'for_time', rounds: 5, interval_seconds: null, cap_seconds: null },
+    exercises: [
+      movement({
+        exercise_id: 'kettlebell-swing', equipment: 'kettlebell', load_type: 'absolute', load_value: 24,
+        target_kind: 'sequence', target_value: null, target_sequence: [15, 12, 9, 6, 3],
+      }),
+      movement({ exercise_id: 'row', equipment: 'rower', load_type: 'none', modality: 'distance', distance_unit: 'm', target_value: 250 }),
+    ],
+  }
+}
+
 /** The same ladder as the live shell hands it to its renderer. */
 export function galleryLadderProgress(rounds: LadderRoundCount): BlockProgress {
-  const block = timedLadderBlock(rounds)
-  const exercises = galleryExerciseProgress(block, 40 + rounds)
+  return galleryBlockProgress(timedLadderBlock(rounds), 40 + rounds)
+}
+
+/** Any gallery ladder block as the live shell hands it to its renderer. */
+export function galleryBlockProgress(block: Block, seed: number): BlockProgress {
+  const exercises = galleryExerciseProgress(block, seed)
   return {
     blockId: exercises[0].blockId,
     structureType: block.structure_type,

@@ -1,0 +1,82 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-012",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/ladder-rungs.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-012/required-cases.json",
+    "sha256": "0d322bfc8bd10b71142860f775633b0207c7b172e35f4e7e3287b43781462ea1"
+  },
+  "targets": [
+    {
+      "path": "src/ui/ladder-rungs.test.tsx",
+      "sha256": "bbd2c1d8911a09b0d0456795acd99442676a8e41703c8050d33cf3444fea0c26"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > AC-C35-01 the accepted twelve-round ladder on /workout states its concise progression once, then every round’s push up and fixed burpee as a compact tile after its Start — with no rung row repeating it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > AC-R012-01 every name, sequence, load and unit, round count and cap is read from each ladder’s own data — a loaded descending ladder with a distance companion and a scheduled pyramid with no cap — never from the accepted screenshot",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > AC-R012-01 Review states every round of each ladder in the same words the workout performs, read-only, under its unchanged accepted movement rows",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > AC-R012-02 no “same every round” suffix, no “Move through the rounds” paragraph and no “reps” between a quantity and its movement: the ×/· notation keeps the order, every target and each movement’s identity, the fixed companion in every round",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 recovery: Start, Pause and the cap keep the prescription unchanged; the rung question and the reached reading appear only once answered; nothing is recorded but the declared answer",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a scheduled ladder’s tiles keep each start and mark the live round from its own clock through Start, a close and reopen and the end of the schedule",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a ladder with no explicit timing, an inverse pair and a malformed ladder are stated through the same owner: their rounds are their rungs, and absent rungs keep their existing meaning",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 the readings come from the columns: rising, falling, uneven, timed, distance, per-side and inverse ladders, and the round count the timing gives",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 gallery ladder-4 and ladder-12 draw the actual consumer’s compact prescription, from the gallery’s own data, with no network and no route storage",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}

@@ -264,7 +264,16 @@ describe('representative prescriptions, timing and execution states', () => {
       expect(
         region.getByText(timingSummary(ladder.timing, ladder.columns.timer_seconds)),
       ).toBeVisible()
-      expect(region.getByText(PACING_NOTES[ladder.timing.mode])).toBeVisible()
+      // TASK-012 (AC-R012-02, R71): the capped window's "Move through the
+      // rounds…" paragraph is removed, with nothing in its place; the other
+      // modes keep their one pacing line.
+      const pacing = PACING_NOTES[ladder.timing.mode]
+      if (pacing === null) {
+        expect(ladder.timing.mode).toBe('capped_window')
+        expect(region.queryByText(/Move through the rounds/)).toBeNull()
+      } else {
+        expect(region.getByText(pacing)).toBeVisible()
+      }
       const rungs = region.getByRole('list', { name: `${ladder.heading} rungs` })
       expect(within(rungs).getAllByRole('listitem')).toHaveLength(5)
     }

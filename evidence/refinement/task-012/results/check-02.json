@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-012",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-012.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-012/required-cases.json",
+    "sha256": "0d322bfc8bd10b71142860f775633b0207c7b172e35f4e7e3287b43781462ea1"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-012.spec.ts",
+      "sha256": "cb81ff37315dec1cc6beb7ec53ff64143984e173bb238f9e8e6e1a7eedef4199"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-320: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-390: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 keyboard and reduced motion phone-390: no tile is a focus stop; Start, Pause, Resume and Finish by keyboard leave the prescription unchanged, and the rung question appears only once the ladder is answered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 touch and recovery phone-320: a tapped tile does nothing, and a close and reopen while the ladders run keeps every prescription as it was",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 gallery ladder-4 and ladder-12 phone-320: the accepted states draw the actual consumer’s compact prescription with no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

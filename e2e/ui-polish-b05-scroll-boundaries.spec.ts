@@ -797,12 +797,20 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
   }
 
   test('ladder rungs keep the horizontal start/end cues and reveal the chosen rung', async ({ page, visit }, testInfo) => {
+    test.setTimeout(90_000)
     await page.setViewportSize(NARROW)
     const app = await syntheticApp(page, { activeWorkout: true })
     await visit('/workout')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await page.getByRole('button', { name: 'All sections', exact: true }).click()
     await page.getByRole('button', { name: 'Conditioning, not started', exact: true }).click()
+    // TASK-012 (C35, R95): while the ladder is performed its rungs are stated
+    // by the compact prescription's wrapping grid, with no horizontal scroller,
+    // so the rung rail — and this horizontal contract — is drawn once the
+    // ladder is answered. Make the production ladder interactive first (TASK-010,
+    // C29: Incomplete opens the rung question).
+    await expect(page.locator('main .clr-rail:has(.clr-rungs)')).toHaveCount(0)
+    await page.getByRole('radio', { name: 'Incomplete', exact: true }).check()
     const rail = page.locator('main .clr-rail:has(.clr-rungs)').first()
     await expect(rail).toBeVisible()
     // Bring the rung row out from behind the pinned navigation with real
@@ -810,6 +818,7 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
     const pageScroller = page_region(page).locator(':scope > .clr-scroll-region__scroller')
     const pageBox = (await pageScroller.boundingBox())!
     await page.mouse.move(pageBox.x + pageBox.width / 2, pageBox.y + pageBox.height / 2)
+    await page.mouse.wheel(0, -10_000)
     await page.mouse.wheel(0, 260)
     await settle(page_region(page))
     const cues = () => rail.evaluate((element) => {
@@ -827,15 +836,41 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
     await expect.poll(async () => (await cues()).end).toBe(1)
     await capture(page, testInfo, 'ladder-rungs-narrow-start', { consumer: 'LadderRungs OverflowRail', state: 'overflowing, at start' })
 
-    await rail.locator('.clr-rail__cue[data-side="end"]').click()
+    // The answered row's rungs are touch targets, wider than the read-only
+    // row's were, so the end may be more than one cue page away.
+    const atEdge = (side: 'start' | 'end') => rail.evaluate((element, edge) => {
+      const scroller = element.querySelector('.clr-rail__scroller')!
+      return edge === 'start'
+        ? scroller.scrollLeft <= 1
+        : scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1
+    }, side)
+    const page_through = async (side: 'start' | 'end') => {
+      for (let step = 0; step < 6 && !(await atEdge(side)); step += 1) {
+        const before = (await cues()).left
+        await rail.locator(`.clr-rail__cue[data-side="${side}"]`).click()
+        await expect.poll(async () => (await cues()).left).not.toBe(before)
+        // Let the smooth scroll come to rest before reading the edge again.
+        await expect.poll(async () => {
+          const first = (await cues()).left
+          await page.waitForTimeout(100)
+          return (await cues()).left === first
+        }).toBe(true)
+      }
+      expect(await atEdge(side), `paged to the ${side}`).toBe(true)
+    }
+    await page_through('end')
     await expect.poll(async () => (await cues()).start).toBe(1)
     await expect.poll(async () => (await cues()).end).toBe(0)
     await capture(page, testInfo, 'ladder-rungs-narrow-end', { consumer: 'LadderRungs OverflowRail', state: 'overflowing, at end' })
 
-    // Make the production ladder interactive, then use the real radio group.
-    // No scrollIntoView or geometry writes precede focus or selection reveal.
-    // TASK-010 (C29; R78, R87): Incomplete replaces "Hit the time cap"; it opens the same rung question.
-    await page.getByRole('radio', { name: 'Incomplete', exact: true }).check()
+    // Back to the start through the start cue, so the radio contract below
+    // begins, as before, with the last radio genuinely hidden.
+    await page_through('start')
+    await expect.poll(async () => (await cues()).start).toBe(0)
+    await expect.poll(async () => (await cues()).end).toBe(1)
+
+    // Use the real radio group. No scrollIntoView or geometry writes precede
+    // focus or selection reveal.
     const radios = rail.getByRole('radio')
     await expect(radios).toHaveCount(RUNGS.length)
     const first = radios.first()

@@ -351,33 +351,23 @@ async function attachViewport(page: Page, format: TimedFormat, name: string) {
 
 /**
  * axe over the journey's screen after an interaction: every rule on every node
- * (`checkA11y`'s scan), with one pre-existing finding held to exactly itself.
+ * (`checkA11y`'s scan).
  *
- * The accepted long ladder has twelve rungs, so the existing read-only rung row
- * (`LadderRungs`, EXE-04a, unchanged by TASK-006) overflows its OverflowRail at
- * phone widths, and its rungs are deliberately not focus stops: axe's
- * `scrollable-region-focusable` flags that scroller. axe's first scan of a page
- * — `visit`'s — does not report it; every later scan does. Its owner is the
- * ladder prescription work (TASK-012's compact prescription, TASK-013's
- * wrapping tiles without horizontal overflow); TASK-006's note records it. So
- * that rule's violations must be exactly the read-only rung rows' scrollers —
- * any other scrollable region, or any other rule, still fails here.
+ * This check once held one pre-existing finding to exactly itself: the twelve-
+ * rung ladder's read-only rung row (`LadderRungs` over an OverflowRail)
+ * overflowed at phone widths with no focus stop, and axe's
+ * `scrollable-region-focusable` flagged its scroller. TASK-012 (C35, R95)
+ * removed that row while a ladder is performed — the compact prescription's
+ * wrapping grid states the rounds, with no scroller — and these journeys never
+ * answer the ladder Complete, the one state that still draws it (TASK-013's).
+ * So the exception has nothing left to hold, and every rule runs unexcepted.
  */
 async function checkJourneyA11y(page: Page) {
-  const rest = await new AxeBuilder({ page }).disableRules(['scrollable-region-focusable']).analyze()
-  expect(rest.violations.map((violation) => ({ id: violation.id, nodes: violation.nodes.map((node) => node.target.join(' ')) }))).toEqual([])
-  const scroll = await new AxeBuilder({ page }).withRules(['scrollable-region-focusable']).analyze()
-  const flagged = scroll.violations.flatMap((violation) => violation.nodes.map((node) => node.target.join(' ')))
-  if (flagged.length > 0) {
-    await test.info().attach('pre-existing-rung-rail-scrollable-region.json', {
-      body: JSON.stringify(scroll.violations, null, 2), contentType: 'application/json',
-    })
+  const results = await new AxeBuilder({ page }).analyze()
+  if (results.violations.length > 0) {
+    await test.info().attach('axe-violations.json', { body: JSON.stringify(results.violations, null, 2), contentType: 'application/json' })
   }
-  const readOnlyRungRails = await page.evaluate(() => [...document.querySelectorAll('.clr-rail__scroller')]
-    .filter((scroller) => scroller.querySelector('[role="list"].clr-rungs') !== null && scroller.querySelector('button, input, a, [tabindex]') === null)
-    .length)
-  expect(flagged.every((target) => target === '.clr-rail__scroller'), JSON.stringify(flagged)).toBe(true)
-  expect(flagged.length, 'only the read-only rung rows').toBeLessThanOrEqual(readOnlyRungRails)
+  expect(results.violations.map((violation) => ({ id: violation.id, nodes: violation.nodes.map((node) => node.target.join(' ')) }))).toEqual([])
 }
 
 async function noHorizontalOverflow(page: Page) {
@@ -412,10 +402,12 @@ test.describe('TASK-006 timed action hierarchy', () => {
       expect(ladder.controls[0]).toMatchObject({ name: TIMED_START.ladder, primary: true })
       expect(ladder.row.top, 'after the identity and cap').toBeGreaterThanOrEqual(ladder.headerBottom - TOLERANCE)
       expect(ladder.row.bottom, 'before the rounds').toBeLessThanOrEqual(ladder.listTop + TOLERANCE)
-      // Reachable without the repetitive list: within the first screen from the
-      // card's header, while the twelve rounds alone run longer than a screen.
+      // Reachable without the rounds: within the first screen from the card's
+      // header, above all twelve of them. TASK-012 (C35, R95, R117) superseded
+      // "the twelve rounds alone run longer than a screen": they are now the
+      // compact wrapping grid, not the repetitive list; the Start still leads.
       expect(ladder.row.bottom - ladder.headerBottom, 'within the first screen').toBeLessThan(viewport.height)
-      expect(ladder.listBottom - ladder.listTop, `${LONG_LADDER_ROUNDS} rounds outrun the screen`).toBeGreaterThan(viewport.height)
+      expect(ladder.listBottom, `${LONG_LADDER_ROUNDS} rounds after the Start`).toBeGreaterThan(ladder.row.bottom)
       await expect(page.getByRole('button', { name: TIMED_START.ladder, exact: true })).toHaveCount(1)
 
       await noHorizontalOverflow(page)

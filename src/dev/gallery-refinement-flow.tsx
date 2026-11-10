@@ -1,7 +1,8 @@
 /**
  * `/gallery/refinements?state=ladder-4` and `?state=ladder-12` — the live
  * ladder's Start/Pause/Resume/Finish hierarchy (TASK-006: C17, C18, G05; R66,
- * R67, R68), drawn by the consumer the `/workout` route draws.
+ * R67, R68) and its compact truthful prescription (TASK-012: C35; R70, R71,
+ * R72, R94, R95, R117), drawn by the consumer the `/workout` route draws.
  *
  * Deliberate consolidation of the accepted reference's `GalleryLadderFlow`
  * (eded158c…, `src/dev/gallery-refinement-flow.tsx`). The reference drew a
@@ -9,8 +10,12 @@
  * a secondary Pause beside a primary Finish, the compact prescription with live
  * check-off, and the result log with quiet Undo. Here the state renders the
  * route's actual `LadderBlock` — its own clock (EXE-04b's For Time state),
- * its shared `TimedWorkoutActions` in the ladder's top slot and its real round
- * list — over the accepted composition (`gallery-refinement-flow-data.ts`).
+ * its shared `TimedWorkoutActions` in the ladder's top slot and, since
+ * TASK-012, the shared `LadderPrescription` (`refinements/ladder.tsx`): one
+ * concise line per movement, then every round as a wrapping tile with the fixed
+ * burpee in each — over the accepted composition
+ * (`gallery-refinement-flow-data.ts`), read from its data like any route
+ * ladder's.
  *
  * Memory only. The clock is stored in an in-memory `ShellStorage` for this
  * mount; the block reports to the shell's own `BlockCompletionProvider`, which
@@ -20,21 +25,29 @@
  * (`GalleryCoachingClients`). Nothing reaches the network or the route's
  * storage, and no performed work is written anywhere.
  *
- * Not composed here, and owned by later tasks: the reference's compact
- * rep-first prescription and live check-off (`refinements/ladder.tsx`, TASK-012
- * and TASK-013), the result log and quiet Undo (TASK-013, TASK-014, TASK-046),
- * the whole-timer frame (TASK-007) and the urgency state (TASK-008).
+ * Not composed here, and owned by later tasks: the reference's live check-off
+ * of whole rounds (`LadderPrescription`'s `onProgress`, TASK-013), the rep-first
+ * result tiles and quiet Undo (TASK-013, TASK-014, TASK-046). The whole-timer
+ * frame (TASK-007) and the warning (TASK-008) are the route's own here.
  */
 import { useState } from 'react'
 
 import { Button } from '../design-system/index'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
+import { ladderRoundReadings } from '../state/ladder'
 import { finishLabel, type TimedLifecyclePhase } from '../state/timed-lifecycle'
 import type { ShellStorage } from '../state/workout-persistence'
 import { LadderBlock } from '../ui/ladder-block'
+import { LadderPrescription, LadderRounds } from '../ui/refinements/ladder'
 import { TimedWorkoutActions } from '../ui/timed-workout-flow'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
-import { galleryLadderProgress, type LadderRoundCount } from './gallery-refinement-flow-data'
+import {
+  galleryBlockProgress,
+  galleryLadderProgress,
+  loadedLadderBlock,
+  timedLadderBlock,
+  type LadderRoundCount,
+} from './gallery-refinement-flow-data'
 
 /** One mount's storage, so the gallery never reads or writes the route's records. */
 function memoryStorage(): ShellStorage {
@@ -118,5 +131,45 @@ export function TimedActionsLifecycle() {
       />
       {phase === 'ended' && <Button variant="quiet" size="sm" onClick={() => setPhase('ready')}>Show again</Button>}
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Register specimens: the compact prescription alone (TASK-012)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The accepted four-round ladder: push up 2 → 8 and the fixed burpee, as the live card states it. */
+export function LadderPrescriptionFour() {
+  const [block] = useState(() => galleryLadderProgress(4))
+  return <LadderPrescription exercises={block.exercises} rounds={block.ladderTiming?.rounds ?? null} weightUnit="kg" />
+}
+
+/** The accepted twelve-round ladder, wrapping into rows of tiles. */
+export function LadderPrescriptionTwelve() {
+  const [block] = useState(() => galleryLadderProgress(12))
+  return <LadderPrescription exercises={block.exercises} rounds={block.ladderTiming?.rounds ?? null} weightUnit="kg" />
+}
+
+/** A loaded, descending ladder with a distance companion: every reading is its own data. */
+export function LadderPrescriptionLoaded() {
+  const [block] = useState(() => galleryBlockProgress(loadedLadderBlock(), 60))
+  return <LadderPrescription exercises={block.exercises} rounds={block.ladderTiming?.rounds ?? null} weightUnit="kg" />
+}
+
+/** Review's reading: the planned rounds from the composed prescriptions, read-only. */
+export function LadderRoundsReview() {
+  const block = timedLadderBlock(4)
+  return <LadderRounds rounds={ladderRoundReadings(block.exercises.map((exercise) => ({ prescription: exercise })), 4)} />
+}
+
+/** A schedule's tiles: each start, and the live round marked Now (memory only, no clock). */
+export function LadderRoundsScheduled() {
+  const block = timedLadderBlock(4)
+  const start = (round: number) => `Starts at 0${round - 1}:00`
+  return (
+    <LadderRounds
+      rounds={ladderRoundReadings(block.exercises.map((exercise) => ({ prescription: exercise })), 4)}
+      roundContext={(round) => ({ marker: round === 2 ? 'now' : null, detail: start(round) })}
+    />
   )
 }

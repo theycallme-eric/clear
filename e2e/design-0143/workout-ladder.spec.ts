@@ -430,10 +430,13 @@ function rounds(page: Page, index: number): Locator {
   return page.getByRole('list', { name: 'Rounds in this ladder', exact: true }).nth(index)
 }
 
+/**
+ * One round's tile. TASK-012 (C35, R95): the rounds are the compact
+ * prescription's wrapping tiles — `R1`, each movement's work — rather than rows
+ * headed `Round N`; a tile names its round for a screen reader as `Round N`.
+ */
 function round(page: Page, ladder: number, number: number): Locator {
-  return rounds(page, ladder).getByRole('listitem').filter({
-    has: page.getByRole('heading', { name: `Round ${number}`, exact: true }),
-  })
+  return rounds(page, ladder).locator(`:scope > li[data-ladder-round="${number}"]`)
 }
 
 /**
@@ -536,8 +539,11 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   for (const [index, reps] of SCHEDULED_RUNGS.entries()) {
     const row = round(page, 0, index + 1)
     await expect(row.getByText(`Starts at ${['00:00', '01:15', '02:30', '03:45'][index]}`, { exact: true })).toBeVisible()
-    await expect(row.getByText(`${reps} reps ${display(laddered.id)}`, { exact: true })).toBeVisible()
-    await expect(row.getByText(`${COMPANION_REPS} reps ${display(companion.id)} — same every round`, { exact: true })).toBeVisible()
+    // TASK-012 (R72, AC-R012-02): the ×/· notation, and the companion's fixed
+    // target in every round without the rejected "— same every round" (R70).
+    await expect(row.getByText(`${reps} × ${display(laddered.id)}`, { exact: true })).toBeVisible()
+    await expect(row.getByText(`${COMPANION_REPS} × ${display(companion.id)}`, { exact: true })).toBeVisible()
+    await expect(row.getByText(/same every round/)).toHaveCount(0)
   }
   await expect(page.getByText('NOT STARTED', { exact: true })).toBeVisible()
   await expect(round(page, 0, 1).getByText('Next', { exact: true })).toBeVisible()
@@ -545,11 +551,11 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // ENTRY-053 — free-paced For Time and the capped window, with their caps.
   await expect(page.getByText('3 rounds · for time, at your pace · 10:00 cap', { exact: true })).toBeVisible()
   for (const [index, reps] of FREE_PACED_RUNGS.entries()) {
-    await expect(round(page, 1, index + 1).getByText(`${reps} reps ${display(laddered.id)}`, { exact: true })).toBeVisible()
+    await expect(round(page, 1, index + 1).getByText(`${reps} × ${display(laddered.id)}`, { exact: true })).toBeVisible()
   }
   await expect(page.getByText('3 rounds · 06:00 cap on the whole ladder', { exact: true })).toBeVisible()
   for (const [index, reps] of CAPPED_RUNGS.entries()) {
-    await expect(round(page, 2, index + 1).getByText(`${reps} reps ${display(companion.id)}`, { exact: true })).toBeVisible()
+    await expect(round(page, 2, index + 1).getByText(`${reps} × ${display(companion.id)}`, { exact: true })).toBeVisible()
   }
   await expectNoLiveRound(page, 1, FREE_PACED.rounds)
   await expectNoLiveRound(page, 2, CAPPED.rounds)

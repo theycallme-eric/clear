@@ -1,0 +1,114 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-012",
+  "description": "Compact truthful ladder prescription (REQ-012; C35; R65, R70, R71, R72, R94, R95, R117; V11) delivered through the accepted shared owner src/ui/refinements/ladder.tsx (LadderPrescription: one concise line per movement with its compact equipment, whole progression or fixed companion target and prescribed load, then LadderRounds: every round as a wrapping read-only tile in the ×/· notation with the fixed companion in each) over ladderRungs and the column readings ladderProgressionText / ladderRoundReadings in src/state/ladder.ts, composed by the route consumers LadderBlock (src/ui/ladder-block.tsx; legacy, raced and scheduled ladders, the rung row drawn only once answered, the capped window's 'Move through the rounds' paragraph and the 'same every round' suffix removed) and Review's ReviewSection (src/ui/review-block.tsx; the same rounds read-only under the accepted movement rows), on the real /review and /workout routes (JOURNEY-012) with three differently shaped ladders from their own data, and the accepted gallery states /gallery/refinements?state=ladder-4 and ?state=ladder-12 (reference eded158cfd928d382c9a9409e2c372270312741d). Read-only presentation: no storage key, field or writer. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-012 --check check-01 -- npx vitest run src/ui/ladder-rungs.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C35-01",
+        "AC-R012-01",
+        "AC-R012-02",
+        "JOURNEY-012"
+      ],
+      "files": [
+        "src/ui/ladder-rungs.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > AC-C35-01 the accepted twelve-round ladder on /workout states its concise progression once, then every round’s push up and fixed burpee as a compact tile after its Start — with no rung row repeating it",
+          "criterion": "AC-C35-01"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > AC-R012-01 every name, sequence, load and unit, round count and cap is read from each ladder’s own data — a loaded descending ladder with a distance companion and a scheduled pyramid with no cap — never from the accepted screenshot",
+          "criterion": "AC-R012-01"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > AC-R012-01 Review states every round of each ladder in the same words the workout performs, read-only, under its unchanged accepted movement rows",
+          "criterion": "AC-R012-01"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > AC-R012-02 no “same every round” suffix, no “Move through the rounds” paragraph and no “reps” between a quantity and its movement: the ×/· notation keeps the order, every target and each movement’s identity, the fixed companion in every round",
+          "criterion": "AC-R012-02"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 recovery: Start, Pause and the cap keep the prescription unchanged; the rung question and the reached reading appear only once answered; nothing is recorded but the declared answer",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a scheduled ladder’s tiles keep each start and mark the live round from its own clock through Start, a close and reopen and the end of the schedule",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a ladder with no explicit timing, an inverse pair and a malformed ladder are stated through the same owner: their rounds are their rungs, and absent rungs keep their existing meaning",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 the readings come from the columns: rising, falling, uneven, timed, distance, per-side and inverse ladders, and the round count the timing gives",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "src/ui/ladder-rungs.test.tsx",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 gallery ladder-4 and ladder-12 draw the actual consumer’s compact prescription, from the gallery’s own data, with no network and no route storage",
+          "criterion": "JOURNEY-012"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-012 --check check-02 -- npx playwright test e2e/refinement/task-012.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C35-01",
+        "AC-R012-01",
+        "AC-R012-02",
+        "JOURNEY-012"
+      ],
+      "files": [
+        "e2e/refinement/task-012.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-012.spec.ts",
+          "project": "mobile",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-320: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "e2e/refinement/task-012.spec.ts",
+          "project": "mobile",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-390: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "e2e/refinement/task-012.spec.ts",
+          "project": "mobile",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 keyboard and reduced motion phone-390: no tile is a focus stop; Start, Pause, Resume and Finish by keyboard leave the prescription unchanged, and the rung question appears only once the ladder is answered",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "e2e/refinement/task-012.spec.ts",
+          "project": "mobile",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 touch and recovery phone-320: a tapped tile does nothing, and a close and reopen while the ladders run keeps every prescription as it was",
+          "criterion": "JOURNEY-012"
+        },
+        {
+          "file": "e2e/refinement/task-012.spec.ts",
+          "project": "mobile",
+          "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 gallery ladder-4 and ladder-12 phone-320: the accepted states draw the actual consumer’s compact prescription with no network",
+          "criterion": "JOURNEY-012"
+        }
+      ]
+    }
+  }
+}
