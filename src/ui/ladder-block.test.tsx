@@ -24,13 +24,23 @@
  * "between each rung" note and the timed list's "— same every round" suffix.
  * The rung row is drawn only once answered. Each superseded assertion below
  * says so where it changed; its focused proof is `src/ui/ladder-rungs.test.tsx`.
+ *
+ * TASK-013 (C33, C34, C36; AC-R013-01; R77, R88, R89, R92, R99, R118)
+ * supersedes how the rung reached is *asked and read*: the "How far did you
+ * get?" radio row and the "Ladder" reached row are gone, and the result log's
+ * "Rounds completed" asks it instead — rep-first tiles, one toggle per rung,
+ * named `Round 3: 9 reps` (position and target both said), the selected prefix
+ * pressed and counted (`3 of 5 rounds completed`), with no tick. Selecting the
+ * top rung is Complete. The ladder's answer now lives in TASK-032's durable
+ * attempt (`localStorage`), so each case starts from empty storage. Its focused
+ * proof is TASK-013's in `src/ui/timed-workout-flow.test.tsx`.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   BlockCompletionContext,
@@ -147,6 +157,37 @@ async function declare(user: ReturnType<typeof userEvent.setup>, label: 'Complet
   await user.click(screen.getByRole('radio', { name: label }))
 }
 
+/**
+ * TASK-013 (C33, C34; R88, R99): the result log's rounds completed — the
+ * rep-first tiles that replaced the "How far did you get?" radios, each named
+ * by its round and its target.
+ */
+function roundsCompleted(): HTMLElement {
+  return screen.getByRole('group', { name: 'Rounds completed' })
+}
+
+function roundTile(name: string): HTMLElement {
+  return within(roundsCompleted()).getByRole('button', { name })
+}
+
+/** The rungs pressed, by number: the completed prefix. */
+function pressedRungs(): number[] {
+  return within(roundsCompleted())
+    .getAllByRole('button')
+    .filter((tile) => tile.getAttribute('aria-pressed') === 'true')
+    .map((tile) => Number(tile.dataset.ladderRung))
+}
+
+function roundsCount(): string {
+  return within(roundsCompleted()).getByRole('status').textContent ?? ''
+}
+
+// TASK-013: the ladder's answer is durable (TASK-032's attempt in
+// `localStorage`), so no case may inherit another's.
+afterEach(() => {
+  localStorage.clear()
+})
+
 describe('the ladder is rendered from the int array, and shown once', () => {
   it('renders one rung per entry of target_sequence, in order', () => {
     mount()
@@ -223,12 +264,13 @@ describe('the ladder is rendered from the int array, and shown once', () => {
     // TASK-012 (C35): each round names both movements at their own target.
     expect(roundWork()).toEqual([['10 × pull up', '1 × burpee'], ['9 × pull up', '2 × burpee'], ['8 × pull up', '3 × burpee']])
     // The rung the athlete is asked about still carries both numbers.
+    // TASK-013 (C33, R88): as a rep-first tile, named by round and target.
     await declare(userEvent.setup(), 'Incomplete')
     expect(
-      within(screen.getByRole('group', { name: 'How far did you get?' }))
-        .getAllByRole('radio')
-        .map((radio) => radio.getAttribute('aria-label')),
-    ).toEqual(['10 / 1 reps', '9 / 2 reps', '8 / 3 reps'])
+      within(roundsCompleted())
+        .getAllByRole('button')
+        .map((tile) => tile.getAttribute('aria-label')),
+    ).toEqual(['Round 1: 10 / 1 reps', 'Round 2: 9 / 2 reps', 'Round 3: 8 / 3 reps'])
   })
 
   it('states a fixed-interval companion as an annotation, not as a movement', () => {
@@ -287,12 +329,14 @@ describe('read-only and interactive rungs are different things', () => {
     mount()
     await declare(user, 'Incomplete')
 
-    const group = screen.getByRole('group', { name: 'How far did you get?' })
+    // TASK-013 (C33, C34; R88): the result log's rep-first tiles, each a
+    // toggle named by its round and its target.
     expect(
-      within(group)
-        .getAllByRole('radio')
-        .map((radio) => radio.getAttribute('aria-label')),
-    ).toEqual(['15 reps', '12 reps', '9 reps', '6 reps', '3 reps'])
+      within(roundsCompleted())
+        .getAllByRole('button')
+        .map((tile) => tile.getAttribute('aria-label')),
+    ).toEqual(['Round 1: 15 reps', 'Round 2: 12 reps', 'Round 3: 9 reps', 'Round 4: 6 reps', 'Round 5: 3 reps'])
+    expect(pressedRungs()).toEqual([])
 
     // One row, two modes: the read-only display is not left behind it.
     expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
@@ -314,18 +358,14 @@ describe('read-only and interactive rungs are different things', () => {
     const user = userEvent.setup()
     mount()
     await declare(user, 'Incomplete')
-    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+    await user.click(roundTile('Round 3: 9 reps'))
 
-    const states = Array.from(
-      screen
-        .getByRole('group', { name: 'How far did you get?' })
-        .querySelectorAll('.clr-rung'),
-      (rung) => rung.getAttribute('data-state'),
-    )
-
-    expect(states).toEqual(['reached', 'reached', 'selected', 'unreached', 'unreached'])
+    // TASK-013 (C34, AC-R013-01): the chosen rung and every rung before it
+    // are the pressed prefix; the rest are not.
+    expect(within(roundsCompleted()).getAllByRole('button').map((tile) => tile.getAttribute('aria-pressed')))
+      .toEqual(['true', 'true', 'true', 'false', 'false'])
     // And the choice is stated in words, so the fill is never the only cue.
-    expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
+    expect(roundsCount()).toBe('3 of 5 rounds completed')
   })
 
   it('reselects cleanly when the user changes their mind', async () => {
@@ -333,13 +373,15 @@ describe('read-only and interactive rungs are different things', () => {
     mount()
     await declare(user, 'Incomplete')
 
-    await user.click(screen.getByRole('radio', { name: '12 reps' }))
-    expect(screen.getByRole('radio', { name: '12 reps' })).toBeChecked()
+    // TASK-013 (C34, AC-R013-01): a tile states the prefix through it.
+    await user.click(roundTile('Round 2: 12 reps'))
+    expect(pressedRungs()).toEqual([1, 2])
 
-    await user.click(screen.getByRole('radio', { name: '3 reps' }))
-    expect(screen.getByRole('radio', { name: '3 reps' })).toBeChecked()
-    expect(screen.getByRole('radio', { name: '12 reps' })).not.toBeChecked()
-    expect(screen.getByText('Reached rung 5 of 5 — 3 reps')).toBeInTheDocument()
+    // The top rung is every rung: the ladder is Complete.
+    await user.click(roundTile('Round 5: 3 reps'))
+    expect(pressedRungs()).toEqual([1, 2, 3, 4, 5])
+    expect(screen.getByRole('radio', { name: 'Complete' })).toHaveAttribute('aria-checked', 'true')
+    expect(roundsCount()).toBe('5 of 5 rounds completed')
   })
 
   it('tells two rungs with the same target apart by position, not by name', async () => {
@@ -352,12 +394,13 @@ describe('read-only and interactive rungs are different things', () => {
     await declare(user, 'Incomplete')
 
     // A pyramid climbs past 4 twice. The two are different rungs, and the
-    // second one is the one further up.
-    const fours = screen.getAllByRole('radio', { name: '4 reps' })
-    expect(fours).toHaveLength(2)
+    // second one is the one further up. TASK-013 (R88): each tile's name says
+    // its round as well as its target, so the two never share a name.
+    const fours = within(roundsCompleted()).getAllByRole('button', { name: /: 4 reps$/ })
+    expect(fours.map((tile) => tile.getAttribute('aria-label'))).toEqual(['Round 2: 4 reps', 'Round 4: 4 reps'])
 
     await user.click(fours[1])
-    expect(screen.getByText('Reached rung 4 of 5 — 4 reps')).toBeInTheDocument()
+    expect(roundsCount()).toBe('4 of 5 rounds completed')
   })
 })
 
@@ -367,7 +410,7 @@ describe('the rung reached is what the block’s row records', () => {
     const { block, reportOutcome } = mount()
 
     await declare(user, 'Incomplete')
-    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+    await user.click(roundTile('Round 3: 9 reps'))
 
     // The rung *number*, which is what `block_results.highest_rung` means —
     // rung 3 of the ladder, whose target happens to be 9.
@@ -385,9 +428,11 @@ describe('the rung reached is what the block’s row records', () => {
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
     })
-    // Finishing fills the pattern without turning it into a control.
-    expect(screen.getByText('Reached rung 5 of 5 — 3 reps')).toBeInTheDocument()
-    expect(screen.getByRole('list', { name: 'Ladder' })).toBeInTheDocument()
+    // Every rung reads as climbed. TASK-013 (C36; R69): in the editable log,
+    // so the athlete can still correct it — the reached reading is the count.
+    expect(pressedRungs()).toEqual([1, 2, 3, 4, 5])
+    expect(roundsCount()).toBe('5 of 5 rounds completed')
+    expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
   })
 
   it('records no rung at all when the user says nothing', () => {
@@ -412,7 +457,7 @@ describe('the rung reached is what the block’s row records', () => {
     const { block, reportOutcome } = mount()
 
     await declare(user, 'Incomplete')
-    await user.click(screen.getByRole('radio', { name: '6 reps' }))
+    await user.click(roundTile('Round 4: 6 reps'))
     await declare(user, 'Complete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
@@ -515,11 +560,12 @@ describe('a ladder block is one card of the shared frame', () => {
     // in it — and the rung row, with its caption, is drawn once answered.
     expect(screen.queryByText('Each rung')).not.toBeInTheDocument()
     await declare(userEvent.setup(), 'Complete')
-    expect(screen.getByText('Ladder')).toHaveClass('clr-rungs__legend')
-    const legend = /\.clr-rungs__legend\s*\{([^}]*)\}/.exec(declarations)?.[1] ?? ''
-    expect(legend).toContain('color: var(--text-card-label)')
-    expect(legend).toContain('font-size: var(--label-xs-size)')
-    expect(legend).toContain('font-family: var(--font-data)')
+    // TASK-013 (C33): the rungs are the result log's "Rounds completed", whose
+    // legend wears the same DS label face as the log's other questions.
+    const rounds = roundsCompleted().querySelector('legend')!
+    expect(rounds).toHaveTextContent('Rounds completed')
+    expect(rounds).toHaveClass('label')
+    expect(screen.getByRole('group', { name: 'Work completed' }).querySelector('legend')).toHaveClass('label')
   })
 
   it('says it is saved inside the card, below the ending it asks for', () => {
@@ -541,9 +587,10 @@ describe('a ladder block is one card of the shared frame', () => {
     const { block, reportOutcome } = mount()
 
     await declare(user, 'Incomplete')
-    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+    await user.click(roundTile('Round 3: 9 reps'))
 
-    expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
+    // TASK-013 (C34): the count says it.
+    expect(roundsCount()).toBe('3 of 5 rounds completed')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 3,
@@ -811,9 +858,10 @@ describe('a scheduled ladder runs on its own clock, restored from wall-clock tim
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, {})
     expect(screen.getByRole('radio', { name: 'Incomplete' })).toHaveAttribute('aria-checked', 'true')
 
-    // How far is the athlete's to say, and is what records a rung.
+    // How far is the athlete's to say, and is what records a rung. TASK-013
+    // (C33, C34): on the log's rep-first tile for that round.
     await declare(user, 'Incomplete')
-    await user.click(screen.getByRole('radio', { name: `${schedule.sequence[2]} reps` }))
+    await user.click(roundTile(`Round 3: ${schedule.sequence[2]} reps`))
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, { highestRung: 3 })
   })
 })
@@ -859,7 +907,10 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
     // Start in its top slot — superseding "no Start at all". Until it is
     // pressed no clock runs and nothing is stored.
     expect(screen.getAllByRole('button', { name: /start/i }).map((button) => button.textContent)).toEqual(['Start ladder'])
+    // TASK-013: the ladder's attempt has its own durable record; nothing is
+    // written under either key before Start.
     expect(storage.getItem('clear.workout-for-time')).toBeNull()
+    expect(storage.getItem('clear.workout-ladders')).toBeNull()
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
     expectNoSetEntry()
 
@@ -873,6 +924,8 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
     for (const row of roundRows()) {
       expect(row).not.toHaveAttribute('aria-current')
       expect(within(row).queryByText(/^(Now|Next)$/)).not.toBeInTheDocument()
+      // TASK-013 (C34): the round is the athlete's to check off; time checks none.
+      expect(within(row).getByRole('button')).toHaveAttribute('aria-pressed', 'false')
     }
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })

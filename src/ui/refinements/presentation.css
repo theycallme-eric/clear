@@ -591,3 +591,88 @@ html[data-reduce-motion] .clr-deadline-edge {
   max-width: 100%;
   overflow-wrap: anywhere;
 }
+
+/* Ordered live ladder progress and its result tiles — LadderRounds' live
+ * check-off, LadderCount and LadderCompletion (TASK-013: C33, C34, C36; R77,
+ * R88, R89, R92, R93, R99, R118). The accepted R6/R7 recipe (`?state=ladder-4`,
+ * `ladder-12`; reference `.clr-ladder-completion`): wrapping tiles in as many
+ * columns as fit — four rungs or twelve, never a horizontal scroller; no tick
+ * glyph on a rung tile (R92), the selected prefix carried by the shared
+ * selected surface and frame plus the explicit count; the result tile's three
+ * rows — round, rep target, unit — each on one line, so every tile of a row
+ * keeps them level whether its target has one digit or two (R93), the target
+ * largest and the round secondary (R99). Tokens only. */
+.clr-ladder-prescription__grid > li > .clr-bleed {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.clr-ladder-prescription__round > svg,
+.clr-ladder-completion__tile > svg {
+  display: none;
+}
+
+.clr-ladder-prescription__round[aria-pressed="true"],
+.clr-ladder-completion__tile[aria-pressed="true"] {
+  --bw: var(--focus-ring-width);
+}
+
+.clr-ladder-completion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.clr-ladder-completion > legend {
+  margin: 0 0 var(--spacing-200);
+  padding: 0;
+}
+
+.clr-ladder-completion__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--control-height) + var(--spacing-500)), 1fr));
+  gap: var(--spacing-200);
+  min-width: 0;
+}
+
+.clr-ladder-completion__tiles > .clr-bleed {
+  display: flex;
+  min-width: 0;
+}
+
+.clr-ladder-completion__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-100);
+  min-width: 0;
+}
+
+.clr-ladder-completion__round,
+.clr-ladder-completion__unit {
+  min-height: var(--label-xs-line-height);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  white-space: nowrap;
+}
+
+.clr-ladder-completion__number {
+  font-size: var(--heading-h3-size);
+  line-height: var(--heading-h3-line-height);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.clr-ladder-completion__status,
+.clr-ladder-completion__partial {
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  color: var(--text-secondary);
+}

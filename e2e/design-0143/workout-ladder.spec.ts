@@ -60,6 +60,12 @@ const CORS = {
 }
 const SESSION_KEY = 'clear.auth.session'
 const FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
+/**
+ * TASK-013 (C36; its adoption of TASK-032's durable attempt): every ladder,
+ * the schedule included, keeps its clock in its own versioned attempt record
+ * under this key, `{ clock: { startedAt, … }, progress, draft, … }` per block.
+ */
+const LADDER_STORAGE_KEY = 'clear.workout-ladders'
 const TITLE = 'TASK-033 timed ladders'
 
 /** Four rounds, a new one every 75 s: the block runs 300 s. */
@@ -563,20 +569,21 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await projectRender(page, testInfo, 'ladders-ready')
 
   // The one tap: start the schedule. Everything after it is the clock's.
+  // TASK-013: the start stamp is the schedule's durable ladder attempt's clock.
   await page.getByRole('button', { name: 'Start schedule', exact: true }).click()
   const scheduleStart = await page.waitForFunction(({ key, blockId }) => {
     const records = JSON.parse(localStorage.getItem(key) ?? '{}') as
-      Record<string, { startedAt: string | null } | undefined>
-    const startedAt = records[blockId]?.startedAt
+      Record<string, { clock?: { startedAt: string | null } } | undefined>
+    const startedAt = records[blockId]?.clock?.startedAt
     return startedAt == null ? null : Date.parse(startedAt)
-  }, { key: FOR_TIME_STORAGE_KEY, blockId: world.blocks.scheduled }).then((handle) => handle.jsonValue() as Promise<number>)
+  }, { key: LADDER_STORAGE_KEY, blockId: world.blocks.scheduled }).then((handle) => handle.jsonValue() as Promise<number>)
   // Only the schedule was started. TASK-006 (AC-R006-01, C18; R66, R67): the
   // free-paced and capped ladders now offer their own Start ladder at the top,
-  // but nothing has pressed it, so neither stores a clock.
-  const freeAndCapped = await page.evaluate(({ key, ids }) => {
+  // but nothing has pressed it, so neither stores a clock — under either key.
+  const freeAndCapped = await page.evaluate(({ keys, ids }) => keys.flatMap((key) => {
     const records = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>
     return ids.filter((id) => id in records)
-  }, { key: FOR_TIME_STORAGE_KEY, ids: [world.blocks.freePaced, world.blocks.capped] })
+  }), { keys: [LADDER_STORAGE_KEY, FOR_TIME_STORAGE_KEY], ids: [world.blocks.freePaced, world.blocks.capped] })
   expect(freeAndCapped).toEqual([])
   await checkA11y()
 
@@ -644,13 +651,15 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await ending(page, 0).getByRole('radio', { name: 'Complete', exact: true }).check()
   await ending(page, 1).getByRole('radio', { name: 'Complete', exact: true }).check()
   await ending(page, 2).getByRole('radio', { name: 'Incomplete', exact: true }).check()
-  const reached = page.getByRole('group', { name: 'How far did you get?', exact: true })
-  // The radio is visually hidden; the rung card that stands for it is its label.
-  await reached.locator('label', {
-    has: page.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true }),
-  }).click()
-  await expect(reached.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true })).toBeChecked()
-  await expect(page.getByText(`Reached rung 2 of 3 — ${CAPPED_RUNGS[1]} reps`, { exact: true })).toBeVisible()
+  // TASK-013 (C33, C34; R88, R99): how far is each answered ladder's result
+  // log "Rounds completed" — rep-first tiles named by round and target, the
+  // prefix pressed and counted — in place of the "How far did you get?" radios.
+  // All three ladders are answered, so the capped one's is the third.
+  const reached = page.getByRole('group', { name: 'Rounds completed', exact: true }).nth(2)
+  const secondRung = reached.getByRole('button', { name: `Round 2: ${CAPPED_RUNGS[1]} reps`, exact: true })
+  await secondRung.click()
+  await expect(secondRung).toHaveAttribute('aria-pressed', 'true')
+  await expect(reached.getByRole('status')).toHaveText('2 of 3 rounds completed')
   await expectHandsOff(page)
   await projectRender(page, testInfo, 'ladders-declared')
 
@@ -664,7 +673,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
     expect(failure.failed()).toBe(1)
     await expect(page.getByText('COMPLETE', { exact: true })).toBeVisible()
     await expect(ending(page, 1).getByRole('radio', { name: 'Complete', exact: true })).toBeChecked()
-    await expect(reached.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true })).toBeChecked()
+    await expect(secondRung).toHaveAttribute('aria-pressed', 'true')
     await dialog.getByRole('button', { name: 'Try again', exact: true }).click()
   } finally {
     await failure.dispose()

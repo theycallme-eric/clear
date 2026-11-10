@@ -19,8 +19,11 @@
  * top slot, then a secondary Pause beside the primary Finish — and its compact
  * truthful prescription (TASK-012: C35): one concise line per movement, then
  * every round as a wrapping tile with the fixed companion in each, through the
- * shared `LadderPrescription` — over memory-only storage
- * (`gallery-refinement-flow.tsx`).
+ * shared `LadderPrescription` — and, once started, its rep-first ordered live
+ * progress and result handoff (TASK-013: C33, C34, C36): the round tiles as
+ * the live check-off with its count, then Finish or the cap importing the
+ * checked prefix into the log's rep-first `LadderCompletion` tiles — over
+ * memory-only storage (`gallery-refinement-flow.tsx`).
  *
  * `urgency`: the whole timer body (TASK-007, C19, C21) drawn by each clock's
  * actual consumer — a movement countdown, the race clock toward its cap, the
@@ -41,8 +44,9 @@
  * (TASK-010: C29, C30) — the route's own `ForTimeBlock` and `LadderBlock`,
  * each ended by Finish and by its cap, then the shared `TimedResultLog`: "Work
  * completed" with Complete beside Incomplete in one row at the route's own
- * starting point, and the three effort faces unanswered, over memory-only
- * storage (`gallery-refinement-forms.tsx`).
+ * starting point — the ladder's with its rep-first "Rounds completed" tiles
+ * (TASK-013), nothing stated — and the three effort faces unanswered, over
+ * memory-only storage (`gallery-refinement-forms.tsx`).
  *
  * `emom`: the EMOM's schedule and end logging without a completion counter
  * (TASK-011: C31, C32) — the route's own `EmomBlock`, every prescribed minute

@@ -854,21 +854,24 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     expect(within(ladderCard()).queryByRole('list', { name: 'Ladder' })).toBeNull()
 
     // Finish with nothing tracked rung by rung: Incomplete, and how far is asked.
+    // TASK-013 (C33, C34): how far is the log's "Rounds completed" — rep-first
+    // tiles, the pressed prefix and its count — in place of the rung radios.
     await finishLadderAfter(user, 200)
     expect(chosen(completionOf(log(ladderCard())))).toEqual(['Incomplete'])
-    const howFar = within(ladderCard()).getByRole('group', { name: 'How far did you get?' })
-    expect(within(howFar).queryAllByRole('radio', { checked: true })).toEqual([])
-    expect(within(ladderCard()).queryByText(/^Reached rung/)).toBeNull()
-    await user.click(within(howFar).getByRole('radio', { name: '6 reps' }))
-    expect(within(ladderCard()).getByText(`Reached rung 3 of ${LADDER_ROUNDS} — 6 reps`)).toBeInTheDocument()
+    const howFar = () => within(ladderCard()).getByRole('group', { name: 'Rounds completed' })
+    const pressedRounds = () => within(howFar()).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')
+    expect(pressedRounds()).toEqual([])
+    expect(within(howFar()).getByRole('status')).toHaveTextContent('No rounds marked yet')
+    await user.click(within(howFar()).getByRole('button', { name: 'Round 3: 6 reps' }))
+    expect(within(howFar()).getByRole('status')).toHaveTextContent(`3 of ${LADDER_ROUNDS} rounds completed`)
 
     // Complete is the athlete's to say, and only then is every rung reached.
     await answer(user, completionOf(log(ladderCard())), 'Complete')
-    expect(within(ladderCard()).queryByRole('group', { name: 'How far did you get?' })).toBeNull()
-    expect(within(ladderCard()).getByText(`Reached rung ${LADDER_ROUNDS} of ${LADDER_ROUNDS} — 8 reps`)).toBeInTheDocument()
+    expect(pressedRounds()).toHaveLength(LADDER_ROUNDS)
+    expect(within(howFar()).getByRole('status')).toHaveTextContent(`${LADDER_ROUNDS} of ${LADDER_ROUNDS} rounds completed`)
     // Back to Incomplete: the rung starts over rather than keeping a guess.
     await answer(user, completionOf(log(ladderCard())), 'Incomplete')
-    expect(within(within(ladderCard()).getByRole('group', { name: 'How far did you get?' })).queryAllByRole('radio', { checked: true })).toEqual([])
+    expect(pressedRounds()).toEqual([])
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     expect(recordedOutcome(first.double, first.ladder.blockId).outcome).toEqual({})
@@ -924,15 +927,15 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     expect(storedRace(first.forTime.blockId)).toMatchObject({ workCompleted: false })
 
     // The reload: the tree goes, the storage stays. The For Time keeps the
-    // athlete's Incomplete — never the clock's Complete. The ladder's answer is
-    // a draft of its renderer (durable ladder drafts are TASK-032): it starts
-    // again where its ended clock puts it, Incomplete, never at every rung.
+    // athlete's Incomplete — never the clock's Complete. TASK-013 (C36; its
+    // adoption of TASK-032's durable attempt) supersedes the ladder's: its
+    // answer is no longer the renderer's memory, so the athlete's Complete
+    // comes back as given rather than starting again at Incomplete.
     first.view.unmount()
     const second = await openResults()
     expect(within(forTimeCard().parentElement!.closest('.clr-stack')!).getByRole('timer', { name: 'Block time' })).toHaveTextContent('01:30')
     expect(chosen(completionOf(log(forTimeCard())))).toEqual(['Incomplete'])
-    expect(chosen(completionOf(log(ladderCard())))).toEqual(['Incomplete'])
-    await answer(user, completionOf(log(ladderCard())), 'Complete')
+    expect(chosen(completionOf(log(ladderCard())))).toEqual(['Complete'])
 
     // The save: one forward action writes both rows.
     await user.click(screen.getByRole('button', { name: 'Next section' }))
@@ -947,9 +950,10 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // Back to the saved section: no longer offered as a choice — there is no
     // correction writer for a saved result, so nothing on screen can drift
     // from the row. The For Time reads its saved answer from its own record.
-    // The ladder's draft left with its section, so it claims no answer at all
-    // rather than a starting point the saved row contradicts (reading the
-    // saved ladder result back is TASK-032 / TASK-048).
+    // The ladder claims no answer at all rather than a draft or starting point
+    // the saved row may contradict: once the server reports its row, the
+    // durable attempt is closed as saved elsewhere (TASK-032; reading the
+    // saved ladder result back is TASK-048).
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByRole('heading', { name: RESULTS_SECTION_TITLE })
     for (const [scope, shown] of [[forTimeCard(), ['Incomplete']], [ladderCard(), []]] as const) {
@@ -1199,8 +1203,10 @@ describe('TASK-010 completion choices and existing effort faces', () => {
         expect(chosen(effortOf(form))).toEqual([])
         if (state.id === 'ladder') {
           // Nothing tracked: how far is asked, and no rung is claimed.
-          expect(within(live).getByRole('group', { name: 'How far did you get?' })).toBeInTheDocument()
-          expect(within(live).queryByText(/^Reached rung/)).toBeNull()
+          // TASK-013 (C33, C34): as the log's rep-first "Rounds completed".
+          const rounds = within(live).getByRole('group', { name: 'Rounds completed' })
+          expect(within(rounds).getByRole('status')).toHaveTextContent('No rounds marked yet')
+          expect(within(rounds).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toEqual([])
         }
       }
       if (state.id === 'for_time') {
@@ -1215,10 +1221,13 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       } else {
         const finish = root.querySelector<HTMLElement>('[data-gallery-race="ladder-finish"]')!
         await answer(user, completionOf(log(liveCard(state.list, finish))), 'Complete')
-        expect(within(liveCard(state.list, finish)).getByText(/^Reached rung 4 of 4/)).toBeInTheDocument()
+        // TASK-013 (C34): the reached reading is the rounds' count.
+        expect(within(within(liveCard(state.list, finish)).getByRole('group', { name: 'Rounds completed' })).getByRole('status'))
+          .toHaveTextContent('4 of 4 rounds completed')
       }
     }
     expect(localStorage.getItem(WORKOUT_FOR_TIME_STORAGE_KEY)).toBeNull()
+    expect(localStorage.getItem('clear.workout-ladders')).toBeNull()
     expect(fetch).not.toHaveBeenCalled()
   })
 })

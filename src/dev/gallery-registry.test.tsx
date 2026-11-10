@@ -104,8 +104,9 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   SetMeasurementRow: 'REQ-009 — the sheet’s Weight / Unit / measure row, drawn only inside it',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
   SupersetBlock: 'EXE-02 — a paired block of a live session, alternated and logged set by set',
-  // EXE-04a. The block is a live For Time section; the rung row it composes is
-  // plain props, so that one *is* framed below.
+  // EXE-04a. The block is a live For Time section; what it composes — its
+  // prescription and, since TASK-013, its rep-first rounds completed — is
+  // plain props, so those *are* framed below.
   LadderBlock:
     'EXE-04a — a For Time ladder of a live session, and it completes through the shell’s provider',
   // EXE-03's circuit. Its whole subject is a position inside a live block —

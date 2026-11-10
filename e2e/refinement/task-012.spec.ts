@@ -457,11 +457,11 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
     // The attempt has ended: the top slot leaves (TASK-006).
     await expect(accepted.locator('[data-timed-actions]')).toHaveCount(0)
 
-    // Answered: Incomplete with no rung (TASK-010), so how far is asked — the
-    // rung row's one appearance before TASK-013 moves it into the log — and
-    // the prescription is unchanged beside it.
-    const howFar = accepted.getByRole('group', { name: 'How far did you get?', exact: true })
-    await expect(howFar.getByRole('radio')).toHaveCount(12)
+    // Answered: Incomplete with no rung (TASK-010), so how far is asked — and
+    // the prescription is unchanged beside it. TASK-013 (C33, C34) moved the
+    // question into the result log as its rep-first "Rounds completed" tiles.
+    const howFar = accepted.getByRole('group', { name: 'Rounds completed', exact: true })
+    await expect(howFar.getByRole('button')).toHaveCount(12)
     const after = await readGrid(accepted)
     expect(words(after)).toEqual(words(before))
     expectCompactGrid(after, 'accepted', 'Workout accepted, answered @phone-390')

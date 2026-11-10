@@ -1327,7 +1327,9 @@ backendTest('motion: one breathing atmosphere, interrupted entries cut, one info
     await tab.click()
     await expect(tab).toHaveAttribute('aria-current', 'step')
   }
-  // The Ladder's rungs are an OverflowRail: contained sideways, every rung reachable.
+  // Any contained sideways scroller with controls keeps every control reachable.
+  // TASK-013 (AC-R013-02; R77): the Ladder's rungs no longer use one — its
+  // rounds and its result tiles wrap — so on this screen none is expected.
   const rail = await page.evaluate(() => {
     const scroller = [...document.querySelectorAll<HTMLElement>('main *')]
       .find((element) => /(auto|scroll)/.test(getComputedStyle(element).overflowX) && element.querySelector('[role="radio"], button'))

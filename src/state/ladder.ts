@@ -197,6 +197,21 @@ export function rungLabel(rung: LadderRung, unit: string): string {
   return unit === '' ? numbers : `${numbers} ${unit}`
 }
 
+/**
+ * TASK-013 (C34, AC-R013-01; R77, R89): one tap on a rung of the ordered
+ * progress, and the rounds completed through after it. A rung outside the
+ * completed prefix selects through it — every rung before it with it,
+ * because "selecting a completed ladder rung marks preceding rungs complete"
+ * (R89); a rung already in the prefix leaves only the rungs before it. The
+ * result is always one contiguous run from the first rung: there is no
+ * non-contiguous completion model, and the rung after the prefix is where any
+ * partial work belongs (`ladderPartialRound`, TASK-030's rule). `null`, nothing
+ * stated yet, is not zero: the first tap states it.
+ */
+export function ladderPrefixAfterTap(rungNumber: number, completedThrough: number | null): number {
+  return completedThrough !== null && rungNumber <= completedThrough ? rungNumber - 1 : rungNumber
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The compact prescription — TASK-012 (C35; R70, R71, R72, R94, R95, R117)
 // ─────────────────────────────────────────────────────────────────────────────

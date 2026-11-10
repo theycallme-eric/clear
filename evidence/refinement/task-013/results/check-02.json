@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-013",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-013.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-013/required-cases.json",
+    "sha256": "55b39552db8b4a3230ddeac533c21fcb9dbfb4a1a798a333d734dac8054d7ee7"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-013.spec.ts",
+      "sha256": "876d98f204285433d67d4f4336df3c66357156ea5f460b24947f9424ab1db54f"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 phone-320 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 phone-390 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 keyboard phone-390 reduced motion: rounds are checked off and corrected by keyboard, the count is announced, Finish with nothing more imports only what was checked, and nothing moves beyond the hard cut",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery phone-390: a reload keeps checked progress and the pause, and keeps the edited log after Finish; the save records the edit once",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 phone-320: the actual ladder renderer checks rounds off live and hands them to its rep-first log, over memory only",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

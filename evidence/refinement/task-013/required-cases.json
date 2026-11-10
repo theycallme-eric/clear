@@ -1,0 +1,115 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-013",
+  "description": "Rep-first ordered live ladder progress and result handoff (REQ-013; C33, C34, C36; R69, R77, R88, R89, R92, R93, R99, R118, R124) delivered through the shared owner src/ui/refinements/ladder.tsx (LadderPrescription / LadderRounds live ordered check-off with its LadderCount, and the rep-first LadderCompletion result tiles), the shared TimedResultLog ladder family, and the route consumer LadderBlock (src/ui/ladder-block.tsx) over TASK-032's durable ladder attempt (usePersistedLadder) on the real /workout route (JOURNEY-013): Start, rounds checked off by touch or keyboard as an ordered prefix with its count and no check glyph, Finish or the cap importing exactly that prefix into the editable end log (never every rung merely because Finish was tapped), rep-first wrapping tiles whose round, target and unit rows stay level for one- and two-digit targets at 320 and 390 without horizontal overflow, the round after the prefix named as where partial work belongs, a reload keeping progress, pause and edits, and the save recording highest_rung alone. Two differently shaped ladders (twelve rungs of kettlebell swing 3-36 reps with a fixed row under one 09:00 cap; four rungs of plank 5-20 sec under a 15:00 cap), an uncapped direct mount and the accepted gallery states /gallery/refinements?state=ladder-4 and ?state=ladder-12 (reference eded158cfd928d382c9a9409e2c372270312741d) drawing the actual LadderBlock. Every declared case must execute and pass; TASK-006's three ladder-named cases in the same file are selected by the pattern and must pass too, but are not declared here.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-013 --check check-01 -- npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C33-01",
+        "AC-C34-01",
+        "AC-C36-01",
+        "AC-R013-01",
+        "AC-R013-02",
+        "AC-R013-03",
+        "JOURNEY-013"
+      ],
+      "files": [
+        "src/ui/timed-workout-flow.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard",
+          "criterion": "AC-C34-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone",
+          "criterion": "AC-R013-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save",
+          "criterion": "AC-C36-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked",
+          "criterion": "AC-R013-03"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)",
+          "criterion": "AC-C33-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer",
+          "criterion": "JOURNEY-013"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
+          "criterion": "JOURNEY-013"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only",
+          "criterion": "JOURNEY-013"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-013 --check check-02 -- npx playwright test e2e/refinement/task-013.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C33-01",
+        "AC-C34-01",
+        "AC-C36-01",
+        "AC-R013-01",
+        "AC-R013-02",
+        "AC-R013-03",
+        "JOURNEY-013"
+      ],
+      "files": [
+        "e2e/refinement/task-013.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-013.spec.ts",
+          "project": "mobile",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 phone-320 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
+          "criterion": "AC-R013-02"
+        },
+        {
+          "file": "e2e/refinement/task-013.spec.ts",
+          "project": "mobile",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 phone-390 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
+          "criterion": "AC-C33-01"
+        },
+        {
+          "file": "e2e/refinement/task-013.spec.ts",
+          "project": "mobile",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 keyboard phone-390 reduced motion: rounds are checked off and corrected by keyboard, the count is announced, Finish with nothing more imports only what was checked, and nothing moves beyond the hard cut",
+          "criterion": "AC-C34-01"
+        },
+        {
+          "file": "e2e/refinement/task-013.spec.ts",
+          "project": "mobile",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery phone-390: a reload keeps checked progress and the pause, and keeps the edited log after Finish; the save records the edit once",
+          "criterion": "AC-C36-01"
+        },
+        {
+          "file": "e2e/refinement/task-013.spec.ts",
+          "project": "mobile",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 phone-320: the actual ladder renderer checks rounds off live and hands them to its rep-first log, over memory only",
+          "criterion": "JOURNEY-013"
+        }
+      ]
+    }
+  }
+}

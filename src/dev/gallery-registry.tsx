@@ -86,8 +86,12 @@ import {
   GroupExerciseCoachingSuperset,
 } from './gallery-refinement-coaching'
 import {
+  LadderCompletionFour,
+  LadderCompletionTwelve,
+  LadderCompletionUnstated,
   LadderPrescriptionFour,
   LadderPrescriptionLoaded,
+  LadderPrescriptionTracking,
   LadderPrescriptionTwelve,
   LadderRoundsReview,
   LadderRoundsScheduled,
@@ -2217,11 +2221,23 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'LadderPrescription',
     requirement: 'REQ-012',
     module: 'src/ui/refinements/ladder.tsx',
-    summary: 'TASK-012 the compact truthful ladder prescription every live ladder draws (C35; R70, R71, R72, R94, R95, R117; V11): one concise line per movement in prescribed order — its name, compact equipment, the whole progression (a constant step as its ends and step, any other sequence as itself) or the fixed companion’s target, and its prescribed load — then every round as a wrapping read-only tile in the ×/· notation with the fixed companion in each. Every name, sequence, unit, load and round count is the block’s own data (ladderProgressionText, ladderRoundReadings); no “same every round” suffix and no long per-round list. Live check-off of whole rounds is TASK-013. The live ladder is /gallery/refinements?state=ladder-4 and ladder-12.',
+    summary: 'TASK-012 the compact truthful ladder prescription every live ladder draws (C35; R70, R71, R72, R94, R95, R117; V11): one concise line per movement in prescribed order — its name, compact equipment, the whole progression (a constant step as its ends and step, any other sequence as itself) or the fixed companion’s target, and its prescribed load — then every round as a wrapping read-only tile in the ×/· notation with the fixed companion in each. Every name, sequence, unit, load and round count is the block’s own data (ladderProgressionText, ladderRoundReadings); no “same every round” suffix and no long per-round list. TASK-013 (C34, R118): while a raced ladder’s clock runs or is paused, its round tiles are the live ordered check-off — each a shared Chip toggle whose pressed state is the completed prefix (a tap selects through it; a tap inside it leaves the rounds before it), no tick glyph, the count beneath. The live ladder is /gallery/refinements?state=ladder-4 and ladder-12.',
     specimens: [
       { state: 'accepted · 4 rounds', note: 'Push up 2 → 8, +2 per round; the fixed 4-rep burpee in every tile.', Render: LadderPrescriptionFour },
       { state: 'accepted · 12 rounds', note: 'The same owner wrapping twelve tiles into rows; no horizontal scroll.', Render: LadderPrescriptionTwelve },
       { state: 'loaded, descending, distance companion', note: '24 kg kettlebell swing 15 → 3, −3 per round, and a fixed 250 m row: read from its own columns.', Render: LadderPrescriptionLoaded },
+      { state: 'live check-off · 12 rounds, 5 completed', note: 'Each round a toggle: the pressed prefix and its count, no tick. Memory only here; the route’s is the ladder’s durable attempt.', Render: LadderPrescriptionTracking },
+    ],
+  },
+  {
+    component: 'LadderCompletion',
+    requirement: 'REQ-013',
+    module: 'src/ui/refinements/ladder.tsx',
+    summary: 'TASK-013 the ladder log’s rep-first result tiles (C33, C34, C36; R69, R77, R88, R89, R92, R93, R99, R118): Rounds completed, one shared Chip toggle per rung named Round 3: 9 reps — the round secondary, the rep target largest, the unit its own row, each row on one line so a row of tiles stays level for one- and two-digit targets — wrapping into as many columns as fit with no sideways scroll and no tick glyph. The selected prefix is pressed and counted (3 of 12 rounds completed; nothing stated reads as its own words, never zero), and the round after it is named as where any partial work belongs. TimedResultLog’s ladder family draws it under Complete / Incomplete; the route imports the live check-off into it at Finish or the cap: /gallery/refinements?state=ladder-4 and ladder-12.',
+    specimens: [
+      { state: '4 rungs · 2 completed', note: 'The prefix pressed, its count, and round 3 named for any partial work.', Render: LadderCompletionFour },
+      { state: '12 rungs · every rung completed', note: 'One- and two-digit targets, rows level, wrapping without a tick.', Render: LadderCompletionTwelve },
+      { state: '12 rungs · nothing stated', note: 'No tile pressed and no count of zero: unreported is not zero.', Render: LadderCompletionUnstated },
     ],
   },
   {
@@ -2976,7 +2992,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'EXE-04a',
     module: 'src/ui/ladder-rungs.tsx',
     summary:
-      'The block’s rep pattern, stated once. Read-only it is data — quiet, square, nothing to tap; once the cap is hit the same rungs become a radio group, named by their target rather than their index, with the choice ticked and said in words. Since TASK-012 the live ladder states its prescription through LadderPrescription, and draws this row only once answered — the reached reading of a Complete and the How far question of an Incomplete — until TASK-013 moves both into its result log.',
+      'The block’s rep pattern, stated once. Read-only it is data — quiet, square, nothing to tap; once the cap is hit the same rungs become a radio group, named by their target rather than their index, with the choice ticked and said in words. Since TASK-012 the live ladder states its prescription through LadderPrescription; TASK-013 moved the reached reading and the How far question into its result log as the rep-first LadderCompletion tiles, so the live ladder no longer draws this row. FormatPreview still reads rungs through it.',
     specimens: [
       { state: 'read-only', Render: LadderRungsReadOnly },
       {
