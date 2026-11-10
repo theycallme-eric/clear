@@ -17,6 +17,14 @@
  * streak lights on that rule. With no pinned footer, an overflowing screen
  * gets a bare lower edge layer: the foot's rule, and the bottom inset beneath
  * it, with no action added. Content that fits gets neither.
+ *
+ * TASK-025 (C52, R24): a screen with both a fixed header and a `pinnedHead`
+ * pins them together as one head, closed by one divider. The header gives up
+ * its own closing rule to the region's (or to the pinned layer's own, with
+ * `pinnedHeadRule={false}`), so the title and the layer beneath it never draw
+ * two rules. The layer stays in the accessibility tree, and the scroller
+ * starts below the whole head, so a focused control scrolled into view is
+ * never under it.
  */
 import {
   isValidElement,
@@ -46,7 +54,10 @@ export interface ScreenProps {
   heading?: ReactNode
   /** Fixed header above the screen; when set, the h1 is its title. */
   header?: ScreenHeader
-  /** Optional transparent layer pinned above this screen's scrolling content. */
+  /**
+   * Optional transparent layer pinned above this screen's scrolling content.
+   * With `header`, it sits under the header and the two share one divider.
+   */
   pinnedHead?: ReactNode
   /** Optional transparent layer pinned below this screen's scrolling content. */
   pinnedFoot?: ReactNode
@@ -149,7 +160,7 @@ export function Screen({
     ) : (
       <>
         <AppHeader {...headerSlots}>{pageTitle}</AppHeader>
-        {pinnedHead}
+        {pinnedHead === undefined ? null : <div className="clr-screen__pinned">{pinnedHead}</div>}
       </>
     )
 

@@ -83,7 +83,9 @@
  * one-workout Recovery toggle apart from them, Place and Notes without helper
  * lines and the fitted MINUTES unit, for a returning athlete and a first
  * workout, over an in-memory draft that sends nothing
- * (`gallery-refinement-scenes.tsx`).
+ * (`gallery-refinement-scenes.tsx`). Since TASK-025 (C52; R24) it also draws
+ * Setup's equipment step as `/onboarding` pins it: the title, the route's own
+ * `SetupProgress` and one divider above its scrolling `SetupStepView`.
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -120,7 +122,7 @@ const REFINEMENT_STATES = [
   { id: 'ladder-long', title: 'Long ladder results · final scrolling', Render: GalleryLadderLongResults },
   { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
   { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
-  { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields', Render: GalleryScreens },
+  { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields · Setup · pinned title, step and progress', Render: GalleryScreens },
 ] as const
 
 export function GalleryRefinements() {

@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -152,6 +155,41 @@ describe('Screen scroll boundaries (B05 REQ-003)', () => {
     expect(head).not.toHaveAttribute('data-rule')
     expect(region.querySelectorAll(':scope > .clr-scroll-region__streak')).toHaveLength(2)
     expect(region.querySelector('.clr-scroll-region__scroller header')).toBeNull()
+  })
+
+  it('TASK-025 pins a header and a pinned layer together as one head closed by one divider', () => {
+    const { container } = renderWithProviders(
+      <Screen title="Titled" header={{}} pinnedHead={<p>Step 1 of 5</p>}>
+        <p>Body</p>
+      </Screen>,
+    )
+
+    const region = container.querySelector('main > .clr-scroll-region')!
+    const head = region.querySelector(':scope > .clr-scroll-region__head')!
+    const header = head.querySelector(':scope > header')!
+    const pinned = head.querySelector<HTMLElement>(':scope > .clr-screen__pinned')!
+    expect(header.querySelector('h1')).toHaveTextContent('Titled')
+    expect(pinned).toHaveTextContent('Step 1 of 5')
+    expect(header.nextElementSibling).toBe(pinned)
+    // One divider: the head's own rule, under the layer; the header gives up its rule.
+    expect(head).toHaveAttribute('data-rule')
+    const shell = readFileSync(resolve(import.meta.dirname, '../styles/shell.css'), 'utf8')
+    expect(shell).toMatch(
+      /\.clr-scroll-region__head > header:has\(\+ \.clr-screen__pinned\) \{\s*border-bottom: 0;\s*\}/,
+    )
+    expect(region.querySelector('.clr-scroll-region__scroller')).not.toContainElement(pinned)
+    expect(region.querySelectorAll(':scope > .clr-scroll-region__streak')).toHaveLength(2)
+  })
+
+  it('TASK-025 lets a pinned layer that draws its own rule close the shared head instead', () => {
+    const { container } = renderWithProviders(
+      <Screen title="Titled" header={{}} pinnedHead={<nav aria-label="Views">Recent</nav>} pinnedHeadRule={false}>
+        <p>Body</p>
+      </Screen>,
+    )
+    const head = container.querySelector('main > .clr-scroll-region > .clr-scroll-region__head')!
+    expect(head).not.toHaveAttribute('data-rule')
+    expect(head.querySelector(':scope > .clr-screen__pinned > nav')).not.toBeNull()
   })
 
   it('emits no top streak for a screen without a header or pinned head', () => {

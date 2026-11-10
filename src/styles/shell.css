@@ -121,6 +121,18 @@ body,
   border-bottom: var(--border-width) solid var(--border-region-rule);
 }
 
+/* TASK-025 (C52, R24): a pinned layer under the fixed header (Screen's
+   `pinnedHead`, e.g. Setup's step and progress) joins it as one head. The
+   header gives its closing rule to the head's one divider beneath the layer,
+   and the layer keeps the header's side insets and closing gap. */
+.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header:has(+ .clr-screen__pinned) {
+  border-bottom: 0;
+}
+
+.clr-screen > .clr-scroll-region > .clr-scroll-region__head > .clr-screen__pinned {
+  padding: 0 var(--shell-inset-right) var(--spacing-300) var(--shell-inset-left);
+}
+
 /* REQ-001: the page title is the header's title, in the h1's own display
    type. A long title wraps beside the actions instead of pushing them off. */
 .clr-scroll-region__head > header .clr-screen__title {

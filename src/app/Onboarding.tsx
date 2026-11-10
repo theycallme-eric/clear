@@ -104,6 +104,27 @@ type Commit =
 
 type Direction = 'forward' | 'back'
 
+/** The header every Setup state shares: its title is the screen's h1. */
+const SETUP_HEADER = {}
+
+/**
+ * TASK-025 (C52, R24): the step label and its progress, pinned with the
+ * Set up CLEAR title in Screen's one head and closed by its one divider, while
+ * the step's card (the equipment list on the first step) scrolls below. It is
+ * the shared `Progress`, still a named progressbar with its visible label —
+ * pinned, never hidden.
+ */
+export function SetupProgress({ step }: { readonly step: OnboardingStep }) {
+  const number = stepNumber(step)
+  return (
+    <Progress
+      value={number}
+      max={ONBOARDING_STEPS.length}
+      label={`Step ${number} of ${ONBOARDING_STEPS.length}`}
+    />
+  )
+}
+
 export function Onboarding() {
   const { user } = useAuth()
   const userData = useUserData()
@@ -162,7 +183,7 @@ export function Onboarding() {
 
   if (commit.status === 'committing') {
     return (
-      <Screen title={ONBOARDING_TITLE}>
+      <Screen title={ONBOARDING_TITLE} header={SETUP_HEADER}>
         <LoadingView label={COMMITTING_LABEL} />
       </Screen>
     )
@@ -171,6 +192,8 @@ export function Onboarding() {
   return (
     <Screen
       title={ONBOARDING_TITLE}
+      header={SETUP_HEADER}
+      pinnedHead={<SetupProgress step={step} />}
       pinnedFoot={
         <PhoneFooter>
           {/* U03: equivalent actions share one size; the forward step is the
@@ -216,51 +239,44 @@ export function Onboarding() {
         </PhoneFooter>
       }
     >
-      <div className="clr-stack">
-        <Progress
-          value={stepNumber(step)}
-          max={ONBOARDING_STEPS.length}
-          label={`Step ${stepNumber(step)} of ${ONBOARDING_STEPS.length}`}
-        />
-
-        <div
-          // Keyed so each step enters on its own; never a full-screen replay.
-          key={step}
-          className={direction === 'forward' ? 'route-enter-forward' : 'route-enter-back'}
+      <div
+        // Keyed so each step enters on its own; never a full-screen replay.
+        key={step}
+        className={direction === 'forward' ? 'route-enter-forward' : 'route-enter-back'}
+      >
+        <Card
+          heading={STEP_TITLES[step]}
+          role={failed || refusal !== null ? 'urgency' : undefined}
         >
-          <Card
-            heading={STEP_TITLES[step]}
-            role={failed || refusal !== null ? 'urgency' : undefined}
-          >
-            <div className="clr-stack">
-              {commit.status === 'failed' && failed && (
-                <>
-                  <ErrorView error={commit.error} title={COMMIT_FAILED_TITLE} />
-                  <p style={{ margin: 0 }}>{COMMIT_FAILED_MESSAGE}</p>
-                </>
-              )}
-              <StepView step={step} draft={draft} dispatch={dispatch} />
-              {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
-              {refusal !== null && (
-                <p role="alert" style={{ margin: 0 }}>
-                  {refusal}
-                </p>
-              )}
-            </div>
-          </Card>
-        </div>
+          <div className="clr-stack">
+            {commit.status === 'failed' && failed && (
+              <>
+                <ErrorView error={commit.error} title={COMMIT_FAILED_TITLE} />
+                <p style={{ margin: 0 }}>{COMMIT_FAILED_MESSAGE}</p>
+              </>
+            )}
+            <SetupStepView step={step} draft={draft} dispatch={dispatch} />
+            {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
+            {refusal !== null && (
+              <p role="alert" style={{ margin: 0 }}>
+                {refusal}
+              </p>
+            )}
+          </div>
+        </Card>
       </div>
     </Screen>
   )
 }
 
-interface StepProps {
+export interface SetupStepProps {
   readonly step: OnboardingStep
   readonly draft: OnboardingDraft
   readonly dispatch: (action: OnboardingAction) => void
 }
 
-function StepView({ step, draft, dispatch }: StepProps) {
+/** One step's controls, inside its card. Exported for the accepted gallery state. */
+export function SetupStepView({ step, draft, dispatch }: SetupStepProps) {
   switch (step) {
     case 'location':
       return (
