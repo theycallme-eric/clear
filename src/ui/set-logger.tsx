@@ -939,6 +939,13 @@ function measureField(
  *   · nothing requires both movements. The action waits only for one movement
  *     to log, and an unreadable field refuses the round where it is.
  *
+ * TASK-017 (C47, R112): the sheet draws no instruction above the movements —
+ * the added paragraph on ticking performed movements and on blank fields is
+ * removed and nothing replaces it; every rule above is unchanged. (C05, R111): each movement is one complete movement group of the
+ * shared logging rhythm (`clr-logging-movement`) — identity, Performed,
+ * measurements and effort together — and the second sits slightly further
+ * from the first than the fields inside either.
+ *
  * Every movement in a round logs the same set number — the round's — so a
  * partner that missed a round keeps a gap at that number rather than having
  * its next result slide into it.
@@ -1063,7 +1070,6 @@ export function SupersetRoundSheet({
       setNumber={round}
       entryName={`round ${round}`}
       formLabel={`Log round ${round} of ${parts.map((part) => part.name).join(' and ')}`}
-      context="Tick each movement you performed. A blank field is saved as not recorded."
       measures={readings.map(({ part, entry, reading }) => {
         // Entering a result identifies this movement. Clearing a suggestion or
         // the last entered result does not identify a performance with no
@@ -1094,7 +1100,7 @@ export function SupersetRoundSheet({
             key={part.exercise.exerciseId}
             role="group"
             aria-label={`${part.ordinal} ${part.name}, set ${round}`}
-            className="clr-stack clr-stack--tight"
+            className="clr-stack clr-stack--tight clr-logging-movement"
           >
             <p style={ROUND_MOVEMENT_STYLE}>
               {[`${part.ordinal} ${part.name}`, prescriptionText(prescription)].join(' · ')}

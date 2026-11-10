@@ -43,25 +43,52 @@
  * top alignment and the backdrop were also measured in Chromium (TASK-016
  * progress note); jsdom proves the declared recipe and the behaviour.
  *
+ * TASK-017 (REQ-017; C05, C42, C47; R108, R109, R111, R112, R131; AC-C05-01,
+ * AC-C42-01, AC-C47-01, AC-R017-01–03; TASK-AC-0C1431FDDA19,
+ * TASK-AC-9B1E8E32EE3B, TASK-AC-582934B08D11) shares this file too: the
+ * shared movement-group and label/control rhythm contracts (tokens.css
+ * `--logging-label-gap`, `--logging-count-gap`, `--logging-movement-gap`,
+ * `--logging-movement-field-gap`; presentation.css `.clr-logging-movement`
+ * and the legend rhythm of `.clr-timed-log`, `.clr-accepted-log` and
+ * `.clr-logging-movement`) and the removal of the superset's added helper
+ * paragraph, at the shared-component boundary with representative consumers
+ * (the shared `TimedResultLog`'s For Time and ladder logs inline and in the
+ * frame, the superset's `SupersetRoundSheet`, the frame's Workout feedback
+ * specimen) and the accepted `?state=for_time`. Its cases sit in their own
+ * describe block, whose name carries "group", and each case name carries
+ * "group", "spacing" or "helper" and none of TASK-018's or TASK-016's words,
+ * so TASK-017's check-01 (`--testNamePattern "group|spacing|helper"`) selects
+ * them and neither of the other checks does. jsdom has no layout, so the
+ * spacing is read from the cascade: every rule of the stylesheets that reach
+ * these elements (Foundation, the effort row's and the presentation recipe) is
+ * matched against the rendered element, the winner taken by specificity and
+ * order, and its variable resolved through tokens.css to Foundation's spacing
+ * step. Provider acceptance only: TASK-043–046 move the routes' logging
+ * moments into the frame, and TASK-041 owns JOURNEY-017's full-route closure.
+ *
  * Synthetic data only: memory controllers, no account, no network, no writer.
  */
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { parse, type Rule } from 'postcss'
-import { useState, type ReactNode } from 'react'
+import { parse, type Declaration, type Rule } from 'postcss'
+import { useMemo, useState, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { GalleryRefinements } from '../dev/gallery-refinements'
+import { SUPERSET_BLOCK } from '../dev/gallery-refinement-cards-data'
 import { galleryLadderProgress } from '../dev/gallery-refinement-flow-data'
+import { CAPPED_SAMPLE_FOR_TIME, galleryAmrapProgress, galleryTimedProgress } from '../dev/gallery-refinement-forms-data'
 import { LoggingOverlayWorkoutFeedback } from '../dev/gallery-refinement-forms'
 import { Button, Input } from '../design-system/index'
 import { ladderRungs, ladderUnit } from '../state/ladder'
 import { ladderPartialRound } from '../state/ladder-recovery'
+import { SetLoggingContext, type SetLoggingApi } from '../state/set-logging'
 import { MovementCountdown } from './movement-countdown'
+import { SupersetRoundSheet, type RoundDraft } from './set-logger'
 import {
   LOGGING_OVERLAY_CLOSE_LABEL,
   LOGGING_VISIBLE_HEIGHT,
@@ -1059,6 +1086,474 @@ describe('TASK-016 LoggingOverlay — selected dialog, header, backdrop and clos
       act(() => void fireEvent(dialog, new Event('cancel', { cancelable: true })))
       expect(dialog.open).toBe(false)
       expect(document.activeElement).toBe(opener)
+      expect(fetch).not.toHaveBeenCalled()
+    },
+    HEAVY,
+  )
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-017 — movement groups and label/control rhythm
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SET_EFFORT_CSS = readFileSync(resolve(ROOT, 'src/ui/set-effort.css'), 'utf8')
+
+/** Every top-level rule that can reach a logging form's elements, in load order. */
+const CASCADE: readonly Rule[] = [FOUNDATION_CSS, SET_EFFORT_CSS, PRESENTATION_CSS]
+  .flatMap((css) => rulesOf(css))
+  .filter((rule) => rule.parent?.type === 'root')
+
+type Longhand = 'margin-block-start' | 'margin-block-end' | 'row-gap'
+
+/** The value one declaration gives a longhand, shorthands included (horizontal writing mode). */
+function longhandOf(decl: { prop: string; value: string }, property: Longhand): string | undefined {
+  const value = normalise(decl.value)
+  const parts = splitTopLevel(value, ' ')
+  if (decl.prop === property) return value
+  switch (decl.prop) {
+    case 'margin':
+      if (property === 'margin-block-start') return parts[0]
+      if (property === 'margin-block-end') return parts[2] ?? parts[0]
+      return undefined
+    case 'margin-block':
+      if (property === 'margin-block-start') return parts[0]
+      if (property === 'margin-block-end') return parts[1] ?? parts[0]
+      return undefined
+    case 'margin-top':
+      return property === 'margin-block-start' ? value : undefined
+    case 'margin-bottom':
+      return property === 'margin-block-end' ? value : undefined
+    case 'gap':
+      return property === 'row-gap' ? parts[0] : undefined
+    default:
+      return undefined
+  }
+}
+
+/**
+ * The cascaded value of one longhand on a rendered element: the inline style,
+ * else the most specific matching rule, the later one on a tie. `null` when
+ * nothing declares it (the initial value: no margin, no gap).
+ */
+function cascaded(element: Element, property: Longhand): string | null {
+  const inline = element.getAttribute('style')
+  if (inline) {
+    let found: string | undefined
+    parse(`x{${inline}}`).walkDecls((decl: Declaration) => {
+      found = longhandOf(decl, property) ?? found
+    })
+    if (found !== undefined) return found
+  }
+  let best: { value: string; specificity: Specificity; order: number } | null = null
+  CASCADE.forEach((rule, order) => {
+    let value: string | undefined
+    rule.walkDecls((decl) => {
+      value = longhandOf(decl, property) ?? value
+    })
+    if (value === undefined) return
+    for (const selector of rule.selectors) {
+      if (selector.includes('::')) continue
+      let matches = false
+      try {
+        matches = element.matches(selector)
+      } catch {
+        continue
+      }
+      if (!matches) continue
+      const weight = specificity(selector)
+      if (best === null || compare(weight, best.specificity) > 0 || (compare(weight, best.specificity) === 0 && order >= best.order)) {
+        best = { value, specificity: weight, order }
+      }
+    }
+  })
+  return best === null ? null : (best as { value: string }).value
+}
+
+/** The custom properties declared on `:root` by Foundation and then the refinement tokens. */
+const ROOT_VARIABLES = (() => {
+  const variables = new Map<string, string>()
+  for (const css of [FOUNDATION_CSS, TOKENS_CSS]) {
+    for (const rule of rulesOf(css)) {
+      if (rule.parent?.type !== 'root' || !rule.selectors.includes(':root')) continue
+      rule.walkDecls((decl) => {
+        if (decl.prop.startsWith('--')) variables.set(decl.prop, normalise(decl.value))
+      })
+    }
+  }
+  return variables
+})()
+
+/** A spacing value resolved through tokens.css to Foundation's step, then to CSS px. */
+function px(value: string | null): number {
+  if (value === null || value === '0' || value === '0px') return 0
+  const variable = /^var\((--[\w-]+)\)$/.exec(value)
+  if (variable) {
+    const next = ROOT_VARIABLES.get(variable[1])
+    if (next === undefined) throw new Error(`${variable[1]} is not declared on :root`)
+    return px(next)
+  }
+  const length = /^(\d+(?:\.\d+)?)px$/.exec(value)
+  if (length) return Number(length[1])
+  throw new Error(`not a spacing token: ${value}`)
+}
+
+/** The Foundation spacing step a refinement variable resolves to. */
+function foundationStep(name: string): string | undefined {
+  let value = ROOT_VARIABLES.get(name)
+  for (let hop = 0; value !== undefined && hop < 4; hop += 1) {
+    const variable = /^var\((--[\w-]+)\)$/.exec(value)
+    if (variable === null) return undefined
+    if (/^--spacing-\d+$/.test(variable[1])) return variable[1]
+    value = ROOT_VARIABLES.get(variable[1])
+  }
+  return undefined
+}
+
+/** The space a label leaves above its control, as a field or a choice draws it. */
+function labelGap(legend: HTMLElement): number {
+  return px(cascaded(legend, 'margin-block-end'))
+}
+
+/** The distance a flex column puts between two adjacent items: its gap plus the second's own margin. */
+function spaceBefore(item: HTMLElement): number {
+  return px(cascaded(item.parentElement!, 'row-gap')) + px(cascaded(item, 'margin-block-start'))
+}
+
+/** The For Time race run into its cap, answered Incomplete: each movement's round-1 amount and the wall ball's load. */
+function IncompleteForTimeConsumer() {
+  const [block] = useState(() => galleryTimedProgress(CAPPED_SAMPLE_FOR_TIME, 171))
+  const [value, setValue] = useState<CompletionResult>({ completed: false, effort: null })
+  const [entries, setEntries] = useState<MovementEntryLog['values']>({})
+  return (
+    <TimedResultLog
+      format="for_time"
+      value={value}
+      onChange={setValue}
+      movements={{
+        exercises: block.exercises,
+        partialRound: 1,
+        weightUnit: 'kg',
+        values: entries,
+        onChange: (exerciseId, next) => setEntries((current) => ({ ...current, [exerciseId]: next })),
+      }}
+    />
+  )
+}
+
+/** The ladder's result log, Incomplete through `through`, with its rung tiles and count. */
+function LadderResultConsumer({ rounds, through }: { rounds: 4 | 12; through: number | null }) {
+  const [block] = useState(() => galleryLadderProgress(rounds))
+  const rungs = ladderRungs(block.exercises)
+  const [value, setValue] = useState<CompletionResult>({ completed: false, effort: null })
+  const [completedThrough, setThrough] = useState<number | null>(through)
+  return (
+    <TimedResultLog
+      format="ladder"
+      value={value}
+      onChange={setValue}
+      rounds={{
+        rungs,
+        unit: ladderUnit(block.exercises),
+        completedThrough,
+        partialRound: ladderPartialRound(completedThrough, rungs.length),
+        onChange: setThrough,
+      }}
+    />
+  )
+}
+
+/** The superset's one Log round over a memory set-logging seam: the loaded long-named lift and the bodyweight push up. */
+function SupersetRoundConsumer({ logSet }: { logSet: SetLoggingApi['logSet'] }) {
+  const [block] = useState(() => galleryAmrapProgress(SUPERSET_BLOCK, 172))
+  const [held, setHeld] = useState<RoundDraft | null>(null)
+  const api = useMemo<SetLoggingApi>(
+    () => ({
+      weightUnit: 'kg',
+      logSet,
+      loggedSets: () => [],
+      isSaving: () => false,
+      sync: { unsyncedCount: 0, sustainedFailure: false, syncing: false },
+      retrySync() {},
+    }),
+    [logSet],
+  )
+  return (
+    <SetLoggingContext value={api}>
+      <SupersetRoundSheet
+        movements={block.exercises.map((exercise) => ({ exercise, ordinal: `A${exercise.position}` }))}
+        round={1}
+        held={held}
+        onHeld={setHeld}
+        onCollapse={() => {}}
+      />
+    </SetLoggingContext>
+  )
+}
+
+const SUPERSET_FORM = /^Log round 1 of /
+const LIFT_GROUP = 'A1 single arm kettlebell overhead reverse lunge to knee drive, set 1'
+const PARTNER_GROUP = 'A2 push up, set 1'
+
+/** The removed R112 paragraph, sentence by sentence. */
+const REMOVED_HELPER = ['Tick each movement you performed', 'A blank field is saved as not recorded']
+
+const movementGroupsOf = (form: Element) => [...form.querySelectorAll<HTMLElement>('.clr-timed-log__group--movement')]
+
+describe('TASK-017 movement groups and label/control rhythm', () => {
+  it(
+    'AC-C05-01 AC-R017-02 TASK-AC-9B1E8E32EE3B group: a timed log keeps each complete movement group together — its name, amount and load at the inner field gap — and sets two complete groups slightly further apart than any other section, inline and in the logging frame',
+    () => {
+      // The variables: the reference's movement gap is the extra space between
+      // two complete groups; inside one, the fields sit at the field gap.
+      expect(foundationStep('--logging-movement-gap')).toBe('--spacing-300')
+      expect(foundationStep('--logging-movement-field-gap')).toBe('--spacing-300')
+      expect(foundationStep('--logging-section-gap')).toBe('--spacing-600')
+
+      for (const framed of [false, true]) {
+        render(framed ? <Harness title="Log results"><IncompleteForTimeConsumer /></Harness> : <IncompleteForTimeConsumer />)
+        const form = document.querySelector<HTMLFormElement>('form.clr-timed-log')!
+        const groups = movementGroupsOf(form)
+        expect(groups.map((group) => within(group).getByRole('heading').textContent)).toEqual(['wall ball', 'burpee'])
+
+        for (const group of groups) {
+          // One complete group: the movement's name heads it and every field it owns is inside it.
+          expect(group).toHaveClass('clr-logging-movement')
+          const name = within(group).getByRole('heading').textContent!
+          for (const field of within(group).getAllByRole('spinbutton')) {
+            expect(field.getAttribute('aria-label')).toContain(name)
+          }
+          expect(px(cascaded(group, 'row-gap'))).toBe(12)
+        }
+        expect(within(groups[0]).getAllByRole('spinbutton').map((field) => field.getAttribute('aria-label'))).toEqual(['Completed · wall ball', 'Weight · wall ball'])
+        expect(within(groups[1]).getAllByRole('spinbutton').map((field) => field.getAttribute('aria-label'))).toEqual(['Completed · burpee'])
+
+        // Between sections: the log's section gap. Between two complete
+        // movement groups: that and the movement gap — slightly more, never
+        // a field-by-field spreading.
+        const sections = [...form.children] as HTMLElement[]
+        const result = sections[0]
+        const effort = sections.at(-1)!
+        expect(result).not.toHaveClass('clr-logging-movement')
+        expect(spaceBefore(groups[0])).toBe(24)
+        expect(spaceBefore(groups[1])).toBe(36)
+        expect(spaceBefore(effort)).toBe(24)
+        expect(within(effort).getByRole('radiogroup')).toBeInTheDocument()
+        const inside = px(cascaded(groups[0], 'row-gap'))
+        expect(inside).toBeLessThan(spaceBefore(groups[0]))
+        expect(spaceBefore(groups[1]) - spaceBefore(groups[0])).toBe(12)
+        cleanup()
+      }
+    },
+    HEAVY,
+  )
+
+  it(
+    'AC-C05-01 AC-R017-02 group: the superset round’s complete movement-entry groups — name and prescription, Performed, weight/unit/reps and effort — each stay one group, and the second sits the shared movement gap further from the first',
+    () => {
+      render(<SupersetRoundConsumer logSet={vi.fn()} />)
+      const form = screen.getByRole('form', { name: SUPERSET_FORM })
+      const lift = within(form).getByRole('group', { name: LIFT_GROUP })
+      const partner = within(form).getByRole('group', { name: PARTNER_GROUP })
+
+      // Each group holds its own identity line, Performed, measures and effort.
+      expect(within(lift).getByText(/^A1 single arm kettlebell overhead reverse lunge to knee drive · /)).toBeInTheDocument()
+      expect(within(lift).getByRole('checkbox', { name: 'Performed' })).toBeInTheDocument()
+      expect(within(lift).getByLabelText('Weight')).toBeInTheDocument()
+      expect(within(lift).getByLabelText('Reps')).toBeInTheDocument()
+      expect(within(lift).getByRole('group', { name: 'Effort' })).toBeInTheDocument()
+      expect(within(partner).getByText(/^A2 push up · /)).toBeInTheDocument()
+      expect(within(partner).getByRole('checkbox', { name: 'Performed' })).toBeInTheDocument()
+      expect(within(partner).getByLabelText('Reps')).toBeInTheDocument()
+      expect(within(partner).getByRole('group', { name: 'Effort' })).toBeInTheDocument()
+
+      // Siblings in the form, each a complete movement group.
+      expect(lift.parentElement).toBe(form)
+      expect(partner.previousElementSibling).toBe(lift)
+      for (const group of [lift, partner]) expect(group).toHaveClass('clr-logging-movement')
+
+      const inside = px(cascaded(lift, 'row-gap'))
+      expect(inside).toBe(8)
+      expect(px(cascaded(lift, 'margin-block-start'))).toBe(0)
+      expect(cascaded(partner, 'margin-block-start')).toBe('var(--logging-movement-gap)')
+      expect(spaceBefore(partner)).toBe(20)
+      expect(spaceBefore(partner)).toBeGreaterThan(inside)
+    },
+    HEAVY,
+  )
+
+  it(
+    'AC-C47-01 AC-R017-03 helper: the superset round no longer draws the “Tick each movement you performed. A blank field is saved as not recorded.” paragraph or any replacement prose, and Performed still decides what is logged — unticked logs nothing, ticked with a blank field logs it unmeasured',
+    async () => {
+      const user = userEvent.setup()
+      const logSet = vi.fn<SetLoggingApi['logSet']>()
+      render(<SupersetRoundConsumer logSet={logSet} />)
+      const sheet = screen.getByRole('heading', { name: 'Log round 1' }).closest('section')!
+      const form = within(sheet).getByRole('form', { name: SUPERSET_FORM })
+
+      for (const sentence of REMOVED_HELPER) expect(sheet).not.toHaveTextContent(sentence)
+      expect(sheet).not.toHaveTextContent(/\btick\b|\bblank\b|not recorded/i)
+      // The only paragraphs left are each movement's own identity line: no
+      // instruction took the helper's place, above the form or inside it.
+      expect([...sheet.querySelectorAll('p')].map((paragraph) => paragraph.textContent)).toEqual([
+        expect.stringMatching(/^A1 single arm kettlebell overhead reverse lunge to knee drive · /),
+        expect.stringMatching(/^A2 push up · /),
+      ])
+      const submit = within(form).getByRole('button', { name: 'Log round 1' })
+      expect(submit).toBeDisabled()
+
+      // Ticked with its suggested reps cleared: performed, and unmeasured.
+      const partner = within(within(form).getByRole('group', { name: PARTNER_GROUP }))
+      await user.click(partner.getByRole('checkbox', { name: 'Performed' }))
+      await user.clear(partner.getByLabelText('Reps'))
+      expect(submit).toBeEnabled()
+      await user.click(submit)
+
+      expect(logSet).toHaveBeenCalledTimes(1)
+      const block = galleryAmrapProgress(SUPERSET_BLOCK, 172)
+      const [exerciseId, performed] = logSet.mock.calls[0]
+      expect(exerciseId).toBe(block.exercises[1].exerciseId)
+      // Blank is not recorded: no measurement at all, never a zero. The
+      // unticked lift, with its suggestion still in its fields, logs nothing.
+      expect(performed).toEqual({ setNumber: 1 })
+      expect(logSet.mock.calls.some(([id]) => id === block.exercises[0].exerciseId)).toBe(false)
+    },
+    HEAVY,
+  )
+
+  it(
+    'AC-C47-01 AC-R017-03 helper: the removed sentence is gone from every shipped source — no component, gallery state, register entry or spec draws or expects it',
+    () => {
+      const offenders: string[] = []
+      const walk = (directory: string) => {
+        for (const entry of readdirSync(directory, { withFileTypes: true })) {
+          const path = join(directory, entry.name)
+          if (entry.isDirectory()) {
+            if (entry.name !== 'node_modules') walk(path)
+            continue
+          }
+          if (!/\.(tsx?|css|json|md)$/.test(entry.name)) continue
+          if (path === resolve(ROOT, 'src/ui/logging-overlay.test.tsx')) continue
+          const text = readFileSync(path, 'utf8')
+          if (REMOVED_HELPER.some((sentence) => text.includes(sentence))) offenders.push(relative(ROOT, path))
+        }
+      }
+      for (const directory of ['src', 'e2e']) walk(resolve(ROOT, directory))
+      expect(offenders).toEqual([])
+      // The superset still offers its own words: the Performed tick and the per-movement fields.
+      expect(readFileSync(resolve(ROOT, 'src/ui/set-logger.tsx'), 'utf8')).toMatch(/label="Performed"/)
+    },
+    HEAVY,
+  )
+
+  it(
+    'AC-C42-01 AC-R017-01 TASK-AC-0C1431FDDA19 spacing: every choice legend — Work completed, Effort · optional, a superset movement’s Effort and Workout feedback’s feeling — takes the label gap, the same space the log’s labelled count field leaves between its label and control',
+    async () => {
+      // One label gap, the accepted field rhythm: the same Foundation step the
+      // log's own labelled field (the framed count) keeps between its label
+      // and its control.
+      expect(foundationStep('--logging-label-gap')).toBe('--spacing-200')
+      const fieldGap = px(declarations(PRESENTATION_CSS, '.clr-timed-field').get('gap') ?? null)
+      expect(declarations(PRESENTATION_CSS, '.clr-timed-field').get('gap')).toBe('var(--spacing-200)')
+      expect(fieldGap).toBe(8)
+      expect(px('var(--logging-label-gap)')).toBe(fieldGap)
+
+      // Inline in a card and held in the frame alike.
+      for (const framed of [false, true]) {
+        render(framed ? <Harness title="Log results"><IncompleteForTimeConsumer /></Harness> : <IncompleteForTimeConsumer />)
+        const form = document.querySelector<HTMLFormElement>('form.clr-timed-log')!
+        const legends = [...form.querySelectorAll<HTMLElement>('fieldset > legend')]
+        expect(legends.map((legend) => legend.textContent)).toEqual(['Work completed', 'Effort · optional'])
+        for (const legend of legends) {
+          expect(cascaded(legend, 'margin-block-end')).toBe('var(--logging-label-gap)')
+          expect(labelGap(legend)).toBe(fieldGap)
+        }
+        cleanup()
+      }
+
+      // A superset movement's effort, in its complete movement group.
+      render(<SupersetRoundConsumer logSet={vi.fn()} />)
+      for (const legend of document.querySelectorAll<HTMLElement>('.clr-logging-movement fieldset > legend')) {
+        expect(legend).toHaveTextContent('Effort')
+        expect(labelGap(legend)).toBe(fieldGap)
+      }
+      expect(document.querySelectorAll('.clr-logging-movement fieldset > legend')).toHaveLength(2)
+      cleanup()
+
+      // Any form the logging frame holds: the Workout feedback specimen's feeling.
+      const user = userEvent.setup()
+      render(<LoggingOverlayWorkoutFeedback />)
+      await user.click(screen.getByRole('button', { name: 'Open workout feedback' }))
+      const dialog = document.querySelector<HTMLDialogElement>('dialog.clr-accepted-log')!
+      const feeling = [...dialog.querySelectorAll<HTMLElement>('fieldset > legend')]
+      expect(feeling).toHaveLength(1)
+      expect(labelGap(feeling[0])).toBe(fieldGap)
+    },
+    HEAVY,
+  )
+
+  it(
+    'AC-C42-01 AC-R017-01 spacing: the ladder log keeps its good Rounds completed heading gap and gives the dynamic count its own breathing room after the last row of tiles, for four and twelve rounds',
+    () => {
+      expect(foundationStep('--logging-count-gap')).toBe('--spacing-400')
+      for (const [rounds, through, count] of [[4, null, 'No rounds marked yet'], [12, 7, '7 of 12 rounds completed']] as const) {
+        render(<LadderResultConsumer rounds={rounds} through={through} />)
+        const group = screen.getByRole('group', { name: 'Rounds completed' })
+        const legend = group.querySelector<HTMLElement>(':scope > legend')!
+        const tiles = group.querySelector<HTMLElement>('.clr-ladder-completion__tiles')!
+        const status = within(group).getByRole('status')
+
+        // The heading gap the owner called good is the ladder's own, unchanged.
+        expect(cascaded(legend, 'margin-block-end')).toBe('var(--spacing-200)')
+        expect(labelGap(legend)).toBe(8)
+        expect(within(group).getAllByRole('button')).toHaveLength(rounds)
+
+        // The count: its own, wider gap after the tiles' last row, distinct
+        // from the label gap, and still the truthful count.
+        expect(status).toHaveTextContent(count)
+        expect(status.previousElementSibling).toBe(tiles)
+        expect(cascaded(status, 'margin-block-start')).toBe('var(--logging-count-gap)')
+        expect(spaceBefore(status)).toBe(16)
+        expect(spaceBefore(status)).toBeGreaterThan(labelGap(legend))
+        // The partial round's line stays where it was under the count.
+        const partial = group.querySelector<HTMLElement>('.clr-ladder-completion__partial')
+        if (partial !== null) expect(spaceBefore(partial)).toBe(8)
+        expect(partial !== null).toBe(through !== null)
+
+        // The completion question in the same log takes the label gap.
+        const completion = screen.getByRole('group', { name: 'Work completed' }).querySelector<HTMLElement>(':scope > legend')!
+        expect(labelGap(completion)).toBe(8)
+        cleanup()
+      }
+    },
+    HEAVY,
+  )
+
+  it(
+    'TASK-AC-582934B08D11 JOURNEY-017 group: gallery for_time draws the route’s own For Time logs with the shared contract — the capped race’s two movement groups apart and its legends at the label gap — while no route claims the logging frame yet',
+    () => {
+      const fetch = vi.spyOn(globalThis, 'fetch')
+      render(
+        <MemoryRouter initialEntries={['/gallery/refinements?state=for_time']}>
+          <GalleryRefinements />
+        </MemoryRouter>,
+      )
+      const cap = document.querySelector<HTMLElement>('[data-gallery-race="for-time-cap"]')!
+      const form = cap.querySelector<HTMLFormElement>('form.clr-timed-log')!
+      const groups = movementGroupsOf(form)
+      expect(groups.map((group) => within(group).getByRole('heading').textContent)).toEqual(['wall ball', 'burpee'])
+      for (const group of groups) expect(group).toHaveClass('clr-logging-movement')
+      expect(spaceBefore(groups[1])).toBeGreaterThan(spaceBefore(groups[0]))
+      expect(spaceBefore(groups[1])).toBe(36)
+      for (const legend of form.querySelectorAll<HTMLElement>('fieldset > legend')) expect(labelGap(legend)).toBe(8)
+
+      // The finished race: one movement group, so no extra gap is drawn.
+      const finish = document.querySelector<HTMLElement>('[data-gallery-race="for-time-finish"]')!
+      const finished = movementGroupsOf(finish.querySelector('form.clr-timed-log')!)
+      expect(finished).toHaveLength(1)
+      expect(px(cascaded(finished[0], 'margin-block-start'))).toBe(0)
+
+      // Provider acceptance only: the route's logs are still inline in their cards.
+      expect(document.querySelector('dialog.clr-accepted-log')).toBeNull()
       expect(fetch).not.toHaveBeenCalled()
     },
     HEAVY,

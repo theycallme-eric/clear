@@ -1,0 +1,74 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-017",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/logging-overlay.test.tsx",
+    "--testNamePattern",
+    "group|spacing|helper",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-017/required-cases.json",
+    "sha256": "a49aebf2f30253fa2296d01dcffbef3c444eddd6f1e1842df82179244eb14cd7"
+  },
+  "targets": [
+    {
+      "path": "src/ui/logging-overlay.test.tsx",
+      "sha256": "26d3ac7c6052c73c4d7972b37bcdbbd14ccda7c1e0b75f2cdff867cb7789b54d"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 TASK-AC-9B1E8E32EE3B group: a timed log keeps each complete movement group together — its name, amount and load at the inner field gap — and sets two complete groups slightly further apart than any other section, inline and in the logging frame",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 group: the superset round’s complete movement-entry groups — name and prescription, Performed, weight/unit/reps and effort — each stay one group, and the second sits the shared movement gap further from the first",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the superset round no longer draws the “Tick each movement you performed. A blank field is saved as not recorded.” paragraph or any replacement prose, and Performed still decides what is logged — unticked logs nothing, ticked with a blank field logs it unmeasured",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the removed sentence is gone from every shipped source — no component, gallery state, register entry or spec draws or expects it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 TASK-AC-0C1431FDDA19 spacing: every choice legend — Work completed, Effort · optional, a superset movement’s Effort and Workout feedback’s feeling — takes the label gap, the same space the log’s labelled count field leaves between its label and control",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 spacing: the ladder log keeps its good Rounds completed heading gap and gives the dynamic count its own breathing room after the last row of tiles, for four and twelve rounds",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > TASK-AC-582934B08D11 JOURNEY-017 group: gallery for_time draws the route’s own For Time logs with the shared contract — the capped race’s two movement groups apart and its legends at the label gap — while no route claims the logging frame yet",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 24,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 17,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

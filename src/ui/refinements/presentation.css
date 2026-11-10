@@ -283,9 +283,9 @@
  * accepted `.clr-timed-log__group-title`: a movement's group is the one titled
  * group the simple hierarchy keeps, because its fields are that movement's —
  * the display face at the h4 size, uppercase, the card-header colour. Inside
- * it the amount and the load sit at the accepted movement gap (tokens.css
- * `--logging-movement-gap`), tighter than the result group's field gap, so a
- * movement's two fields read as one. Tokens only. */
+ * it the amount and the load sit at the movement field gap (tokens.css
+ * `--logging-movement-field-gap`), tighter than the result group's field gap,
+ * so a movement's two fields read as one. Tokens only. */
 .clr-timed-log__group-title {
   margin: 0;
   font-family: var(--font-display);
@@ -297,15 +297,44 @@
 }
 
 .clr-timed-log__group--movement {
-  gap: var(--logging-movement-gap);
+  gap: var(--logging-movement-field-gap);
 }
 
-/* One labelled field: its label, then its control. */
+/* One labelled field: its label, then its control. TASK-017: this is the
+ * field rhythm `--logging-label-gap` (the same Foundation step) gives every
+ * choice legend below. */
 .clr-timed-field {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-200);
   min-width: 0;
+}
+
+/* Shared logging rhythm — TASK-017 (C05, C42; R108, R109, R111, R131;
+ * REUSE.md; accepted reference `.clr-accepted-form__movement + …` and
+ * `.clr-accepted-log fieldset > legend`). Contracts any logging form adopts;
+ * tokens only.
+ *
+ * Complete movement groups (C05, R111): `.clr-logging-movement` marks one
+ * complete movement-entry group — its identity, Performed, measurements and
+ * effort. A group directly after another sits the movement gap further away
+ * than the form's own gap, so whole movements separate slightly while nothing
+ * inside one moves. Consumers: TimedResultLog's per-movement groups and the
+ * superset round's movements. */
+.clr-logging-movement + .clr-logging-movement {
+  margin-block-start: var(--logging-movement-gap);
+}
+
+/* Label to control (C42, R108): a choice group's legend is not a flex item of
+ * its fieldset, so the fieldset's gap never reached it and the choices sat
+ * right under their label. The legend takes the label gap — the labelled
+ * field's rhythm — in the timed log (inline or held), in anything the
+ * focused logging frame holds and in a complete movement group. The ladder's
+ * Rounds completed heading keeps its own gap (R109: it is the good one). */
+.clr-timed-log fieldset:not(.clr-ladder-completion) > legend,
+.clr-accepted-log fieldset:not(.clr-ladder-completion) > legend,
+.clr-logging-movement fieldset:not(.clr-ladder-completion) > legend {
+  margin-block-end: var(--logging-label-gap);
 }
 
 .clr-timed-field > .label {
@@ -669,10 +698,14 @@ html[data-reduce-motion] .clr-deadline-edge {
   --bw: var(--focus-ring-width);
 }
 
+/* TASK-017 (C42, R109): the fieldset's items are spaced by their own
+ * margins, so the count can stand further from the tiles than the partial
+ * line stands from the count. (The legend is not a flex item; its gap is its
+ * own margin, below.) */
 .clr-ladder-completion {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-200);
+  gap: 0;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -726,6 +759,21 @@ html[data-reduce-motion] .clr-deadline-edge {
   font-size: var(--label-xs-size);
   line-height: var(--label-xs-line-height);
   color: var(--text-secondary);
+}
+
+/* TASK-017 (C42; R109; accepted `.clr-ladder-completion
+ * .clr-ladder-completion__status`): breathing room between the tiles' last
+ * row and the dynamic completion count — supporting status after a control,
+ * at the count gap, distinct from the label gap. The Rounds completed
+ * heading's gap above the tiles is unchanged; the partial round's line keeps
+ * its place under the count. The live prescription's count is not this log's
+ * and is untouched. */
+.clr-ladder-completion > .clr-ladder-completion__status {
+  margin-block-start: var(--logging-count-gap);
+}
+
+.clr-ladder-completion > .clr-ladder-completion__partial {
+  margin-block-start: var(--spacing-200);
 }
 
 /* TASK-022 (C49, G14; R01, R13, R36): the concise Warm-up / Cooldown guide.

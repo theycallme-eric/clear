@@ -97,6 +97,16 @@
  * memory, no writer — the Summary's debrief moves into the dialog with
  * TASK-045, and `?state=anchor` / `?state=superset` arrive with their
  * route consumers (TASK-043, TASK-044).
+ *
+ * TASK-017 (C05, C42, C47; R108, R109, R111, R112): no new state and no
+ * gallery-only form. The shared logging rhythm reaches the states above
+ * through the route's own blocks: `?state=for_time` (and `amrap`, `ladder`,
+ * `ladder-long`) shows the capped race's two movement groups slightly further
+ * apart than the log's other sections, Work completed and Effort at the
+ * label gap, and the ladder's count at its count gap after the tiles. The
+ * superset round's helper paragraph is removed in the route's own
+ * `SupersetRoundSheet`; `?state=superset` is still TASK-044's to add with
+ * that consumer, where it will show the same groups.
  */
 import { useState, type ReactNode } from 'react'
 
