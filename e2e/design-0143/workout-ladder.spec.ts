@@ -554,7 +554,9 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
     const startedAt = records[blockId]?.startedAt
     return startedAt == null ? null : Date.parse(startedAt)
   }, { key: FOR_TIME_STORAGE_KEY, blockId: world.blocks.scheduled }).then((handle) => handle.jsonValue() as Promise<number>)
-  // Only the scheduled ladder has a clock to start.
+  // Only the schedule was started. TASK-006 (AC-R006-01, C18; R66, R67): the
+  // free-paced and capped ladders now offer their own Start ladder at the top,
+  // but nothing has pressed it, so neither stores a clock.
   const freeAndCapped = await page.evaluate(({ key, ids }) => {
     const records = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>
     return ids.filter((id) => id in records)

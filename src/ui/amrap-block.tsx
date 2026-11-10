@@ -12,8 +12,10 @@
  * REQ-014 (E02) decides the rest:
  *
  *   · **The window is hands-off.** While the clock runs there is nothing to
- *     enter — the countdown, the round and a way to finish early. There is no
- *     round goal either: an ordinary AMRAP prescribes a window, not a count.
+ *     enter — the countdown, the round, and the shared actions after it
+ *     (TASK-006, C18): a secondary Pause, which freezes the window, beside the
+ *     primary Finish early. There is no round goal either: an ordinary AMRAP
+ *     prescribes a window, not a count.
  *   · **The result is optional and comes afterwards.** Once the window closes
  *     the athlete may record rounds and a partial round, or leave both blank.
  *     Blank is `null` all the way to the column and an entered zero is a zero;
@@ -44,13 +46,10 @@
 import { use, useId, useMemo } from 'react'
 
 import {
-  Button,
   Check,
   IconButton,
   Minus,
-  Play,
   Plus,
-  Stop,
   TextAction,
   TimerDisplay,
   X,
@@ -66,6 +65,7 @@ import {
   setPartialRoundReps,
   setRoundsCompleted,
   startAmrap,
+  type AmrapState,
   type AmrapView,
 } from '../state/amrap'
 import { AuthContext } from '../state/auth-context'
@@ -80,6 +80,14 @@ import { QueryClientContext } from '../state/query'
 import { WorkoutClientsContext } from '../state/workout-queries'
 import { targetText } from '../state/prescription'
 import { useShellWeightUnit } from '../state/set-logging'
+import {
+  clockStopMoment,
+  finishLabel,
+  isClockPaused,
+  pauseClock,
+  resumeClock,
+  type TimedLifecyclePhase,
+} from '../state/timed-lifecycle'
 import {
   elapsedSeconds,
   formatElapsed,
@@ -101,6 +109,7 @@ import { useInterfaceLoop } from './motion'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
+import { TimedWorkoutActions } from './timed-workout-flow'
 import type { BlockRendererProps } from './block-renderers'
 
 export interface AmrapBlockProps extends BlockRendererProps {
@@ -133,7 +142,8 @@ export function AmrapBlock({
 
   // Read from the clock rather than accumulated, exactly as the session timer
   // is: a phone that locked through the buzzer comes back to a closed window.
-  const elapsed = useElapsedSeconds(amrap.state.startedAt, now)
+  // A paused window reads its pause and does not tick (TASK-006, C18).
+  const elapsed = useElapsedSeconds(amrapTicking(amrap.state), now)
   const view = amrapView(amrap.state, shape, elapsed)
 
   const urgent =
@@ -155,9 +165,10 @@ export function AmrapBlock({
     >
       {/*
         The shipped timer card, beside the block's card and never within it. Only
-        a window that is open and has a deadline has anything to count down.
+        a window that is open and has a deadline has anything to count down —
+        frozen where it was while the window is paused (TASK-006).
       */}
-      {shape.size > 0 && view.phase === 'running' && view.capSeconds !== null && (
+      {shape.size > 0 && (view.phase === 'running' || view.phase === 'paused') && view.capSeconds !== null && (
         <TimerDisplay seconds={view.remainingSeconds} size="lg" />
       )}
       {/*
@@ -185,22 +196,7 @@ export function AmrapBlock({
           </p>
         ) : (
           <>
-            <Window
-              view={view}
-              onStart={() => amrap.update(startAmrap(amrap.state, now()))}
-              // Read from the clock at the moment of the tap rather than from the
-              // rendered countdown: the repaint is throttled to twice a second,
-              // and the time the user stopped at is the time they stopped at.
-              onFinish={() =>
-                amrap.update(
-                  finishAmrap(
-                    amrap.state,
-                    shape,
-                    elapsedSeconds(amrap.state.startedAt, now()),
-                  ),
-                )
-              }
-            />
+            <Window view={view} />
 
             {/*
               After the window and nowhere before it: the result is optional,
@@ -259,6 +255,33 @@ export function AmrapBlock({
                 ))}
               </ol>
             </Card>
+
+            {/*
+              TASK-006 (C17, C18; R48): the shared action slot, after the round's
+              work and prescription and before the card's coaching — Start AMRAP,
+              then a secondary Pause beside the primary Finish early.
+            */}
+            <TimedWorkoutActions
+              phase={amrapLifecycle(view)}
+              startLabel="Start AMRAP"
+              finishLabel={finishLabel('amrap', view.capSeconds !== null)}
+              onStart={() => amrap.update(startAmrap(amrap.state, now()))}
+              onPause={() => amrap.update(pauseClock(amrap.state, now()))}
+              onResume={() => amrap.update(resumeClock(amrap.state, now()))}
+              // Read from the clock at the moment of the tap rather than from the
+              // rendered countdown: the repaint is throttled to twice a second,
+              // and the time the user stopped at is the time they stopped at — a
+              // paused window's, its pause.
+              onFinish={() =>
+                amrap.update(
+                  finishAmrap(
+                    amrap.state,
+                    shape,
+                    elapsedSeconds(amrap.state.startedAt, clockStopMoment(amrap.state, now())),
+                  ),
+                )
+              }
+            />
           </>
         )}
 
@@ -277,45 +300,40 @@ export function AmrapBlock({
 // The window
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** The start the window ticks from: none before Start, while paused or once it closed. */
+function amrapTicking(state: AmrapState): string | null {
+  return state.endedAtSeconds === null && !isClockPaused(state) ? state.startedAt : null
+}
+
+/** The window's place, as the shared Start/Pause/Resume/Finish actions read it. */
+function amrapLifecycle(view: AmrapView): TimedLifecyclePhase {
+  return view.phase === 'complete' ? 'ended' : view.phase
+}
+
 /**
- * The card's side of the clock, in whichever of its three states it is in. The
- * countdown itself is the block's `TimerDisplay`, above the card.
+ * The card's side of the clock, in whichever of its states it is in. The
+ * countdown itself is the block's `TimerDisplay`, above the card, and its
+ * actions are the shared slot after the round (TASK-006, C17).
  *
  * Running is the passive one on purpose: the phone is on the floor and the
  * countdown is all it is being asked to do (`amrap-logging.md`, design
- * principle). Complete is static and carries a tick — the window is settled, and
- * a red countdown at `00:00` would be urgency about a deadline that has passed.
+ * principle). Paused says so in words, with the window frozen above it.
+ * Complete is static and carries a tick — the window is settled, and a red
+ * countdown at `00:00` would be urgency about a deadline that has passed.
  * Whether the cap or the user settled it is said in words.
  */
-function Window({
-  view,
-  onStart,
-  onFinish,
-}: {
-  view: AmrapView
-  onStart: () => void
-  onFinish: () => void
-}) {
+function Window({ view }: { view: AmrapView }) {
   if (view.phase === 'ready') {
-    return (
-      <div
-        className="clr-stack--tight"
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-      >
-        <p style={{ margin: 0 }}>{openingText(view)}</p>
-        <Button variant="primary" size="lg" icon={<Play />} onClick={onStart}>
-          Start AMRAP
-        </Button>
-      </div>
-    )
+    return <p style={{ margin: 0 }}>{openingText(view)}</p>
   }
 
-  if (view.phase === 'running') {
+  if (view.phase === 'running' || view.phase === 'paused') {
     return (
       <div
         className="clr-stack--tight"
         style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
       >
+        {view.phase === 'paused' && <span style={labelStyle}>Paused</span>}
         {view.capSeconds === null && (
           <p style={{ margin: 0 }}>
             No window prescribed — the clock is yours, and it reads{' '}
@@ -323,9 +341,6 @@ function Window({
           </p>
         )}
         <p style={CONTEXT_STYLE}>Nothing to enter now. Record your rounds afterwards if you like.</p>
-        <Button variant="secondary" size="lg" icon={<Stop />} onClick={onFinish}>
-          {view.capSeconds === null ? 'Finish' : 'Finish early'}
-        </Button>
       </div>
     )
   }

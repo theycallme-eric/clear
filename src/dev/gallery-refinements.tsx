@@ -13,16 +13,32 @@
  * `overview`: the accepted Overview facts, Required equipment group and
  * Summary frames (TASK-004), drawn by the Review, Session Detail and Summary
  * consumers over the shared owners in `src/ui/refinements/overview.tsx`.
+ *
+ * `ladder-4`, `ladder-12`: the live ladder's Start/Pause/Resume/Finish
+ * hierarchy (TASK-006) — the route's own `LadderBlock`, Start ladder in its
+ * top slot, then a secondary Pause beside the primary Finish — over memory-only
+ * storage (`gallery-refinement-flow.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
+import { GalleryLadderFlow } from './gallery-refinement-flow'
 import { GalleryOverviewSummary } from './gallery-refinement-scenes'
+
+function GalleryLadderFour() {
+  return <GalleryLadderFlow rounds={4} />
+}
+
+function GalleryLadderTwelve() {
+  return <GalleryLadderFlow rounds={12} />
+}
 
 const REFINEMENT_STATES = [
   { id: 'cards', title: 'Movement cards and shared header', Render: GalleryMovementCards },
   { id: 'overview', title: 'Overview and Summary frames', Render: GalleryOverviewSummary },
+  { id: 'ladder-4', title: 'Live ladder · 4 rounds', Render: GalleryLadderFour },
+  { id: 'ladder-12', title: 'Live ladder · 12 rounds', Render: GalleryLadderTwelve },
 ] as const
 
 export function GalleryRefinements() {

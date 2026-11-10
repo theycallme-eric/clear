@@ -1,0 +1,82 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-006",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-workout-flow.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-006/required-cases.json",
+    "sha256": "5a4519ac8d24b83b91089e58bcfaabb45e2e6461c05b959c4af8197326f369f5"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-workout-flow.test.tsx",
+      "sha256": "f1d196fd801a20c1907022de3ca8478c0a7e985ae56337211b5b4d7ce0e3d97b"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 the long ladder keeps its Start near the top, after its identity and cap and before the repetitive rounds, with no second Start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 running controls are a secondary Pause and the format's primary Finish or Finish early, and paused controls a secondary Resume in Pause's place",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Pause freezes the section clock and its cap while the workout clock runs on, and Resume keeps the active time and the remaining window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Finish ends each format's attempt where it stands — a paused attempt at its pause — and records nothing the format did not already observe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-02 the section's Finish stays distinct from Finish workout: ending a block neither completes nor leaves the workout",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 recovery: a paused section comes back paused after close and reopen, and a reached cap offers no Resume",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 draw the actual ladder renderer with the top Start and the Pause/Finish hierarchy",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}

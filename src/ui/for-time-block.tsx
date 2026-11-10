@@ -37,7 +37,7 @@
  */
 import type { CSSProperties } from 'react'
 
-import { AlertTriangle, Button, Check, Play, Stop } from '../design-system/index'
+import { AlertTriangle, Check } from '../design-system/index'
 import {
   clampForTimeState,
   finishForTime,
@@ -45,11 +45,15 @@ import {
   forTimeShape,
   forTimeView,
   startForTime,
+  forTimeLifecycle,
+  forTimeTicking,
   FOR_TIME_START,
+  type ForTimePhase,
   type ForTimeView,
 } from '../state/for-time'
 import { prescriptionText } from '../state/prescription'
 import { useShellWeightUnit } from '../state/set-logging'
+import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
   usePersistedForTime,
@@ -61,6 +65,7 @@ import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
 import { useInterfaceLoop } from './motion'
 import { liveMovementReadings } from './refinements/movement-readings'
+import { TimedWorkoutActions } from './timed-workout-flow'
 
 export interface ForTimeBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -81,13 +86,11 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
   )
 
   // Read from the clock rather than accumulated, exactly as the session timer
-  // is — and not read at all once the attempt has finished: passing a null start
-  // switches the tick off, because a finished attempt's time is the distance
-  // between its two stamps and repainting it twice a second would change nothing.
-  const elapsed = useElapsedSeconds(
-    clock.state.finishedAt === null ? clock.state.startedAt : null,
-    now,
-  )
+  // is — and not read at all once the attempt has finished or while it is
+  // paused: passing a null start switches the tick off, because a stopped
+  // attempt's time is fixed by its stamps and repainting it twice a second
+  // would change nothing.
+  const elapsed = useElapsedSeconds(forTimeTicking(clock.state), now)
   const view = forTimeView(clock.state, shape, elapsed)
 
   const start = () => clock.moveTo(startForTime(clock.state, now()))
@@ -117,22 +120,21 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
           </BlockPanel.MovementList>
 
           {/*
-            One forward control, and which one it is *is* the phase: starting
-            the race, or ending it. Neither exists once the attempt is over —
-            a second Start would discard the time it took, and the cap cannot
-            be un-reached.
+            TASK-006 (C17, C18): the shared action slot, after the work and
+            before the card's coaching — Start, then a secondary Pause or Resume
+            beside the primary Finish. None of them exists once the attempt is
+            over: a second Start would discard the time it took, and the cap
+            cannot be un-reached.
           */}
-          {view.phase === 'ready' && (
-            <Button variant="primary" size="lg" icon={<Play />} onClick={start}>
-              Start For Time
-            </Button>
-          )}
-
-          {view.phase === 'running' && (
-            <Button variant="primary" size="lg" icon={<Stop />} onClick={finish}>
-              Finish
-            </Button>
-          )}
+          <TimedWorkoutActions
+            phase={forTimeLifecycle(view.phase)}
+            startLabel="Start For Time"
+            finishLabel={finishLabel('for_time', shape.capSeconds !== null)}
+            onStart={start}
+            onPause={() => clock.moveTo(pauseClock(clock.state, now()))}
+            onResume={() => clock.moveTo(resumeClock(clock.state, now()))}
+            onFinish={finish}
+          />
         </>
       )}
     </BlockPanel>
@@ -157,7 +159,14 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
  * capped block gives it up — pulsing it would animate a number that has stopped
  * moving.
  */
-function ForTimeClock({ view }: { view: ForTimeView }) {
+export function ForTimeClock({
+  view,
+  words = PHASE_WORDS,
+}: {
+  view: ForTimeView
+  /** The outcome in words, by phase. The timed ladder states its own ending. */
+  words?: Readonly<Record<ForTimePhase, string>>
+}) {
   const low = view.urgent || view.phase === 'capped'
   const loop = useInterfaceLoop('urgent', view.urgent)
 
@@ -177,7 +186,7 @@ function ForTimeClock({ view }: { view: ForTimeView }) {
           */}
           <p role="status" style={statusStyle(view)}>
             <PhaseGlyph view={view} />
-            {PHASE_WORDS[view.phase]}
+            {words[view.phase]}
           </p>
 
           <ElapsedReadout view={view} low={low} />
@@ -253,7 +262,9 @@ function CapLine({ view }: { view: ForTimeView }) {
     return null
   }
 
-  if (view.phase === 'running' && view.remainingSeconds !== null) {
+  // Paused (TASK-006, C18), the cap is frozen with the clock: the same line,
+  // and no urgency, because nothing is running out.
+  if ((view.phase === 'running' || view.phase === 'paused') && view.remainingSeconds !== null) {
     return (
       <BlockPanel.Label style={view.urgent ? urgentLineStyle : undefined}>
         {view.urgent
@@ -273,6 +284,8 @@ function CapLine({ view }: { view: ForTimeView }) {
 const PHASE_WORDS: Readonly<Record<ForTimeView['phase'], string>> = {
   ready: 'Ready',
   running: 'Racing the clock',
+  // TASK-006 (C18): the frozen clock says so in words, not only by standing still.
+  paused: 'Paused',
   finished: 'Finished under cap',
   capped: 'Cap reached',
 }
@@ -344,6 +357,7 @@ const urgentLineStyle: CSSProperties = {
 const PHASE_COLOURS: Readonly<Record<ForTimeView['phase'], string>> = {
   ready: 'var(--text-card-label)',
   running: 'var(--text-card-label)',
+  paused: 'var(--text-card-label)',
   // The two endings, and the only two places this card leaves the label colour:
   // the timer's own colour for the result that beat the cap, its low colour for
   // the one the cap cut off (ATOMIC.md §3 — urgency is time pressure *and*

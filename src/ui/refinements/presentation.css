@@ -218,3 +218,30 @@
   margin: 0;
   color: var(--text-secondary);
 }
+
+/* Timed Start/Pause/Resume/Finish actions — TimedWorkoutActions (TASK-006:
+ * C17, C18, G05, R39, R48, R66, R68). The accepted reference's
+ * `.clr-timed-actions`: one responsive full-width row whose cells share the
+ * card's width equally, so a lone Start fills the row and a running Pause and
+ * Finish split it. Each control fills its cell, label centred. The consumer
+ * places the row — after the work and before coaching, or at the long ladder's
+ * top — and it is never sticky or repeated. */
+.clr-timed-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--spacing-300);
+  min-width: 0;
+}
+
+.clr-timed-actions > .clr-bleed, .clr-timed-actions button {
+  width: 100%;
+  min-width: 0;
+}
+
+.clr-timed-actions > .clr-bleed {
+  display: flex;
+}
+
+.clr-timed-actions button {
+  justify-content: center;
+}
