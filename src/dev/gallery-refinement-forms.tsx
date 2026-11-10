@@ -33,21 +33,38 @@
  * reference's synthetic draft, Save/retry, rung tiles, Undo and overlay are
  * not copied.
  *
+ * `?state=emom` (TASK-011: C31, C32; R40, R43, R84) is the same
+ * consolidation of the reference's `emom` logging moment: the route's actual
+ * `EmomBlock`, ended twice over memory-only storage — every prescribed minute
+ * run (COMPLETE), and ended early in minute 4 of 8 (FINISHED EARLY, its actual
+ * stop stated) — so the shared `TimedResultLog` shows its EMOM family: no
+ * minutes-completed counter, no completion question, only the optional notes
+ * for an exception. Typing a note reports it to the shell's own completion
+ * path, which saves nothing here. The same file supplies the `cards` state's
+ * live EMOM (`GalleryLiveEmom`): the route's own block, ready, with its minute,
+ * minute assignment and Next marker and no NOT STARTED caption. Both run under
+ * the shell's own completion and set-logging providers — the latter only so
+ * the prescribed load reads in the gallery's known unit, as the route reads
+ * the profile's; an EMOM logs no set.
+ *
  * Not composed here, and owned by later tasks: the focused logging dialog,
  * its header, backdrop and contained scrolling (`refinements/logging-overlay.tsx`:
  * TASK-016, TASK-017, TASK-018, adopted for the timed families by TASK-046 and
- * closed on the routes by TASK-041), the EMOM's end log (TASK-011), the
- * ladder's rep-first rung tiles, live check-off and quiet Undo (TASK-013,
- * TASK-014), per-movement next-round actuals and loads, notes and the
- * categorical effort's writer (TASK-015, TASK-031, TASK-047) and the other
- * logging contexts.
+ * closed on the routes by TASK-041), the ladder's rep-first rung tiles, live
+ * check-off and quiet Undo (TASK-013, TASK-014), per-movement next-round
+ * actuals and loads (the EMOM's applicable weights among them) and the
+ * categorical effort's writer (TASK-015, TASK-031, TASK-047), new notes
+ * behaviour (TASK-015, TASK-045) and the other logging contexts.
  */
 import { useState, type ReactNode } from 'react'
 
 import { BlockCompletionProvider } from '../state/block-completion-provider'
-import { writeAmrapState, writeForTimeState, type ShellStorage } from '../state/workout-persistence'
+import type { SessionAcceptance } from '../state/schemas'
+import { SetLoggingProvider } from '../state/set-logging-provider'
+import { writeAmrapState, writeEmomState, writeForTimeState, type ShellStorage } from '../state/workout-persistence'
 import type { BlockProgress } from '../state/workout-progress'
 import { AmrapBlock } from '../ui/amrap-block'
+import { EmomBlock } from '../ui/emom-block'
 import { ForTimeBlock } from '../ui/for-time-block'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { LadderBlock } from '../ui/ladder-block'
@@ -57,17 +74,23 @@ import {
   type AmrapResult,
   type CompletionResult,
   type CompletionResultLog,
+  type EmomResult,
 } from '../ui/refinements/timed-result-log'
+import { SectionLabelContext } from '../ui/section-label-context'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
 import {
   GALLERY_AMRAP_ATTEMPTS,
+  GALLERY_EMOM_ATTEMPTS,
   GALLERY_FOR_TIME_ATTEMPTS,
   GALLERY_LADDER_ATTEMPTS,
   galleryAmrapProgress,
   galleryTimedProgress,
   type GalleryAmrapAttemptSpec,
+  type GalleryEmomAttemptSpec,
   type GalleryRaceAttemptSpec,
 } from './gallery-refinement-forms-data'
+
+type Block = SessionAcceptance['workout']['sections'][number]['blocks'][number]
 
 /** One mount's storage, so the gallery never reads or writes the route's records. */
 function memoryStorage(): ShellStorage {
@@ -188,6 +211,91 @@ export function GalleryLadderResults() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TASK-011 — `?state=emom` and the `cards` state's live EMOM (C31, C32)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The gallery's known unit; the route reads the profile's. */
+const GALLERY_WEIGHT_UNIT = 'kg' as const
+
+const noop = () => {}
+
+/**
+ * The shell around one gallery EMOM, as the route draws it: the shell's own
+ * completion path (the block reports to it; with no forward action here
+ * nothing is saved, and the block-result writer refuses in any case) and its
+ * set-logging context, which carries the unit a prescribed load is stated in.
+ * Memory only: no queue storage, and an EMOM logs no set.
+ */
+function GalleryEmomShell({ block, children }: { block: BlockProgress; children: ReactNode }) {
+  return (
+    <BlockCompletionProvider sessionId={GALLERY_SESSION_ID} blocks={[block]}>
+      <SetLoggingProvider
+        sessionId={GALLERY_SESSION_ID}
+        exercises={block.exercises}
+        weightUnit={GALLERY_WEIGHT_UNIT}
+        storage={null}
+        onFailure={noop}
+      >
+        {children}
+      </SetLoggingProvider>
+    </BlockCompletionProvider>
+  )
+}
+
+/** One ended EMOM: the route's own renderer over its seeded memory grid. */
+function GalleryEmomAttempt({ attempt }: { attempt: GalleryEmomAttemptSpec }) {
+  const [block] = useState(() => galleryTimedProgress(attempt.block, attempt.blockIndex))
+  const [storage] = useState(() => {
+    const memory = memoryStorage()
+    writeEmomState(memory, block.blockId, attempt.record(Date.now()))
+    return memory
+  })
+  return (
+    <HeadingSection className="clr-stack" data-gallery-emom={attempt.id}>
+      <Heading className="label">{attempt.title}</Heading>
+      <GalleryEmomShell block={block}>
+        <div data-gallery-context="workout">
+          <EmomBlock block={block} storage={storage} />
+        </div>
+      </GalleryEmomShell>
+    </HeadingSection>
+  )
+}
+
+/** The accepted `emom` state: the route's EMOM, every minute run and ended early. */
+export function GalleryEmomResults() {
+  return (
+    <GalleryCoachingClients>
+      <div className="clr-stack" data-gallery-emom-results="">
+        {GALLERY_EMOM_ATTEMPTS.map((attempt) => (
+          <GalleryEmomAttempt key={attempt.id} attempt={attempt} />
+        ))}
+      </div>
+    </GalleryCoachingClients>
+  )
+}
+
+/**
+ * The `cards` state's live EMOM: the route's own `EmomBlock`, ready, over
+ * memory-only storage and under the section label the live shell provides —
+ * the minute ahead (`MIN 1 OF 10`), each movement's minutes and target, Next
+ * on the first, and Start (C32: no NOT STARTED caption). Its ids are the same
+ * gallery ids the other live cards use, so its coaching reads the same
+ * in-memory library. Rendered inside the cards state's `GalleryCoachingClients`.
+ */
+export function GalleryLiveEmom({ block, blockIndex, sectionLabel }: { block: Block; blockIndex: number; sectionLabel: string }) {
+  const [progress] = useState(() => galleryTimedProgress(block, blockIndex))
+  const [storage] = useState(memoryStorage)
+  return (
+    <GalleryEmomShell block={progress}>
+      <SectionLabelContext value={sectionLabel}>
+        <EmomBlock block={progress} storage={storage} />
+      </SectionLabelContext>
+    </GalleryEmomShell>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Register specimens: the two shared owners alone (TASK-009)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -260,4 +368,20 @@ export function TimedResultLogLadderUnanswered() {
 /** A saved result: the completion keeps the saved answer, no longer offered as a choice. */
 export function TimedResultLogForTimeSaved() {
   return <MemoryCompletionLog format="for_time" initial={{ completed: false, effort: null }} saved />
+}
+
+/** An EMOM end log held in memory here; its consumer owns the note and its writer (TASK-011). */
+function MemoryEmomLog({ initial }: { initial: EmomResult }) {
+  const [value, setValue] = useState<EmomResult>(initial)
+  return <TimedResultLog format="emom" value={value} onChange={setValue} />
+}
+
+/** The EMOM's end log: no counter and no completion question, the notes blank. */
+export function TimedResultLogEmomBlank() {
+  return <MemoryEmomLog initial={{ notes: '' }} />
+}
+
+/** The EMOM's end log with an exception written in the notes. */
+export function TimedResultLogEmomNoted() {
+  return <MemoryEmomLog initial={{ notes: 'Dropped to 10 swings from minute 7.' }} />
 }

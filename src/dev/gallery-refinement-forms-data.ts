@@ -15,12 +15,16 @@
  * TASK-010 adds the accepted `for_time` and `ladder` states' attempts (below):
  * the race clock each block's own renderer keeps (`for-time.ts`), seeded the
  * same way.
+ *
+ * TASK-011 adds the accepted `emom` state's attempts (below): the minute grid
+ * the route's own EMOM keeps (`emom.ts`), seeded the same way.
  */
 import type { AmrapState } from '../state/amrap'
+import type { EmomState } from '../state/emom'
 import type { ForTimeState } from '../state/for-time'
 import type { SessionAcceptance } from '../state/schemas'
 import { structureIdentity, type BlockProgress } from '../state/workout-progress'
-import { AMRAP_BLOCK, FOR_TIME_BLOCK } from './gallery-refinement-cards-data'
+import { AMRAP_BLOCK, EMOM_BLOCK, FOR_TIME_BLOCK } from './gallery-refinement-cards-data'
 import { galleryExerciseProgress } from './gallery-refinement-coaching-data'
 import { LADDER_CAP_SECONDS, timedLadderBlock } from './gallery-refinement-flow-data'
 
@@ -187,6 +191,59 @@ export const GALLERY_LADDER_ATTEMPTS: readonly GalleryRaceAttemptSpec[] = [
     record: (now) => ({
       startedAt: new Date(now - (LADDER_CAP_SECONDS + 30) * 1000).toISOString(),
       finishedAt: null,
+    }),
+  },
+]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-011 — `?state=emom` (C31, C32)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The accepted reference's EMOM results sample (`sampleBlock('emom')`): the
+ * loaded kettlebell swing alone, twelve a minute, eight minutes. Its companion
+ * is the route fixture's two-movement EMOM (`EMOM_BLOCK`), so the two cards'
+ * own landmarks keep distinct names on one page.
+ */
+export const ACCEPTED_SAMPLE_EMOM: Block = { ...EMOM_BLOCK, timer_seconds: 480, exercises: [EMOM_BLOCK.exercises[0]] }
+
+export interface GalleryEmomAttemptSpec {
+  readonly id: 'complete' | 'early'
+  readonly title: string
+  readonly block: Block
+  readonly blockIndex: number
+  /** The EMOM's own stored grid (`emom.ts`) for this attempt, read against `now`. */
+  record(now: number): EmomState
+}
+
+const EMOM_SECONDS = EMOM_BLOCK.timer_seconds ?? 0
+
+/**
+ * JOURNEY-011's two ends: the ten-minute EMOM run to its last minute — the
+ * schedule as specified, assumed done, with only notes for an exception — and
+ * the sample ended early, 3:20 into its eight minutes, so it says FINISHED
+ * EARLY in minute 4 of 8 and is never a completed schedule.
+ */
+export const GALLERY_EMOM_ATTEMPTS: readonly GalleryEmomAttemptSpec[] = [
+  {
+    id: 'complete',
+    title: 'Every prescribed minute run · notes for an exception',
+    block: EMOM_BLOCK,
+    blockIndex: 90,
+    record: (now) => ({
+      startedAt: new Date(now - (EMOM_SECONDS + 30) * 1000).toISOString(),
+      workDoneMinute: null,
+    }),
+  },
+  {
+    id: 'early',
+    title: 'Finished early in minute 4 of 8 · the actual stop kept',
+    block: ACCEPTED_SAMPLE_EMOM,
+    blockIndex: 91,
+    record: (now) => ({
+      startedAt: new Date(now - 400 * 1000).toISOString(),
+      workDoneMinute: null,
+      finishedAt: new Date(now - 200 * 1000).toISOString(),
     }),
   },
 ]

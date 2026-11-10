@@ -15,6 +15,17 @@
  * `e2e/refinement/task-006.spec.ts`.
  *
  * Synthetic data only: in-memory doubles, no account and no network.
+ *
+ * TASK-011 (REQ-011; C31, C32; R40, R43, R44, R84; AC-C31-01, AC-C32-01,
+ * AC-R011-01, AC-R011-02; JOURNEY-011) — the EMOM's schedule context and its
+ * end log without a completion counter, through the EMOM owner (`EmomBlock`)
+ * and the shared `TimedResultLog`'s EMOM family, on the same real `/workout`
+ * route over its own fixture (`emom-end-log-fixture.ts`: the EMOM in the
+ * first section, a cooldown after it, so `Next section` saves its row). Its
+ * cases live in their own describe block, whose title carries "EMOM":
+ * TASK-011's check-01 selects them with `--testNamePattern EMOM` (with
+ * TASK-006's one EMOM-named case beside them, which must pass too).
+ * TASK-006's check-01 runs this whole file.
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -27,13 +38,38 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { routes } from '../app/router'
 import { GalleryRefinements } from '../dev/gallery-refinements'
 import { LADDER_CAP_SECONDS, pushUpRungs } from '../dev/gallery-refinement-flow-data'
-import { BlockCompletionContext, type BlockCompletionApi, type BlockOutcome } from '../state/block-completion'
 import {
+  blockResultInsert,
+  BlockCompletionContext,
+  type BlockCompletion,
+  type BlockCompletionApi,
+  type BlockOutcome,
+} from '../state/block-completion'
+import { clampEmomState, emomShape, emomView, type EmomState } from '../state/emom'
+import { createError, err, ErrorCode, ok } from '../state/errors'
+import type { BlockResultRow } from '../state/schemas'
+import { blockOutcome } from '../state/session-detail'
+import {
+  readEmomState,
   WORKOUT_AMRAP_STORAGE_KEY,
   WORKOUT_EMOM_STORAGE_KEY,
   WORKOUT_FOR_TIME_STORAGE_KEY,
+  writeEmomState,
 } from '../state/workout-persistence'
 import { sessionProgress } from '../state/workout-progress'
+import {
+  COOLDOWN_SECTION_TITLE,
+  EMOM_MINUTES,
+  EMOM_MOVEMENTS,
+  EMOM_NOTES_LABEL,
+  EMOM_REST_SECONDS,
+  EMOM_SECTION_TITLE,
+  EMOM_WORK_LIST,
+  RETIRED_CAPTIONS,
+  emomEndLogAcceptance,
+  emomEndLogBlock,
+  emomEndLogSnapshot,
+} from '../test/emom-end-log-fixture'
 import {
   LONG_LADDER_ROUNDS,
   TIMED_FINISH,
@@ -46,7 +82,7 @@ import {
 } from '../test/timed-actions-fixture'
 import { AppProviders, signedIn } from '../test/render'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
-import { createWorkoutDouble, snapshotFixture, type BlockFixture } from '../test/workout-double'
+import { createWorkoutDouble, snapshotFixture, type BlockFixture, type WorkoutDoubleOptions } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
 import { finishLabel } from '../state/timed-lifecycle'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -586,6 +622,574 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
       expect(localStorage.getItem(WORKOUT_FOR_TIME_STORAGE_KEY)).toBeNull()
       cleanup()
     }
+    expect(fetch).not.toHaveBeenCalled()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-011 — the EMOM's schedule context and its end log (C31, C32)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** JOURNEY-011's session: started a minute before entry, the EMOM ready. */
+const EMOM_SESSION = () =>
+  emomEndLogSnapshot(emomEndLogAcceptance(), {
+    userId: FIXTURE_USER_ID,
+    startedAt: new Date(Date.parse('2026-11-09T09:00:00.000Z') - 60_000).toISOString(),
+  })
+
+/** JOURNEY-011's entry: `/workout`, the EMOM ready in the first section. */
+async function openEmom(options: Omit<WorkoutDoubleOptions, 'session'> = {}, snapshot = EMOM_SESSION()) {
+  const double = createWorkoutDouble({ session: snapshot, ...options })
+  const router = createMemoryRouter(routes, { initialEntries: ['/', '/workout'], initialIndex: 1 })
+  const view = render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  await screen.findByRole('navigation', { name: 'Workout sections' })
+  await screen.findByRole('list', { name: EMOM_WORK_LIST })
+  return { double, router, view, snapshot, block: emomEndLogBlock(snapshot) }
+}
+
+/** The EMOM's live card. */
+function emomCard(scope: HTMLElement = document.body): HTMLElement {
+  const found = within(scope).getByRole('list', { name: EMOM_WORK_LIST }).closest<HTMLElement>('[data-workout-card="workout"]')
+  if (found === null) throw new Error('the EMOM has no live card')
+  return found
+}
+
+/** The EMOM's stack: its minute countdown beside its card. */
+function emomStack(scope?: HTMLElement): HTMLElement {
+  return emomCard(scope).parentElement!.closest<HTMLElement>('.clr-stack')!
+}
+
+/** The minute's countdown, once the clock has started. */
+function emomTime(scope?: HTMLElement): string {
+  return within(emomStack(scope)).getByRole('timer').textContent ?? ''
+}
+
+/** The end log: the card's one form, headed "Log results". */
+function queryEmomLog(scope?: HTMLElement): HTMLElement | null {
+  const forms = emomCard(scope).querySelectorAll<HTMLElement>('form.clr-timed-log')
+  expect(forms.length).toBeLessThanOrEqual(1)
+  return forms[0] ?? null
+}
+
+function emomLog(scope?: HTMLElement): HTMLElement {
+  const found = queryEmomLog(scope)
+  if (found === null) throw new Error('the EMOM has no end log')
+  return found
+}
+
+function notesField(scope?: HTMLElement): HTMLTextAreaElement {
+  return within(emomLog(scope)).getByRole('textbox', { name: EMOM_NOTES_LABEL }) as HTMLTextAreaElement
+}
+
+/** The movements a marker word sits on — the frame's `Now` / `Next` — by heading. */
+function emomMarked(word: 'Now' | 'Next', scope?: HTMLElement): string[] {
+  const list = within(emomCard(scope)).getByRole('list', { name: EMOM_WORK_LIST })
+  return [...list.querySelectorAll<HTMLElement>(':scope > li')]
+    .filter((item) => [...item.children].some((child) => child.tagName === 'P' && child.textContent === word))
+    .map((item) => within(item).getAllByRole('heading')[0].textContent ?? '')
+}
+
+function emomMovement(name: (typeof EMOM_MOVEMENTS)[number], scope?: HTMLElement) {
+  const list = within(emomCard(scope)).getByRole('list', { name: EMOM_WORK_LIST })
+  return within(within(list).getByRole('heading', { name }).closest('li')!)
+}
+
+/**
+ * The card's minute line and the phase line under it, exactly as drawn: the
+ * minute is always there; the phase line only when it says something more.
+ */
+function scheduleLines(scope?: HTMLElement): string[] {
+  const minute = within(emomCard(scope)).getByText(/^MIN \d+( OF \d+)?$/)
+  return [...minute.parentElement!.children].map((line) => line.textContent ?? '')
+}
+
+/** C32 / AC-R011-01: the annotated captions are drawn nowhere in the EMOM's block. */
+function expectNoRetiredCaption(scope?: HTMLElement) {
+  for (const caption of RETIRED_CAPTIONS) {
+    expect(within(emomStack(scope)).queryByText(caption), caption).toBeNull()
+  }
+}
+
+/** Every control or reading of a minutes tally or a completion question (C31). */
+function expectNoTally(log: HTMLElement) {
+  expect(log.querySelectorAll('output, .clr-quantity, [data-quantity-field], input[type="number"]')).toHaveLength(0)
+  expect(within(log).queryByRole('spinbutton')).toBeNull()
+  expect(within(log).queryByRole('slider')).toBeNull()
+  expect(within(log).queryByRole('radiogroup')).toBeNull()
+  expect(within(log).queryByRole('checkbox')).toBeNull()
+  expect(within(log).queryByRole('button')).toBeNull()
+  expect(within(log).queryByText(/minutes?|completed|complete|tally|count|confirm/i)).toBeNull()
+  expect(log.querySelector('.clr-set-effort')).toBeNull()
+}
+
+/** The EMOM's stored grid, as the raw string the route wrote. */
+function storedEmomRaw(): string | null {
+  return localStorage.getItem(WORKOUT_EMOM_STORAGE_KEY)
+}
+
+/** Every column of the saved row a minutes tally or a timing could hide in. */
+function resultRow(completion: BlockCompletion) {
+  const row = blockResultInsert(completion)
+  return {
+    minutes_completed: row.minutes_completed,
+    elapsed_seconds: row.elapsed_seconds,
+    completed_under_cap: row.completed_under_cap,
+    rounds_completed: row.rounds_completed,
+    partial_round_reps: row.partial_round_reps,
+    highest_rung: row.highest_rung,
+    perceived_effort: row.perceived_effort,
+    notes: row.notes,
+  }
+}
+
+const NO_TALLY_ROW = {
+  minutes_completed: null, elapsed_seconds: null, completed_under_cap: null, rounds_completed: null,
+  partial_round_reps: null, highest_rung: null, perceived_effort: null,
+}
+
+/** History (`/history/:id`) over the same clients, as a later visit opens it. */
+async function openHistory(double: ReturnType<typeof createWorkoutDouble>, sessionId: string) {
+  const history = createMemoryRouter(routes, { initialEntries: ['/', `/history/${sessionId}`], initialIndex: 1 })
+  render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={history} />
+    </AppProviders>,
+  )
+  const badge = await screen.findByText(/^EMOM · 10 MIN$/)
+  return badge.closest<HTMLElement>('[data-detail-block]')!
+}
+
+const EXCEPTION_NOTE = 'Dropped to 10 swings from minute 7.'
+const EARLY_NOTE = 'Stopped in minute 3: shoulder.'
+
+describe('TASK-011 EMOM schedule and end logging without a completion counter', () => {
+  it('AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state', async () => {
+    const user = userEvent.setup()
+    await openEmom()
+    const [swing, burpee] = EMOM_MOVEMENTS
+
+    // Ready: the minute ahead, the first movement Next, each movement's
+    // minutes and the minute it opens — no NOT STARTED beside them.
+    expect(scheduleLines()).toEqual(['MIN 1 OF 10'])
+    expectNoRetiredCaption()
+    expect(emomMarked('Next')).toEqual([swing])
+    expect(emomMovement(swing).getByText('ODD MIN')).toBeInTheDocument()
+    expect(emomMovement(burpee).getByText('EVEN MIN')).toBeInTheDocument()
+    expect(emomMovement(swing).getByText('MIN 1 · 12 reps')).toBeInTheDocument()
+    expect(emomMovement(burpee).getByText('MIN 2 · 10 reps')).toBeInTheDocument()
+    expect(within(emomStack()).queryByRole('timer')).toBeNull()
+
+    // Running, the work part of minute one: the minute and Now — no WORK.
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    expect(scheduleLines()).toEqual(['MIN 1 OF 10'])
+    expect(emomMarked('Now')).toEqual([swing])
+    expect(emomTime()).toContain('01:00')
+    expectNoRetiredCaption()
+    advance(60 - EMOM_REST_SECONDS - 1)
+    expect(scheduleLines()).toEqual(['MIN 1 OF 10'])
+    expect(emomMarked('Now')).toEqual([swing])
+    expect(emomTime()).toContain('00:16')
+
+    // The transition into the minute's rest keeps its word and looks ahead.
+    advance(1)
+    expect(scheduleLines()).toEqual(['MIN 1 OF 10', 'REST'])
+    expect(emomMarked('Next')).toEqual([burpee])
+    expect(emomMarked('Now')).toEqual([])
+    expect(emomTime()).toContain('00:15')
+
+    // The boundary flips the work: minute two is the burpee's, with no caption.
+    advance(EMOM_REST_SECONDS)
+    expect(scheduleLines()).toEqual(['MIN 2 OF 10'])
+    expect(emomMarked('Now')).toEqual([burpee])
+    expect(emomMovement(swing).getByText('MIN 3 · 12 reps')).toBeInTheDocument()
+    expectNoRetiredCaption()
+
+    // The actual clock state stays in words: PAUSED holds the minute and its time.
+    advance(10)
+    await user.click(within(emomCard()).getByRole('button', { name: 'Pause' }))
+    advance(90)
+    expect(scheduleLines()).toEqual(['MIN 2 OF 10', 'PAUSED'])
+    expect(emomTime()).toContain('00:50')
+    await user.click(within(emomCard()).getByRole('button', { name: 'Resume' }))
+    expect(scheduleLines()).toEqual(['MIN 2 OF 10'])
+    expect(emomMarked('Now')).toEqual([burpee])
+
+    // FINISHED EARLY in the minute it stopped.
+    await user.click(within(emomCard()).getByRole('button', { name: 'Finish early' }))
+    expect(scheduleLines()).toEqual(['MIN 2 OF 10', 'FINISHED EARLY'])
+    expectNoRetiredCaption()
+
+    // The rule itself: only the two annotated captions went, nothing else.
+    const source = readFileSync(resolve(ROOT, 'src/ui/emom-block.tsx'), 'utf8')
+    expect(source).toMatch(/ready: null,\s*work: null,\s*rest: 'REST',\s*finished: 'COMPLETE'/)
+  })
+
+  it('AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them', async () => {
+    const user = userEvent.setup()
+    const first = await openEmom()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+
+    // Every minute boundary to the last: the minute, the movement that minute
+    // prescribes as Now, and the other's next turn as its target.
+    for (let minute = 1; minute <= EMOM_MINUTES; minute += 1) {
+      const now = EMOM_MOVEMENTS[(minute - 1) % 2]
+      const other = EMOM_MOVEMENTS[minute % 2]
+      expect(scheduleLines(), `minute ${minute}`).toEqual([`MIN ${minute} OF ${EMOM_MINUTES}`])
+      expect(emomMarked('Now'), `minute ${minute}`).toEqual([now])
+      expect(emomMarked('Next'), `minute ${minute}`).toEqual([])
+      const ahead = minute + 1 <= EMOM_MINUTES ? `MIN ${minute + 1} · ` : null
+      if (ahead !== null) expect(emomMovement(other).getByText(new RegExp(`^${ahead}`))).toBeInTheDocument()
+      else expect(emomMovement(other).queryByText(/^MIN \d+ · /)).toBeNull()
+      expectNoRetiredCaption()
+      // Into the minute's rest: the next minute's movement is Next.
+      advance(60 - EMOM_REST_SECONDS + 1)
+      expect(scheduleLines()).toEqual([`MIN ${minute} OF ${EMOM_MINUTES}`, 'REST'])
+      expect(emomMarked('Next')).toEqual(minute < EMOM_MINUTES ? [other] : [])
+      if (minute < EMOM_MINUTES) advance(EMOM_REST_SECONDS - 1)
+    }
+    // The last minute's rest runs out: the schedule ends, COMPLETE, nothing live.
+    advance(EMOM_REST_SECONDS)
+    expect(scheduleLines()).toEqual([`MIN ${EMOM_MINUTES} OF ${EMOM_MINUTES}`, 'COMPLETE'])
+    expect(emomMarked('Now')).toEqual([])
+    expect(emomTime()).toContain('00:00')
+
+    // A fresh EMOM: backgrounded across boundaries, then reloaded mid-minute.
+    first.view.unmount()
+    localStorage.clear()
+    clock = Date.parse('2026-11-09T09:00:00.000Z')
+    const second = await openEmom()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    advance(125)
+    expect(scheduleLines()).toEqual(['MIN 3 OF 10'])
+    expect(emomMarked('Now')).toEqual([EMOM_MOVEMENTS[0]])
+    expect(emomTime()).toContain('00:55')
+    second.view.unmount()
+    advance(40)
+    await openEmom({}, second.snapshot)
+    expect(scheduleLines()).toEqual(['MIN 3 OF 10', 'REST'])
+    expect(emomMarked('Next')).toEqual([EMOM_MOVEMENTS[1]])
+    expect(emomTime()).toContain('00:15')
+    expectNoRetiredCaption()
+  })
+
+  it('AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions', async () => {
+    const user = userEvent.setup()
+    const { block } = await openEmom()
+
+    // Ready, running and paused: nothing to log yet.
+    expect(queryEmomLog()).toBeNull()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    advance(30)
+    expect(queryEmomLog()).toBeNull()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Pause' }))
+    expect(queryEmomLog()).toBeNull()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Resume' }))
+
+    // Every prescribed minute runs: the schedule ends, and its log opens.
+    advance(EMOM_MINUTES * 60)
+    expect(scheduleLines()).toEqual(['MIN 10 OF 10', 'COMPLETE'])
+    const log = emomLog()
+    expect(log.dataset.timedFormat).toBe('emom')
+    expect(log.dataset.logHierarchy).toBe('simple')
+    // R43: the log replaces the closing sentence that only said it was done.
+    expect(within(emomCard()).queryByText(/The clock has run every prescribed minute/)).toBeNull()
+
+    // After the work and its prescription, before the card's coaching.
+    const list = within(emomCard()).getByRole('list', { name: EMOM_WORK_LIST })
+    expect(follows(log, list)).toBe(true)
+    expect(follows(log, within(emomCard()).getByText(`${EMOM_REST_SECONDS}s rest at the end of each minute`))).toBe(true)
+    const coaching = emomCard().querySelector('[data-coaching-group]')!
+    expect(follows(coaching, log)).toBe(true)
+    expect(emomCard().lastElementChild).toBe(coaching)
+
+    // One title, one group, one field: the optional notes. No counter, no
+    // completion question, no confirmation step, no effort here.
+    expect(within(log).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results'])
+    const groups = log.querySelectorAll('.clr-timed-log__group')
+    expect(groups).toHaveLength(1)
+    const fields = log.querySelectorAll('input, textarea, select, output')
+    expect(fields).toHaveLength(1)
+    expect(fields[0]).toBe(notesField())
+    expect(notesField().tagName).toBe('TEXTAREA')
+    expect(notesField()).toHaveValue('')
+    expect(notesField()).not.toBeRequired()
+    expectNoTally(log)
+    expect(within(emomCard()).queryByRole('group', { name: 'Work completed' })).toBeNull()
+
+    // Notes for an exception: written, and nothing else moves — the clock's
+    // record is the same string, and no new key or field is stored.
+    const keys = Object.keys(localStorage).sort()
+    const grid = storedEmomRaw()
+    await user.type(notesField(), EXCEPTION_NOTE)
+    expect(notesField()).toHaveValue(EXCEPTION_NOTE)
+    expect(storedEmomRaw()).toBe(grid)
+    expect(Object.keys(localStorage).sort()).toEqual(keys)
+    expect(readEmomState(localStorage, block.blockId)).toEqual({
+      startedAt: new Date(Date.parse('2026-11-09T09:00:00.000Z')).toISOString(),
+      workDoneMinute: null,
+    })
+    expect(scheduleLines()).toEqual(['MIN 10 OF 10', 'COMPLETE'])
+
+    // Enter in the log submits nothing and navigates nowhere.
+    const submitted = new Event('submit', { bubbles: true, cancelable: true })
+    log.dispatchEvent(submitted)
+    expect(submitted.defaultPrevented).toBe(true)
+  })
+
+  it('AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back', async () => {
+    const user = userEvent.setup()
+    const { double, block, snapshot, view } = await openEmom()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    advance(EMOM_MINUTES * 60 + 30)
+    const grid = storedEmomRaw()
+    await user.type(notesField(), EXCEPTION_NOTE)
+
+    // The section's forward action saves the block: its note, and nothing counted.
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
+    expect(double.recorded()).toEqual([{ blockId: block.blockId, outcome: { notes: EXCEPTION_NOTE }, perceivedEffort: null }])
+    expect(resultRow(double.recorded()[0])).toEqual({ ...NO_TALLY_ROW, notes: EXCEPTION_NOTE })
+    // The actual timing is the clock's own record, unchanged by the note or the save.
+    expect(storedEmomRaw()).toBe(grid)
+
+    // Back to the saved section: the schedule still reads as it ended; the log
+    // has stepped aside (no correction writer), and the shell says it saved.
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    expect(await screen.findByRole('heading', { name: EMOM_SECTION_TITLE })).toBeInTheDocument()
+    expect(scheduleLines()).toEqual(['MIN 10 OF 10', 'COMPLETE'])
+    expect(queryEmomLog()).toBeNull()
+    expect(within(emomCard()).getByText('Block saved')).toBeInTheDocument()
+    expect(double.recorded()).toHaveLength(1)
+
+    // History reads the saved row back: the note, and no minutes reading.
+    view.unmount()
+    const detail = await openHistory(double, snapshot.session.id)
+    expect(within(detail).getByText(EXCEPTION_NOTE)).toBeInTheDocument()
+    expect(within(detail).queryByText('Minutes')).toBeNull()
+    expect(within(detail).queryByText('Not scored')).toBeNull()
+  })
+
+  it('AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing', async () => {
+    const user = userEvent.setup()
+    const first = await openEmom()
+    const entry = Date.parse('2026-11-09T09:00:00.000Z')
+
+    // Minute three, paused 130 seconds in, then ended early a while later: it
+    // ends at its pause, in the minute it was in.
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    advance(130)
+    await user.click(within(emomCard()).getByRole('button', { name: 'Pause' }))
+    advance(40)
+    await user.click(within(emomCard()).getByRole('button', { name: 'Finish early' }))
+    const stopped = { startedAt: new Date(entry).toISOString(), workDoneMinute: null, finishedAt: new Date(entry + 130_000).toISOString() }
+    expect(readEmomState(localStorage, first.block.blockId)).toEqual(stopped)
+    expect(scheduleLines()).toEqual(['MIN 3 OF 10', 'FINISHED EARLY'])
+    expect(within(emomCard()).getByText('Finished early, in minute 3 of 10. Continue when you are ready.')).toBeInTheDocument()
+    expect(within(emomStack()).queryByText('COMPLETE')).toBeNull()
+
+    // The same counter-free log: nothing asks how many minutes, nothing claims all ten.
+    const log = emomLog()
+    expectNoTally(log)
+    await user.type(notesField(), EARLY_NOTE)
+
+    // The clock running on never turns an early end into a completed schedule.
+    advance(EMOM_MINUTES * 60)
+    expect(scheduleLines()).toEqual(['MIN 3 OF 10', 'FINISHED EARLY'])
+    expect(readEmomState(localStorage, first.block.blockId)).toEqual(stopped)
+    // The view the shell reads is the stop, not the window.
+    const view = emomView(clampEmomState(stopped), emomShape(first.block), (clock - entry) / 1000)
+    expect(view).toMatchObject({ phase: 'finished', endedEarly: true, minute: 3, minutes: 10 })
+
+    // Close and reopen: the actual stop is restored, and the log is reachable.
+    // Its note was this visit's draft, so it reads empty — what will be saved.
+    first.view.unmount()
+    const second = await openEmom({}, first.snapshot)
+    expect(scheduleLines()).toEqual(['MIN 3 OF 10', 'FINISHED EARLY'])
+    expect(notesField()).toHaveValue('')
+    await user.type(notesField(), EARLY_NOTE)
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
+    expect(second.double.recorded()).toEqual([{ blockId: second.block.blockId, outcome: { notes: EARLY_NOTE }, perceivedEffort: null }])
+    expect(resultRow(second.double.recorded()[0])).toEqual({ ...NO_TALLY_ROW, notes: EARLY_NOTE })
+    expect(readEmomState(localStorage, second.block.blockId)).toEqual(stopped)
+
+    // History: the note, and no minutes reading — not "10 of 10", not "3 of 10".
+    second.view.unmount()
+    const detail = await openHistory(second.double, second.snapshot.session.id)
+    expect(within(detail).getByText(EARLY_NOTE)).toBeInTheDocument()
+    expect(within(detail).queryByText('Minutes')).toBeNull()
+    expect(detail.textContent).not.toMatch(/\d+ of 10/)
+
+    // Stopped before its last minute without Finish early: the section moved
+    // on while the clock ran. No log opened, nothing is counted.
+    cleanup()
+    localStorage.clear()
+    clock = entry
+    const third = await openEmom()
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    advance(200)
+    expect(queryEmomLog()).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
+    expect(third.double.recorded()).toEqual([{ blockId: third.block.blockId, outcome: {}, perceivedEffort: null }])
+    expect(resultRow(third.double.recorded()[0])).toEqual({ ...NO_TALLY_ROW, notes: null })
+    expect(readEmomState(localStorage, third.block.blockId)).toEqual({ startedAt: new Date(entry).toISOString(), workDoneMinute: null })
+  })
+
+  it('AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged', async () => {
+    const user = userEvent.setup()
+    const rows: BlockCompletion[] = []
+    let refusing = true
+    const record = vi.fn(async (completion: BlockCompletion) => {
+      if (refusing) return err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))
+      rows.push(completion)
+      return ok({} as BlockResultRow)
+    })
+    const { block } = await openEmom({ blockResults: { record } })
+    await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
+    advance(EMOM_MINUTES * 60 + 5)
+    const grid = storedEmomRaw()
+    await user.type(notesField(), EXCEPTION_NOTE)
+
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const failed = await screen.findByRole('dialog')
+    expect(failed).toHaveTextContent('That didn’t save')
+    expect(record).toHaveBeenCalledTimes(1)
+    expect(rows).toEqual([])
+    // Nothing discarded and nothing filled in: the note, the ended schedule.
+    expect(notesField()).toHaveValue(EXCEPTION_NOTE)
+    expect(scheduleLines()).toEqual(['MIN 10 OF 10', 'COMPLETE'])
+    expect(storedEmomRaw()).toBe(grid)
+
+    refusing = false
+    await user.click(within(failed).getByRole('button', { name: 'Try again' }))
+    expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
+    expect(record).toHaveBeenCalledTimes(2)
+    expect(record.mock.calls[0][0]).toEqual(record.mock.calls[1][0])
+    expect(rows).toEqual([{ blockId: block.blockId, outcome: { notes: EXCEPTION_NOTE }, perceivedEffort: null }])
+    expect(resultRow(rows[0])).toEqual({ ...NO_TALLY_ROW, notes: EXCEPTION_NOTE })
+  })
+
+  it('AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before', async () => {
+    const user = userEvent.setup()
+    const entry = Date.parse('2026-11-09T09:00:00.000Z')
+    const at = (seconds: number) => new Date(entry + seconds * 1000).toISOString()
+    const block = emomEndLogBlock(EMOM_SESSION())
+
+    // Records an earlier build wrote, read against the same moment: before
+    // Pause existed, with the retired "Minute done" mark, TASK-006's paused and
+    // ended-early stamps, and a window that expired while the tab was away.
+    const older: { stored: EmomState; lines: string[]; log: boolean; time: string }[] = [
+      { stored: { startedAt: at(-200), workDoneMinute: null }, lines: ['MIN 4 OF 10'], log: false, time: '00:40' },
+      { stored: { startedAt: at(-190), workDoneMinute: 4 }, lines: ['MIN 4 OF 10'], log: false, time: '00:50' },
+      { stored: { startedAt: at(-300), workDoneMinute: null, pausedAt: at(-250) }, lines: ['MIN 1 OF 10', 'PAUSED'], log: false, time: '00:10' },
+      { stored: { startedAt: at(-300), workDoneMinute: null, finishedAt: at(-100) }, lines: ['MIN 4 OF 10', 'FINISHED EARLY'], log: true, time: '00:00' },
+      { stored: { startedAt: at(-900), workDoneMinute: null }, lines: ['MIN 10 OF 10', 'COMPLETE'], log: true, time: '00:00' },
+    ]
+    for (const { stored, lines, log, time } of older) {
+      writeEmomState(localStorage, block.blockId, stored)
+      const raw = storedEmomRaw()
+      const { double, view } = await openEmom()
+      const label = JSON.stringify(stored)
+      expect(scheduleLines(), label).toEqual(lines)
+      expect(emomTime(), label).toContain(time)
+      expect(queryEmomLog() !== null, label).toBe(log)
+      // Loaded, not rewritten.
+      expect(storedEmomRaw(), label).toBe(raw)
+      // Saved as before: no note given, nothing counted — the same `{}` an older build saved.
+      await user.click(screen.getByRole('button', { name: 'Next section' }))
+      expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
+      expect(double.recorded().map((row) => row.outcome), label).toEqual([{}])
+      view.unmount()
+      localStorage.clear()
+    }
+
+    // Saved rows from before this change, minutes and all, read in History
+    // exactly as they did: the History reading is unchanged, and so is the
+    // row's mapping into it.
+    const blockRow = emomEndLogSnapshot(emomEndLogAcceptance()).sections[0].blocks[0].block
+    const row = (minutes: number | null, notes: string | null): BlockResultRow => ({
+      id: '00000000-0000-4000-8000-000000000911', block_id: blockRow.id, elapsed_seconds: null,
+      completed_under_cap: null, rounds_completed: null, partial_round_reps: null, minutes_completed: minutes,
+      highest_rung: null, perceived_effort: null, notes, created_at: '2026-11-01T09:30:00+00:00',
+    })
+    expect(blockOutcome(blockRow, row(8, null))).toEqual([{ label: 'Minutes', value: '8 of 10' }])
+    expect(blockOutcome(blockRow, row(10, null))).toEqual([{ label: 'Minutes', value: '10 of 10' }])
+    expect(blockOutcome(blockRow, row(0, null))).toEqual([{ label: 'Minutes', value: '0 of 10' }])
+    expect(blockOutcome(blockRow, row(null, null))).toEqual([])
+
+    // And end to end: a row an earlier build wrote with eight minutes and a
+    // note reads "Minutes 8 of 10" beside it, as it always did.
+    const snapshot = EMOM_SESSION()
+    const double = createWorkoutDouble({ session: snapshot })
+    await double.clients.blockResults.record({ blockId: emomEndLogBlock(snapshot).blockId, outcome: { minutesCompleted: 8, notes: 'Older note' }, perceivedEffort: null })
+    const detail = await openHistory(double, snapshot.session.id)
+    expect(within(detail).getByText('Minutes').parentElement).toHaveTextContent(/^Minutes8 of 10$/)
+    expect(within(detail).getByText('Older note')).toBeInTheDocument()
+  })
+
+  it('JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption', async () => {
+    const user = userEvent.setup()
+    const fetch = vi.spyOn(globalThis, 'fetch')
+
+    // `?state=emom`: the accepted "EMOM results", the route's own block ended twice.
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=emom']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const state = document.querySelector<HTMLElement>('[data-refinement-state="emom"]')!
+    expect(state).not.toBeNull()
+    expect(screen.getByRole('link', { name: 'EMOM results' })).toHaveAttribute('aria-current', 'page')
+    const complete = state.querySelector<HTMLElement>('[data-gallery-emom="complete"]')!
+    const early = state.querySelector<HTMLElement>('[data-gallery-emom="early"]')!
+    expect(scheduleLines(complete)).toEqual(['MIN 10 OF 10', 'COMPLETE'])
+    expect(scheduleLines(early)).toEqual(['MIN 4 OF 8', 'FINISHED EARLY'])
+    expect(within(early).getByText('Finished early, in minute 4 of 8. Continue when you are ready.')).toBeInTheDocument()
+    expect(within(complete).queryByText(/The clock has run every prescribed minute/)).toBeNull()
+    for (const scope of [complete, early]) {
+      const log = emomLog(scope)
+      expect(log.dataset.timedFormat).toBe('emom')
+      expectNoTally(log)
+      expect(notesField(scope)).toHaveValue('')
+      expectNoRetiredCaption(scope)
+      expect(follows(log, within(emomCard(scope)).getByRole('list', { name: EMOM_WORK_LIST }))).toBe(true)
+    }
+    // Live over memory only: a note is written in place.
+    await user.type(notesField(complete), 'Swings unbroken')
+    expect(notesField(complete)).toHaveValue('Swings unbroken')
+    expect(localStorage.getItem(WORKOUT_EMOM_STORAGE_KEY)).toBeNull()
+    // The same owner the route draws, not a look-alike.
+    const forms = readFileSync(resolve(ROOT, 'src/dev/gallery-refinement-forms.tsx'), 'utf8')
+    expect(forms).toMatch(/import \{ EmomBlock \} from '\.\.\/ui\/emom-block'/)
+    cleanup()
+
+    // `?state=cards`, timed composition: the Workout context's EMOM is the
+    // route's own block, ready — its minute, assignment and Next, no caption.
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=cards']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const cards = document.querySelector<HTMLElement>('[data-refinement-state="cards"]')!
+    await user.click(within(cards).getByRole('radio', { name: /EMOM, AMRAP and For Time/ }))
+    const workout = cards.querySelector<HTMLElement>('[data-gallery-context="workout"]')!
+    expect(scheduleLines(workout)).toEqual(['MIN 1 OF 10'])
+    expectNoRetiredCaption(workout)
+    expect(emomMarked('Next', workout)).toEqual([EMOM_MOVEMENTS[0]])
+    expect(emomMovement(EMOM_MOVEMENTS[0], workout).getByText('ODD MIN')).toBeInTheDocument()
+    expect(emomMovement(EMOM_MOVEMENTS[0], workout).getByText('MIN 1 · 12 reps')).toBeInTheDocument()
+    await user.click(within(emomCard(workout)).getByRole('button', { name: 'Start EMOM' }))
+    expect(scheduleLines(workout)).toEqual(['MIN 1 OF 10'])
+    expect(emomMarked('Now', workout)).toEqual([EMOM_MOVEMENTS[0]])
+    expect(within(emomStack(workout)).getByRole('timer')).toHaveTextContent('01:00')
+    expect(localStorage.getItem(WORKOUT_EMOM_STORAGE_KEY)).toBeNull()
+    const cardsSource = readFileSync(resolve(ROOT, 'src/dev/gallery-refinement-cards.tsx'), 'utf8')
+    expect(cardsSource).toMatch(/<GalleryLiveEmom\b/)
     expect(fetch).not.toHaveBeenCalled()
   })
 })

@@ -29,18 +29,27 @@
  * a session mood. R78 limits the completion question to work whose full
  * completion is meaningful, so the AMRAP family is not given one.
  *
+ * TASK-011 (C31; R43, R84) adds the EMOM family: the end of the schedule's
+ * log, with no minutes-completed counter, no completion question and no
+ * confirmation step. The schedule as the block specifies it is assumed done;
+ * the one group holds the existing optional notes, where an exception — a
+ * dropped rep, a skipped minute, a stop — is written in the athlete's own
+ * words. The consumer owns the draft and reports it to the block's existing
+ * `block_results.notes` through the shell's one writer; nothing here counts a
+ * minute, and a note never changes the clock or the time it recorded.
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
- * group joins this form under the same title and group recipe — the EMOM's
- * counter-free end log (TASK-011), the ladder's rung results and quiet Undo
- * (TASK-013, TASK-014), richer per-movement actuals and the categorical
- * effort's writer once they exist (TASK-031, TASK-015, TASK-047), and the
- * focused dialog, Save and the four families' adoption into it (TASK-016–018,
- * TASK-046, TASK-041). None of those is drawn here.
+ * group joins this form under the same title and group recipe — the ladder's
+ * rung results and quiet Undo (TASK-013, TASK-014), richer per-movement
+ * actuals and loads (the EMOM's applicable weights among them) and the
+ * categorical effort's writer once they exist (TASK-031, TASK-015, TASK-047),
+ * and the focused dialog, Save and the four families' adoption into it
+ * (TASK-016–018, TASK-046, TASK-041). None of those is drawn here.
  */
 import type { ReactNode } from 'react'
 
-import { ChoiceGroup } from '../../design-system/index'
+import { ChoiceGroup, Input } from '../../design-system/index'
 import { useInvalidFocus } from '../formFocus'
 import { Heading, HeadingSection } from '../Heading'
 import { SetEffortChoice, type SetEffort } from '../set-effort'
@@ -91,7 +100,26 @@ export interface CompletionResultLog {
   saved?: boolean
 }
 
-export type TimedResultLogProps = AmrapResultLog | CompletionResultLog
+/**
+ * TASK-011: the EMOM's end log as its consumer keeps it. `notes` is the
+ * athlete's own words, `''` when nothing was written. There is no count and no
+ * completion answer: the schedule as specified is assumed (C31, R84).
+ */
+export interface EmomResult {
+  readonly notes: string
+}
+
+export interface EmomResultLog {
+  format: 'emom'
+  value: EmomResult
+  /** The consumer's writer, called with the whole next result on every edit. */
+  onChange: (next: EmomResult) => void
+}
+
+export type TimedResultLogProps = AmrapResultLog | CompletionResultLog | EmomResultLog
+
+/** The accepted optional notes label of the timed logs (accepted reference, LOGGING-FIELDS.md). */
+export const TIMED_NOTES_LABEL = 'Notes · optional'
 
 /** The accepted completion question and its two answers, in their one row. */
 export const WORK_COMPLETED_LEGEND = 'Work completed'
@@ -138,8 +166,35 @@ export function TimedResultLog(props: TimedResultLogProps) {
         part of it.
       */}
       <Heading className="clr-timed-log__title">Log results</Heading>
-      {props.format === 'amrap' ? <AmrapGroups {...props} /> : <CompletionGroups {...props} />}
+      {props.format === 'amrap' ? (
+        <AmrapGroups {...props} />
+      ) : props.format === 'emom' ? (
+        <EmomGroups {...props} />
+      ) : (
+        <CompletionGroups {...props} />
+      )}
     </form>
+  )
+}
+
+/**
+ * TASK-011: one untitled group (R90 A) holding the existing optional notes —
+ * the public multiline field, as the reference and every other notes field in
+ * the app draw it. No QuantitySelector, no minutes tally, no Work completed
+ * row and no confirmation: completion of the schedule as specified is the
+ * default (C31, R84), and an exception is the athlete's words, not a number.
+ */
+function EmomGroups({ value, onChange }: EmomResultLog) {
+  return (
+    <ResultGroup>
+      <Input
+        label={TIMED_NOTES_LABEL}
+        multiline
+        rows={2}
+        value={value.notes}
+        onChange={(notes: string) => onChange({ notes })}
+      />
+    </ResultGroup>
   )
 }
 

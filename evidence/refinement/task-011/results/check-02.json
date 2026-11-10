@@ -1,0 +1,55 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-011",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-011.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-011/required-cases.json",
+    "sha256": "bf5dd26f9cc7ced01e557f20361b0620bb19a2bab9d7f8893fea3af2b34140b3"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-011.spec.ts",
+      "sha256": "7f48ae1997124e5a964457a569be99845fe80733de78221f569dfbee72aae437"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-011.spec.ts",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 touch phone-390 Signal: minute progress and Now/Next without the Not started or Work captions through a boundary, the rest and a pause; the natural end opens the counter-free log; an exception note survives a failed save, is saved once with no minutes tally, and History reads it",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-011.spec.ts",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 keyboard phone-320 reduced motion: Finish early in minute 3 keeps FINISHED EARLY and the actual stop, never COMPLETE; the counter-free log by keyboard; a reload keeps the stop; the note is saved with no minutes tally or timing",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-011.spec.ts",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 gallery emom and cards phone-390: the route’s own EmomBlock — the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption — with no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 3
+  },
+  "problems": []
+}

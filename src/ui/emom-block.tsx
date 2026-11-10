@@ -42,10 +42,29 @@
  * of their own (`superset-circuit-clarity.md` §8) and the trailing window is
  * stated once at the foot of the card.
  *
- * Completion is the shell's, and this renderer supplies no outcome to it. The
- * clock running past a minute is the schedule, not work the athlete reported
- * (E01), so `minutes_completed` stays `null` rather than being filled from the
- * timer. The section's forward action is what saves the block.
+ * Completion is the shell's, and this renderer supplies no measured outcome to
+ * it. The clock running past a minute is the schedule, not work the athlete
+ * reported (E01), so `minutes_completed` stays `null` rather than being filled
+ * from the timer. The section's forward action is what saves the block.
+ *
+ * TASK-011 (C31, C32; R40, R43, R44, R84) — the end of the schedule and its
+ * log. When the schedule ends — every prescribed minute run, or ended by the
+ * user — the card's closing sentence gives way to the shared `TimedResultLog`
+ * in its EMOM family (R43: "make this the log … rather than just saying it's
+ * done"): no minutes-completed counter, no completion question, no
+ * confirmation. The schedule as the block specifies it is assumed done (R84),
+ * so nothing is asked about it; an exception is the athlete's note, reported
+ * as the block's existing `notes` through the shell's one writer. That is the
+ * whole outcome: no minutes tally, no elapsed time, and the EMOM's clock record
+ * is never touched by it. An early finish says so truthfully (its minute and
+ * FINISHED EARLY stay on the card) and is no more a completed schedule in the
+ * saved row than a natural end is a measured one: both save `minutes_completed`
+ * `null`. The note is this mount's draft — kept through a failed save and its
+ * retry, never stored as a new field — and once the block's row is saved the
+ * log steps aside: there is no correction writer for a saved row. The captions
+ * R40 crossed out, NOT STARTED and WORK, are gone; the minute (`MIN 1 OF 10`),
+ * each movement's minutes and target, Now/Next, REST, PAUSED, FINISHED EARLY
+ * and COMPLETE stay (C32).
  *
  * Where the user is comes from `emom.ts` as pure arithmetic over a stored
  * timestamp, and `workout-persistence.ts` writes that timestamp down — so a
@@ -55,6 +74,9 @@
  * real, drawable case rather than an empty view — everything in it was swapped
  * out, and it says so.
  */
+import { useMemo, useState } from 'react'
+
+import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
 import {
   clampEmomState,
   emomShape,
@@ -93,6 +115,7 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
+import { TimedResultLog } from './refinements/timed-result-log'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
 export interface EmomBlockProps extends BlockRendererProps {
@@ -125,11 +148,26 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
 
   const counting = shape.size > 0 && view.phase !== 'untimed' && view.phase !== 'ready'
 
+  // TASK-011 (C31, R84): the end log's one field, the athlete's note. A draft
+  // of this mount, never a new stored field: it survives a failed save and its
+  // retry because the section keeps this block mounted until it saves.
+  const [notes, setNotes] = useState('')
+  const { isBlockRecorded } = useBlockCompletion()
+  const saved = isBlockRecorded(block.blockId)
+  const ended = shape.size > 0 && view.phase === 'finished'
+  const completion = useMemo(() => ({ outcome: endLogOutcome(ended ? notes : '') }), [ended, notes])
+
   return (
-    // No `completion` outcome: the clock is the schedule, and a scheduled
-    // minute is not athlete-reported work (E01). The panel's default records
-    // nothing observed, and the section's forward action saves the block.
-    <BlockPanel block={block} timer={counting ? <MinuteCountdown view={view} /> : null}>
+    // No measured outcome: the clock is the schedule, and a scheduled minute
+    // is not athlete-reported work (E01) — not even once the schedule ends,
+    // when it is assumed rather than counted (C31, R84). The one thing the
+    // EMOM reports is the end log's note, to the block's existing `notes`; the
+    // section's forward action saves the block.
+    <BlockPanel
+      block={block}
+      timer={counting ? <MinuteCountdown view={view} /> : null}
+      completion={completion}
+    >
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />
       ) : (
@@ -186,16 +224,39 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
           )}
 
           {/*
-            The clock has run out, or the user ended it, which is all it can
-            say: the schedule is over, not a record of what was performed.
+            The user ended the schedule before its last minute, which the card
+            says in the minute it stopped: the actual timing, never rewritten
+            into a completed schedule. A natural end needs no sentence: R43
+            replaced "The clock has run every prescribed minute" with the log.
           */}
-          {view.phase === 'finished' && (
-            <BlockPanel.Note>{finishedText(view)}</BlockPanel.Note>
+          {view.phase === 'finished' && view.endedEarly && (
+            <BlockPanel.Note>{endedEarlyText(view)}</BlockPanel.Note>
+          )}
+
+          {/*
+            TASK-011 (C31; R43, R84): the end log, after the work and its
+            prescription, once the schedule has ended. No count to fill in and
+            no completion to confirm; an exception goes in the notes. Once the
+            block's row is saved there is no correction writer, so the log
+            steps aside and the shell's "Block saved" says what happened.
+          */}
+          {ended && !saved && (
+            <TimedResultLog format="emom" value={{ notes }} onChange={(next) => setNotes(next.notes)} />
           )}
         </>
       )}
     </BlockPanel>
   )
+}
+
+/**
+ * TASK-011 (C31, AC-R011-02): what the end log reports — the athlete's note,
+ * as written, when there is one; otherwise nothing. Never a minute count, an
+ * elapsed time or a completion flag: the schedule is assumed, not measured,
+ * and a blank note is not an observation.
+ */
+function endLogOutcome(notes: string): BlockOutcome {
+  return notes.trim() === '' ? {} : { notes }
 }
 
 /** The start the grid ticks from: none before Start, while paused or once ended. */
@@ -218,14 +279,11 @@ function emomLifecycle(view: EmomView): TimedLifecyclePhase {
 }
 
 /**
- * How the schedule ended, truthfully: every prescribed minute ran, or the user
- * ended it in the minute it was in (TASK-006, Finish early). Neither is a
- * record of work performed (E01).
+ * How an early end happened, truthfully: the user ended the schedule in the
+ * minute it was in (TASK-006, Finish early). It is not a record of work
+ * performed (E01), and it is not a completed schedule (TASK-011, AC-R011-02).
  */
-function finishedText(view: EmomView): string {
-  if (!view.endedEarly) {
-    return 'The clock has run every prescribed minute. Continue when you are ready.'
-  }
+function endedEarlyText(view: EmomView): string {
   return view.minutes === null
     ? `Finished in minute ${view.minute}. Continue when you are ready.`
     : `Finished early, in minute ${view.minute} of ${view.minutes}. Continue when you are ready.`
@@ -268,23 +326,35 @@ function MinuteCountdown({ view }: { view: EmomView }) {
  * (REQ-014) — and Pause holds the grid where it is.
  *
  * Neither line is a live region: announcing a number every second makes the
- * rest of the screen unusable, so the phase word is what a screen reader is
- * meant to find.
+ * rest of the screen unusable, so the minute and the movements' own Now/Next
+ * are what a screen reader is meant to find.
+ *
+ * TASK-011 (C32, AC-R011-01; R40): the phase line is drawn only when it says
+ * something the minute and the Now/Next markers do not. NOT STARTED (the
+ * minute reads `MIN 1 OF 10` and the first movement is Next, beside Start)
+ * and WORK (the minute and the movement marked Now) were the annotated,
+ * redundant captions and are gone. REST — the transition inside the minute —
+ * and the actual clock states PAUSED, FINISHED EARLY, FINISHED and COMPLETE
+ * stay.
  */
 function SectionTimer({ view }: { view: EmomView }) {
+  const word = phaseWord(view)
   return (
     <div
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
       <BlockPanel.Label style={{ color: 'var(--text-timer)' }}>{minuteText(view)}</BlockPanel.Label>
-      <BlockPanel.Label>{phaseWord(view)}</BlockPanel.Label>
+      {word !== null && <BlockPanel.Label>{word}</BlockPanel.Label>}
     </div>
   )
 }
 
-/** The phase in words; a paused grid and an early finish say so (TASK-006). */
-function phaseWord(view: EmomView): string {
+/**
+ * The phase in words, where it adds to the minute; a paused grid and an early
+ * finish say so (TASK-006). Null for the captions TASK-011 removed.
+ */
+function phaseWord(view: EmomView): string | null {
   if (view.paused) return 'PAUSED'
   if (view.phase === 'finished' && view.endedEarly) return view.minutes === null ? 'FINISHED' : 'FINISHED EARLY'
   return PHASE_WORDS[view.phase]
@@ -297,10 +367,15 @@ function minuteText(view: EmomView): string {
     : `MIN ${view.minute} OF ${view.minutes}`
 }
 
-const PHASE_WORDS: Readonly<Record<EmomView['phase'], string>> = {
+/**
+ * TASK-011 (C32, R40): `ready` and `work` draw no caption — the minute and the
+ * Now/Next markers already say it. `untimed` is never drawn here (a block with
+ * no clock has no minute line); it keeps its word for completeness.
+ */
+const PHASE_WORDS: Readonly<Record<EmomView['phase'], string | null>> = {
   untimed: 'NO CLOCK',
-  ready: 'NOT STARTED',
-  work: 'WORK',
+  ready: null,
+  work: null,
   rest: 'REST',
   finished: 'COMPLETE',
 }

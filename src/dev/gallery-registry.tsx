@@ -103,6 +103,8 @@ import {
   QuantitySelectorZero,
   TimedResultLogAmrapBlank,
   TimedResultLogAmrapEntered,
+  TimedResultLogEmomBlank,
+  TimedResultLogEmomNoted,
   TimedResultLogForTimeFinished,
   TimedResultLogForTimeSaved,
   TimedResultLogLadderIncomplete,
@@ -2222,7 +2224,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'TimedResultLog',
     requirement: 'REQ-009',
     module: 'src/ui/refinements/timed-result-log.tsx',
-    summary: 'TASK-009 the accepted timed-results log in the simple selected hierarchy (C26; R55, R85, R90): one form under one rule with one Log results title, then its result group with field labels and no Result, Movements or Feedback group titles. Its AMRAP family groups rounds completed and the reps into the next round as one result of two framed counts. Presentation over the consumer’s own record and writer: no draft, field or save of its own, blank stays blank and zero stays zero (C28). The route’s AMRAP places it after the work and its prescription (C25): /gallery/refinements?state=amrap. TASK-010 (C29, C30; R76, R78, R86, R87, R124): its For Time and ladder families ask Work completed with Complete beside Incomplete in one row, at the starting point the consumer’s tracked work and clock give it (never a Finish alone), then the existing three-face effort, optional and unanswered as null, never a number or a mood: ?state=for_time and ?state=ladder. Memory-only controllers here.',
+    summary: 'TASK-009 the accepted timed-results log in the simple selected hierarchy (C26; R55, R85, R90): one form under one rule with one Log results title, then its result group with field labels and no Result, Movements or Feedback group titles. Its AMRAP family groups rounds completed and the reps into the next round as one result of two framed counts. Presentation over the consumer’s own record and writer: no draft, field or save of its own, blank stays blank and zero stays zero (C28). The route’s AMRAP places it after the work and its prescription (C25): /gallery/refinements?state=amrap. TASK-010 (C29, C30; R76, R78, R86, R87, R124): its For Time and ladder families ask Work completed with Complete beside Incomplete in one row, at the starting point the consumer’s tracked work and clock give it (never a Finish alone), then the existing three-face effort, optional and unanswered as null, never a number or a mood: ?state=for_time and ?state=ladder. TASK-011 (C31; R43, R84): its EMOM family is the end of the schedule’s log with no minutes-completed counter, no completion question and no confirmation — the schedule as specified is assumed — and one group holding the existing optional notes for an exception, which the route’s EMOM saves to the block’s existing notes and never into a minutes tally or its timing: ?state=emom. Memory-only controllers here.',
     specimens: [
       { state: 'AMRAP · nothing entered', note: 'Both counts blank: unreported, not zero.', Render: TimedResultLogAmrapBlank },
       { state: 'AMRAP · rounds and an observed zero partial round', note: 'Tap down to zero; it stops there, never back to blank.', Render: TimedResultLogAmrapEntered },
@@ -2230,6 +2232,8 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       { state: 'Ladder · ended with nothing tracked', note: 'Incomplete, never every rung; an effort face chosen, with its compact Clear.', Render: TimedResultLogLadderIncomplete },
       { state: 'Ladder · before its attempt ends', note: 'Nothing chosen: unanswered completion and effort.', Render: TimedResultLogLadderUnanswered },
       { state: 'For Time · saved', note: 'The saved answer, no longer offered as a choice: the chips’ shared disabled role.', Render: TimedResultLogForTimeSaved },
+      { state: 'EMOM · schedule ended', note: 'No counter and no completion question: only the optional notes, blank.', Render: TimedResultLogEmomBlank },
+      { state: 'EMOM · an exception noted', note: 'The exception in the athlete’s own words; nothing counts a minute.', Render: TimedResultLogEmomNoted },
     ],
   },
   {

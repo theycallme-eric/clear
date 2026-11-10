@@ -40,13 +40,22 @@
  * completed" with Complete beside Incomplete in one row at the route's own
  * starting point, and the three effort faces unanswered, over memory-only
  * storage (`gallery-refinement-forms.tsx`).
+ *
+ * `emom`: the EMOM's schedule and end logging without a completion counter
+ * (TASK-011: C31, C32) — the route's own `EmomBlock`, every prescribed minute
+ * run and ended early, its minute progress and actual stop kept, then the
+ * shared `TimedResultLog` with no minutes-completed counter and only the
+ * optional notes for an exception, over memory-only storage
+ * (`gallery-refinement-forms.tsx`). The `cards` state's Workout EMOM is the
+ * same route block, ready: its minute, minute assignment and Next marker,
+ * without the NOT STARTED caption.
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
-import { GalleryAmrapResults, GalleryForTimeResults, GalleryLadderResults } from './gallery-refinement-forms'
+import { GalleryAmrapResults, GalleryEmomResults, GalleryForTimeResults, GalleryLadderResults } from './gallery-refinement-forms'
 import { GalleryOverviewSummary } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
@@ -67,6 +76,7 @@ const REFINEMENT_STATES = [
   { id: 'amrap', title: 'AMRAP results', Render: GalleryAmrapResults },
   { id: 'for_time', title: 'For Time results', Render: GalleryForTimeResults },
   { id: 'ladder', title: 'Ladder results', Render: GalleryLadderResults },
+  { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
 ] as const
 
 export function GalleryRefinements() {
