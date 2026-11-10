@@ -53,17 +53,19 @@
  * real, drawable case rather than an empty view — everything in it was swapped
  * out, and it says so.
  */
-import { Button, Play, TimerDisplay } from '../design-system/index'
+import { TimerDisplay } from '../design-system/index'
 import {
   clampEmomState,
   emomShape,
   emomView,
   EMOM_START,
+  finishEmom,
   minuteAssignment,
   scheduledMinuteFor,
   startEmom,
   targetForMinute,
   type EmomShape,
+  type EmomState,
   type EmomView,
 } from '../state/emom'
 import {
@@ -73,6 +75,13 @@ import {
   targetText,
 } from '../state/prescription'
 import { useShellWeightUnit } from '../state/set-logging'
+import {
+  finishLabel,
+  isClockPaused,
+  pauseClock,
+  resumeClock,
+  type TimedLifecyclePhase,
+} from '../state/timed-lifecycle'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
@@ -81,6 +90,7 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { useInterfaceLoop } from './motion'
 import { liveMovementReadings } from './refinements/movement-readings'
+import { TimedWorkoutActions } from './timed-workout-flow'
 
 export interface EmomBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -101,8 +111,9 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
   )
 
   // Read from the clock rather than accumulated, exactly as the session timer
-  // is: a phone that locked for four minutes comes back to minute five.
-  const elapsed = useElapsedSeconds(emom.state.startedAt, now)
+  // is: a phone that locked for four minutes comes back to minute five. A
+  // paused or finished grid reads its own stamps and does not tick (TASK-006).
+  const elapsed = useElapsedSeconds(emomTicking(emom.state), now)
   const view = emomView(emom.state, shape, elapsed)
 
   const start = () => {
@@ -128,7 +139,7 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
               This block prescribes no clock. Work through the movements as prescribed.
             </BlockPanel.Note>
           ) : (
-            <SectionTimer view={view} onStart={start} />
+            <SectionTimer view={view} />
           )}
 
           <BlockPanel.MovementList label="Movements in this EMOM">
@@ -154,18 +165,67 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
           )}
 
           {/*
-            The clock has run out, which is all it can say: the schedule is
-            over, not a record of what was performed.
+            TASK-006 (C17, C18; R39, R98): the shared action slot, after the
+            work and its prescription — the minute's rest included — and before
+            the card's coaching. Start EMOM; once it runs, a secondary Pause and
+            the primary Finish early. A block with no clock has none.
+          */}
+          {view.phase !== 'untimed' && (
+            <TimedWorkoutActions
+              phase={emomLifecycle(view)}
+              startLabel="Start EMOM"
+              finishLabel={finishLabel('emom', shape.minutes !== null)}
+              onStart={start}
+              onPause={() => emom.update(pauseClock(emom.state, now()))}
+              onResume={() => emom.update(resumeClock(emom.state, now()))}
+              onFinish={() => emom.update(finishEmom(emom.state, now()))}
+            />
+          )}
+
+          {/*
+            The clock has run out, or the user ended it, which is all it can
+            say: the schedule is over, not a record of what was performed.
           */}
           {view.phase === 'finished' && (
-            <BlockPanel.Note>
-              The clock has run every prescribed minute. Continue when you are ready.
-            </BlockPanel.Note>
+            <BlockPanel.Note>{finishedText(view)}</BlockPanel.Note>
           )}
         </>
       )}
     </BlockPanel>
   )
+}
+
+/** The start the grid ticks from: none before Start, while paused or once ended. */
+function emomTicking(state: EmomState): string | null {
+  return (state.finishedAt ?? null) === null && !isClockPaused(state) ? state.startedAt : null
+}
+
+/** The grid's place, as the shared Start/Pause/Resume/Finish actions read it. */
+function emomLifecycle(view: EmomView): TimedLifecyclePhase {
+  switch (view.phase) {
+    case 'ready':
+      return 'ready'
+    case 'work':
+    case 'rest':
+      return view.paused ? 'paused' : 'running'
+    case 'untimed':
+    case 'finished':
+      return 'ended'
+  }
+}
+
+/**
+ * How the schedule ended, truthfully: every prescribed minute ran, or the user
+ * ended it in the minute it was in (TASK-006, Finish early). Neither is a
+ * record of work performed (E01).
+ */
+function finishedText(view: EmomView): string {
+  if (!view.endedEarly) {
+    return 'The clock has run every prescribed minute. Continue when you are ready.'
+  }
+  return view.minutes === null
+    ? `Finished in minute ${view.minute}. Continue when you are ready.`
+    : `Finished early, in minute ${view.minute} of ${view.minutes}. Continue when you are ready.`
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -195,7 +255,8 @@ const MINUTE_LOW_SECONDS = 10
  */
 function MinuteCountdown({ view }: { view: EmomView }) {
   const low = view.secondsRemaining <= MINUTE_LOW_SECONDS
-  const running = view.phase === 'work' || view.phase === 'rest'
+  // A paused minute is not running out (TASK-006): the loop is given up.
+  const running = (view.phase === 'work' || view.phase === 'rest') && !view.paused
   const loop = useInterfaceLoop('urgent', low && running)
 
   return (
@@ -211,30 +272,32 @@ function MinuteCountdown({ view }: { view: EmomView }) {
 
 /**
  * The minute the user is in, inside the block's card: the minute out of the
- * window, the phase in words, and — before the clock runs — the one way in.
- * Once it is running there is nothing to press: every boundary moves the work
- * on by itself (REQ-014).
+ * window and the phase in words. Its one way in, and the running controls,
+ * are the shared action slot after the movements (TASK-006, C17): the minute
+ * is never marked done — every boundary moves the work on by itself
+ * (REQ-014) — and Pause holds the grid where it is.
  *
  * Neither line is a live region: announcing a number every second makes the
  * rest of the screen unusable, so the phase word is what a screen reader is
  * meant to find.
  */
-function SectionTimer({ view, onStart }: { view: EmomView; onStart: () => void }) {
+function SectionTimer({ view }: { view: EmomView }) {
   return (
     <div
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
       <BlockPanel.Label style={{ color: 'var(--text-timer)' }}>{minuteText(view)}</BlockPanel.Label>
-      <BlockPanel.Label>{PHASE_WORDS[view.phase]}</BlockPanel.Label>
-
-      {view.phase === 'ready' && (
-        <Button variant="primary" size="lg" icon={<Play />} onClick={onStart}>
-          Start EMOM
-        </Button>
-      )}
+      <BlockPanel.Label>{phaseWord(view)}</BlockPanel.Label>
     </div>
   )
+}
+
+/** The phase in words; a paused grid and an early finish say so (TASK-006). */
+function phaseWord(view: EmomView): string {
+  if (view.paused) return 'PAUSED'
+  if (view.phase === 'finished' && view.endedEarly) return view.minutes === null ? 'FINISHED' : 'FINISHED EARLY'
+  return PHASE_WORDS[view.phase]
 }
 
 /** `MIN 4 OF 10`, or `MIN 4` for a block that carries no window. */

@@ -34,13 +34,20 @@
  * Round count and interval length are the timing's own numbers, never
  * constants, and the global session clock is neither read nor changed here.
  *
+ * **Start, Pause, Resume and Finish** (TASK-006; C17, C18; R66, R67, R68). A
+ * ladder raced against its cap — every mode but a schedule — runs EXE-04b's
+ * own clock (`for-time.ts` and its persistence, drawn by `ForTimeClock`), not
+ * a second timer invented here, with the shared `TimedWorkoutActions` in the
+ * ladder's top slot: after its identity and cap, before the rung row and the
+ * repetitive round list, so Start is reachable without scrolling past them.
+ * Running, a secondary Pause sits beside the primary Finish.
+ *
  * What this renderer deliberately does **not** own:
- *   · **the clock.** `elapsed_seconds` and `completed_under_cap` are EXE-04b's,
- *     and a cap countdown invented here would be a second timer for the same
- *     structure. The ending is therefore *declared* rather than observed, and
- *     when EXE-04b lands it drives this same state from the real clock. A
- *     schedule's clock says which round is live and nothing more — it is never
- *     recorded as work performed.
+ *   · **a measurement from the clock.** `elapsed_seconds` and
+ *     `completed_under_cap` are EXE-04b's to record, and the ladder records
+ *     neither: its clock is the athlete's to watch, and the ending is still
+ *     *declared* rather than observed. A schedule's clock says which round is
+ *     live and nothing more — it is never recorded as work performed.
  *   · **the write.** The outcome goes to `BlockCompletionControl` and the shell
  *     writes the row, once, for every structure type (EXE-01).
  *   · **the frame.** The one card, the identity row and the single completion
@@ -53,11 +60,21 @@
  */
 import { useState, type ReactNode } from 'react'
 
-import { Button, ChoiceGroup, Play, TimerDisplay } from '../design-system/index'
+import { ChoiceGroup, TimerDisplay } from '../design-system/index'
 import type { BlockOutcome } from '../state/block-completion'
-import { clampForTimeState, startForTime, FOR_TIME_START } from '../state/for-time'
+import {
+  clampForTimeState,
+  finishForTime,
+  forTimeLifecycle,
+  forTimeTicking,
+  forTimeView,
+  startForTime,
+  FOR_TIME_START,
+  type ForTimePhase,
+} from '../state/for-time'
 import {
   explicitLadderTiming,
+  ladderCapSeconds,
   ladderMovements,
   ladderRoundPlan,
   ladderRungs,
@@ -69,14 +86,17 @@ import {
 import { prescribedTarget, targetText } from '../state/prescription'
 import type { LadderTiming } from '../state/schemas'
 import { useShellWeightUnit } from '../state/set-logging'
+import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
 import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
+import { ForTimeClock } from './for-time-block'
 import { LadderRungs } from './ladder-rungs'
 import { useInterfaceLoop } from './motion'
 import { liveMovementReadings, type LiveMovementReadings } from './refinements/movement-readings'
+import { TimedWorkoutActions } from './timed-workout-flow'
 
 /**
  * How the block ended, as the user says it.
@@ -136,17 +156,99 @@ export interface LadderBlockProps extends BlockRendererProps {
 export function LadderBlock({ block, storage, now }: LadderBlockProps) {
   const timing = explicitLadderTiming(block)
 
-  if (timing === null) return <LegacyLadder block={block} />
+  if (timing === null) return <LegacyLadder block={block} storage={storage} now={now} />
   if (timing.mode === 'scheduled_starts') {
     return <ScheduledLadder block={block} timing={timing} storage={storage} now={now} />
   }
-  return <TimedLadder block={block} timing={timing} live={null} />
+  return <RacedLadder block={block} timing={timing} storage={storage} now={now} />
 }
 
-/** A ladder with no explicit timing: exactly the EXE-04a block. */
-function LegacyLadder({ block }: BlockRendererProps) {
+// ─────────────────────────────────────────────────────────────────────────────
+// The ladder's race against its cap — TASK-006 (C17, C18; G05; R66, R67, R68)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The ladder's clock in words. Finish ends the attempt, which is not a claim
+ * that every rung was climbed (R69): how the ladder ended stays the athlete's
+ * to say below, so the clock says Finished rather than For Time's
+ * "Finished under cap".
+ */
+const LADDER_CLOCK_WORDS: Readonly<Record<ForTimePhase, string>> = {
+  ready: 'Ready',
+  running: 'Racing the clock',
+  paused: 'Paused',
+  finished: 'Finished',
+  capped: 'Cap reached',
+}
+
+/**
+ * A ladder raced against its cap — every ladder but a schedule — runs one
+ * visible clock (R67: the same Start and stop as other For Time work), on the
+ * For Time state owner and its persistence, so a refresh reads it back and a
+ * paused ladder comes back paused. Its actions are the shared lifecycle in the
+ * ladder's top slot (R66): Start ladder, then a secondary Pause beside the
+ * primary Finish (R68). The clock is drawn beside the card once started; before
+ * that the header and the timing line already state the cap.
+ *
+ * It records nothing (DATA_MODEL §8): how the ladder ended, and the rung
+ * reached, are still declared below — the clock never fills them in.
+ */
+function useLadderRace(
+  block: BlockRendererProps['block'],
+  capSeconds: number | null,
+  storage: ShellStorage | null | undefined,
+  now: () => number,
+): { actions: ReactNode; timer: ReactNode } {
+  const clock = usePersistedForTime(
+    block.blockId,
+    (stored) => (stored === null ? FOR_TIME_START : clampForTimeState(stored)),
+    storage,
+  )
+  const shape = {
+    capSeconds: capSeconds === null ? null : Math.max(1, Math.trunc(capSeconds)),
+    size: block.exercises.length,
+  }
+  const view = forTimeView(clock.state, shape, useElapsedSeconds(forTimeTicking(clock.state), now))
+
+  if (block.exercises.length === 0) return { actions: null, timer: null }
+  return {
+    actions: (
+      <TimedWorkoutActions
+        placement="top"
+        phase={forTimeLifecycle(view.phase)}
+        startLabel="Start ladder"
+        finishLabel={finishLabel('ladder', shape.capSeconds !== null)}
+        onStart={() => clock.moveTo(startForTime(clock.state, now()))}
+        onPause={() => clock.moveTo(pauseClock(clock.state, now()))}
+        onResume={() => clock.moveTo(resumeClock(clock.state, now()))}
+        onFinish={() => clock.moveTo(finishForTime(clock.state, now()))}
+      />
+    ),
+    timer: view.phase === 'ready' ? null : <ForTimeClock view={view} words={LADDER_CLOCK_WORDS} />,
+  }
+}
+
+interface ClockedLadderProps extends BlockRendererProps {
+  storage?: ShellStorage | null
+  now?: () => number
+}
+
+/** An explicit `for_time` or `capped_window` ladder: its rounds, raced against its cap. */
+function RacedLadder({
+  block,
+  timing,
+  storage,
+  now = Date.now,
+}: ClockedLadderProps & { timing: LadderTiming }) {
+  const race = useLadderRace(block, ladderCapSeconds(timing) ?? block.timerSeconds, storage, now)
+  return <TimedLadder block={block} timing={timing} live={null} timer={race.timer} actions={race.actions} />
+}
+
+/** A ladder with no explicit timing: the EXE-04a block, raced against the block's cap. */
+function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
   const [ending, setEnding] = useState<Ending>('undeclared')
   const [reached, setReached] = useState<number | null>(null)
+  const race = useLadderRace(block, block.timerSeconds, storage, now)
 
   const rungs = ladderRungs(block.exercises)
   const unit = ladderUnit(block.exercises)
@@ -155,12 +257,16 @@ function LegacyLadder({ block }: BlockRendererProps) {
   return (
     <BlockPanel
       block={block}
+      timer={race.timer}
       completion={{ outcome: ladderOutcome(ending, reached, rungs) }}
     >
       {block.exercises.length === 0 ? (
         <BlockPanel.EmptyNote />
       ) : (
         <>
+          {/* R66: the ladder's top action, after its identity and cap. */}
+          {race.actions}
+
           {rungs.length === 0 ? (
             // A ladder scheme with no sequence on any movement: the block is
             // malformed, and saying so is better than drawing an empty rail.
@@ -403,7 +509,19 @@ function ScheduledLadder({
       timing={timing}
       live={view}
       timer={block.exercises.length === 0 ? null : <IntervalCountdown view={view} />}
-      onStart={() => clock.moveTo(startForTime(clock.state, now()))}
+      // TASK-006 (C17): the schedule's one way in, in the ladder's shared top
+      // slot. Its lifecycle is its own: once it runs, every round starts on
+      // the clock, so there is nothing to pause or finish.
+      actions={
+        block.exercises.length === 0 ? null : (
+          <TimedWorkoutActions
+            placement="top"
+            phase={view.phase === 'ready' ? 'ready' : 'ended'}
+            startLabel="Start schedule"
+            onStart={() => clock.moveTo(startForTime(clock.state, now()))}
+          />
+        )
+      }
     />
   )
 }
@@ -420,13 +538,14 @@ function TimedLadder({
   timing,
   live,
   timer,
-  onStart,
+  actions,
 }: {
   block: BlockRendererProps['block']
   timing: LadderTiming
   live: ScheduleView | null
   timer?: ReactNode
-  onStart?: () => void
+  /** The ladder's top action slot (TASK-006, R66): after its identity and cap. */
+  actions?: ReactNode
 }) {
   const [ending, setEnding] = useState<Ending>('undeclared')
   const [reached, setReached] = useState<number | null>(null)
@@ -448,9 +567,14 @@ function TimedLadder({
         <>
           <BlockPanel.Label>{timingSummary(timing, block.timerSeconds)}</BlockPanel.Label>
 
-          {live !== null && onStart !== undefined && (
-            <ScheduleStatus view={live} rounds={timing.rounds} onStart={onStart} />
-          )}
+          {live !== null && <ScheduleStatus view={live} rounds={timing.rounds} />}
+
+          {/*
+            R66 (TASK-006): the long ladder's exception — its actions near the
+            top, after its identity and cap, so they are reachable without the
+            repetitive round list below. One slot, never sticky or repeated.
+          */}
+          {actions}
 
           {rungs.length > 0 && (
             <RungsRow rungs={rungs} unit={unit} ending={ending} reached={reached} onReach={setReached} />
@@ -577,19 +701,12 @@ function roundTarget(movement: ExerciseProgress, roundNumber: number): string {
 }
 
 /**
- * The schedule's place, inside the block's card: the round out of the total,
- * the phase in words, and — before it runs — the one way in. Not a live region:
- * a number announced every second would make the rest of the screen unusable.
+ * The schedule's place, inside the block's card: the round out of the total
+ * and the phase in words. Its one way in is the ladder's shared top action
+ * slot, just below (TASK-006). Not a live region: a number announced every
+ * second would make the rest of the screen unusable.
  */
-function ScheduleStatus({
-  view,
-  rounds,
-  onStart,
-}: {
-  view: ScheduleView
-  rounds: number
-  onStart: () => void
-}) {
+function ScheduleStatus({ view, rounds }: { view: ScheduleView; rounds: number }) {
   return (
     <div
       className="clr-stack--tight"
@@ -601,12 +718,6 @@ function ScheduleStatus({
         </BlockPanel.Label>
       )}
       <BlockPanel.Label>{SCHEDULE_WORDS[view.phase]}</BlockPanel.Label>
-
-      {view.phase === 'ready' && (
-        <Button variant="primary" size="lg" icon={<Play />} onClick={onStart}>
-          Start schedule
-        </Button>
-      )}
     </div>
   )
 }

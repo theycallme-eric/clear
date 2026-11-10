@@ -34,6 +34,7 @@
  * `amrap-block.tsx` draws it and `workout-persistence.ts` remembers it.
  */
 import type { BlockOutcome } from './block-completion'
+import { pausedElapsedSeconds, restoredPause, withoutPause } from './timed-lifecycle'
 import type { BlockProgress } from './workout-progress'
 
 /** What the block prescribes: the window, and what one round is made of. */
@@ -67,9 +68,19 @@ export interface AmrapState {
   readonly roundsCompleted: number | null
   /** Reps into the unfinished round, or null for no partial round recorded. */
   readonly partialRoundReps: number | null
+  /**
+   * TASK-006 (C18): when the open window was paused, ISO. Absent while it runs
+   * and in every record written before Pause existed. Resume moves `startedAt`
+   * on by the pause, so the window left is the window left (`timed-lifecycle.ts`).
+   */
+  readonly pausedAt?: string | null
 }
 
-export type AmrapPhase = 'ready' | 'running' | 'complete'
+/**
+ * `paused` (TASK-006, C18) is an open window frozen by the user's Pause: the
+ * time left stays where it was, nothing is entered and nothing runs out.
+ */
+export type AmrapPhase = 'ready' | 'running' | 'paused' | 'complete'
 
 /** Nothing started, nothing recorded, no partial round claimed. */
 export const AMRAP_START: AmrapState = {
@@ -113,10 +124,11 @@ export function finishAmrap(
 ): AmrapState {
   if (state.startedAt === null || state.endedAtSeconds !== null) return state
 
-  const elapsed = Math.max(0, Math.floor(elapsedSeconds))
+  // A paused window ends where it was paused, whatever the caller's clock says.
+  const elapsed = Math.max(0, Math.floor(pausedElapsedSeconds(state) ?? elapsedSeconds))
 
   return {
-    ...state,
+    ...withoutPause(state),
     endedAtSeconds: shape.capSeconds === null ? elapsed : Math.min(elapsed, shape.capSeconds),
   }
 }
@@ -191,6 +203,8 @@ export function clampAmrapState(state: AmrapState, shape: AmrapShape): AmrapStat
       state.partialRoundReps === null
         ? null
         : Math.max(0, Math.trunc(state.partialRoundReps)),
+    // A pause belongs to a window still open; a closed one has none.
+    ...(ended === null ? restoredPause(state) : {}),
   }
 }
 
@@ -256,7 +270,9 @@ export function amrapView(
     }
   }
 
-  const elapsed = Math.max(0, Math.floor(clockElapsedSeconds))
+  // TASK-006 (C18): a paused window reads the moment it was paused.
+  const paused = pausedElapsedSeconds(state)
+  const elapsed = Math.max(0, Math.floor(paused ?? clockElapsedSeconds))
 
   // Derived, not written: nothing had to be running for the buzzer to have gone.
   if (shape.capSeconds !== null && elapsed >= shape.capSeconds) {
@@ -271,7 +287,7 @@ export function amrapView(
 
   return {
     ...common,
-    phase: 'running',
+    phase: paused === null ? 'running' : 'paused',
     remainingSeconds: shape.capSeconds === null ? 0 : shape.capSeconds - elapsed,
     elapsedSeconds: elapsed,
     expired: false,

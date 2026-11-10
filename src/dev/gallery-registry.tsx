@@ -86,6 +86,12 @@ import {
   GroupExerciseCoachingSuperset,
 } from './gallery-refinement-coaching'
 import {
+  TimedActionsLifecycle,
+  TimedActionsPaused,
+  TimedActionsReady,
+  TimedActionsRunning,
+} from './gallery-refinement-flow'
+import {
   EquipmentSummaryBodyweight,
   EquipmentSummaryLoaded,
   OverviewFactsPlanned,
@@ -2169,6 +2175,18 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'superset · two movements', note: 'Open it: each movement’s cues sit under its own name.', Render: GroupExerciseCoachingSuperset },
       { state: 'circuit · guidance, blank guidance, failed read and a failed save', note: 'Open it, then save each note: only the plank’s write fails, and its text stays.', Render: GroupExerciseCoachingStates },
+    ],
+  },
+  {
+    component: 'TimedWorkoutActions',
+    requirement: 'REQ-006',
+    module: 'src/ui/timed-workout-flow.tsx',
+    summary: 'TASK-006 the timed Start/Pause/Resume/Finish hierarchy every timed format composes (C17, C18, R39, R48, R66, R68): one responsive full-width slot after the work and before coaching — or at the long ladder’s top — holding a primary Start, then a secondary Pause beside the format’s primary Finish or Finish early, with Resume in Pause’s place while paused. Presentation only: each format’s controller owns its clock, pause and record. The live ladder is /gallery/refinements?state=ladder-4 and ladder-12.',
+    specimens: [
+      { state: 'ready · Start EMOM', note: 'One primary action, the card’s full width.', Render: TimedActionsReady },
+      { state: 'running · Pause and Finish early', note: 'Secondary Pause, primary Finish early, equal halves.', Render: TimedActionsRunning },
+      { state: 'paused · Resume and Finish', note: 'Resume takes Pause’s place; Finish is unchanged.', Render: TimedActionsPaused },
+      { state: 'lifecycle · ladder', note: 'Start, Pause, Resume, then Finish: the row leaves once the attempt has ended. Memory only.', Render: TimedActionsLifecycle },
     ],
   },
   {

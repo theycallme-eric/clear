@@ -37,6 +37,11 @@
  * buzzer — is nowhere in the rows until the block is completed, and the user is
  * entitled to walk to the next section and back without losing it.
  *
+ * TASK-006 (C18) adds no key: Pause is one more optional stamp, `pausedAt`, in
+ * each timed record (and the EMOM's Finish early a `finishedAt`), so a paused
+ * section comes back paused after a refresh and records written before it
+ * parse unchanged.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -405,6 +410,15 @@ export function usePersistedCircuit(
 // EMOMs (EXE-03)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * TASK-006 (C18): an optional stamp a later build added — Pause's `pausedAt`,
+ * EMOM's Finish early `finishedAt`. Absent in a record written before it, so
+ * absence is as valid as null or an ISO string.
+ */
+function isOptionalStamp(value: unknown): boolean {
+  return value === undefined || value === null || typeof value === 'string'
+}
+
 type EmomRecords = BlockRecords<EmomState>
 
 function isEmomState(value: unknown): value is EmomState {
@@ -413,7 +427,9 @@ function isEmomState(value: unknown): value is EmomState {
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.workDoneMinute === null ||
-      (typeof record.workDoneMinute === 'number' && Number.isInteger(record.workDoneMinute)))
+      (typeof record.workDoneMinute === 'number' && Number.isInteger(record.workDoneMinute))) &&
+    isOptionalStamp(record.pausedAt) &&
+    isOptionalStamp(record.finishedAt)
   )
 }
 
@@ -457,7 +473,8 @@ function isForTimeState(value: unknown): value is ForTimeState {
   const record = value as Record<string, unknown>
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
-    (record.finishedAt === null || typeof record.finishedAt === 'string')
+    (record.finishedAt === null || typeof record.finishedAt === 'string') &&
+    isOptionalStamp(record.pausedAt)
   )
 }
 
@@ -509,7 +526,8 @@ function isAmrapState(value: unknown): value is AmrapState {
         Number.isInteger(record.roundsCompleted) && record.roundsCompleted >= 0)) &&
     (record.partialRoundReps === null ||
       (typeof record.partialRoundReps === 'number' &&
-        Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0))
+        Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0)) &&
+    isOptionalStamp(record.pausedAt)
   )
 }
 

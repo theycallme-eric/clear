@@ -749,7 +749,7 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
   it.each([
     { rounds: 3, rungs: [21, 15, 9], cap: 600 },
     { rounds: 6, rungs: [2, 4, 6, 8, 10, 12], cap: 1500 },
-  ])('$rounds rounds: no live round and no schedule, however long passes', ({ rounds, rungs, cap }) => {
+  ])('$rounds rounds: no live round and no schedule, however long passes', async ({ rounds, rungs, cap }) => {
     const storage = memoryStorage()
     let wall = SCHEDULE_START
     const mounted = mountTimed(
@@ -781,10 +781,26 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
       expect(within(row).queryByText(/^(Now|Next)$/)).not.toBeInTheDocument()
     }
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /start/i })).not.toBeInTheDocument()
+    // TASK-006 (AC-R006-01, C18; R66, R67): a For Time ladder offers its own
+    // Start in its top slot — superseding "no Start at all". Until it is
+    // pressed no clock runs and nothing is stored.
+    expect(screen.getAllByRole('button', { name: /start/i }).map((button) => button.textContent)).toEqual(['Start ladder'])
     expect(storage.getItem('clear.workout-for-time')).toBeNull()
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
     expectNoSetEntry()
+
+    // Once its clock runs, it is still never a schedule: elapsed time marks no
+    // round live and records no progress.
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Start ladder' }))
+    moveClockTo((value) => {
+      wall = value
+    }, SCHEDULE_START + cap * 1500)
+    expect(screen.getByRole('timer', { name: 'Block time' })).toBeInTheDocument()
+    for (const row of roundRows()) {
+      expect(row).not.toHaveAttribute('aria-current')
+      expect(within(row).queryByText(/^(Now|Next)$/)).not.toBeInTheDocument()
+    }
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 
   it('records progress only once the athlete declares it', async () => {

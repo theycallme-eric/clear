@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-006",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-006.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-006/required-cases.json",
+    "sha256": "5a4519ac8d24b83b91089e58bcfaabb45e2e6461c05b959c4af8197326f369f5"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-006.spec.ts",
+      "sha256": "c15ebc3388690e8e33a85ded9746da00c3c5c6240554fbd0012cd9eafd9456d1"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 keyboard and reduced motion: every action by keyboard, focus kept through Start and Pause, and the section Finish is not Finish workout",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 recovery phone-390: close and reopen keeps a paused section paused and frozen, and a running one running",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-006.spec.ts",
+      "name": "TASK-006 timed action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 phone-320: the actual ladder renderer, Start at the top, then Pause and Finish",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

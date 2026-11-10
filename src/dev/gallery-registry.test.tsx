@@ -122,6 +122,11 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // block has been running against its cap, so a specimen would be framing a
   // frozen moment of an invented session rather than the renderer.
   ForTimeBlock: 'EXE-04b — a For Time block of a live session, raced against its cap',
+  // TASK-006: ForTimeBlock's own clock card, shared with the timed ladder's
+  // race. Its subject is a live attempt's elapsed time against its cap; it is
+  // reviewed on `/workout` and in the accepted `ladder-4` / `ladder-12` states.
+  ForTimeClock:
+    'EXE-04b / TASK-006 — the race clock ForTimeBlock and the timed ladder draw; framed through /gallery/refinements?state=ladder-4',
   // EXE-03's EMOM. Its whole subject is where a running clock has got to —
   // which minute, whether the work or the remainder is live, which movement the
   // minute prescribes — so a specimen would be framing an invented session
