@@ -1,0 +1,92 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-030",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/data/refinement-logging-contract.test.ts",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-030/required-cases.json",
+    "sha256": "0f85605df329e9ecf9b355003fa51655da9f6f34c9c8ee95db924ef69cbf5454"
+  },
+  "targets": [
+    {
+      "path": "src/data/refinement-logging-contract.test.ts",
+      "sha256": "9a1b0ae1e11b36015ef7a0f5dfab795fe13540103508bd789abe79d98a765c45"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 inventories exactly the 16 logging moments of the accepted sources, each with schema, validator, writer, identity, null/zero/update meaning, draft and readback",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 every source the matrix names resolves to a real export, every existing column to the generated types, and every proposed one is still absent",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 the published specification states the same moments, fields, statuses, migrations and owners as the typed contract",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: lifts, timed and distance movements, extra sets, supersets and circuit movements save through the one durable set path and read back in Workout and History",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: a saved set is corrected and cleared by ordered mutations that keep its identity, and a retry replays rather than duplicates",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: circuit, EMOM, AMRAP, For Time and ladder outcomes save through the shell’s one block writer, keep null distinct from zero and read back in History",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: movement notes, workout feedback and rest days keep their own writers, validators and readers",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-02 categorical block effort is never converted into the legacy 1-10 perceived_effort, which keeps its numeric meaning",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-02 per-movement timed partials and loads cannot reuse exercise_set_logs, so they need their own table",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 proposed per-movement identities derive from the block’s recorded outcome, never from planned targets, and keep null distinct from zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 11
+  },
+  "problems": []
+}

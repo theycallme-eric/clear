@@ -395,6 +395,8 @@ Collapsing revision and execution into one column loses information: replacing a
 
 ## 8. Execution
 
+Per-logging-moment field ownership (writer, validator, identity, null/zero/update meaning, readback), the proposed richer timed fields and their isolated migrations: [`LOGGING_FIELD_CONTRACT.md`](LOGGING_FIELD_CONTRACT.md).
+
 ### `exercise_set_logs`
 
 Prescriptions support reps, time, and distance, so logs must too.

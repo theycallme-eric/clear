@@ -57,3 +57,10 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
 - `constraint-selectors.ts` (DATA-05) — pure reads over a constraint set the server returned.
   Deterministic filtering is SQL's (`constraints_in_force`, `usable_equipment`); these mirror it for
   rendering, and where they disagree with the database, the database is right.
+- `refinement-logging-contract.ts` (TASK-030, REQ-030) — the logging field-to-contract matrix as
+  data: the 16 logging moments and every existing and proposed measurement, load, effort and note
+  field, each with its schema, validator, writer, identity, null/zero/update meaning and readback
+  owner, plus the pure rules for the proposed timed fields (`partialRoundFor`, `loadApplies`,
+  `movementActualFromDraft`). It writes nothing and calls nothing; the prose, the reuse-versus-
+  migration reasoning and the draft SQL (MIG-A, MIG-B — owned by TASK-031, not applied) are
+  `docs/specs/LOGGING_FIELD_CONTRACT.md`. A task that lands a proposed field updates both.
