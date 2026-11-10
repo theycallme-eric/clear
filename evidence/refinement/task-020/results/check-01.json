@@ -1,0 +1,64 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-020",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/set-logging-sheet.test.tsx",
+    "--testNamePattern",
+    "rest|save|collapse",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-020/required-cases.json",
+    "sha256": "34ffb89ea69d10e5065da62ed6643412b9da3551831c0cfca4864dd160212038"
+  },
+  "targets": [
+    {
+      "path": "src/ui/set-logging-sheet.test.tsx",
+      "sha256": "8e24c4de0ed0b93100815191dd913ee31c792a8f6ccf945135250e627c1015ba"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-C46-01 Log set N shows its saved confirmation beside the same running rest and no next-set form; at rest end the sheet collapses and resets, and only a deliberate Rest opens set N + 1",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-01 Save never replaces the entry with another form; an early collapse is kept: the rest ending never reopens the sheet, and Rest opens the next entry on the same rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 Add 30s and Skip rest stay the existing rest’s: the extension keeps the confirmation and Skip rest ends it; rest expiry or its final-seconds warning never records another set or closes a draft",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a superset’s Log round N confirms each logged movement’s own actuals and effort beside the round’s one rest; the rest ending collapses without opening round N + 1",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a Save the shell refuses claims no confirmation: the entry stays on its form, and the rest ending neither collapses nor records it",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 36,
+    "passed": 17,
+    "failed": 0,
+    "skipped": 19,
+    "todo": 0,
+    "executed": 17
+  },
+  "problems": []
+}

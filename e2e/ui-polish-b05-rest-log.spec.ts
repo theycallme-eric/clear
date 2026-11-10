@@ -453,7 +453,9 @@ async function captureSheet(page: Page, testInfo: TestInfo, id: string) {
   const geometry = await frame.evaluate((element) => {
     const box = element.getBoundingClientRect()
     const head = element.querySelector('.clr-set-sheet__head')!.getBoundingClientRect()
-    const firstLabel = element.querySelector('form label, form [role="group"]')!.getBoundingClientRect()
+    // TASK-020 (C46): after a Save the sheet holds its confirmation, not a form.
+    const firstLabel = (element.querySelector('form label, form [role="group"]')
+      ?? element.querySelector('.clr-set-sheet__frame > [role="status"]'))!.getBoundingClientRect()
     const rest = element.querySelector('[aria-label="Rest"]')?.getBoundingClientRect() ?? null
     return {
       width: box.width, height: box.height,
@@ -606,7 +608,9 @@ for (const { name: size, viewport } of VIEWPORTS) {
 
       // ── Log set 1 saves; the rest runs on ────────────────────────────────
       await form1.getByRole('button', { name: 'Log set 1', exact: true }).click()
-      await expect(page.getByRole('heading', { name: 'Log set 2', exact: true })).toBeVisible()
+      // TASK-020 (C46): set 1's confirmation beside the same rest, not set 2's form.
+      await expect(page.getByRole('heading', { name: 'Set 1 logged', exact: true })).toBeVisible()
+      await expect(page.getByRole('form', { name: 'Log set 2 of back squat' })).toHaveCount(0)
       await expect.poll(() => app.mutations.length).toBe(1)
       expect(app.mutations[0]).toMatchObject({
         operation: 'insert', exercise_id: EXERCISE_ID.get('back-squat'), set_number: 1,
@@ -619,7 +623,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(saved).toContainText('Saved')
       const logged = await captureSheet(page, testInfo, `sheet-after-log-${size}`)
       await record(page, testInfo, `sheet-after-log-${size}`, {
-        consumer: 'Workout · SetLoggingSheet new entry', state: 'Log set 1 saved; rest continues; next entry set 2', viewport,
+        consumer: 'Workout · SetLoggingSheet new entry', state: 'Log set 1 saved; rest continues; set 1 confirmed (TASK-020)', viewport,
         reference: refRecord(ref.sheet.region), measured: { referenceBands: ref.sheet.bands, actualBands: logged.bands },
         mutation: app.mutations[0], capture: logged.capture, criteria: { 'AC-037': 'pass', 'AC-051': 'pass', 'AC-067': 'pass' },
       })
@@ -832,6 +836,11 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
       // Expiry while a second combined draft is open saves nothing. Its
       // subsequent explicit save cannot silently start another round rest.
+      // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately,
+      // on the rest already running.
+      await expect(page.getByRole('heading', { name: 'Round 1 logged', exact: true })).toBeVisible()
+      await pair.getByRole('button', { name: 'Rest', exact: true }).click()
+      await expectRestFrom(page, roundRest, 4)
       const round2 = page.getByRole('form', { name: 'Log round 2 of bench press and plank' })
       await expect(round2).toBeVisible()
       await round2.getByRole('group', { name: 'A1 bench press, set 2' }).getByLabel('Reps').fill('6')

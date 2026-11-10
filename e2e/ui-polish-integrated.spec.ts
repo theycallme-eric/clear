@@ -667,6 +667,15 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await tap(rest.getByRole('button', { name: 'Skip rest', exact: true }))
       await expect(rest).toHaveCount(0)
       expect(api.mutations).toHaveLength(1)
+      // TASK-020 (C46): the rest's end collapses set 1's confirmation; no
+      // set-2 form opens by itself. The card's Rest opens it deliberately and
+      // starts its prescribed rest, skipped here so set 2 saves with none.
+      await expect(page.getByRole('region', { name: 'Set 1 logged', exact: true })).toHaveCount(0)
+      await expect(form('Log', 2)).toHaveCount(0)
+      await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
+      await expect(form('Log', 2)).toBeVisible()
+      await tap(rest.getByRole('button', { name: 'Skip rest', exact: true }))
+      await expect(rest).toHaveCount(0)
       await expect(form('Log', 2)).toBeVisible()
       await tap(form('Log', 2).getByRole('button', { name: 'Log set 2', exact: true }))
       await expect(logged.getByRole('listitem').filter({ hasText: 'Set 2' })).toContainText('Saved')
@@ -921,7 +930,10 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     expect(await timerSeconds(remaining)).toBeLessThan(beforeRest)
     expect(await timerSeconds(sessionTime)).toBeGreaterThanOrEqual(beforeRestGlobal + 2)
     expect(api.mutations).toHaveLength(2)
-    await expect(page.getByRole('form', { name: 'Log round 2 of bench press and plank', exact: true })).toBeVisible()
+    // TASK-020 (C46): round 1 is confirmed beside the same rest, not replaced
+    // by round 2's form.
+    await expect(page.getByRole('region', { name: 'Round 1 logged', exact: true })).toBeVisible()
+    await expect(page.getByRole('form', { name: 'Log round 2 of bench press and plank', exact: true })).toHaveCount(0)
     await tap(page.getByRole('button', { name: 'Minimize', exact: true }))
     await tap(sharedRest.getByRole('button', { name: 'Skip rest', exact: true }))
     await expect(sharedRest).toHaveCount(0)

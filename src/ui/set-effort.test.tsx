@@ -90,7 +90,11 @@ async function openSheet(user: ReturnType<typeof userEvent.setup>) {
 async function logSet(user: ReturnType<typeof userEvent.setup>, setNumber: number, effort?: string) {
   if (effort !== undefined) await user.click(form(setNumber).getByRole('radio', { name: effort }))
   await user.click(form(setNumber).getByRole('button', { name: `Log set ${setNumber}` }))
-  await waitFor(() => expect(screen.getByRole('region', { name: `Log set ${setNumber + 1}` })).toBeInTheDocument())
+  // TASK-020 (C46): the saved set is confirmed; the next entry is opened
+  // deliberately, from the card's Rest.
+  await waitFor(() => expect(screen.getByRole('region', { name: `Set ${setNumber} logged` })).toBeInTheDocument())
+  await user.click(main().getByRole('button', { name: 'Rest' }))
+  expect(screen.getByRole('region', { name: `Log set ${setNumber + 1}` })).toBeInTheDocument()
 }
 
 const checked = (scope: ReturnType<typeof form>) =>
@@ -131,7 +135,7 @@ describe('AC-039: one optional three-choice effort with the set’s entry', () =
     expect(screen.queryByLabelText(/RPE/i)).toBeNull()
 
     await logSet(user, 1, 'About right')
-    // Logging moves straight to the next set: no dialog asks afterwards.
+    // Logging asks nothing afterwards: no dialog follows the set.
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.queryByRole('alertdialog')).toBeNull()
   })

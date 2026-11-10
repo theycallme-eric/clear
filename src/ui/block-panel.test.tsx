@@ -308,7 +308,8 @@ describe('TASK-003 consistent format badges and truthful prescribed load', () =>
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
     expect(double.loggedSets()[0].performed).toMatchObject({ weight: 22 })
-    await screen.findByRole('form', { name: 'Log set 2 of kb swing' })
+    // TASK-020 (C46): the saved set is confirmed, not replaced by set 2's form.
+    await screen.findByRole('region', { name: 'Set 1 logged' })
     expect(within(screen.getByRole('list', { name: 'Logged sets' })).getByText(/22 kg/)).toBeInTheDocument()
     const swing = () => blockList('workout', 2).querySelector<HTMLElement>('[data-movement-identity]')!
     expect(swing().querySelector('[data-movement-load]')).toHaveTextContent('24 kg')

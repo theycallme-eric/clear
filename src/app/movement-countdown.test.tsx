@@ -272,7 +272,8 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
         { name: 'Log set 1' },
       ),
     )
-    await screen.findByRole('form', { name: 'Log set 2 of hollow body hold' })
+    // TASK-020 (C46): set 1 is confirmed beside the rest; no set-2 form opens.
+    await screen.findByRole('region', { name: 'Set 1 logged' })
 
     // The rest is the sheet's clock; the countdown is the card's, re-armed.
     expect(within(screen.getByRole('region', { name: 'Rest' })).getByRole('timer', {

@@ -566,7 +566,8 @@ describe('set progression follows the round, and each movement keeps its own row
 
     // The round moves on. A1 is prefilled from the set just done; A2 missed
     // round one and stays missing there rather than being filled in.
-    await screen.findByRole('form', { name: /^Log round 2 of / })
+    // TASK-020 (C46): round 1 is confirmed first; round 2 is opened deliberately.
+    await screen.findByRole('region', { name: 'Round 1 logged' })
     const next = formFor('romanian deadlift', 2)
     expect(rowFor('A1 romanian deadlift').getByText('Set 2/3')).toBeInTheDocument()
     expect(next.getByLabelText('Weight')).toHaveValue(60)
@@ -591,7 +592,8 @@ describe('set progression follows the round, and each movement keeps its own row
         await user.type(form.getByLabelText('Weight'), '60')
       }
       await user.click(logRoundButton(round))
-      await screen.findByRole('form', { name: new RegExp(`^Log round ${round + 1} of `) })
+      // TASK-020 (C46): confirmed; the next round is opened by the block's Rest.
+      await screen.findByRole('region', { name: `Round ${round} logged` })
     }
 
     await waitFor(() => expect(workout.loggedSets()).toHaveLength(4))
@@ -651,7 +653,10 @@ describe('saving, refusing and retrying a set', () => {
 
     // The set is on the screen at once, and said to be saving — not saved.
     const a1 = rowFor('A1 romanian deadlift')
-    await screen.findByRole('form', { name: /^Log round 2 of / })
+    // TASK-020 (C46): round 1 is confirmed while in flight; round 2 is opened
+    // deliberately, and its action waits for the set still saving.
+    await screen.findByRole('region', { name: 'Round 1 logged' })
+    formFor('back squat', 2)
     const busy = logRoundButton(2)
     await waitFor(() => expect(busy).toBeDisabled())
     expect(busy).toHaveAttribute('aria-busy', 'true')
@@ -714,8 +719,10 @@ describe('saving, refusing and retrying a set', () => {
     expect(workout.loggedSets()).toEqual([])
     expect(attempts).toHaveLength(1)
 
-    // Logging is not blocked by it: the round has moved on and is open.
-    await screen.findByRole('form', { name: /^Log round 2 of / })
+    // Logging is not blocked by it: the round is confirmed as it stands, and
+    // the next deliberate Rest opens round 2 (TASK-020: C46).
+    await screen.findByRole('region', { name: 'Round 1 logged' })
+    formFor('back squat', 2)
     expect(logRoundButton(2)).toBeInTheDocument()
 
     // The connection returns, and the next set logged carries the first along.

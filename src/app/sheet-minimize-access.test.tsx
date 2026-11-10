@@ -119,7 +119,8 @@ async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
-  await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+  // TASK-020 (C46): the saved set's confirmation, not set 2's form.
+  await screen.findByRole('region', { name: 'Set 1 logged' })
   await user.click(screen.getByRole('button', { name: 'Minimize' }))
   expect(openSheet()).toBeNull()
 }
@@ -251,11 +252,15 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
         name: 'Log set 1',
       }),
     )
-    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+    // TASK-020 (C46): Log set confirms set 1 beside the same rest.
+    await screen.findByRole('region', { name: 'Set 1 logged' })
     const recorded = double.loggedSets().length
     // Log set saved; it did not restart the rest.
     expect(restTimer()).toHaveTextContent('01:30')
 
+    // Set 2 is opened deliberately, on the rest already running.
+    await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
+    expect(restTimer()).toHaveTextContent('01:30')
     const form = within(screen.getByRole('form', { name: 'Log set 2 of back squat' }))
     await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '6')
@@ -317,7 +322,8 @@ describe('Saving and correcting never start absent or expired rest (B05 AC-037/0
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     expect(double.loggedSets()).toEqual([])
     await user.click(entry.getByRole('button', { name: 'Log set 1' }))
-    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+    // TASK-020 (C46): confirmed, with no rest to wait for, until Minimize.
+    await screen.findByRole('region', { name: 'Set 1 logged' })
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
     const stored = double.loggedSets()[0]

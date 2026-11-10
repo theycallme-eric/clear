@@ -129,7 +129,8 @@ async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
-  await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+  // TASK-020 (C46): the saved set's confirmation, not set 2's form.
+  await screen.findByRole('region', { name: 'Set 1 logged' })
   await user.click(screen.getByRole('button', { name: 'Minimize' }))
   expect(sheet()).toBeNull()
 }
@@ -285,15 +286,21 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     )
     expect(double.loggedSets()).toHaveLength(1)
 
-    // Expiry with the prefilled set-2 sheet open records no set 2.
+    // TASK-020 (C46): set 1 is confirmed, and no set-2 form is opened.
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBeInTheDocument()
+    expect(sheet()).toBeNull()
+
+    // Expiry collapses the confirmation and records no set 2.
     advance(90)
     returnToForeground()
     expectNoFinishedRest()
-    expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Set 1 logged' })).toBeNull())
+    expect(sheet()).toBeNull()
     expect(double.loggedSets()).toHaveLength(1)
 
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    // Reopening it deliberately draws the prefilled set 2 and records nothing.
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
+    expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
     expect(double.loggedSets()).toHaveLength(1)
   })
 
