@@ -43,4 +43,13 @@
   --logging-viewport-gap: var(--spacing-800);
   --logging-inline-padding: var(--spacing-400);
   --logging-section-gap: var(--spacing-600);
+  /* TASK-016 (C43; R110, R127; REUSE.md "Balanced focused dialog"): the
+   * selected A / Balanced backdrop, exactly as the owner reviewed it — the
+   * existing small blur step behind the dialog, a 55% dim of the ground
+   * colour, and a corner vignette rising to 85% at the edges from a clear
+   * centre. The darker B and C treatments were rejected; these are not
+   * raised to hide anything. The accepted reference's values. */
+  --logging-backdrop-blur: var(--spacing-100);
+  --logging-backdrop-tint: 55%;
+  --logging-backdrop-edge-tint: 85%;
 }

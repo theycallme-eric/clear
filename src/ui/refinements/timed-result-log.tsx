@@ -97,6 +97,7 @@ import { useInvalidFocus } from '../formFocus'
 import { Heading, HeadingSection } from '../Heading'
 import { SetEffortChoice, type SetEffort } from '../set-effort'
 import { LadderCompletion, type LadderCompletionProps } from './ladder'
+import { useLoggingOverlayTitle } from './logging-overlay-context'
 import { QuantitySelector } from './quantity'
 import './tokens.css'
 import './presentation.css'
@@ -359,25 +360,29 @@ const NOTHING_TO_SUBMIT = () => true
  * Inline in a block's card the form is deliberately unnamed, so it is not a
  * landmark: a section can hold more than one AMRAP, and two `form` landmarks
  * with one name are indistinguishable (axe `landmark-unique`). Its title heads
- * it instead. The focused dialog that later holds one log at a time names it
- * (TASK-016, TASK-046).
+ * it instead. The focused dialog that holds one log at a time names it
+ * (TASK-016: C40, R90 A): inside `LoggingOverlay` the dialog's title is the
+ * form's one title, so the form is labelled by it and draws no second "Log
+ * results" heading under it. TASK-046 moves the route's logs into the dialog.
  */
 export function TimedResultLog(props: TimedResultLogProps) {
   const invalidFocus = useInvalidFocus()
+  const dialogTitle = useLoggingOverlayTitle()
   return (
     <form
       className="clr-timed-log"
       data-log-hierarchy="simple"
       data-timed-format={props.format}
+      aria-labelledby={dialogTitle ?? undefined}
       noValidate
       onSubmit={invalidFocus(NOTHING_TO_SUBMIT)}
     >
       {/*
         The title heads the log at the level of the card's other groups ("Each
         round:"), so the log is the work's sibling in the outline, never a
-        part of it.
+        part of it. In the focused dialog, the dialog's title is that title.
       */}
-      <Heading className="clr-timed-log__title">Log results</Heading>
+      {dialogTitle === null ? <Heading className="clr-timed-log__title">Log results</Heading> : null}
       {props.format === 'amrap' ? (
         <AmrapGroups {...props} />
       ) : props.format === 'emom' ? (

@@ -70,8 +70,11 @@
  * `LoggingOverlay` holding the twelve-round ladder's `TimedResultLog` over a
  * memory controller: one stationary frame, only the inside scrolling, to the
  * inner lower border, with no scrollbar and no outline around the frame on
- * open or reopen. A provider reference: the routes adopt the frame with
- * TASK-043–046 (`gallery-refinement-forms.tsx`).
+ * open or reopen. Since TASK-016 (C40, C41, C43) it also draws the selected
+ * dialog: the A / Balanced backdrop, the dialog's title as the log's one
+ * title (wrapping on a phone) and the framed icon-only X on its visible top.
+ * A provider reference: the routes adopt the frame with TASK-043–046
+ * (`gallery-refinement-forms.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
