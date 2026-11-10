@@ -86,11 +86,22 @@
  * TASK-046 moves the timed families into the frame, and TASK-041 closes the
  * geometry on the routes. The selected header and backdrop are TASK-016's.
  * No Save, no writer, nothing leaves memory.
+ *
+ * TASK-016 (C40, C41, C43; R104–R106, R110, R113, R127): the same frame now
+ * draws the selected dialog — the A / Balanced backdrop, the dialog's title
+ * as the held log's one title (the log's own "Log results" heading is
+ * dropped inside it), and the framed icon-only X, named "Close log", on the
+ * title's visible top. `?state=ladder-long` shows it with a title that wraps
+ * on a phone. The register adds a Workout feedback specimen (the owner's
+ * wrapped-title example, R106): the shared `FeelingRow` and notes field in
+ * memory, no writer — the Summary's debrief moves into the dialog with
+ * TASK-045, and `?state=anchor` / `?state=superset` arrive with their
+ * route consumers (TASK-043, TASK-044).
  */
 import { useState, type ReactNode } from 'react'
 
 import { partialRoundFor } from '../data/refinement-logging-rules'
-import { Button } from '../design-system/index'
+import { Button, Input } from '../design-system/index'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
 import { ladderRungs, ladderUnit } from '../state/ladder'
 import { ladderPartialRound } from '../state/ladder-recovery'
@@ -100,6 +111,7 @@ import { writeAmrapState, writeEmomState, writeForTimeState, type ShellStorage }
 import type { BlockProgress } from '../state/workout-progress'
 import { AmrapBlock } from '../ui/amrap-block'
 import { EmomBlock } from '../ui/emom-block'
+import { FeelingRow } from '../ui/feeling-row'
 import { ForTimeBlock } from '../ui/for-time-block'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { LadderBlock } from '../ui/ladder-block'
@@ -600,6 +612,26 @@ export function LoggingOverlayShortEmom() {
   return (
     <MemoryLoggingOverlay opener="Open the EMOM log" title="EMOM · 10 minutes">
       <MemoryEmomLog initial={{ notes: '' }} />
+    </MemoryLoggingOverlay>
+  )
+}
+
+/**
+ * TASK-016 (C41; R105, R106): the owner's wrapped-title example — the
+ * Workout feedback dialog. The header's X stays on the title's first line
+ * as the title wraps on a phone. The shared `FeelingRow` and notes field are
+ * held in memory here: no Save, no writer. The Summary's own debrief adopts
+ * the dialog with TASK-045.
+ */
+export function LoggingOverlayWorkoutFeedback() {
+  const [mood, setMood] = useState<number | null>(null)
+  const [notes, setNotes] = useState('')
+  return (
+    <MemoryLoggingOverlay opener="Open workout feedback" title="Workout feedback">
+      <div className="clr-stack">
+        <FeelingRow value={mood} onChange={setMood} />
+        <Input label="Notes · optional" multiline rows={3} value={notes} onChange={setNotes} />
+      </div>
     </MemoryLoggingOverlay>
   )
 }

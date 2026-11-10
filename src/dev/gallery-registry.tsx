@@ -110,6 +110,7 @@ import {
 import {
   LoggingOverlayLongLadder,
   LoggingOverlayShortEmom,
+  LoggingOverlayWorkoutFeedback,
   QuantitySelectorBlank,
   QuantitySelectorCount,
   QuantitySelectorZero,
@@ -2302,10 +2303,11 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'LoggingOverlay',
     requirement: 'REQ-018',
     module: 'src/ui/refinements/logging-overlay.tsx',
-    summary: 'TASK-018 the focused logging frame’s contained viewport, scrolling and focus/chrome contract (C44, C57, C58, C59; P01, P02, P03; R16, R128, R129, R140): a native modal dialog with one stationary, continuous chamfered frame whose height is the space actually available — the visible viewport above an on-screen keyboard, less the accepted gap and the safe areas, never a half-height cap — so a short form fits without scrolling and a long one scrolls only inside. The scrolling region sits on the frame’s inner border with no bottom inset: partly visible controls run to the inner lower border and are cut there and on the inner chamfer, with no divider or pinned foot crossing the form. No outline lights the frame or the scroller on open or reopen (Foundation’s chamfer focus rule is kept off the structural frame), while the opening focus lands on the X and every control keeps its own keyboard focus. Every scrollbar is hidden, overlay ones included, and nothing scrolls sideways; wheel, touch, keyboard and focus scrolling are unchanged. The selected header and backdrop are TASK-016’s; the logging entry points move into it with TASK-043–046 and TASK-041 closes it on the routes: /gallery/refinements?state=ladder-long. Memory-only logs here; nothing is saved.',
+    summary: 'TASK-018 the focused logging frame’s contained viewport, scrolling and focus/chrome contract (C44, C57, C58, C59; P01, P02, P03; R16, R128, R129, R140): a native modal dialog with one stationary, continuous chamfered frame whose height is the space actually available — the visible viewport above an on-screen keyboard, less the accepted gap and the safe areas, never a half-height cap — so a short form fits without scrolling and a long one scrolls only inside. The scrolling region sits on the frame’s inner border with no bottom inset: partly visible controls run to the inner lower border and are cut there and on the inner chamfer, with no divider or pinned foot crossing the form. No outline lights the frame or the scroller on open or reopen (Foundation’s chamfer focus rule is kept off the structural frame), while the opening focus lands on the X and every control keeps its own keyboard focus. Every scrollbar is hidden, overlay ones included, and nothing scrolls sideways; wheel, touch, keyboard and focus scrolling are unchanged. TASK-016 adds the selected dialog itself (REQ-016; C40, C41, C43; R104–R106, R110, R113, R127): the A / Balanced backdrop — the reviewed dim, corner vignette and small blur on the native backdrop only, the frame and its content sharp — the dialog’s title as the held form’s one title, and the framed icon-only X named “Close log”, with no visible Close word, its frame on the title’s visible top however the title wraps. The workout behind is inert while its clocks keep running; the X and Escape close it, focus returns to the opener, and a draft is still there on reopen. The logging entry points move into it with TASK-043–046 and TASK-041 closes it on the routes: /gallery/refinements?state=ladder-long. Memory-only logs here; nothing is saved.',
     specimens: [
       { state: 'long form · twelve-round ladder log', note: 'Only the inside scrolls; the frame and its chamfer stay put, the content meets the inner lower border, and there is no scrollbar or frame outline. Open, close and reopen.', Render: LoggingOverlayLongLadder },
       { state: 'short form · EMOM end log', note: 'As tall as its content: no scrolling.', Render: LoggingOverlayShortEmom },
+      { state: 'wrapped title · Workout feedback', note: 'On a phone the title wraps; the framed X stays on its first line. Escape or the X closes it and returns focus here.', Render: LoggingOverlayWorkoutFeedback },
     ],
   },
   {

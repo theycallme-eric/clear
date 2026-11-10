@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-016",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/logging-overlay.test.tsx",
+    "--testNamePattern",
+    "header|focus|close|backdrop",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-016/required-cases.json",
+    "sha256": "2c129c2e3b369e5c4a0d8439bb30bdc73567d9f421b1d72c3a11cb436e09e1a6"
+  },
+  "targets": [
+    {
+      "path": "src/ui/logging-overlay.test.tsx",
+      "sha256": "d4da0e779ec8f7e2da6bc2ca394d8e152f5541fdc801581379c65c8b145d4b64"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame starts on the title’s visible top — the header aligns to its start and the title’s line box is trimmed to its capitals, so a wrapped title grows downwards beside the X",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 AC-R016-01 TASK-AC-F1CC1A37FB0E header: the dialog’s title is the simple form’s one title — the held TimedResultLog drops its own “Log results” heading and is named by the dialog, while inline it keeps its own",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 header: inline in a card the same log keeps its own “Log results” title and stays an unnamed form",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C43-01 AC-R016-01 TASK-AC-F1CC1A37FB0E backdrop: the selected A / Balanced dim, corner vignette and blur sit on the native backdrop only — the foreground stays sharp, nothing darkens further, and there is no rising sheet",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > TASK-AC-C0A657D4BABE JOURNEY-016 header: gallery ladder-long draws the selected header and backdrop on the shared frame — the contract consumers adopt; Escape closes it and focus returns to its opener",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 17,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 4,
+    "todo": 0,
+    "executed": 13
+  },
+  "problems": []
+}

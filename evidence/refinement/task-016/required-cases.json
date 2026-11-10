@@ -1,0 +1,69 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-016",
+  "description": "Selected focused dialog appearance and accessible header (REQ-016; C40, C41, C43; R81, R90, R91, R100, R104, R105, R106, R110, R113, R127, R131) delivered as the shared provider contract of the accepted focused logging dialog LoggingOverlay (src/ui/refinements/logging-overlay.tsx, created by TASK-018 from the accepted reference eded158cfd928d382c9a9409e2c372270312741d; recipe in src/ui/refinements/presentation.css over tokens.css; title contract src/ui/refinements/logging-overlay-context.ts adopted by the shared TimedResultLog): the selected simple form whose one title is the dialog's (a held log drops its own 'Log results' heading and is named by the dialog; inline it keeps its own), a header of the title then the framed icon-only X (the shared secondary IconButton named 'Close log', no visible Close word) aligned to the header's start with the title's line box trimmed to its capitals so the X's frame starts on the visible title top for one-line and wrapped titles including Workout feedback and a superset's Log round 1, the selected A / Balanced backdrop (--logging-backdrop-blur/-tint/-edge-tint, the reviewed values) on the native ::backdrop only with no filter, opacity or shadow on the foreground and no rising sheet, and native modal behaviour: showModal() making the workout behind inert while its clocks and the rest inside the log keep running, the X and Escape closing once through the consumer, focus returned to the opener, drafts kept across close/reopen. Checked at the shared-component boundary with representative consumers (the shared TimedResultLog's EMOM and twelve-round ladder logs, the actual MovementCountdown behind and inside the dialog, the shared FeelingRow in the gallery Workout feedback specimen) and the accepted gallery state /gallery/refinements?state=ladder-long. Provider acceptance only: no logging route has adopted the dialog (TASK-043–046 migrate consumers; TASK-041 owns full-route visual/geometry acceptance and JOURNEY-016 closure). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-016 --check check-01 -- npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"header|focus|close|backdrop\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C40-01",
+        "AC-C41-01",
+        "AC-C43-01",
+        "AC-R016-01",
+        "AC-R016-02",
+        "AC-R016-03",
+        "TASK-AC-F1CC1A37FB0E",
+        "TASK-AC-73CE385048B8",
+        "TASK-AC-C0A657D4BABE",
+        "JOURNEY-016"
+      ],
+      "files": [
+        "src/ui/logging-overlay.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+          "criterion": "AC-C41-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame starts on the title’s visible top — the header aligns to its start and the title’s line box is trimmed to its capitals, so a wrapped title grows downwards beside the X",
+          "criterion": "AC-R016-02"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 AC-R016-01 TASK-AC-F1CC1A37FB0E header: the dialog’s title is the simple form’s one title — the held TimedResultLog drops its own “Log results” heading and is named by the dialog, while inline it keeps its own",
+          "criterion": "AC-C40-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 header: inline in a card the same log keeps its own “Log results” title and stays an unnamed form",
+          "criterion": "AC-C40-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C43-01 AC-R016-01 TASK-AC-F1CC1A37FB0E backdrop: the selected A / Balanced dim, corner vignette and blur sit on the native backdrop only — the foreground stays sharp, nothing darkens further, and there is no rising sheet",
+          "criterion": "AC-C43-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
+          "criterion": "AC-R016-03"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
+          "criterion": "AC-R016-03"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > TASK-AC-C0A657D4BABE JOURNEY-016 header: gallery ladder-long draws the selected header and backdrop on the shared frame — the contract consumers adopt; Escape closes it and focus returns to its opener",
+          "criterion": "JOURNEY-016"
+        }
+      ]
+    }
+  }
+}

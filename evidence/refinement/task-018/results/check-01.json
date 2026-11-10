@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/logging-overlay.test.tsx",
-      "sha256": "e1a284c8939f5dd3ef0e0171ab6d559a584ff4ebbe5cf4ce6b1490fddb757c4b"
+      "sha256": "d4da0e779ec8f7e2da6bc2ca394d8e152f5541fdc801581379c65c8b145d4b64"
     }
   ],
   "requiredCases": [
@@ -73,10 +73,10 @@
     }
   ],
   "totals": {
-    "total": 9,
+    "total": 17,
     "passed": 9,
     "failed": 0,
-    "skipped": 0,
+    "skipped": 8,
     "todo": 0,
     "executed": 9
   },

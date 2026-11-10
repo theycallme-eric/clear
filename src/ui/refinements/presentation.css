@@ -779,6 +779,27 @@ html[data-reduce-motion] .clr-deadline-edge {
   background: transparent;
 }
 
+/* TASK-016 (C43; R110, R127): the selected A / Balanced backdrop — the
+ * reviewed dim of the ground colour, a corner vignette from a clear centre and
+ * the small blur behind the dialog, from `--logging-backdrop-*`. It is drawn
+ * on the native backdrop only: the frame and everything in it carry no filter,
+ * opacity or shadow, so the foreground stays sharp and readable, and nothing
+ * here darkens further. It replaces Foundation's dialog backdrop paint for
+ * this dialog only (one more class than `.clr-dialog::backdrop`), and keeps
+ * Foundation's backdrop fade and its reduced-motion closure, which set only
+ * the animation. */
+.clr-dialog.clr-accepted-log::backdrop {
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 35%,
+      color-mix(in srgb, var(--base) var(--logging-backdrop-edge-tint), transparent) 100%
+    ),
+    color-mix(in srgb, var(--base) var(--logging-backdrop-tint), transparent);
+  -webkit-backdrop-filter: blur(var(--logging-backdrop-blur));
+  backdrop-filter: blur(var(--logging-backdrop-blur));
+}
+
 .clr-accepted-log__emission {
   --bleed: var(--border-card);
   width: 100%;
@@ -857,6 +878,11 @@ html[data-reduce-motion] .clr-deadline-edge {
   inset: var(--bw);
 }
 
+/* TASK-016 (C41; R104, R105, R106, R113): the header — the title, then the
+ * framed icon-only X (the shared secondary IconButton; its accessible name,
+ * no visible word). Both align to the header's start, so the X's frame top is
+ * the title's top and a wrapped title grows downwards beside it, never
+ * re-centring the X against its lines. */
 .clr-accepted-log__head {
   display: flex;
   justify-content: space-between;
@@ -865,10 +891,16 @@ html[data-reduce-motion] .clr-deadline-edge {
   margin-block-end: var(--logging-section-gap);
 }
 
-.clr-accepted-log__head h2 {
+/* The dialog's one title (C40): the display face at the h2 size. Its line box
+ * is the font size, and is trimmed at the top to the capitals (the title is
+ * set in capitals), so the box's top is the visible top of the letters — the
+ * line the X's frame starts on. A browser without text-box trimming keeps the
+ * tight line box. */
+.clr-accepted-log__title {
   margin: 0;
   min-width: 0;
   line-height: 1;
+  text-box: trim-start cap alphabetic;
   font-family: var(--font-display);
   font-size: var(--heading-h2-size);
   color: var(--text-card-header);
