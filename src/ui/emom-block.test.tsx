@@ -257,6 +257,16 @@ function nestedCards(): HTMLElement[] {
   return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
 }
 
+/**
+ * TASK-011 (C32, AC-R011-01; R40) supersedes the NOT STARTED and WORK
+ * captions: the minute and the movements' Now/Next say it, so neither is
+ * drawn. REST, PAUSED, FINISHED EARLY and COMPLETE stay.
+ */
+function expectNoRedundantCaption() {
+  expect(screen.queryByText('NOT STARTED')).not.toBeInTheDocument()
+  expect(screen.queryByText('WORK')).not.toBeInTheDocument()
+}
+
 describe('the EMOM runs the clock the block prescribes', () => {
   it('keeps the timer in its own single frame without remounting the movement list', async () => {
     const user = setup()
@@ -282,7 +292,9 @@ describe('the EMOM runs the clock the block prescribes', () => {
     expectSingleTimerFrame('01:00')
 
     mounted.advance(20)
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // TASK-011 (C32): the minute and Now say it; the WORK caption is gone.
+    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expectNoRedundantCaption()
     expectSingleTimerFrame('00:40')
 
     mounted.advance(580)
@@ -294,12 +306,17 @@ describe('the EMOM runs the clock the block prescribes', () => {
     const user = setup()
     mount()
 
-    // Not started: the block says what it is, and offers the one way in.
-    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    // Not started: the block says what it is, and offers the one way in —
+    // the first minute and its movement marked Next (TASK-011, C32: no
+    // NOT STARTED caption repeating it).
+    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expect(marked('Next')).toEqual(['1. hollow body hold'])
+    expectNoRedundantCaption()
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
     expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expectNoRedundantCaption()
     expect(screen.getByRole('timer')).toBeInTheDocument()
   })
 
@@ -349,7 +366,8 @@ describe('the minute boundary flips the active work', () => {
 
     expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
     expect(marked('Now')).toEqual(['2. v up'])
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // TASK-011 (C32): Now and the minute carry the work; no WORK caption.
+    expectNoRedundantCaption()
   })
 
   it('offers nothing to press once the clock runs: the minute is never marked done', async () => {
@@ -359,8 +377,11 @@ describe('the minute boundary flips the active work', () => {
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(20)
 
-    // Still work, and nothing on the screen claims the minute is finished.
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // Still work — the minute and Now say so (TASK-011, C32: no WORK
+    // caption) — and nothing on the screen claims the minute is finished.
+    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expectNoRedundantCaption()
     expect(screen.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
     expect(screen.queryByText(/minute done/i)).not.toBeInTheDocument()
 
@@ -390,14 +411,20 @@ describe('the minute boundary flips the active work', () => {
     // Stated once, as the block's rest rather than each movement's.
     expect(screen.getByText('15s rest at the end of each minute')).toBeInTheDocument()
 
+    // TASK-011 (C32): the work part of the minute is the minute and Now; the
+    // transition into its rest keeps its REST word.
     mounted.advance(44)
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expect(screen.queryByText('REST')).not.toBeInTheDocument()
+    expectNoRedundantCaption()
 
     mounted.advance(1)
     expect(screen.getByText('REST')).toBeInTheDocument()
 
     mounted.advance(15)
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(screen.queryByText('REST')).not.toBeInTheDocument()
+    expect(marked('Now')).toEqual(['2. v up'])
+    expectNoRedundantCaption()
     expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
   })
 
@@ -409,8 +436,14 @@ describe('the minute boundary flips the active work', () => {
     mounted.advance(120)
 
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
-    // The schedule is over; nothing says the work was performed.
-    expect(screen.getByText(/The clock has run every prescribed minute/)).toBeInTheDocument()
+    // The schedule is over; nothing says the work was performed. TASK-011
+    // (C31; R43, R84) supersedes the closing sentence with the end log: no
+    // minutes counter, only the optional notes for an exception.
+    expect(screen.queryByText(/The clock has run every prescribed minute/)).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Log results' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Notes · optional' })).toBeInTheDocument()
+    expect(screen.queryByText(/minutes? completed/i)).not.toBeInTheDocument()
+    expect(document.querySelector('output, .clr-quantity')).toBeNull()
     expect(screen.queryByText(/minutes? (is |are )?done/i)).not.toBeInTheDocument()
     expect(marked('Now')).toEqual([])
   })
@@ -517,7 +550,10 @@ describe('the timed state survives a refresh', () => {
     })
 
     expect(screen.getByText('MIN 4 OF 10')).toBeInTheDocument()
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // Work, not rest: minute 4 is the second movement's, marked Now (TASK-011,
+    // C32: no WORK caption).
+    expect(marked('Now')).toEqual(['2. v up'])
+    expectNoRedundantCaption()
     expect(timer()).toHaveTextContent('00:50')
   })
 
@@ -557,16 +593,23 @@ describe('the timed state survives a refresh', () => {
   it('ignores a record no clock can be read against', () => {
     mount({ stored: { startedAt: 'some time on Tuesday', workDoneMinute: 4 } })
 
-    // Repaired to "not started" rather than frozen at minute one for ever.
+    // Repaired to "not started" rather than frozen at minute one for ever:
+    // Start, minute one ahead and its movement Next (TASK-011, C32: no
+    // NOT STARTED caption).
     expect(screen.getByRole('button', { name: 'Start EMOM' })).toBeInTheDocument()
-    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(marked('Next')).toEqual(['1. hollow body hold'])
+    expectNoRedundantCaption()
   })
 
   it('starts at the top when there is nothing stored, and stores what it starts', async () => {
     const user = setup()
     const mounted = mount({ stored: EMOM_START })
 
-    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    // TASK-011 (C32): ready reads as Start and minute one, without a caption.
+    expect(screen.getByRole('button', { name: 'Start EMOM' })).toBeInTheDocument()
+    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expectNoRedundantCaption()
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
     expect(mounted.storage.getItem('clear.workout-emom')).toContain(mounted.block.blockId)
@@ -649,7 +692,9 @@ describe('the EMOM draws with the shared block frame', () => {
     expect(within(timerFrame).queryByRole('button')).not.toBeInTheDocument()
     const inside = within(blockCard)
     expect(inside.getByText('MIN 1 OF 10')).toBeInTheDocument()
-    expect(inside.getByText('WORK')).toBeInTheDocument()
+    // TASK-011 (C32): the movement marked Now, not a WORK caption.
+    expect(inside.getByText('Now')).toBeInTheDocument()
+    expect(inside.queryByText('WORK')).not.toBeInTheDocument()
     expect(inside.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
   })
 
@@ -703,8 +748,8 @@ describe('execution is hands-off (REQ-014)', () => {
     const user = setup()
     const mounted = mount({ block: { roundRestSeconds: 15 } })
 
-    const expectHandsOff = () => {
-      expect(entryFields()).toEqual([])
+    const expectHandsOff = (fields: string[] = []) => {
+      expect(entryFields().map((field) => (field as HTMLTextAreaElement).labels?.[0]?.textContent ?? '')).toEqual(fields)
       expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
       expect(screen.queryByRole('slider')).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /log set|minute done/i })).not.toBeInTheDocument()
@@ -720,7 +765,10 @@ describe('execution is hands-off (REQ-014)', () => {
     expectHandsOff()
     mounted.advance(600)
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
-    expectHandsOff()
+    // TASK-011 (C31; R43, R84) supersedes "no entry field once the schedule
+    // ends": the end log's one field is the optional notes for an exception.
+    // Still no set form, no count, no Minute done and no exertion prompt.
+    expectHandsOff(['Notes · optional'])
   })
 
   it('draws no entry form for a block that prescribes no clock either', () => {
@@ -1044,7 +1092,8 @@ describe('the countdown takes the shared countdown warning', () => {
     expect(digits().style.color).toBe('var(--text-timer-low)')
     expect(timer()).toHaveTextContent('00:04')
     expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // TASK-011 (C32): the minute and Now; the WORK caption is gone.
+    expectNoRedundantCaption()
     expect(marked('Now')).toEqual(['1. hollow body hold'])
     expect(movement('1. hollow body hold').getByText('MIN 1 · 8 reps')).toBeInTheDocument()
   })

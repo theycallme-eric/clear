@@ -1325,7 +1325,9 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   const emomStart = await page.evaluate(() => Date.now())
   await page.clock.pauseAt(emomStart + 20_000)
   await evidence.shot(...key('active-emom-amrap-for-time-ladder'), at, 'Workout', async () => {
-    await expect(page.getByText('WORK', { exact: true })).toBeVisible()
+    // TASK-011 (C32, AC-R011-01; R40): the minute and Now carry the work; no WORK caption.
+    await expect(page.getByText(/^MIN 1 OF \d+$/)).toBeVisible()
+    await expect(page.getByText('WORK', { exact: true })).toHaveCount(0)
     const probe = await timerProbe(emomTimer)
     expectTimerContract(probe, 'Time remaining')
     expect(probe.low).toBe(false)

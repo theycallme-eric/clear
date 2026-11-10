@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-011",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-workout-flow.test.tsx",
+    "--testNamePattern",
+    "EMOM",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-011/required-cases.json",
+    "sha256": "bf5dd26f9cc7ced01e557f20361b0620bb19a2bab9d7f8893fea3af2b34140b3"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-workout-flow.test.tsx",
+      "sha256": "e3520cfe9f5e8551446764e0a9320f746d9f195dd70ccd056658dff5d0af9fc4"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 17,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 8,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}

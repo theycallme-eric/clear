@@ -22,6 +22,12 @@
  *     route's own workout header — title, the session clock's compact whole
  *     frame and the menu frame on one row — at the accepted reading and one
  *     past the hour (`gallery-refinement-timers.tsx`).
+ *   · TASK-011 (C32, R40): the Workout context's EMOM is the route's own
+ *     `EmomBlock`, ready, over memory-only storage (`GalleryLiveEmom`,
+ *     `gallery-refinement-forms.tsx`): its minute ahead, each movement's
+ *     minutes and target, Next on the first, and Start — with no NOT STARTED
+ *     caption — under the shell's own completion path, which saves nothing
+ *     here. The other live cards keep the frame's parts below.
  *   · TASK-005 (C16, R29, R36): every live grouped card ends with the actual
  *     `GroupExerciseCoaching` in `WorkoutCard`'s `coaching` slot — one bottom
  *     Coaching and notes disclosure with a labelled section per movement —
@@ -61,6 +67,7 @@ import {
   TIMED_BLOCKS,
 } from './gallery-refinement-cards-data'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
+import { GalleryLiveEmom } from './gallery-refinement-forms'
 import { GalleryWorkoutHeaders } from './gallery-refinement-timers'
 import { galleryExerciseProgress } from './gallery-refinement-coaching-data'
 
@@ -170,7 +177,10 @@ export function WorkoutContextCards({ blocks = [STANDARD_BLOCK, SUPERSET_BLOCK, 
   return (
     <GalleryCoachingClients>
       <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        {blocks.map((block, index) => <WorkoutBlock key={index} block={block} blockIndex={index} sectionLabel={sectionLabel} />)}
+        {blocks.map((block, index) => block.structure_type === 'emom'
+          // TASK-011 (C32): the route's own EMOM, not the frame's parts.
+          ? <GalleryLiveEmom key={index} block={block} blockIndex={index} sectionLabel={sectionLabel} />
+          : <WorkoutBlock key={index} block={block} blockIndex={index} sectionLabel={sectionLabel} />)}
       </div>
     </GalleryCoachingClients>
   )

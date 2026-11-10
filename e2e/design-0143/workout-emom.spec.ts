@@ -405,7 +405,11 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   await expect(page.getByRole('list', { name: 'Movements in this EMOM', exact: true })).toBeVisible()
 
   // Ready: the schedule is stated before the clock runs, and nothing is a form.
-  await expect(page.getByText('NOT STARTED', { exact: true })).toBeVisible()
+  // TASK-011 (C32, AC-R011-01; R40) supersedes the NOT STARTED caption: the
+  // minute ahead and the first movement's Next say it.
+  await expect(page.getByText('MIN 1 OF 6', { exact: true })).toBeVisible()
+  await expect(first.getByText('Next', { exact: true })).toBeVisible()
+  await expect(page.getByText('NOT STARTED', { exact: true })).toHaveCount(0)
   await expect(first.getByText('MIN 1 · 6 reps', { exact: true })).toBeVisible()
   await expect(first.getByText('Each turn: 6-8-10', { exact: true })).toBeVisible()
   await expect(second.getByText('MIN 2 · 12 reps', { exact: true })).toBeVisible()
@@ -426,7 +430,8 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   const sessionAtStart = (await sessionTime.textContent()) ?? ''
 
   await expect(page.getByText('MIN 1 OF 6', { exact: true })).toBeVisible()
-  await expect(page.getByText('WORK', { exact: true })).toBeVisible()
+  // TASK-011 (C32, AC-R011-01; R40): the minute and Now carry the work; no WORK caption.
+  await expect(page.getByText('WORK', { exact: true })).toHaveCount(0)
   // On a phone the countdown is in view without scrolling, so it can be read
   // from across the room.
   await expect(timer).toBeInViewport()
@@ -454,7 +459,8 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // target and the countdown are the wall clock's.
   await background(page, emomStart + 160_000)
   await expect(page.getByText('MIN 3 OF 6', { exact: true })).toBeVisible()
-  await expect(page.getByText('WORK', { exact: true })).toBeVisible()
+  // TASK-011 (C32, AC-R011-01): the minute and Now carry the work; no WORK caption.
+  await expect(page.getByText('WORK', { exact: true })).toHaveCount(0)
   await expect(first).toHaveAttribute('aria-current', 'step')
   await expect(first.getByText('MIN 3 · 8 reps', { exact: true })).toBeVisible()
   await expect(timer).toContainText('00:20')
@@ -491,7 +497,13 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   await page.clock.pauseAt(emomStart + 400_000)
   await expect(page.getByText('COMPLETE', { exact: true })).toBeVisible()
   await expect(timer).toContainText('00:00')
-  await expect(page.getByText(/The clock has run every prescribed minute/)).toBeVisible()
+  // TASK-011 (C31, AC-R011-02; R43, R84) supersedes the closing sentence with
+  // the end log: no minutes-completed counter or completion question, only
+  // the optional notes for an exception (left blank here, so the row below
+  // still carries no note).
+  await expect(page.getByText(/The clock has run every prescribed minute/)).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Log results', exact: true })).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Notes · optional', exact: true })).toBeVisible()
   await expect(first.getByText('6-8-10 reps', { exact: true })).toBeVisible()
   await expectHandsOff(page)
 
