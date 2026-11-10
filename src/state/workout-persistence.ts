@@ -42,6 +42,11 @@
  * section comes back paused after a refresh and records written before it
  * parse unchanged.
  *
+ * TASK-010 (C29) adds no key either: the athlete's Complete or Incomplete for
+ * a finished For Time race is one optional boolean, `workCompleted`, on that
+ * race's own record, so a correction survives a refresh (an Incomplete must
+ * not come back as the clock's Complete) and older records parse unchanged.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -419,6 +424,11 @@ function isOptionalStamp(value: unknown): boolean {
   return value === undefined || value === null || typeof value === 'string'
 }
 
+/** TASK-010 (C29): an optional answer a later build added. Absent in older records. */
+function isOptionalAnswer(value: unknown): boolean {
+  return value === undefined || value === null || typeof value === 'boolean'
+}
+
 type EmomRecords = BlockRecords<EmomState>
 
 function isEmomState(value: unknown): value is EmomState {
@@ -474,7 +484,8 @@ function isForTimeState(value: unknown): value is ForTimeState {
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.finishedAt === null || typeof record.finishedAt === 'string') &&
-    isOptionalStamp(record.pausedAt)
+    isOptionalStamp(record.pausedAt) &&
+    isOptionalAnswer(record.workCompleted)
   )
 }
 

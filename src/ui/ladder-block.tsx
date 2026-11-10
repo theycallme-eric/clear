@@ -15,9 +15,22 @@
  *
  * **How a ladder ends** is the other half. A For Time ladder has two endings
  * and they record different things (`ladder-for-time.md` §3): finishing the
- * pattern, or running into the cap having got part-way. The user says which,
- * and the cap-hit answer is what opens the rung selection — *how far did you
- * get?* — whose answer becomes `highest_rung` on the block's row.
+ * pattern, or stopping part-way. The user says which, and the Incomplete
+ * answer is what opens the rung selection — *how far did you get?* — whose
+ * answer becomes `highest_rung` on the block's row.
+ *
+ * TASK-010 (C29, C30; R78, R87, R124): that question is now the shared result
+ * log's — "Work completed" with Complete beside Incomplete in one row, then the
+ * existing three-face effort (`TimedResultLog`). Its starting point follows
+ * the work the ladder actually tracked and its clock, never a Finish alone:
+ * nothing is tracked rung by rung yet (TASK-013 adds the live check-off), so
+ * once the attempt has ended — Finish, the cap, or a schedule run out — it
+ * starts at Incomplete with no rung, and only the athlete's own Complete
+ * records the top rung. Before the attempt ends nothing is chosen, and the
+ * athlete may still answer at any time, as before. The answer, the rung and
+ * the effort are this renderer's draft (durable ladder drafts are TASK-032);
+ * effort is never written, because no categorical block-effort field exists
+ * yet (R116).
  *
  * **Explicit timing** (REQ-018 / E03, TASK-033). A block carrying
  * `ladder_timing` is drawn as its rounds rather than its movements: every round
@@ -60,8 +73,7 @@
  */
 import { useState, type ReactNode } from 'react'
 
-import { ChoiceGroup } from '../design-system/index'
-import type { BlockOutcome } from '../state/block-completion'
+import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
 import {
   clampForTimeState,
   finishForTime,
@@ -98,35 +110,24 @@ import { ForTimeClock } from './for-time-block'
 import { LadderRungs } from './ladder-rungs'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings, type LiveMovementReadings } from './refinements/movement-readings'
+import { TimedResultLog } from './refinements/timed-result-log'
+import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
 /**
- * How the block ended, as the user says it.
+ * How the block ended, as the user says it (TASK-010: Complete or Incomplete).
  *
- * `undeclared` is a real third state rather than a default of either: a block
- * the user advanced past without answering recorded no ending, and guessing one
- * would be inventing a measurement (DATA_MODEL §8).
+ * `unanswered` is a real third state rather than a default of either: a block
+ * the user advanced past before its attempt ended, without answering, recorded
+ * no ending, and guessing one would be inventing a measurement (DATA_MODEL §8).
  */
-type Ending = 'undeclared' | 'finished' | 'capped'
-
-const FINISHED_OPTION = { value: 'finished', label: 'Finished the ladder' }
-
-const ENDING_OPTIONS = [FINISHED_OPTION, { value: 'capped', label: 'Hit the time cap' }]
-
-/**
- * A schedule has no cap to hit; what stops it short is falling behind the
- * starts. The answer opens the same question, and records the same rung.
- */
-const SCHEDULED_ENDING_OPTIONS = [
-  FINISHED_OPTION,
-  { value: 'capped', label: 'Fell behind the schedule' },
-]
+type Ending = 'unanswered' | 'complete' | 'incomplete'
 
 /**
  * The outcome the block's row gets.
  *
- * Finishing reaches the last rung, so that is what is recorded — the ladder was
- * climbed to the top, and the fact is the rung, not a zero. A cap hit records
+ * Complete reaches the last rung, so that is what is recorded — the ladder was
+ * climbed to the top, and the fact is the rung, not a zero. Incomplete records
  * the rung the user chose, and records nothing at all if they chose none:
  * advancing without answering is allowed (`ladder-for-time.md` §3), and a
  * `highest_rung` nobody stated would be a guess.
@@ -139,12 +140,64 @@ function ladderOutcome(
   if (rungs.length === 0) return {}
 
   switch (ending) {
-    case 'finished':
+    case 'complete':
       return { highestRung: rungs.length }
-    case 'capped':
+    case 'incomplete':
       return reached === null ? {} : { highestRung: reached }
-    case 'undeclared':
+    case 'unanswered':
       return {}
+  }
+}
+
+/**
+ * TASK-010 (C29, C30; AC-R010-01): the ladder's result draft — the athlete's
+ * Complete or Incomplete, the rung reached and the optional effort.
+ *
+ * The answer starts where the tracked work and the clock put it, and never at
+ * every rung: until the attempt has ended nothing is chosen; once it has (the
+ * athlete's Finish, the cap, or a schedule run out) it starts at Incomplete
+ * with no rung, because no rung was tracked (TASK-013 imports live check-off
+ * here). The athlete's own answer, given before or after, always wins.
+ *
+ * A starting point belongs to the unsaved draft only. Once the block's result
+ * is saved, the saved row is the answer; a renderer that no longer holds the
+ * draft (its section was left and reopened) knows only that a row exists, so
+ * it claims no answer rather than a starting point the row may contradict.
+ * Reading the saved ladder result back is TASK-032 / TASK-048.
+ */
+function useLadderResult(block: BlockRendererProps['block'], ended: boolean) {
+  const { isBlockRecorded } = useBlockCompletion()
+  const [answer, setAnswer] = useState<Exclude<Ending, 'unanswered'> | null>(null)
+  const [reached, setReached] = useState<number | null>(null)
+  const [effort, setEffort] = useState<SetEffort | null>(null)
+
+  const saved = isBlockRecorded(block.blockId)
+  const rungs = ladderRungs(block.exercises)
+  const ending: Ending = answer ?? (ended && !saved ? 'incomplete' : 'unanswered')
+  const completed = ending === 'unanswered' ? null : ending === 'complete'
+
+  return {
+    ending,
+    reached,
+    setReached,
+    outcome: ladderOutcome(ending, reached, rungs),
+    log:
+      rungs.length === 0 ? null : (
+        <TimedResultLog
+          format="ladder"
+          value={{ completed, effort }}
+          saved={saved}
+          onChange={(next) => {
+            if (next.completed !== null && next.completed !== completed) {
+              setAnswer(next.completed ? 'complete' : 'incomplete')
+              // The rung only means something for an incomplete ladder;
+              // completing it reached them all.
+              if (next.completed) setReached(null)
+            }
+            if (next.effort !== effort) setEffort(next.effort)
+          }}
+        />
+      ),
   }
 }
 
@@ -200,7 +253,7 @@ function useLadderRace(
   capSeconds: number | null,
   storage: ShellStorage | null | undefined,
   now: () => number,
-): { actions: ReactNode; timer: ReactNode } {
+): { actions: ReactNode; timer: ReactNode; ended: boolean } {
   const clock = usePersistedForTime(
     block.blockId,
     (stored) => (stored === null ? FOR_TIME_START : clampForTimeState(stored)),
@@ -212,8 +265,11 @@ function useLadderRace(
   }
   const view = forTimeView(clock.state, shape, useElapsedSeconds(forTimeTicking(clock.state), now))
 
-  if (block.exercises.length === 0) return { actions: null, timer: null }
+  // TASK-010: the attempt has ended — the athlete's Finish or the cap.
+  const ended = view.phase === 'finished' || view.phase === 'capped'
+  if (block.exercises.length === 0) return { actions: null, timer: null, ended }
   return {
+    ended,
     actions: (
       <TimedWorkoutActions
         placement="top"
@@ -243,14 +299,23 @@ function RacedLadder({
   now = Date.now,
 }: ClockedLadderProps & { timing: LadderTiming }) {
   const race = useLadderRace(block, ladderCapSeconds(timing) ?? block.timerSeconds, storage, now)
-  return <TimedLadder block={block} timing={timing} live={null} timer={race.timer} actions={race.actions} />
+  return (
+    <TimedLadder
+      block={block}
+      timing={timing}
+      live={null}
+      ended={race.ended}
+      timer={race.timer}
+      actions={race.actions}
+    />
+  )
 }
 
 /** A ladder with no explicit timing: the EXE-04a block, raced against the block's cap. */
 function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
-  const [ending, setEnding] = useState<Ending>('undeclared')
-  const [reached, setReached] = useState<number | null>(null)
   const race = useLadderRace(block, block.timerSeconds, storage, now)
+  const result = useLadderResult(block, race.ended)
+  const { ending, reached, setReached } = result
 
   const rungs = ladderRungs(block.exercises)
   const unit = ladderUnit(block.exercises)
@@ -260,7 +325,7 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
     <BlockPanel
       block={block}
       timer={race.timer}
-      completion={{ outcome: ladderOutcome(ending, reached, rungs) }}
+      completion={{ outcome: result.outcome }}
     >
       {block.exercises.length === 0 ? (
         <BlockPanel.EmptyNote />
@@ -304,14 +369,8 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
               ))}
           </BlockPanel.MovementList>
 
-          {rungs.length === 0 ? null : (
-            <EndingChoice
-              options={ENDING_OPTIONS}
-              ending={ending}
-              onEnding={setEnding}
-              onReach={setReached}
-            />
-          )}
+          {/* TASK-010 (C29, C30): the ladder's result log, after its work. */}
+          {result.log}
         </>
       )}
     </BlockPanel>
@@ -336,7 +395,7 @@ function RungsRow({
   reached: number | null
   onReach: (rung: number) => void
 }) {
-  if (ending === 'capped') {
+  if (ending === 'incomplete') {
     return (
       <LadderRungs
         rungs={rungs}
@@ -354,35 +413,8 @@ function RungsRow({
       unit={unit}
       label="Ladder"
       // Read-only while the block is being performed, and still read-only once
-      // it is finished — with every rung climbed.
-      reached={ending === 'finished' ? rungs.length : null}
-    />
-  )
-}
-
-function EndingChoice({
-  options,
-  ending,
-  onEnding,
-  onReach,
-}: {
-  options: readonly { value: string; label: string }[]
-  ending: Ending
-  onEnding: (ending: Ending) => void
-  onReach: (rung: number | null) => void
-}) {
-  return (
-    <ChoiceGroup
-      legend="How did this block end?"
-      options={[...options]}
-      value={ending === 'undeclared' ? '' : ending}
-      onChange={(value) => {
-        const chosen = Array.isArray(value) ? value[0] : value
-        onEnding(chosen === 'capped' ? 'capped' : 'finished')
-        // The rung only means something for a cap hit; finishing reached
-        // them all.
-        if (chosen !== 'capped') onReach(null)
-      }}
+      // it is complete — with every rung climbed.
+      reached={ending === 'complete' ? rungs.length : null}
     />
   )
 }
@@ -507,6 +539,8 @@ function ScheduledLadder({
       block={block}
       timing={timing}
       live={view}
+      // TASK-010: a schedule that has run every round has ended its attempt.
+      ended={view.phase === 'complete'}
       timer={block.exercises.length === 0 ? null : <IntervalCountdown view={view} />}
       // TASK-006 (C17): the schedule's one way in, in the ladder's shared top
       // slot. Its lifecycle is its own: once it runs, every round starts on
@@ -536,18 +570,21 @@ function TimedLadder({
   block,
   timing,
   live,
+  ended,
   timer,
   actions,
 }: {
   block: BlockRendererProps['block']
   timing: LadderTiming
   live: ScheduleView | null
+  /** TASK-010: whether the attempt has ended — Finish, the cap, or the schedule run out. */
+  ended: boolean
   timer?: ReactNode
   /** The ladder's top action slot (TASK-006, R66): after its identity and cap. */
   actions?: ReactNode
 }) {
-  const [ending, setEnding] = useState<Ending>('undeclared')
-  const [reached, setReached] = useState<number | null>(null)
+  const result = useLadderResult(block, ended)
+  const { ending, reached, setReached } = result
 
   const rungs = ladderRungs(block.exercises)
   const unit = ladderUnit(block.exercises)
@@ -558,7 +595,7 @@ function TimedLadder({
     <BlockPanel
       block={block}
       timer={timer}
-      completion={{ outcome: ladderOutcome(ending, reached, rungs) }}
+      completion={{ outcome: result.outcome }}
     >
       {block.exercises.length === 0 ? (
         <BlockPanel.EmptyNote />
@@ -597,14 +634,8 @@ function TimedLadder({
             </BlockPanel.Note>
           )}
 
-          {rungs.length > 0 && (
-            <EndingChoice
-              options={timing.mode === 'scheduled_starts' ? SCHEDULED_ENDING_OPTIONS : ENDING_OPTIONS}
-              ending={ending}
-              onEnding={setEnding}
-              onReach={setReached}
-            />
-          )}
+          {/* TASK-010 (C29, C30): the ladder's result log, after its work. */}
+          {result.log}
         </>
       )}
     </BlockPanel>

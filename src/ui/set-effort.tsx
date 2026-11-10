@@ -15,6 +15,14 @@
  * This is one set's effort and nothing else. The session's five-choice feeling
  * (`feeling-row.tsx`) is a different question, stored in a different column,
  * and neither is ever read as the other.
+ *
+ * TASK-010 (C30; R76, R80, R86, R87): the timed results log asks a block's
+ * optional effort with this same control — the same three faces, words,
+ * categories, order, tick, focus and keyboard pattern — rather than a control
+ * of its own. The one adaptation is the accepted owner's (gallery reference
+ * eded158c…): a block has no set number, so the caller may name the scope the
+ * compact Clear acts on (`scopeLabel`) and give the question its legend. No
+ * icon, scale or word is added, and a category is never read as a number.
  */
 import { useRef, type ReactElement } from 'react'
 
@@ -46,22 +54,27 @@ function isSetEffort(value: string): value is SetEffort {
   return SET_EFFORT_CHOICES.some((choice) => choice.value === value)
 }
 
-export interface SetEffortChoiceProps {
-  /** The set being entered or corrected — it names the Clear control. */
-  readonly setNumber: number
-  /** The set's answer, or `null` for unanswered. */
+export type SetEffortChoiceProps = {
+  /** The answer, or `null` for unanswered. */
   readonly value: SetEffort | null
   readonly onChange: (next: SetEffort | null) => void
-}
+  /** The question's legend; the sheet's established `Effort` unless the caller's context names it. */
+  readonly legend?: string
+} & (
+  /** The set being entered or corrected — it names the Clear control. */
+  | { readonly setNumber: number; readonly scopeLabel?: never }
+  /** TASK-010: what else the Clear acts on, when there is no set — `this block`. */
+  | { readonly scopeLabel: string; readonly setNumber?: never }
+)
 
-export function SetEffortChoice({ setNumber, value, onChange }: SetEffortChoiceProps) {
+export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange }: SetEffortChoiceProps) {
   const rowRef = useRef<HTMLDivElement>(null)
 
   return (
     <div ref={rowRef} className="clr-set-effort">
       <ChoiceGroup
         className="clr-set-effort__choices"
-        legend={SET_EFFORT_LEGEND}
+        legend={legend}
         options={SET_EFFORT_CHOICES.map(({ value: choice, label, Glyph }) => ({
           value: choice,
           label: (
@@ -83,7 +96,7 @@ export function SetEffortChoice({ setNumber, value, onChange }: SetEffortChoiceP
             type="button"
             variant="quiet"
             size="sm"
-            aria-label={`Clear effort for set ${setNumber}`}
+            aria-label={`Clear effort for ${scopeLabel ?? `set ${setNumber}`}`}
             onClick={() => {
               onChange(null)
               // The pressed control is about to go; the question keeps the caret.

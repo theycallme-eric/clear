@@ -77,6 +77,15 @@ export interface ForTimeState {
    * runs, and in every record written before Pause existed.
    */
   readonly pausedAt?: string | null
+  /**
+   * TASK-010 (C29, AC-R010-01): the athlete's own answer to "Work completed",
+   * once the race has ended — `true` Complete, `false` Incomplete. Absent until
+   * they answer, and in every record written before the question existed;
+   * the clock's ending then supplies the initial answer (`forTimeCompletion`).
+   * Kept on the race's own record so a reload never replaces a correction with
+   * the clock's default — an Incomplete must not come back as Complete.
+   */
+  readonly workCompleted?: boolean
 }
 
 /** Nothing started, nothing finished. */
@@ -188,11 +197,22 @@ export function clampForTimeState(state: ForTimeState): ForTimeState {
       : null
 
   // A pause belongs to an attempt still under way; a finished one has none.
+  // The athlete's answer (TASK-010) is kept only as the boolean it is.
   return {
     startedAt,
     finishedAt,
     ...(finishedAt === null ? restoredPause({ startedAt, pausedAt: state.pausedAt }) : {}),
+    ...(typeof state.workCompleted === 'boolean' ? { workCompleted: state.workCompleted } : {}),
   }
+}
+
+/**
+ * TASK-010 (C29): the athlete's Complete or Incomplete, written onto the race
+ * it judges. A race that never started has nothing to judge.
+ */
+export function answerForTime(state: ForTimeState, workCompleted: boolean): ForTimeState {
+  if (state.startedAt === null) return state
+  return { ...state, workCompleted }
 }
 
 /** Everything the renderer draws, derived rather than stored. */
@@ -219,9 +239,10 @@ export interface ForTimeView {
   /** The cap, for the line that states it. Null when there is none. */
   readonly capSeconds: number | null
   /**
-   * What completion supplies as `completed_under_cap`: true for a finish under
-   * the cap, false once the cap is reached, null while the answer is not known
-   * yet — and null for a block with no cap, which cannot be under or over one.
+   * How the clock stopped: true for a finish under the cap, false once the cap
+   * is reached, null while it has not stopped — and null for a block with no
+   * cap, which cannot be under or over one. TASK-010: this is the starting
+   * point of the completion answer, not the answer (`forTimeCompletion`).
    */
   readonly completedUnderCap: boolean | null
 }
@@ -304,6 +325,32 @@ export function forTimeView(
 }
 
 /**
+ * TASK-010 (C29; AC-R010-01; R78, R86, R124) — whether the prescribed work was
+ * completed, as the result log offers it and `completed_under_cap` records it.
+ *
+ * The clock cannot know whether the athlete performed all the work, so this is
+ * an answer with a starting point rather than a measurement:
+ *
+ *   · **Finish under the cap** starts at Complete: in For Time the athlete's
+ *     Finish is their own report that the work is done (R78's manual-Finish
+ *     default) — and Incomplete is one tap away, because Finish proves nothing.
+ *   · **The cap** starts at Incomplete, with Complete still offered for someone
+ *     who finished but could not stop the clock in time (R78).
+ *   · **Before the race has ended** there is no answer at all: stopping to
+ *     record mid-race, pausing or never starting claims nothing.
+ *   · **No cap, no claim** (DATA_MODEL §8): a block with no deadline was
+ *     neither under one nor over it, so the question is not asked.
+ *
+ * `answer` is the athlete's own (`ForTimeState.workCompleted`) and wins over
+ * either starting point.
+ */
+export function forTimeCompletion(view: ForTimeView, answer?: boolean): boolean | null {
+  if (view.capSeconds === null) return null
+  if (view.phase !== 'finished' && view.phase !== 'capped') return null
+  return answer ?? view.phase === 'finished'
+}
+
+/**
  * What this structure observed, for the shell's one `block_results` write.
  *
  * A block that was never started observed nothing and supplies nothing — an
@@ -311,18 +358,19 @@ export function forTimeView(
  * (DATA_MODEL §8). Everything else supplies the clock it actually ran, including
  * an attempt recorded while still running: the seconds are real, and stopping
  * to record is stopping.
+ *
+ * `completed_under_cap` is the completion answer (`forTimeCompletion`), and
+ * nothing when there is none. TASK-010 (AC-R010-01): an attempt recorded while
+ * still running claims no completion — stopping alone never marks the planned
+ * work performed — where it used to be read as a finish under the cap.
  */
-export function forTimeOutcome(view: ForTimeView): BlockOutcome {
+export function forTimeOutcome(view: ForTimeView, answer?: boolean): BlockOutcome {
   if (view.phase === 'ready') return {}
 
-  const underCap =
-    view.completedUnderCap ??
-    // Recorded mid-attempt: the clock had not reached the cap, so this is the
-    // same fact as finishing under it.
-    (view.capSeconds === null ? null : true)
+  const completed = forTimeCompletion(view, answer)
 
   return {
     elapsedSeconds: view.elapsedSeconds,
-    ...(underCap === null ? {} : { completedUnderCap: underCap }),
+    ...(completed === null ? {} : { completedUnderCap: completed }),
   }
 }

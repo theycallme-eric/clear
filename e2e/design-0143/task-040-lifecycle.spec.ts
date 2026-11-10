@@ -574,11 +574,13 @@ test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifa
       { section: 'Plain For Time', state: 'active-emom-amrap-for-time-ladder', oracle: async () => {
         await expect(page.getByRole('list', { name: 'Movements in this block' })).toBeVisible()
         await expect(page.getByRole('button', { name: 'Start For Time', exact: true })).toBeVisible()
-        await expect(page.getByRole('group', { name: 'How did this block end?' })).toHaveCount(0)
+        // TASK-010 (C29): the completion question is the result log's, asked once the race ends.
+        await expect(page.getByRole('group', { name: 'Work completed' })).toHaveCount(0)
       } },
       { section: 'Ladder', state: 'active-emom-amrap-for-time-ladder', oracle: async () => {
         await expect(page.getByRole('list', { name: 'Movements in this ladder' })).toBeVisible()
-        await expect(page.getByRole('radio', { name: 'Finished the ladder', exact: true })).toBeVisible()
+        // TASK-010 (C29; R78, R87): Complete beside Incomplete replaces "Finished the ladder".
+        await expect(page.getByRole('radio', { name: 'Complete', exact: true })).toBeVisible()
         await expect(page.getByRole('button', { name: 'Start For Time', exact: true })).toHaveCount(0)
       } },
     ]

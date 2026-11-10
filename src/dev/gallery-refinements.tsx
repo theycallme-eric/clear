@@ -33,13 +33,20 @@
  * ended early, its work first and then the shared `TimedResultLog` with its
  * two framed `QuantitySelector` counts, blank beside an explicit zero, over
  * memory-only storage (`gallery-refinement-forms.tsx`).
+ *
+ * `for_time`, `ladder`: completion choices and the existing effort faces
+ * (TASK-010: C29, C30) — the route's own `ForTimeBlock` and `LadderBlock`,
+ * each ended by Finish and by its cap, then the shared `TimedResultLog`: "Work
+ * completed" with Complete beside Incomplete in one row at the route's own
+ * starting point, and the three effort faces unanswered, over memory-only
+ * storage (`gallery-refinement-forms.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
-import { GalleryAmrapResults } from './gallery-refinement-forms'
+import { GalleryAmrapResults, GalleryForTimeResults, GalleryLadderResults } from './gallery-refinement-forms'
 import { GalleryOverviewSummary } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
@@ -58,6 +65,8 @@ const REFINEMENT_STATES = [
   { id: 'ladder-12', title: 'Live ladder · 12 rounds', Render: GalleryLadderTwelve },
   { id: 'urgency', title: 'Countdown warning and whole timer frames · countdown, cap and elapsed clocks', Render: GalleryTimerFrames },
   { id: 'amrap', title: 'AMRAP results', Render: GalleryAmrapResults },
+  { id: 'for_time', title: 'For Time results', Render: GalleryForTimeResults },
+  { id: 'ladder', title: 'Ladder results', Render: GalleryLadderResults },
 ] as const
 
 export function GalleryRefinements() {

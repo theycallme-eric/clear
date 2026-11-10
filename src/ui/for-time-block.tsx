@@ -35,13 +35,28 @@
  * `completed_under_cap` through `BlockPanel`'s completion and nothing else — and
  * rung selection, which is a ladder's (EXE-04a) even when the ladder is performed
  * for time.
+ *
+ * **The result log** (TASK-010: C29, C30; R78, R86, R124). Once the race has
+ * ended — by Finish or by the cap — the shared `TimedResultLog` follows the
+ * work: "Work completed" with Complete beside Incomplete, then the existing
+ * three-face effort. The clock cannot know whether all the work was done, so
+ * completion is the athlete's answer with a starting point (`forTimeCompletion`):
+ * Finish under the cap starts at Complete, the cap at Incomplete, and either
+ * is one tap from the other. The answer is kept on the race's own record and
+ * is what `completed_under_cap` saves. Effort is optional and is held here,
+ * unanswered as `null`: no categorical block-effort field exists yet (R116;
+ * TASK-030, TASK-031, TASK-047), so it is never written — and never turned into
+ * the numeric `perceived_effort`.
  */
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 
 import { AlertTriangle, Check } from '../design-system/index'
+import { useBlockCompletion } from '../state/block-completion'
 import {
+  answerForTime,
   clampForTimeState,
   finishForTime,
+  forTimeCompletion,
   forTimeOutcome,
   forTimeShape,
   forTimeView,
@@ -69,6 +84,8 @@ import { Card } from './card'
 import { countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
+import { TimedResultLog } from './refinements/timed-result-log'
+import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
 export interface ForTimeBlockProps extends BlockRendererProps {
@@ -100,14 +117,23 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
   const start = () => clock.moveTo(startForTime(clock.state, now()))
   const finish = () => clock.moveTo(finishForTime(clock.state, now()))
 
+  // TASK-010: the result log's state. The completion answer lives on the
+  // race's record; the effort only here, because nothing can save it yet.
+  const { isBlockRecorded } = useBlockCompletion()
+  const [effort, setEffort] = useState<SetEffort | null>(null)
+  const answer = clock.state.workCompleted
+  const completed = forTimeCompletion(view, answer)
+  const ended = view.phase === 'finished' || view.phase === 'capped'
+
   return (
     <BlockPanel
       block={block}
       timer={shape.size === 0 ? null : <ForTimeClock view={view} />}
-      // What this structure observed: the seconds it took and whether they
-      // beat the cap. A block nobody started observed neither, and says so by
-      // supplying nothing rather than a zero (DATA_MODEL §8).
-      completion={{ outcome: shape.size === 0 ? {} : forTimeOutcome(view) }}
+      // What this structure observed: the seconds it took and whether the
+      // athlete completed the work (TASK-010). A block nobody started observed
+      // neither, and says so by supplying nothing rather than a zero
+      // (DATA_MODEL §8).
+      completion={{ outcome: shape.size === 0 ? {} : forTimeOutcome(view, answer) }}
     >
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />
@@ -139,6 +165,25 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
             onResume={() => clock.moveTo(resumeClock(clock.state, now()))}
             onFinish={finish}
           />
+
+          {/*
+            TASK-010 (C29, C30): the result, after the work, once the race has
+            ended. Ready, running and paused ask for nothing.
+          */}
+          {ended && (
+            <TimedResultLog
+              format="for_time"
+              value={{ completed, effort }}
+              askCompletion={view.capSeconds !== null}
+              saved={isBlockRecorded(block.blockId)}
+              onChange={(next) => {
+                if (next.completed !== null && next.completed !== completed) {
+                  clock.moveTo(answerForTime(clock.state, next.completed))
+                }
+                if (next.effort !== effort) setEffort(next.effort)
+              }}
+            />
+          )}
         </>
       )}
     </BlockPanel>

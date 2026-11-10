@@ -18,19 +18,32 @@
  * shared data fields"). Blank stays blank and an entered zero stays zero all
  * the way through: the counts never emit `null` and there is no reset (C28).
  *
+ * TASK-010 (C29, C30; R63, R76, R78, R80, R86, R87, R116, R124) adds the For
+ * Time and ladder families: one result group asking "Work completed" with
+ * Complete and Incomplete side by side in one row (the accepted
+ * `.clr-timed-completion`), then one group with the existing three-face effort
+ * (`SetEffortChoice`, unchanged faces, words and categories). Which answer the
+ * completion starts at is the consumer's — it follows the work and the clock
+ * it actually tracked, never a Finish alone — and the log only draws it. The
+ * effort is optional: unanswered is `null`, never a default face, a number or
+ * a session mood. R78 limits the completion question to work whose full
+ * completion is meaningful, so the AMRAP family is not given one.
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
- * group joins this form under the same title and group recipe —
- * completion choices and the existing effort faces (TASK-010), the EMOM's
- * counter-free end log (TASK-011), the ladder's results (TASK-013), richer
- * per-movement actuals once their writers exist (TASK-031), and the focused
- * dialog, Save and the four families' adoption into it (TASK-016–018,
+ * group joins this form under the same title and group recipe — the EMOM's
+ * counter-free end log (TASK-011), the ladder's rung results and quiet Undo
+ * (TASK-013, TASK-014), richer per-movement actuals and the categorical
+ * effort's writer once they exist (TASK-031, TASK-015, TASK-047), and the
+ * focused dialog, Save and the four families' adoption into it (TASK-016–018,
  * TASK-046, TASK-041). None of those is drawn here.
  */
 import type { ReactNode } from 'react'
 
+import { ChoiceGroup } from '../../design-system/index'
 import { useInvalidFocus } from '../formFocus'
 import { Heading, HeadingSection } from '../Heading'
+import { SetEffortChoice, type SetEffort } from '../set-effort'
 import { QuantitySelector } from './quantity'
 import './tokens.css'
 import './presentation.css'
@@ -41,7 +54,7 @@ export interface AmrapResult {
   readonly partialRoundReps: number | null
 }
 
-/** The family whose result is logged. Later families widen this union (TASK-010, TASK-011, TASK-013, TASK-046). */
+/** The family whose result is logged. Later families widen this union (TASK-011, TASK-013, TASK-046). */
 export interface AmrapResultLog {
   format: 'amrap'
   value: AmrapResult
@@ -49,7 +62,46 @@ export interface AmrapResultLog {
   onChange: (next: AmrapResult) => void
 }
 
-export type TimedResultLogProps = AmrapResultLog
+/**
+ * TASK-010: a For Time or ladder result as its consumer keeps it. `completed`
+ * is `true` Complete, `false` Incomplete and `null` not yet answered — no
+ * starting point exists yet, so neither option is chosen. `effort` is the
+ * existing categorical effort, `null` when unanswered.
+ */
+export interface CompletionResult {
+  readonly completed: boolean | null
+  readonly effort: SetEffort | null
+}
+
+export interface CompletionResultLog {
+  format: 'for_time' | 'ladder'
+  value: CompletionResult
+  /** The consumer's writer, called with the whole next result on every choice. */
+  onChange: (next: CompletionResult) => void
+  /**
+   * False when the block's record cannot hold the answer — a For Time with no
+   * cap (no cap, no claim) — so the question is not asked. Asked otherwise.
+   */
+  askCompletion?: boolean
+  /**
+   * True once the block's result is saved. There is no correction writer for a
+   * saved block result, so the completion keeps the answer that was saved and
+   * is no longer offered as a choice (the chips' shared disabled role).
+   */
+  saved?: boolean
+}
+
+export type TimedResultLogProps = AmrapResultLog | CompletionResultLog
+
+/** The accepted completion question and its two answers, in their one row. */
+export const WORK_COMPLETED_LEGEND = 'Work completed'
+const COMPLETE = 'complete'
+const INCOMPLETE = 'incomplete'
+
+/** The accepted section-log legend for the existing effort faces. */
+export const TIMED_EFFORT_LEGEND = 'Effort · optional'
+/** What the effort's compact Clear acts on in a block's log. */
+const EFFORT_SCOPE = 'this block'
 
 /** One result group of the simple hierarchy: no group title, its fields in order. */
 function ResultGroup({ children }: { children: ReactNode }) {
@@ -70,13 +122,13 @@ const NOTHING_TO_SUBMIT = () => true
  * it instead. The focused dialog that later holds one log at a time names it
  * (TASK-016, TASK-046).
  */
-export function TimedResultLog({ format, value, onChange }: TimedResultLogProps) {
+export function TimedResultLog(props: TimedResultLogProps) {
   const invalidFocus = useInvalidFocus()
   return (
     <form
       className="clr-timed-log"
       data-log-hierarchy="simple"
-      data-timed-format={format}
+      data-timed-format={props.format}
       noValidate
       onSubmit={invalidFocus(NOTHING_TO_SUBMIT)}
     >
@@ -86,18 +138,73 @@ export function TimedResultLog({ format, value, onChange }: TimedResultLogProps)
         part of it.
       */}
       <Heading className="clr-timed-log__title">Log results</Heading>
+      {props.format === 'amrap' ? <AmrapGroups {...props} /> : <CompletionGroups {...props} />}
+    </form>
+  )
+}
+
+function AmrapGroups({ value, onChange }: AmrapResultLog) {
+  return (
+    <ResultGroup>
+      <QuantitySelector
+        label="Rounds completed"
+        value={value.roundsCompleted}
+        onChange={(roundsCompleted) => onChange({ ...value, roundsCompleted })}
+      />
+      <QuantitySelector
+        label="Reps into the next round"
+        value={value.partialRoundReps}
+        onChange={(partialRoundReps) => onChange({ ...value, partialRoundReps })}
+      />
+    </ResultGroup>
+  )
+}
+
+/**
+ * TASK-010: the result group, then the feedback group, neither titled (R90 A).
+ *
+ * Work completed (C29; R78, R86, R87): Complete and Incomplete share one row
+ * as the two equal chips of one radiogroup — one tab stop, arrows and
+ * Home/End, a tick with the colour. The renamed answers replace "All
+ * completed" / "Stopped short" and the ladder's "Finished the ladder" / "Hit
+ * the time cap". A radiogroup cannot be emptied, so once answered the athlete
+ * corrects by choosing the other answer, never by clearing it.
+ *
+ * Effort (C30; R63, R76, R80, R116): the existing `SetEffortChoice`, so the
+ * same Frown, Meh and Smile, the same words, categories, tick, focus and
+ * compact Clear back to `null`. Nothing here turns a category into the
+ * numeric block effort or reads it as the session's mood.
+ */
+function CompletionGroups({ value, onChange, askCompletion = true, saved = false }: CompletionResultLog) {
+  return (
+    <>
+      {askCompletion && (
+        <ResultGroup>
+          <ChoiceGroup
+            className="clr-timed-completion"
+            legend={WORK_COMPLETED_LEGEND}
+            options={[
+              { value: COMPLETE, label: 'Complete', disabled: saved },
+              { value: INCOMPLETE, label: 'Incomplete', disabled: saved },
+            ]}
+            value={value.completed === null ? undefined : value.completed ? COMPLETE : INCOMPLETE}
+            onChange={(next) => {
+              const chosen = Array.isArray(next) ? next[0] : next
+              if (chosen === COMPLETE || chosen === INCOMPLETE) {
+                onChange({ ...value, completed: chosen === COMPLETE })
+              }
+            }}
+          />
+        </ResultGroup>
+      )}
       <ResultGroup>
-        <QuantitySelector
-          label="Rounds completed"
-          value={value.roundsCompleted}
-          onChange={(roundsCompleted) => onChange({ ...value, roundsCompleted })}
-        />
-        <QuantitySelector
-          label="Reps into the next round"
-          value={value.partialRoundReps}
-          onChange={(partialRoundReps) => onChange({ ...value, partialRoundReps })}
+        <SetEffortChoice
+          scopeLabel={EFFORT_SCOPE}
+          legend={TIMED_EFFORT_LEGEND}
+          value={value.effort}
+          onChange={(effort) => onChange({ ...value, effort })}
         />
       </ResultGroup>
-    </form>
+    </>
   )
 }

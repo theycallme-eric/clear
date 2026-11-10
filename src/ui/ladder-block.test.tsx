@@ -119,8 +119,13 @@ function rungNames(): string[] {
   return Array.from(items, (item) => item.textContent ?? '')
 }
 
-/** Says the block ended the way the user says it did. */
-async function declare(user: ReturnType<typeof userEvent.setup>, label: string) {
+/**
+ * Says the block ended the way the user says it did. TASK-010 (C29; R78, R87):
+ * the answers are now the shared log's Complete and Incomplete, in one row,
+ * replacing "Finished the ladder" and "Hit the time cap" / "Fell behind the
+ * schedule"; what each records is unchanged.
+ */
+async function declare(user: ReturnType<typeof userEvent.setup>, label: 'Complete' | 'Incomplete') {
   await user.click(screen.getByRole('radio', { name: label }))
 }
 
@@ -148,9 +153,10 @@ describe('the ladder is rendered from the int array, and shown once', () => {
     // And no movement line repeats the pattern the way the old card did.
     expect(screen.queryByText(/2-4-6-4-2/)).not.toBeInTheDocument()
     expect(screen.queryByText(/5 rungs/)).not.toBeInTheDocument()
+    // TASK-010 (C29, C30): after the movements, the shared result log's one title.
     expect(
       screen.getAllByRole('heading').map((heading) => heading.textContent),
-    ).toEqual(['push up', 'sit up'])
+    ).toEqual(['push up', 'sit up', 'Log results'])
   })
 
   it('says what is performed at each rung when the movements share it', () => {
@@ -204,8 +210,9 @@ describe('the ladder is rendered from the int array, and shown once', () => {
 
     expect(screen.getByText('4 reps burpee between each rung')).toBeInTheDocument()
     // The companion is an annotation under the ladder's movement, not a card
-    // of its own — one heading, not two.
-    expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual(['push up'])
+    // of its own — one movement heading, not two (then the result log's title,
+    // TASK-010).
+    expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual(['push up', 'Log results'])
   })
 })
 
@@ -214,17 +221,22 @@ describe('read-only and interactive rungs are different things', () => {
     mount()
 
     expect(screen.getByRole('list', { name: 'Ladder' })).toBeInTheDocument()
-    // The only radios on the screen are the two endings; no rung is a control.
+    // The only radios on the screen are the result log's (TASK-010: C29, C30):
+    // the two answers and the three effort faces, none chosen. No rung is a control.
     expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual([
-      'Finished the ladder',
-      'Hit the time cap',
+      'Complete',
+      'Incomplete',
+      'Too hard',
+      'About right',
+      'Too easy',
     ])
+    expect(screen.queryAllByRole('radio', { checked: true })).toEqual([])
   })
 
   it('turns the same rungs into a choice once the cap is declared', async () => {
     const user = userEvent.setup()
     mount()
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
     const group = screen.getByRole('group', { name: 'How far did you get?' })
     expect(
@@ -252,7 +264,7 @@ describe('read-only and interactive rungs are different things', () => {
   it('marks the chosen rung and the rungs climbed below it', async () => {
     const user = userEvent.setup()
     mount()
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
     await user.click(screen.getByRole('radio', { name: '9 reps' }))
 
     const states = Array.from(
@@ -270,7 +282,7 @@ describe('read-only and interactive rungs are different things', () => {
   it('reselects cleanly when the user changes their mind', async () => {
     const user = userEvent.setup()
     mount()
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
     await user.click(screen.getByRole('radio', { name: '12 reps' }))
     expect(screen.getByRole('radio', { name: '12 reps' })).toBeChecked()
@@ -288,7 +300,7 @@ describe('read-only and interactive rungs are different things', () => {
       repScheme: 'pyramid',
       exercises: [sequence('push-up', [2, 4, 6, 4, 2])],
     })
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
     // A pyramid climbs past 4 twice. The two are different rungs, and the
     // second one is the one further up.
@@ -305,7 +317,7 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
     await user.click(screen.getByRole('radio', { name: '9 reps' }))
 
     // The rung *number*, which is what `block_results.highest_rung` means —
@@ -319,7 +331,7 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Finished the ladder')
+    await declare(user, 'Complete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
@@ -341,7 +353,7 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
@@ -350,9 +362,9 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
     await user.click(screen.getByRole('radio', { name: '6 reps' }))
-    await declare(user, 'Finished the ladder')
+    await declare(user, 'Complete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
@@ -384,7 +396,7 @@ describe('a ladder block the rows do not describe as one', () => {
     // The movement is still named, and the block still completes — with no
     // ending to declare, because there are no rungs to have reached.
     expect(screen.getByRole('heading', { name: 'burpee' })).toBeInTheDocument()
-    expect(screen.queryByText('How did this block end?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Work completed')).not.toBeInTheDocument()
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
@@ -417,7 +429,7 @@ describe('a ladder block is one card of the shared frame', () => {
 
     expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
 
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
     expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
   })
 
@@ -467,7 +479,7 @@ describe('a ladder block is one card of the shared frame', () => {
     const saved = within(card).getAllByText('Block saved')
     expect(saved).toHaveLength(1)
 
-    const ending = screen.getByRole('group', { name: 'How did this block end?' })
+    const ending = screen.getByRole('group', { name: 'Work completed' })
     expect(card).toContainElement(ending)
     expect(
       ending.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -478,7 +490,7 @@ describe('a ladder block is one card of the shared frame', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
     await user.click(screen.getByRole('radio', { name: '9 reps' }))
 
     expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
@@ -733,13 +745,16 @@ describe('a scheduled ladder runs on its own clock, restored from wall-clock tim
     expect(screen.queryByRole('button', { name: 'Start schedule' })).not.toBeInTheDocument()
 
     // Past the last interval: complete, nothing live, and no rung claimed.
+    // TASK-010 (AC-R010-01): a schedule run out starts the log at Incomplete,
+    // never at every rung — the clock is not work performed.
     moveClockTo(setWall, SCHEDULE_START + (schedule.rounds * schedule.interval + 5) * 1000)
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
     for (const row of roundRows()) expect(row).not.toHaveAttribute('aria-current')
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, {})
+    expect(screen.getByRole('radio', { name: 'Incomplete' })).toHaveAttribute('aria-checked', 'true')
 
-    // Falling behind is the athlete's to say, and is what records a rung.
-    await declare(user, 'Fell behind the schedule')
+    // How far is the athlete's to say, and is what records a rung.
+    await declare(user, 'Incomplete')
     await user.click(screen.getByRole('radio', { name: `${schedule.sequence[2]} reps` }))
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, { highestRung: 3 })
   })
@@ -816,7 +831,7 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
     )
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
-    await declare(user, 'Finished the ladder')
+    await declare(user, 'Complete')
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { highestRung: 4 })
   })
 })
@@ -856,7 +871,7 @@ describe('a capped window shows its one cap', () => {
     expect(last.getByText(`${rungs[rounds - 1]} reps kettlebell swing`)).toBeInTheDocument()
     expect(last.getByText('5 reps push up — same every round')).toBeInTheDocument()
     for (const row of rows) expect(row).not.toHaveAttribute('aria-current')
-    expect(screen.getByRole('radio', { name: 'Hit the time cap' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Incomplete' })).toBeInTheDocument()
     expectNoSetEntry()
   })
 })

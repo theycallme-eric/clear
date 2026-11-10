@@ -329,7 +329,13 @@ export function blockOutcome(
       readings.push(measurement('Elapsed', result.elapsed_seconds, formatElapsed))
       readings.push(
         measurement('Cap', result.completed_under_cap, (under) =>
-          under ? 'Finished under the cap' : 'Stopped at the cap',
+          under
+            ? 'Finished under the cap'
+            : stoppedBeforeCap(block, result)
+              ? // TASK-010 (C29): the athlete's Incomplete for a race they
+                // stopped before its cap — not a cap it reached.
+                'Incomplete'
+              : 'Stopped at the cap',
         ),
       )
       break
@@ -406,6 +412,18 @@ function measurement<T>(
   format: (value: T) => string,
 ): OutcomeMeasurement | null {
   return value === null ? null : { label, value: format(value) }
+}
+
+/**
+ * TASK-010 (C29): a For Time row saved as not completed whose recorded time is
+ * short of its cap. Until the completion question existed, `false` came only
+ * from the cap, always with the cap's own time, so every such older row still
+ * reads "Stopped at the cap"; only an athlete's Incomplete for a race stopped
+ * earlier is short of it. An unknown time or cap claims nothing new.
+ */
+function stoppedBeforeCap(block: WorkoutBlockRow, result: BlockResultRow): boolean {
+  if (result.elapsed_seconds === null || block.timer_seconds === null) return false
+  return result.elapsed_seconds < Math.max(1, Math.trunc(block.timer_seconds))
 }
 
 /** Rounds against the prescription, because `4 of 5` is the fact `4` is not. */

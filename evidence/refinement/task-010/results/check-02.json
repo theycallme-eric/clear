@@ -1,0 +1,55 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-010",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-010.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-010/required-cases.json",
+    "sha256": "7630d75e8f2d2f5585faed776b7fdae708703374b6788a2947d2a524d833cef8"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-010.spec.ts",
+      "sha256": "49de4ede54eebab9cf836d5a537e5e168e1889c838175b8de22ed585dfd06218"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-010.spec.ts",
+      "name": "TASK-010 completion choices and existing effort faces > JOURNEY-010 touch phone-390 Signal: For Time Finish opens Complete beside Incomplete in one row; the athlete corrects to Incomplete and answers effort with a face; a reload, a refused save and its retry, the saved row and History keep the answer, and effort is never a number",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-010.spec.ts",
+      "name": "TASK-010 completion choices and existing effort faces > JOURNEY-010 keyboard phone-320 reduced motion: the ladder’s cap opens Incomplete with no rung; Complete and the effort faces are reached and chosen by keyboard; the saved row records the top rung and no effort",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-010.spec.ts",
+      "name": "TASK-010 completion choices and existing effort faces > JOURNEY-010 gallery for_time and ladder phone-390: the route’s own logs, completion at the route’s starting point and the effort faces unanswered, live over memory only, with no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 3
+  },
+  "problems": []
+}

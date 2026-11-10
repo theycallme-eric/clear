@@ -853,7 +853,8 @@ backendTest('responsive: original route families and seven renderers across widt
     const tab = page.getByRole('button', { name: new RegExp('^' + section.name + ', ') })
     await tab.click()
     if (section.name === 'Ladder') {
-      await page.getByRole('radio', { name: 'Finished the ladder', exact: true }).click()
+      // TASK-010 (C29; R78, R87): Complete beside Incomplete replaces "Finished the ladder".
+      await page.getByRole('radio', { name: 'Complete', exact: true }).click()
     }
     await evidence.shot('Workout', '/workout', section.state, '/workout', 'Workout', async () => {
       await expect(tab).toHaveAttribute('aria-current', 'step')
@@ -862,7 +863,7 @@ backendTest('responsive: original route families and seven renderers across widt
       if (section.name === 'Standard') {
         await expect(page.getByRole('form', { name: /^Log set 1 of/ }).first()).toBeVisible()
       } else if (section.name === 'Ladder') {
-        await expect(page.getByRole('radio', { name: 'Finished the ladder', exact: true })).toHaveAttribute('aria-checked', 'true')
+        await expect(page.getByRole('radio', { name: 'Complete', exact: true })).toHaveAttribute('aria-checked', 'true')
       } else {
         const names: Record<string, string> = {
           Superset: 'Movements in this superset', Circuit: 'Movements in this circuit',
@@ -1367,14 +1368,16 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     const probe = await timerProbe(page.getByRole('timer', { name: 'Block time', exact: true }))
     expectTimerContract(probe, 'Block time')
     expect(await seconds(page.getByRole('timer', { name: 'Block time', exact: true }))).toBe(45)
-    await expect(page.getByRole('group', { name: 'How did this block end?' })).toHaveCount(0)
+    // TASK-010 (C29): the completion question is the result log's, asked once the race ends.
+    await expect(page.getByRole('group', { name: 'Work completed' })).toHaveCount(0)
     await expectContained(page, 'For Time')
   }, { variant: 'for-time-active' })
   await page.clock.resume()
 
   await section('Ladder')
   await checkA11y()
-  const finished = page.getByRole('radio', { name: 'Finished the ladder', exact: true })
+  // TASK-010 (C29; R78, R87): Complete beside Incomplete replaces "Finished the ladder".
+  const finished = page.getByRole('radio', { name: 'Complete', exact: true })
   await finished.click()
   await evidence.shot(...key('active-emom-amrap-for-time-ladder'), at, 'Workout', async () => {
     await expect(page.getByRole('list', { name: 'Movements in this ladder' })).toBeVisible()

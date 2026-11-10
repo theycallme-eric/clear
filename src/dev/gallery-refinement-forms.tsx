@@ -22,24 +22,52 @@
  * library. Nothing reaches the network or the route's storage, and no
  * performed work is written anywhere.
  *
+ * `?state=for_time` and `?state=ladder` (TASK-010: C29, C30; R78, R86, R87,
+ * R124) are the same consolidation of the reference's `for_time` and `ladder`
+ * logging moments: the route's actual `ForTimeBlock` and `LadderBlock`, each
+ * ended twice — by Finish and by its cap — over memory-only storage, so the
+ * shared `TimedResultLog` shows "Work completed" with Complete beside
+ * Incomplete at the starting point the route gives it (For Time: Finish
+ * Complete, the cap Incomplete; the ladder: Incomplete with no rung, because
+ * nothing was tracked), then the existing three effort faces, unanswered. The
+ * reference's synthetic draft, Save/retry, rung tiles, Undo and overlay are
+ * not copied.
+ *
  * Not composed here, and owned by later tasks: the focused logging dialog,
  * its header, backdrop and contained scrolling (`refinements/logging-overlay.tsx`:
- * TASK-016, TASK-017, TASK-018, adopted for the AMRAP by TASK-046 and closed on
- * the routes by TASK-041), completion choices and the existing effort faces
- * (TASK-010), the EMOM, For Time and ladder logs (TASK-011, TASK-013,
- * TASK-046), per-movement next-round actuals and loads (TASK-031) and the
- * other logging contexts.
+ * TASK-016, TASK-017, TASK-018, adopted for the timed families by TASK-046 and
+ * closed on the routes by TASK-041), the EMOM's end log (TASK-011), the
+ * ladder's rep-first rung tiles, live check-off and quiet Undo (TASK-013,
+ * TASK-014), per-movement next-round actuals and loads, notes and the
+ * categorical effort's writer (TASK-015, TASK-031, TASK-047) and the other
+ * logging contexts.
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { BlockCompletionProvider } from '../state/block-completion-provider'
-import { writeAmrapState, type ShellStorage } from '../state/workout-persistence'
+import { writeAmrapState, writeForTimeState, type ShellStorage } from '../state/workout-persistence'
+import type { BlockProgress } from '../state/workout-progress'
 import { AmrapBlock } from '../ui/amrap-block'
+import { ForTimeBlock } from '../ui/for-time-block'
 import { Heading, HeadingSection } from '../ui/Heading'
+import { LadderBlock } from '../ui/ladder-block'
 import { QuantitySelector } from '../ui/refinements/quantity'
-import { TimedResultLog, type AmrapResult } from '../ui/refinements/timed-result-log'
+import {
+  TimedResultLog,
+  type AmrapResult,
+  type CompletionResult,
+  type CompletionResultLog,
+} from '../ui/refinements/timed-result-log'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
-import { GALLERY_AMRAP_ATTEMPTS, galleryAmrapProgress, type GalleryAmrapAttemptSpec } from './gallery-refinement-forms-data'
+import {
+  GALLERY_AMRAP_ATTEMPTS,
+  GALLERY_FOR_TIME_ATTEMPTS,
+  GALLERY_LADDER_ATTEMPTS,
+  galleryAmrapProgress,
+  galleryTimedProgress,
+  type GalleryAmrapAttemptSpec,
+  type GalleryRaceAttemptSpec,
+} from './gallery-refinement-forms-data'
 
 /** One mount's storage, so the gallery never reads or writes the route's records. */
 function memoryStorage(): ShellStorage {
@@ -93,6 +121,73 @@ export function GalleryAmrapResults() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TASK-010 — `?state=for_time` and `?state=ladder` (C29, C30)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One ended race: the route's own renderer over its seeded memory clock. */
+function GalleryRaceAttempt({
+  attempt,
+  family,
+  render,
+}: {
+  attempt: GalleryRaceAttemptSpec
+  family: 'for-time' | 'ladder'
+  render: (block: BlockProgress, storage: ShellStorage) => ReactNode
+}) {
+  const [block] = useState(() => galleryTimedProgress(attempt.block, attempt.blockIndex))
+  const [storage] = useState(() => {
+    const memory = memoryStorage()
+    writeForTimeState(memory, block.blockId, attempt.record(Date.now()))
+    return memory
+  })
+  return (
+    <HeadingSection className="clr-stack" data-gallery-race={`${family}-${attempt.id}`}>
+      <Heading className="label">{attempt.title}</Heading>
+      {/* The shell's own completion path, as for the AMRAP above: nothing is ever saved. */}
+      <BlockCompletionProvider sessionId={GALLERY_SESSION_ID} blocks={[block]}>
+        <div data-gallery-context="workout">{render(block, storage)}</div>
+      </BlockCompletionProvider>
+    </HeadingSection>
+  )
+}
+
+/** The accepted `for_time` state: the route's For Time, finished under the cap and run into it. */
+export function GalleryForTimeResults() {
+  return (
+    <GalleryCoachingClients>
+      <div className="clr-stack" data-gallery-for-time-results="">
+        {GALLERY_FOR_TIME_ATTEMPTS.map((attempt) => (
+          <GalleryRaceAttempt
+            key={attempt.id}
+            attempt={attempt}
+            family="for-time"
+            render={(block, storage) => <ForTimeBlock block={block} storage={storage} />}
+          />
+        ))}
+      </div>
+    </GalleryCoachingClients>
+  )
+}
+
+/** The accepted `ladder` state: the route's ladder, finished with nothing tracked and run into its cap. */
+export function GalleryLadderResults() {
+  return (
+    <GalleryCoachingClients>
+      <div className="clr-stack" data-gallery-ladder-results="">
+        {GALLERY_LADDER_ATTEMPTS.map((attempt) => (
+          <GalleryRaceAttempt
+            key={attempt.id}
+            attempt={attempt}
+            family="ladder"
+            render={(block, storage) => <LadderBlock block={block} storage={storage} />}
+          />
+        ))}
+      </div>
+    </GalleryCoachingClients>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Register specimens: the two shared owners alone (TASK-009)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -131,4 +226,38 @@ export function TimedResultLogAmrapBlank() {
 /** Rounds and an observed zero partial round entered. */
 export function TimedResultLogAmrapEntered() {
   return <MemoryAmrapLog initial={{ roundsCompleted: 4, partialRoundReps: 0 }} />
+}
+
+/** A For Time or ladder log held in memory here; its consumer owns the record and its writer (TASK-010). */
+function MemoryCompletionLog({
+  format,
+  initial,
+  saved,
+}: {
+  format: CompletionResultLog['format']
+  initial: CompletionResult
+  saved?: boolean
+}) {
+  const [value, setValue] = useState<CompletionResult>(initial)
+  return <TimedResultLog format={format} value={value} onChange={setValue} saved={saved} />
+}
+
+/** For Time after Finish under the cap: completion starts at Complete; effort unanswered. */
+export function TimedResultLogForTimeFinished() {
+  return <MemoryCompletionLog format="for_time" initial={{ completed: true, effort: null }} />
+}
+
+/** A ladder whose attempt ended with nothing tracked: Incomplete, and an effort face chosen. */
+export function TimedResultLogLadderIncomplete() {
+  return <MemoryCompletionLog format="ladder" initial={{ completed: false, effort: 'about_right' }} />
+}
+
+/** A ladder before its attempt ended: nothing chosen, neither completion nor effort. */
+export function TimedResultLogLadderUnanswered() {
+  return <MemoryCompletionLog format="ladder" initial={{ completed: null, effort: null }} />
+}
+
+/** A saved result: the completion keeps the saved answer, no longer offered as a choice. */
+export function TimedResultLogForTimeSaved() {
+  return <MemoryCompletionLog format="for_time" initial={{ completed: false, effort: null }} saved />
 }

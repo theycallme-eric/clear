@@ -436,12 +436,20 @@ function round(page: Page, ladder: number, number: number): Locator {
   })
 }
 
-/** The `n`th ladder's ending question. */
+/**
+ * The `n`th ladder's ending question. TASK-010 (C29; R78, R87): the shared
+ * result log's Work completed, Complete beside Incomplete, replacing "How did
+ * this block end?" with "Finished the ladder" / "Hit the time cap".
+ */
 function ending(page: Page, index: number): Locator {
-  return page.getByRole('group', { name: 'How did this block end?', exact: true }).nth(index)
+  return page.getByRole('group', { name: 'Work completed', exact: true }).nth(index)
 }
 
-/** Nothing on the screen asks for a set, a number or an exertion. */
+/**
+ * Nothing on the screen asks for a set, a number or a numeric exertion. The
+ * result log's optional effort faces (TASK-010, C30) are three categories,
+ * never a number, a slider or an RPE.
+ */
 async function expectHandsOff(page: Page) {
   const main = page.locator('main')
   await expect(main.getByRole('form', { name: /^Log set/ })).toHaveCount(0)
@@ -623,10 +631,13 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await page.clock.resume()
 
   // Progress is declared, never inferred: finished the schedule; finished the
-  // free-paced ladder; reached the second rung inside the cap.
-  await ending(page, 0).getByRole('radio', { name: 'Finished the ladder', exact: true }).check()
-  await ending(page, 1).getByRole('radio', { name: 'Finished the ladder', exact: true }).check()
-  await ending(page, 2).getByRole('radio', { name: 'Hit the time cap', exact: true }).check()
+  // free-paced ladder; reached the second rung inside the cap. TASK-010
+  // (AC-R010-01): the schedule run out already starts its log at Incomplete,
+  // never at every rung, so Complete is the athlete's own answer.
+  await expect(ending(page, 0).getByRole('radio', { name: 'Incomplete', exact: true })).toBeChecked()
+  await ending(page, 0).getByRole('radio', { name: 'Complete', exact: true }).check()
+  await ending(page, 1).getByRole('radio', { name: 'Complete', exact: true }).check()
+  await ending(page, 2).getByRole('radio', { name: 'Incomplete', exact: true }).check()
   const reached = page.getByRole('group', { name: 'How far did you get?', exact: true })
   // The radio is visually hidden; the rung card that stands for it is its label.
   await reached.locator('label', {
@@ -646,7 +657,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
     await expect(dialog).toContainText('That didn’t save')
     expect(failure.failed()).toBe(1)
     await expect(page.getByText('COMPLETE', { exact: true })).toBeVisible()
-    await expect(ending(page, 1).getByRole('radio', { name: 'Finished the ladder', exact: true })).toBeChecked()
+    await expect(ending(page, 1).getByRole('radio', { name: 'Complete', exact: true })).toBeChecked()
     await expect(reached.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true })).toBeChecked()
     await dialog.getByRole('button', { name: 'Try again', exact: true }).click()
   } finally {
