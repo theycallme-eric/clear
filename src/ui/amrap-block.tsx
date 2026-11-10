@@ -76,6 +76,7 @@ import {
   type ConditioningSectionRead,
 } from '../state/conditioning'
 import { useConditioningHistoryQuery } from '../state/conditioning-queries'
+import { amrapWindowDeadline } from '../state/countdown-urgency'
 import { QueryClientContext } from '../state/query'
 import { WorkoutClientsContext } from '../state/workout-queries'
 import { targetText } from '../state/prescription'
@@ -106,7 +107,6 @@ import { MetricFrame } from './composition'
 import { ConditioningScoreLine } from './conditioning-score'
 import { GroupExerciseCoaching } from './exercise-coaching'
 import { coachesAsGroup } from './group-coaching-context'
-import { useInterfaceLoop } from './motion'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { WorkoutCard } from './refinements/workout-card'
@@ -125,13 +125,6 @@ export interface AmrapBlockProps extends BlockRendererProps {
    */
   conditioningHistory?: readonly ConditioningSectionRead[] | null
 }
-
-/**
- * The last stretch of the window, where its readout takes the low state: ten,
- * the shipped `TimerDisplay`'s own default, kept unchanged (TASK-007 changes the
- * frame, not the threshold).
- */
-const WINDOW_LOW_SECONDS = 10
 
 export function AmrapBlock({
   block,
@@ -155,34 +148,25 @@ export function AmrapBlock({
   const elapsed = useElapsedSeconds(amrapTicking(amrap.state), now)
   const view = amrapView(amrap.state, shape, elapsed)
 
-  const urgent =
-    shape.size > 0 &&
-    view.phase === 'running' &&
-    view.capSeconds !== null &&
-    view.remainingSeconds <= 10
-  const loop = useInterfaceLoop('urgent', urgent)
   const roundsLabelId = useId()
   const sectionLabel = useSectionLabel()
   const outcome = shape.size === 0 ? {} : amrapOutcome(view)
 
   return (
-    <div
-      className="clr-stack"
-      style={{ display: 'flex', flexDirection: 'column' }}
-      data-urgent={urgent ? 'true' : undefined}
-      {...(urgent ? loop : {})}
-    >
+    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
       {/*
         The shipped timer card, beside the block's card and never within it. Only
         a window that is open and has a deadline has anything to count down —
-        frozen where it was while the window is paused (TASK-006).
+        frozen where it was while the window is paused (TASK-006). Its warning
+        is the shared one, read from the window's own deadline (TASK-008: C22,
+        C23, C24, C61): colour from ten seconds left, and the breathe with the
+        one soft screen-edge aura in the last five while the window runs.
       */}
       {shape.size > 0 && (view.phase === 'running' || view.phase === 'paused') && view.capSeconds !== null && (
         <DeadlineTimer
           reading={formatCountdownReading(view.remainingSeconds)}
           size="var(--heading-h1-size)"
-          low={view.remainingSeconds <= WINDOW_LOW_SECONDS}
-          pulse={view.remainingSeconds <= WINDOW_LOW_SECONDS || undefined}
+          deadline={amrapWindowDeadline(view)}
         />
       )}
       {/*

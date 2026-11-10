@@ -663,7 +663,14 @@ async function expectStaticReviewSections(page: Page) {
   return sections
 }
 
-/** One timer: its name, liveness, card depth, stepped crossing, low pulse and glow. */
+/**
+ * One timer: its name, liveness, card depth, stepped crossing, low colour,
+ * warning breathe and glow. TASK-008 (C22, C23, C61; R133, R135) supersedes the
+ * low marker and pulse read here: the colour from ten seconds left is the
+ * whole frame's `data-low`, and in a running deadline's final five the timer
+ * itself breathes on the shared smooth 1.5 s `clr-deadline-breathe` with one
+ * screen-edge aura — no longer the card's four-second stepped micro-pulse.
+ */
 function timerProbe(timer: Locator) {
   return timer.evaluate((el) => {
     const digits = el.querySelector<HTMLElement>('[aria-hidden="true"]')
@@ -672,13 +679,13 @@ function timerProbe(timer: Locator) {
     for (let node: Element | null = el; node; node = node.parentElement) {
       if (node.classList.contains('clr-card')) cardDepth += 1
     }
-    const pulse = el.closest<HTMLElement>('.clr-pulse-micro')
-    const pulseStyle = pulse ? getComputedStyle(pulse) : null
+    const urgent = el.getAttribute('data-urgent') === 'true'
+    const pulseStyle = urgent ? getComputedStyle(el) : null
     // Every text emits through `body`'s shadow; only its geometry is comparable,
     // because each element tints it with its own colour.
     const geometry = (shadow: string) => shadow.replace(/(?:color|rgba?)\([^)]*\)\s*/g, '').trim()
-    const pulseAnimation = pulse?.getAnimations().find((animation) =>
-      'animationName' in animation && (animation as CSSAnimation).animationName === 'clr-micro-pulse')
+    const pulseAnimation = urgent ? el.getAnimations().find((animation) =>
+      'animationName' in animation && (animation as CSSAnimation).animationName === 'clr-deadline-breathe') : undefined
     const opacities = pulseAnimation?.effect && 'getKeyframes' in pulseAnimation.effect
       ? (pulseAnimation.effect as KeyframeEffect).getKeyframes().map((frame) => Number(frame.opacity))
       : []
@@ -694,12 +701,14 @@ function timerProbe(timer: Locator) {
         body: geometry(getComputedStyle(document.body).textShadow),
         inline: digits?.style.textShadow || null,
       } : null,
-      low: pulse !== null,
+      low: el.closest('[data-low]') !== null,
       pulse: pulseStyle ? {
         animation: pulseStyle.animationName, duration: pulseStyle.animationDuration,
         timing: pulseStyle.animationTimingFunction, minimumOpacity: opacities.length ? Math.min(...opacities) : null,
+        maximumOpacity: opacities.length ? Math.max(...opacities) : null, opacity: Number(pulseStyle.opacity),
         running: pulseAnimation?.playState ?? 'none', boxShadow: pulseStyle.boxShadow,
       } : null,
+      edges: document.querySelectorAll('[data-countdown-edge]').length,
     }
   })
 }
@@ -715,15 +724,28 @@ function expectTimerContract(probe: TimerProbe, name: string) {
   expect(probe.digitGlow?.inline).toBeNull()
   expect(probe.digitGlow?.own).toBe(probe.digitGlow?.body)
 }
-function expectLowState(probe: TimerProbe, reducedMotion: boolean) {
+/** TASK-008 (C23): ten seconds left or fewer, not yet five — the colour alone. */
+function expectLowState(probe: TimerProbe) {
   expect(probe.low).toBe(true)
+  expect(probe.pulse).toBeNull()
+  expect(probe.edges).toBe(0)
+}
+/**
+ * TASK-008 (C22, C61): a running deadline's final five seconds — the timer
+ * breathes .2/.8/.2 on the smooth 1.5 s cycle with one soft screen-edge aura,
+ * no glow of its own; under reduced motion both hold a steady .5.
+ */
+function expectWarningBreathe(probe: TimerProbe, reducedMotion: boolean) {
+  expect(probe.low).toBe(true)
+  expect(probe.edges).toBe(1)
   expect(probe.pulse).toMatchObject({
-    animation: reducedMotion ? 'none' : 'clr-micro-pulse',
+    animation: reducedMotion ? 'none' : 'clr-deadline-breathe',
     boxShadow: 'none',
   })
-  if (!reducedMotion) {
-    expect(probe.pulse).toMatchObject({ duration: '4s', minimumOpacity: 0.8 })
-    expect(probe.pulse?.timing).toMatch(/^steps\(2(, end)?\)$/)
+  if (reducedMotion) {
+    expect(probe.pulse?.opacity).toBe(0.5)
+  } else {
+    expect(probe.pulse).toMatchObject({ duration: '1.5s', timing: 'ease-in-out', minimumOpacity: 0.2, maximumOpacity: 0.8, running: 'running' })
   }
 }
 
@@ -857,21 +879,24 @@ backendTest('responsive: original route families and seven renderers across widt
   await page.getByRole('button', { name: /^EMOM, / }).click()
   await page.getByRole('button', { name: 'Start EMOM', exact: true }).click()
   const emomStart = await page.evaluate(() => Date.now())
-  await page.clock.pauseAt(emomStart + 52_000)
+  // TASK-008 (C23): the urgent moment is the minute's final five seconds.
+  await page.clock.pauseAt(emomStart + 56_000)
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const urgent = async () => {
-    expect(await seconds(timer)).toBe(8)
+    expect(await seconds(timer)).toBe(4)
     expectTimerContract(await timerProbe(timer), 'Time remaining')
-    expectLowState(await timerProbe(timer), false)
-    expect((await loops(page)).running).toHaveLength(1)
+    expectWarningBreathe(await timerProbe(timer), false)
+    // One loop: the warning — the timer and its one aura breathing together.
+    expect((await loops(page)).running).toEqual(['Time remaining', 'clr-deadline-edge'])
     await expectContained(page, 'Responsive urgent timer')
   }
   await evidence.shot('Workout', '/workout', 'active-emom-amrap-for-time-ladder', '/workout', 'Workout', urgent,
     { variant: 'responsive-emom-urgent', skins: true, acrossSkins: true })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await evidence.shot('Workout', '/workout', 'active-emom-amrap-for-time-ladder', '/workout', 'Workout', async () => {
-    expect(await seconds(timer)).toBe(8)
-    expectLowState(await timerProbe(timer), true)
+    expect(await seconds(timer)).toBe(4)
+    await expect.poll(async () => (await timerProbe(timer)).pulse?.opacity).toBe(0.5)
+    expectWarningBreathe(await timerProbe(timer), true)
     await expect.poll(() => page.evaluate(() =>
       document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0)
   }, { variant: 'responsive-emom-urgent-reduced', skins: true, acrossSkins: true })
@@ -1192,10 +1217,14 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   await evidence.shot(...key('rest-running-urgent-skipped'), at, 'Workout', async () => {
     await expect(page.getByText('Final 10 seconds', { exact: true })).toBeVisible()
     expectTimerContract(await timerProbe(restTimer), 'Time remaining')
-    expectLowState(await timerProbe(restTimer), false)
+    expectLowState(await timerProbe(restTimer))
     await expectContained(page, 'Rest urgent')
   }, { variant: 'running-urgent', skins: true })
-  evidence.note('timer', 'Rest low state: the card takes the timer-low role, digits cross colour over 0.4s in four steps, the card dims to 80% on the 4s two-step pulse, and no glow is added to the timer.', urgent)
+  evidence.note('timer', 'Rest low state (TASK-008, C23): from ten seconds left the card takes the timer-low role and the digits cross colour over 0.4s in four steps; in its final five the timer breathes on the smooth 1.5s cycle with one soft screen-edge aura. No glow is added to the timer.', urgent)
+
+  // TASK-008 (C23, C61): the warning holds the view's loop in the rest's final five seconds.
+  await page.clock.pauseAt(t0 + 21_000 + (after.rest - 4) * 1000)
+  expect(await seconds(restTimer)).toBe(4)
 
   // Coaching opened while the rest is urgent: its read is held, so two loops want the view.
   const definition = await boundary(page, { tail: 'exercise_definitions', method: 'GET' }, 'held-real')
@@ -1206,10 +1235,9 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     await evidence.shot(...key('rest-running-urgent-skipped'), at, 'Workout', async () => {
       await expect(page.locator('main [aria-busy="true"]').first()).toBeVisible()
       const held = await loops(page)
-      expect(held.running).toHaveLength(1)
-      expect(held.running[0]).toBe('Rest')
+      expect(held.running).toEqual(['Time remaining', 'clr-deadline-edge'])
       expect(held.stilled).toBeGreaterThan(0)
-      evidence.note('motion', 'Coaching loading beside an urgent rest: the rest pulse holds the one interface loop and the loading region is stilled but still busy.', held)
+      evidence.note('motion', 'Coaching loading beside an urgent rest: the rest warning (its timer and one aura, TASK-008) holds the one interface loop and the loading region is stilled but still busy.', held)
     }, { variant: 'rest-with-coaching-loading' })
     definition.release()
   } finally { await definition.dispose() }
@@ -1234,10 +1262,11 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     await evidence.shot(...key('rest-running-urgent-skipped'), at, 'Workout', async () => {
       await expect(page.getByText('Final 10 seconds', { exact: true })).toBeVisible()
       await expect(rest).toHaveAttribute('data-urgent', 'true')
-      expectLowState(await timerProbe(restTimer), true)
-      expect(await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0)
+      await expect.poll(async () => (await timerProbe(restTimer)).pulse?.opacity).toBe(0.5)
+      expectWarningBreathe(await timerProbe(restTimer), true)
+      await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0)
     }, { variant: 'reduced-motion' })
-    evidence.note('motion', 'Under reduced motion the urgent rest keeps its words, digits and low colours; the pulse and every other animation stop.')
+    evidence.note('motion', 'Under reduced motion the urgent rest keeps its words, digits and low colours; its timer and the one aura hold a steady .5 and every animation stops (TASK-008).')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
   }
   await page.clock.resume()
@@ -1301,15 +1330,16 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     expect(probe.low).toBe(false)
     expect(await seconds(emomTimer)).toBe(40)
   }, { variant: 'emom-active' })
-  await page.clock.pauseAt(emomStart + 52_000)
+  // TASK-008 (C23): the urgent moment is the minute's final five seconds.
+  await page.clock.pauseAt(emomStart + 56_000)
   await evidence.shot(...key('active-emom-amrap-for-time-ladder'), at, 'Workout', async () => {
-    expect(await seconds(emomTimer)).toBe(8)
+    expect(await seconds(emomTimer)).toBe(4)
     const probe = await timerProbe(emomTimer)
     expectTimerContract(probe, 'Time remaining')
-    expectLowState(probe, false)
-    expect((await loops(page)).running).toHaveLength(1)
+    expectWarningBreathe(probe, false)
+    expect((await loops(page)).running).toEqual(['Time remaining', 'clr-deadline-edge'])
     await expectContained(page, 'EMOM urgent')
-    evidence.note('timer', 'EMOM low state: the shared whole timer frame (TASK-007, C19) beside the block card, one chamfer filling its width, steps its colour over 0.4s and pulses to 80% on the one loop, with no extra glow.', probe)
+    evidence.note('timer', 'EMOM warning: the shared whole timer frame (TASK-007, C19) beside the block card, one chamfer filling its width, steps its colour over 0.4s from ten seconds left and, in the final five, breathes on the smooth 1.5s cycle with one soft screen-edge aura on the one loop (TASK-008), with no extra glow.', probe)
   }, { variant: 'emom-urgent', skins: true })
   await page.clock.resume()
 

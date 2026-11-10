@@ -295,6 +295,63 @@
   color: var(--text-timer-low);
 }
 
+/* The recovered countdown warning — DeadlineTimer (TASK-008: C22, C23, C24,
+ * C61; G06; R120, R125, R126, R133, R135, R144; P05). The accepted
+ * `.clr-deadline-edge` and `clr-deadline-breathe` (eded158c…), on the exact
+ * values in `tokens.css`:
+ *
+ *   · one decorative, pointer-transparent soft vignette covering the whole
+ *     viewport — a 70 CSS px urgency-a400 inset shadow, with no hard outline,
+ *     no fill and no full-screen flash (R120, R133, R135);
+ *   · the urgent deadline timer and that aura breathe .2 → .8 → .2 on the one
+ *     smooth 1.5 s cycle, the same keyframes, duration and easing — and, because
+ *     `DeadlineTimer` pins both to the document timeline's epoch, the same
+ *     phase: numeric ticks and portal moves never restart either (C61, P05);
+ *   · only while the deadline runs with 0 < remaining <= 5 (`data-urgent`, set
+ *     by `countdown-warning.ts`), and only on the view's one running loop
+ *     (`data-loop='run'`): stilled — the loop's still policy, the app's reduced
+ *     motion choice or the device's — the timer and the aura hold a steady .5.
+ *
+ * It replaces the shipped four-second stepped micro-pulse on every timer
+ * (R133, R135: that pulse is not this effect). The colour at ten seconds is the
+ * shipped timer-low role on the frame, unchanged. Ledger EXC-07. */
+.clr-accepted-timer__body[data-urgent],
+.clr-deadline-edge {
+  opacity: var(--countdown-warning-opacity-still);
+}
+
+.clr-accepted-timer__body[data-urgent][data-loop='run'],
+.clr-deadline-edge[data-loop='run'] {
+  animation: clr-deadline-breathe var(--countdown-warning-period) var(--countdown-warning-easing) infinite;
+}
+
+.clr-deadline-edge {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow: inset 0 0 var(--countdown-warning-edge-softness) var(--urgency-a400);
+}
+
+@keyframes clr-deadline-breathe {
+  0%, 100% { opacity: var(--countdown-warning-opacity-min); }
+  50% { opacity: var(--countdown-warning-opacity-max); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clr-accepted-timer__body[data-urgent],
+  .clr-deadline-edge {
+    animation: none !important;
+    opacity: var(--countdown-warning-opacity-still);
+  }
+}
+
+html[data-reduce-motion] .clr-accepted-timer__body[data-urgent],
+html[data-reduce-motion] .clr-deadline-edge {
+  animation: none !important;
+  opacity: var(--countdown-warning-opacity-still);
+}
+
 /* The echoed frame: its wrapper passes the frame's layout on, so the frame
    fills (or sizes to) its place exactly as it does with the effect off. */
 .clr-echo:has(> .clr-accepted-timer) {

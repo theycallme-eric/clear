@@ -84,7 +84,8 @@ Each one is named, narrowly tested and recorded here. None edits the vendor. An 
 where integration needed one. The production guard
 (`src/test/design-system-097-deprecations.test.ts`) pins EXC-01, EXC-04 and EXC-06 by file. It fails
 if hand-assembled card markup, a public `Card` import or a raw `<select>` appears anywhere else, or
-if a pinned exception is no longer needed. EXC-03 is retired (below).
+if a pinned exception is no longer needed. EXC-03 is retired (below). EXC-07 is pinned by the same
+guard's keyframe rule and by the DS-06 easing guard (`src/test/easing-vocabulary.test.ts`).
 
 | ID | File | What it adds | Why | Test |
 |---|---|---|---|---|
@@ -94,6 +95,7 @@ if a pinned exception is no longer needed. EXC-03 is retired (below).
 | EXC-04 | `src/ui/select.tsx` | Native `<select>` framed with the public `.clr-field` | The export ships no Select (DS-04b) | `src/ui/select.test.tsx` |
 | EXC-05 | `src/styles/skin-clear.css` | CLEAR skin values with self-hosted fonts in place of the vendor font CDN import | DS-02 font delivery from CLEAR's own origin | `src/styles/fonts.test.ts` |
 | EXC-06 | `src/ui/set-logging-sheet.tsx` | Joins the shipped `.clr-card__bar` to the set-logging sheet's structural frame in every mode, with a plain opaque scan-free panel over a dim/light-blur backdrop that omits the Dialog backdrop's scanline/static layers (styles in `src/ui/set-logging-sheet.css`; browser proof in `e2e/ui-polish-b05-sheet-surface.spec.ts`) | Batch-05 B05-07.3/07.4 owner intent: the sheet needs the accent bar although overlays otherwise carry none. Scoped to this app-owned sheet: no vendor edit, no Dialog or card restyling, and the sheet is not a card, so the rest timer card inside it is not nested | `src/ui/set-logging-sheet.test.tsx` |
+| EXC-07 | `src/ui/refinements/presentation.css` | The recovered countdown warning's one smooth breathe: `clr-deadline-breathe` (opacity `.2 → .8 → .2`) on the owner-selected `--countdown-warning-period: 1.5s` and `--countdown-warning-easing: ease-in-out` (stated once in `src/ui/refinements/tokens.css`), shared in phase by the urgent deadline timer and its one 70px `--urgency-a400` screen-edge vignette (`DeadlineTimer`), steady `.5` under reduced motion or the still policy. Declared once on those tokens; no other local keyframes or named curve | clear-refinement-20261103 TASK-008 (C22, C61; R133, R135, R144; P05): the owner selected this exact recovered October 26 appearance over the shipped four-second stepped `clr-micro-pulse` ("explicitly not this effect", R135), as accepted in the gallery reference `eded158c…` (REUSE.md). ATOMIC.md §8's mechanical/stepped vocabulary still governs every other motion. No vendor edit | `e2e/refinement/task-008.spec.ts`; `src/ui/countdown-urgency.test.tsx`; `src/test/easing-vocabulary.test.ts`; `src/test/design-system-097-deprecations.test.ts` |
 
 ## Open findings
 

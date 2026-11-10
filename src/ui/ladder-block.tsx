@@ -83,6 +83,7 @@ import {
   type LadderRoundPlan,
   type LadderRung,
 } from '../state/ladder'
+import { scheduleIntervalDeadline } from '../state/countdown-urgency'
 import { prescribedTarget, targetText } from '../state/prescription'
 import type { LadderTiming } from '../state/schemas'
 import { useShellWeightUnit } from '../state/set-logging'
@@ -95,7 +96,6 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ForTimeClock } from './for-time-block'
 import { LadderRungs } from './ladder-rungs'
-import { useInterfaceLoop } from './motion'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings, type LiveMovementReadings } from './refinements/movement-readings'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -475,9 +475,6 @@ function scheduleView(
   }
 }
 
-/** The last stretch of an interval, where the countdown crosses into its low state. */
-const INTERVAL_LOW_SECONDS = 10
-
 /**
  * A scheduled ladder: the round list, the live round marked from the block's
  * own clock, and the countdown to the next start beside the card.
@@ -734,22 +731,16 @@ const SCHEDULE_WORDS: Readonly<Record<ScheduleView['phase'], string>> = {
  * The countdown to the next scheduled start, as `BlockPanel`'s `timer`: the
  * shared whole timer body (TASK-007, C19), filling the block's width with its
  * digits centred, drawn beside the block's card. It counts the current
- * interval rather than the block, so its low state means "the next round is
- * about to start" and resets at every boundary — and it is given up once the
- * schedule has run out.
+ * interval rather than the block, so its warning means "the next round is
+ * about to start" and resets at every boundary. The warning is the shared one
+ * (TASK-008: C22, C23, C24, C61; R126 names interval countdowns): colour from
+ * ten seconds left, the breathe with the one soft screen-edge aura in the last
+ * five while the schedule runs, and nothing once the schedule has run out.
  */
 function IntervalCountdown({ view }: { view: ScheduleView }) {
-  const low = view.secondsRemaining <= INTERVAL_LOW_SECONDS
-  const running = view.phase === 'running'
-  const loop = useInterfaceLoop('urgent', low && running)
-
   return (
-    <div
-      style={{ display: 'flex', flexDirection: 'column' }}
-      data-urgent={low && running ? 'true' : 'false'}
-      {...loop}
-    >
-      <DeadlineTimer reading={formatCountdownReading(view.secondsRemaining)} low={low} pulse={low || undefined} />
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <DeadlineTimer reading={formatCountdownReading(view.secondsRemaining)} deadline={scheduleIntervalDeadline(view)} />
     </div>
   )
 }

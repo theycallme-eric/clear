@@ -466,8 +466,9 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   const [first, second] = world.catalog
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const sessionTime = page.getByRole('timer', { name: 'Session time', exact: true })
-  // The block carries `data-urgent` only while the low-time cue is on.
-  const urgentCue = page.locator('[data-urgent="true"]').filter({ has: timer })
+  // TASK-008 (C23): the window's whole frame carries `data-low` only while the
+  // low-time colour is on (ten seconds left); the breathe and edge are the last five's.
+  const urgentCue = page.locator('[data-timer-frame][data-low]').filter({ has: timer })
 
   await page.clock.install({ time: Date.now() })
   await visit('/workout')

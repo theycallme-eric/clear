@@ -609,28 +609,40 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     }
   })
 
-  it('leaves urgency to the timer’s own low state, with nothing added around it', async () => {
+  // TASK-008 (C22, C23, C61) supersedes "the package's stepped pulse on the
+  // timer's own emission": the colour still comes at ten seconds left, and in
+  // the last five the timer itself breathes with the one soft screen-edge aura.
+  it('leaves urgency to the timer’s own shared warning, with nothing added around it', async () => {
     const calm = await resumeAt(60_000)
     const resting = screen.getByRole('timer')
     expect(resting).toHaveClass('clr-chamfer--timer')
-    expect(resting.closest('.clr-bleed')).not.toHaveClass('clr-pulse-micro')
+    expect(resting).not.toHaveAttribute('data-urgent')
     calm.unmount()
 
-    const { container } = await resumeAt(472_000)
-    const low = screen.getByRole('timer', { name: 'Time remaining' })
-    expect(low).toHaveTextContent('00:08')
-    expect(low).toHaveClass('clr-chamfer--timer-low')
+    const low = await resumeAt(472_000)
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(timer).toHaveTextContent('00:08')
+    expect(timer).toHaveClass('clr-chamfer--timer-low')
+    expect(timer.parentElement).toHaveAttribute('data-low')
+    // The colour alone at eight seconds: no stepped pulse, nothing on the block.
+    expect(low.container.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(low.container.querySelector('[data-urgent]')).toBeNull()
+    low.unmount()
 
-    // The package's stepped pulse on the timer's own emission — and that is the
-    // only loop on the block.
-    const bleed = low.closest('.clr-bleed')
-    expect(bleed).toHaveClass('clr-pulse-micro')
-    expect(bleed?.parentElement).toBe(container.firstElementChild)
-    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    const { container } = await resumeAt(476_000)
+    const urgent = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(urgent).toHaveTextContent('00:04')
+    // The timer is the only thing that breathes on the block, with one aura.
+    expect(urgent).toHaveAttribute('data-urgent', 'true')
+    expect(container.querySelectorAll('[data-urgent]')).toHaveLength(1)
+    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(urgent.closest('.clr-bleed')?.parentElement).toBe(container.firstElementChild)
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
 
     // Urgent, and still nothing to enter.
     expectNoScoreEntry()
   })
+
 
   it('labels each group inside the card it belongs to', async () => {
     const { user } = await resumeAt(60_000)

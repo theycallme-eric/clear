@@ -2199,10 +2199,10 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'DeadlineTimer',
     requirement: 'REQ-007',
     module: 'src/ui/refinements/deadline-timer.tsx',
-    summary: 'TASK-007 the whole timer body every live clock draws (C19, C20, C21; R42, R49, R53, R96, R102, R103, R119): one chamfered timer frame with no accent-bar strip or second chamfer, filling its place with its digits centred, or the compact header readout at the menu’s height. It reads a clock’s existing owner through state/timed-clock.ts and has no clock of its own. The route consumers are /gallery/refinements?state=urgency; the one-row header is ?state=cards.',
+    summary: 'TASK-007 the whole timer body every live clock draws (C19, C20, C21; R42, R49, R53, R96, R102, R103, R119): one chamfered timer frame with no accent-bar strip or second chamfer, filling its place with its digits centred, or the compact header readout at the menu’s height. It reads a clock’s existing owner through state/timed-clock.ts and has no clock of its own. TASK-008 (C22, C23, C24, C61; P05): it is also the one owner of the recovered countdown warning — the timer-low colour at 10 seconds left on a live deadline (countdown-warning.ts), and in the last 5 of a running one a smooth 1.5 s breathe shared, in phase, by the timer and one pointer-transparent soft urgency vignette (70 CSS pixels) over the whole viewport (above an open native dialog), steady at .5 under reduced motion; elapsed-only clocks never warn and nothing is recorded. The route consumers and the warning are /gallery/refinements?state=urgency; the one-row header is ?state=cards.',
     specimens: [
       { state: 'body · a format countdown', note: 'Fills the width; digits centred.', Render: DeadlineTimerBody },
-      { state: 'body · the shipped low state', note: 'The existing threshold, unchanged: timer-low frame and digits.', Render: DeadlineTimerLow },
+      { state: 'body · the warning colour, held', note: 'A deadline held at 8 seconds: timer-low frame and digits from 10 seconds; no aura while held (C23, C24).', Render: DeadlineTimerLow },
       { state: 'header · the session clock', note: 'The menu’s control height, sized to its digits.', Render: DeadlineTimerHeader },
       { state: 'the workout header row', note: 'Title, session clock and menu frame on one row (C20).', Render: GalleryWorkoutHeaders },
     ],

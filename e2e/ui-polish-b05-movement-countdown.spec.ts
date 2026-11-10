@@ -183,7 +183,7 @@ async function arrangement(page: Page, image: Buffer, type: string, region: Regi
       return Math.abs(here - luminance(x + step, y)) > 25 || Math.abs(here - luminance(x, y + step)) > 25
     }
     // A frame's top or bottom stroke is a rule: a row lit across most of the
-    // width. The urgency cue's hard edge at the viewport side, digits and
+    // width. The urgency cue (a soft vignette since TASK-008), digits and
     // labels never are.
     const ruleRow = (y: number) => {
       let count = 0
@@ -714,14 +714,16 @@ for (const { name: size, viewport } of VIEWPORTS) {
       expect(await digits(timer)).toBe(HOLD_SECONDS)
       await expect(reset).toBeDisabled()
 
-      // ── Final five seconds, with motion: low state, pulse, screen edge ───
+      // ── Final five seconds, with motion: low state, breathe, screen edge ─
+      // TASK-008 (C22, C23, C61): the colour comes at ten seconds left; in the
+      // final five the timer itself breathes with the one shared soft edge.
       await start.click()
       await advance(page, (HOLD_SECONDS - 4) * 1000)
       await expect(timer).toHaveClass(/clr-chamfer--timer-low/)
       await expect(status).toHaveText('Final 5 seconds')
       await expect(edge).toHaveCount(1)
       await expect(edge).toHaveAttribute('data-loop', 'run')
-      await expect(timer.locator('xpath=..')).toHaveAttribute('data-loop', 'run')
+      await expect(timer).toHaveAttribute('data-loop', 'run')
       await expect(session).not.toHaveClass(/clr-chamfer--timer-low/)
       await shoot('urgent')
 
@@ -748,7 +750,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(status).toHaveText('Final 5 seconds')
       await expect(edge).toHaveCount(1)
       await expect(edge).toHaveAttribute('data-loop', 'still')
-      await expect(timer.locator('xpath=..')).toHaveAttribute('data-loop', 'still')
+      await expect(timer).toHaveAttribute('data-loop', 'still')
       await shoot('urgent-reduced-motion')
 
       expect(app.writes).toEqual([])

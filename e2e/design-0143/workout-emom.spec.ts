@@ -396,7 +396,9 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   const second = movement(page, 2, fixed.id)
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const sessionTime = page.getByRole('timer', { name: 'Session time', exact: true })
-  const countdown = page.locator('[data-urgent]').filter({ has: timer })
+  // TASK-008 (C23): the countdown's whole frame carries the low colour from ten
+  // seconds left (`data-low`); the breathe and the one edge are the last five's.
+  const countdown = page.locator('[data-timer-frame]').filter({ has: timer })
 
   await page.clock.install({ time: Date.now() })
   await visit('/workout')
@@ -435,7 +437,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // The end-of-minute cue, then the rest window — with nothing to press.
   await page.clock.pauseAt(emomStart + 52_000)
   await expect(timer).toContainText('00:08')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
   await expect(page.getByText('REST', { exact: true })).toBeVisible()
   await expect(second.getByText('Next', { exact: true })).toBeVisible()
   await expectHandsOff(page)
@@ -443,7 +445,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // Boundary: minute 2 is the second movement's, with no tap; the cue resets.
   await page.clock.pauseAt(emomStart + 61_000)
   await expect(page.getByText('MIN 2 OF 6', { exact: true })).toBeVisible()
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
   await expect(second).toHaveAttribute('aria-current', 'step')
   await expect(second.getByText('MIN 2 · 12 reps', { exact: true })).toBeVisible()
   await expect(first.getByText('MIN 3 · 8 reps', { exact: true })).toBeVisible()
@@ -456,12 +458,12 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   await expect(first).toHaveAttribute('aria-current', 'step')
   await expect(first.getByText('MIN 3 · 8 reps', { exact: true })).toBeVisible()
   await expect(timer).toContainText('00:20')
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
 
   // Into its rest window: the end-of-minute cue, and the schedule looks ahead.
   await page.clock.pauseAt(emomStart + 172_000)
   await expect(timer).toContainText('00:08')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
   await expect(page.getByText('REST', { exact: true })).toBeVisible()
   await expect(second.getByText('Next', { exact: true })).toBeVisible()
   await expect(first.getByText('MIN 5 · 10 reps', { exact: true })).toBeVisible()
@@ -483,7 +485,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // The restored countdown still crosses into its cue at the end of the minute.
   await page.clock.pauseAt(emomStart + 292_000)
   await expect(timer).toContainText('00:08')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
 
   // Expiry: the schedule ends; nothing claims the work was performed.
   await page.clock.pauseAt(emomStart + 400_000)

@@ -83,6 +83,7 @@ import {
   resumeClock,
   type TimedLifecyclePhase,
 } from '../state/timed-lifecycle'
+import { emomMinuteDeadline } from '../state/countdown-urgency'
 import { formatCountdownReading } from '../state/timed-clock'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
@@ -91,7 +92,6 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { DeadlineTimer } from './refinements/deadline-timer'
-import { useInterfaceLoop } from './motion'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
@@ -236,40 +236,26 @@ function finishedText(view: EmomView): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The last stretch of a minute, where the readout crosses into its low state.
- * Ten, which is the shipped `TimerDisplay`'s own default — stated here so the
- * loop claim below and the readout cannot disagree about when that is.
- */
-const MINUTE_LOW_SECONDS = 10
-
-/**
  * The countdown, as `BlockPanel`'s `timer`: the shared whole timer body
  * (TASK-007, C19), its own frame filling the block's width, drawn beside the
  * block's card rather than inside it.
  *
  * It is handed the seconds left of *this minute* rather than of the whole
- * block, which is what makes its urgency treatment mean "wrap up this minute"
- * and reset at every boundary. The low state is the shipped one and nothing
- * more: the stepped `--dur-alert` crossing and the dim to 80%, with no glow of
- * its own. The pulse is an `urgent` claim on the view's one loop for as long as
- * a minute is actually running out — it outranks a wait beside it, and it is
- * given up once the last minute has elapsed, so a finished clock at `00:00`
- * holds the low colours without pulsing for ever. Under reduced motion it is
- * still, with the digits, the colour and the phase word all unchanged.
+ * block, which is what makes its warning mean "wrap up this minute" and reset
+ * at every boundary. The warning is the shared one (TASK-008: C22, C23, C24,
+ * C61; R126 names the EMOM), drawn by `DeadlineTimer` from the minute's own
+ * deadline: the timer-low colour from ten seconds left, and in the last five
+ * of a running minute the smooth breathe with the one soft screen-edge aura in
+ * the same phase — an `urgent` claim on the view's one loop that outranks a
+ * wait beside it. A paused grid holds the colour and loses the breathe and
+ * the aura; once the last minute has elapsed the warning is over. Under
+ * reduced motion the timer and the aura hold a steady .5, with the digits, the
+ * colour and the phase word unchanged.
  */
 function MinuteCountdown({ view }: { view: EmomView }) {
-  const low = view.secondsRemaining <= MINUTE_LOW_SECONDS
-  // A paused minute is not running out (TASK-006): the loop is given up.
-  const running = (view.phase === 'work' || view.phase === 'rest') && !view.paused
-  const loop = useInterfaceLoop('urgent', low && running)
-
   return (
-    <div
-      style={{ display: 'flex', flexDirection: 'column' }}
-      data-urgent={low ? 'true' : 'false'}
-      {...loop}
-    >
-      <DeadlineTimer reading={formatCountdownReading(view.secondsRemaining)} low={low} pulse={low || undefined} />
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <DeadlineTimer reading={formatCountdownReading(view.secondsRemaining)} deadline={emomMinuteDeadline(view)} />
     </div>
   )
 }
