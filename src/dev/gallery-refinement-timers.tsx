@@ -26,6 +26,14 @@
  *     one aura moves into the dialog's top layer, in phase), and previewed
  *     still. The movement countdown and the rest warn the same way when run
  *     into their last seconds; the elapsed-only session clock never does.
+ *   · TASK-033 (REQ-033; AC-R033-02) opens that log in the accepted focused
+ *     logging dialog itself — `LoggingOverlay`, with TASK-016's Balanced
+ *     backdrop, its X-only header and the frame's shared Echo — as the
+ *     accepted reference's urgency state does (eded158c…
+ *     `gallery-refinement-flow.tsx`, "Open log over cue"), so this state shows
+ *     the final composition: the CRT front glass over the readable dialog, the
+ *     Balanced backdrop under it and the one warning edge in its top layer.
+ *     See `docs/specs/EFFECTS_COMPOSITION_CONTRACT.md`.
  *
  * Every controller here is memory-only: the countdown and the rest are the
  * real hooks over the browser clock, the warning demonstration's deadline is
@@ -39,12 +47,12 @@ import { RestTimerProvider } from '../state/rest-provider'
 import { useRestTimer } from '../state/rest'
 import { forTimeView, type ForTimeState } from '../state/for-time'
 import { formatCountdownReading, raceReading, sessionReading } from '../state/timed-clock'
-import { AppDialog } from '../ui/app-dialog'
 import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { ForTimeClock } from '../ui/for-time-block'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { MovementCountdown } from '../ui/movement-countdown'
 import { DeadlineTimer } from '../ui/refinements/deadline-timer'
+import { LoggingOverlay } from '../ui/refinements/logging-overlay'
 import { GlobalTimer, RestTimerBar, WorkoutMenu } from '../ui/workout-chrome'
 
 const noop = () => {}
@@ -122,7 +130,9 @@ const DEMO_CAP_SECONDS = 60
  * the last five, gone on Pause and at zero). The count-up race reads the same
  * deadline as its cap minus its elapsed time. The open log draws the same
  * deadline again inside a native dialog: still one aura, now in the dialog's
- * top layer, breathing in phase with both timers.
+ * top layer, breathing in phase with both timers. That dialog is the shared
+ * `LoggingOverlay` (TASK-033): its timer is drawn only while it is open, so a
+ * closed log holds no second urgent claim.
  */
 function GalleryDeadlineWarning() {
   const [seconds, setSeconds] = useState(12)
@@ -172,19 +182,14 @@ function GalleryDeadlineWarning() {
       </div>
       <Checkbox label="Still preview (reduced motion)" checked={still} onChange={setStill} />
       {cue}
-      <AppDialog
-        open={open}
-        title="Log set"
-        onClose={() => setOpen(false)}
-        actions={<Button variant="secondary" onClick={() => setOpen(false)}>Close log</Button>}
-      >
+      <LoggingOverlay open={open} title="Log set" onClose={() => setOpen(false)}>
         {open ? (
           <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
             <p style={{ margin: 0 }}>The deadline stays visible over the open log, with one aura above it.</p>
             {cue}
           </div>
         ) : null}
-      </AppDialog>
+      </LoggingOverlay>
     </div>
   )
 }
