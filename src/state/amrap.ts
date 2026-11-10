@@ -33,6 +33,7 @@
  * Nothing here imports React, touches storage, or knows what a card looks like.
  * `amrap-block.tsx` draws it and `workout-persistence.ts` remembers it.
  */
+import { draftsAfterProgressChange, type MovementActualDraft } from '../data/refinement-logging-rules'
 import type { BlockOutcome } from './block-completion'
 import { pausedElapsedSeconds, restoredPause, withoutPause } from './timed-lifecycle'
 import type { BlockProgress } from './workout-progress'
@@ -74,6 +75,16 @@ export interface AmrapState {
    * on by the pause, so the window left is the window left (`timed-lifecycle.ts`).
    */
   readonly pausedAt?: string | null
+  /**
+   * TASK-015 (C37): each movement's next-round partial and actual load, as
+   * typed, by `workout_exercises.id` — the AMRAP's draft of the per-movement
+   * entries, kept on the same record as its counts so a reload, or a walk to
+   * the next section and back, brings them back as entered. Absent in every
+   * record written before the fields existed and until the athlete types.
+   * Never derived from the counts, the plan or `partialRoundReps`, and never
+   * read into them (TASK-030 §6).
+   */
+  readonly movements?: Readonly<Record<string, MovementActualDraft>>
 }
 
 /**
@@ -140,7 +151,7 @@ export function finishAmrap(
  */
 export function countRound(state: AmrapState, delta: number): AmrapState {
   const rounds = Math.max(0, (state.roundsCompleted ?? 0) + Math.trunc(delta))
-  return rounds === state.roundsCompleted ? state : { ...state, roundsCompleted: rounds }
+  return rounds === state.roundsCompleted ? state : setRoundsCompleted(state, rounds)
 }
 
 /**
@@ -151,10 +162,35 @@ export function setRoundsCompleted(
   state: AmrapState,
   rounds: number | null,
 ): AmrapState {
-  return {
-    ...state,
-    roundsCompleted: rounds === null ? null : Math.max(0, Math.trunc(rounds)),
-  }
+  const roundsCompleted = rounds === null ? null : Math.max(0, Math.trunc(rounds))
+  return withMovementsFor({ ...state, roundsCompleted }, state)
+}
+
+/**
+ * TASK-015 (C37): one movement's entry, as typed. Blank stays blank — nothing
+ * is recorded for it — and a typed zero stays zero; the record is written on
+ * every keystroke, as the counts are.
+ */
+export function setAmrapMovement(
+  state: AmrapState,
+  workoutExerciseId: string,
+  entry: MovementActualDraft,
+): AmrapState {
+  return { ...state, movements: { ...(state.movements ?? {}), [workoutExerciseId]: entry } }
+}
+
+/**
+ * The round a next-round partial belongs to is the round after the recorded
+ * count, so a change of count moves it: every amount is cleared (never carried
+ * to a round it was not performed in) and every load kept — TASK-030's
+ * `draftsAfterProgressChange`, the accepted owner's rule. A record with no
+ * entries stays without the key, so older records are rewritten unchanged.
+ */
+function withMovementsFor(next: AmrapState, previous: AmrapState): AmrapState {
+  if (previous.movements === undefined) return next
+  const from = previous.roundsCompleted === null ? null : previous.roundsCompleted + 1
+  const to = next.roundsCompleted === null ? null : next.roundsCompleted + 1
+  return { ...next, movements: draftsAfterProgressChange(previous.movements, from, to) }
 }
 
 /**
@@ -205,6 +241,8 @@ export function clampAmrapState(state: AmrapState, shape: AmrapShape): AmrapStat
         : Math.max(0, Math.trunc(state.partialRoundReps)),
     // A pause belongs to a window still open; a closed one has none.
     ...(ended === null ? restoredPause(state) : {}),
+    // TASK-015: the per-movement entries, exactly as typed; absent stays absent.
+    ...(state.movements === undefined ? {} : { movements: state.movements }),
   }
 }
 

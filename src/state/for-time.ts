@@ -26,6 +26,7 @@
  * Nothing here imports React, touches storage, or knows what a card looks like.
  * `for-time-block.tsx` draws it.
  */
+import { draftsAfterProgressChange, type MovementActualDraft } from '../data/refinement-logging-rules'
 import type { BlockOutcome } from './block-completion'
 import {
   clockStopMoment,
@@ -86,6 +87,14 @@ export interface ForTimeState {
    * the clock's default — an Incomplete must not come back as Complete.
    */
   readonly workCompleted?: boolean
+  /**
+   * TASK-015 (C37): each movement's partial amount and actual load, as typed,
+   * by `workout_exercises.id` — kept on the race's own record beside the
+   * answer, so a reload or a walk away and back brings them back as entered.
+   * Absent in every record written before the fields existed and until the
+   * athlete types. Never derived from the plan or the clock.
+   */
+  readonly movements?: Readonly<Record<string, MovementActualDraft>>
 }
 
 /** Nothing started, nothing finished. */
@@ -203,6 +212,8 @@ export function clampForTimeState(state: ForTimeState): ForTimeState {
     finishedAt,
     ...(finishedAt === null ? restoredPause({ startedAt, pausedAt: state.pausedAt }) : {}),
     ...(typeof state.workCompleted === 'boolean' ? { workCompleted: state.workCompleted } : {}),
+    // TASK-015: the per-movement entries, exactly as typed; absent stays absent.
+    ...(state.movements === undefined ? {} : { movements: state.movements }),
   }
 }
 
@@ -212,7 +223,27 @@ export function clampForTimeState(state: ForTimeState): ForTimeState {
  */
 export function answerForTime(state: ForTimeState, workCompleted: boolean): ForTimeState {
   if (state.startedAt === null) return state
-  return { ...state, workCompleted }
+  const next = { ...state, workCompleted }
+  // TASK-015: a partial amount belongs to the Incomplete race's round; once the
+  // answer changes, that round is no longer the one it was entered against, so
+  // every amount is cleared and every load kept (TASK-030's
+  // `draftsAfterProgressChange`). A record with no entries stays without them.
+  if (state.movements === undefined || state.workCompleted === workCompleted) return next
+  return { ...next, movements: draftsAfterProgressChange(state.movements, 1, 2) }
+}
+
+/**
+ * TASK-015 (C37): one movement's entry, as typed. Blank stays blank — nothing
+ * is recorded for it — and a typed zero stays zero. A race that never started
+ * has no movement to log against.
+ */
+export function setForTimeMovement(
+  state: ForTimeState,
+  workoutExerciseId: string,
+  entry: MovementActualDraft,
+): ForTimeState {
+  if (state.startedAt === null) return state
+  return { ...state, movements: { ...(state.movements ?? {}), [workoutExerciseId]: entry } }
 }
 
 /** Everything the renderer draws, derived rather than stored. */

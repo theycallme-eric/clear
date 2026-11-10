@@ -44,14 +44,26 @@
  * Finish under the cap starts at Complete, the cap at Incomplete, and either
  * is one tap from the other. The answer is kept on the race's own record and
  * is what `completed_under_cap` saves. Effort is optional and is held here,
- * unanswered as `null`: no categorical block-effort field exists yet (R116;
- * TASK-030, TASK-031, TASK-047), so it is never written — and never turned into
- * the numeric `perceived_effort`.
+ * unanswered as `null`; since TASK-015 it is reported to the shell beside the
+ * outcome and saved as the block's categorical `effort` (MIG-A, applied by the
+ * owner's LIVE-PRE-1) — and never turned into the numeric `perceived_effort`.
+ *
+ * TASK-015 (C37; AC-C37-01, AC-R015-01, AC-R015-02): the log also asks each
+ * movement's completed amount and actual load where they apply. A partial
+ * belongs to round 1 only for a single pass answered Incomplete (TASK-030's
+ * `partialRoundFor` over the block's real `rounds`); a multi-round race takes
+ * loads only, with no partial round and no rounds count (owner decision). The
+ * entries live on the race's own record (`ForTimeState.movements`), typed as
+ * typed and read back after a reload; a change of answer clears the amounts
+ * and keeps the loads; they reach the row through the shell's one completion
+ * path as the block's timed report. Once saved, the fields keep their values
+ * and are no longer offered.
  */
-import { useState, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 
+import { partialRoundFor } from '../data/refinement-logging-rules'
 import { AlertTriangle, Check } from '../design-system/index'
-import { useBlockCompletion } from '../state/block-completion'
+import { useBlockCompletion, type TimedResultReport } from '../state/block-completion'
 import {
   answerForTime,
   clampForTimeState,
@@ -59,6 +71,8 @@ import {
   forTimeCompletion,
   forTimeOutcome,
   forTimeShape,
+  setForTimeMovement,
+  type ForTimeState,
   forTimeView,
   startForTime,
   forTimeLifecycle,
@@ -84,7 +98,7 @@ import { Card } from './card'
 import { countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
-import { TimedResultLog } from './refinements/timed-result-log'
+import { TimedResultLog, UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
 import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
@@ -118,22 +132,38 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
   const finish = () => clock.moveTo(finishForTime(clock.state, now()))
 
   // TASK-010: the result log's state. The completion answer lives on the
-  // race's record; the effort only here, because nothing can save it yet.
+  // race's record; the effort is this mount's draft, reported to the shell
+  // (TASK-015) and saved as the block's categorical effort, never a number.
   const { isBlockRecorded } = useBlockCompletion()
   const [effort, setEffort] = useState<SetEffort | null>(null)
   const answer = clock.state.workCompleted
   const completed = forTimeCompletion(view, answer)
   const ended = view.phase === 'finished' || view.phase === 'capped'
+  const saved = isBlockRecorded(block.blockId)
+
+  // What this structure observed: the seconds it took and whether the athlete
+  // completed the work (TASK-010). A block nobody started observed neither,
+  // and says so by supplying nothing rather than a zero (DATA_MODEL §8).
+  const outcome = shape.size === 0 ? {} : forTimeOutcome(view, answer)
+
+  // TASK-015 (C37): the per-movement entries on the race's own record. A
+  // partial belongs to round 1 only for a single pass answered Incomplete
+  // (TASK-030's `partialRoundFor` over the block's real `rounds`); a
+  // multi-round race records no count, so it takes loads only. The report the
+  // shell saves beside the row carries the effort and the typed entries.
+  const weightUnit = useShellWeightUnit() ?? UNSCOPED_WEIGHT_UNIT
+  const movements = clock.state.movements ?? NO_ENTRIES
+  const partialRound = ended ? partialRoundFor({ family: 'for_time', outcome, block: { rounds: block.rounds } }) : null
+  const timed = useMemo<TimedResultReport>(
+    () => ({ family: 'for_time', effort, movements, weightUnit }),
+    [effort, movements, weightUnit],
+  )
 
   return (
     <BlockPanel
       block={block}
       timer={shape.size === 0 ? null : <ForTimeClock view={view} />}
-      // What this structure observed: the seconds it took and whether the
-      // athlete completed the work (TASK-010). A block nobody started observed
-      // neither, and says so by supplying nothing rather than a zero
-      // (DATA_MODEL §8).
-      completion={{ outcome: shape.size === 0 ? {} : forTimeOutcome(view, answer) }}
+      completion={{ outcome, timed }}
     >
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />
@@ -175,12 +205,19 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
               format="for_time"
               value={{ completed, effort }}
               askCompletion={view.capSeconds !== null}
-              saved={isBlockRecorded(block.blockId)}
+              saved={saved}
               onChange={(next) => {
                 if (next.completed !== null && next.completed !== completed) {
                   clock.moveTo(answerForTime(clock.state, next.completed))
                 }
                 if (next.effort !== effort) setEffort(next.effort)
+              }}
+              movements={{
+                exercises: block.exercises,
+                partialRound,
+                weightUnit,
+                values: movements,
+                onChange: (exerciseId, entry) => clock.moveTo(setForTimeMovement(clock.state, exerciseId, entry)),
               }}
             />
           )}
@@ -189,6 +226,9 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
     </BlockPanel>
   )
 }
+
+/** No entry typed yet: one frozen object, so a report with nothing new is the same report. */
+const NO_ENTRIES: ForTimeState['movements'] & object = Object.freeze({})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The clock

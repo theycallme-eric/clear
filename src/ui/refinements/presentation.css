@@ -279,6 +279,27 @@
   min-width: 0;
 }
 
+/* Per-movement entries — TimedResultLog (TASK-015: C37; AC-R015-01). The
+ * accepted `.clr-timed-log__group-title`: a movement's group is the one titled
+ * group the simple hierarchy keeps, because its fields are that movement's —
+ * the display face at the h4 size, uppercase, the card-header colour. Inside
+ * it the amount and the load sit at the accepted movement gap (tokens.css
+ * `--logging-movement-gap`), tighter than the result group's field gap, so a
+ * movement's two fields read as one. Tokens only. */
+.clr-timed-log__group-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--heading-h4-size);
+  line-height: var(--heading-h4-line-height);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--text-card-header);
+}
+
+.clr-timed-log__group--movement {
+  gap: var(--logging-movement-gap);
+}
+
 /* One labelled field: its label, then its control. */
 .clr-timed-field {
   display: flex;

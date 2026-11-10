@@ -1,0 +1,55 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-015",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-015.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-015/required-cases.json",
+    "sha256": "c7a3a3331c07a7249fbb703874aa5132c105219b62b35ab922037e5b9ea53191"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-015.spec.ts",
+      "sha256": "05551d49cf64acead494f52e0ede2c3249521d475119e94e9d13891cbf6f2de9"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-015.spec.ts",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 touch phone-390 Signal: a single-pass For Time stopped Incomplete takes each movement’s completed amount in its own unit and the actual load; a reload keeps them; a refused movement write keeps every entry and the existing dialog; the retry restates the row and writes the movement rows once; saved fields read back and are no longer offered; History reads the row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-015.spec.ts",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 keyboard phone-320 reduced motion: the AMRAP’s partial fields appear only once a rounds count is recorded and name the round after it, a load only on the loaded movement, filled by keyboard beside the kept Reps into the next round, and the saved rows carry each round, amount, unit and load with no row for a blank movement",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-015.spec.ts",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 gallery amrap, for_time and ladder phone-390: the route’s own per-movement fields over memory only — the seeded entries read back unlike the plan, loads only where they apply, the ladder’s round-3 fields once round 2 is stated and bounded by its target — with nothing stored and no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 3
+  },
+  "problems": []
+}

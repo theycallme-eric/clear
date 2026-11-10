@@ -20,18 +20,21 @@
  *     path calls yet, and not applied to the hosted project: LIVE-PRE-1).
  *   · `PROPOSED_PATHS` — the proposed writers and read models, each with the
  *     dependent task that owns it.
- *   · Three pure contract functions for the proposed timed fields:
- *     `partialRoundFor` (which round a per-movement partial belongs to, from
- *     the block's own recorded outcome), `loadApplies` (the set logger's own
- *     loaded-movement rule) and `movementActualFromDraft` (one movement's entry
- *     to the proposed row, or the field it is refused on).
+ *   · The pure contract functions for the timed fields, re-exported from
+ *     `refinement-logging-rules.ts` (TASK-015 moved them there unchanged, so
+ *     the shipped graph can run them without this inventory): `partialRoundFor`
+ *     (which round a per-movement partial belongs to, from the block's own
+ *     recorded outcome), `loadApplies` (the set logger's own loaded-movement
+ *     rule), `movementActualFromDraft` (one movement's entry to the row, or
+ *     the field it is refused on) and `draftsAfterProgressChange`.
  *
  * What it deliberately is not:
  *
  *   · Not a writer. It imports no client, builds no request and calls no
- *     database. Nothing in `src/` imports it at runtime; dependent tasks
- *     (TASK-015, TASK-031, TASK-032, TASK-036, TASK-043–TASK-047) import it to
- *     build against the same contract.
+ *     database. Nothing in `src/` imports this module at runtime — the shell's
+ *     completion path and the timed log import the rules module; dependent
+ *     tasks (TASK-015, TASK-031, TASK-032, TASK-036, TASK-043–TASK-047) import
+ *     this one to build against the same contract.
  *   · Not a migration. `MIG-A` and `MIG-B` are TASK-031's repository
  *     migrations (`supabase/migrations/20261110000029_block_result_effort.sql`,
  *     `20261110000030_block_movement_results.sql`); applying either to any
@@ -41,13 +44,6 @@
  *     for `MIG-A` / `MIG-B` are `blockResultRowSchema.effort` and
  *     `blockMovementResultRowSchema` in `src/state/schemas.ts` (TASK-031).
  */
-import type { Enums } from './database.types'
-import type { BlockOutcome } from '../state/block-completion'
-import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
-import type { PrescribedColumns } from '../state/prescription'
-import { incrementFor } from '../state/progression'
-import type { WorkoutBlockRow } from '../state/schemas'
-import { setLogViolation, type SetLogEntry } from '../state/set-logging'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary
@@ -106,9 +102,11 @@ export type DependentTask =
  *   · `proposed-migration` — needs a column or table that does not exist.
  *   · `pending-live-migration` — TASK-031: the column or table is declared by
  *     a repository migration (MIG-A / MIG-B) and is in the generated types, and
- *     a client writer and History reader exist; but no shipped path calls the
- *     writer yet (TASK-015 / TASK-047 wire it), and the migration is not
- *     applied to the hosted project until the owner's LIVE-PRE-1.
+ *     a client writer and History reader exist. The status name is TASK-031's
+ *     and is kept as these fields' identity in the matrix; since the owner's
+ *     LIVE-PRE-1 (2026-11-10) the migrations are applied to the hosted
+ *     project, and since TASK-015 the shell's one completion path writes them
+ *     (TASK-047 proves it on the real lane).
  */
 export type FieldStatus = 'existing' | 'legacy' | 'prescription' | 'proposed-migration' | 'pending-live-migration'
 
@@ -530,7 +528,7 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     nullMeans: 'blank rounds or partial reps are null (not recorded); stopping and the cap never fill them',
     zeroMeans: 'an explicit 0 rounds or 0 partial reps is stored as 0 and read as such',
     update: `${BLOCK_UPDATE}; before the save every tap rewrites clear.workout-amraps`,
-    draft: 'clear.workout-amraps (clock and both counts), restored on reload',
+    draft: 'clear.workout-amraps (clock, both counts and, since TASK-015, each movement’s typed next-round amount and load as AmrapState.movements), restored on reload',
     readback: {
       workout: 'the AMRAP card and its like-for-like score line',
       history: 'History reads Rounds N (of M) and Partial round N reps; a null count has no reading',
@@ -551,14 +549,14 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     writer: BLOCK_WRITER,
     identity:
       `${BLOCK_IDENTITY}; forTimeOutcome reports elapsedSeconds and the completion answer, and no rounds count; ` +
-      'workout_blocks.rounds may be null, 1 or more, so a proposed partial has round 1 only for a single pass and none for a ' +
-      'multi-round race until a completed-rounds count is recorded (TASK-015)',
+      'workout_blocks.rounds may be null, 1 or more, so a partial has round 1 only for a single pass and none for a ' +
+      'multi-round race, which takes loads only (TASK-015, owner decision: no rounds count is recorded)',
     fields: ['block_results.elapsed_seconds', 'block_results.completed_under_cap'],
     proposed: ['block_results.notes', ...TIMED_PROPOSED_COMMON, ...TIMED_PARTIALS],
     nullMeans: 'completed_under_cap is null before the race ends, with no cap, or when recorded mid-race; Finish alone never claims the work',
     zeroMeans: 'elapsed_seconds 0 is a measured time; an unstarted race reports no time at all',
     update: `${BLOCK_UPDATE}; before the save the athlete's Complete/Incomplete is kept as workCompleted on clear.workout-for-time`,
-    draft: 'clear.workout-for-time (clock stamps and workCompleted); the effort faces are memory only and not saved',
+    draft: 'clear.workout-for-time (clock stamps, workCompleted and, since TASK-015, each movement’s typed amount and load as ForTimeState.movements); the effort faces are the renderer’s memory, reported to the shell and saved as the block’s category (TASK-015)',
     readback: {
       workout: 'the For Time card; completion chips are disabled once the row is saved',
       history: 'History reads Elapsed and Cap · Finished under the cap / Stopped at the cap / Incomplete (no rounds reading)',
@@ -585,7 +583,7 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     nullMeans: 'highest_rung is null when unanswered or Incomplete with no rung chosen',
     zeroMeans: 'the column admits 0 (no rung completed); the ladder log records it when the athlete states that no round was completed (TASK-013), never for nothing stated',
     update: BLOCK_UPDATE,
-    draft: 'the race clock, live checked progress and the answer and rounds are TASK-032’s durable attempt (clear.workout-ladders, usePersistedLadder: progress, draft, Finish checkpoint, original cap), adopted by TASK-013, which imports the checked prefix at Finish or the cap; effort is still the renderer’s memory (no writer); TASK-014 adopted its Finish checkpoint as the quiet Undo, which restores the attempt (clock, pause, progress, answer) until the original cap or a saved row, the shell’s word that the row exists closing it at once; the shared log and visible recovery are TASK-046/TASK-048',
+    draft: 'the race clock, live checked progress and the answer and rounds are TASK-032’s durable attempt (clear.workout-ladders, usePersistedLadder: progress, draft, Finish checkpoint, original cap), adopted by TASK-013, which imports the checked prefix at Finish or the cap; TASK-015 adopted its movements (each movement’s typed amount for the round after the prefix, and load) and reports the effort, still the renderer’s memory, to the shell; TASK-014 adopted its Finish checkpoint as the quiet Undo, which restores the attempt (clock, pause, progress, answer) until the original cap or a saved row, the shell’s word that the row exists closing it at once; the shared log and visible recovery are TASK-046/TASK-048',
     readback: {
       workout: 'the ladder card while unsaved, its answer and rounds restored from the durable attempt after a reload; a saved ladder whose row this device did not see saved claims no answer',
       history: 'History reads Highest rung N',
@@ -667,7 +665,7 @@ function movementField(column: string, type: string, meaning: string, zeroMeans:
       'on the 23505 of a retry or correction, removed when the movement is cleared; when the block’s recorded progress changes, ' +
       'the amounts are cleared rather than moved to the new round, and the load is kept',
     validators: [
-      { module: 'src/data/refinement-logging-contract.ts', name: 'movementActualFromDraft' },
+      { module: 'src/data/refinement-logging-rules.ts', name: 'movementActualFromDraft' },
       { module: SET_LOGGING, name: 'setLogViolation' },
       { module: BLOCK_COMPLETION, name: 'movementResultViolation' },
       schema('blockMovementResultRowSchema'),
@@ -931,7 +929,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     kind: 'migration',
     summary:
       'add block_results.effort public.set_effort (nullable, no default, no backfill): landed by TASK-031 as ' +
-      'supabase/migrations/20261110000029_block_result_effort.sql; not applied to any hosted project (LIVE-PRE-1)',
+      'supabase/migrations/20261110000029_block_result_effort.sql; applied to the hosted project by the owner (LIVE-PRE-1, 2026-11-10)',
     basis: 'reuses the set_effort enum (20261027000027); block_results is granted at table level and reconstructions use to_jsonb(br), so no grant or reader SQL changes',
     ref: null,
     owner: 'TASK-031',
@@ -942,7 +940,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     summary:
       'create block_movement_results: one row per movement per block attempt with round_number, the set log’s measurement columns and a ' +
       'stamped weight_unit, owner-only RLS, and the reconstructions extended to return it: landed by TASK-031 as ' +
-      'supabase/migrations/20261110000030_block_movement_results.sql; not applied to any hosted project (LIVE-PRE-1)',
+      'supabase/migrations/20261110000030_block_movement_results.sql; applied to the hosted project by the owner (LIVE-PRE-1, 2026-11-10)',
     basis: 'exercise_set_logs cannot carry it: anchor_evidence reads every set log, so a partial round would read as a short working set (deload D5, e1RM), and a load-only observation has no set identity',
     ref: null,
     owner: 'TASK-031',
@@ -985,7 +983,8 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     summary:
       'the data provider for TASK-015/TASK-019/TASK-026/TASK-047: a timed draft (outcome, categorical effort, notes, per-movement text) → ' +
       'the completion and movement writes (timedResultRequest), saved through record → correct on 23505 → recordMovements ' +
-      '(saveTimedResult), idempotent on retry, the draft kept on failure (timedSaveSettled); imported by no shipped path yet',
+      '(saveTimedResult), idempotent on retry, the draft kept on failure (timedSaveSettled); adopted by BlockCompletionProvider only ' +
+      '(TASK-015: timedDraftFromReport, reportedTimedEntries)',
     basis: 'block-result-correction, movement-actuals-writer, partialRoundFor and movementActualFromDraft',
     ref: { module: 'src/state/timed-results.ts', name: 'saveTimedResult' },
     owner: 'TASK-031',
@@ -1002,10 +1001,12 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     id: 'timed-entry',
     kind: 'draft',
     summary:
-      'per-movement partial and load entry, effort and notes in the timed log, truthful across edit and retry; for a multi-round ' +
-      'For Time, decide whether a completed-rounds count is recorded and whether a movement amount is in-round or a total (open)',
-    basis: 'partialRoundFor, loadApplies and movementActualFromDraft below',
-    ref: { module: 'src/ui/refinements/timed-result-log.tsx', name: 'TimedResultLog', extendedBy: 'TASK-015' },
+      'landed by TASK-015: per-movement partial and load entry in TimedResultLog (AMRAP, For Time and ladder families), labels from ' +
+      'the recorded progress, blank unrecorded and 0 kept, the row rule refusing inline; the entries on each family’s own draft owner ' +
+      '(AmrapState.movements, ForTimeState.movements, LadderDraft.movements); effort reported and saved as the block’s category; ' +
+      'owner decisions: the AMRAP keeps partial_round_reps beside the amounts, a multi-round For Time takes loads only',
+    basis: 'partialRoundFor, loadApplies and movementActualFromDraft (src/data/refinement-logging-rules.ts)',
+    ref: { module: 'src/ui/refinements/timed-result-log.tsx', name: 'TimedResultLog' },
     owner: 'TASK-015',
   },
   {
@@ -1047,233 +1048,25 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
 // The proposed timed contract, as pure functions
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The four timed-result families of the accepted `TimedResultLog`. */
-export type TimedFamily = 'emom' | 'amrap' | 'for_time' | 'ladder'
-
-/**
- * What the round identity of a per-movement partial is read from: the block's
- * own reported outcome (`amrapOutcome`, `forTimeOutcome`, the ladder's
- * outcome), never a planned target. The ladder's rung count and the For Time
- * block's `workout_blocks.rounds` are the block's structure — how many rungs
- * or passes exist — read only to know whether a round is left (and, for For
- * Time, whether the race is a single pass); neither ever supplies the round.
- */
-export type PartialRoundInput =
-  | { readonly family: 'emom' }
-  | { readonly family: 'amrap'; readonly outcome: BlockOutcome }
-  | { readonly family: 'for_time'; readonly outcome: BlockOutcome; readonly block: Pick<WorkoutBlockRow, 'rounds'> }
-  | { readonly family: 'ladder'; readonly outcome: BlockOutcome; readonly rungCount: number }
-
-/**
- * The round a movement's partial amount belongs to, or `null` when no partial
- * applies.
- *
- *   · EMOM: never (the schedule is assumed; only loads are logged).
- *   · AMRAP: the round after the recorded rounds. Unrecorded rounds give no
- *     identity — a partial cannot be attached to a round nobody counted, and
- *     null is never read as zero. An explicit 0 rounds gives round 1.
- *   · For Time, only when the athlete answered Incomplete (none when Complete
- *     or unanswered). `workout_blocks.rounds` is nullable and unrestricted for
- *     For Time, so a race may have several rounds:
- *       – with a recorded completed-rounds count (`roundsCompleted`, which
- *         `conditioningScore` already reads for a capped For Time), the round
- *         after it, while one is left;
- *       – with none, round 1 only for a single pass (`rounds` null or 1) — the
- *         one round there is. A multi-round race with no recorded count has
- *         no identity: `forTimeOutcome` records no count today, and where the
- *         athlete stopped is never guessed (TASK-015's open decision).
- *   · Ladder: the rung after the last completed one, when one is left; none
- *     when Complete (the top rung) or when no rung was recorded.
- */
-export function partialRoundFor(input: PartialRoundInput): number | null {
-  switch (input.family) {
-    case 'emom':
-      return null
-    case 'amrap': {
-      const rounds = input.outcome.roundsCompleted
-      return rounds === undefined ? null : rounds + 1
-    }
-    case 'for_time': {
-      if (input.outcome.completedUnderCap !== false) return null
-      const passes = input.block.rounds ?? 1
-      const through = input.outcome.roundsCompleted
-      if (through === undefined) return passes === 1 ? 1 : null
-      const next = through + 1
-      return next <= passes ? next : null
-    }
-    case 'ladder': {
-      const through = input.outcome.highestRung
-      if (through === undefined) return null
-      const next = through + 1
-      return next <= input.rungCount ? next : null
-    }
-  }
-}
-
-/**
- * Whether an actual load can attach to this movement: the set logger's base
- * rule for load fields (`incrementFor(equipment_used)` not null — loaded
- * equipment), so a timed movement and a set of the same movement agree. The
- * accepted gallery's predicate was an approximation of it; this one is the
- * application's.
- *
- * The set logger's `showLoad` also shows load fields on unloaded equipment when
- * a weight is carried forward from that movement's earlier set or the set being
- * corrected already has one, so a recorded weight stays visible and correctable.
- * That exception has no counterpart here: a timed attempt has no earlier
- * movement row to carry a weight from, and because this rule refuses a weight
- * on unloaded equipment, no saved movement row can hold one to correct.
- */
-export function loadApplies(prescription: Pick<PrescribedColumnsWithEquipment, 'equipment_used'>): boolean {
-  return incrementFor(prescription.equipment_used, 'kg') !== null
-}
-
-/** The prescription columns a movement actual is read against. */
-export type PrescribedColumnsWithEquipment = PrescribedColumns & { readonly equipment_used: string }
-
-/** One movement's entry as the accepted log holds it: text, as typed. */
-export interface MovementActualDraft {
-  readonly amount: string
-  readonly weight: string
-}
-
-/** MIG-B's draft row, before TASK-031 generates its types. */
-export interface ProposedMovementActualRow {
-  readonly id: string
-  readonly workout_exercise_id: string
-  readonly round_number: number | null
-  readonly actual_reps: number | null
-  readonly actual_duration_seconds: number | null
-  readonly actual_distance: number | null
-  readonly actual_distance_unit: Enums<'distance_unit'> | null
-  readonly weight: number | null
-  readonly weight_unit: Enums<'weight_unit'>
-}
-
-export interface MovementActualInput {
-  /** Client-minted, so a retried write collides instead of duplicating. */
-  readonly id: string
-  /** `workout_exercises.id` — the movement as performed in this block. */
-  readonly workoutExerciseId: string
-  readonly prescription: PrescribedColumnsWithEquipment
-  /** From `partialRoundFor`; null means no partial applies. */
-  readonly partialRound: number | null
-  /** Stamped at write time: the athlete's choice, else the profile's unit. */
-  readonly weightUnit: Enums<'weight_unit'>
-  readonly draft: MovementActualDraft
-}
-
-/** Blank is not recorded; anything else must be a number, which may be zero. */
-function typed(text: string): number | undefined {
-  const trimmed = text.trim()
-  return trimmed === '' ? undefined : Number(trimmed)
-}
-
-function refused(field: string, extra: Record<string, unknown> = {}): Result<never> {
-  return err(createError(ErrorCode.VALIDATION_OUT_OF_RANGE, { details: { field, ...extra } }))
-}
-
-/**
- * The movement's ladder target at a rung — the accepted log's input `max` —
- * or null where no source bounds the amount (AMRAP, For Time).
- */
-function rungTarget(prescription: PrescribedColumns, round: number): number | null {
-  if (prescription.target_kind === 'sequence') return prescription.target_sequence?.[round - 1] ?? null
-  return prescription.target_kind === 'fixed' ? prescription.target_value : null
-}
-
-/**
- * One movement's entry → MIG-B's row, `ok(null)` when nothing was observed (no
- * row is written), or the field it is refused on.
- *
- * Every rule here is an existing one, applied to the new identity:
- *
- *   · the amount goes to the column of the prescription's modality, with the
- *     prescription's own distance unit, and is bounded exactly as a set's
- *     measurement is (`setLogViolation`): whole non-negative reps and seconds,
- *     a non-negative distance, a non-negative weight;
- *   · blank is not recorded and zero is a measurement;
- *   · an amount needs a round (`partialRoundFor`): a partial with no round
- *     identity is refused rather than attached to a guessed one;
- *   · a load attaches only where `loadApplies`, and is never the prescribed
- *     load — nothing here reads `load_value`;
- *   · a ladder amount is bounded by that movement's target at that rung.
- */
-export function movementActualFromDraft(
-  input: MovementActualInput,
-  family: TimedFamily,
-): Result<ProposedMovementActualRow | null> {
-  const amount = typed(input.draft.amount)
-  const weight = typed(input.draft.weight)
-  const { prescription } = input
-
-  if (amount !== undefined && input.partialRound === null) return refused('round_number')
-  if (weight !== undefined && !loadApplies(prescription)) return refused('weight', { reason: 'unloaded' })
-
-  const measured = {
-    reps: prescription.modality === 'reps' ? amount : undefined,
-    durationSeconds: prescription.modality === 'time' ? amount : undefined,
-    distance: prescription.modality === 'distance' ? amount : undefined,
-  }
-  const entry: SetLogEntry = {
-    id: input.id,
-    exerciseId: input.workoutExerciseId,
-    blockId: '',
-    distanceUnit: prescription.distance_unit,
-    weightUnit: input.weightUnit,
-    // The round takes set_number's positive-integer rule. A load-only row has
-    // no round; 1 stands in for the check and is never written.
-    performed: {
-      setNumber: input.partialRound ?? 1,
-      ...(measured.reps === undefined ? {} : { reps: measured.reps }),
-      ...(measured.durationSeconds === undefined ? {} : { durationSeconds: measured.durationSeconds }),
-      ...(measured.distance === undefined ? {} : { distance: measured.distance }),
-      ...(weight === undefined ? {} : { weight }),
-    },
-  }
-  const violation = setLogViolation(entry)
-  if (violation !== null) {
-    return refused(violation.field === 'set_number' ? 'round_number' : violation.field, {
-      ...(violation.min === undefined ? {} : { min: violation.min }),
-    })
-  }
-
-  if (family === 'ladder' && amount !== undefined && input.partialRound !== null) {
-    const max = rungTarget(prescription, input.partialRound)
-    if (max !== null && amount > max) return refused(fieldFor(prescription.modality), { max })
-  }
-
-  if (amount === undefined && weight === undefined) return ok(null)
-
-  return ok({
-    id: input.id,
-    workout_exercise_id: input.workoutExerciseId,
-    round_number: amount === undefined ? null : input.partialRound,
-    actual_reps: measured.reps ?? null,
-    actual_duration_seconds: measured.durationSeconds ?? null,
-    actual_distance: measured.distance ?? null,
-    actual_distance_unit: measured.distance === undefined ? null : prescription.distance_unit,
-    weight: weight ?? null,
-    weight_unit: input.weightUnit,
-  })
-}
-
-function fieldFor(modality: Enums<'prescription_modality'>): string {
-  return modality === 'reps' ? 'actual_reps' : modality === 'time' ? 'actual_duration_seconds' : 'actual_distance'
-}
-
-/**
- * The accepted owner's rule for a change of recorded progress: an amount
- * belongs to one round, so when the round identity changes every amount is
- * cleared — never carried to the new round — and every load is kept.
- */
-export function draftsAfterProgressChange(
-  drafts: Readonly<Record<string, MovementActualDraft>>,
-  fromRound: number | null,
-  toRound: number | null,
-): Readonly<Record<string, MovementActualDraft>> {
-  if (fromRound === toRound) return drafts
-  return Object.fromEntries(
-    Object.entries(drafts).map(([id, draft]) => [id, { amount: '', weight: draft.weight }]),
-  )
-}
+// TASK-015: the rules themselves live in `refinement-logging-rules.ts`, which
+// the shipped graph runs (the shell's completion path and the timed log); this
+// module re-exports them unchanged so the matrix is still one module to read
+// and the TASK-030 check still binds to the same names. Nothing in the
+// shipped graph imports this file.
+export {
+  draftsAfterProgressChange,
+  isMovementActualDraft,
+  loadApplies,
+  movementActualFromDraft,
+  movementAmountMax,
+  movementEntryBlank,
+  partialRoundFor,
+} from './refinement-logging-rules'
+export type {
+  MovementActualDraft,
+  MovementActualInput,
+  PartialRoundInput,
+  PrescribedColumnsWithEquipment,
+  ProposedMovementActualRow,
+  TimedFamily,
+} from './refinement-logging-rules'

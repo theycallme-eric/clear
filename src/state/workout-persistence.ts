@@ -70,6 +70,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Constants } from '../data/database.types'
+import { isMovementActualDraft } from '../data/refinement-logging-rules'
 import type { AmrapState } from './amrap'
 import type { CircuitState, RoundTiming } from './circuit'
 import type { EmomState } from './emom'
@@ -470,6 +471,17 @@ function isOptionalAnswer(value: unknown): boolean {
   return value === undefined || value === null || typeof value === 'boolean'
 }
 
+/**
+ * TASK-015 (C37): the optional per-movement entries a later build added to the
+ * AMRAP and For Time records — each movement's typed amount and load, two
+ * strings. Absent in older records; anything else is not a record.
+ */
+function isOptionalMovementDrafts(value: unknown): boolean {
+  if (value === undefined) return true
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  return Object.values(value as Record<string, unknown>).every(isMovementActualDraft)
+}
+
 type EmomRecords = BlockRecords<EmomState>
 
 function isEmomState(value: unknown): value is EmomState {
@@ -526,7 +538,8 @@ function isForTimeState(value: unknown): value is ForTimeState {
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.finishedAt === null || typeof record.finishedAt === 'string') &&
     isOptionalStamp(record.pausedAt) &&
-    isOptionalAnswer(record.workCompleted)
+    isOptionalAnswer(record.workCompleted) &&
+    isOptionalMovementDrafts(record.movements)
   )
 }
 
@@ -579,7 +592,8 @@ function isAmrapState(value: unknown): value is AmrapState {
     (record.partialRoundReps === null ||
       (typeof record.partialRoundReps === 'number' &&
         Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0)) &&
-    isOptionalStamp(record.pausedAt)
+    isOptionalStamp(record.pausedAt) &&
+    isOptionalMovementDrafts(record.movements)
   )
 }
 

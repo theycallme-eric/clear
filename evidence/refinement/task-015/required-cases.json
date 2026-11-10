@@ -1,0 +1,87 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-015",
+  "description": "Truthful per-movement partial and actual-load entry (REQ-015; C37; R62, R69, R116; AC-C37-01, AC-R015-01, AC-R015-02; JOURNEY-015) delivered through the accepted shared owner TimedResultLog (src/ui/refinements/timed-result-log.tsx: one accepted per-movement group per movement between the result and the effort — the amount completed in the round the partial belongs to, labelled with that round and the movement's own unit and bounded where the TASK-030 contract bounds it, and the actual load used in the athlete's unit, each only where it applies; blank unrecorded, a typed 0 kept, nothing filled from a planned target or load_value, the same movementActualFromDraft that builds the row refusing inline), composed by the route consumers AmrapBlock, ForTimeBlock and LadderBlock on the real /workout route over their own draft owners (AmrapState.movements, ForTimeState.movements, LadderDraft.movements), with every round identity decided by partialRoundFor from the recorded progress (an AMRAP amount only once a rounds count is recorded, an explicit 0 giving round 1, Reps into the next round kept beside and never derived; a single-pass For Time answered Incomplete round 1; a multi-round For Time loads only with no partial round and no rounds count; a ladder the round after the stated prefix, cleared when the round changes, loads kept), saved through the shell's one completion path (BlockCompletionApi.reportTimedResult → BlockCompletionProvider → TASK-031's saveTimedResult over the real createWorkoutClients and the migration-transcribed in-memory PostgREST: the block row carrying the categorical effort and never a number, one block_movement_results row per entered movement with its round, modality column and stamped unit, a refused movement write keeping every entry with the existing dialog, the retry restating the row and writing the movements once; a save with nothing new sending the bare insert as before), read back after a return and a reload once saved, and the accepted gallery states /gallery/refinements?state=amrap, ?state=for_time and ?state=ladder (reference eded158cfd928d382c9a9409e2c372270312741d) drawing the route's own fields over memory only. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-015 --check check-01 -- npx vitest run src/ui/timed-result-log.test.tsx --testNamePattern \"partial|load|round\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C37-01",
+        "AC-R015-01",
+        "AC-R015-02",
+        "JOURNEY-015"
+      ],
+      "files": [
+        "src/ui/timed-result-log.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 AMRAP per-movement partial and load fields follow the recorded rounds on the real /workout route: no amount until a rounds count is recorded, an explicit 0 gives round 1, the label names the round after the count, each amount in its movement’s own unit, a load only on a loaded movement, blank unrecorded and 0 kept, the partial reps count kept beside them, and a changed count clears the amounts and keeps the loads",
+          "criterion": "AC-C37-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 For Time partial and load fields follow the race: a single pass answered Incomplete asks each movement’s completed amount for round 1 in its own unit and a load on the loaded movement, Complete asks loads only and clears the amounts, an invalid value is refused in the field by the row’s own rule, and a multi-round race asks loads only with no partial round and no rounds count",
+          "criterion": "AC-C37-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-01 ladder partial fields name the round after the stated prefix, are bounded by that rung’s target and never filled from it, a change of round clears the amounts and keeps the loads, Complete offers loads only, and the entries live on the durable draft",
+          "criterion": "AC-R015-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 the partials, loads and effort save through the shell’s one completion path over the migration-transcribed PostgREST: one block row carrying the category as effort and never a number, one movement row per entered movement with its round, modality column and stamped unit, none for a blank movement, a refused movement write keeps every entry with the existing dialog, the retry restates the row and writes the movements once, saved fields read back disabled after a return and a reload, and History reads the entries",
+          "criterion": "AC-R015-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 a save with no new per-movement data behaves exactly as today: a timed log with nothing typed and no effort sends the same bare insert, names no effort column, calls neither the correction nor the movement writer, and a later-typed load reaches the row through the same path",
+          "criterion": "AC-R015-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 the accepted amrap, for_time and ladder gallery states draw the route’s own per-movement partial and load fields over memory only: the AMRAP’s seeded round-4 entry and load beside its counts, the capped For Time’s round-1 entry, the finished one’s load alone, the ladder’s fields once a round is stated, nothing stored and no network",
+          "criterion": "AC-C37-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-015 --check check-02 -- npx playwright test e2e/refinement/task-015.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C37-01",
+        "AC-R015-01",
+        "AC-R015-02",
+        "JOURNEY-015"
+      ],
+      "files": [
+        "e2e/refinement/task-015.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-015.spec.ts",
+          "project": "mobile",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 touch phone-390 Signal: a single-pass For Time stopped Incomplete takes each movement’s completed amount in its own unit and the actual load; a reload keeps them; a refused movement write keeps every entry and the existing dialog; the retry restates the row and writes the movement rows once; saved fields read back and are no longer offered; History reads the row",
+          "criterion": "AC-R015-02"
+        },
+        {
+          "file": "e2e/refinement/task-015.spec.ts",
+          "project": "mobile",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 keyboard phone-320 reduced motion: the AMRAP’s partial fields appear only once a rounds count is recorded and name the round after it, a load only on the loaded movement, filled by keyboard beside the kept Reps into the next round, and the saved rows carry each round, amount, unit and load with no row for a blank movement",
+          "criterion": "AC-C37-01"
+        },
+        {
+          "file": "e2e/refinement/task-015.spec.ts",
+          "project": "mobile",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 gallery amrap, for_time and ladder phone-390: the route’s own per-movement fields over memory only — the seeded entries read back unlike the plan, loads only where they apply, the ladder’s round-3 fields once round 2 is stated and bounded by its target — with nothing stored and no network",
+          "criterion": "AC-R015-01"
+        }
+      ]
+    }
+  }
+}

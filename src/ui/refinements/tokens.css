@@ -27,4 +27,9 @@
   --countdown-warning-opacity-min: .2;
   --countdown-warning-opacity-max: .8;
   --countdown-warning-opacity-still: .5;
+  /* TASK-015 (C37; REUSE.md "separate movement groups"): the gap between the
+   * fields of one movement's group in a timed log — its completed amount and
+   * its load — tighter than the result group's field gap, so the two read as
+   * one movement. The accepted reference's value. */
+  --logging-movement-gap: var(--spacing-300);
 }

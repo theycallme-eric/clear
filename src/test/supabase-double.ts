@@ -59,6 +59,8 @@ const PARENT: Record<string, [string, string]> = {
   workout_exercises: ['workout_blocks', 'block_id'],
   exercise_set_logs: ['workout_exercises', 'workout_exercise_id'],
   set_observation_mutations: ['workout_exercises', 'workout_exercise_id'],
+  // TASK-015 (MIG-B): a timed movement actual follows its exercise's chain.
+  block_movement_results: ['workout_exercises', 'workout_exercise_id'],
   block_results: ['workout_blocks', 'block_id'],
   saved_workout_completions: ['saved_workouts', 'saved_workout_id'],
 }

@@ -40,6 +40,8 @@ import { MemoryRouter, RouterProvider, createMemoryRouter } from 'react-router-d
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routes } from '../app/router'
+import type { AuthSession } from '../data/auth'
+import { createWorkoutClients } from '../data/workout'
 import { GalleryRefinements } from '../dev/gallery-refinements'
 import { Frown, Meh, Smile } from '../design-system/index'
 import { amrapOutcome, amrapShape, amrapView, clampAmrapState, type AmrapState } from '../state/amrap'
@@ -50,10 +52,11 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
 } from '../state/block-completion'
-import { createError, err, ErrorCode, ok } from '../state/errors'
+import { createError, err, ErrorCode, isErr, ok, type Result } from '../state/errors'
 import { clampForTimeState, forTimeOutcome, forTimeShape, forTimeView, type ForTimeState } from '../state/for-time'
 import { MOOD_SCALE } from '../state/mood'
 import type { BlockResultRow, LadderTiming } from '../state/schemas'
+import { sessionDetail } from '../state/session-detail'
 import {
   readAmrapState,
   readForTimeState,
@@ -88,7 +91,28 @@ import {
   completionEffortBlocks,
   completionEffortSnapshot,
 } from '../test/completion-effort-fixture'
+import {
+  LOGGING_DOUBLE_ANON_KEY,
+  LOGGING_DOUBLE_TOKEN,
+  LOGGING_DOUBLE_URL,
+  createLoggingDouble,
+  type LoggingDouble,
+} from '../test/logging-contract-double'
 import { AppProviders, signedIn } from '../test/render'
+import {
+  ACTUALS_AMRAP_WORK_LIST,
+  ACTUALS_COOLDOWN_TITLE,
+  ACTUALS_FOR_TIME_WORK_LIST,
+  ACTUALS_LADDER_ROUNDS,
+  ACTUALS_LADDER_TARGETS,
+  ACTUALS_LADDER_WORK_LIST,
+  ACTUALS_PLANNED_LOADS,
+  ACTUALS_RACE_SECTION_TITLE,
+  ACTUALS_SECTION_TITLE,
+  timedActualsAcceptance,
+  timedActualsBlocks,
+  timedActualsSnapshot,
+} from '../test/timed-actuals-fixture'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
 import { createWorkoutDouble, snapshotFixture, type BlockFixture, type WorkoutDoubleOptions } from '../test/workout-double'
 import { ForTimeBlock } from './for-time-block'
@@ -304,9 +328,14 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     expect(card().querySelectorAll('form')).toHaveLength(1)
 
     // One title, at the level of the card's other group ("Each round:") — the
-    // log is the work's sibling in the outline, not part of it.
-    const headings = within(form).getAllByRole('heading')
+    // log is the work's sibling in the outline, not part of it. TASK-015
+    // (C37) adds the accepted per-movement groups after the counts, each
+    // titled by its movement's name (the kettlebell swing's load field here);
+    // those are the only other headings, and no Result / Movements /
+    // Feedback title joins them.
+    const headings = within(form).getAllByRole('heading').filter((heading) => !heading.classList.contains('clr-timed-log__group-title'))
     expect(headings.map((heading) => heading.textContent)).toEqual(['Log results'])
+    expect(within(form).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results', 'kb swing'])
     const title = headings[0]
     expect(title).toHaveClass('clr-timed-log__title')
     const round = within(card()).getByRole('heading', { name: 'Each round:' })
@@ -316,7 +345,8 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     }
 
     // One group holds both counts, rounds first; each label precedes its frame.
-    const groups = form.querySelectorAll<HTMLElement>('.clr-timed-log__group')
+    // (TASK-015's per-movement groups follow it and are not result groups.)
+    const groups = form.querySelectorAll<HTMLElement>('.clr-timed-log__group:not(.clr-timed-log__group--movement)')
     expect(groups).toHaveLength(1)
     const fields = [...groups[0].querySelectorAll<HTMLElement>('[data-quantity-field]')]
     expect(fields.map((field) => field.querySelector('.label')?.textContent)).toEqual([...AMRAP_COUNTS])
@@ -750,9 +780,14 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       expect(form.dataset.timedFormat).toBe(format)
       expect(form.dataset.logHierarchy).toBe('simple')
       expect(follows(form, within(scope).getByRole('list', { name: list }))).toBe(true)
-      // One title and no group titles; the question and the effort in two groups.
-      expect(within(form).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results'])
-      const groups = form.querySelectorAll<HTMLElement>('.clr-timed-log__group')
+      // One title and no group titles; the question and the effort in two
+      // groups. TASK-015 (C37) adds the accepted per-movement groups between
+      // them, each titled by its movement's name (the loaded wall ball's load
+      // field for the For Time; none for the bodyweight ladder with no rung
+      // stated); they are not result groups and carry no Result / Movements /
+      // Feedback title.
+      expect(within(form).getAllByRole('heading').filter((heading) => !heading.classList.contains('clr-timed-log__group-title')).map((heading) => heading.textContent)).toEqual(['Log results'])
+      const groups = form.querySelectorAll<HTMLElement>('.clr-timed-log__group:not(.clr-timed-log__group--movement)')
       expect(groups).toHaveLength(2)
       const question = completionOf(form)
       expect(groups[0]).toContainElement(question)
@@ -1006,9 +1041,12 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       expect(within(effort).getAllByRole('radio')).toHaveLength(SET_EFFORT_CHOICES.length)
       expect(within(effort).getAllByRole('radio')).not.toHaveLength(MOOD_SCALE.length)
       expect(within(scope).queryByRole('group', { name: 'How do you feel?' })).toBeNull()
-      // No number anywhere: no slider, no spin button, no digit in the question.
+      // No number anywhere in the effort: no slider, no spin button, no digit
+      // in the question. (TASK-015's per-movement amount and load fields are
+      // number fields of their own groups, never of the effort's.)
       expect(within(scope).queryByRole('slider')).toBeNull()
-      expect(within(scope).queryByRole('spinbutton')).toBeNull()
+      expect(within(effort).queryByRole('spinbutton')).toBeNull()
+      for (const spin of within(scope).queryAllByRole('spinbutton')) expect(effort).not.toContainElement(spin)
       expect(effort.textContent).not.toMatch(/\d/)
     }
 
@@ -1025,15 +1063,18 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     expect(chosen(effortOf(log(ladderCard())))).toEqual(['Too easy'])
 
     // Saved: a category is never converted into the numeric 1–10 block effort,
-    // and nothing is written as the session's mood.
+    // and nothing is written as the session's mood. TASK-015 (AC-R015-02;
+    // MIG-A applied by the owner's LIVE-PRE-1): the chosen face now travels as
+    // the block's categorical `effort` — the category word itself, beside a
+    // numeric effort that stays unasked and null.
     expect(storedRace(forTime.blockId)).not.toHaveProperty('effort')
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
-    for (const blockId of [forTime.blockId, ladder.blockId]) {
+    for (const [blockId, category] of [[forTime.blockId, 'about_right'], [ladder.blockId, 'too_easy']] as const) {
       const row = recordedOutcome(double, blockId)
       expect(row.perceivedEffort).toBeNull()
-      expect(Object.keys(row.outcome)).not.toContain('effort')
-      expect(blockResultInsert(row).perceived_effort).toBeNull()
+      expect(row.outcome.effort).toBe(category)
+      expect(blockResultInsert(row)).toMatchObject({ perceived_effort: null, effort: category })
     }
     expect(double.completed()).toEqual([])
     expect(JSON.stringify(localStorage)).not.toMatch(/too_hard|about_right|too_easy/)
@@ -1140,10 +1181,15 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     refusing = false
     await user.click(within(failed).getByRole('button', { name: 'Try again' }))
     expect(await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })).toBeInTheDocument()
+    // TASK-015 (AC-R015-02; MIG-A applied by the owner's LIVE-PRE-1): the
+    // chosen face now travels with the completion as the block's categorical
+    // `effort` — the same completion both times, written once — while the
+    // numeric effort stays unasked and null: no category ever becomes a number.
     expect(rows).toEqual([
-      { blockId: forTime.blockId, outcome: { elapsedSeconds: 150, completedUnderCap: false }, perceivedEffort: null },
+      { blockId: forTime.blockId, outcome: { elapsedSeconds: 150, completedUnderCap: false, effort: 'too_hard' }, perceivedEffort: null },
       { blockId: ladder.blockId, outcome: { highestRung: LADDER_ROUNDS }, perceivedEffort: null },
     ])
+    expect(rows.map((row) => blockResultInsert(row).perceived_effort)).toEqual([null, null])
   })
 
   it('AC-R010-01 For Time records written before the completion question load and read as before: a finish reads Complete and a cap Incomplete, the same completed_under_cap they always saved, and nothing is rewritten', async () => {
@@ -1230,4 +1276,535 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     expect(localStorage.getItem('clear.workout-ladders')).toBeNull()
     expect(fetch).not.toHaveBeenCalled()
   })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-015 — truthful per-movement partial and actual-load entry (C37)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * TASK-015 (REQ-015; C37; R62, R69, R116; AC-C37-01, AC-R015-01, AC-R015-02;
+ * JOURNEY-015) — the per-movement partial and load entries of the same owner's
+ * AMRAP, For Time and ladder families and the consumers that compose them, on
+ * the same real `/workout` route over their own fixture
+ * (`timed-actuals-fixture.ts`), saved through the shell's one completion path
+ * (`BlockCompletionProvider` → TASK-031's `saveTimedResult`) over the
+ * migration-transcribed in-memory PostgREST (`logging-contract-double.ts`).
+ * Every case name carries "partial", "load" or "round": check-01 selects them
+ * with `--testNamePattern "partial|load|round"`.
+ */
+
+const HEAVY_MS = 30_000
+
+/** The session's owner: a real uuid, because the performed reconstruction's schema reads it as one. */
+const ACTUALS_USER_ID = 'a0000015-0000-4000-8000-000000000000'
+
+const runningActuals = () =>
+  timedActualsSnapshot(timedActualsAcceptance(), {
+    userId: ACTUALS_USER_ID,
+    startedAt: new Date(ENTRY - 60_000).toISOString(),
+  })
+
+/** The app's own writers over the migration-transcribed PostgREST, for the session's owner. */
+function realWritersOver(double: LoggingDouble) {
+  const auth = {
+    getSession: (): Promise<Result<AuthSession | null>> =>
+      Promise.resolve(
+        ok({ accessToken: LOGGING_DOUBLE_TOKEN, refreshToken: 'refresh', expiresAt: Date.now() + 60_000, user: { id: ACTUALS_USER_ID, email: null } }),
+      ),
+  }
+  return createWorkoutClients({ auth, supabase: { url: LOGGING_DOUBLE_URL, anonKey: LOGGING_DOUBLE_ANON_KEY, fetch: double.fetch } })
+}
+
+/** JOURNEY-015's entry: `/workout`, the session running for one minute, the three timed blocks ready. */
+async function openActuals(options: Omit<WorkoutDoubleOptions, 'session'> = {}) {
+  const snapshot = runningActuals()
+  const double = createWorkoutDouble({ session: snapshot, ...options })
+  const router = createMemoryRouter(routes, { initialEntries: ['/', '/workout'], initialIndex: 1 })
+  const view = render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  await screen.findByRole('navigation', { name: 'Workout sections' })
+  await screen.findByRole('list', { name: ACTUALS_AMRAP_WORK_LIST })
+  await screen.findByRole('list', { name: ACTUALS_LADDER_WORK_LIST })
+  return { double, view, snapshot, ...timedActualsBlocks(snapshot) }
+}
+
+/** The same entry, with the block writers and the performed read answered by the real clients over the logging double. */
+async function openActualsOverDouble() {
+  const snapshot = runningActuals()
+  const logging = createLoggingDouble({ snapshot })
+  const real = realWritersOver(logging)
+  const opened = await openActuals({ blockResults: real.blockResults, sessions: { asPerformed: real.sessions.asPerformed } })
+  return { ...opened, logging, real }
+}
+
+const amrapCardOf = () => liveCard(ACTUALS_AMRAP_WORK_LIST)
+const forTimeCardOf = () => liveCard(ACTUALS_FOR_TIME_WORK_LIST)
+const ladderCardOf = () => liveCard(ACTUALS_LADDER_WORK_LIST)
+
+/** One movement's group in a log, by its `workout_exercises.id`; null when the log draws none for it. */
+function movementGroup(scope: HTMLElement, exerciseId: string): HTMLElement | null {
+  return scope.querySelector<HTMLElement>(`[data-timed-movement="${exerciseId}"]`)
+}
+
+/** Every movement group a log draws, in order: the movement's name and its fields' visible labels and units. */
+function movementGroups(scope: HTMLElement) {
+  return [...scope.querySelectorAll<HTMLElement>('[data-timed-movement]')].map((group) => ({
+    id: group.dataset.timedMovement,
+    name: within(group).getByRole('heading').textContent,
+    fields: [...group.querySelectorAll<HTMLElement>('label')].map((label) => label.textContent),
+    units: [...group.querySelectorAll<HTMLElement>('.clr-field__unit')].map((unit) => unit.textContent),
+  }))
+}
+
+const amountOf = (scope: HTMLElement, name: string) =>
+  within(scope).queryByRole('spinbutton', { name: new RegExp(`^(?:Round \\d+|Completed) · ${name}$`) }) as HTMLInputElement | null
+const weightOf = (scope: HTMLElement, name: string) =>
+  within(scope).queryByRole('spinbutton', { name: `Weight · ${name}` }) as HTMLInputElement | null
+
+async function type(user: ReturnType<typeof userEvent.setup>, field: HTMLElement | null, text: string) {
+  if (field === null) throw new Error('no field to type into')
+  await user.clear(field)
+  if (text !== '') await user.type(field, text)
+}
+
+const storedAmrap = (blockId: string) => readAmrapState(localStorage, blockId)
+const storedLadderDraft = (blockId: string): { movements?: Record<string, { amount: string; weight: string }> } | null =>
+  (JSON.parse(localStorage.getItem('clear.workout-ladders') ?? '{}')[blockId]?.draft ?? null)
+
+/** The ladder's live check-off tile for a round, while the clock runs (TASK-013). */
+function liveRound(scope: HTMLElement, round: number): HTMLElement {
+  return within(scope).getByRole('button', { name: new RegExp(`^Round ${round} `) })
+}
+
+/** A log's answer to Work completed. */
+async function choose(user: ReturnType<typeof userEvent.setup>, scope: HTMLElement, word: 'Complete' | 'Incomplete') {
+  await answer(user, completionOf(log(scope)), word)
+}
+
+const requestsTo = (double: LoggingDouble, path: string, method?: string) =>
+  double.requests.filter((entry) => entry.path === path && (method === undefined || entry.method === method))
+
+describe('TASK-015 truthful per-movement partial and actual-load entry', () => {
+  it('AC-C37-01 AMRAP per-movement partial and load fields follow the recorded rounds on the real /workout route: no amount until a rounds count is recorded, an explicit 0 gives round 1, the label names the round after the count, each amount in its movement’s own unit, a load only on a loaded movement, blank unrecorded and 0 kept, the partial reps count kept beside them, and a changed count clears the amounts and keeps the loads', async () => {
+    const user = userEvent.setup()
+    const { amrap } = await openActuals()
+    const [swing, burpee, row] = amrap.exercises.map((exercise) => exercise.exerciseId)
+    await startAndFinishEarly(user, 200)
+    const form = log(amrapCardOf())
+
+    // Nothing counted: no round to attach a partial to, so no amount field
+    // anywhere; the loaded kettlebell swing alone has its load field.
+    expect(movementGroups(form)).toEqual([{ id: swing, name: 'kettlebell swing', fields: ['Weight used'], units: ['kg'] }])
+    expect(amountOf(form, 'kettlebell swing')).toBeNull()
+    expect(movementGroup(form, burpee)).toBeNull()
+    expect(movementGroup(form, row)).toBeNull()
+
+    // One round counted: each movement's round-2 amount, in its own unit —
+    // reps, reps and metres — and still one load field.
+    await tap(user, count('Rounds completed', amrapCardOf()).plus)
+    expect(movementGroups(form)).toEqual([
+      { id: swing, name: 'kettlebell swing', fields: ['Completed in round 2', 'Weight used'], units: ['reps', 'kg'] },
+      { id: burpee, name: 'burpee', fields: ['Completed in round 2'], units: ['reps'] },
+      { id: row, name: 'row', fields: ['Completed in round 2'], units: ['m'] },
+    ])
+    expect(amountOf(form, 'row')).toHaveAttribute('inputmode', 'decimal')
+    expect(amountOf(form, 'burpee')).toHaveAttribute('inputmode', 'numeric')
+    // An explicit zero rounds is a count: round 1.
+    await tap(user, count('Rounds completed', amrapCardOf()).minus)
+    expect(shown('Rounds completed', amrapCardOf())).toBe('0')
+    expect(movementGroups(form).map((group) => group.fields[0])).toEqual(['Completed in round 1', 'Completed in round 1', 'Completed in round 1'])
+
+    // Every field starts blank: nothing is filled from the plan's 12 reps,
+    // 8 reps, 200 m or 24 kg.
+    for (const field of [amountOf(form, 'kettlebell swing'), amountOf(form, 'burpee'), amountOf(form, 'row'), weightOf(form, 'kettlebell swing')]) {
+      expect(field).toHaveValue(null)
+    }
+    expect(form.textContent).not.toContain(String(ACTUALS_PLANNED_LOADS.kettlebellSwing))
+
+    // Typed as typed: an amount, a zero and a load; the row left blank is not recorded.
+    await type(user, amountOf(form, 'kettlebell swing'), '7')
+    await type(user, amountOf(form, 'burpee'), '0')
+    await type(user, weightOf(form, 'kettlebell swing'), '20')
+    expect(storedAmrap(amrap.blockId)?.movements).toEqual({ [swing]: { amount: '7', weight: '20' }, [burpee]: { amount: '0', weight: '' } })
+    // The reps into the next round is its own count: neither derived from the other.
+    await tap(user, count('Reps into the next round', amrapCardOf()).plus, 5)
+    expect(shown('Reps into the next round', amrapCardOf())).toBe('5')
+    expect(amountOf(form, 'kettlebell swing')).toHaveValue(7)
+    expect(storedAmrap(amrap.blockId)).toMatchObject({ roundsCompleted: 0, partialRoundReps: 5 })
+    await type(user, amountOf(form, 'kettlebell swing'), '9')
+    expect(shown('Reps into the next round', amrapCardOf())).toBe('5')
+
+    // A changed count moves the round: the amounts are cleared, never carried
+    // to round 3, and the load is kept.
+    await tap(user, count('Rounds completed', amrapCardOf()).plus, 2)
+    expect(movementGroups(form).map((group) => group.fields[0])).toEqual(['Completed in round 3', 'Completed in round 3', 'Completed in round 3'])
+    expect(amountOf(form, 'kettlebell swing')).toHaveValue(null)
+    expect(amountOf(form, 'burpee')).toHaveValue(null)
+    expect(weightOf(form, 'kettlebell swing')).toHaveValue(20)
+    expect(storedAmrap(amrap.blockId)?.movements).toEqual({ [swing]: { amount: '', weight: '20' }, [burpee]: { amount: '', weight: '' } })
+    // The accepted labels and the shared field: a real label for each, the
+    // group titled by the movement, and no reset or clear control.
+    expect(within(movementGroup(form, swing)!).getByRole('heading')).toHaveClass('clr-timed-log__group-title')
+    expectNoResetControls(form)
+  }, HEAVY_MS)
+
+  it('AC-C37-01 For Time partial and load fields follow the race: a single pass answered Incomplete asks each movement’s completed amount for round 1 in its own unit and a load on the loaded movement, Complete asks loads only and clears the amounts, an invalid value is refused in the field by the row’s own rule, and a multi-round race asks loads only with no partial round and no rounds count', async () => {
+    const user = userEvent.setup()
+    const { forTime, race } = await openActualsOverDouble()
+    const [wallBall, plank] = forTime.exercises.map((exercise) => exercise.exerciseId)
+    await finishForTimeAfter(user, 90, forTimeCardOf())
+    const form = log(forTimeCardOf())
+
+    // Finished under the cap starts at Complete: the race's work is done, so
+    // no partial; the loaded wall ball's load alone.
+    expect(chosen(completionOf(form))).toEqual(['Complete'])
+    expect(movementGroups(form)).toEqual([{ id: wallBall, name: 'wall ball', fields: ['Weight used'], units: ['kg'] }])
+    expect(movementGroup(form, plank)).toBeNull()
+
+    // Incomplete: the single pass is round 1, so each movement's completed
+    // amount — reps for the wall ball, seconds for the plank — and the load.
+    await choose(user, forTimeCardOf(), 'Incomplete')
+    expect(movementGroups(form)).toEqual([
+      { id: wallBall, name: 'wall ball', fields: ['Completed', 'Weight used'], units: ['reps', 'kg'] },
+      { id: plank, name: 'plank', fields: ['Completed'], units: ['sec'] },
+    ])
+    expect(amountOf(form, 'wall ball')).toHaveAccessibleName('Completed · wall ball')
+    expect(amountOf(form, 'wall ball')).toHaveValue(null)
+    expect(weightOf(form, 'wall ball')).toHaveValue(null)
+    await type(user, amountOf(form, 'wall ball'), '28')
+    await type(user, amountOf(form, 'plank'), '45')
+    await type(user, weightOf(form, 'wall ball'), '8')
+    expect(readForTimeState(localStorage, forTime.blockId)?.movements).toEqual({ [wallBall]: { amount: '28', weight: '8' }, [plank]: { amount: '45', weight: '' } })
+
+    // Refused in the field by the same rule that builds the row: a negative
+    // load, a fractional rep count; a blank is never refused.
+    await type(user, weightOf(form, 'wall ball'), '-2')
+    expect(weightOf(form, 'wall ball')).toHaveAttribute('aria-invalid', 'true')
+    expect(within(movementGroup(form, wallBall)!).getByText('Enter a weight of zero or more')).toBeInTheDocument()
+    await type(user, weightOf(form, 'wall ball'), '8')
+    expect(weightOf(form, 'wall ball')).not.toHaveAttribute('aria-invalid')
+    await type(user, amountOf(form, 'plank'), '4.5')
+    expect(amountOf(form, 'plank')).toHaveAttribute('aria-invalid', 'true')
+    expect(within(movementGroup(form, plank)!).getByText('Enter sec as a whole number, 0 or more')).toBeInTheDocument()
+    await type(user, amountOf(form, 'plank'), '')
+    expect(amountOf(form, 'plank')).not.toHaveAttribute('aria-invalid')
+    expect(readForTimeState(localStorage, forTime.blockId)?.movements).toEqual({ [wallBall]: { amount: '28', weight: '8' }, [plank]: { amount: '', weight: '' } })
+
+    // Back to Complete: the round is gone, so the amounts are cleared and the load kept.
+    await choose(user, forTimeCardOf(), 'Complete')
+    expect(movementGroups(form)).toEqual([{ id: wallBall, name: 'wall ball', fields: ['Weight used'], units: ['kg'] }])
+    expect(weightOf(form, 'wall ball')).toHaveValue(8)
+    expect(readForTimeState(localStorage, forTime.blockId)?.movements).toEqual({ [wallBall]: { amount: '', weight: '8' }, [plank]: { amount: '', weight: '' } })
+    // No rounds-completed control joins a For Time log.
+    expect(within(form).queryByRole('group', { name: 'Rounds completed' })).toBeNull()
+
+    // The three-round race in the next section: loads only — no partial round
+    // is guessed for a multi-round race with no recorded count, and no rounds
+    // count is asked (owner decision).
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await screen.findByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE })
+    const raceCard = liveCard(ACTUALS_FOR_TIME_WORK_LIST)
+    await user.click(within(raceCard).getByRole('button', { name: 'Start For Time' }))
+    advance(300)
+    await user.click(within(raceCard).getByRole('button', { name: 'Finish' }))
+    const raceLog = log(raceCard)
+    await choose(user, raceCard, 'Incomplete')
+    const [thruster, raceBurpee] = race.exercises.map((exercise) => exercise.exerciseId)
+    expect(movementGroups(raceLog)).toEqual([{ id: thruster, name: 'thruster', fields: ['Weight used'], units: ['kg'] }])
+    expect(movementGroup(raceLog, raceBurpee)).toBeNull()
+    expect(within(raceLog).queryByRole('group', { name: 'Rounds completed' })).toBeNull()
+    expect(within(raceLog).queryByRole('spinbutton', { name: /^(?:Round|Completed) · / })).toBeNull()
+    await type(user, weightOf(raceLog, 'thruster'), '35')
+    expect(readForTimeState(localStorage, race.blockId)?.movements).toEqual({ [thruster]: { amount: '', weight: '35' } })
+  }, HEAVY_MS)
+
+  it('AC-R015-01 ladder partial fields name the round after the stated prefix, are bounded by that rung’s target and never filled from it, a change of round clears the amounts and keeps the loads, Complete offers loads only, and the entries live on the durable draft', async () => {
+    const user = userEvent.setup()
+    const { ladder } = await openActuals()
+    const [goblet, pushUp] = ladder.exercises.map((exercise) => exercise.exerciseId)
+    const card = ladderCardOf()
+    await user.click(within(card).getByRole('button', { name: 'Start ladder' }))
+    await user.click(liveRound(card, 2))
+    advance(100)
+    await user.click(within(card).getByRole('button', { name: 'Finish' }))
+    const form = log(card)
+
+    // Finish carried the checked prefix: Incomplete through round 2, so the
+    // partial belongs to round 3 — the round the log already names (TASK-013)
+    // — bounded by each movement's target there (6), never filled with it.
+    expect(chosen(completionOf(form))).toEqual(['Incomplete'])
+    expect(within(form).getByText(`Any partial work belongs to round 3`)).toBeInTheDocument()
+    expect(movementGroups(form)).toEqual([
+      { id: goblet, name: 'goblet squat', fields: ['Completed in round 3', 'Weight used'], units: ['reps', 'kg'] },
+      { id: pushUp, name: 'push up', fields: ['Completed in round 3'], units: ['reps'] },
+    ])
+    expect(amountOf(form, 'goblet squat')).toHaveAttribute('max', String(ACTUALS_LADDER_TARGETS[2]))
+    expect(amountOf(form, 'goblet squat')).toHaveValue(null)
+    expect(weightOf(form, 'goblet squat')).toHaveValue(null)
+    expect(form.textContent).not.toContain(`${ACTUALS_PLANNED_LOADS.gobletSquat} kg`)
+
+    // Above the rung's target: refused in the field; at it: taken.
+    await type(user, amountOf(form, 'goblet squat'), '7')
+    expect(amountOf(form, 'goblet squat')).toHaveAttribute('aria-invalid', 'true')
+    expect(within(movementGroup(form, goblet)!).getByText('At most 6 reps in round 3')).toBeInTheDocument()
+    await type(user, amountOf(form, 'goblet squat'), '4')
+    expect(amountOf(form, 'goblet squat')).not.toHaveAttribute('aria-invalid')
+    await type(user, amountOf(form, 'push up'), '6')
+    await type(user, weightOf(form, 'goblet squat'), '16')
+    expect(storedLadderDraft(ladder.blockId)?.movements).toEqual({ [goblet]: { amount: '4', weight: '16' }, [pushUp]: { amount: '6', weight: '' } })
+
+    // The prefix corrected to round 3: the partial moves to round 4, the
+    // amounts are cleared (never carried) and the load is kept.
+    await user.click(within(within(form).getByRole('group', { name: 'Rounds completed' })).getByRole('button', { name: /^Round 3: / }))
+    expect(movementGroups(form).map((group) => group.fields[0])).toEqual(['Completed in round 4', 'Completed in round 4'])
+    expect(amountOf(form, 'goblet squat')).toHaveAttribute('max', String(ACTUALS_LADDER_TARGETS[3]))
+    expect(amountOf(form, 'goblet squat')).toHaveValue(null)
+    expect(amountOf(form, 'push up')).toHaveValue(null)
+    expect(weightOf(form, 'goblet squat')).toHaveValue(16)
+    expect(storedLadderDraft(ladder.blockId)?.movements).toEqual({ [goblet]: { amount: '', weight: '16' }, [pushUp]: { amount: '', weight: '' } })
+
+    // Complete: every rung done, so no partial round; the load stays offered.
+    await choose(user, card, 'Complete')
+    expect(movementGroups(form)).toEqual([{ id: goblet, name: 'goblet squat', fields: ['Weight used'], units: ['kg'] }])
+    expect(weightOf(form, 'goblet squat')).toHaveValue(16)
+    // Incomplete again clears the round to be stated: no round, no amount field.
+    await choose(user, card, 'Incomplete')
+    expect(movementGroups(form)).toEqual([{ id: goblet, name: 'goblet squat', fields: ['Weight used'], units: ['kg'] }])
+    expect(within(form).getByRole('group', { name: 'Rounds completed' }).querySelectorAll('[aria-pressed="true"]')).toHaveLength(0)
+    expect(ACTUALS_LADDER_ROUNDS).toBe(4)
+  }, HEAVY_MS)
+
+  it('AC-R015-02 the partials, loads and effort save through the shell’s one completion path over the migration-transcribed PostgREST: one block row carrying the category as effort and never a number, one movement row per entered movement with its round, modality column and stamped unit, none for a blank movement, a refused movement write keeps every entry with the existing dialog, the retry restates the row and writes the movements once, saved fields read back disabled after a return and a reload, and History reads the entries', async () => {
+    const user = userEvent.setup()
+    const first = await openActualsOverDouble()
+    const { amrap, forTime, ladder, logging } = first
+    const [swing, burpee, row] = amrap.exercises.map((exercise) => exercise.exerciseId)
+    const [wallBall, plank] = forTime.exercises.map((exercise) => exercise.exerciseId)
+    const [goblet] = ladder.exercises.map((exercise) => exercise.exerciseId)
+
+    // The AMRAP: two rounds and 5 reps into the third; the swing's round-3
+    // amount and load, the burpee an explicit zero, the row blank.
+    await startAndFinishEarly(user, 300)
+    await tap(user, count('Rounds completed', amrapCardOf()).plus, 2)
+    await tap(user, count('Reps into the next round', amrapCardOf()).plus, 5)
+    const amrapLog = log(amrapCardOf())
+    await type(user, amountOf(amrapLog, 'kettlebell swing'), '7')
+    await type(user, weightOf(amrapLog, 'kettlebell swing'), '20')
+    await type(user, amountOf(amrapLog, 'burpee'), '0')
+    // The For Time: Incomplete, the wall ball's round-1 amount and load, the
+    // plank's seconds, and an effort face.
+    await finishForTimeAfter(user, 120, forTimeCardOf())
+    await choose(user, forTimeCardOf(), 'Incomplete')
+    const forTimeLog = log(forTimeCardOf())
+    await type(user, amountOf(forTimeLog, 'wall ball'), '28')
+    await type(user, weightOf(forTimeLog, 'wall ball'), '8')
+    await type(user, amountOf(forTimeLog, 'plank'), '45')
+    await answer(user, effortOf(forTimeLog), 'Too hard')
+    // The ladder: nothing typed, Complete after its cap by the athlete's word.
+    await user.click(within(ladderCardOf()).getByRole('button', { name: 'Start ladder' }))
+    advance(60)
+    await user.click(within(ladderCardOf()).getByRole('button', { name: 'Finish' }))
+    await choose(user, ladderCardOf(), 'Complete')
+
+    // The first forward action: the AMRAP's row lands and its movement write
+    // is refused. The athlete stays, with every entry and the dialog.
+    logging.refuseNext('/block_movement_results', 503, 'POST')
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const failed = await screen.findByRole('dialog')
+    expect(failed).toHaveTextContent('That didn’t save')
+    expect(amountOf(amrapLog, 'kettlebell swing')).toHaveValue(7)
+    expect(weightOf(amrapLog, 'kettlebell swing')).toHaveValue(20)
+    expect(amountOf(amrapLog, 'burpee')).toHaveValue(0)
+    expect(amountOf(forTimeLog, 'wall ball')).toHaveValue(28)
+    expect(chosen(effortOf(forTimeLog))).toEqual(['Too hard'])
+    expect(amountOf(amrapLog, 'kettlebell swing')).toBeEnabled()
+    expect(logging.blockResults().map((saved) => saved.block_id)).toEqual([amrap.blockId])
+    expect(logging.movementResults()).toEqual([])
+    expect(within(amrapCardOf()).queryByText('Block saved')).toBeNull()
+
+    // The retry: the AMRAP's row is restated through its unique key, never
+    // inserted twice; its movement rows are written once; then the others.
+    await user.click(within(failed).getByRole('button', { name: 'Try again' }))
+    await screen.findByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE })
+    const rows = logging.blockResults()
+    expect(rows.map((saved) => saved.block_id).sort()).toEqual([amrap.blockId, forTime.blockId, ladder.blockId].sort())
+    expect(rows.find((saved) => saved.block_id === amrap.blockId)).toMatchObject({ rounds_completed: 2, partial_round_reps: 5, effort: null, perceived_effort: null })
+    expect(rows.find((saved) => saved.block_id === forTime.blockId)).toMatchObject({ elapsed_seconds: 120, completed_under_cap: false, effort: 'too_hard', perceived_effort: null })
+    expect(rows.find((saved) => saved.block_id === ladder.blockId)).toMatchObject({ highest_rung: ACTUALS_LADDER_ROUNDS, effort: null, perceived_effort: null })
+    expect(requestsTo(logging, '/block_results', 'POST').map((request) => (request.body as Record<string, unknown>[])[0].block_id)).toEqual([amrap.blockId, amrap.blockId, forTime.blockId, ladder.blockId])
+    expect(requestsTo(logging, '/block_results', 'PATCH')).toHaveLength(1)
+    const movements = logging.movementResults()
+    expect(movements.map((saved) => saved.workout_exercise_id).sort()).toEqual([swing, burpee, wallBall, plank].sort())
+    expect(movements.find((saved) => saved.workout_exercise_id === swing)).toMatchObject({ round_number: 3, actual_reps: 7, actual_duration_seconds: null, actual_distance: null, weight: 20, weight_unit: 'kg' })
+    expect(movements.find((saved) => saved.workout_exercise_id === burpee)).toMatchObject({ round_number: 3, actual_reps: 0, weight: null })
+    expect(movements.find((saved) => saved.workout_exercise_id === wallBall)).toMatchObject({ round_number: 1, actual_reps: 28, weight: 8, weight_unit: 'kg' })
+    expect(movements.find((saved) => saved.workout_exercise_id === plank)).toMatchObject({ round_number: 1, actual_reps: null, actual_duration_seconds: 45, weight: null })
+    expect(movements.some((saved) => saved.workout_exercise_id === row || saved.workout_exercise_id === goblet)).toBe(false)
+    // Written once each: one POST per entered movement that landed, plus the one refused.
+    expect(requestsTo(logging, '/block_movement_results', 'POST')).toHaveLength(5)
+    expect(requestsTo(logging, '/block_movement_results', 'PATCH')).toHaveLength(0)
+    // No category anywhere near the numeric effort, and nothing written for the mood.
+    for (const saved of rows) expect(saved.perceived_effort).toBeNull()
+
+    // Back to the saved section: the fields keep their values and are no longer offered.
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    await screen.findByRole('heading', { name: ACTUALS_SECTION_TITLE })
+    expect(amountOf(log(amrapCardOf()), 'kettlebell swing')).toHaveValue(7)
+    expect(amountOf(log(amrapCardOf()), 'kettlebell swing')).toBeDisabled()
+    expect(weightOf(log(amrapCardOf()), 'kettlebell swing')).toBeDisabled()
+    expect(amountOf(log(forTimeCardOf()), 'wall ball')).toHaveValue(28)
+    expect(amountOf(log(forTimeCardOf()), 'wall ball')).toBeDisabled()
+    expect(amountOf(log(forTimeCardOf()), 'plank')).toHaveValue(45)
+    expect(within(amrapCardOf()).getByText('Block saved')).toBeInTheDocument()
+
+    // A reload: the records keep the entries and the rows are known, so the
+    // same values read back, still not offered; nothing is written again.
+    const before = logging.requests.length
+    first.view.unmount()
+    const second = await openActuals({ blockResults: first.real.blockResults, sessions: { asPerformed: first.real.sessions.asPerformed } })
+    await waitFor(() => expect(within(amrapCardOf()).getByText('Block saved')).toBeInTheDocument())
+    expect(amountOf(log(amrapCardOf()), 'kettlebell swing')).toHaveValue(7)
+    expect(amountOf(log(amrapCardOf()), 'kettlebell swing')).toBeDisabled()
+    expect(amountOf(log(forTimeCardOf()), 'wall ball')).toHaveValue(28)
+    expect(amountOf(log(forTimeCardOf()), 'wall ball')).toBeDisabled()
+    expect(requestsTo(logging, '/block_results', 'POST').length + requestsTo(logging, '/block_movement_results', 'POST').length).toBe(9)
+    expect(logging.requests.length).toBeGreaterThan(before)
+    second.view.unmount()
+
+    // History reads the entries, not the plan: each movement's round and amount, and the load.
+    const performed = await first.real.sessions.asPerformed(first.snapshot.session.id)
+    if (isErr(performed) || performed.value === null) throw new Error('no performed read')
+    const detail = sessionDetail(performed.value)
+    const blockView = (id: string) => detail.sections.flatMap((section) => section.blocks).find((block) => block.id === id)!
+    expect(blockView(amrap.blockId).movementActuals.map(({ name, roundLabel, amount, weight }) => ({ name, roundLabel, amount, weight }))).toEqual([
+      { name: 'kettlebell swing', roundLabel: 'Round 3', amount: '7 reps', weight: '20 kg' },
+      { name: 'burpee', roundLabel: 'Round 3', amount: '0 reps', weight: null },
+    ])
+    expect(blockView(forTime.blockId).movementActuals.map(({ name, roundLabel, amount, weight }) => ({ name, roundLabel, amount, weight }))).toEqual([
+      { name: 'wall ball', roundLabel: 'Round 1', amount: '28 reps', weight: '8 kg' },
+      { name: 'plank', roundLabel: 'Round 1', amount: '45s', weight: null },
+    ])
+    expect(blockView(forTime.blockId).effort).toBe('too_hard')
+    expect(blockView(ladder.blockId).movementActuals).toEqual([])
+  }, HEAVY_MS)
+
+  it('AC-R015-02 a save with no new per-movement data behaves exactly as today: a timed log with nothing typed and no effort sends the same bare insert, names no effort column, calls neither the correction nor the movement writer, and a later-typed load reaches the row through the same path', async () => {
+    const user = userEvent.setup()
+    const { amrap, forTime, logging, real } = await openActualsOverDouble()
+    await startAndFinishEarly(user, 240)
+    await tap(user, count('Rounds completed', amrapCardOf()).plus, 3)
+    await tap(user, count('Reps into the next round', amrapCardOf()).plus, 4)
+    // The fields are there and left alone: nothing typed, no effort chosen.
+    expect(amountOf(log(amrapCardOf()), 'kettlebell swing')).toHaveValue(null)
+    await finishForTimeAfter(user, 75, forTimeCardOf())
+    const forTimeLog = log(forTimeCardOf())
+    expect(chosen(completionOf(forTimeLog))).toEqual(['Complete'])
+    expect(chosen(effortOf(forTimeLog))).toEqual([])
+
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await screen.findByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE })
+    // One insert per block — the shipped body, no effort key — and nothing else.
+    const inserts = requestsTo(logging, '/block_results', 'POST')
+    expect(inserts).toHaveLength(3)
+    for (const request of inserts) {
+      const [sent] = request.body as Record<string, unknown>[]
+      expect(Object.keys(sent)).not.toContain('effort')
+      expect(Object.keys(sent).sort()).toEqual(['block_id', 'completed_under_cap', 'elapsed_seconds', 'highest_rung', 'minutes_completed', 'notes', 'partial_round_reps', 'perceived_effort', 'rounds_completed'])
+    }
+    expect(requestsTo(logging, '/block_results', 'PATCH')).toHaveLength(0)
+    expect(requestsTo(logging, '/block_movement_results')).toHaveLength(0)
+    expect(logging.movementResults()).toEqual([])
+    expect(logging.blockResults().find((saved) => saved.block_id === amrap.blockId)).toMatchObject({ rounds_completed: 3, partial_round_reps: 4, effort: null })
+    expect(logging.blockResults().find((saved) => saved.block_id === forTime.blockId)).toMatchObject({ completed_under_cap: true, effort: null })
+
+    // The multi-round race, with a load typed: the same path writes the row
+    // and then its one load-only movement row.
+    const raceCard = liveCard(ACTUALS_FOR_TIME_WORK_LIST)
+    await user.click(within(raceCard).getByRole('button', { name: 'Start For Time' }))
+    advance(200)
+    await user.click(within(raceCard).getByRole('button', { name: 'Finish' }))
+    await type(user, weightOf(log(raceCard), 'thruster'), '35')
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await screen.findByRole('heading', { name: ACTUALS_COOLDOWN_TITLE })
+    expect(logging.movementResults()).toHaveLength(1)
+    expect(logging.movementResults()[0]).toMatchObject({ round_number: null, actual_reps: null, weight: 35, weight_unit: 'kg' })
+    expect(requestsTo(logging, '/block_results', 'PATCH')).toHaveLength(0)
+    expect((await real.sessions.asPerformed(logging.session().id)).ok).toBe(true)
+  }, HEAVY_MS)
+
+  it('JOURNEY-015 the accepted amrap, for_time and ladder gallery states draw the route’s own per-movement partial and load fields over memory only: the AMRAP’s seeded round-4 entry and load beside its counts, the capped For Time’s round-1 entry, the finished one’s load alone, the ladder’s fields once a round is stated, nothing stored and no network', async () => {
+    const user = userEvent.setup()
+    const fetch = vi.spyOn(globalThis, 'fetch')
+
+    // AMRAP: finished early with 3 rounds — round-4 amounts, the swing's
+    // seeded 7 reps and 20 kg (not its prescribed 12 and 24); the cap with
+    // nothing counted — the load field alone.
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=amrap']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const early = document.querySelector<HTMLElement>('[data-gallery-amrap="early"]')!
+    const earlyLog = log(liveCard(AMRAP_WORK_LIST, early))
+    expect(movementGroups(earlyLog).map((group) => [group.name, ...group.fields])).toEqual([['kb swing', 'Completed in round 4', 'Weight used']])
+    expect(amountOf(earlyLog, 'kb swing')).toHaveValue(7)
+    expect(weightOf(earlyLog, 'kb swing')).toHaveValue(20)
+    expect(shown('Reps into the next round', liveCard(AMRAP_WORK_LIST, early))).toBe('0')
+    const capped = document.querySelector<HTMLElement>('[data-gallery-amrap="cap"]')!
+    const cappedLog = log(liveCard(AMRAP_WORK_LIST, capped))
+    expect(movementGroups(cappedLog).map((group) => [group.name, ...group.fields])).toEqual([['kb swing', 'Weight used']])
+    // Live over memory: a count moves the round and clears the amount, keeping the load.
+    await tap(user, count('Rounds completed', liveCard(AMRAP_WORK_LIST, early)).plus)
+    expect(movementGroups(earlyLog)[0].fields[0]).toBe('Completed in round 5')
+    expect(amountOf(earlyLog, 'kb swing')).toHaveValue(null)
+    expect(weightOf(earlyLog, 'kb swing')).toHaveValue(20)
+    expect(localStorage.getItem(WORKOUT_AMRAP_STORAGE_KEY)).toBeNull()
+
+    // For Time: the cap (Incomplete) — the wall ball's seeded round-1 28 reps
+    // and 8 kg (not 40 and 9), the burpee blank; the finish (Complete) — the
+    // wall ball's load alone, blank.
+    cleanup()
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=for_time']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const capRace = document.querySelector<HTMLElement>('[data-gallery-race="for-time-cap"]')!
+    const capLog = log(liveCard(FOR_TIME_WORK_LIST, capRace))
+    expect(movementGroups(capLog).map((group) => [group.name, ...group.fields])).toEqual([['wall ball', 'Completed', 'Weight used'], ['burpee', 'Completed']])
+    expect(amountOf(capLog, 'wall ball')).toHaveValue(28)
+    expect(weightOf(capLog, 'wall ball')).toHaveValue(8)
+    expect(amountOf(capLog, 'burpee')).toHaveValue(null)
+    const finishRace = document.querySelector<HTMLElement>('[data-gallery-race="for-time-finish"]')!
+    const finishLog = log(liveCard(FOR_TIME_WORK_LIST, finishRace))
+    expect(movementGroups(finishLog).map((group) => [group.name, ...group.fields])).toEqual([['wall ball', 'Weight used']])
+    expect(weightOf(finishLog, 'wall ball')).toHaveValue(null)
+    expect(localStorage.getItem(WORKOUT_FOR_TIME_STORAGE_KEY)).toBeNull()
+
+    // Ladder: Incomplete with no rung stated and bodyweight work — nothing to
+    // ask; stating round 2 asks each movement's round-3 amount, bounded by
+    // that rung's target, blank.
+    cleanup()
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=ladder']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const ladderFinish = document.querySelector<HTMLElement>('[data-gallery-race="ladder-finish"]')!
+    const ladderLog = log(liveCard(LADDER_WORK_LIST, ladderFinish))
+    expect(chosen(completionOf(ladderLog))).toEqual(['Incomplete'])
+    expect(movementGroups(ladderLog)).toEqual([])
+    await user.click(within(within(ladderLog).getByRole('group', { name: 'Rounds completed' })).getByRole('button', { name: /^Round 2: / }))
+    expect(movementGroups(ladderLog).map((group) => [group.name, ...group.fields])).toEqual([['push up', 'Completed in round 3'], ['burpee', 'Completed in round 3']])
+    expect(amountOf(ladderLog, 'push up')).toHaveValue(null)
+    expect(amountOf(ladderLog, 'push up')).toHaveAttribute('max')
+    await type(user, amountOf(ladderLog, 'push up'), '3')
+    expect(amountOf(ladderLog, 'push up')).toHaveValue(3)
+    expect(localStorage.getItem('clear.workout-ladders')).toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
+  }, HEAVY_MS)
 })

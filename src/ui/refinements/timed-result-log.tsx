@@ -51,16 +51,47 @@
  * this log so its look and alignment have one owner, offered and handled by
  * the consumer over its own attempt.
  *
+ * TASK-015 (C37; R62, R69, R116; AC-C37-01, AC-R015-01, AC-R015-02) adds the
+ * per-movement entries the accepted log draws between the result and the
+ * feedback: one titled group per movement — the amount completed in the round
+ * the partial belongs to, in the movement's own unit, and the actual load
+ * used, in the athlete's unit, each only where it applies. Which round is the
+ * consumer's, decided by TASK-030's `partialRoundFor` from the block's own
+ * recorded progress (the AMRAP's recorded rounds, the ladder's stated rung,
+ * the single-pass For Time answered Incomplete): the log draws its number and
+ * never guesses one, so with no round recorded there is no amount field. A
+ * load field appears only on a loaded movement (`loadApplies`, the set
+ * logger's rule). Blank is not recorded; a typed `0` is a zero; nothing is
+ * filled from a planned target or `load_value`; the same rules that build the
+ * saved row (`movementActualFromDraft`) say inline what a value is refused on,
+ * so what passes here is what saves. The consumer owns the typed entries and
+ * their record (the AMRAP's and For Time's stored records, the ladder's
+ * durable draft) and the shell saves them through its one completion path;
+ * once the row is saved the fields keep their values and are no longer
+ * offered. The AMRAP's "Reps into the next round" stays beside them: neither
+ * is derived from the other.
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
- * group joins this form under the same title and group recipe — richer
- * per-movement actuals and loads (the EMOM's applicable weights among them) and the
- * categorical effort's writer once they exist (TASK-031, TASK-015, TASK-047),
- * and the focused dialog, Save and the four families' adoption into it
- * (TASK-016–018, TASK-046, TASK-041). None of those is drawn here.
+ * group joins this form under the same title and group recipe — the EMOM's
+ * applicable weights, notes for the other families and the categorical
+ * effort's wider adoption (TASK-046, TASK-047), and the focused dialog, Save
+ * and the four families' adoption into it (TASK-016–018, TASK-046, TASK-041).
+ * None of those is drawn here.
  */
 import type { ReactNode } from 'react'
 
+import type { Enums } from '../../data/database.types'
+import {
+  loadApplies,
+  movementActualFromDraft,
+  movementAmountMax,
+  type MovementActualDraft,
+  type PrescribedColumnsWithEquipment,
+  type TimedFamily,
+} from '../../data/refinement-logging-rules'
+import { isErr } from '../../state/errors'
+import { exerciseName, modalityUnit } from '../../state/prescription'
 import { Button, ChoiceGroup, Input } from '../../design-system/index'
 import { useInvalidFocus } from '../formFocus'
 import { Heading, HeadingSection } from '../Heading'
@@ -82,7 +113,47 @@ export interface AmrapResultLog {
   value: AmrapResult
   /** The consumer's writer, called with the whole next result on every tap. */
   onChange: (next: AmrapResult) => void
+  /** TASK-015: the per-movement entries, drawn after the counts. Omitted or null, none. */
+  movements?: MovementEntryLog | null
+  /** TASK-015: once the block's result is saved, the movement fields keep their values and are no longer offered. */
+  saved?: boolean
 }
+
+/**
+ * TASK-015 (C37): one movement of the block as the log needs it — its
+ * identity and its prescription's columns (modality, distance unit, equipment,
+ * the ladder's sequence), read for the field's unit, bound and whether a load
+ * applies. Never read for a value.
+ */
+export interface MovementEntryExercise {
+  /** `workout_exercises.id`, the identity the entry is saved under. */
+  readonly exerciseId: string
+  readonly prescription: PrescribedColumnsWithEquipment
+}
+
+/**
+ * TASK-015 (C37, AC-R015-01): the per-movement partial and load entries, over
+ * the consumer's own record. `partialRound` is the round a partial amount
+ * belongs to, decided by the consumer from its recorded progress through
+ * TASK-030's `partialRoundFor` (the AMRAP's recorded rounds + 1, the ladder's
+ * stated rung + 1, the single-pass For Time's round 1 when Incomplete); null
+ * means no partial applies, so no amount is asked. `values` are the entries
+ * exactly as typed; `onChange` is the consumer's writer for one movement.
+ */
+export interface MovementEntryLog {
+  readonly exercises: readonly MovementEntryExercise[]
+  readonly partialRound: number | null
+  /** The unit a typed load is stated in: the athlete's choice, else the profile's. */
+  readonly weightUnit: Enums<'weight_unit'>
+  readonly values: Readonly<Record<string, MovementActualDraft>>
+  readonly onChange: (exerciseId: string, next: MovementActualDraft) => void
+}
+
+/** The unit a load is stated in where no shell supplies the profile's (a bare mount); the route always does. */
+export const UNSCOPED_WEIGHT_UNIT: Enums<'weight_unit'> = 'kg'
+
+/** The accepted load field's label. */
+export const WEIGHT_USED_LABEL = 'Weight used'
 
 /**
  * TASK-010: a For Time or ladder result as its consumer keeps it. `completed`
@@ -124,6 +195,8 @@ export interface CompletionResultLog {
    * how it looks; the consumer owns whether it is offered and what it does.
    */
   completionAction?: CompletionAction | null
+  /** TASK-015: the per-movement entries, between the result and the effort. Omitted or null, none. */
+  movements?: MovementEntryLog | null
 }
 
 /**
@@ -170,6 +243,109 @@ const EFFORT_SCOPE = 'this block'
 /** One result group of the simple hierarchy: no group title, its fields in order. */
 function ResultGroup({ children }: { children: ReactNode }) {
   return <HeadingSection className="clr-timed-log__group">{children}</HeadingSection>
+}
+
+/**
+ * TASK-015: one movement's group — the accepted per-movement group, titled by
+ * the movement's name (the one title the simple hierarchy keeps, because a
+ * movement's fields are that movement's), its fields at the movement gap.
+ */
+function MovementGroup({ exerciseId, name, children }: { exerciseId: string; name: string; children: ReactNode }) {
+  return (
+    <HeadingSection className="clr-timed-log__group clr-timed-log__group--movement" data-timed-movement={exerciseId}>
+      <Heading className="clr-timed-log__group-title">{name}</Heading>
+      {children}
+    </HeadingSection>
+  )
+}
+
+const NO_ENTRY: MovementActualDraft = { amount: '', weight: '' }
+/** A row id for the inline check only; the shell mints the real one. Never sent. */
+const PROBE_ROW_ID = '00000000-0000-4000-8000-000000000000'
+
+/** The amount field's words: the round the partial belongs to, from the consumer's recorded progress. */
+function amountLabel(format: TimedFamily, partialRound: number): string {
+  return format === 'for_time' ? 'Completed' : `Completed in round ${partialRound}`
+}
+
+/** What a refused amount or load is told, in the field, by the same rule that builds the row. */
+function refusalText(field: string, details: Record<string, unknown> | undefined, unit: string, partialRound: number | null): string {
+  if (field === 'weight') return 'Enter a weight of zero or more'
+  if (typeof details?.max === 'number') return `At most ${details.max} ${unit} in round ${partialRound}`
+  return field === 'actual_distance' ? `Enter a distance in ${unit}, 0 or more` : `Enter ${unit} as a whole number, 0 or more`
+}
+
+/**
+ * TASK-015 (C37; AC-C37-01, AC-R015-01): the per-movement groups, in the
+ * block's order. A movement gets an amount field only while a partial round
+ * applies (the consumer's `partialRound`), labelled with that round and the
+ * movement's own unit, bounded where the contract bounds it (a ladder's
+ * target at that rung); a load field only where the set logger's rule says
+ * the movement is loaded, in the athlete's unit. A movement with neither is
+ * not drawn. The same rule that builds the saved row checks each entry and
+ * says, in the field, what it is refused on; blank is never refused and never
+ * recorded. Nothing here reads a planned target or `load_value` into a field.
+ */
+function MovementGroups({ format, movements, saved }: { format: TimedFamily; movements: MovementEntryLog; saved: boolean }) {
+  const { partialRound, weightUnit, values, onChange } = movements
+  return (
+    <>
+      {movements.exercises.map(({ exerciseId, prescription }) => {
+        const amountApplies = partialRound !== null
+        const load = loadApplies(prescription)
+        if (!amountApplies && !load) return null
+        const name = exerciseName(prescription.exercise_id)
+        const value = values[exerciseId] ?? NO_ENTRY
+        const unit = modalityUnit(prescription)
+        const max = movementAmountMax(prescription, format, partialRound)
+        const checked = movementActualFromDraft(
+          { id: PROBE_ROW_ID, workoutExerciseId: exerciseId, prescription, partialRound, weightUnit, draft: value },
+          format,
+        )
+        const refused = isErr(checked) ? String(checked.error.details?.field ?? '') : null
+        const refusedDetails = isErr(checked) ? checked.error.details : undefined
+        const amountRefused = refused !== null && refused !== 'weight'
+        const weightRefused = refused === 'weight'
+        return (
+          <MovementGroup key={exerciseId} exerciseId={exerciseId} name={name}>
+            {amountApplies && (
+              <Input
+                type="number"
+                inputMode={prescription.modality === 'distance' ? 'decimal' : 'numeric'}
+                min="0"
+                step={prescription.modality === 'distance' ? 'any' : '1'}
+                max={max ?? undefined}
+                label={amountLabel(format, partialRound)}
+                aria-label={`${format === 'for_time' ? 'Completed' : `Round ${partialRound}`} · ${name}`}
+                unit={unit}
+                value={value.amount}
+                disabled={saved}
+                invalid={amountRefused}
+                errorText={amountRefused ? refusalText(refused, refusedDetails, unit, partialRound) : undefined}
+                onChange={(amount: string) => onChange(exerciseId, { ...value, amount })}
+              />
+            )}
+            {load && (
+              <Input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="any"
+                label={WEIGHT_USED_LABEL}
+                aria-label={`Weight · ${name}`}
+                unit={weightUnit}
+                value={value.weight}
+                disabled={saved}
+                invalid={weightRefused}
+                errorText={weightRefused ? refusalText('weight', refusedDetails, unit, partialRound) : undefined}
+                onChange={(weight: string) => onChange(exerciseId, { ...value, weight })}
+              />
+            )}
+          </MovementGroup>
+        )
+      })}
+    </>
+  )
 }
 
 /**
@@ -234,20 +410,24 @@ function EmomGroups({ value, onChange }: EmomResultLog) {
   )
 }
 
-function AmrapGroups({ value, onChange }: AmrapResultLog) {
+function AmrapGroups({ value, onChange, movements = null, saved = false }: AmrapResultLog) {
   return (
-    <ResultGroup>
-      <QuantitySelector
-        label="Rounds completed"
-        value={value.roundsCompleted}
-        onChange={(roundsCompleted) => onChange({ ...value, roundsCompleted })}
-      />
-      <QuantitySelector
-        label="Reps into the next round"
-        value={value.partialRoundReps}
-        onChange={(partialRoundReps) => onChange({ ...value, partialRoundReps })}
-      />
-    </ResultGroup>
+    <>
+      <ResultGroup>
+        <QuantitySelector
+          label="Rounds completed"
+          value={value.roundsCompleted}
+          onChange={(roundsCompleted) => onChange({ ...value, roundsCompleted })}
+        />
+        <QuantitySelector
+          label="Reps into the next round"
+          value={value.partialRoundReps}
+          onChange={(partialRoundReps) => onChange({ ...value, partialRoundReps })}
+        />
+      </ResultGroup>
+      {/* TASK-015 (C37): each movement's next-round amount and load, after the counts; neither derived from the other. */}
+      {movements !== null && <MovementGroups format="amrap" movements={movements} saved={saved} />}
+    </>
   )
 }
 
@@ -282,12 +462,14 @@ function AmrapGroups({ value, onChange }: AmrapResultLog) {
  * numeric block effort or reads it as the session's mood.
  */
 function CompletionGroups({
+  format,
   value,
   onChange,
   askCompletion = true,
   saved = false,
   rounds = null,
   completionAction = null,
+  movements = null,
 }: CompletionResultLog) {
   return (
     <>
@@ -320,6 +502,8 @@ function CompletionGroups({
           {rounds !== null && <LadderCompletion {...rounds} disabled={saved} />}
         </ResultGroup>
       )}
+      {/* TASK-015 (C37): each movement's partial amount and load, between the result and the effort. */}
+      {movements !== null && <MovementGroups format={format} movements={movements} saved={saved} />}
       <ResultGroup>
         <SetEffortChoice
           scopeLabel={EFFORT_SCOPE}

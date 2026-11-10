@@ -1,0 +1,69 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-015",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-result-log.test.tsx",
+    "--testNamePattern",
+    "partial|load|round",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-015/required-cases.json",
+    "sha256": "c7a3a3331c07a7249fbb703874aa5132c105219b62b35ab922037e5b9ea53191"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-result-log.test.tsx",
+      "sha256": "69d25bcc8106e76d4568dcbf533bc6e6fc772a7c7c0cb54bcc054e39f442eeb4"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 AMRAP per-movement partial and load fields follow the recorded rounds on the real /workout route: no amount until a rounds count is recorded, an explicit 0 gives round 1, the label names the round after the count, each amount in its movement’s own unit, a load only on a loaded movement, blank unrecorded and 0 kept, the partial reps count kept beside them, and a changed count clears the amounts and keeps the loads",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 For Time partial and load fields follow the race: a single pass answered Incomplete asks each movement’s completed amount for round 1 in its own unit and a load on the loaded movement, Complete asks loads only and clears the amounts, an invalid value is refused in the field by the row’s own rule, and a multi-round race asks loads only with no partial round and no rounds count",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-01 ladder partial fields name the round after the stated prefix, are bounded by that rung’s target and never filled from it, a change of round clears the amounts and keeps the loads, Complete offers loads only, and the entries live on the durable draft",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 the partials, loads and effort save through the shell’s one completion path over the migration-transcribed PostgREST: one block row carrying the category as effort and never a number, one movement row per entered movement with its round, modality column and stamped unit, none for a blank movement, a refused movement write keeps every entry with the existing dialog, the retry restates the row and writes the movements once, saved fields read back disabled after a return and a reload, and History reads the entries",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 a save with no new per-movement data behaves exactly as today: a timed log with nothing typed and no effort sends the same bare insert, names no effort column, calls neither the correction nor the movement writer, and a later-typed load reaches the row through the same path",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 the accepted amrap, for_time and ladder gallery states draw the route’s own per-movement partial and load fields over memory only: the AMRAP’s seeded round-4 entry and load beside its counts, the capped For Time’s round-1 entry, the finished one’s load alone, the ladder’s fields once a round is stated, nothing stored and no network",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 23,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 10,
+    "todo": 0,
+    "executed": 13
+  },
+  "problems": []
+}

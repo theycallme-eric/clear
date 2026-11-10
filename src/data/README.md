@@ -60,15 +60,22 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
 - `refinement-logging-contract.ts` (TASK-030, REQ-030) — the logging field-to-contract matrix as
   data: the 16 logging moments and every existing and proposed measurement, load, effort and note
   field, each with its schema, validator, writer, identity, null/zero/update meaning and readback
-  owner, plus the pure rules for the proposed timed fields (`partialRoundFor`, `loadApplies`,
-  `movementActualFromDraft`). It writes nothing and calls nothing; the prose, the reuse-versus-
-  migration reasoning and the draft SQL (MIG-A, MIG-B — owned by TASK-031, not applied) are
-  `docs/specs/LOGGING_FIELD_CONTRACT.md`. A task that lands a proposed field updates both.
-  TASK-031 landed MIG-A/MIG-B as repository migrations (status `pending-live-migration`: not
-  applied to the hosted project until the owner's LIVE-PRE-1).
+  owner, and re-exports the pure rules for the timed fields. It writes nothing and calls nothing;
+  the prose, the reuse-versus-migration reasoning and the migrations' record (MIG-A, MIG-B — landed
+  by TASK-031, applied to the hosted project by the owner's LIVE-PRE-1 on 2026-11-10) are
+  `docs/specs/LOGGING_FIELD_CONTRACT.md`. A task that lands a proposed field updates both. Nothing
+  in the shipped graph imports this module.
+- `refinement-logging-rules.ts` (TASK-015, from TASK-030) — the pure rules the shipped graph runs,
+  moved here unchanged so the matrix's tables stay out of the workout bundle: `partialRoundFor`
+  (which round a per-movement partial belongs to, from the block's recorded outcome),
+  `loadApplies`, `movementActualFromDraft` (one movement's entry to its row, or the field it is
+  refused on), `draftsAfterProgressChange`, plus the log's readers of the same rules
+  (`movementAmountMax`, `isMovementActualDraft`, `movementEntryBlank`). The contract module
+  re-exports every one of them.
 - `workout.ts` `blockResults.correct` / `blockResults.recordMovements` (TASK-031, REQ-031) — the
   timed-result correction (UPDATE of the saved `block_results` row) and the per-movement writer
-  (`block_movement_results`: insert, restate on 23505, remove when cleared). No shipped path calls
-  them yet; `src/state/timed-results.ts` (`saveTimedResult`) is the provider TASK-015/TASK-047 wire
-  through the shell's one completion path. A project without the migrations refuses them with
+  (`block_movement_results`: insert, restate on 23505, remove when cleared). Called by one shipped
+  path only: `src/state/timed-results.ts` (`saveTimedResult`), adopted by
+  `src/state/block-completion-provider.tsx` (TASK-015) for a timed block whose log reported an
+  effort or a typed movement entry. A project without the migrations refuses them with
   `details.migration`.
