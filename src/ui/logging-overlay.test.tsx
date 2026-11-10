@@ -1153,13 +1153,11 @@ function cascaded(element: Element, property: Longhand): string | null {
     if (value === undefined) return
     for (const selector of rule.selectors) {
       if (selector.includes('::')) continue
-      let matches = false
       try {
-        matches = element.matches(selector)
+        if (!element.matches(selector)) continue
       } catch {
         continue
       }
-      if (!matches) continue
       const weight = specificity(selector)
       if (best === null || compare(weight, best.specificity) > 0 || (compare(weight, best.specificity) === 0 && order >= best.order)) {
         best = { value, specificity: weight, order }

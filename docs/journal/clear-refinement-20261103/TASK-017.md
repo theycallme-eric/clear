@@ -188,3 +188,5 @@ TASK-016/018's cases match this pattern.
 ## Next action
 
 Controller verification (`npm ci`, check-01, build, lint:ds, test) and commit.
+
+- Repair round 1 (2026-11-10): required CI Lint failed on PR #704 with one ESLint error, `no-useless-assignment` on the `let matches = false` initialiser in the test helper `cascaded()` (`src/ui/logging-overlay.test.tsx`). The fix replaced the flag with `if (!element.matches(selector)) continue` inside the existing `try`/`catch { continue }`. The same selectors match and skip, so no assertion changed. ESLint on every TASK-017 file reports 0 errors. The TASK-017, TASK-016 and TASK-018 check-01 guards were re-run on the new file hash and all passed (7/7, 13/13, 9/9). `npm test` and the final delivery-evidence verifier were re-run.
