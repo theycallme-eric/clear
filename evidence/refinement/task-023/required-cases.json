@@ -1,0 +1,89 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-023",
+  "description": "Review Regenerate follows the entire workout (REQ-023; C50, G15; R05; AC-C50-01; JOURNEY-023). On the real /review route Review's existing Regenerate action, now the exported owner ReviewRegenerateAction (src/app/Review.tsx), is the last item of the scrolling content: after every section, including the Cooldown guide (TASK-022's PreparationGuide) down to its last movement, with nothing readable below it and Start still pinned in the footer. Its behaviour and navigation are unchanged: it asks first with RegenerateConfirmDialog, Keep it / Escape keep the workout, confirming runs the route's existing regeneration (the generation run with its Cancel landing on Nothing to review), and it is held while Start is in flight. The accepted gallery state /gallery/refinements?state=preparation (reference eded158cfd928d382c9a9409e2c372270312741d) draws the same owner after its Cooldown, asking with Review's own confirmation and discarding nothing. check-01 selects the AC-021 block of the shared src/app/review-screen.test.tsx (its primary placement case included); check-02 proves the route in the browser at 320 and 390 with a contained synthetic session, touch, keyboard, reduced motion, a failed Start, a reload and the absent hand-off. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-023 --check check-01 -- npx vitest run src/app/review-screen.test.tsx --testNamePattern \"AC-021\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C50-01"
+      ],
+      "files": [
+        "src/app/review-screen.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/app/review-screen.test.tsx",
+          "name": "AC-021: Regenerate sits at the end of the scrolling content > is the last control in the scrolling content, after every section",
+          "criterion": "AC-C50-01"
+        },
+        {
+          "file": "src/app/review-screen.test.tsx",
+          "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 follows the whole workout — Warm-up, the work and the Cooldown guide down to its last movement — and nothing readable follows it",
+          "criterion": "AC-C50-01"
+        },
+        {
+          "file": "src/app/review-screen.test.tsx",
+          "name": "AC-021: Regenerate sits at the end of the scrolling content > still asks before discarding, and regenerates through the existing flow",
+          "criterion": "AC-C50-01"
+        },
+        {
+          "file": "src/app/review-screen.test.tsx",
+          "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 after the Cooldown its behaviour is unchanged: Keep it keeps the workout, Discard and regenerate runs the same flow once, and it is held while Start is in flight",
+          "criterion": "AC-C50-01"
+        },
+        {
+          "file": "src/app/review-screen.test.tsx",
+          "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 the accepted gallery state ?state=preparation draws Review’s own Regenerate after the Cooldown, and it only asks",
+          "criterion": "AC-C50-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-023 --check check-02 -- npx playwright test e2e/refinement/task-023.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C50-01",
+        "JOURNEY-023"
+      ],
+      "files": [
+        "e2e/refinement/task-023.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-023.spec.ts",
+          "project": "mobile",
+          "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 phone-320: Review reads the Warm-up, the work and the Cooldown, then Regenerate last; it asks first, Keep it keeps the workout, and confirming runs the existing regeneration",
+          "criterion": "JOURNEY-023"
+        },
+        {
+          "file": "e2e/refinement/task-023.spec.ts",
+          "project": "mobile",
+          "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 phone-390: Review reads the Warm-up, the work and the Cooldown, then Regenerate last; it asks first, Keep it keeps the workout, and confirming runs the existing regeneration",
+          "criterion": "JOURNEY-023"
+        },
+        {
+          "file": "e2e/refinement/task-023.spec.ts",
+          "project": "mobile",
+          "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 keyboard, reduced motion and reopen phone-390: Regenerate is the next stop after the Cooldown, Escape keeps the workout, and a reload keeps the same order",
+          "criterion": "JOURNEY-023"
+        },
+        {
+          "file": "e2e/refinement/task-023.spec.ts",
+          "project": "mobile",
+          "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 recovery phone-390: a failed Start keeps the workout with Regenerate still last and enabled, and with nothing to review there is no Regenerate",
+          "criterion": "JOURNEY-023"
+        },
+        {
+          "file": "e2e/refinement/task-023.spec.ts",
+          "project": "mobile",
+          "name": "TASK-023 Review Regenerate follows the entire workout > gallery preparation phone-320: the accepted state draws Review’s own Regenerate after the Cooldown, which only asks, with nothing read or written",
+          "criterion": "AC-C50-01"
+        }
+      ]
+    }
+  }
+}

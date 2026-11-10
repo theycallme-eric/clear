@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-015",
   "check": "check-02",
-  "verdict": "rejected",
+  "verdict": "passed",
   "purpose": "delivery",
   "runner": "playwright",
   "runnerVersion": "1.63.0",
@@ -28,36 +28,28 @@
       "file": "e2e/refinement/task-015.spec.ts",
       "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 touch phone-390 Signal: a single-pass For Time stopped Incomplete takes each movement’s completed amount in its own unit and the actual load; a reload keeps them; a refused movement write keeps every entry and the existing dialog; the retry restates the row and writes the movement rows once; saved fields read back and are no longer offered; History reads the row",
       "project": "mobile",
-      "status": "missing"
+      "status": "passed"
     },
     {
       "file": "e2e/refinement/task-015.spec.ts",
       "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 keyboard phone-320 reduced motion: the AMRAP’s partial fields appear only once a rounds count is recorded and name the round after it, a load only on the loaded movement, filled by keyboard beside the kept Reps into the next round, and the saved rows carry each round, amount, unit and load with no row for a blank movement",
       "project": "mobile",
-      "status": "missing"
+      "status": "passed"
     },
     {
       "file": "e2e/refinement/task-015.spec.ts",
       "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 gallery amrap, for_time and ladder phone-390: the route’s own per-movement fields over memory only — the seeded entries read back unlike the plan, loads only where they apply, the ladder’s round-3 fields once round 2 is stated and bounded by its target — with nothing stored and no network",
       "project": "mobile",
-      "status": "missing"
+      "status": "passed"
     }
   ],
   "totals": {
-    "total": 0,
-    "passed": 0,
+    "total": 3,
+    "passed": 3,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 0
+    "executed": 3
   },
-  "problems": [
-    "runner exited with code 1",
-    "runner error: Error: http://localhost:5173 is already used, make sure that nothing is running on the port/url or set reuseExistingServer:true in config.webServer.",
-    "zero execution: the native report contains no cases",
-    "requested target produced no native results: e2e/refinement/task-015.spec.ts",
-    "required case did not run: e2e/refinement/task-015.spec.ts > TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 touch phone-390 Signal: a single-pass For Time stopped Incomplete takes each movement’s completed amount in its own unit and the actual load; a reload keeps them; a refused movement write keeps every entry and the existing dialog; the retry restates the row and writes the movement rows once; saved fields read back and are no longer offered; History reads the row [mobile]",
-    "required case did not run: e2e/refinement/task-015.spec.ts > TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 keyboard phone-320 reduced motion: the AMRAP’s partial fields appear only once a rounds count is recorded and name the round after it, a load only on the loaded movement, filled by keyboard beside the kept Reps into the next round, and the saved rows carry each round, amount, unit and load with no row for a blank movement [mobile]",
-    "required case did not run: e2e/refinement/task-015.spec.ts > TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 gallery amrap, for_time and ladder phone-390: the route’s own per-movement fields over memory only — the seeded entries read back unlike the plan, loads only where they apply, the ladder’s round-3 fields once round 2 is stated and bounded by its target — with nothing stored and no network [mobile]"
-  ]
+  "problems": []
 }

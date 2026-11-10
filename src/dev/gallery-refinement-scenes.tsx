@@ -38,6 +38,12 @@
  *     Start / Pause and Add 30s and no Dismiss. The clock is memory-only and
  *     records nothing.
  *
+ * TASK-023 (C50, G15, R05) completes the Review context as the reference drew
+ * it: Review's own `ReviewRegenerateAction` follows the Cooldown, the last
+ * item after all workout content. Pressing it asks with Review's own
+ * `RegenerateConfirmDialog`; both answers only close it here — the gallery
+ * discards nothing, navigates nowhere and runs no generation.
+ *
  * The reference file's other scenes (cards, Generate / Setup / History,
  * equipment inventory) belong to other tasks; the cards scene is
  * `gallery-refinement-cards.tsx` (TASK-001/002/003).
@@ -45,7 +51,7 @@
 import { useState } from 'react'
 
 import { ChoiceGroup } from '../design-system/index'
-import { ReviewOverview } from '../app/Review'
+import { RegenerateConfirmDialog, ReviewOverview, ReviewRegenerateAction } from '../app/Review'
 import { SessionOverview } from '../app/SessionDetail'
 import { DurationMetric, StreakMetric } from '../app/Summary'
 import { createError, ErrorCode } from '../state/errors'
@@ -195,6 +201,7 @@ export function WorkoutPreparation({ type }: { type: PreparationSectionType }) {
 
 export function GalleryPreparation() {
   const [context, setContext] = useState<PreparationContext>('review')
+  const [confirmingRegenerate, setConfirmingRegenerate] = useState(false)
   return (
     <div className="clr-stack" data-gallery-preparation={context}>
       <ChoiceGroup
@@ -212,6 +219,7 @@ export function GalleryPreparation() {
             <ReviewPreparationGuide type="warmup" />
             <ReviewContextCards blocks={PREPARATION_SECTIONS.main.blocks} />
             <ReviewPreparationGuide type="cooldown" />
+            <ReviewRegenerateAction onRequest={() => setConfirmingRegenerate(true)} />
           </>
         ) : (
           <>
@@ -220,6 +228,11 @@ export function GalleryPreparation() {
           </>
         )}
       </div>
+      <RegenerateConfirmDialog
+        open={confirmingRegenerate}
+        onCancel={() => setConfirmingRegenerate(false)}
+        onConfirm={() => setConfirmingRegenerate(false)}
+      />
     </div>
   )
 }

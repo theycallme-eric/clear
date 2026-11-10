@@ -335,20 +335,14 @@ export function Review({
           )
         })}
 
-        {/* REQ-006: the way out of this composition, once it has been read.
-            Discarding is confirmed and irreversible, so it is a framed button
-            rather than a text action. */}
-        <ActionRow>
-          <Button
-            variant="secondary"
-            size="lg"
-            icon={<RefreshCw />}
-            disabled={starting}
-            onClick={() => setConfirmingRegenerate(true)}
-          >
-            {REGENERATE_LABEL}
-          </Button>
-        </ActionRow>
+        {/* REQ-006, TASK-023 (C50, R05): the way out of this composition,
+            once all of it has been read — the last thing in the list, after
+            every section including the Cooldown guide. Nothing is appended
+            below it. */}
+        <ReviewRegenerateAction
+          disabled={starting}
+          onRequest={() => setConfirmingRegenerate(true)}
+        />
       </div>
       </ReviewSwapProvider>
 
@@ -460,6 +454,39 @@ export { TEMPO_DETAIL_LABEL } from '../ui/review-block'
 // ─────────────────────────────────────────────────────────────────────────────
 // Discarding
 // ─────────────────────────────────────────────────────────────────────────────
+
+export interface ReviewRegenerateActionProps {
+  /** Held while Start is in flight, as before. */
+  disabled?: boolean
+  /** Asks the question; the caller opens `RegenerateConfirmDialog`. */
+  onRequest: () => void
+}
+
+/**
+ * Review's Regenerate (REQ-006): the one way out of this composition, drawn
+ * once the whole workout has been read. TASK-023 (C50, G15, R05): it is the
+ * last item of the scrolling content, after every section — the Cooldown
+ * guide included — and no workout content is ever placed below it. Discarding
+ * is confirmed and irreversible, so it is a framed button rather than a text
+ * action; pressing it only asks (`RegenerateConfirmDialog`), and what a
+ * confirmed discard does is the caller's, unchanged. The accepted gallery
+ * state `?state=preparation` draws this same owner after its Cooldown.
+ */
+export function ReviewRegenerateAction({ disabled = false, onRequest }: ReviewRegenerateActionProps) {
+  return (
+    <ActionRow>
+      <Button
+        variant="secondary"
+        size="lg"
+        icon={<RefreshCw />}
+        disabled={disabled}
+        onClick={onRequest}
+      >
+        {REGENERATE_LABEL}
+      </Button>
+    </ActionRow>
+  )
+}
 
 export interface RegenerateConfirmDialogProps {
   open: boolean
