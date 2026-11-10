@@ -203,8 +203,9 @@ describe('the production app speaks one dialect per component', () => {
    * below, so an exception cannot outlive its reason.
    */
   const HAND_ASSEMBLED_CARD: Record<string, string> = {
-    'src/ui/workout-chrome.tsx':
-      'EXC-03 TimerFrame (GlobalTimer, MovementCountdown): TimerDisplay always draws its own card and counts down into the low state, so a count-up session clock, or any timer inside a card, mirrors its markup',
+    // EXC-03 (TimerFrame) retired by TASK-007 (C19, R102): every timer is now
+    // the shared whole timer body (src/ui/refinements/deadline-timer.tsx), one
+    // chamfered frame with no hand-assembled card or accent bar.
     'src/ui/set-logging-sheet.tsx':
       'EXC-06 SetLoggingSheet: B05-07.3 owner-required accent bar on this one overlay frame, which overlays otherwise never carry; the sheet is not a card, so only the shipped bar element is joined to it',
   }

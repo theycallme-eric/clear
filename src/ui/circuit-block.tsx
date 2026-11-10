@@ -40,7 +40,10 @@
  * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
  * card, the identity row and the single completion are `BlockPanel`'s, the
  * movements are rows of its list, and the rest countdown goes to its `timer`
- * slot — `TimerDisplay` is already a card, and is never put inside another.
+ * slot — the shared whole timer body (`DeadlineTimer`, TASK-007: C19, R103),
+ * one frame filling the block's width with its digits centred, never put
+ * inside another frame. It reads the circuit's own rest, never the session's
+ * one rest between sets (C21).
  */
 import { useState } from 'react'
 
@@ -50,7 +53,6 @@ import {
   Play,
   Rest,
   TextAction,
-  TimerDisplay,
 } from '../design-system/index'
 import {
   circuitShape,
@@ -68,6 +70,7 @@ import {
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
 import { useSetLogging } from '../state/set-logging'
+import { formatCountdownReading, roundReading } from '../state/timed-clock'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
   usePersistedCircuit,
@@ -81,7 +84,7 @@ import { ExerciseSetLogger } from './set-logger'
 import { MovementCountdownView } from './movement-countdown'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { useInterfaceLoop } from './motion'
-import { TimerFrame } from './workout-chrome'
+import { DeadlineTimer } from './refinements/deadline-timer'
 
 export interface CircuitBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -119,8 +122,9 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   return (
     <BlockPanel
       block={block}
-      // The round boundary's one countdown: the shipped `TimerDisplay`, a real
-      // deadline with urgency in its last seconds, beside the card.
+      // The round boundary's one countdown: the shared whole timer body, a
+      // real deadline with the shipped low state in its last ten seconds (the
+      // threshold `TimerDisplay` drew it at), beside the card.
       timer={
         resting ? (
           <div
@@ -128,7 +132,7 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
             data-urgent={urgent ? 'true' : 'false'}
             {...loop}
           >
-            <TimerDisplay seconds={view.restRemaining} />
+            <DeadlineTimer reading={formatCountdownReading(view.restRemaining)} low={urgent} pulse={urgent || undefined} />
           </div>
         ) : null
       }
@@ -267,14 +271,15 @@ function RoundRecord({
   )
 }
 
-/** The running round's elapsed time: a count-up, so the shared timer frame. */
+/**
+ * The running round's elapsed time: a count-up, so the shared whole timer
+ * body, filling the card's width with its caption and digits centred (C19).
+ */
 function RoundElapsed({ round, seconds }: { round: number; seconds: number }) {
   return (
-    <TimerFrame
-      label={`Round ${round} time`}
+    <DeadlineTimer
+      reading={roundReading(round, seconds)}
       caption={`Round ${round}`}
-      text={formatElapsed(seconds)}
-      spoken={spokenElapsed(seconds)}
       size="var(--label-lg-size)"
     />
   )

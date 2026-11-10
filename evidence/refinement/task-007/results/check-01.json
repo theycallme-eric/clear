@@ -1,0 +1,107 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-007",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/state/timed-clock.test.ts",
+    "src/ui/timer-frame-layout.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-007/required-cases.json",
+    "sha256": "dd7efcb15cbb8c9028cc2c2654059559615a87ed9003a6c7c548e0acd21b802a"
+  },
+  "targets": [
+    {
+      "path": "src/state/timed-clock.test.ts",
+      "sha256": "88e4c230802c3a4a7b155806909865a04f1374cd9d5fe102ce09646cf8b7b60b"
+    },
+    {
+      "path": "src/ui/timer-frame-layout.test.tsx",
+      "sha256": "3d8404860585fbfce29172f419de7c10842cd134d8e14cb52c0475f3d74a11d9"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-C21-01 session elapsed, a movement countdown, the session rest and a format clock each read only their own owner at the same moment",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-C21-01 a section Pause freezes only its format clock and its cap; the session clock, the rest and a running countdown run on",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-C21-01 cap arithmetic is the race's own: cap minus elapsed while running, frozen while paused, zero once the cap is reached, none without a cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-C21-01 a movement countdown banks its own time on Pause, and a rest extension moves only the rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-C21-01 the session clock is elapsed only: it counts up, carries no deadline, and past an hour still reads as one clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-C21-01 each clock keeps its own name, direction and words",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "name": "TASK-007 distinct functional clocks > AC-R007-03 a reading is a pure function of its owner's reading: re-read after a reload or in another place it is identical, and reading starts nothing",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, not a short readout beside its label",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu's height and never stretched across the header",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the gallery draws the route's own header on one row, and no two-row state",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 13
+  },
+  "problems": []
+}

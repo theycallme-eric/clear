@@ -2,8 +2,8 @@
  * EXE-03 — the EMOM renderer: fixed work at the top of every minute, and the
  * remainder of the minute as rest. This is the EMOM arm of the IA's
  * `TimedRenderer` (IA.md §3), and the readout inside it is its `SectionTimer` —
- * the one place in the app that composes the shipped `TimerDisplay`, because
- * unlike the session clock this really is a countdown with a deadline.
+ * a real countdown with a deadline, unlike the session clock, drawn in the
+ * shared whole timer body (`DeadlineTimer`, TASK-007: C19, R42).
  *
  * `emom-clarity.md` is a list of four things the old screen failed to say, and
  * all four are said here:
@@ -21,16 +21,18 @@
  *   · **The alternation pattern.** Each movement states the minutes it covers —
  *     `ODD MIN` / `EVEN MIN` for two, the actual minute numbers for three or
  *     more, nothing at all for one (§3).
- *   · **What the timer's colour means.** It is `TimerDisplay`'s own urgency
- *     threshold, and it is meaningful because the seconds handed to it are the
- *     seconds left of *this minute*: the readout turns to the urgency treatment
+ *   · **What the timer's colour means.** It is the shipped `TimerDisplay`'s
+ *     own low threshold, kept, and it is meaningful because the seconds handed
+ *     to it are the seconds left of *this minute*: the readout turns to the urgency treatment
  *     in the last ten seconds of every minute and resets on the boundary
  *     (§4, option A). Nothing here sets a colour to say it.
  *
  * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
  * card, the identity row and the single completion are `BlockPanel`'s, the
  * movements are rows of its list, and the countdown is handed to its `timer`
- * slot — `TimerDisplay` is already a card, and is never put inside another.
+ * slot — one frame filling the block's width with its digits centred, never a
+ * short readout inside an empty wider frame (R42), and never put inside
+ * another. It reads the EMOM's own minute and no other clock (C21).
  *
  * Execution is hands-off (REQ-014). There is no set form, no "Minute done" and
  * no exertion prompt: each movement states the target its scheduled minute
@@ -53,7 +55,6 @@
  * real, drawable case rather than an empty view — everything in it was swapped
  * out, and it says so.
  */
-import { TimerDisplay } from '../design-system/index'
 import {
   clampEmomState,
   emomShape,
@@ -82,12 +83,14 @@ import {
   resumeClock,
   type TimedLifecyclePhase,
 } from '../state/timed-lifecycle'
+import { formatCountdownReading } from '../state/timed-clock'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
+import { DeadlineTimer } from './refinements/deadline-timer'
 import { useInterfaceLoop } from './motion'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -240,8 +243,9 @@ function finishedText(view: EmomView): string {
 const MINUTE_LOW_SECONDS = 10
 
 /**
- * The countdown, as `BlockPanel`'s `timer`: the shipped `TimerDisplay`, which
- * is its own frame and is drawn beside the block's card rather than inside it.
+ * The countdown, as `BlockPanel`'s `timer`: the shared whole timer body
+ * (TASK-007, C19), its own frame filling the block's width, drawn beside the
+ * block's card rather than inside it.
  *
  * It is handed the seconds left of *this minute* rather than of the whole
  * block, which is what makes its urgency treatment mean "wrap up this minute"
@@ -265,7 +269,7 @@ function MinuteCountdown({ view }: { view: EmomView }) {
       data-urgent={low ? 'true' : 'false'}
       {...loop}
     >
-      <TimerDisplay seconds={view.secondsRemaining} lowThreshold={MINUTE_LOW_SECONDS} />
+      <DeadlineTimer reading={formatCountdownReading(view.secondsRemaining)} low={low} pulse={low || undefined} />
     </div>
   )
 }

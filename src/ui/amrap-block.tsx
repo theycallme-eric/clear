@@ -1,7 +1,7 @@
 /**
  * EXE-04c — the AMRAP renderer: a window, then an optional result. This is the
- * IA's `TimedRenderer` in its AMRAP mode (IA.md §3), composing the shipped
- * `TimerDisplay` as its `SectionTimer`.
+ * IA's `TimedRenderer` in its AMRAP mode (IA.md §3), its `SectionTimer` the
+ * shared whole timer body (`DeadlineTimer`, TASK-007: C19, R49).
  *
  * Everything the structure is comes from `workout_blocks`: the window is
  * `timer_seconds` and one round is the movements in their prescribed order. The
@@ -36,10 +36,11 @@
  * the remaining time is read against the clock, so the buzzer can go while the
  * tab is asleep.
  *
- * Containment, as 0.14.3 draws it. `TimerDisplay` is a card of its own, so the
- * countdown stands above the block's card rather than inside it, and its low
- * state is the package's — the stepped colour and the pulse, with nothing added
- * around it. Everything else is one card: the counters and the round are its
+ * Containment. The countdown is one frame of its own (TASK-007, C19, R49): it
+ * stands above the block's card rather than inside it and fills the block's
+ * width with its digits centred — never a short readout inside an empty wider
+ * frame — and its low state is the shipped one at the shipped `TimerDisplay`'s
+ * threshold: the stepped colour and the pulse, with nothing added around it. Everything else is one card: the counters and the round are its
  * ruled sub-groups with their labels inside, the settled time is the shared
  * bare readout, and the two partial-round toggles are frameless text actions.
  */
@@ -51,7 +52,6 @@ import {
   Minus,
   Plus,
   TextAction,
-  TimerDisplay,
   X,
 } from '../design-system/index'
 import {
@@ -88,6 +88,7 @@ import {
   resumeClock,
   type TimedLifecyclePhase,
 } from '../state/timed-lifecycle'
+import { formatCountdownReading } from '../state/timed-clock'
 import {
   elapsedSeconds,
   formatElapsed,
@@ -106,6 +107,7 @@ import { ConditioningScoreLine } from './conditioning-score'
 import { GroupExerciseCoaching } from './exercise-coaching'
 import { coachesAsGroup } from './group-coaching-context'
 import { useInterfaceLoop } from './motion'
+import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
@@ -123,6 +125,13 @@ export interface AmrapBlockProps extends BlockRendererProps {
    */
   conditioningHistory?: readonly ConditioningSectionRead[] | null
 }
+
+/**
+ * The last stretch of the window, where its readout takes the low state: ten,
+ * the shipped `TimerDisplay`'s own default, kept unchanged (TASK-007 changes the
+ * frame, not the threshold).
+ */
+const WINDOW_LOW_SECONDS = 10
 
 export function AmrapBlock({
   block,
@@ -169,7 +178,12 @@ export function AmrapBlock({
         frozen where it was while the window is paused (TASK-006).
       */}
       {shape.size > 0 && (view.phase === 'running' || view.phase === 'paused') && view.capSeconds !== null && (
-        <TimerDisplay seconds={view.remainingSeconds} size="lg" />
+        <DeadlineTimer
+          reading={formatCountdownReading(view.remainingSeconds)}
+          size="var(--heading-h1-size)"
+          low={view.remainingSeconds <= WINDOW_LOW_SECONDS}
+          pulse={view.remainingSeconds <= WINDOW_LOW_SECONDS || undefined}
+        />
       )}
       {/*
         TASK-003 (C08, C09): the block's card and static header are the shared
@@ -312,7 +326,7 @@ function amrapLifecycle(view: AmrapView): TimedLifecyclePhase {
 
 /**
  * The card's side of the clock, in whichever of its states it is in. The
- * countdown itself is the block's `TimerDisplay`, above the card, and its
+ * countdown itself is the block's whole timer body, above the card, and its
  * actions are the shared slot after the round (TASK-006, C17).
  *
  * Running is the passive one on purpose: the phone is on the floor and the

@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-007",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-007.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-007/required-cases.json",
+    "sha256": "dd7efcb15cbb8c9028cc2c2654059559615a87ed9003a6c7c548e0acd21b802a"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-007.spec.ts",
+      "sha256": "13415102a5954ac6a13deb67a3c521bee1ca9960774536f078eefb0b8587721f"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-320: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-320: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-390: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-390: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: the route's own one-row header, and every clock's actual consumer in one whole frame",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

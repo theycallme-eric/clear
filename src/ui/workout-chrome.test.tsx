@@ -107,18 +107,25 @@ describe('GlobalTimer', () => {
     expect(timer).not.toHaveAttribute('role', 'status')
   })
 
-  it('is the shipped timer card — one bar, the timer role, and no frame around it', () => {
+  // TASK-007 (C19, C20; R53, R96, R102, R119) supersedes the hand-assembled
+  // timer card here: the header readout is the shared whole timer body — one
+  // chamfered frame on the timer role, no accent-bar strip, no card — in its
+  // compact header placement at the menu's height.
+  it('is one whole timer frame in the header placement — no accent bar, no card, the timer role', () => {
     renderWithProviders(<GlobalTimer seconds={750} />)
 
     const timer = screen.getByRole('timer', { name: 'Session time' })
-    expect(timer).toHaveClass('clr-chamfer', 'clr-card__body', 'clr-chamfer--timer')
-    expect(cards()).toHaveLength(1)
-    expect(timer.parentElement).toBe(cards()[0])
-    expect(cards()[0].querySelectorAll(':scope > .clr-card__bar')).toHaveLength(1)
+    expect(timer).toHaveClass('clr-chamfer', 'clr-accepted-timer__body', 'clr-chamfer--timer')
+    expect(timer).not.toHaveClass('clr-card__body')
+    expect(cards()).toHaveLength(0)
+    expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(0)
+    expect(timer.querySelectorAll('.clr-chamfer')).toHaveLength(0)
 
-    const bleed = cards()[0].parentElement as HTMLElement
-    expect(bleed).toHaveClass('clr-bleed')
-    expect(bleed.style.getPropertyValue('--bleed')).toBe('var(--border-timer)')
+    const bleed = timer.parentElement as HTMLElement
+    expect(bleed).toHaveClass('clr-bleed', 'clr-accepted-timer', 'clr-accepted-timer--header')
+    expect(bleed).toHaveAttribute('data-timer-frame', 'header')
+    expect(bleed).toHaveAttribute('data-clock', 'session')
+    expect(bleed).not.toHaveAttribute('data-low')
   })
 
   it('is an element frame inside a card, never a second card', () => {

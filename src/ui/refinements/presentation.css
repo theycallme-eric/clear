@@ -245,3 +245,100 @@
 .clr-timed-actions button {
   justify-content: center;
 }
+
+/* Whole timer body — DeadlineTimer (TASK-007: C19, C20, G06; R42, R49, R53,
+ * R96, R102, R103, R119). The accepted `.clr-accepted-timer`: one chamfered
+ * timer body emitting through its own bleed — no accent-bar strip and no
+ * second chamfer inside it. In a block's stack, a card or the open log the
+ * body fills the available width; its readout is centred both ways. Colour
+ * and low state are the shipped timer roles. */
+.clr-accepted-timer {
+  min-width: 0;
+}
+
+.clr-accepted-timer--body {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.clr-accepted-timer--header {
+  display: inline-flex;
+  flex: none;
+}
+
+.clr-accepted-timer__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-200);
+  min-width: 0;
+  padding: var(--spacing-200) var(--spacing-400);
+}
+
+/* The header readout: the menu's control height, digits centred in it. */
+.clr-accepted-timer--header > .clr-accepted-timer__body {
+  min-height: var(--control-height);
+  padding-block: 0;
+}
+
+.clr-accepted-timer__caption {
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  color: var(--text-timer);
+}
+
+.clr-accepted-timer[data-low] .clr-accepted-timer__caption {
+  color: var(--text-timer-low);
+}
+
+/* The echoed frame: its wrapper passes the frame's layout on, so the frame
+   fills (or sizes to) its place exactly as it does with the effect off. */
+.clr-echo:has(> .clr-accepted-timer) {
+  display: flex;
+  min-width: 0;
+}
+
+/* The workout header — C20, R53, R96, R119 (TASK-007). The accepted
+ * `.clr-accepted-workout-header`: the Workout title, the session clock's
+ * compact readout and the menu frame on one row the menu's control height
+ * tall, each centred on it. One row only: the readout and menu never drop to
+ * a second line, because no two-row header was shown or accepted (R119). The
+ * title gives up width first; on the narrow phone it takes the accepted
+ * smaller heading size. The shipped AppHeader sets its two gaps inline, so
+ * the accepted gap overrides them here. */
+.clr-workout-header {
+  flex-wrap: nowrap;
+  gap: var(--spacing-200) !important;
+}
+
+.clr-workout-header > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clr-workout-header > :last-child {
+  gap: var(--spacing-200) !important;
+}
+
+.clr-workout-header > :last-child > :not(:last-child) {
+  display: flex;
+}
+
+.clr-workout-header .clr-screen__title {
+  font-size: var(--heading-h2-size);
+  line-height: var(--control-height);
+}
+
+@media (max-width: 380px) {
+  .clr-workout-header .clr-screen__title {
+    font-size: var(--heading-h4-size);
+  }
+
+  .clr-workout-header .clr-accepted-timer--header > .clr-accepted-timer__body {
+    padding-inline: var(--spacing-200);
+  }
+}

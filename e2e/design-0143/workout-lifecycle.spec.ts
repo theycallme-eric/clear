@@ -1146,7 +1146,7 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     const probe = await expectContained(page, 'Standard')
     expectTimerContract(await timerProbe(sessionTime), 'Session time')
     await expect(page.getByRole('button', { name: 'Previous', exact: true })).toBeDisabled()
-    evidence.note('containment', 'Standard: shell, section, block and set form are sibling cards; fields and labels inside; Session time is a labelled non-live timer card.', probe)
+    evidence.note('containment', 'Standard: shell, section, block and set form are sibling cards; fields and labels inside; Session time is a labelled non-live whole timer frame (TASK-007, C20).', probe)
   }, { variant: 'standard', skins: true, short: logSet })
 
   // TASK-002 (AC-C06-01, AC-R002-03; U37): Swap is Review's action, and its
@@ -1309,7 +1309,7 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     expectLowState(probe, false)
     expect((await loops(page)).running).toHaveLength(1)
     await expectContained(page, 'EMOM urgent')
-    evidence.note('timer', 'EMOM low state: the shipped TimerDisplay is its own card beside the block card, steps its colour over 0.4s and pulses to 80% on the one loop, with no extra glow.', probe)
+    evidence.note('timer', 'EMOM low state: the shared whole timer frame (TASK-007, C19) beside the block card, one chamfer filling its width, steps its colour over 0.4s and pulses to 80% on the one loop, with no extra glow.', probe)
   }, { variant: 'emom-urgent', skins: true })
   await page.clock.resume()
 
