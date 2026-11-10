@@ -18,6 +18,13 @@
  * hierarchy (TASK-006) — the route's own `LadderBlock`, Start ladder in its
  * top slot, then a secondary Pause beside the primary Finish — over memory-only
  * storage (`gallery-refinement-flow.tsx`).
+ *
+ * `urgency`: the whole timer body (TASK-007, C19, C21) drawn by each clock's
+ * actual consumer — a movement countdown, the race clock toward its cap, a
+ * format countdown, the session's rest and the elapsed-only session clock
+ * (`gallery-refinement-timers.tsx`). The `cards` state's Workout context opens
+ * with the route's one-row workout header (C20). The recovered soft warning
+ * (C22–C24, C61) is TASK-008's addition to this state.
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -25,6 +32,7 @@ import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
 import { GalleryOverviewSummary } from './gallery-refinement-scenes'
+import { GalleryTimerFrames } from './gallery-refinement-timers'
 
 function GalleryLadderFour() {
   return <GalleryLadderFlow rounds={4} />
@@ -39,6 +47,7 @@ const REFINEMENT_STATES = [
   { id: 'overview', title: 'Overview and Summary frames', Render: GalleryOverviewSummary },
   { id: 'ladder-4', title: 'Live ladder · 4 rounds', Render: GalleryLadderFour },
   { id: 'ladder-12', title: 'Live ladder · 12 rounds', Render: GalleryLadderTwelve },
+  { id: 'urgency', title: 'Whole timer frames · countdown, cap and elapsed clocks', Render: GalleryTimerFrames },
 ] as const
 
 export function GalleryRefinements() {

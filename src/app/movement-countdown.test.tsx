@@ -46,6 +46,11 @@ const COUNTDOWN_CSS = readFileSync(
   resolve(import.meta.dirname, '../ui/movement-countdown.css'),
   'utf-8',
 )
+/** TASK-007: the shared whole timer body's recipe. */
+const PRESENTATION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../ui/refinements/presentation.css'),
+  'utf-8',
+)
 const MOTION_CSS = readFileSync(
   resolve(import.meta.dirname, '../design-system/css/motion.css'),
   'utf-8',
@@ -301,9 +306,15 @@ describe('B05-06: full-width countdown above its paired controls, above Rest', (
     expect(within(card).queryByRole('button', { name: /^Log/ })).toBeNull()
   })
 
-  it('spans the card width and keeps the pair on one row through the shipped rules', () => {
-    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer > \.clr-bleed\s*\{[^}]*display:\s*flex/)
-    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer > \.clr-bleed > \*\s*\{[^}]*flex:\s*1 1 auto/)
+  // TASK-007 (C19, R102): the width is now the shared whole timer body's own
+  // (`.clr-accepted-timer--body` fills its place), not a countdown-local rule
+  // stretching a narrower frame; the countdown keeps only its column.
+  it('spans the card width and keeps the pair on one row through the shipped rules', async () => {
+    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column/)
+    expect(PRESENTATION_CSS).toMatch(/\.clr-accepted-timer--body\s*\{[^}]*display:\s*flex[^}]*width:\s*100%/)
+    await shell()
+    expect(countdown().parentElement).toHaveClass('clr-accepted-timer--body')
+    expect(countdown().parentElement).toHaveAttribute('data-timer-frame', 'body')
   })
 })
 
@@ -330,14 +341,18 @@ describe('Countdown framing matches the session clock (AC-052)', () => {
     expect(session).toHaveClass('clr-chamfer', 'clr-chamfer--md', 'clr-chamfer--timer')
   })
 
-  it('is the shipped timer card, with one bar, wherever no card surrounds it', () => {
+  // TASK-007 (C19, R102) supersedes "the shipped timer card, with one bar":
+  // with no card around it, the countdown is still one whole frame — no
+  // hand-assembled card and no accent-bar strip drawn as a second chamfer.
+  it('is one whole timer frame, with no card and no bar, wherever no card surrounds it', () => {
     renderWithProviders(<MovementCountdown seconds={30} movement="hollow body hold" />)
 
     const timer = screen.getByRole('timer', { name: 'Countdown' })
-    expect(timer).toHaveClass('clr-card__body', 'clr-chamfer--timer')
-    expect(document.querySelectorAll('.clr-card')).toHaveLength(1)
-    expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(1)
-    expect(timer.parentElement?.parentElement).toHaveClass('clr-bleed')
+    expect(timer).toHaveClass('clr-accepted-timer__body', 'clr-chamfer--timer')
+    expect(timer).not.toHaveClass('clr-card__body')
+    expect(document.querySelectorAll('.clr-card')).toHaveLength(0)
+    expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(0)
+    expect(timer.parentElement).toHaveClass('clr-bleed', 'clr-accepted-timer--body')
   })
 
   it('never adds a frame or bar in a card', () => {

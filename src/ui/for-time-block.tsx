@@ -54,7 +54,8 @@ import {
 import { prescriptionText } from '../state/prescription'
 import { useShellWeightUnit } from '../state/set-logging'
 import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
-import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
+import { raceReading } from '../state/timed-clock'
+import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
   usePersistedForTime,
   type ShellStorage,
@@ -64,6 +65,7 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
 import { useInterfaceLoop } from './motion'
+import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
@@ -150,6 +152,19 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
  * in words, the elapsed reading and the cap, drawn beside the block's card
  * rather than inside it. Nothing of the clock floats outside its own card.
  *
+ * TASK-007 (C19, R67, R102): the elapsed reading is the shared whole timer
+ * body (`DeadlineTimer`), filling the card's width with its digits centred —
+ * the For Time block's and the timed ladder's functioning visible clock —
+ * rather than a short readout beside the words. It reads the race's own
+ * clock (`for-time.ts`, with TASK-006's pause) and nothing else (C21).
+ *
+ * App-owned rather than the export's `TimerDisplay` for the same reason the
+ * shell's `GlobalTimer` is: `TimerDisplay` is a *countdown*, and what For Time
+ * records is the time that has passed. The digits are decorative and the
+ * accessible value is spoken in words, so a screen reader hears "six minutes
+ * 23 seconds" rather than "06 colon 23", and hears it when the user asks:
+ * `role="timer"` here is labelled, never live.
+ *
  * The low state is the shipped one and nothing more. The card changes role, so
  * bar, body and digits step to the low colours over `--dur-alert`, and the
  * whole card takes `.clr-pulse-micro` — the dim to 80% — with no glow of its
@@ -178,72 +193,24 @@ export function ForTimeClock({
       {...loop}
     >
       <Card role={low ? 'timer-low' : 'timer'}>
-        <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          {/*
-            The outcome in words, and the one thing here that changes without
-            the user touching anything: the cap arrives on its own, so this is
-            the status a screen reader is told about politely.
-          */}
-          <p role="status" style={statusStyle(view)}>
-            <PhaseGlyph view={view} />
-            {words[view.phase]}
-          </p>
+        {/*
+          The outcome in words, and the one thing here that changes without
+          the user touching anything: the cap arrives on its own, so this is
+          the status a screen reader is told about politely.
+        */}
+        <p role="status" style={statusStyle(view)}>
+          <PhaseGlyph view={view} />
+          {words[view.phase]}
+        </p>
 
-          <ElapsedReadout view={view} low={low} />
-        </div>
+        <DeadlineTimer
+          reading={raceReading(view.elapsedSeconds, view.remainingSeconds)}
+          size="var(--label-xl-size)"
+          low={low}
+        />
 
         <CapLine view={view} />
       </Card>
-    </div>
-  )
-}
-
-/**
- * The elapsed time, and the only number this block is scored on.
- *
- * App-owned rather than the export's `TimerDisplay` for the same reason the
- * shell's `GlobalTimer` is: `TimerDisplay` is a *countdown*, and what For Time
- * records is the time that has passed. The digits are still drawn the way
- * `TimerDisplay` draws them — each one tumbles when it changes, the colon holds
- * still, and the colour crosses into the low state on the frame's own schedule,
- * `--dur-alert`, stepped.
- *
- * The digits are decorative and the accessible value is spoken in words, so a
- * screen reader hears "six minutes 23 seconds" rather than "06 colon 23", and
- * hears it when the user asks: `role="timer"` here is labelled, never live.
- */
-function ElapsedReadout({ view, low }: { view: ForTimeView; low: boolean }) {
-  return (
-    <div role="timer" aria-label="Block time" style={{ display: 'inline-flex' }}>
-      <span
-        aria-hidden="true"
-        style={{
-          display: 'inline-flex',
-          fontFamily: 'var(--font-data)',
-          fontSize: 'var(--label-xl-size)',
-          fontWeight: 'var(--font-weight-bold)',
-          letterSpacing: 'var(--tracking-data)',
-          color: low ? 'var(--text-timer-low)' : 'var(--text-timer)',
-          transition: 'color var(--dur-alert) var(--step-4)',
-        }}
-      >
-        {formatElapsed(view.elapsedSeconds)
-          .split('')
-          .map((char, index) => (
-            <span
-              key={`${index}-${char}`}
-              className={char === ':' ? undefined : 'clr-tumble'}
-              style={{
-                display: 'inline-block',
-                minWidth: char === ':' ? undefined : '0.62em',
-                textAlign: 'center',
-              }}
-            >
-              {char}
-            </span>
-          ))}
-      </span>
-      <span className="a11y-hidden">{spokenElapsed(view.elapsedSeconds)}</span>
     </div>
   )
 }

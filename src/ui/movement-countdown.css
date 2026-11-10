@@ -25,18 +25,14 @@
 }
 
 /* B05-06: the countdown spans its card's width, digits centred, with the
-   paired Start/Pause and Reset row underneath. The frame is TimerFrame's own
-   (EXC-03); only its width is decided here. */
+   paired Start/Pause and Reset row underneath. The frame is the shared whole
+   timer body (`DeadlineTimer`, TASK-007), which fills its place itself. */
 .clr-movement-countdown {
   display: flex;
   flex-direction: column;
 }
 
-.clr-movement-countdown__timer > .clr-bleed {
+.clr-movement-countdown__timer {
   display: flex;
-}
-
-.clr-movement-countdown__timer > .clr-bleed > * {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex-direction: column;
 }

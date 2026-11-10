@@ -1599,13 +1599,22 @@ describe('Workout — the session’s one rest', () => {
 
   const COACHING_PANEL = 'Coaching and notes — back squat'
 
-  it('draws the session timer and the rest as two self-framed cards, neither inside another', async () => {
+  // TASK-007 (C19, C20, C21; R102, R103) supersedes "two self-framed cards":
+  // the session clock is one whole timer frame in the header, and the rest is
+  // its own timer card holding its own whole frame — two clocks, each framed
+  // once, neither inside the other.
+  it('draws the session clock as one whole frame and the rest as its own timer card holding its whole frame, neither inside another', async () => {
     await restShell()
     await logSet('back squat', 1)
 
     const session = screen.getByRole('timer', { name: 'Session time' })
-    expect(session.closest('.clr-card')).not.toBeNull()
-    expect(restTimer().closest('.clr-card')).not.toBe(session.closest('.clr-card'))
+    expect(session.closest('.clr-card')).toBeNull()
+    expect(session.parentElement).toHaveAttribute('data-timer-frame', 'header')
+    expect(session.parentElement).toHaveAttribute('data-clock', 'session')
+    expect(restTimer().closest('.clr-card')).not.toBeNull()
+    expect(restTimer().parentElement).toHaveAttribute('data-timer-frame', 'body')
+    expect(restTimer().parentElement).toHaveAttribute('data-clock', 'rest')
+    expect(restBars()[0]).not.toContainElement(session)
     expect(restBody()).toHaveClass('clr-chamfer--timer')
     expect(nestedCards()).toEqual([])
   })

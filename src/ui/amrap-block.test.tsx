@@ -576,21 +576,27 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     return { user, block, ...renderAmrap(block, storage, api) }
   }
 
+  // TASK-007 (C19, R49) supersedes the shipped timer *card* here: the
+  // countdown is one whole timer frame beside the block's card — no card of
+  // its own, no accent-bar strip, no short chamfer inside a wider frame.
   it('stands the countdown beside the block’s card, never inside one', async () => {
     const { container } = await resumeAt(60_000)
 
     const timer = screen.getByRole('timer', { name: 'Time remaining' })
-    const timerCard = timer.closest('.clr-card')
-    expect(timerCard).not.toBeNull()
-    expect(timerCard?.parentElement?.closest('.clr-card')).toBeNull()
+    expect(timer.closest('.clr-card')).toBeNull()
+    expect(timer).toHaveClass('clr-accepted-timer__body')
+    expect(timer.parentElement).toHaveAttribute('data-timer-frame', 'body')
+    expect(timer.parentElement).toHaveAttribute('data-clock', 'format')
+    expect(timer.querySelectorAll('.clr-chamfer, .clr-card__bar')).toHaveLength(0)
 
-    // One timer card and one block card, and no card within either.
-    expect(container.querySelectorAll('.clr-card')).toHaveLength(2)
+    // One block card beside the frame, and no card within it.
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
     expect(container.querySelector('.clr-card .clr-card')).toBeNull()
 
-    // The controls stay with the block, in its card rather than the timer's.
+    // The controls stay with the block, in its card rather than the timer's frame.
     const finishButton = screen.getByRole('button', { name: 'Finish early' })
-    expect(finishButton.closest('.clr-card')).not.toBe(timerCard)
+    expect(finishButton.closest('.clr-card')).not.toBeNull()
+    expect(timer.parentElement).not.toContainElement(finishButton)
   })
 
   it('keeps the countdown a labelled timer that is not a live region', async () => {

@@ -261,12 +261,16 @@ describe('the EMOM runs the clock the block prescribes', () => {
 
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
 
+    // TASK-007 (C19, R42): the single frame is the shared whole timer body —
+    // one chamfer filling the block's width — rather than a shipped timer card.
     const expectSingleTimerFrame = (seconds: string) => {
       const timer = screen.getByRole('timer')
-      const frame = timer.closest('.clr-card')
-      expect(frame).not.toBeNull()
-      expect(frame?.parentElement?.closest('.clr-card')).toBeNull()
-      expect(within(timer).getByText(seconds)).toBeInTheDocument()
+      const frame = timer.parentElement as HTMLElement
+      expect(frame).toHaveAttribute('data-timer-frame', 'body')
+      expect(frame.closest('.clr-card')).toBeNull()
+      expect(timer.querySelectorAll('.clr-chamfer, .clr-card__bar')).toHaveLength(0)
+      // The digits are decorative spans; the value is also said in words.
+      expect(timer).toHaveTextContent(seconds)
       expect(screen.getByRole('list', { name: 'Movements in this EMOM' })).toBe(movementList)
     }
 
@@ -613,7 +617,10 @@ describe('completion never records a scheduled minute as performed work', () => 
 })
 
 describe('the EMOM draws with the shared block frame', () => {
-  it('is one block card beside one timer card, with neither inside the other', async () => {
+  // TASK-007 (C19, R42) supersedes "beside one timer card": the minute's
+  // countdown is one whole timer frame beside the block's card — no card of
+  // its own and no short chamfer inside a wider one.
+  it('is one block card beside one whole timer frame, with neither inside the other', async () => {
     const user = setup()
     mount()
 
@@ -622,17 +629,20 @@ describe('the EMOM draws with the shared block frame', () => {
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
-    expect(cards()).toHaveLength(2)
+    expect(cards()).toHaveLength(1)
     expect(nestedCards()).toEqual([])
 
-    // The timer's card is the shipped one, and it holds the readout alone: the
-    // minute, the phase, the movements and the controls are the block card's.
-    const timerCard = timer().closest('.clr-card') as HTMLElement
+    // The frame holds the readout alone: the minute, the phase, the movements
+    // and the controls are the block card's.
+    const timerFrame = timer().parentElement as HTMLElement
+    expect(timerFrame).toHaveAttribute('data-timer-frame', 'body')
+    expect(timerFrame).toHaveAttribute('data-clock', 'format')
+    expect(timerFrame.closest('.clr-card')).toBeNull()
     const blockCard = screen
       .getByRole('list', { name: 'Movements in this EMOM' })
       .closest('.clr-card') as HTMLElement
-    expect(blockCard).not.toBe(timerCard)
-    expect(within(timerCard).queryByRole('button')).not.toBeInTheDocument()
+    expect(blockCard).not.toContainElement(timerFrame)
+    expect(within(timerFrame).queryByRole('button')).not.toBeInTheDocument()
     const inside = within(blockCard)
     expect(inside.getByText('MIN 1 OF 10')).toBeInTheDocument()
     expect(inside.getByText('WORK')).toBeInTheDocument()

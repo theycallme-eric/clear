@@ -18,6 +18,10 @@
  *     line below it — drawn by `WorkoutCard` from the block's identity — and
  *     the live EMOM, AMRAP and For Time movements state their prescribed load
  *     as their route renderers now do.
+ *   · TASK-007 (C20, R53, R96, R119): the Workout context opens with the
+ *     route's own workout header — title, the session clock's compact whole
+ *     frame and the menu frame on one row — at the accepted reading and one
+ *     past the hour (`gallery-refinement-timers.tsx`).
  *   · TASK-005 (C16, R29, R36): every live grouped card ends with the actual
  *     `GroupExerciseCoaching` in `WorkoutCard`'s `coaching` slot — one bottom
  *     Coaching and notes disclosure with a labelled section per movement —
@@ -57,6 +61,7 @@ import {
   TIMED_BLOCKS,
 } from './gallery-refinement-cards-data'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
+import { GalleryWorkoutHeaders } from './gallery-refinement-timers'
 import { galleryExerciseProgress } from './gallery-refinement-coaching-data'
 
 type Block = SessionAcceptance['workout']['sections'][number]['blocks'][number]
@@ -196,6 +201,8 @@ export function GalleryMovementCards() {
       </HeadingSection>
       <HeadingSection data-gallery-context="workout" className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
         <Heading>Workout · the same header, set progress in the action slot</Heading>
+        {/* TASK-007 (C20): the route's own one-row workout header. */}
+        <GalleryWorkoutHeaders />
         <WorkoutContextCards blocks={blocks} />
       </HeadingSection>
     </div>

@@ -60,7 +60,7 @@
  */
 import { useState, type ReactNode } from 'react'
 
-import { ChoiceGroup, TimerDisplay } from '../design-system/index'
+import { ChoiceGroup } from '../design-system/index'
 import type { BlockOutcome } from '../state/block-completion'
 import {
   clampForTimeState,
@@ -86,6 +86,7 @@ import {
 import { prescribedTarget, targetText } from '../state/prescription'
 import type { LadderTiming } from '../state/schemas'
 import { useShellWeightUnit } from '../state/set-logging'
+import { formatCountdownReading } from '../state/timed-clock'
 import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
 import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
@@ -95,6 +96,7 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ForTimeClock } from './for-time-block'
 import { LadderRungs } from './ladder-rungs'
 import { useInterfaceLoop } from './motion'
+import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings, type LiveMovementReadings } from './refinements/movement-readings'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
@@ -730,7 +732,8 @@ const SCHEDULE_WORDS: Readonly<Record<ScheduleView['phase'], string>> = {
 
 /**
  * The countdown to the next scheduled start, as `BlockPanel`'s `timer`: the
- * shipped `TimerDisplay`, drawn beside the block's card. It counts the current
+ * shared whole timer body (TASK-007, C19), filling the block's width with its
+ * digits centred, drawn beside the block's card. It counts the current
  * interval rather than the block, so its low state means "the next round is
  * about to start" and resets at every boundary — and it is given up once the
  * schedule has run out.
@@ -746,7 +749,7 @@ function IntervalCountdown({ view }: { view: ScheduleView }) {
       data-urgent={low && running ? 'true' : 'false'}
       {...loop}
     >
-      <TimerDisplay seconds={view.secondsRemaining} lowThreshold={INTERVAL_LOW_SECONDS} />
+      <DeadlineTimer reading={formatCountdownReading(view.secondsRemaining)} low={low} pulse={low || undefined} />
     </div>
   )
 }

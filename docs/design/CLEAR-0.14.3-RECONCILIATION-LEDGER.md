@@ -82,15 +82,15 @@ Further stale prose, the same kind as DISC-01 to DISC-05:
 
 Each one is named, narrowly tested and recorded here. None edits the vendor. An adapter exists only
 where integration needed one. The production guard
-(`src/test/design-system-097-deprecations.test.ts`) pins EXC-01, EXC-03, EXC-04 and EXC-06 by file. It fails
+(`src/test/design-system-097-deprecations.test.ts`) pins EXC-01, EXC-04 and EXC-06 by file. It fails
 if hand-assembled card markup, a public `Card` import or a raw `<select>` appears anywhere else, or
-if EXC-03 is no longer needed.
+if a pinned exception is no longer needed. EXC-03 is retired (below).
 
 | ID | File | What it adds | Why | Test |
 |---|---|---|---|---|
 | EXC-01 | `src/ui/card.tsx` | Renders the card heading as a real `Heading` at the outline level; a nested card becomes a ruled sub-group | The public heading slot is a `span`, and a card never holds a card (owner component authority) | `src/ui/card.test.tsx` |
 | EXC-02 | `src/ui/app-dialog.tsx` | Reports each user dismissal exactly once across the vendor's delayed close; a controlled close stays silent | DISC-07: the vendor schedules the close after its exit | `src/ui/app-dialog.test.tsx` |
-| EXC-03 | `src/ui/workout-chrome.tsx` | `TimerFrame` draws the shipped timer card markup by hand, for `GlobalTimer` and the movement countdown (REQ-014) | `TimerDisplay` always draws its own card and counts down into its low state. A count-up session clock cannot use it, and neither timer can sit inside a card through it. This is a composition gap, not a vendor defect. | `src/ui/workout-chrome.test.tsx`; `src/app/movement-countdown.test.tsx` |
+| EXC-03 (retired) | `src/ui/workout-chrome.tsx` | Was: `TimerFrame` drew the shipped timer card markup by hand, for `GlobalTimer` and the movement countdown (REQ-014). **Retired by the clear-refinement-20261103 TASK-007 (C19, R102):** every live clock now draws the app-owned whole timer body `DeadlineTimer` (`src/ui/refinements/deadline-timer.tsx`) — one chamfered frame with no hand-assembled card or accent bar — so no card markup is assembled by hand here. | `TimerDisplay` always draws its own card and counts down into its low state; the accepted refinement's one complete frame replaces both it and the hand-assembled card at every live clock. No vendor edit. | `src/ui/timer-frame-layout.test.tsx`; `src/ui/workout-chrome.test.tsx`; `src/app/movement-countdown.test.tsx` |
 | EXC-04 | `src/ui/select.tsx` | Native `<select>` framed with the public `.clr-field` | The export ships no Select (DS-04b) | `src/ui/select.test.tsx` |
 | EXC-05 | `src/styles/skin-clear.css` | CLEAR skin values with self-hosted fonts in place of the vendor font CDN import | DS-02 font delivery from CLEAR's own origin | `src/styles/fonts.test.ts` |
 | EXC-06 | `src/ui/set-logging-sheet.tsx` | Joins the shipped `.clr-card__bar` to the set-logging sheet's structural frame in every mode, with a plain opaque scan-free panel over a dim/light-blur backdrop that omits the Dialog backdrop's scanline/static layers (styles in `src/ui/set-logging-sheet.css`; browser proof in `e2e/ui-polish-b05-sheet-surface.spec.ts`) | Batch-05 B05-07.3/07.4 owner intent: the sheet needs the accent bar although overlays otherwise carry none. Scoped to this app-owned sheet: no vendor edit, no Dialog or card restyling, and the sheet is not a card, so the rest timer card inside it is not nested | `src/ui/set-logging-sheet.test.tsx` |

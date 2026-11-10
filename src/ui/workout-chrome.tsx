@@ -7,17 +7,17 @@
  * `GlobalTimer` is the interesting case: the export ships `TimerDisplay`, but
  * it is a *countdown* — its accessible name is "Time remaining" and its low
  * state is time pressure. The session timer counts up and has no deadline, so
- * it composes the same shipped timer card and the same timer tokens rather than
- * borrowing a component whose meaning is the opposite. `SectionTimer` (EXE-03)
- * is the one that composes `TimerDisplay`, exactly as the IA says. The frame
- * itself is `TimerFrame` (EXC-03), shared with a movement's own countdown
- * (`movement-countdown.tsx`, REQ-014) so both clocks speak one vocabulary.
+ * it draws the app's shared whole timer body (`DeadlineTimer`,
+ * `refinements/deadline-timer.tsx`, TASK-007) on the same timer tokens rather
+ * than borrowing a component whose meaning is the opposite. Every live clock —
+ * a movement's countdown, the rest, each format's clock — draws that one
+ * frame, so they speak one vocabulary while each keeps its own clock (C21).
  *
- * Containment, from 0.14.3: a timer is its own card — one accent bar, the timer
- * role on bar, body and emission — and is never put inside another. The rest
- * is therefore one timer-role card with its label, digits and controls inside
- * it rather than a `TimerDisplay` in a frame, and nothing here floats a label
- * or a readout outside the card it belongs to.
+ * TASK-007 (C19, R102, R103): a timer is one complete frame whose body fills
+ * its place, with no accent-bar strip or second chamfer inside it. The rest is
+ * one timer-role card — its accent bar, label, controls and low state are the
+ * card's — holding that frame at the card's full width, and nothing here
+ * floats a label or a readout outside the card it belongs to.
  *
  * It also holds the one surface that is not the shell's alone:
  * `AbandonConfirmDialog`. Three places can end a session early — the shell's
@@ -55,8 +55,8 @@ import {
   Button,
   X,
 } from '../design-system/index'
-import { REST_EXTENSION_SECONDS, spokenRest, useRestTimer } from '../state/rest'
-import { formatElapsed, spokenElapsed } from '../state/workout-clock'
+import { REST_EXTENSION_SECONDS, useRestTimer } from '../state/rest'
+import { restReading, sessionReading } from '../state/timed-clock'
 import type {
   SectionProgress,
   SectionStatus,
@@ -66,9 +66,9 @@ import type {
 } from '../state/workout-progress'
 import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
-import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
-import { useInterfaceLoop, type InterfaceLoop } from './motion'
+import { useInterfaceLoop } from './motion'
+import { DeadlineTimer } from './refinements/deadline-timer'
 import './rest-timer-bar.css'
 import './workout-navigation.css'
 
@@ -86,155 +86,15 @@ export interface GlobalTimerProps {
  * value is spoken in words, so a screen reader hears "12 minutes 30 seconds"
  * rather than "12 colon 30" — and hears it only when the user asks, because
  * `role="timer"` here is labelled, not live.
+ *
+ * TASK-007 (C20, R53, R96, R119): the shared whole timer body
+ * (`DeadlineTimer`) in its compact header placement — one frame, no accent
+ * bar strip, the menu's height, digits centred — and never stretched across
+ * the header. It reads the session clock and nothing else (C21): it counts up
+ * and has no low state or deadline.
  */
 export function GlobalTimer({ seconds }: GlobalTimerProps) {
-  return (
-    <TimerFrame
-      label="Session time"
-      text={formatElapsed(seconds)}
-      spoken={spokenElapsed(seconds)}
-      size="var(--label-lg-size)"
-    />
-  )
-}
-
-export interface TimerFrameProps {
-  /** The timer's accessible name, said once — "Session time", "Countdown". */
-  label: string
-  /** The digits, `mm:ss`. Decorative. */
-  text: string
-  /** The accessible value, in words. */
-  spoken: string
-  /** The digit size, a label-size token. */
-  size: string
-  /** A short caption drawn inside the frame, before the digits. */
-  caption?: string
-  /** The shipped low state: bar, body, emission and digits take timer-low. */
-  low?: boolean
-  /**
-   * The low state's 80% pulse, as a claim on the view's one loop. Given, the
-   * frame pulses while that claim runs and is still otherwise.
-   */
-  pulse?: InterfaceLoop
-}
-
-/**
- * EXC-03's adapter: the shipped timer frame, as `TimerDisplay` builds it, for
- * the timers `TimerDisplay` cannot be — a count-up clock, or any timer that has
- * to sit inside a card. One vocabulary, so the session clock and a movement's
- * countdown share border, surface, chamfer and accent bar.
- *
- * Outside a card it is the timer card: the emission, the accent bar and the
- * body all take the timer role, and no frame goes around it. Inside a card it
- * is that card's element frame instead — the same role, without a bar of its
- * own, so there is never a second bar or a frame in a frame.
- */
-export function TimerFrame({
-  label,
-  text,
-  spoken,
-  size,
-  caption,
-  low = false,
-  pulse,
-}: TimerFrameProps) {
-  const insideCard = useInsideCard()
-  const role = low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'
-
-  const readout = (
-    <div
-      role="timer"
-      aria-label={label}
-      className={
-        insideCard
-          ? `clr-chamfer clr-chamfer--md ${role}`
-          : `clr-chamfer clr-chamfer--md clr-card__body ${role}`
-      }
-      style={{
-        display: 'inline-flex',
-        alignItems: 'baseline',
-        justifyContent: 'center',
-        gap: 'var(--spacing-200)',
-        padding: 'var(--spacing-100) var(--spacing-300)',
-      }}
-    >
-      {caption === undefined ? null : (
-        <span
-          aria-hidden="true"
-          style={{ ...labelStyle, color: low ? 'var(--text-timer-low)' : 'var(--text-timer)' }}
-        >
-          {caption}
-        </span>
-      )}
-      <TimerDigits text={text} size={size} low={low} />
-      <span className="a11y-hidden">{spoken}</span>
-    </div>
-  )
-
-  return (
-    <span
-      className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
-      style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
-      {...pulse}
-    >
-      {insideCard ? (
-        readout
-      ) : (
-        <span className="clr-card">
-          <span className="clr-card__bar" aria-hidden="true" />
-          {readout}
-        </span>
-      )}
-    </span>
-  )
-}
-
-const TIMER_BLEED_STYLE = { '--bleed': 'var(--border-timer)' } as CSSProperties
-const TIMER_LOW_BLEED_STYLE = { '--bleed': 'var(--border-timer-low)' } as CSSProperties
-
-/**
- * A timer's digits, drawn the way `TimerDisplay` draws them: each one tumbles
- * when it changes, the colon holds still, and the colour crosses into the low
- * state on the frame's own schedule — `--dur-alert`, stepped. Decorative; the
- * caller supplies the accessible value.
- */
-function TimerDigits({
-  text,
-  size,
-  low = false,
-}: {
-  text: string
-  size: string
-  low?: boolean
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      style={{
-        display: 'inline-flex',
-        fontFamily: 'var(--font-data)',
-        fontSize: size,
-        fontWeight: 'var(--font-weight-bold)',
-        letterSpacing: 'var(--tracking-data)',
-        color: low ? 'var(--text-timer-low)' : 'var(--text-timer)',
-        transition: 'color var(--dur-alert) var(--step-4)',
-      }}
-    >
-      {text.split('').map((char, index) => (
-        <span
-          key={`${index}-${char}`}
-          className={char === ':' ? undefined : 'clr-tumble'}
-          style={{
-            display: 'inline-block',
-            minWidth: char === ':' ? undefined : '0.62em',
-            textAlign: 'center',
-          }}
-        >
-          {char}
-        </span>
-      ))}
-    </span>
-  )
+  return <DeadlineTimer reading={sessionReading(seconds)} placement="header" />
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -728,30 +588,26 @@ export function RestTimerBar() {
       {...loop}
     >
       <Card role={urgent ? 'timer-low' : 'timer'}>
-        <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <p
-            style={{
-              ...labelStyle,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-100)',
-            }}
-          >
-            <span aria-hidden="true" style={{ display: 'flex' }}>
-              <Rest />
-            </span>
-            Rest after {rest.label}
-          </p>
-          {/* Labelled once and not live: the milestone below is what speaks. */}
-          <div role="timer" aria-label="Time remaining" style={{ display: 'inline-flex' }}>
-            <TimerDigits
-              text={formatElapsed(remainingSeconds)}
-              size="var(--label-xl-size)"
-              low={urgent}
-            />
-            <span className="a11y-hidden">{spokenRest(remainingSeconds)}</span>
-          </div>
-        </div>
+        <p
+          style={{
+            ...labelStyle,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-100)',
+          }}
+        >
+          <span aria-hidden="true" style={{ display: 'flex' }}>
+            <Rest />
+          </span>
+          Rest after {rest.label}
+        </p>
+        {/*
+          TASK-007 (C19, R17, R103): the rest's readout is the shared whole
+          timer body, filling the card's width with its digits centred — in
+          the footer and in the open log alike. Labelled once and not live:
+          the milestone below is what speaks.
+        */}
+        <DeadlineTimer reading={restReading(remainingSeconds)} size="var(--label-xl-size)" low={urgent} />
         {urgent && (
           <p
             role="status"

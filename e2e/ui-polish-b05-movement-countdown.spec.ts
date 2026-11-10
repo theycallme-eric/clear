@@ -850,7 +850,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(region.getByRole('timer', { name: 'Round 1 time' })).toHaveCount(0)
       await expect(region).toHaveAttribute('data-countdown-status', 'finished')
 
-      // ── AMRAP: its window is the block's TimerDisplay, not a movement's ──
+      // ── AMRAP: its window is the block's own timer frame, not a movement's ──
       await page.getByRole('button', { name: 'Next section' }).click()
       await page.getByRole('button', { name: 'Start AMRAP', exact: true }).click()
       const amrapWindow = page.getByRole('timer', { name: 'Time remaining' })

@@ -17,10 +17,11 @@
  * and Reset side by side underneath as one paired action row, above the
  * card's Rest entry action.
  *
- * The frame is EXC-03's `TimerFrame`, the same adapter the session clock
- * draws with, so border, surface, chamfer and bar are one vocabulary. On a
- * card it is an element frame with no bar of its own: never a second card,
- * never a second bar.
+ * The frame is the shared whole timer body (`DeadlineTimer`, TASK-007: C19,
+ * R102), the one every live clock draws, so border, surface, chamfer and
+ * emission are one vocabulary: one complete frame filling the card's width,
+ * its digits centred, with no accent-bar strip or second chamfer inside it.
+ * It reads this countdown and no other clock (C21).
  *
  * The final five seconds take the shipped low state — the timer-low frame and
  * digits, and the 80% pulse as the view's one urgent loop — and, while the
@@ -40,11 +41,10 @@ import {
   useMovementCountdown,
   type MovementCountdownApi,
 } from '../state/movement-countdown'
-import { spokenRest } from '../state/rest'
-import { formatElapsed } from '../state/workout-clock'
+import { movementReading } from '../state/timed-clock'
 import { ActionGroup } from './composition'
 import { useInterfaceLoop } from './motion'
-import { TimerFrame } from './workout-chrome'
+import { DeadlineTimer } from './refinements/deadline-timer'
 import './movement-countdown.css'
 
 export interface MovementCountdownProps {
@@ -87,10 +87,8 @@ export function MovementCountdownView({ clock, movement }: MovementCountdownView
       data-countdown-status={status}
     >
       <div className="clr-movement-countdown__timer">
-        <TimerFrame
-          label="Countdown"
-          text={formatElapsed(remainingSeconds)}
-          spoken={spokenRest(remainingSeconds)}
+        <DeadlineTimer
+          reading={movementReading(remainingSeconds)}
           size="var(--heading-h1-size)"
           low={low}
           pulse={urgent ? loop : undefined}
