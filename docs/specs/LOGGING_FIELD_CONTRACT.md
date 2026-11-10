@@ -284,7 +284,9 @@ the checked prefix at Finish or the cap; effort is still its memory (no writer).
 `clear.workout-ladders`, one versioned record per block with session/block/attempt identity, holding
 ordered progress, the draft, the Finish checkpoint and the original cap on the For Time clock
 (`src/state/ladder-recovery.ts`, `usePersistedLadder`); TASK-013, TASK-014, TASK-046 and TASK-048
-adopt it. History reads `Highest rung N`. Proposed: notes (reuse), block effort (MIG-A), per-movement
+adopt it. TASK-014 adopted the Finish checkpoint as the log's quiet Undo: it restores the attempt
+before a saved row exists and writes nothing; the shell's word that the row exists
+(`onBlockRecorded`) closes the record in the same act as the save. History reads `Highest rung N`. Proposed: notes (reuse), block effort (MIG-A), per-movement
 partials for the next rung and loads (MIG-B); ordered progress is recorded by TASK-013. Owners:
 TASK-013, TASK-015, TASK-031, TASK-032, TASK-046, TASK-047, TASK-048, TASK-019.
 

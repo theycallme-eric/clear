@@ -1,0 +1,74 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-014",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-workout-flow.test.tsx",
+    "--testNamePattern",
+    "undo|resume|cap",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-014/required-cases.json",
+    "sha256": "35ee23dd36bf10cbfbedfab61698ce36b3b155de61836a5f126cb8cdd8971aca"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-workout-flow.test.tsx",
+      "sha256": "cbd14d4ad088464d0200c14886055d2ccf44c9eaea3589f353082f5be7c15439"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 32,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 17,
+    "todo": 0,
+    "executed": 15
+  },
+  "problems": []
+}

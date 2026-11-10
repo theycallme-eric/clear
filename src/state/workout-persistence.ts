@@ -863,6 +863,14 @@ export interface PersistedLadder {
   saveSucceeded(attemptId?: string): void
   /** It failed: the draft, progress and checkpoint are kept for the retry. */
   saveFailed(attemptId?: string): void
+  /**
+   * TASK-014 (AC-R014-03): the server's word that the block's row exists,
+   * applied now (`ladderRecorded`) rather than by the `recorded` option on the
+   * next render. For a consumer told synchronously (the shell's
+   * `onBlockRecorded`) that may unmount in the same render: the record is
+   * closed — no Undo, no edit — before a reload can find it open.
+   */
+  markRecorded(): void
 }
 
 interface LadderHookState {
@@ -967,6 +975,10 @@ export function usePersistedLadder({
     saveFailed: useCallback(
       (attemptId?: string) =>
         apply((attempt, at) => ladderSaveFailed(attempt, attemptId ?? attempt.identity.attemptId, at)),
+      [apply],
+    ),
+    markRecorded: useCallback(
+      () => apply((attempt, at, rungs) => ladderRecorded(attempt, rungs, at), true),
       [apply],
     ),
   }

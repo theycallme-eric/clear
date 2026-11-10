@@ -10,9 +10,9 @@
  *
  * Six structure types, one path, one row shape.
  */
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { describe, expect, it } from 'vitest'
 
 import type { BlockCompletion } from './block-completion'
@@ -430,6 +430,94 @@ describe('BlockCompletionProvider — idempotent saves and retries', () => {
     await waitFor(() => expect(results).toHaveLength(1))
     expect(results[0]?.ok).toBe(false)
     expect(screen.getByText('EMOM')).toBeInTheDocument()
+  })
+})
+
+describe('BlockCompletionProvider — told the moment a row is known (TASK-014, AC-R014-03)', () => {
+  /** A renderer that keeps a durable record: what it was told, and what the screen said when it was. */
+  function Listening({ block, told }: { block: BlockProgress; told: (blockId: string) => void }) {
+    const { onBlockRecorded, isBlockRecorded } = useBlockCompletion()
+    useEffect(() => onBlockRecorded?.(block.blockId, () => told(block.blockId)), [block.blockId, onBlockRecorded, told])
+    return <p data-listening={block.blockId}>{isBlockRecorded(block.blockId) ? 'recorded' : 'open'}</p>
+  }
+
+  function mountListening(double: WorkoutDouble, snapshot: ReturnType<typeof snapshotFixture>, listen = true) {
+    const blocks = sessionProgress(snapshot).sections.flatMap((section) => section.blocks)
+    const results: Result<undefined>[] = []
+    const told: { blockId: string; screen: string | null; answered: number }[] = []
+    const tell = (blockId: string) => told.push({
+      blockId,
+      screen: document.querySelector(`[data-listening="${blockId}"]`)?.textContent ?? null,
+      answered: results.length,
+    })
+    function Harness() {
+      const [listening, setListening] = useState(listen)
+      return (
+        <BlockCompletionProvider sessionId={snapshot.session.id} blocks={blocks}>
+          {listening ? blocks.map((block) => <Listening key={block.blockId} block={block} told={tell} />) : null}
+          <button type="button" onClick={() => setListening(false)}>Stop listening</button>
+          <Forward blockIds={blocks.map((block) => block.blockId)} onResult={(result) => results.push(result)} />
+        </BlockCompletionProvider>
+      )
+    }
+    render(<AppProviders workout={double.clients}><Harness /></AppProviders>)
+    return { blocks, results, told }
+  }
+
+  it('tells a block’s listener in the same act as its insert is answered: before isBlockRecorded renders and before the forward action hears the answer', async () => {
+    const user = userEvent.setup()
+    const snapshot = snapshotFixture({ sections: [{ sectionType: 'conditioning', blocks: [{ structureType: 'for_time', timerSeconds: 600 }, { structureType: 'emom', timerSeconds: 600 }] }] })
+    const double = createWorkoutDouble({ session: snapshot })
+    const { blocks, results, told } = mountListening(double, snapshot)
+
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await waitFor(() => expect(results).toEqual([ok(undefined)]))
+    // Once per block, in the save's order, each while the screen still said
+    // open and before the save's answer reached the forward action.
+    expect(told).toEqual(blocks.map((block) => ({ blockId: block.blockId, screen: 'open', answered: 0 })))
+    expect(document.querySelectorAll('[data-listening]')).toHaveLength(2)
+    for (const node of document.querySelectorAll('[data-listening]')) expect(node.textContent).toBe('recorded')
+    // Pressed again: nothing new to write, nothing new to tell.
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await waitFor(() => expect(results).toHaveLength(2))
+    expect(told).toHaveLength(2)
+  })
+
+  it('tells it for a row already there and for the performed read, never for a failed write, and never once unsubscribed', async () => {
+    const user = userEvent.setup()
+    const fixture = { sections: [{ sectionType: 'conditioning' as const, blocks: [{ structureType: 'emom' as const, result: {} }] }] }
+
+    // The performed read finds the row.
+    const read = snapshotFixture(fixture)
+    const performed = createWorkoutDouble({ session: read, sessions: { asPerformed: async () => ok(reconstructionFixture(fixture)) } })
+    const first = mountListening(performed, read)
+    await screen.findByText('recorded')
+    expect(first.told.map((entry) => entry.blockId)).toEqual([first.blocks[0].blockId])
+    cleanup()
+
+    // A failed write tells nothing; the retry's row exists (the unique index) and tells once.
+    const snapshot = snapshotFixture({ sections: [{ sectionType: 'conditioning', blocks: [{ structureType: 'emom', timerSeconds: 600 }] }] })
+    let answer: Result<never> = err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))
+    const conflicted = createWorkoutDouble({ session: snapshot, blockResults: { record: async () => answer } })
+    const second = mountListening(conflicted, snapshot)
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await waitFor(() => expect(second.results).toHaveLength(1))
+    expect(second.told).toEqual([])
+    answer = err(createError(ErrorCode.PERSISTENCE_CONFLICT, { details: { pgCode: '23505' } }))
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await waitFor(() => expect(second.results).toHaveLength(2))
+    expect(second.results[1]).toEqual(ok(undefined))
+    expect(second.told.map((entry) => entry.blockId)).toEqual([second.blocks[0].blockId])
+    cleanup()
+
+    // Unsubscribed (the renderer left): the save is not reported to it.
+    const quiet = createWorkoutDouble({ session: snapshot })
+    const third = mountListening(quiet, snapshot)
+    await user.click(screen.getByRole('button', { name: 'Stop listening' }))
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await waitFor(() => expect(third.results).toEqual([ok(undefined)]))
+    expect(quiet.recorded()).toHaveLength(1)
+    expect(third.told).toEqual([])
   })
 })
 

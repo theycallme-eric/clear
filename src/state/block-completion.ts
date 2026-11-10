@@ -128,6 +128,19 @@ export interface BlockCompletionApi {
    * The shell's provider always supplies it; a bare test seam may omit it.
    */
   readonly sessionId?: string
+  /**
+   * TASK-014 (C38, AC-R014-03): calls `listener` once, synchronously, at the
+   * moment the shell learns the block's row exists — its insert answered, a
+   * row already there (the unique index), or the performed read — before
+   * `isBlockRecorded` reports it and before the forward action moves on. The
+   * same word as `isBlockRecorded`, only sooner: a renderer that keeps a
+   * durable local record of an open attempt (the ladder's, whose accidental
+   * Finish can be undone until the result is saved) closes it in the same
+   * act, so leaving the section in the same render cannot leave a saved
+   * attempt open to Undo after a reload. Returns the unsubscribe. The shell's
+   * provider always supplies it; a bare test seam may omit it.
+   */
+  onBlockRecorded?(blockId: string, listener: () => void): () => void
 }
 
 export const BlockCompletionContext = createContext<BlockCompletionApi | null>(null)

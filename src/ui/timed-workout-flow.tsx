@@ -35,9 +35,18 @@
  * attempt and nothing more. The workout's own completion stays the shell's
  * forward action in the footer.
  *
+ * Undo finish (TASK-014; C38, C39; R124): an accidental Finish is reversed
+ * from the attempt's result log, not from this row — the quiet `Undo finish ·
+ * Resume ladder` under its Complete / Incomplete (`TimedResultLog`'s
+ * completion action). The attempt comes back to this row as it was before
+ * Finish (running, or paused), and `leadRef` lets its consumer put the focus
+ * back on the row's lead control.
+ *
  * Presentation only. Pause semantics are `state/timed-lifecycle.ts`; what each
  * action does is the consumer's handler on its own state owner.
  */
+import type { Ref } from 'react'
+
 import { Button, Pause, Play, Stop } from '../design-system/index'
 import type { TimedLifecyclePhase } from '../state/timed-lifecycle'
 import './refinements/tokens.css'
@@ -62,6 +71,12 @@ export interface TimedWorkoutActionsProps {
   onFinish?: () => void
   /** Where the consumer has placed the slot; it names the placement, nothing more. */
   placement?: TimedActionPlacement
+  /**
+   * TASK-014: the lead control — Start, Pause or Resume, one element through
+   * every phase — so a consumer can return focus to it when the attempt comes
+   * back (Undo finish): the control the athlete left the attempt by is gone.
+   */
+  leadRef?: Ref<HTMLButtonElement>
 }
 
 /**
@@ -80,6 +95,7 @@ export function TimedWorkoutActions({
   onResume,
   onFinish,
   placement = 'after-work',
+  leadRef,
 }: TimedWorkoutActionsProps) {
   if (phase === 'ended') return null
 
@@ -89,11 +105,11 @@ export function TimedWorkoutActions({
 
   const lead =
     phase === 'ready' ? (
-      <Button variant="primary" icon={<Play />} onClick={onStart}>
+      <Button variant="primary" icon={<Play />} onClick={onStart} buttonRef={leadRef}>
         {startLabel}
       </Button>
     ) : toggle === undefined ? null : (
-      <Button variant="secondary" icon={phase === 'paused' ? <Play /> : <Pause />} onClick={toggle}>
+      <Button variant="secondary" icon={phase === 'paused' ? <Play /> : <Pause />} onClick={toggle} buttonRef={leadRef}>
         {phase === 'paused' ? 'Resume' : 'Pause'}
       </Button>
     )

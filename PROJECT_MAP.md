@@ -500,7 +500,12 @@ never re-read, and a saved row closes the attempt. TASK-013 adopted it in the ro
 (`ladder-block.tsx`): one durable attempt per ladder holds its race clock (a schedule's start stamp,
 with no cap), its live checked progress and its answer and rounds; the session id comes from the
 completion seam (`BlockCompletionApi.sessionId`). Effort stays the renderer's memory until its writer
-exists. TASK-014/046/048 adopt the rest (`src/state/README.md` lists what each must do).
+exists. TASK-014 adopted the Finish checkpoint as the log's quiet Undo (`TimedResultLog`'s completion
+action). One new flow runs from the shell to a renderer for it: the completion provider tells a
+block's `onBlockRecorded` listeners in the same act as the block's row is known to exist, before
+`isBlockRecorded` renders and the forward action moves on, and the ladder closes its durable attempt
+there (`markRecorded`), so a saved attempt is never left open to Undo after a reload. TASK-046/048 adopt
+the rest (`src/state/README.md` lists what each must do).
 
 REQ-057 adds the one thing that renders *above* the route tree rather than inside it, and the
 reason is that boot is the app becoming ready rather than a screen it navigates to.

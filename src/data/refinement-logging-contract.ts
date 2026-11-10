@@ -575,7 +575,7 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     nullMeans: 'highest_rung is null when unanswered or Incomplete with no rung chosen',
     zeroMeans: 'the column admits 0 (no rung completed); the ladder log records it when the athlete states that no round was completed (TASK-013), never for nothing stated',
     update: BLOCK_UPDATE,
-    draft: 'the race clock, live checked progress and the answer and rounds are TASK-032’s durable attempt (clear.workout-ladders, usePersistedLadder: progress, draft, Finish checkpoint, original cap), adopted by TASK-013, which imports the checked prefix at Finish or the cap; effort is still the renderer’s memory (no writer); Undo, the shared log and visible recovery are TASK-014/TASK-046/TASK-048',
+    draft: 'the race clock, live checked progress and the answer and rounds are TASK-032’s durable attempt (clear.workout-ladders, usePersistedLadder: progress, draft, Finish checkpoint, original cap), adopted by TASK-013, which imports the checked prefix at Finish or the cap; effort is still the renderer’s memory (no writer); TASK-014 adopted its Finish checkpoint as the quiet Undo, which restores the attempt (clock, pause, progress, answer) until the original cap or a saved row, the shell’s word that the row exists closing it at once; the shared log and visible recovery are TASK-046/TASK-048',
     readback: {
       workout: 'the ladder card while unsaved, its answer and rounds restored from the durable attempt after a reload; a saved ladder whose row this device did not see saved claims no answer',
       history: 'History reads Highest rung N',

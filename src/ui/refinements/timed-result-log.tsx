@@ -46,18 +46,22 @@
  * consumer imports its tracked live progress into them at Finish or the cap
  * and owns every change; the log only draws them.
  *
+ * TASK-014 (C38, C39, C60; R124, R130, R141; P04) adds the quiet completion
+ * action between them — the ladder's `Undo finish · Resume ladder` — drawn by
+ * this log so its look and alignment have one owner, offered and handled by
+ * the consumer over its own attempt.
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
- * group joins this form under the same title and group recipe — quiet Undo
- * (TASK-014), richer per-movement
- * actuals and loads (the EMOM's applicable weights among them) and the
+ * group joins this form under the same title and group recipe — richer
+ * per-movement actuals and loads (the EMOM's applicable weights among them) and the
  * categorical effort's writer once they exist (TASK-031, TASK-015, TASK-047),
  * and the focused dialog, Save and the four families' adoption into it
  * (TASK-016–018, TASK-046, TASK-041). None of those is drawn here.
  */
 import type { ReactNode } from 'react'
 
-import { ChoiceGroup, Input } from '../../design-system/index'
+import { Button, ChoiceGroup, Input } from '../../design-system/index'
 import { useInvalidFocus } from '../formFocus'
 import { Heading, HeadingSection } from '../Heading'
 import { SetEffortChoice, type SetEffort } from '../set-effort'
@@ -113,6 +117,23 @@ export interface CompletionResultLog {
    * none is drawn (before the ladder is answered, and for For Time).
    */
   rounds?: Omit<LadderCompletionProps, 'disabled'> | null
+  /**
+   * TASK-014: the quiet action under the completion row and before the rounds
+   * (C39) — the ladder's `Undo finish · Resume ladder` while its accidental
+   * Finish can still be undone. Omitted or null, none is drawn. The log owns
+   * how it looks; the consumer owns whether it is offered and what it does.
+   */
+  completionAction?: CompletionAction | null
+}
+
+/**
+ * TASK-014 (C39, C60; R124, R130, R141; P04): one quiet action in the result
+ * group. `onAction` is the consumer's handler on its own state owner.
+ */
+export interface CompletionAction {
+  /** The action's words, which are also its accessible name. */
+  readonly label: string
+  readonly onAction: () => void
 }
 
 /**
@@ -244,12 +265,30 @@ function AmrapGroups({ value, onChange }: AmrapResultLog) {
  * the answer in the same group — the ordered prefix it refines, with its
  * count — disabled with the answer once the result is saved.
  *
+ * The completion action (TASK-014: C39, C60; R124, R130, R141; P04) sits
+ * between them: below Complete / Incomplete, before Rounds completed. It is
+ * the existing small quiet button — no frame, no fill at rest, the shared
+ * control height, left-aligned — whose visible text starts exactly where the
+ * dynamic rounds-completed count's text starts: the group's content edge. Its
+ * inherited inline inset is given back outside its box, so none is left on
+ * the text (R141: "do not keep the quiet button's extra visible text inset")
+ * while its focus frame still clears the letters; its height is untouched, so
+ * the touch target stays usable. It asks nothing further: no confirmation
+ * (R124).
+ *
  * Effort (C30; R63, R76, R80, R116): the existing `SetEffortChoice`, so the
  * same Frown, Meh and Smile, the same words, categories, tick, focus and
  * compact Clear back to `null`. Nothing here turns a category into the
  * numeric block effort or reads it as the session's mood.
  */
-function CompletionGroups({ value, onChange, askCompletion = true, saved = false, rounds = null }: CompletionResultLog) {
+function CompletionGroups({
+  value,
+  onChange,
+  askCompletion = true,
+  saved = false,
+  rounds = null,
+  completionAction = null,
+}: CompletionResultLog) {
   return (
     <>
       {askCompletion && (
@@ -269,6 +308,14 @@ function CompletionGroups({ value, onChange, askCompletion = true, saved = false
               }
             }}
           />
+          {/* TASK-014 (C39, C60): the quiet action, under the answer and before the rounds. */}
+          {completionAction !== null && !saved && (
+            <div className="clr-timed-undo" data-timed-undo="">
+              <Button variant="quiet" size="sm" onClick={completionAction.onAction}>
+                {completionAction.label}
+              </Button>
+            </div>
+          )}
           {/* TASK-013 (C33, C34): the rounds completed, under the answer they refine. */}
           {rounds !== null && <LadderCompletion {...rounds} disabled={saved} />}
         </ResultGroup>

@@ -53,9 +53,11 @@
  * Not composed here, and owned by later tasks: the focused logging dialog,
  * its header, backdrop and contained scrolling (`refinements/logging-overlay.tsx`:
  * TASK-016, TASK-017, TASK-018, adopted for the timed families by TASK-046 and
- * closed on the routes by TASK-041), the ladder's quiet Undo (TASK-014; its
- * rep-first tiles and live check-off are TASK-013's, drawn by the route's own
- * ladder in `ladder-4` / `ladder-12` and here), per-movement next-round
+ * closed on the routes by TASK-041), the ladder's quiet Undo (TASK-014: the
+ * route's ladder offers it only after an athlete's Finish, which neither
+ * attempt here has — an older build's finished clock and a reached cap are
+ * never undone; it is drawn in `ladder-4` / `ladder-12`; its rep-first tiles
+ * and live check-off are TASK-013's, drawn there and here), per-movement next-round
  * actuals and loads (the EMOM's applicable weights among them) and the
  * categorical effort's writer (TASK-015, TASK-031, TASK-047), new notes
  * behaviour (TASK-015, TASK-045) and the other logging contexts.
