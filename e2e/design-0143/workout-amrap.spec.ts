@@ -40,6 +40,13 @@ import { installDeterministicCapture } from './fixtures'
  *     and the retry writes one row that carries the edited result — including
  *     an observed zero — and reaches Summary;
  *   · a result left blank never blocks completion and is stored as null.
+ *
+ * TASK-009 (C25–C28; clear-refinement-20261103) supersedes how the result is
+ * entered, not what it means: each count is one framed minus/value/plus
+ * selector in the shared log, and Record rounds, Clear rounds, Partial round
+ * and No partial round are gone. Blank is the selector's own `—` state; tapping
+ * down stops at an explicit zero; nothing clears a count. The steps changed for
+ * that cite TASK-009 in place; every assertion on the rows is unchanged.
  */
 
 const CORS = {
@@ -385,19 +392,30 @@ async function expectHandsOff(page: Page) {
   await expect(main.getByRole('spinbutton')).toHaveCount(0)
   await expect(main.getByRole('slider')).toHaveCount(0)
   await expect(main.getByRole('group', { name: 'Rounds completed', exact: true })).toHaveCount(0)
-  await expect(main.getByRole('button', { name: /record rounds|add a completed round|partial round/i })).toHaveCount(0)
+  // TASK-009 (C27): the framed counts' own actions, and the retired toggles.
+  await expect(main.getByRole('button', { name: /rounds completed|reps into the next round|record rounds|partial round/i })).toHaveCount(0)
   await expect(main.getByText(/\bRPE\b|exertion|how hard/i)).toHaveCount(0)
   await expect(main.getByText(/round goal|target rounds|expected rounds|predicted/i)).toHaveCount(0)
 }
 
-/** A frameless text action, whose accessible name ends in the package's chevron. */
-function textAction(page: Page, label: string): Locator {
-  return page.locator('main').getByRole('button', { name: new RegExp(`^${label}\\b`) })
-}
-
-/** The count the rounds stepper is showing. */
+/** The count the rounds selector is showing. */
 function roundsShown(page: Page): Locator {
   return page.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('status')
+}
+
+/** The count the partial-round selector is showing. */
+function partialShown(page: Page): Locator {
+  return page.getByRole('group', { name: 'Reps into the next round', exact: true }).getByRole('status')
+}
+
+/** One framed count's action (TASK-009, C27): `Increase rounds completed`, `Decrease reps into the next round`. */
+function countAction(page: Page, name: string): Locator {
+  return page.locator('main').getByRole('button', { name, exact: true })
+}
+
+/** TASK-009 (C28, R57): no reset or toggle remains to clear or open a count. */
+async function expectNoResetControls(page: Page) {
+  await expect(page.locator('main').getByRole('button', { name: /^(clear rounds|no partial round|record rounds|partial round)\b/i })).toHaveCount(0)
 }
 
 /** Background the tab, let wall-clock time pass, and bring it back. */
@@ -526,8 +544,10 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   await expect(page.getByText('05:00 on the clock')).toBeVisible()
   await expect(page.getByText('Cap reached', { exact: true })).toBeVisible()
   await expect(timer).toHaveCount(0)
-  await expect(page.getByText('No rounds recorded. Optional — leave it blank if you like.', { exact: true })).toBeVisible()
-  await expect(page.getByText('No partial round recorded.', { exact: true })).toBeVisible()
+  // TASK-009 (C26, C28): offered as the log's two blank counts.
+  await expect(roundsShown(page)).toHaveAttribute('data-quantity-value', 'blank')
+  await expect(partialShown(page)).toHaveAttribute('data-quantity-value', 'blank')
+  await expectNoResetControls(page)
   // Blank is not a score, and claims no comparison.
   await expect(page.getByText(/^Score:/)).toHaveCount(0)
   await expect(page.getByText(/previous best/i)).toHaveCount(0)
@@ -537,11 +557,10 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   await page.clock.resume()
 
   // Recorded after the window: three rounds is 12 reps/min against yesterday's
-  // identical 8 — the only comparable history there is.
-  await textAction(page, 'Record rounds').click()
-  await expect(roundsShown(page)).toHaveText('0')
+  // identical 8 — the only comparable history there is. TASK-009 (C28): the
+  // framed count takes the first tap from blank; there is no Record rounds.
   for (let round = 0; round < 3; round += 1) {
-    await page.getByRole('button', { name: 'Add a completed round', exact: true }).click()
+    await countAction(page, 'Increase rounds completed').click()
   }
   await expect(roundsShown(page)).toHaveText('3')
   await expect(page.getByText('Score: 12 reps/min', { exact: true })).toBeVisible({ timeout: 15_000 })
@@ -549,18 +568,19 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   await checkA11y()
 
   // A post-window edit: a round taken back and a partial round of zero — an
-  // observed zero, not a blank.
-  await page.getByRole('button', { name: 'Take back a round', exact: true }).click()
-  await textAction(page, 'Partial round').click()
+  // observed zero, not a blank (TASK-009, C28: one rep up and back down).
+  await countAction(page, 'Decrease rounds completed').click()
+  await countAction(page, 'Increase reps into the next round').click()
+  await countAction(page, 'Decrease reps into the next round').click()
   await expect(roundsShown(page)).toHaveText('2')
-  await expect(page.getByRole('group', { name: 'Reps into the next round', exact: true }).getByRole('status')).toHaveText('0')
+  await expect(partialShown(page)).toHaveText('0')
   await expect(page.getByText('Previous best 8 reps/min · Level with your previous best', { exact: true })).toBeVisible()
 
   // The edit survives a refresh.
   await page.reload()
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
   await expect(roundsShown(page)).toHaveText('2')
-  await expect(page.getByRole('group', { name: 'Reps into the next round', exact: true }).getByRole('status')).toHaveText('0')
+  await expect(partialShown(page)).toHaveText('0')
 
   // Save recovery: the shared forward action fails once, the athlete stays on
   // the AMRAP with the result intact, and the retry is the same action again.
@@ -600,15 +620,16 @@ test('JOURNEY-024: a result left blank never blocks completion and is stored as 
   await page.getByRole('button', { name: 'Finish early', exact: true }).click()
   await expect(page.getByText('01:35 on the clock')).toBeVisible()
   await expect(page.getByText('Cap reached', { exact: true })).toHaveCount(0)
-  await expect(page.getByText('No rounds recorded. Optional — leave it blank if you like.', { exact: true })).toBeVisible()
+  // TASK-009 (C28): blank counts — stopping early filled nothing in.
+  await expect(roundsShown(page)).toHaveAttribute('data-quantity-value', 'blank')
+  await expect(partialShown(page)).toHaveAttribute('data-quantity-value', 'blank')
   await expect(page.getByText(/^Score:/)).toHaveCount(0)
   await page.clock.resume()
 
-  // Entered and cleared again: back to blank, not to zero.
-  await textAction(page, 'Record rounds').click()
-  await page.getByRole('button', { name: 'Add a completed round', exact: true }).click()
-  await textAction(page, 'Clear rounds').click()
-  await expect(page.getByText('No rounds recorded. Optional — leave it blank if you like.', { exact: true })).toBeVisible()
+  // TASK-009 (C28, R57) supersedes "entered and cleared again": Clear rounds
+  // is gone, with nothing in its place, so the blank here is simply left blank.
+  await expectNoResetControls(page)
+  await expect(roundsShown(page)).toHaveAttribute('data-quantity-value', 'blank')
 
   await page.getByRole('button', { name: 'Next section', exact: true }).click()
   await finishToSummary(page)

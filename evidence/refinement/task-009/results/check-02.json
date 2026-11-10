@@ -1,0 +1,55 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-009",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-009.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-009/required-cases.json",
+    "sha256": "bc11b49882752327fa817d77ca586d8f3dd6b7b920e1167564d5c1aec3274a0c"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-009.spec.ts",
+      "sha256": "b05e539e2148bfce206f4482dc52b57ba088b8d3ce18c668a2f41533b59a2793"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-009.spec.ts",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 touch phone-390 Signal: the work precedes the grouped log; the framed counts tap up and down to an explicit zero beside a blank; a reload, a failed save and its retry, the saved row and History keep them apart",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-009.spec.ts",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 keyboard phone-320 reduced motion: the cap closes the window with nothing entered; the counts are reached and operated by keyboard; blank rounds and an explicit zero partial round are saved as null and 0",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-009.spec.ts",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 gallery amrap phone-390: the route’s own AMRAP ended by its cap and ended early, work first, the grouped log and framed counts, blank beside an explicit zero, with no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 3
+  },
+  "problems": []
+}

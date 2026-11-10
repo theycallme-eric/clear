@@ -27,12 +27,19 @@
  * a count-up cap, an open native log over the warning and a still preview
  * (`gallery-refinement-timers.tsx`). The `cards` state's Workout context opens
  * with the route's one-row workout header (C20).
+ *
+ * `amrap`: the AMRAP's prescription and concise scoring controls (TASK-009:
+ * C25, C26, C27, C28) — the route's own `AmrapBlock`, ended by its cap and
+ * ended early, its work first and then the shared `TimedResultLog` with its
+ * two framed `QuantitySelector` counts, blank beside an explicit zero, over
+ * memory-only storage (`gallery-refinement-forms.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
+import { GalleryAmrapResults } from './gallery-refinement-forms'
 import { GalleryOverviewSummary } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
@@ -50,6 +57,7 @@ const REFINEMENT_STATES = [
   { id: 'ladder-4', title: 'Live ladder · 4 rounds', Render: GalleryLadderFour },
   { id: 'ladder-12', title: 'Live ladder · 12 rounds', Render: GalleryLadderTwelve },
   { id: 'urgency', title: 'Countdown warning and whole timer frames · countdown, cap and elapsed clocks', Render: GalleryTimerFrames },
+  { id: 'amrap', title: 'AMRAP results', Render: GalleryAmrapResults },
 ] as const
 
 export function GalleryRefinements() {

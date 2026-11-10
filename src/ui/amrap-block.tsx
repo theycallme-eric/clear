@@ -19,7 +19,9 @@
  *   · **The result is optional and comes afterwards.** Once the window closes
  *     the athlete may record rounds and a partial round, or leave both blank.
  *     Blank is `null` all the way to the column and an entered zero is a zero;
- *     neither blocks the section's forward action.
+ *     neither blocks the section's forward action. Stopping — the buzzer or
+ *     Finish early — records the time and nothing else: no round and no
+ *     partial round is ever inferred from it.
  *   · **A comparison only where it is like-for-like.** A recorded result is
  *     scored and set against identical earlier pieces through `likeForLike`;
  *     no history in hand, or none comparable, claims nothing beyond what was
@@ -27,7 +29,17 @@
  *
  * A partial round is a number, not a note: DATA-01d requires zero to be
  * distinguishable from absence, so "no partial round recorded" is its own
- * visible state.
+ * visible state — the count's blank `—`, never a zero.
+ *
+ * TASK-009 (C25–C28; G08; R52, R54, R55, R56, R57, R79, R83, R85, R90): the
+ * work and its prescription come first and the scoring after them (C25). The
+ * result is the shared `TimedResultLog` in its simple hierarchy — the one
+ * "Log results" title, then rounds and the partial round as one group (C26) —
+ * each count the shared `QuantitySelector`: one wide frame holding framed
+ * minus and plus actions around a distinct value (C27). The Clear rounds and
+ * No partial round resets are gone with nothing in their place (C28): the
+ * minus taps down to an explicit zero and stops there, so blank and zero stay
+ * the two different answers they are, and nothing clears a value implicitly.
  *
  * Score keeping is `amrap.ts`, which is pure, and `workout-persistence.ts`, which
  * writes it down on every tap: a refresh, a locked phone or a walk to the next
@@ -39,28 +51,20 @@
  * Containment. The countdown is one frame of its own (TASK-007, C19, R49): it
  * stands above the block's card rather than inside it and fills the block's
  * width with its digits centred — never a short readout inside an empty wider
- * frame — and its low state is the shipped one at the shipped `TimerDisplay`'s
- * threshold: the stepped colour and the pulse, with nothing added around it. Everything else is one card: the counters and the round are its
- * ruled sub-groups with their labels inside, the settled time is the shared
- * bare readout, and the two partial-round toggles are frameless text actions.
+ * frame — and its warning is the shared one (TASK-008), with nothing added
+ * around it. Everything else is one card: the round is its ruled sub-group
+ * with its label inside, the settled time is the shared bare readout, and the
+ * result is the shared log under its own rule (TASK-009).
  */
-import { use, useId, useMemo } from 'react'
+import { use, useMemo } from 'react'
 
-import {
-  Check,
-  IconButton,
-  Minus,
-  Plus,
-  TextAction,
-  X,
-} from '../design-system/index'
+import { Check } from '../design-system/index'
 import {
   amrapOutcome,
   amrapShape,
   amrapView,
   AMRAP_START,
   clampAmrapState,
-  countRound,
   finishAmrap,
   setPartialRoundReps,
   setRoundsCompleted,
@@ -109,6 +113,7 @@ import { GroupExerciseCoaching } from './exercise-coaching'
 import { coachesAsGroup } from './group-coaching-context'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
+import { TimedResultLog } from './refinements/timed-result-log'
 import { WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -148,7 +153,6 @@ export function AmrapBlock({
   const elapsed = useElapsedSeconds(amrapTicking(amrap.state), now)
   const view = amrapView(amrap.state, shape, elapsed)
 
-  const roundsLabelId = useId()
   const sectionLabel = useSectionLabel()
   const outcome = shape.size === 0 ? {} : amrapOutcome(view)
 
@@ -197,42 +201,11 @@ export function AmrapBlock({
             <Window view={view} />
 
             {/*
-              After the window and nowhere before it: the result is optional,
-              one tap on the card, with nothing to submit — and blank is a
-              state of its own rather than a zero.
-            */}
-            {view.phase === 'complete' && (
-              <>
-                <Card heading={<span id={roundsLabelId}>Rounds completed</span>}>
-                  <Rounds
-                    labelledBy={roundsLabelId}
-                    rounds={view.roundsCompleted}
-                    onCount={(delta) => amrap.update(countRound(amrap.state, delta))}
-                    onSet={(rounds) =>
-                      amrap.update(setRoundsCompleted(amrap.state, rounds))
-                    }
-                  />
-                </Card>
-                <PartialRound
-                  reps={view.partialRoundReps}
-                  onChange={(reps) =>
-                    amrap.update(setPartialRoundReps(amrap.state, reps))
-                  }
-                />
-                {conditioningHistory === undefined ? (
-                  <AmrapComparison block={block} outcome={outcome} />
-                ) : (
-                  <ConditioningScoreLine
-                    {...likeForLike(block, outcome, conditioningHistory)}
-                  />
-                )}
-              </>
-            )}
-
-            {/*
-              The quickfix's label, on its own terms: two or more movements make
-              a round worth naming, and a single-movement AMRAP is already
-              obvious (`quickfix-amrap-round-label.md`).
+              C25 (TASK-009, R54): the work and its prescription come before any
+              scoring — planned work first, the athlete's reported result after
+              it, kept apart. The quickfix's label, on its own terms: two or
+              more movements make a round worth naming, and a single-movement
+              AMRAP is already obvious (`quickfix-amrap-round-label.md`).
             */}
             <Card heading={shape.size > 1 ? 'Each round:' : undefined}>
               <ol
@@ -280,6 +253,39 @@ export function AmrapBlock({
                 )
               }
             />
+
+            {/*
+              After the work and nowhere before the window has closed: the
+              result is optional, written on every tap, with nothing to submit
+              (C26, C27). Blank is a state of its own rather than a zero, and
+              nothing here clears it back or fills it in (C28).
+            */}
+            {view.phase === 'complete' && (
+              <>
+                <TimedResultLog
+                  format="amrap"
+                  value={{
+                    roundsCompleted: view.roundsCompleted,
+                    partialRoundReps: view.partialRoundReps,
+                  }}
+                  onChange={(next) =>
+                    amrap.update(
+                      setPartialRoundReps(
+                        setRoundsCompleted(amrap.state, next.roundsCompleted),
+                        next.partialRoundReps,
+                      ),
+                    )
+                  }
+                />
+                {conditioningHistory === undefined ? (
+                  <AmrapComparison block={block} outcome={outcome} />
+                ) : (
+                  <ConditioningScoreLine
+                    {...likeForLike(block, outcome, conditioningHistory)}
+                  />
+                )}
+              </>
+            )}
           </>
         )}
 
@@ -364,118 +370,8 @@ function openingText(view: AmrapView): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Counting
+// The score
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * A number and two taps. Both buttons are at least 48px square, because the
- * hands reaching for them are tired and wet (`amrap-logging.md` §1) — and the
- * number itself is timer-sized for the same reason.
- *
- * `output` rather than a `span`: its implicit `status` role announces the new
- * count once per tap, which is the whole feedback the interaction needs.
- */
-function Counter({
-  labelledBy,
-  value,
-  decrementLabel,
-  incrementLabel,
-  onChange,
-}: {
-  labelledBy: string
-  value: number
-  decrementLabel: string
-  incrementLabel: string
-  onChange: (delta: number) => void
-}) {
-  return (
-    <div
-      role="group"
-      aria-labelledby={labelledBy}
-      className="clr-row"
-      style={{ alignItems: 'center', gap: 'var(--spacing-300)' }}
-    >
-      <IconButton
-        label={decrementLabel}
-        icon={<Minus />}
-        size="lg"
-        disabled={value === 0}
-        style={touchTarget}
-        onClick={() => onChange(-1)}
-      />
-      <output
-        style={{
-          fontFamily: 'var(--font-data)',
-          fontSize: 'var(--heading-h1-size)',
-          fontWeight: 'var(--font-weight-bold)',
-          letterSpacing: 'var(--tracking-data)',
-          color: 'var(--text-timer)',
-          minWidth: 'var(--spacing-1000)',
-          textAlign: 'center',
-        }}
-      >
-        {value}
-      </output>
-      <IconButton
-        label={incrementLabel}
-        icon={<Plus />}
-        size="lg"
-        style={touchTarget}
-        onClick={() => onChange(1)}
-      />
-    </div>
-  )
-}
-
-/**
- * The rounds, in the two states they genuinely have: not recorded, which is
- * where every window closes, and a count the athlete chose to enter. Clearing
- * goes back to not recorded rather than to zero.
- */
-function Rounds({
-  labelledBy,
-  rounds,
-  onCount,
-  onSet,
-}: {
-  labelledBy: string
-  rounds: number | null
-  onCount: (delta: number) => void
-  onSet: (rounds: number | null) => void
-}) {
-  if (rounds === null) {
-    return (
-      <div
-        className="clr-stack--tight"
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-      >
-        <p style={{ margin: 0 }}>No rounds recorded. Optional — leave it blank if you like.</p>
-        <TextAction onClick={() => onSet(0)}>
-          <Plus size={16} />
-          Record rounds
-        </TextAction>
-      </div>
-    )
-  }
-
-  return (
-    <>
-      <Counter
-        labelledBy={labelledBy}
-        value={rounds}
-        decrementLabel="Take back a round"
-        incrementLabel="Add a completed round"
-        onChange={onCount}
-      />
-      <div>
-        <TextAction onClick={() => onSet(null)}>
-          <X size={16} />
-          Clear rounds
-        </TextAction>
-      </div>
-    </>
-  )
-}
 
 /**
  * The recorded result's score, and the like-for-like comparison when the
@@ -503,57 +399,6 @@ function HistoryComparison({ block, outcome }: { block: BlockProgress; outcome: 
     [query.state],
   )
   return <ConditioningScoreLine {...likeForLike(block, outcome, history)} />
-}
-
-/**
- * The partial round, in the two states it genuinely has.
- *
- * Absent is a state and not an empty field: `null` says nobody recorded how far
- * into the next round the user was, `0` says the buzzer landed on the boundary,
- * and the card says which of the two it is holding in words. That is the
- * difference DATA-01d asks to be preserved, made visible before it is written.
- */
-function PartialRound({
-  reps,
-  onChange,
-}: {
-  reps: number | null
-  onChange: (reps: number | null) => void
-}) {
-  const labelId = useId()
-
-  if (reps === null) {
-    return (
-      <div
-        className="clr-stack--tight"
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-      >
-        <p style={{ margin: 0 }}>No partial round recorded.</p>
-        <TextAction onClick={() => onChange(0)}>
-          <Plus size={16} />
-          Partial round
-        </TextAction>
-      </div>
-    )
-  }
-
-  return (
-    <Card heading={<span id={labelId}>Reps into the next round</span>}>
-      <Counter
-        labelledBy={labelId}
-        value={reps}
-        decrementLabel="One rep fewer in the partial round"
-        incrementLabel="One more rep in the partial round"
-        onChange={(delta) => onChange(reps + delta)}
-      />
-      <div>
-        <TextAction onClick={() => onChange(null)}>
-          <X size={16} />
-          No partial round
-        </TextAction>
-      </div>
-    </Card>
-  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -592,12 +437,6 @@ function Movement({ exercise }: { exercise: ExerciseProgress }) {
     </BlockPanel.Movement>
   )
 }
-
-/** 48px each way: the tap target the spec asks for, from the spacing scale. */
-const touchTarget = {
-  minWidth: 'var(--spacing-1000)',
-  minHeight: 'var(--spacing-1000)',
-} as const
 
 /** The settled time: the data face, as every other readout's value is. */
 const READOUT_STYLE = {
