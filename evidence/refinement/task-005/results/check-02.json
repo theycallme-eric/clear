@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-005",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-005.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-005/required-cases.json",
+    "sha256": "01bb65dd909e6dbe21dc90839f229a4fd0d1b9cc2f6e5d875f3278dc0c9b510c"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-005.spec.ts",
+      "sha256": "af248c3b516a95994d48ecf476839ca0da258ea489575a7df01ccd86696253e4"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 phone-320: Review then Workout — one bottom disclosure per grouped block, and each movement's note saves and fails on its own",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 phone-390: Review then Workout — one bottom disclosure per grouped block, and each movement's note saves and fails on its own",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 phone-390: written, blank, no entry, loading and failed guidance stay distinct per movement, and a retry recovers only its own",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 keyboard and reduced motion phone-390: the disclosure opens and closes from the keyboard, drafts survive, and a refused save keeps its words until its retry stores them",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "name": "TASK-005 one grouped coaching and notes disclosure > gallery cards phone-320: the accepted state draws the actual disclosure at the foot of each grouped live card",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

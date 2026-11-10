@@ -95,6 +95,8 @@ import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
 import { MetricFrame } from './composition'
 import { ConditioningScoreLine } from './conditioning-score'
+import { GroupExerciseCoaching } from './exercise-coaching'
+import { coachesAsGroup } from './group-coaching-context'
 import { useInterfaceLoop } from './motion'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { WorkoutCard } from './refinements/workout-card'
@@ -171,6 +173,10 @@ export function AmrapBlock({
           `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`
         }
         structure={block.identity}
+        // C16, R29 (TASK-005): an AMRAP is performed as a group, so its
+        // movements' coaching and notes are one disclosure at the foot of the
+        // card — each movement still its own guidance read and note writer.
+        coaching={coachesAsGroup(block) ? <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} /> : undefined}
       >
         {shape.size === 0 ? (
           <p style={{ margin: 0 }}>

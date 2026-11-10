@@ -5,9 +5,10 @@
  * Mounted through the real route tree on a synthetic session from the workout
  * double: no personal data, no backend. What it holds the screen to:
  *
- *   · compact numbered rows, each with its own accessible logging action and a
- *     concise coaching disclosure; opening logging opens the shared half-sheet,
- *     and none of it is needed to record a round (AC-061);
+ *   · compact numbered rows, each with its own accessible logging action, and
+ *     the circuit's one bottom coaching disclosure with a labelled section per
+ *     movement (TASK-005, AC-C16-01); opening logging opens the shared
+ *     half-sheet, and none of it is needed to record a round (AC-061);
  *   · an initial Start round 1, then Finish round, with the round's elapsed
  *     clock; the shared rest after a finished round, and the next round's clock
  *     starting when that rest ends — on its own, or from the tap that ends it
@@ -132,7 +133,7 @@ const roundTimer = (round: number) => screen.getByRole('timer', { name: `Round $
 const restTimer = () => screen.queryByRole('timer', { name: 'Time remaining' })
 
 describe('AC-061 — compact numbered rows, optional sheet-based logging', () => {
-  it('keeps one compact numbered row per movement, each with logging and a coaching disclosure', async () => {
+  it('keeps one compact numbered row per movement, each with logging, and one coaching disclosure for the circuit', async () => {
     await shell()
 
     expect(rows().map((row) => within(row).getByRole('heading').textContent)).toEqual([
@@ -147,14 +148,18 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
         'aria-expanded',
         'false',
       )
-      expect(inside.getByRole('button', { name: `Coaching and notes — ${name}` })).toHaveAttribute(
-        'aria-expanded',
-        'false',
-      )
+      // AC-C16-01 (TASK-005, R29): no disclosure repeated in each row.
+      expect(inside.queryByRole('button', { name: /^Coaching and notes/ })).toBeNull()
       // Compact: no entry fields and no set form until logging is asked for.
       expect(inside.queryByRole('spinbutton')).toBeNull()
       expect(inside.queryByRole('form')).toBeNull()
     })
+    // AC-C16-01: one bottom Coaching and notes disclosure, closed until asked
+    // for, with a labelled section for every movement.
+    const coaching = screen.getByRole('button', { name: `Coaching and notes — CIRCUIT: ${NAMES.join(', ')}` })
+    expect(coaching).toHaveAttribute('aria-expanded', 'false')
+    const region = screen.getByRole('region', { name: `Coaching and notes — CIRCUIT: ${NAMES.join(', ')}` })
+    expect(NAMES.map((name) => within(region).getByRole('group', { name }).getAttribute('data-coaching-movement'))).toHaveLength(3)
   })
 
   it('opens the shared half-sheet in one tap where logging is opened, outside the row', async () => {

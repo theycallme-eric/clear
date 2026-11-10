@@ -23,8 +23,22 @@
  * previewed on its own has no row to read or write.
  *
  * Optional and per movement (U38): closed until asked for, named for the one
- * movement it belongs to, and drawn inside that movement's row, so in a
- * superset or circuit each panel's cues sit with their own exercise.
+ * movement it belongs to. A standard block's movement keeps its own panel,
+ * drawn inside that movement's row.
+ *
+ * Grouped work (TASK-005; C16, G11, R29, R36): a block performed as a group —
+ * any structure but straight sets — draws its movements' coaching and notes as
+ * one bottom "Coaching and notes" disclosure (`GroupExerciseCoaching`), with a
+ * labelled section per movement, instead of a disclosure inside every row. The
+ * grouping is presentation only. Each section is still that movement's own
+ * guidance read and its own note writer — its own draft, save, status and
+ * error — so nothing is merged into one group value, and a movement the library
+ * has no entry for keeps its note. The four guidance states keep their words
+ * in every section, repeated per movement where the library says the same
+ * thing twice: no hide or replacement rule was selected (R73, G21).
+ *
+ * Review draws no panel: nothing is persisted before Start, so there is no
+ * prescription row yet for a note to be written to (Review.tsx).
  *
  * Containment, from 0.14.3: the panel is one group and every label is inside
  * it. On an exercise's card it is that card's content; on its own it is one
@@ -34,7 +48,7 @@
  * save each take the view's one loop in turn, so neither animates against a
  * low rest timer; both stay marked busy while they are stilled.
  */
-import { use, useState } from 'react'
+import { use, useId, useState } from 'react'
 
 import { AlertTriangle, Button, CircleCheck, Input } from '../design-system/index'
 import type { AppError } from '../state/errors'
@@ -49,6 +63,7 @@ import { WorkoutClientsContext } from '../state/workout-queries'
 import type { ExerciseProgress } from '../state/workout-progress'
 import { Card } from './card'
 import { CollapsibleSection } from './collapsible-section'
+import { GroupCoachingContext } from './group-coaching-context'
 import { HeadingSection } from './Heading'
 import { useInterfaceLoop } from './motion'
 import { ErrorView, LoadingView } from './view-state'
@@ -63,16 +78,114 @@ export const NOTE_SAVED_TEXT = 'Note saved'
 export const NOTE_FAILED_TEXT =
   'Your note didn’t save. It is still in the field — try again.'
 
+/** The grouped disclosure's visible label: the accepted words, unchanged (R36). */
+export const GROUP_COACHING_LABEL = 'Coaching and notes'
+
 export interface ExerciseCoachingProps {
   exercise: ExerciseProgress
 }
 
 export function ExerciseCoaching({ exercise }: ExerciseCoachingProps) {
+  const grouped = use(GroupCoachingContext)
   const clients = use(WorkoutClientsContext)
   const cache = use(QueryClientContext)
-  if (clients === null || cache === null) return null
+  if (grouped || clients === null || cache === null) return null
 
   return <CoachingPanel exercise={exercise} />
+}
+
+export interface GroupExerciseCoachingProps {
+  /**
+   * The block's format, in its badge's words (`SUPERSET`, `AMRAP`). With the
+   * movements' names it tells this block's disclosure apart from another's to
+   * assistive technology; the visible label stays the accepted words.
+   */
+  format: string
+  /** The block's movements, in order: one labelled section each. */
+  exercises: readonly ExerciseProgress[]
+}
+
+/**
+ * C16, G11: one bottom Coaching and notes disclosure for a grouped block, with a
+ * labelled section per movement. Each section is that movement's own guidance
+ * read and its own note writer, so one movement's draft, save, failure or retry
+ * never reaches another's.
+ */
+export function GroupExerciseCoaching({ format, exercises }: GroupExerciseCoachingProps) {
+  const clients = use(WorkoutClientsContext)
+  const cache = use(QueryClientContext)
+  if (clients === null || cache === null || exercises.length === 0) return null
+
+  return <GroupCoachingPanel format={format} exercises={exercises} />
+}
+
+function GroupCoachingPanel({ format, exercises }: GroupExerciseCoachingProps) {
+  // Sticky, as one movement's panel is: once opened, every section's guidance
+  // stays asked for, so closing and reopening shows what was read. Collapse is
+  // CSS-only, so the sections — and every draft in them — stay mounted.
+  const [expanded, setExpanded] = useState(false)
+  const [opened, setOpened] = useState(false)
+  const names = exercises.map((exercise) => exerciseName(exercise.prescription.exercise_id))
+
+  return (
+    <Card data-coaching-group="">
+      <CollapsibleSection
+        label={
+          <>
+            {GROUP_COACHING_LABEL}{' '}
+            {/* Names the block's disclosure apart from another block's on the
+                same screen; the visible label stays the accepted words. */}
+            <span className="a11y-hidden">— {format}: {names.join(', ')}</span>
+          </>
+        }
+        expanded={expanded}
+        onExpandedChange={(next) => {
+          setExpanded(next)
+          if (next) setOpened(true)
+        }}
+      >
+        {/* Each movement's section heads one level below whatever the panel sits under. */}
+        <HeadingSection className="clr-stack">
+          {exercises.map((exercise, index) => (
+            <CoachingMovementSection
+              key={exercise.exerciseId}
+              exercise={exercise}
+              name={names[index]}
+              opened={opened}
+            />
+          ))}
+        </HeadingSection>
+      </CollapsibleSection>
+    </Card>
+  )
+}
+
+/**
+ * One movement's labelled section: its name as the heading, then its own
+ * guidance and its own note — the same two owners its standalone panel draws.
+ */
+function CoachingMovementSection({
+  exercise,
+  name,
+  opened,
+}: {
+  exercise: ExerciseProgress
+  name: string
+  opened: boolean
+}) {
+  const headingId = useId()
+  return (
+    <div role="group" aria-labelledby={headingId} data-coaching-movement={exercise.exerciseId}>
+      <Card heading={<span id={headingId}>{name}</span>}>
+        <HeadingSection className="clr-stack">
+          {opened ? (
+            <Guidance exerciseId={exercise.prescription.exercise_id} name={name} />
+          ) : null}
+          <ExerciseNotesField exercise={exercise} name={name} />
+        </HeadingSection>
+      </Card>
+    </div>
+  )
 }
 
 function CoachingPanel({ exercise }: ExerciseCoachingProps) {

@@ -82,6 +82,10 @@ import {
   WorkoutCardWorkout,
 } from './gallery-refinement-cards'
 import {
+  GroupExerciseCoachingStates,
+  GroupExerciseCoachingSuperset,
+} from './gallery-refinement-coaching'
+import {
   EquipmentSummaryBodyweight,
   EquipmentSummaryLoaded,
   OverviewFactsPlanned,
@@ -2131,7 +2135,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'WorkoutCard',
     requirement: 'REQ-002',
     module: 'src/ui/refinements/workout-card.tsx',
-    summary: 'TASK-002 one block card for Review and the live workout: the shared static header (the section identity, a semantic heading in Review and never a toggle; then the format-only badge below it and the rounds, clock or cap below that, TASK-003), then the block. Only the movement slot differs by context.',
+    summary: 'TASK-002 one block card for Review and the live workout: the shared static header (the section identity, a semantic heading in Review and never a toggle; then the format-only badge below it and the rounds, clock or cap below that, TASK-003), then the block, then — live, for a grouped block — its one Coaching and notes disclosure at the foot (TASK-005, C16). Only the movement slot differs by context.',
     specimens: [
       { state: 'Review · static heading and Swap', Render: WorkoutCardReview },
       { state: 'Workout · section label and set progress', Render: WorkoutCardWorkout },
@@ -2155,6 +2159,16 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'set progress', Render: LiveMovementProgress },
       { state: 'timed movement', note: 'No counter: a timed format is counted by its clock.', Render: LiveMovementTimed },
+    ],
+  },
+  {
+    component: 'GroupExerciseCoaching',
+    requirement: 'REQ-005',
+    module: 'src/ui/exercise-coaching.tsx',
+    summary: 'TASK-005 one bottom Coaching and notes disclosure for a grouped live block (C16, R29, R36), placed by WorkoutCard’s coaching slot: a labelled section per movement, each its own library read and its own note draft, save, status and error. Written guidance, blank guidance, no library entry, loading and a failed read keep their own words. Memory-only controllers here; the route reads and writes the real ones.',
+    specimens: [
+      { state: 'superset · two movements', note: 'Open it: each movement’s cues sit under its own name.', Render: GroupExerciseCoachingSuperset },
+      { state: 'circuit · guidance, blank guidance, failed read and a failed save', note: 'Open it, then save each note: only the plank’s write fails, and its text stays.', Render: GroupExerciseCoachingStates },
     ],
   },
   {

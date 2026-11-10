@@ -1,0 +1,82 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-005",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/group-exercise-coaching.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-005/required-cases.json",
+    "sha256": "01bb65dd909e6dbe21dc90839f229a4fd0d1b9cc2f6e5d875f3278dc0c9b510c"
+  },
+  "targets": [
+    {
+      "path": "src/ui/group-exercise-coaching.test.tsx",
+      "sha256": "12c13e7061b21f807d58105b6993d529d8f3980ea4f6877eec2f6329563f6712"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 /workout: each grouped block ends with one Coaching and notes disclosure with a labelled section per movement, and its rows carry none",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 every grouped format — superset, circuit, EMOM, AMRAP, For Time and ladder — ends with one disclosure, and a standard block keeps each movement’s own",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 keeps the note of a movement the library has no entry for, and saves it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 a resumed workout shows each movement’s stored note in its own section, and a blank note stays blank",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 written guidance, blank guidance, no entry, loading and a failed read stay distinct, each in its own movement’s section, with no hide or replacement rule",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 recovery: a failed save keeps its draft through close and reopen, its retry stores it, and no performed work is recorded",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > renders the accepted gallery state cards with the actual disclosure at the foot of each grouped live card",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}
