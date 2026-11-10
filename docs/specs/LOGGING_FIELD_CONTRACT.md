@@ -276,9 +276,11 @@ from a recorded completed-rounds count.
 
 Today: `highest_rung` is the last completed rung, 1-based (Complete records the top rung; Incomplete
 records the chosen rung or nothing; `ladder-for-time.md` "taps the last rung they completed"). The
-CHECK admits 0 (no rung completed), which the current renderer never writes. Draft: the renderer
-still keeps the answer, rung and effort in memory (lost on reload) and its race clock on
-`clear.workout-for-time`. The durable owner exists (`ladder-durable-draft`, landed by TASK-032):
+CHECK admits 0 (no rung completed), which the ladder log records when the athlete states that no
+round was completed (TASK-013), never for nothing stated. Draft: since TASK-013 the renderer keeps its
+race clock, live checked progress and the answer and rounds in the durable owner below, and imports
+the checked prefix at Finish or the cap; effort is still its memory (no writer). The durable owner
+(`ladder-durable-draft`, landed by TASK-032):
 `clear.workout-ladders`, one versioned record per block with session/block/attempt identity, holding
 ordered progress, the draft, the Finish checkpoint and the original cap on the For Time clock
 (`src/state/ladder-recovery.ts`, `usePersistedLadder`); TASK-013, TASK-014, TASK-046 and TASK-048
@@ -310,7 +312,7 @@ by `timedOutcome` / `conditioningScore` / `conditioningTrend` (like-for-like sco
 | `block_results.rounds_completed` | `existing` | int ≥ 0 | AMRAP and circuit rounds recorded; conditioning also scores a capped For Time from it, which the current For Time card never writes | not recorded | AMRAP explicit 0 (circuit never writes 0) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Rounds`, conditioning | — | TASK-031, TASK-047 |
 | `block_results.partial_round_reps` | `existing` | int ≥ 0 | AMRAP reps into the next round, one count; conditioning also reads it for a capped For Time (never written by For Time today) | not recorded | explicit 0 | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Partial round`, conditioning | — | TASK-031, TASK-047 |
 | `block_results.minutes_completed` | `legacy` | int ≥ 0 | older EMOM minutes tally; no current EMOM writes it | every current ending | older 0 of M | insert-once | none | `blockResultRowSchema` | H `Minutes`, conditioning | — | — |
-| `block_results.highest_rung` | `existing` | int ≥ 0 | ladder: last completed rung, 1-based | unanswered or no rung chosen | no rung completed (not written today) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Highest rung`, conditioning | — | TASK-013, TASK-031, TASK-032, TASK-047 |
+| `block_results.highest_rung` | `existing` | int ≥ 0 | ladder: last completed rung, 1-based | unanswered or no rung chosen | no rung completed (stated by the athlete, TASK-013) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Highest rung`, conditioning | — | TASK-013, TASK-031, TASK-032, TASK-047 |
 | `block_results.perceived_effort` | `legacy` | smallint, 1–10 | historical block RPE; every current row null; `conditioningTrend` reads ≤ 7 as easy | not answered, never low | refused | insert-once | none | `isPerceivedEffort` | H `N of 10`, conditioning | — | — |
 | `block_results.notes` | `existing` | text | the athlete's words about the block; EMOM writes it; AMRAP / For Time / ladder reuse it | nothing written | — | insert-once; correction TASK-031 | B | `blockResultInsert` | H block notes | — | TASK-015, TASK-031, TASK-046, TASK-047 |
 | `block_results.effort` | `proposed-migration` | set_effort | optional categorical effort for the whole timed block | unanswered (every older row) | — | with the row; corrected with it; null clears | B (extended) | `isRecordedEffort`, `setEffortSchema` | H category word (TASK-031) | MIG-A | TASK-031, TASK-015, TASK-046, TASK-047 |

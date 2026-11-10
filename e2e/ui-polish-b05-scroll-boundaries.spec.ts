@@ -24,7 +24,8 @@ import { expect, test as scanned } from './fixtures'
  * Covered consumers: the page region with the header as its pinned head
  * (Home, B05-01.2), Settings' lower edge with no footer action (B05-08.2), a
  * fitting screen with no edge, the swap list overlay (B05-05), the capped
- * workout entry/sheet area (B05-07), Home's tab band and a ladder's rungs.
+ * workout entry/sheet area (B05-07), Home's tab band, and a ladder's rungs —
+ * which since TASK-013 wrap into tiles and must draw no horizontal rail at all.
  *
  * Each case renders the production route, compares pixels from the actual
  * capture (decoded by the browser's own canvas) between rest and scrolling,
@@ -796,7 +797,7 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
     })
   }
 
-  test('ladder rungs keep the horizontal start/end cues and reveal the chosen rung', async ({ page, visit }, testInfo) => {
+  test('ladder rungs wrap into rep-first tiles with no horizontal rail, and every rung is reachable and revealed in place', async ({ page, visit }, testInfo) => {
     test.setTimeout(90_000)
     await page.setViewportSize(NARROW)
     const app = await syntheticApp(page, { activeWorkout: true })
@@ -805,127 +806,60 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
     await page.getByRole('button', { name: 'All sections', exact: true }).click()
     await page.getByRole('button', { name: 'Conditioning, not started', exact: true }).click()
     // TASK-012 (C35, R95): while the ladder is performed its rungs are stated
-    // by the compact prescription's wrapping grid, with no horizontal scroller,
-    // so the rung rail — and this horizontal contract — is drawn once the
-    // ladder is answered. Make the production ladder interactive first (TASK-010,
-    // C29: Incomplete opens the rung question).
+    // by the compact prescription's wrapping grid, with no horizontal scroller.
+    // TASK-013 (C33, C34, AC-R013-02; R77, R92) supersedes the answered rung
+    // rail this case once held to the horizontal cue contract: how far the
+    // athlete got is now the result log's rep-first tiles, which wrap into
+    // rows like the prescription — so no ladder state draws an OverflowRail,
+    // and the contract here is that none appears and every rung is reachable
+    // without sideways scrolling. (Home's tab band keeps the rail contract.)
     await expect(page.locator('main .clr-rail:has(.clr-rungs)')).toHaveCount(0)
     await page.getByRole('radio', { name: 'Incomplete', exact: true }).check()
-    const rail = page.locator('main .clr-rail:has(.clr-rungs)').first()
-    await expect(rail).toBeVisible()
-    // Bring the rung row out from behind the pinned navigation with real
-    // vertical input before exercising its independent horizontal contract.
-    const pageScroller = page_region(page).locator(':scope > .clr-scroll-region__scroller')
-    const pageBox = (await pageScroller.boundingBox())!
-    await page.mouse.move(pageBox.x + pageBox.width / 2, pageBox.y + pageBox.height / 2)
-    await page.mouse.wheel(0, -10_000)
-    await page.mouse.wheel(0, 260)
-    await settle(page_region(page))
-    const cues = () => rail.evaluate((element) => {
-      const scroller = element.querySelector('.clr-rail__scroller')!
+    const rounds = page.getByRole('group', { name: 'Rounds completed', exact: true })
+    await expect(rounds).toBeVisible()
+    await expect(page.locator('main .clr-rail, main .clr-rail__scroller')).toHaveCount(0)
+    const tiles = rounds.getByRole('button')
+    await expect(tiles).toHaveCount(RUNGS.length)
+    const layout = () => rounds.evaluate((group) => {
+      const grid = group.querySelector('.clr-ladder-completion__tiles')!
+      const pageScroller = group.closest('.clr-scroll-region__scroller')!
       return {
-        overflows: scroller.scrollWidth > scroller.clientWidth + 1,
-        left: scroller.scrollLeft,
-        start: Number(getComputedStyle(element.querySelector('.clr-rail__cue[data-side="start"]')!).opacity),
-        end: Number(getComputedStyle(element.querySelector('.clr-rail__cue[data-side="end"]')!).opacity),
+        overflowX: getComputedStyle(grid).overflowX,
+        sideways: grid.scrollWidth - grid.clientWidth,
+        pageScrollLeft: pageScroller.scrollLeft,
+        columns: getComputedStyle(grid).gridTemplateColumns.split(' ').filter((track) => track !== '').length,
+        rows: new Set([...grid.querySelectorAll('button')].map((tile) => Math.round(tile.getBoundingClientRect().top))).size,
       }
     })
-    const atStart = await cues()
-    expect(atStart.overflows).toBe(true)
-    expect(atStart.start).toBe(0)
-    await expect.poll(async () => (await cues()).end).toBe(1)
-    await capture(page, testInfo, 'ladder-rungs-narrow-start', { consumer: 'LadderRungs OverflowRail', state: 'overflowing, at start' })
+    const wrapped = await layout()
+    expect(['visible', 'clip', 'hidden']).toContain(wrapped.overflowX)
+    expect(wrapped.sideways).toBeLessThanOrEqual(1)
+    expect(wrapped.pageScrollLeft).toBe(0)
+    expect(wrapped.columns).toBeGreaterThan(1)
+    expect(wrapped.rows).toBe(Math.ceil(RUNGS.length / wrapped.columns))
 
-    // The answered row's rungs are touch targets, wider than the read-only
-    // row's were, so the end may be more than one cue page away.
-    const atEdge = (side: 'start' | 'end') => rail.evaluate((element, edge) => {
-      const scroller = element.querySelector('.clr-rail__scroller')!
-      return edge === 'start'
-        ? scroller.scrollLeft <= 1
-        : scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1
-    }, side)
-    const page_through = async (side: 'start' | 'end') => {
-      for (let step = 0; step < 6 && !(await atEdge(side)); step += 1) {
-        const before = (await cues()).left
-        await rail.locator(`.clr-rail__cue[data-side="${side}"]`).click()
-        await expect.poll(async () => (await cues()).left).not.toBe(before)
-        // Let the smooth scroll come to rest before reading the edge again.
-        await expect.poll(async () => {
-          const first = (await cues()).left
-          await page.waitForTimeout(100)
-          return (await cues()).left === first
-        }).toBe(true)
-      }
-      expect(await atEdge(side), `paged to the ${side}`).toBe(true)
-    }
-    await page_through('end')
-    await expect.poll(async () => (await cues()).start).toBe(1)
-    await expect.poll(async () => (await cues()).end).toBe(0)
-    await capture(page, testInfo, 'ladder-rungs-narrow-end', { consumer: 'LadderRungs OverflowRail', state: 'overflowing, at end' })
-
-    // Back to the start through the start cue, so the radio contract below
-    // begins, as before, with the last radio genuinely hidden.
-    await page_through('start')
-    await expect.poll(async () => (await cues()).start).toBe(0)
-    await expect.poll(async () => (await cues()).end).toBe(1)
-
-    // Use the real radio group. No scrollIntoView or geometry writes precede
-    // focus or selection reveal.
-    const radios = rail.getByRole('radio')
-    await expect(radios).toHaveCount(RUNGS.length)
-    const first = radios.first()
-    const last = radios.last()
-    const position = (radio: Locator) => radio.evaluate((node) => {
-      const rail = node.closest('.clr-rail')!
-      const scroller = rail.querySelector('.clr-rail__scroller')!
-      const box = (element: Element) => {
-        const rect = element.getBoundingClientRect()
-        return { left: rect.left, right: rect.right, width: rect.width }
-      }
-      const pageScroller = rail.closest('.clr-scroll-region__scroller')!
-      return { rung: box(node.closest('.clr-rung')!), rail: box(rail),
-        scroller: box(scroller), scrollLeft: scroller.scrollLeft,
-        page: box(pageScroller), pageScrollLeft: pageScroller.scrollLeft }
+    // Every rung, reached by the keyboard in order, is revealed in place: it
+    // sits wholly inside the viewport's width, with nothing scrolled sideways.
+    const inside = (tile: Locator) => tile.evaluate((node) => {
+      const rect = node.getBoundingClientRect()
+      const page = node.closest('.clr-scroll-region__scroller')!
+      return rect.width > 0 && rect.left >= -0.5 && rect.right <= window.innerWidth + 0.5 && page.scrollLeft === 0
     })
-    const expectRevealed = async (radio: Locator) => {
-      await expect.poll(async () => {
-        const { rung, scroller, page: clip, pageScrollLeft } = await position(radio)
-        return scroller.width > 0 && rung.width > 0 && pageScrollLeft === 0 &&
-          scroller.left >= Math.max(0, clip.left) - 0.5 &&
-          scroller.right <= Math.min(page.viewportSize()!.width, clip.right) + 0.5 &&
-          rung.left >= scroller.left - 0.5 && rung.right <= scroller.right + 0.5
-      }).toBe(true)
+    await tiles.first().focus()
+    for (let index = 0; index < RUNGS.length; index += 1) {
+      if (index > 0) await page.keyboard.press('Tab')
+      await expect(tiles.nth(index)).toBeFocused()
+      await expect.poll(() => inside(tiles.nth(index))).toBe(true)
     }
-    // Changing to the interactive fieldset mounts its native radio rail at
-    // the start; the last radio must be genuinely hidden before key selection.
-    await first.focus()
-    await first.press('Space')
-    await expect(first).toBeFocused()
-    await expect(first).toBeChecked()
-    await expectRevealed(first)
-    const lastBefore = await position(last)
-    expect(lastBefore.rung.left).toBeGreaterThanOrEqual(lastBefore.scroller.right)
-    for (let index = 1; index < RUNGS.length; index += 1) await page.keyboard.press('ArrowRight')
-    await expect(last).toBeFocused()
-    await expect(last).toBeChecked()
-    await expectRevealed(last)
-    await expect.poll(async () => (await cues()).start).toBe(1)
-    await expect.poll(async () => (await cues()).end).toBe(0)
-    await capture(page, testInfo, 'ladder-rungs-narrow-revealed', {
-      consumer: 'LadderRungs OverflowRail', state: 'last real radio focused and selected through native ArrowRight',
-      before: lastBefore, rendered: await position(last) })
-    // Native wrap selection must reveal the first genuinely hidden target again.
-    const beforeWrap = await position(first)
-    expect(beforeWrap.rung.right).toBeLessThanOrEqual(beforeWrap.scroller.left)
-    await page.keyboard.press('ArrowRight')
-    await expect(first).toBeFocused()
-    await expect(first).toBeChecked()
-    await expectRevealed(first)
-    await expect.poll(async () => (await cues()).start).toBe(0)
-    await expect.poll(async () => (await cues()).end).toBe(1)
-    await capture(page, testInfo, 'ladder-rungs-narrow-wrap-revealed', {
-      consumer: 'LadderRungs OverflowRail', state: 'first real radio selected by native wrap from offscreen',
-      before: beforeWrap, rendered: await position(first) })
+    // The last rung's own control: Space completes every rung through it.
+    await page.keyboard.press('Space')
+    await expect(rounds.getByRole('status')).toHaveText(`${RUNGS.length} of ${RUNGS.length} rounds completed`)
+    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('Enter')
+    await expect(rounds.getByRole('status')).toHaveText(`${RUNGS.length - 2} of ${RUNGS.length} rounds completed`)
+    expect((await layout()).sideways).toBeLessThanOrEqual(1)
+    await capture(page, testInfo, 'ladder-rungs-narrow-wrapped', {
+      consumer: 'LadderCompletion (TASK-013)', state: 'eleven rungs wrapped; last rungs reached by keyboard', layout: await layout() })
     app.assertNoWrites()
   })
 })

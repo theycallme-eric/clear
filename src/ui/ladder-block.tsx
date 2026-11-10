@@ -15,10 +15,9 @@
  * in the ×/· notation, the fixed companion in each. It replaces the read-only
  * rung row, the "Each rung" caption, the movement rows with their "between
  * each rung" annotation and the long per-round list with its "— same every
- * round" suffix, which all said the same pattern again (R70, R95). The rung
- * row is drawn only once the athlete's answer needs it — the reached reading
- * of a Complete, and the "How far did you get?" question of an Incomplete —
- * until TASK-013 moves both into the result log.
+ * round" suffix, which all said the same pattern again (R70, R95). The
+ * read-only rung row is no longer drawn at all: TASK-013 moved the reached
+ * reading and the "how far" question into the result log as rep-first tiles.
  *
  * The rungs come from `target_sequence`, an `int[]`, through `state/ladder.ts`.
  * Nothing in this file splits a string, because the schema holds no string to
@@ -33,15 +32,36 @@
  * TASK-010 (C29, C30; R78, R87, R124): that question is now the shared result
  * log's — "Work completed" with Complete beside Incomplete in one row, then the
  * existing three-face effort (`TimedResultLog`). Its starting point follows
- * the work the ladder actually tracked and its clock, never a Finish alone:
- * nothing is tracked rung by rung yet (TASK-013 adds the live check-off), so
- * once the attempt has ended — Finish, the cap, or a schedule run out — it
- * starts at Incomplete with no rung, and only the athlete's own Complete
- * records the top rung. Before the attempt ends nothing is chosen, and the
- * athlete may still answer at any time, as before. The answer, the rung and
- * the effort are this renderer's draft (durable ladder drafts are TASK-032);
- * effort is never written, because no categorical block-effort field exists
- * yet (R116).
+ * the work the ladder actually tracked and its clock, never a Finish alone.
+ * Before the attempt ends nothing is chosen, and the athlete may still answer
+ * at any time, as before. Effort is never written, because no categorical
+ * block-effort field exists yet (R116): it stays this renderer's memory.
+ *
+ * **Ordered live progress and its handoff** (TASK-013; C33, C34, C36; R69,
+ * R77, R88, R89, R92, R93, R99, R118, R124). While a raced ladder's clock runs
+ * or is paused, its round tiles are the live check-off: a tap selects every
+ * round through the one tapped, a tap inside the selection leaves the rounds
+ * before it, and the count says how many (`LadderPrescription`'s `progress`).
+ * The attempt — its clock, that progress, the answer and the rung — is
+ * TASK-032's durable ladder record (`usePersistedLadder`, one clock, never the
+ * For Time record beside it), so a reload or a closed tab keeps all of it.
+ * When the attempt ends — the athlete's Finish or the cap — the tracked
+ * progress is imported into the editable log (`finishLadderAttempt` and the
+ * lazy carry at the cap): every round checked starts the log at Complete, a
+ * prefix at Incomplete through its last round, and nothing tracked leaves the
+ * athlete's own answer, starting at Incomplete with no round stated. Finish
+ * alone never selects every round, and no planned target becomes an actual:
+ * the only value recorded is `highest_rung`, the rounds completed through.
+ * The log draws the rounds as rep-first tiles (`LadderCompletion`): the
+ * athlete corrects them there, Complete selects every round, Incomplete
+ * clears the round to be stated again, and the round after the stated prefix
+ * is named as where any partial work belongs (its entry is TASK-015's).
+ *
+ * A scheduled ladder (`scheduled_starts`) keeps its start stamp, answer and
+ * round in the same durable record, with no cap (TASK-032's
+ * `ladderRaceCapSeconds` gives a schedule none, and none is invented here):
+ * its own clock marks the live round (`Now`), so it offers no check-off, and
+ * its end is its schedule's, which starts the log as TASK-010 does.
  *
  * **Explicit timing** (REQ-018 / E03, TASK-033). A block carrying
  * `ladder_timing` is drawn as its rounds rather than its movements: every round
@@ -60,11 +80,11 @@
  *
  * **Start, Pause, Resume and Finish** (TASK-006; C17, C18; R66, R67, R68). A
  * ladder raced against its cap — every mode but a schedule — runs EXE-04b's
- * own clock (`for-time.ts` and its persistence, drawn by `ForTimeClock`), not
- * a second timer invented here, with the shared `TimedWorkoutActions` in the
- * ladder's top slot: after its identity and cap, before the rung row and the
- * repetitive round list, so Start is reachable without scrolling past them.
- * Running, a secondary Pause sits beside the primary Finish.
+ * own clock (`for-time.ts`'s race state, kept in the ladder's durable attempt
+ * since TASK-013 and drawn by `ForTimeClock`), not a second timer invented
+ * here, with the shared `TimedWorkoutActions` in the ladder's top slot: after
+ * its identity and cap, before the round list, so Start is reachable without
+ * scrolling past it. Running, a secondary Pause sits beside the primary Finish.
  *
  * What this renderer deliberately does **not** own:
  *   · **a measurement from the clock.** `elapsed_seconds` and
@@ -85,19 +105,9 @@
 import { useState, type ReactNode } from 'react'
 
 import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
-import {
-  clampForTimeState,
-  finishForTime,
-  forTimeLifecycle,
-  forTimeTicking,
-  forTimeView,
-  startForTime,
-  FOR_TIME_START,
-  type ForTimePhase,
-} from '../state/for-time'
+import { forTimeTicking, type ForTimePhase } from '../state/for-time'
 import {
   explicitLadderTiming,
-  ladderCapSeconds,
   ladderRoundPlan,
   ladderRungs,
   ladderUnit,
@@ -105,102 +115,152 @@ import {
   type LadderRoundPlan,
   type LadderRung,
 } from '../state/ladder'
+import {
+  ladderAttemptView,
+  ladderPartialRound,
+  ladderRaceCapSeconds,
+  type LadderAttemptView,
+} from '../state/ladder-recovery'
 import { scheduleIntervalDeadline } from '../state/countdown-urgency'
 import type { LadderTiming } from '../state/schemas'
 import { useShellWeightUnit } from '../state/set-logging'
 import { formatCountdownReading } from '../state/timed-clock'
-import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
+import { finishLabel } from '../state/timed-lifecycle'
 import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
-import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
+import { usePersistedLadder, type PersistedLadder, type ShellStorage } from '../state/workout-persistence'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ForTimeClock } from './for-time-block'
-import { LadderRungs } from './ladder-rungs'
 import { DeadlineTimer } from './refinements/deadline-timer'
-import { LadderPrescription, type LadderRoundContext } from './refinements/ladder'
+import { LadderPrescription, type LadderRoundContext, type LadderRoundsProgress } from './refinements/ladder'
 import { TimedResultLog } from './refinements/timed-result-log'
 import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
 /**
- * How the block ended, as the user says it (TASK-010: Complete or Incomplete).
- *
- * `unanswered` is a real third state rather than a default of either: a block
- * the user advanced past before its attempt ended, without answering, recorded
- * no ending, and guessing one would be inventing a measurement (DATA_MODEL §8).
+ * A session id for a bare completion seam that supplies none (a test mounting
+ * a renderer outside the shell). The shell's own provider always names the
+ * session, and every record it files is read back only under that name.
  */
-type Ending = 'unanswered' | 'complete' | 'incomplete'
+const UNSCOPED_SESSION = 'unscoped-session'
 
-/**
- * The outcome the block's row gets.
- *
- * Complete reaches the last rung, so that is what is recorded — the ladder was
- * climbed to the top, and the fact is the rung, not a zero. Incomplete records
- * the rung the user chose, and records nothing at all if they chose none:
- * advancing without answering is allowed (`ladder-for-time.md` §3), and a
- * `highest_rung` nobody stated would be a guess.
- */
-function ladderOutcome(
-  ending: Ending,
-  reached: number | null,
-  rungs: readonly LadderRung[],
-): BlockOutcome {
-  if (rungs.length === 0) return {}
-
-  switch (ending) {
-    case 'complete':
-      return { highestRung: rungs.length }
-    case 'incomplete':
-      return reached === null ? {} : { highestRung: reached }
-    case 'unanswered':
-      return {}
-  }
+/** One ladder attempt, as every ladder renderer reads and moves it. */
+interface LadderAttemptHandle {
+  /** TASK-032's durable attempt: the clock, ordered progress and the result draft. */
+  readonly ladder: PersistedLadder
+  /** What the attempt is now: clock, lifecycle, progress, draft and outcome. */
+  readonly view: LadderAttemptView
+  readonly rungs: readonly LadderRung[]
+  /** The server's word that the block's row exists (`isBlockRecorded`). */
+  readonly recorded: boolean
 }
 
 /**
- * TASK-010 (C29, C30; AC-R010-01): the ladder's result draft — the athlete's
- * Complete or Incomplete, the rung reached and the optional effort.
+ * TASK-013 (C36; R118, R124): the ladder's one attempt — its race clock, its
+ * live progress and its result draft — restored from and written to TASK-032's
+ * durable record (`usePersistedLadder`, `clear.workout-ladders`) under the
+ * session, block and attempt it belongs to. One clock: a ladder clock an older
+ * build kept under the For Time key is adopted once, never run beside this one.
+ * `capSeconds` is stamped as the attempt's original cap when it is created
+ * (`ladderRaceCapSeconds`; none for a schedule), and every reading after that
+ * uses it. The read model is re-derived each second while the clock runs, as
+ * every timed block's is (`useElapsedSeconds`).
+ */
+function useLadderAttempt(
+  block: BlockRendererProps['block'],
+  capSeconds: number | null,
+  storage: ShellStorage | null | undefined,
+  now: () => number,
+): LadderAttemptHandle {
+  const { isBlockRecorded, sessionId } = useBlockCompletion()
+  const recorded = isBlockRecorded(block.blockId)
+  const rungs = ladderRungs(block.exercises)
+  const ladder = usePersistedLadder({
+    sessionId: sessionId ?? UNSCOPED_SESSION,
+    blockId: block.blockId,
+    capSeconds,
+    rungCount: rungs.length,
+    recorded,
+    storage,
+    now,
+  })
+  useElapsedSeconds(forTimeTicking(ladder.attempt.clock), now)
+  const view = ladderAttemptView(ladder.attempt, { rungCount: rungs.length, now: now(), recorded })
+  return { ladder, view, rungs, recorded }
+}
+
+/**
+ * TASK-013 (C34, R118): live ordered check-off, offered only while the
+ * attempt's clock runs or is paused (`canTrack`) — never before Start, after
+ * Finish or the cap, or once saved — and only for the rungs the ladder has.
+ */
+function liveProgress({ ladder, view, rungs }: LadderAttemptHandle): LadderRoundsProgress | null {
+  if (!view.canTrack || rungs.length === 0) return null
+  return { completedThrough: view.progress, rounds: rungs.length, onProgress: ladder.track }
+}
+
+/**
+ * The ladder's result log (TASK-010: C29, C30; TASK-013: C33, C34, C36): the
+ * athlete's Complete or Incomplete, the rounds completed through and the
+ * optional effort.
  *
- * The answer starts where the tracked work and the clock put it, and never at
- * every rung: until the attempt has ended nothing is chosen; once it has (the
- * athlete's Finish, the cap, or a schedule run out) it starts at Incomplete
- * with no rung, because no rung was tracked (TASK-013 imports live check-off
- * here). The athlete's own answer, given before or after, always wins.
+ * The answer and the rounds are the durable attempt's draft. When the attempt
+ * ends, its tracked progress is imported into that draft (TASK-032's carry):
+ * every round checked starts at Complete, a prefix at Incomplete through its
+ * last round. With nothing tracked, the draft is the athlete's own answer, and
+ * once the attempt has ended — the athlete's Finish, the cap, or a schedule
+ * run out — an unanswered draft starts at Incomplete with no round stated
+ * (TASK-010), drawn but not recorded: never every round, and never a round
+ * nobody stated. The athlete corrects any of it: Complete is every round, a
+ * tile states the rounds through it (every round is Complete), and Incomplete
+ * clears the round to be stated again rather than keeping the top one.
  *
  * A starting point belongs to the unsaved draft only. Once the block's result
  * is saved, the saved row is the answer; a renderer that no longer holds the
- * draft (its section was left and reopened) knows only that a row exists, so
- * it claims no answer rather than a starting point the row may contradict.
- * Reading the saved ladder result back is TASK-032 / TASK-048.
+ * draft (the server reports a row this device did not see saved) claims no
+ * answer rather than a starting point the row may contradict (TASK-032's
+ * `saved-elsewhere`). Reading the saved result back is TASK-048's.
+ *
+ * Effort stays this renderer's memory: no categorical block-effort field or
+ * writer exists yet (R116; TASK-046, TASK-047), so a category is neither saved
+ * nor stored.
  */
-function useLadderResult(block: BlockRendererProps['block'], ended: boolean) {
-  const { isBlockRecorded } = useBlockCompletion()
-  const [answer, setAnswer] = useState<Exclude<Ending, 'unanswered'> | null>(null)
-  const [reached, setReached] = useState<number | null>(null)
+function useLadderResult(
+  block: BlockRendererProps['block'],
+  { ladder, view, rungs, recorded }: LadderAttemptHandle,
+  ended: boolean,
+): { outcome: BlockOutcome; log: ReactNode } {
   const [effort, setEffort] = useState<SetEffort | null>(null)
-
-  const saved = isBlockRecorded(block.blockId)
-  const rungs = ladderRungs(block.exercises)
-  const ending: Ending = answer ?? (ended && !saved ? 'incomplete' : 'unanswered')
-  const completed = ending === 'unanswered' ? null : ending === 'complete'
+  const saved = recorded || !view.editable
+  const draft = view.draft
+  const completed = draft?.completed ?? (ended && view.editable ? false : null)
+  const completedThrough = completed === true ? rungs.length : (draft?.highestRung ?? null)
 
   return {
-    ending,
-    reached,
-    setReached,
-    outcome: ladderOutcome(ending, reached, rungs),
+    outcome: view.outcome,
     log:
       rungs.length === 0 ? null : (
         <TimedResultLog
           format="ladder"
           value={{ completed, effort }}
           saved={saved}
+          rounds={
+            completed === null
+              ? null
+              : {
+                  rungs,
+                  unit: ladderUnit(block.exercises),
+                  completedThrough,
+                  // AC-R013-01: partial work belongs to the round after the prefix.
+                  partialRound: completed ? null : ladderPartialRound(completedThrough, rungs.length),
+                  onChange: (through) => ladder.editDraft({ completed: through === rungs.length, highestRung: through }),
+                }
+          }
           onChange={(next) => {
             if (next.completed !== null && next.completed !== completed) {
-              setAnswer(next.completed ? 'complete' : 'incomplete')
-              // The rung only means something for an incomplete ladder;
-              // completing it reached them all.
-              if (next.completed) setReached(null)
+              // Complete is every round; Incomplete states its round again,
+              // never keeping the top one Complete recorded.
+              ladder.editDraft(next.completed ? { completed: true } : { completed: false, highestRung: null })
             }
             if (next.effort !== effort) setEffort(next.effort)
           }}
@@ -246,51 +306,36 @@ const LADDER_CLOCK_WORDS: Readonly<Record<ForTimePhase, string>> = {
 
 /**
  * A ladder raced against its cap — every ladder but a schedule — runs one
- * visible clock (R67: the same Start and stop as other For Time work), on the
- * For Time state owner and its persistence, so a refresh reads it back and a
- * paused ladder comes back paused. Its actions are the shared lifecycle in the
- * ladder's top slot (R66): Start ladder, then a secondary Pause beside the
- * primary Finish (R68). The clock is drawn beside the card once started; before
- * that the header and the timing line already state the cap.
+ * visible clock (R67: the same Start and stop as other For Time work): the
+ * attempt's race clock, so a refresh reads it back and a paused ladder comes
+ * back paused. Its actions are the shared lifecycle in the ladder's top slot
+ * (R66): Start ladder, then a secondary Pause beside the primary Finish (R68),
+ * and nothing once the attempt has ended or its result is saved. The clock is
+ * drawn beside the card once started; before that the header and the timing
+ * line already state the cap.
  *
- * It records nothing (DATA_MODEL §8): how the ladder ended, and the rung
- * reached, are still declared below — the clock never fills them in.
+ * It records nothing (DATA_MODEL §8): the clock never fills in how the ladder
+ * ended. Finish carries what the athlete checked off into the log (TASK-013).
  */
-function useLadderRace(
+function ladderRace(
   block: BlockRendererProps['block'],
-  capSeconds: number | null,
-  storage: ShellStorage | null | undefined,
-  now: () => number,
-): { actions: ReactNode; timer: ReactNode; ended: boolean } {
-  const clock = usePersistedForTime(
-    block.blockId,
-    (stored) => (stored === null ? FOR_TIME_START : clampForTimeState(stored)),
-    storage,
-  )
-  const shape = {
-    capSeconds: capSeconds === null ? null : Math.max(1, Math.trunc(capSeconds)),
-    size: block.exercises.length,
-  }
-  const view = forTimeView(clock.state, shape, useElapsedSeconds(forTimeTicking(clock.state), now))
-
-  // TASK-010: the attempt has ended — the athlete's Finish or the cap.
-  const ended = view.phase === 'finished' || view.phase === 'capped'
-  if (block.exercises.length === 0) return { actions: null, timer: null, ended }
+  { ladder, view }: LadderAttemptHandle,
+): { actions: ReactNode; timer: ReactNode } {
+  if (block.exercises.length === 0) return { actions: null, timer: null }
   return {
-    ended,
     actions: (
       <TimedWorkoutActions
         placement="top"
-        phase={forTimeLifecycle(view.phase)}
+        phase={view.lifecycle}
         startLabel="Start ladder"
-        finishLabel={finishLabel('ladder', shape.capSeconds !== null)}
-        onStart={() => clock.moveTo(startForTime(clock.state, now()))}
-        onPause={() => clock.moveTo(pauseClock(clock.state, now()))}
-        onResume={() => clock.moveTo(resumeClock(clock.state, now()))}
-        onFinish={() => clock.moveTo(finishForTime(clock.state, now()))}
+        finishLabel={finishLabel('ladder', ladder.attempt.originalCapSeconds !== null)}
+        onStart={ladder.start}
+        onPause={ladder.pause}
+        onResume={ladder.resume}
+        onFinish={ladder.finish}
       />
     ),
-    timer: view.phase === 'ready' ? null : <ForTimeClock view={view} words={LADDER_CLOCK_WORDS} />,
+    timer: view.clock.phase === 'ready' ? null : <ForTimeClock view={view.clock} words={LADDER_CLOCK_WORDS} />,
   }
 }
 
@@ -306,13 +351,16 @@ function RacedLadder({
   storage,
   now = Date.now,
 }: ClockedLadderProps & { timing: LadderTiming }) {
-  const race = useLadderRace(block, ladderCapSeconds(timing) ?? block.timerSeconds, storage, now)
+  const attempt = useLadderAttempt(block, ladderRaceCapSeconds(block), storage, now)
+  const race = ladderRace(block, attempt)
   return (
     <TimedLadder
       block={block}
       timing={timing}
       live={null}
-      ended={race.ended}
+      attempt={attempt}
+      ended={attempt.view.ended}
+      progress={liveProgress(attempt)}
       timer={race.timer}
       actions={race.actions}
     />
@@ -321,13 +369,10 @@ function RacedLadder({
 
 /** A ladder with no explicit timing: the EXE-04a block, raced against the block's cap. */
 function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
-  const race = useLadderRace(block, block.timerSeconds, storage, now)
-  const result = useLadderResult(block, race.ended)
-  const { ending, reached, setReached } = result
-
+  const attempt = useLadderAttempt(block, ladderRaceCapSeconds(block), storage, now)
+  const race = ladderRace(block, attempt)
+  const result = useLadderResult(block, attempt, attempt.view.ended)
   const weightUnit = useShellWeightUnit()
-  const rungs = ladderRungs(block.exercises)
-  const unit = ladderUnit(block.exercises)
 
   return (
     <BlockPanel
@@ -342,14 +387,12 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
           {/* R66: the ladder's top action, after its identity and cap. */}
           {race.actions}
 
-          {rungs.length === 0 ? (
+          {attempt.rungs.length === 0 && (
             // A ladder scheme with no sequence on any movement: the block is
             // malformed, and saying so is better than drawing an empty grid.
             <BlockPanel.Note>
               This ladder prescribes no rungs — perform the movements as written.
             </BlockPanel.Note>
-          ) : (
-            <RungsRow rungs={rungs} unit={unit} ending={ending} reached={reached} onReach={setReached} />
           )}
 
           {/*
@@ -357,63 +400,16 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
             progression or fixed target, then every rung as a round. With no
             explicit timing the rounds are the ladder's own rungs; a block whose
             movements carry no sequence still names them, with no rounds.
+            TASK-013 (C34): while the clock runs or is paused, the rounds are
+            the live ordered check-off.
           */}
-          <LadderPrescription exercises={block.exercises} weightUnit={weightUnit} />
+          <LadderPrescription exercises={block.exercises} weightUnit={weightUnit} progress={liveProgress(attempt)} />
 
-          {/* TASK-010 (C29, C30): the ladder's result log, after its work. */}
+          {/* TASK-010, TASK-013: the ladder's result log, after its work. */}
           {result.log}
         </>
       )}
     </BlockPanel>
-  )
-}
-
-/**
- * The rung row, once the athlete's answer needs it: the question once they say
- * it stopped short (`ladder-for-time.md` §3, Path B), and the climbed rungs once
- * they say it was completed. One row, two modes — never both at once.
- *
- * TASK-012 (C35, R95): while the ladder is performed and unanswered nothing is
- * drawn here — the compact prescription below already states every rung, and a
- * second, scrolling row of the same numbers was the duplicate R95 rejects.
- * Moving the question and the reached reading into the result log, as rep-first
- * tiles, is TASK-013 (C33, C34, C36).
- */
-function RungsRow({
-  rungs,
-  unit,
-  ending,
-  reached,
-  onReach,
-}: {
-  rungs: readonly LadderRung[]
-  unit: string
-  ending: Ending
-  reached: number | null
-  onReach: (rung: number) => void
-}) {
-  if (ending === 'unanswered') return null
-
-  if (ending === 'incomplete') {
-    return (
-      <LadderRungs
-        rungs={rungs}
-        unit={unit}
-        label="How far did you get?"
-        reached={reached}
-        onSelect={onReach}
-      />
-    )
-  }
-
-  return (
-    <LadderRungs
-      rungs={rungs}
-      unit={unit}
-      label="Ladder"
-      // Read-only once it is complete — with every rung climbed.
-      reached={rungs.length}
-    />
   )
 }
 
@@ -453,10 +449,15 @@ function scheduleView(
  * A scheduled ladder: the round list, the live round marked from the block's
  * own clock, and the countdown to the next start beside the card.
  *
- * The clock is one stored start stamp — the For Time record shape, read through
- * the same persistence — so a background or refresh reads the schedule back from
- * wall-clock time rather than restarting it. The global session clock is a
- * different clock and is never touched.
+ * The clock is one stored start stamp — the race clock of the ladder's durable
+ * attempt since TASK-013 (`usePersistedLadder`), with no cap, because a
+ * schedule has none and none is invented — so a background or refresh reads
+ * the schedule back from wall-clock time rather than restarting it, and the
+ * answer and round given at its end survive a reload too. A schedule started
+ * by an older build (its stamp under the For Time key) is adopted once. The
+ * schedule's own clock marks the live round, so it offers no check-off; its
+ * end is its schedule's. The global session clock is a different clock and is
+ * never touched.
  */
 function ScheduledLadder({
   block,
@@ -469,20 +470,19 @@ function ScheduledLadder({
   storage?: ShellStorage | null
   now?: () => number
 }) {
-  const clock = usePersistedForTime(
-    block.blockId,
-    (stored) => (stored === null ? FOR_TIME_START : clampForTimeState(stored)),
-    storage,
-  )
-  const view = scheduleView(timing, clock.state.startedAt, useElapsedSeconds(clock.state.startedAt, now))
+  const attempt = useLadderAttempt(block, null, storage, now)
+  const startedAt = attempt.ladder.attempt.clock.startedAt
+  const view = scheduleView(timing, startedAt, useElapsedSeconds(startedAt, now))
 
   return (
     <TimedLadder
       block={block}
       timing={timing}
       live={view}
+      attempt={attempt}
       // TASK-010: a schedule that has run every round has ended its attempt.
       ended={view.phase === 'complete'}
+      progress={null}
       timer={block.exercises.length === 0 ? null : <IntervalCountdown view={view} />}
       // TASK-006 (C17): the schedule's one way in, in the ladder's shared top
       // slot. Its lifecycle is its own: once it runs, every round starts on
@@ -493,7 +493,7 @@ function ScheduledLadder({
             placement="top"
             phase={view.phase === 'ready' ? 'ready' : 'ended'}
             startLabel="Start schedule"
-            onStart={() => clock.moveTo(startForTime(clock.state, now()))}
+            onStart={attempt.ladder.start}
           />
         )
       }
@@ -512,25 +512,28 @@ function TimedLadder({
   block,
   timing,
   live,
+  attempt,
   ended,
+  progress,
   timer,
   actions,
 }: {
   block: BlockRendererProps['block']
   timing: LadderTiming
   live: ScheduleView | null
+  /** The ladder's one durable attempt (TASK-013, over TASK-032). */
+  attempt: LadderAttemptHandle
   /** TASK-010: whether the attempt has ended — Finish, the cap, or the schedule run out. */
   ended: boolean
+  /** TASK-013: the live ordered check-off while the race can track it; null otherwise. */
+  progress: LadderRoundsProgress | null
   timer?: ReactNode
   /** The ladder's top action slot (TASK-006, R66): after its identity and cap. */
   actions?: ReactNode
 }) {
-  const result = useLadderResult(block, ended)
-  const { ending, reached, setReached } = result
+  const result = useLadderResult(block, attempt, ended)
   const weightUnit = useShellWeightUnit()
 
-  const rungs = ladderRungs(block.exercises)
-  const unit = ladderUnit(block.exercises)
   const plan = ladderRoundPlan(block.exercises, timing)
   const pacing = PACING_NOTES[timing.mode]
 
@@ -555,21 +558,20 @@ function TimedLadder({
           */}
           {actions}
 
-          {rungs.length > 0 && (
-            <RungsRow rungs={rungs} unit={unit} ending={ending} reached={reached} onReach={setReached} />
-          )}
-
           {/*
             TASK-012 (C35, R95): every round as a compact tile — its rung
             target and the fixed companion work, the round count the timing's
             own — instead of the long per-round list. A schedule's start and
             its live round are still each tile's, from the block's own clock.
+            TASK-013 (C34): while a raced ladder's clock runs or is paused, the
+            tiles are the live ordered check-off, with its count.
           */}
           <LadderPrescription
             exercises={block.exercises}
             rounds={timing.rounds}
             weightUnit={weightUnit}
             roundContext={(number) => roundContext(plan[number - 1], live)}
+            progress={progress}
           />
 
           {pacing !== null && <BlockPanel.Note>{pacing}</BlockPanel.Note>}
@@ -582,7 +584,7 @@ function TimedLadder({
             </BlockPanel.Note>
           )}
 
-          {/* TASK-010 (C29, C30): the ladder's result log, after its work. */}
+          {/* TASK-010, TASK-013: the ladder's result log, after its work. */}
           {result.log}
         </>
       )}

@@ -38,10 +38,18 @@
  * `block_results.notes` through the shell's one writer; nothing here counts a
  * minute, and a note never changes the clock or the time it recorded.
  *
+ * TASK-013 (C33, C34, C36; R69, R77, R88, R92, R93, R99, R118, R124) adds the
+ * ladder's rung results to its result group: once the completion is answered
+ * (or started at its starting point), "Rounds completed" — the rep-first
+ * wrapping tiles of the shared `LadderCompletion`, the selected prefix and its
+ * count — under Complete / Incomplete, as the accepted log composes them. The
+ * consumer imports its tracked live progress into them at Finish or the cap
+ * and owns every change; the log only draws them.
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
- * group joins this form under the same title and group recipe — the ladder's
- * rung results and quiet Undo (TASK-013, TASK-014), richer per-movement
+ * group joins this form under the same title and group recipe — quiet Undo
+ * (TASK-014), richer per-movement
  * actuals and loads (the EMOM's applicable weights among them) and the
  * categorical effort's writer once they exist (TASK-031, TASK-015, TASK-047),
  * and the focused dialog, Save and the four families' adoption into it
@@ -53,6 +61,7 @@ import { ChoiceGroup, Input } from '../../design-system/index'
 import { useInvalidFocus } from '../formFocus'
 import { Heading, HeadingSection } from '../Heading'
 import { SetEffortChoice, type SetEffort } from '../set-effort'
+import { LadderCompletion, type LadderCompletionProps } from './ladder'
 import { QuantitySelector } from './quantity'
 import './tokens.css'
 import './presentation.css'
@@ -98,6 +107,12 @@ export interface CompletionResultLog {
    * is no longer offered as a choice (the chips' shared disabled role).
    */
   saved?: boolean
+  /**
+   * TASK-013: the ladder's rounds completed — the rep-first result tiles,
+   * drawn under the completion row in the same result group. Omitted or null,
+   * none is drawn (before the ladder is answered, and for For Time).
+   */
+  rounds?: Omit<LadderCompletionProps, 'disabled'> | null
 }
 
 /**
@@ -225,12 +240,16 @@ function AmrapGroups({ value, onChange }: AmrapResultLog) {
  * the time cap". A radiogroup cannot be emptied, so once answered the athlete
  * corrects by choosing the other answer, never by clearing it.
  *
+ * Rounds completed (TASK-013: C33, C34): a ladder's rep-first tiles follow
+ * the answer in the same group — the ordered prefix it refines, with its
+ * count — disabled with the answer once the result is saved.
+ *
  * Effort (C30; R63, R76, R80, R116): the existing `SetEffortChoice`, so the
  * same Frown, Meh and Smile, the same words, categories, tick, focus and
  * compact Clear back to `null`. Nothing here turns a category into the
  * numeric block effort or reads it as the session's mood.
  */
-function CompletionGroups({ value, onChange, askCompletion = true, saved = false }: CompletionResultLog) {
+function CompletionGroups({ value, onChange, askCompletion = true, saved = false, rounds = null }: CompletionResultLog) {
   return (
     <>
       {askCompletion && (
@@ -250,6 +269,8 @@ function CompletionGroups({ value, onChange, askCompletion = true, saved = false
               }
             }}
           />
+          {/* TASK-013 (C33, C34): the rounds completed, under the answer they refine. */}
+          {rounds !== null && <LadderCompletion {...rounds} disabled={saved} />}
         </ResultGroup>
       )}
       <ResultGroup>

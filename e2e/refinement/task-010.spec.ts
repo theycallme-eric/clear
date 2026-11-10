@@ -555,11 +555,13 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await pass(page, LADDER_CAP + 5)
 
     // The cap with nothing tracked: Incomplete, and how far is asked — no rung claimed.
+    // TASK-013 (C33, C34): how far is the log's rep-first "Rounds completed",
+    // in place of the rung radios: no tile pressed, and no count of zero.
     await expect.poll(() => chosen(completionOf(card))).toEqual(['Incomplete'])
-    const howFar = card.getByRole('group', { name: 'How far did you get?', exact: true })
+    const howFar = card.getByRole('group', { name: 'Rounds completed', exact: true })
     await expect(howFar).toBeVisible()
-    expect(await howFar.getByRole('radio').evaluateAll((radios) => radios.filter((radio) => (radio as HTMLInputElement).checked).length)).toBe(0)
-    await expect(card.getByText(/^Reached rung/)).toHaveCount(0)
+    await expect(howFar.locator('button[aria-pressed="true"]')).toHaveCount(0)
+    await expect(howFar.getByRole('status')).toHaveText('No rounds marked yet')
     await settle(page)
     expectResultLogContract(await readResultLog(card), 'ladder capped @phone-320')
     await noHorizontalOverflow(page)
@@ -572,8 +574,17 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     const complete = completionOf(card).getByRole('radio', { name: 'Complete', exact: true })
     await expect(complete).toBeFocused()
     expect(await chosen(completionOf(card))).toEqual(['Complete'])
-    await expect(howFar).toHaveCount(0)
-    await expect(card.getByText(`Reached rung ${LADDER_ROUNDS} of ${LADDER_ROUNDS} — 8 reps`, { exact: true })).toBeVisible()
+    // TASK-013 (C34, C36; R69): Complete reads every rung completed, pressed
+    // and counted, still correctable in the log.
+    await expect(howFar.locator('button[aria-pressed="true"]')).toHaveCount(LADDER_ROUNDS)
+    await expect(howFar.getByRole('status')).toHaveText(`${LADDER_ROUNDS} of ${LADDER_ROUNDS} rounds completed`)
+
+    // TASK-013 (C34): each rung is now a real control, so Tab passes through
+    // the rounds — one stop each, in order — before the faces.
+    for (let round = 1; round <= LADDER_ROUNDS; round += 1) {
+      await page.keyboard.press('Tab')
+      await expect(howFar.getByRole('button', { name: new RegExp(`^Round ${round}: `) })).toBeFocused()
+    }
 
     // Tab reaches the faces' one stop; Home/End and the arrows choose; Tab
     // reaches the compact Clear, which hands the caret back to the question.
@@ -653,8 +664,10 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
         expect(await chosen(effortOf(card)), attempt).toEqual([])
         expectResultLogContract(await readResultLog(card), `gallery ${attempt}`)
         if (state.id === 'ladder') {
-          await expect(card.getByRole('group', { name: 'How far did you get?', exact: true })).toBeVisible()
-          await expect(card.getByText(/^Reached rung/)).toHaveCount(0)
+          // TASK-013 (C33, C34): how far is the log's rep-first "Rounds completed", nothing stated.
+          const rounds = card.getByRole('group', { name: 'Rounds completed', exact: true })
+          await expect(rounds).toBeVisible()
+          await expect(rounds.getByRole('status')).toHaveText('No rounds marked yet')
         }
         await test.info().attach(`gallery-${attempt}-signal-phone-390.png`, { body: await scope.screenshot({ caret: 'hide' }), contentType: 'image/png' })
       }
@@ -669,6 +682,7 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
       await checkJourneyA11y(page)
     }
     expect(await page.evaluate(() => localStorage.getItem('clear.workout-for-time'))).toBeNull()
+    expect(await page.evaluate(() => localStorage.getItem('clear.workout-ladders'))).toBeNull()
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 })

@@ -45,9 +45,10 @@ block id. The record holds the attempt's ordered progress, its result draft, the
 checkpoint Undo returns to and the original cap. Its clock is the For Time race clock, moved and
 read only by `for-time.ts`, `timed-lifecycle.ts` and `workout-clock.ts`.
 
-This is a foundation (REQ-032, foundation-provider). No route renderer uses it yet, so
-**JOURNEY-032 is not complete** here. Live check-off, quiet Undo, the shared timed log and visible
-reload/reconnect/save recovery are adopted by the tasks in the table below. TASK-048 owns the
+This is a foundation (REQ-032, foundation-provider), so **JOURNEY-032 is not complete** here. TASK-013
+adopted it in the route's ladder renderer (`src/ui/ladder-block.tsx`) for the clock, live check-off
+and the answer and rounds of its log; quiet Undo, the shared timed log and visible
+reload/reconnect/save recovery are adopted by the other tasks in the table below. TASK-048 owns the
 complete visible recovery.
 
 The rules every consumer inherits:
@@ -92,7 +93,7 @@ Interfaces:
 
 | Task | Consumes | What it must do |
 | --- | --- | --- |
-| TASK-013 (ladder result entry and live check-off) | `usePersistedLadder` (`track`, `editDraft`, `start`, `pause`, `resume`, `finish`), `ladderAttemptView` (`canTrack`, `progress`, `draft`, `outcome`, `lifecycle`), `ladderRaceCapSeconds` | Replace `usePersistedForTime` in the ladder's race with `usePersistedLadder`, for the clock and the progress together; never run both clocks. Move the answer, rung and effort from the renderer's memory into `editDraft`, and report `outcome` through `BlockCompletionControl`. Decide how a scheduled ladder (no cap here; its end is its schedule) uses the record. Re-run the TASK-010 and TASK-012 checks whose assertions this changes (for example "the ladder's draft starts again at Incomplete" and "no category in storage"). |
+| TASK-013 (ladder result entry and live check-off) | `usePersistedLadder` (`track`, `editDraft`, `start`, `pause`, `resume`, `finish`), `ladderAttemptView` (`canTrack`, `progress`, `draft`, `outcome`, `lifecycle`), `ladderRaceCapSeconds` | Replace `usePersistedForTime` in the ladder's race with `usePersistedLadder`, for the clock and the progress together; never run both clocks. Move the answer, rung and effort from the renderer's memory into `editDraft`, and report `outcome` through `BlockCompletionControl`. Decide how a scheduled ladder (no cap here; its end is its schedule) uses the record. Re-run the TASK-010 and TASK-012 checks whose assertions this changes (for example "the ladder's draft starts again at Incomplete" and "no category in storage"). **Done (TASK-013):** one attempt per ladder, its session from `BlockCompletionApi.sessionId`; the answer and rounds through `editDraft` (Incomplete passes `highestRung: null`, so it never keeps the top rung); effort kept in the renderer's memory, unstored, until TASK-046/047's writer; a schedule keeps its start stamp, answer and rounds in the record with no cap and no check-off. |
 | TASK-014 (Undo Finish) | `ladderAttemptView` (`undo`), `usePersistedLadder` (`undoFinish`) | Offer the quiet Undo only while `undo.available`, and call `undoFinish`. It already clears the ending answer and restores the pause and progress. Never resume past the cap or grant time. |
 | TASK-046 (shared timed logging) | `ladderAttemptView` (`draft`, `editable`), `usePersistedLadder` (`editDraft`), `EMPTY_LADDER_DRAFT` | Read and write the ladder's log through the durable draft, never a second draft. Write effort, notes and movement entries only through TASK-015 / TASK-031's writers. `ladderDraftOutcome` stays `highest_rung` only. |
 | TASK-048 (visible reload, reconnect, Undo and save recovery) | `usePersistedLadder` (`source`, `discarded`, `durable`, `saveSucceeded`, `saveFailed`), `ladderAttemptView` (`authority`, `saveFailed`, `undo`), `restoreLadderAttempt`, `readLadderAttempt` | Call `saveSucceeded(attemptId)` or `saveFailed(attemptId)` with the attempt id captured when the forward action began, and pass `isBlockRecorded` as `recorded`. Make `discarded`, `durable: false` and `saveFailed` explicit on screen. Read the saved row back when `authority` is `saved-elsewhere`, and prefer it over the local echo. Prove it on the real lane. |

@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-013",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-workout-flow.test.tsx",
+    "--testNamePattern",
+    "ladder|rung|handoff",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-013/required-cases.json",
+    "sha256": "55b39552db8b4a3230ddeac533c21fcb9dbfb4a1a798a333d734dac8054d7ee7"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-workout-flow.test.tsx",
+      "sha256": "d955ffaa43da779b4b877a98c0c1446414e5ae82b8d4fdb3c074a06490185a91"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 25,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 14,
+    "todo": 0,
+    "executed": 11
+  },
+  "problems": []
+}

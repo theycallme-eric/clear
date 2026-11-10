@@ -413,22 +413,27 @@ describe('TASK-012 compact truthful ladder prescription', () => {
     await user.click(screen.getByRole('button', { name: 'Pause' }))
     expect(tiles(mounted.card)).toEqual(before)
     expect(within(mounted.card).queryByRole('list', { name: 'Ladder' })).toBeNull()
-    // Reading the prescription stores nothing of its own: only the race's clock.
-    expect(storage.keys().filter((key) => !stored.includes(key))).toEqual(['clear.workout-for-time'])
+    // Reading the prescription stores nothing of its own: only the race.
+    // TASK-013 (C36; scope: TASK-032's adoption): the race is the ladder's one
+    // durable attempt — its clock and progress under the ladder's own key —
+    // in place of the For Time clock record.
+    expect(storage.keys().filter((key) => !stored.includes(key))).toEqual(['clear.workout-ladders'])
 
     await user.click(screen.getByRole('button', { name: 'Resume' }))
     moveClock(() => { wall += LADDER_CAP_SECONDS * 1000 })
     // The cap: Incomplete with no rung (TASK-010); how far is asked, and the
-    // prescription is still every round as before.
-    const howFar = within(mounted.card).getByRole('group', { name: 'How far did you get?' })
-    expect(within(howFar).getAllByRole('radio')).toHaveLength(12)
+    // prescription is still every round as before. TASK-013 (C33, C34): how
+    // far is the result log's "Rounds completed", rep-first, one tile a rung.
+    const howFar = within(mounted.card).getByRole('group', { name: 'Rounds completed' })
+    expect(within(howFar).getAllByRole('button')).toHaveLength(12)
     expect(tiles(mounted.card)).toEqual(before)
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
 
-    await user.click(within(howFar).getByRole('radio', { name: '14 reps' }))
+    await user.click(within(howFar).getByRole('button', { name: 'Round 7: 14 reps' }))
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, { highestRung: 7 })
     await user.click(screen.getByRole('radio', { name: 'Complete' }))
-    expect(screen.getByText('Reached rung 12 of 12 — 24 reps')).toBeInTheDocument()
+    // The reached reading: TASK-013's completion count (C34).
+    expect(within(howFar).getByRole('status')).toHaveTextContent('12 of 12 rounds completed')
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, { highestRung: 12 })
     expect(tiles(mounted.card)).toEqual(before)
   }, ROUTE_TIMEOUT)

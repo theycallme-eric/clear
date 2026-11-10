@@ -121,6 +121,13 @@ export interface BlockCompletionApi {
   reportOutcome(blockId: string, outcome: BlockOutcome): void
   /** Blocks the shell has already written a result for, this session. */
   isBlockRecorded(blockId: string): boolean
+  /**
+   * The session the blocks are performed in — read-only identity, so a
+   * renderer that keeps a durable local record (TASK-013: the ladder's
+   * attempt, `usePersistedLadder`) files it under the workout it belongs to.
+   * The shell's provider always supplies it; a bare test seam may omit it.
+   */
+  readonly sessionId?: string
 }
 
 export const BlockCompletionContext = createContext<BlockCompletionApi | null>(null)

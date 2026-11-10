@@ -29,9 +29,12 @@
  * shared `TimedResultLog` shows "Work completed" with Complete beside
  * Incomplete at the starting point the route gives it (For Time: Finish
  * Complete, the cap Incomplete; the ladder: Incomplete with no rung, because
- * nothing was tracked), then the existing three effort faces, unanswered. The
- * reference's synthetic draft, Save/retry, rung tiles, Undo and overlay are
- * not copied.
+ * nothing was tracked), then the existing three effort faces, unanswered.
+ * Since TASK-013 the ladder's log also draws its rep-first "Rounds completed"
+ * tiles under the answer, nothing stated (its clocks were seeded as an older
+ * build kept them, under the For Time key, which the route's ladder adopts
+ * once into its own durable attempt). The reference's synthetic draft,
+ * Save/retry, Undo and overlay are not copied.
  *
  * `?state=emom` (TASK-011: C31, C32; R40, R43, R84) is the same
  * consolidation of the reference's `emom` logging moment: the route's actual
@@ -50,8 +53,9 @@
  * Not composed here, and owned by later tasks: the focused logging dialog,
  * its header, backdrop and contained scrolling (`refinements/logging-overlay.tsx`:
  * TASK-016, TASK-017, TASK-018, adopted for the timed families by TASK-046 and
- * closed on the routes by TASK-041), the ladder's rep-first rung tiles, live
- * check-off and quiet Undo (TASK-013, TASK-014), per-movement next-round
+ * closed on the routes by TASK-041), the ladder's quiet Undo (TASK-014; its
+ * rep-first tiles and live check-off are TASK-013's, drawn by the route's own
+ * ladder in `ladder-4` / `ladder-12` and here), per-movement next-round
  * actuals and loads (the EMOM's applicable weights among them) and the
  * categorical effort's writer (TASK-015, TASK-031, TASK-047), new notes
  * behaviour (TASK-015, TASK-045) and the other logging contexts.
@@ -59,6 +63,8 @@
 import { useState, type ReactNode } from 'react'
 
 import { BlockCompletionProvider } from '../state/block-completion-provider'
+import { ladderRungs, ladderUnit } from '../state/ladder'
+import { ladderPartialRound } from '../state/ladder-recovery'
 import type { SessionAcceptance } from '../state/schemas'
 import { SetLoggingProvider } from '../state/set-logging-provider'
 import { writeAmrapState, writeEmomState, writeForTimeState, type ShellStorage } from '../state/workout-persistence'
@@ -78,6 +84,7 @@ import {
 } from '../ui/refinements/timed-result-log'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
+import { galleryLadderProgress } from './gallery-refinement-flow-data'
 import {
   GALLERY_AMRAP_ATTEMPTS,
   GALLERY_EMOM_ATTEMPTS,
@@ -347,7 +354,37 @@ function MemoryCompletionLog({
   saved?: boolean
 }) {
   const [value, setValue] = useState<CompletionResult>(initial)
-  return <TimedResultLog format={format} value={value} onChange={setValue} saved={saved} />
+  // TASK-013: a ladder's log draws its rounds completed once answered — here
+  // over the accepted four-rung ladder, the prefix held in memory.
+  const [block] = useState(() => galleryLadderProgress(4))
+  const [completedThrough, setCompletedThrough] = useState<number | null>(null)
+  const rungs = ladderRungs(block.exercises)
+  const shown = value.completed === true ? rungs.length : completedThrough
+  const rounds =
+    format !== 'ladder' || value.completed === null
+      ? null
+      : {
+          rungs,
+          unit: ladderUnit(block.exercises),
+          completedThrough: shown,
+          partialRound: value.completed ? null : ladderPartialRound(shown, rungs.length),
+          onChange: (through: number) => {
+            setCompletedThrough(through)
+            setValue({ ...value, completed: through === rungs.length })
+          },
+        }
+  return (
+    <TimedResultLog
+      format={format}
+      value={value}
+      saved={saved}
+      rounds={rounds}
+      onChange={(next) => {
+        if (next.completed === false && value.completed !== false) setCompletedThrough(null)
+        setValue(next)
+      }}
+    />
+  )
 }
 
 /** For Time after Finish under the cap: completion starts at Complete; effort unanswered. */

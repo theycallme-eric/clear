@@ -171,8 +171,9 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
     () => ({
       reportOutcome,
       isBlockRecorded: (blockId) => recorded.has(blockId),
+      sessionId,
     }),
-    [recorded, reportOutcome],
+    [recorded, reportOutcome, sessionId],
   )
 
   const section = useMemo<SectionCompletionApi>(
