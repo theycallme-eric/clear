@@ -36,6 +36,8 @@ import { BlockSlot } from './block-renderers'
 import { SectionLabelContext } from './section-label-context'
 import { ExerciseSetLogger, type ExerciseSetLoggerProps } from './set-logger'
 import { SetLoggingSheetHost, SetLoggingSheetSlot } from './set-logging-sheet'
+import { useSetLoggingSheetOpen } from './set-logging-sheet-context'
+import { RestTimerBar } from './workout-chrome'
 
 interface MountOptions {
   prescription?: Partial<WorkoutExerciseRow>
@@ -47,6 +49,10 @@ interface MountOptions {
   bare?: boolean
   /** Mount under the root Visual effects provider, as the app does. */
   effects?: boolean
+  /** The block's structure and round rest (TASK-020: a superset's round). */
+  block?: { structureType: 'standard' | 'superset'; roundRestSeconds?: number | null }
+  /** The wall clock the session's one rest is read against (TASK-020). */
+  now?: () => number
 }
 
 function mount(options: MountOptions = {}) {
@@ -57,7 +63,8 @@ function mount(options: MountOptions = {}) {
         sectionType: 'primary_lift',
         blocks: [
           {
-            structureType: 'standard',
+            structureType: options.block?.structureType ?? 'standard',
+            roundRestSeconds: options.block?.roundRestSeconds ?? null,
             exercises: options.exercises ?? [{ prescription: options.prescription ?? {} }],
           },
         ],
@@ -101,11 +108,12 @@ function mount(options: MountOptions = {}) {
           weightUnit={options.weightUnit === undefined ? 'kg' : options.weightUnit}
           onFailure={onFailure}
         >
-          <RestTimerProvider>
+          <RestTimerProvider now={options.now}>
             <SetLoggingSheetHost>
               <main>{content}</main>
               <footer aria-label="Pinned foot">
                 <SetLoggingSheetSlot />
+                <FooterRest />
               </footer>
             </SetLoggingSheetHost>
           </RestTimerProvider>
@@ -116,6 +124,11 @@ function mount(options: MountOptions = {}) {
   render(options.effects ? <VisualEffectsProvider>{tree}</VisualEffectsProvider> : tree)
 
   return { attempts, onFailure, base }
+}
+
+/** The workout footer's rest, unless the open sheet draws it (as `Workout.tsx` does). */
+function FooterRest() {
+  return useSetLoggingSheetOpen() ? null : <RestTimerBar />
 }
 
 const main = () => within(screen.getByRole('main'))
@@ -396,7 +409,12 @@ describe('AC-034: result formatter, sync feedback, and a saved state only on suc
     const row = within(rows).getByRole('listitem')
     await waitFor(() => expect(within(row).getByText('Saved')).toBeInTheDocument())
     expect(row).toHaveTextContent('Set 1 · 8 reps · 60 kg')
-    // The sheet moves on to the next set, carrying the weight forward.
+    // TASK-020 (C46, R07) supersedes the move straight to the next set: the
+    // sheet confirms set 1, and the next deliberate Rest opens set 2, still
+    // carrying the weight forward.
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBeInTheDocument()
+    expect(screen.queryByRole('form')).toBeNull()
+    await user.click(main().getByRole('button', { name: 'Rest' }))
     expect(screen.getByRole('region', { name: 'Log set 2' })).toBeInTheDocument()
     expect(form(2).getByLabelText('Weight')).toHaveValue(60)
   })
@@ -492,9 +510,16 @@ describe('AC-035: borders and the countdown', () => {
     expect(sheet.querySelector('.clr-set-sheet__frame')).toHaveClass('clr-chamfer--structure')
     expect(sheet.querySelector('.clr-set-sheet__frame')).not.toHaveClass('clr-chamfer--timer')
 
-    // Context, then the countdown, then the entry.
+    // Context, then the countdown, then what follows it: since TASK-020
+    // (C46) the saved set's confirmation, and after a deliberate Rest the
+    // next entry, in the same place.
     const context = within(sheet).getByText(/back squat · 3 × 8 reps/)
     expect(context.compareDocumentPosition(rest)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(rest.compareDocumentPosition(within(sheet).getByRole('status')))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    const next = within(sheet).getByRole('region', { name: 'Rest' })
+    expect(next).toBe(rest)
     expect(rest.compareDocumentPosition(form(2).getByLabelText('Reps')))
       .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
@@ -568,7 +593,8 @@ describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', ()
     const row = within(await main().findByRole('list', { name: 'Logged sets' })).getByRole('listitem')
     await waitFor(() => expect(within(row).getByText('Saved')).toBeInTheDocument())
     expect(within(row).getByRole('img', { name: 'Effort: too hard' })).toBeInTheDocument()
-    // The next set starts unanswered.
+    // The next set, opened deliberately (TASK-020: C46), starts unanswered.
+    await user.click(main().getByRole('button', { name: 'Rest' }))
     expect(form(2).getAllByRole('radio').every((radio) => radio.getAttribute('aria-checked') === 'false'))
       .toBe(true)
   })
@@ -610,10 +636,11 @@ describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', ()
     expect(cancel.closest('.clr-action-group--paired')).toBe(save.closest('.clr-action-group--paired'))
     expect(edit.queryByRole('button', { name: /^Log set/ })).toBeNull()
 
-    // Cancel hands nothing over and returns to the next new entry.
+    // Cancel hands nothing over and returns to where the sheet was: since
+    // TASK-020 (C46), set 1's confirmation, not a next entry nobody opened.
     await user.click(cancel)
     expect(onCorrectSet).not.toHaveBeenCalled()
-    expect(screen.getByRole('region', { name: 'Log set 2' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBeInTheDocument()
 
     // Save correction hands the corrected set to whoever inserted the interface.
     await user.click(main().getByRole('button', { name: 'Edit set 1' }))
@@ -657,5 +684,278 @@ describe('the sheet stays usable without the shell’s host', () => {
       await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
     })
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-020 (REQ-020; C46, G12; R07, R17) — deliberate Save and the existing rest
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** An injected wall clock for the session's one rest, moved by the test. */
+function wallClock(start = 1_700_000_000_000) {
+  let at = start
+  return {
+    now: () => at,
+    /** Moves the clock and lets the rest read it, as a phone waking does. */
+    advance(seconds: number) {
+      act(() => {
+        at += seconds * 1000
+        window.dispatchEvent(new Event('focus'))
+      })
+    },
+  }
+}
+
+/** The one rest's reading, in seconds, wherever it is drawn. */
+function restSeconds(): number {
+  const rests = screen.getAllByRole('region', { name: 'Rest' })
+  expect(rests).toHaveLength(1)
+  const text = within(rests[0]).getByRole('timer').textContent ?? ''
+  const digits = /(\d\d):(\d\d)/.exec(text)
+  if (digits === null) throw new Error(`no rest digits in ${text}`)
+  return Number(digits[1]) * 60 + Number(digits[2])
+}
+
+const SHEET_TITLE = /^(Log|Edit) (set|round) \d+$|^(Set|Round) \d+ logged$/
+
+function openSheets() {
+  return screen.queryAllByRole('region', { name: SHEET_TITLE })
+}
+
+describe('TASK-020 deliberate Save confirmation and existing rest lifecycle', () => {
+  it('AC-C46-01 Log set N shows its saved confirmation beside the same running rest and no next-set form; at rest end the sheet collapses and resets, and only a deliberate Rest opens set N + 1', { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const clock = wallClock()
+    const { attempts } = mount({ now: clock.now, prescription: { rest_seconds: 60 } })
+
+    await openSheet(user)
+    expect(restSeconds()).toBe(60)
+    clock.advance(10)
+    await user.type(form(1).getByLabelText('Weight'), '60')
+    await user.click(form(1).getByRole('radio', { name: 'Too easy' }))
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(attempts).toHaveLength(1))
+
+    // The confirmation, in the sheet that stayed open: its title, the saved
+    // result read back from the shell's list, and no form for set 2.
+    const sheet = screen.getByRole('region', { name: 'Set 1 logged' })
+    expect(within(sheet).getByRole('heading', { name: 'Set 1 logged' })).toHaveFocus()
+    const status = within(sheet).getByRole('status')
+    expect(status).toHaveTextContent('Set 1 · 8 reps · 60 kg')
+    expect(within(status).getByRole('img', { name: 'Effort: too easy' })).toBeInTheDocument()
+    await waitFor(() => expect(within(status).getByText('Saved')).toBeInTheDocument())
+    expect(screen.queryByRole('form')).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Log set 2' })).toBeNull()
+    expect(within(sheet).getByRole('button', { name: 'Minimize' })).toBeInTheDocument()
+
+    // The same rest, in the same place, neither restarted nor replaced (R17:
+    // the shared timer card, with its own Add 30s and Skip rest).
+    const rest = within(sheet).getByRole('region', { name: 'Rest' })
+    expect(rest.compareDocumentPosition(status)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(restSeconds()).toBe(50)
+    expect(within(rest).getByRole('button', { name: 'Add 30s' })).toBeInTheDocument()
+    expect(within(rest).getByRole('button', { name: 'Skip rest' })).toBeInTheDocument()
+    clock.advance(20)
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBe(sheet)
+    expect(restSeconds()).toBe(30)
+
+    // Rest end: the sheet collapses, focus returns to the entry action, and
+    // nothing is opened or recorded.
+    clock.advance(31)
+    await waitFor(() => expect(openSheets()).toEqual([]))
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
+    clock.advance(120)
+    expect(openSheets()).toEqual([])
+    expect(attempts).toHaveLength(1)
+
+    // Reset: the next deliberate Rest opens set 2, weight carried forward and
+    // effort unanswered, with its own prescribed rest.
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    expect(screen.getByRole('region', { name: 'Log set 2' })).toBeInTheDocument()
+    expect(form(2).getByLabelText('Weight')).toHaveValue(60)
+    expect(form(2).getAllByRole('radio').every((radio) => radio.getAttribute('aria-checked') === 'false'))
+      .toBe(true)
+    expect(restSeconds()).toBe(60)
+    expect(attempts).toHaveLength(1)
+  })
+
+  it('AC-R020-01 Save never replaces the entry with another form; an early collapse is kept: the rest ending never reopens the sheet, and Rest opens the next entry on the same rest', { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const clock = wallClock()
+    const { attempts } = mount({ now: clock.now, prescription: { rest_seconds: 60 } })
+
+    await openSheet(user)
+    clock.advance(5)
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(attempts).toHaveLength(1))
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBeInTheDocument()
+
+    // Minimize before the rest ends: the sheet closes, the same rest runs on
+    // in the footer, and focus returns to Rest.
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    expect(openSheets()).toEqual([])
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
+    expect(foot().queryByRole('region', { name: 'Rest' })).not.toBeNull()
+    expect(restSeconds()).toBe(55)
+
+    // The rest ending finds nothing open and reopens nothing.
+    clock.advance(70)
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull())
+    expect(openSheets()).toEqual([])
+    clock.advance(60)
+    expect(openSheets()).toEqual([])
+    expect(attempts).toHaveLength(1)
+
+    // A second set, collapsed early and reopened deliberately during its rest:
+    // the next entry, on the rest already running, never the old confirmation.
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    clock.advance(4)
+    await user.click(form(2).getByRole('button', { name: 'Log set 2' }))
+    await waitFor(() => expect(attempts).toHaveLength(2))
+    expect(screen.getByRole('region', { name: 'Set 2 logged' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    clock.advance(6)
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    expect(screen.getByRole('region', { name: 'Log set 3' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Set 2 logged' })).toBeNull()
+    expect(restSeconds()).toBe(50)
+    expect(attempts).toHaveLength(2)
+  })
+
+  it('AC-R020-02 Add 30s and Skip rest stay the existing rest’s: the extension keeps the confirmation and Skip rest ends it; rest expiry or its final-seconds warning never records another set or closes a draft', { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const clock = wallClock()
+    const { attempts } = mount({ now: clock.now, prescription: { rest_seconds: 30 } })
+
+    await openSheet(user)
+    clock.advance(10)
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(attempts).toHaveLength(1))
+    const sheet = screen.getByRole('region', { name: 'Set 1 logged' })
+
+    // Add 30s extends the same rest: 20 s left becomes 50, the confirmation stays.
+    await user.click(within(sheet).getByRole('button', { name: 'Add 30s' }))
+    expect(restSeconds()).toBe(50)
+    clock.advance(25)
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBe(sheet)
+    expect(restSeconds()).toBe(25)
+
+    // The warning in its final seconds is the rest's; it records nothing.
+    clock.advance(17)
+    expect(within(sheet).getByText('Final 10 seconds')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBe(sheet)
+    expect(attempts).toHaveLength(1)
+
+    // Skip rest ends the rest, and with it the confirmation.
+    await user.click(within(sheet).getByRole('button', { name: 'Skip rest' }))
+    await waitFor(() => expect(openSheets()).toEqual([]))
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
+    expect(attempts).toHaveLength(1)
+
+    // A deliberately opened draft is not collapsed or saved by its rest ending.
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    await user.clear(form(2).getByLabelText('Reps'))
+    await user.type(form(2).getByLabelText('Reps'), '6')
+    clock.advance(45)
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull())
+    expect(screen.getByRole('region', { name: 'Log set 2' })).toBeInTheDocument()
+    expect(form(2).getByLabelText('Reps')).toHaveValue(6)
+    expect(attempts).toHaveLength(1)
+
+    // Its own Save, with no rest running, is confirmed until the athlete collapses it.
+    await user.click(form(2).getByRole('button', { name: 'Log set 2' }))
+    await waitFor(() => expect(attempts).toHaveLength(2))
+    expect(attempts[1].performed).toMatchObject({ setNumber: 2, reps: 6 })
+    expect(screen.getByRole('region', { name: 'Set 2 logged' })).toBeInTheDocument()
+    clock.advance(300)
+    expect(screen.getByRole('region', { name: 'Set 2 logged' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    expect(openSheets()).toEqual([])
+    expect(attempts).toHaveLength(2)
+  })
+
+  it('AC-R020-02 a superset’s Log round N confirms each logged movement’s own actuals and effort beside the round’s one rest; the rest ending collapses without opening round N + 1', { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const clock = wallClock()
+    const { attempts } = mount({
+      now: clock.now,
+      block: { structureType: 'superset', roundRestSeconds: 60 },
+      exercises: [
+        { prescription: { exercise_id: 'bench-press', order_index: 0, target_value: 8, sets: 3 } },
+        { prescription: { exercise_id: 'plank', order_index: 1, equipment_used: 'bodyweight', load_type: 'bodyweight',
+          load_value: null, modality: 'time', target_value: 30, sets: 3 } },
+      ],
+    })
+
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    const round = within(screen.getByRole('form', { name: 'Log round 1 of bench press and plank' }))
+    expect(restSeconds()).toBe(60)
+    const bench = within(round.getByRole('group', { name: 'A1 bench press, set 1' }))
+    const plank = within(round.getByRole('group', { name: 'A2 plank, set 1' }))
+    await user.type(bench.getByLabelText('Weight'), '135')
+    await user.selectOptions(bench.getByRole('combobox', { name: 'Unit' }), 'lb')
+    await user.clear(bench.getByLabelText('Reps'))
+    await user.type(bench.getByLabelText('Reps'), '7')
+    await user.click(bench.getByRole('radio', { name: 'Too easy' }))
+    await user.clear(plank.getByLabelText('Seconds'))
+    await user.type(plank.getByLabelText('Seconds'), '28')
+    clock.advance(10)
+    await user.click(round.getByRole('button', { name: 'Log round 1' }))
+    await waitFor(() => expect(attempts).toHaveLength(2))
+    // Each movement its own observation, under the round's number.
+    expect(attempts[0].exerciseId).not.toBe(attempts[1].exerciseId)
+    expect(attempts[0].weightUnit).toBe('lb')
+    expect(attempts[0].performed).toMatchObject({ setNumber: 1, reps: 7, weight: 135, effort: 'too_easy' })
+    expect(attempts[1].performed).toMatchObject({ setNumber: 1, durationSeconds: 28 })
+    expect(attempts[1].performed.weight ?? null).toBeNull()
+
+    const sheet = screen.getByRole('region', { name: 'Round 1 logged' })
+    const status = within(sheet).getByRole('status')
+    expect(status).toHaveTextContent('A1 bench press · Set 1 · 7 reps · 135 lb')
+    expect(status).toHaveTextContent('A2 plank · Set 1 · 28 sec')
+    expect(within(status).getByRole('img', { name: 'Effort: too easy' })).toBeInTheDocument()
+    expect(screen.queryByRole('form')).toBeNull()
+    expect(within(sheet).getByRole('region', { name: 'Rest' })).toHaveTextContent('Rest after round 1')
+    expect(restSeconds()).toBe(50)
+
+    clock.advance(51)
+    await waitFor(() => expect(openSheets()).toEqual([]))
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
+    clock.advance(60)
+    expect(openSheets()).toEqual([])
+    expect(attempts).toHaveLength(2)
+
+    // Round 2, deliberately: only the movement the athlete identifies is
+    // logged, and only it is confirmed.
+    await user.click(main().getByRole('button', { name: 'Rest' }))
+    const round2 = within(screen.getByRole('form', { name: 'Log round 2 of bench press and plank' }))
+    await user.click(within(round2.getByRole('group', { name: 'A1 bench press, set 2' })).getByRole('checkbox', { name: 'Performed' }))
+    await user.click(round2.getByRole('button', { name: 'Log round 2' }))
+    await waitFor(() => expect(attempts).toHaveLength(3))
+    const status2 = within(screen.getByRole('region', { name: 'Round 2 logged' })).getByRole('status')
+    expect(status2).toHaveTextContent('A1 bench press · Set 2')
+    expect(status2).not.toHaveTextContent('plank')
+  })
+
+  it('AC-R020-02 a Save the shell refuses claims no confirmation: the entry stays on its form, and the rest ending neither collapses nor records it', { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const clock = wallClock()
+    const { attempts, onFailure } = mount({ now: clock.now, weightUnit: null, prescription: { rest_seconds: 30 } })
+
+    await openSheet(user)
+    await user.type(form(1).getByLabelText('Weight'), '60')
+    await user.selectOptions(form(1).getByRole('combobox', { name: 'Unit' }), 'kg')
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(onFailure).toHaveBeenCalled())
+    expect(screen.queryByRole('region', { name: 'Set 1 logged' })).toBeNull()
+    expect(form(1).getByLabelText('Weight')).toHaveValue(60)
+
+    clock.advance(31)
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull())
+    expect(screen.getByRole('region', { name: 'Log set 1' })).toBeInTheDocument()
+    expect(form(1).getByLabelText('Weight')).toHaveValue(60)
+    expect(attempts).toEqual([])
   })
 })

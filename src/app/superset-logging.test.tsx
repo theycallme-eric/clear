@@ -240,8 +240,11 @@ describe('one combined Log round (AC-058)', () => {
       durationSeconds: 45,
       effort: 'too_easy',
     })
-    // The sheet moves on to the next round, every field and effort fresh.
-    const next = roundForm(2)
+    // TASK-020 (C46): round 1 is confirmed in the sheet, not replaced by round
+    // 2's form; the next round, opened deliberately, starts every field and
+    // effort fresh.
+    expect(screen.getByRole('region', { name: 'Round 1 logged' })).toBeInTheDocument()
+    const next = await openRound(user, 2)
     expect(within(movement(next, 'A1 bench press, set 2').getByRole('group', { name: 'Effort' }))
       .queryByRole('radio', { checked: true })).toBeNull()
     expect(movement(next, 'A1 bench press, set 2').getByRole('checkbox', { name: 'Performed' })).not.toBeChecked()
@@ -289,7 +292,9 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     expect(double.loggedSets().some((entry) => entry.exerciseId === exerciseIdOf(double, 'plank'))).toBe(false)
 
     // The next round keeps the plank's gap at set 1 rather than sliding into it.
-    const next = roundForm(2)
+    // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately.
+    expect(screen.getByRole('region', { name: 'Round 1 logged' })).toBeInTheDocument()
+    const next = await openRound(user, 2)
     await user.click(movement(next, 'A2 plank, set 2').getByRole('checkbox', { name: 'Performed' }))
     await user.click(submit(next, 2))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(2))
@@ -575,7 +580,9 @@ describe('shared rest and the global clock (AC-060)', () => {
     expect(sessionClock()).toHaveTextContent('10:20')
 
     // A partial round still saves as one round, and starts no second rest.
-    const next = roundForm(2)
+    // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately.
+    expect(screen.getByRole('region', { name: 'Round 1 logged' })).toBeInTheDocument()
+    const next = await openRound(user, 2)
     await retype(user, movement(next, 'A2 plank, set 2').getByLabelText('Seconds'), '25')
     await user.click(submit(next, 2))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(3))

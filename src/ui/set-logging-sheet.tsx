@@ -22,6 +22,13 @@
  * It owns no draft and writes nothing. The logger that opens it keeps the
  * entry and decides what a submit means, so collapsing the sheet loses
  * nothing and only an explicit Log set records an observation.
+ *
+ * TASK-020 (C46; R07, R17): after an accepted Log set N or Log round N the
+ * sheet is that entry's confirmation — `Set N logged`, the saved result read
+ * back, and the same running rest in the same place — instead of the next
+ * set's form. The logger decides when it ends (`set-save-confirmation.ts`):
+ * the rest ending collapses it, Minimize ends it early, and only a deliberate
+ * Rest opens the next entry.
  */
 import {
   use,
@@ -136,6 +143,13 @@ export interface SetLoggingSheetProps {
    * rest, which is absent whenever no rest is running.
    */
   rest?: ReactNode
+  /**
+   * TASK-020 (C46): the entry just saved, confirmed in the form's place.
+   * Given, the sheet is titled `Set N logged` (`Round N logged`), keeps its
+   * context, rest and Minimize, and draws no form: the next entry waits for a
+   * deliberate Rest.
+   */
+  confirmation?: SetSheetConfirmation
   saving?: boolean
   blocked?: boolean
   /**
@@ -151,6 +165,17 @@ export interface SetLoggingSheetProps {
    */
   onClear?(): void
   onCollapse(): void
+}
+
+export interface SetSheetConfirmation {
+  /** What was saved, as the title names it — `set 2`, `round 1`. */
+  readonly entryName: string
+  /** The saved result, read back from the shell's set list. */
+  readonly reading: ReactNode
+}
+
+function capitalised(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 const STRUCTURE_BLEED_STYLE = { '--bleed': 'var(--border-frame-structure)' } as CSSProperties
@@ -173,6 +198,7 @@ export function SetLoggingSheet({
   measures,
   effort,
   rest,
+  confirmation,
   saving = false,
   blocked = false,
   onSubmit,
@@ -189,9 +215,12 @@ export function SetLoggingSheet({
   // the title is already in view, and its region has not been sized yet:
   // scrolling to it there would leave the sheet opened part-way down.
   const hosted = use(SetLoggingSheetHostContext) !== null
+  // A Save replaces the form, and its focused action, with the confirmation:
+  // the title takes focus again so the reader lands on `Set N logged`.
+  const confirmed = confirmation !== undefined
   useEffect(() => {
     document.getElementById(titleId)?.focus({ preventScroll: hosted })
-  }, [titleId, hosted])
+  }, [titleId, hosted, confirmed])
 
   return (
     // Portalled out of the block's card, the sheet is not inside it: React
@@ -216,7 +245,9 @@ export function SetLoggingSheet({
           <div className="clr-row clr-set-sheet__head">
             <HeadingLevelProvider level={2}>
               <Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {mode === 'edit' ? 'Edit' : 'Log'} {entryName}
+                {confirmation === undefined
+                  ? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`
+                  : `${capitalised(confirmation.entryName)} logged`}
               </Heading>
             </HeadingLevelProvider>
             <IconButton
@@ -232,6 +263,13 @@ export function SetLoggingSheet({
 
           {rest === undefined ? <RestTimerBar /> : rest}
 
+          {confirmation === undefined ? null : (
+            <div role="status" className="clr-stack clr-stack--tight clr-set-sheet__saved">
+              {confirmation.reading}
+            </div>
+          )}
+
+          {confirmation !== undefined ? null : (
           <form
             aria-label={formLabel}
             onSubmit={submitWith(onSubmit)}
@@ -264,6 +302,7 @@ export function SetLoggingSheet({
               </ActionGroup>
             )}
           </form>
+          )}
         </div>
       </div>
     </section>

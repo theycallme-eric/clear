@@ -1478,7 +1478,8 @@ describe('Workout — the session’s one rest', () => {
     await logSet('plank', 1)
     await logSet('dead bug', 1)
 
-    await screen.findByRole('form', { name: 'Log set 2 of dead bug' })
+    // TASK-020 (C46): the saved set is confirmed, with no rest to wait for.
+    await screen.findByRole('region', { name: 'Set 1 logged' })
     expect(restBars()).toEqual([])
     expect(screen.queryByText(/Rest: 0|00:00/)).not.toBeInTheDocument()
   })
@@ -1545,7 +1546,11 @@ describe('Workout — the session’s one rest', () => {
     await user.click(screen.getByRole('button', { name: 'Skip rest' }))
     expect(restBars()).toEqual([])
     // Skipping ends the rest and records nothing: the set is still the set.
-    expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
+    // TASK-020 (C46): the rest's end collapses set 1's confirmation and opens
+    // no next form.
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Set 1 logged' })).toBeNull())
+    expect(screen.queryByRole('form', { name: /^Log set \d+ of back squat$/ })).toBeNull()
+    expect(screen.getByText('Set 1 · 8 reps')).toBeInTheDocument()
   })
 
   it('keeps the rest when the user moves between sections, because the session owns it', async () => {

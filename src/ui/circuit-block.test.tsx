@@ -739,9 +739,11 @@ describe('optional, compact load entry', () => {
       exerciseId: block.exercises[0]!.exerciseId,
       blockId: block.blockId,
     })
+    // TASK-020 (C46): the saved set is confirmed, not replaced by set 2's form.
     expect(
-      await screen.findByRole('form', { name: 'Log set 2 of back squat' }),
+      await screen.findByRole('region', { name: 'Set 1 logged' }),
     ).toBeInTheDocument()
+    expect(screen.queryByRole('form', { name: /^Log set \d+ of back squat$/ })).toBeNull()
 
     // A set is not a round: nothing was recorded for it, and no rest raised.
     expect(roundRecord()).toHaveTextContent('No rounds recorded')
@@ -764,7 +766,9 @@ describe('optional, compact load entry', () => {
 
     await logSet(user, 'back squat', 1)
 
-    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+    // TASK-020 (C46): set 1 is confirmed while it is in flight; set 2 is
+    // opened deliberately from the movement's Rest.
+    await screen.findByRole('region', { name: 'Set 1 logged' })
     const busy = formFor('back squat', 2).getByRole('button')
     await waitFor(() => expect(busy).toBeDisabled())
     expect(busy).toHaveAttribute('aria-busy', 'true')
@@ -797,7 +801,9 @@ describe('optional, compact load entry', () => {
 
     await logSet(user, 'back squat', 1)
 
-    const first = within(movementRows()[0]!)
+    // The movement's saved rows (TASK-020: its sheet's confirmation, drawn in
+    // place here, reads the same status back).
+    const first = within(within(movementRows()[0]!).getByRole('list', { name: 'Logged sets' }))
     expect(await first.findByText('On this device only')).toBeInTheDocument()
     expect(workout.loggedSets()).toEqual([])
 

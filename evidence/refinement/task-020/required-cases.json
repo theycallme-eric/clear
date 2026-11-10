@@ -1,0 +1,81 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-020",
+  "description": "Deliberate Save confirmation and existing rest lifecycle (REQ-020; C46, G12; R07, R17; AC-C46-01, AC-R020-01, AC-R020-02; JOURNEY-020). On the real /workout route an accepted Log set N (ExerciseSetLogger) or Log round N (SupersetRound / SupersetRoundSheet) turns the shared SetLoggingSheet into that entry's confirmation - titled Set N logged / Round N logged, the saved result read back from the shell's set list with each movement's own actuals, effort and sync status, the session's existing rest (RestTimerBar over RestTimerProvider, its Add 30s and Skip rest unchanged) in the same place - instead of the next entry's form. The confirmation's lifecycle (src/ui/set-save-confirmation.ts) is derived from the rest it was saved during: that rest running out or being skipped collapses a sheet still showing it and resets it; Minimize ends it early and the rest ending never reopens anything; only the card's or block's Rest opens set/round N + 1; with no rest running it stays until collapsed. A refused write keeps its form (profile unread) or is confirmed only as held on this device; a rest ending or its final-seconds warning never records a set or closes a draft. The accepted gallery states /gallery/refinements?state=anchor and ?state=superset (reference eded158cfd928d382c9a9409e2c372270312741d) do not exist in this build; they arrive with their route consumers and the focused LoggingOverlay migration (TASK-043, TASK-044), so this task proves the real route only. check-01 proves the sheet over the real set-logging and rest providers with an injected wall clock; check-02 proves the journey in the browser at 320 and 390 on a contained synthetic session, with touch, keyboard, reduced motion and a refused write. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-020 --check check-01 -- npx vitest run src/ui/set-logging-sheet.test.tsx --testNamePattern \"rest|save|collapse\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C46-01",
+        "AC-R020-01",
+        "AC-R020-02"
+      ],
+      "files": [
+        "src/ui/set-logging-sheet.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-C46-01 Log set N shows its saved confirmation beside the same running rest and no next-set form; at rest end the sheet collapses and resets, and only a deliberate Rest opens set N + 1",
+          "criterion": "AC-C46-01"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-01 Save never replaces the entry with another form; an early collapse is kept: the rest ending never reopens the sheet, and Rest opens the next entry on the same rest",
+          "criterion": "AC-R020-01"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 Add 30s and Skip rest stay the existing rest’s: the extension keeps the confirmation and Skip rest ends it; rest expiry or its final-seconds warning never records another set or closes a draft",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a superset’s Log round N confirms each logged movement’s own actuals and effort beside the round’s one rest; the rest ending collapses without opening round N + 1",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a Save the shell refuses claims no confirmation: the entry stays on its form, and the rest ending neither collapses nor records it",
+          "criterion": "AC-R020-02"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-020 --check check-02 -- npx playwright test e2e/refinement/task-020.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C46-01",
+        "AC-R020-01",
+        "AC-R020-02",
+        "JOURNEY-020"
+      ],
+      "files": [
+        "e2e/refinement/task-020.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-020.spec.ts",
+          "project": "mobile",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > JOURNEY-020 phone-320: Log set and Log round confirm the saved entry beside the same rest, collapse at its end without opening the next form, keep an early collapse, and open the next entry only from Rest",
+          "criterion": "JOURNEY-020"
+        },
+        {
+          "file": "e2e/refinement/task-020.spec.ts",
+          "project": "mobile",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > JOURNEY-020 phone-390: Log set and Log round confirm the saved entry beside the same rest, collapse at its end without opening the next form, keep an early collapse, and open the next entry only from Rest",
+          "criterion": "JOURNEY-020"
+        },
+        {
+          "file": "e2e/refinement/task-020.spec.ts",
+          "project": "mobile",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 keyboard, reduced motion and a refused save phone-390: Add 30s keeps the confirmation, its final-seconds warning and Skip rest record nothing, a refused write is confirmed only as held on this device, and a draft is never closed by expiry",
+          "criterion": "AC-R020-02"
+        }
+      ]
+    }
+  }
+}

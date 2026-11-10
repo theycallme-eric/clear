@@ -1,0 +1,55 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-020",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-020.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-020/required-cases.json",
+    "sha256": "34ffb89ea69d10e5065da62ed6643412b9da3551831c0cfca4864dd160212038"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-020.spec.ts",
+      "sha256": "999d4f7c450c06e40a706eecc8caaf4e89ba58a7bd4845c3499050c79f4a9f79"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-020.spec.ts",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > JOURNEY-020 phone-320: Log set and Log round confirm the saved entry beside the same rest, collapse at its end without opening the next form, keep an early collapse, and open the next entry only from Rest",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-020.spec.ts",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > JOURNEY-020 phone-390: Log set and Log round confirm the saved entry beside the same rest, collapse at its end without opening the next form, keep an early collapse, and open the next entry only from Rest",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-020.spec.ts",
+      "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 keyboard, reduced motion and a refused save phone-390: Add 30s keeps the confirmation, its final-seconds warning and Skip rest record nothing, a refused write is confirmed only as held on this device, and a draft is never closed by expiry",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 3
+  },
+  "problems": []
+}

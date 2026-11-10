@@ -84,8 +84,9 @@ import { MovementCountdown } from './movement-countdown'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
-import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
+import { SetLoggingSheet, SetMeasurementRow, type SetSheetConfirmation } from './set-logging-sheet'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
+import { focusIsInSetSheet, useSaveConfirmation } from './set-save-confirmation'
 
 type WeightUnit = Enums<'weight_unit'>
 
@@ -220,6 +221,28 @@ export function ExerciseSetLogger({
       : { set: correctedSet, draft: correction }
   const mode = edit === null ? 'new' : 'edit'
   const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
+
+  // TASK-020 (C46; R07, R17): an accepted Log set N is confirmed beside the
+  // running rest rather than replaced by set N + 1's form. The rest ending
+  // collapses the confirmation; Minimize ends it early; Rest opens the next.
+  const saved = useSaveConfirmation({
+    open: sheet.open,
+    editing: edit !== null,
+    recorded: (entry) => logged.some((set) => set.setNumber === entry),
+    onRestEnd: () => {
+      const inSheet = focusIsInSetSheet()
+      sheet.setOpen(false)
+      if (inSheet) returnFocus()
+    },
+  })
+  const confirmedSet =
+    edit !== null || saved.confirmed === null
+      ? undefined
+      : logged.find((set) => set.setNumber === saved.confirmed)
+  const confirmation: SetSheetConfirmation | undefined =
+    confirmedSet === undefined
+      ? undefined
+      : { entryName: `set ${confirmedSet.setNumber}`, reading: <SavedSetLine set={confirmedSet} /> }
   const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
   /**
@@ -230,6 +253,8 @@ export function ExerciseSetLogger({
    */
   const openNew = () => {
     setCorrection(null)
+    // A deliberate Rest is the next entry: any confirmation is over.
+    saved.reset()
     const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
     if (restOnEntry !== null && !resting) {
       restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restOnEntry })
@@ -244,6 +269,9 @@ export function ExerciseSetLogger({
   }
 
   const collapse = () => {
+    // An early collapse ends the confirmation: the rest ending will not
+    // reopen anything, and the next Rest opens the next entry (R07).
+    saved.reset()
     sheet.setOpen(false)
     returnFocus()
   }
@@ -315,6 +343,7 @@ export function ExerciseSetLogger({
         <SetSheetForm
           key={mode}
           mode={mode}
+          confirmation={confirmation}
           setNumber={sheetSetNumber}
           exerciseName={name}
           context={[title, prescriptionText(prescription), equipment].join(' · ')}
@@ -347,6 +376,8 @@ export function ExerciseSetLogger({
             }
             // The save only: a running rest carries on, and none is started.
             logSet(exercise.exerciseId, performed)
+            // Confirmed once the shell's list holds it; a refusal keeps the form.
+            saved.confirm(sheetSetNumber)
           }}
           onCancel={() => {
             setCorrection(null)
@@ -511,6 +542,32 @@ function SyncBadge({ status }: { status: SetSyncStatus }) {
 }
 
 /**
+ * TASK-020 (C46): the confirmation's reading of one saved set — the same
+ * formatter, effort reading and sync status as its row on the card, so the
+ * sheet never says more than the shell's list does (EXE-07: a queued or
+ * refused set is never drawn as stored). `name` prefixes a superset round's
+ * movement, whose actuals are each its own.
+ */
+function SavedSetLine({ set, name }: { set: LoggedSet; name?: string }) {
+  return (
+    <p
+      style={{
+        margin: 0,
+        fontFamily: 'var(--font-data)',
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 'var(--spacing-100)',
+      }}
+    >
+      <span>{name === undefined ? loggedSetText(set) : `${name} · ${loggedSetText(set)}`}</span>
+      <SetEffortReading value={set.effort} />
+      <SyncBadge status={set.status} />
+    </p>
+  )
+}
+
+/**
  * One recorded set, in the units it was recorded in. A null field says
  * nothing — it was not recorded, which is not the same as zero — and zero is
  * printed, because a failed attempt is a result (DATA_MODEL §8).
@@ -645,6 +702,8 @@ interface SetSheetFormProps {
   /** False for an unloaded movement with no load to carry forward. */
   showLoad: boolean
   saving: boolean
+  /** TASK-020: the set just saved, confirmed in the form's place. */
+  confirmation?: SetSheetConfirmation
   onSubmit: (performed: PerformedSet) => void
   onCancel: () => void
   /** Edit mode, where the shell can clear a saved set: arms the confirmation. */
@@ -664,6 +723,7 @@ interface SetSheetFormProps {
  */
 function SetSheetForm({
   mode,
+  confirmation,
   setNumber,
   exerciseName: name,
   context,
@@ -694,6 +754,7 @@ function SetSheetForm({
     <SetLoggingSheet
       mode={mode}
       setNumber={setNumber}
+      confirmation={confirmation}
       formLabel={`${mode === 'edit' ? 'Edit' : 'Log'} set ${setNumber} of ${name}`}
       context={context}
       measures={
@@ -994,6 +1055,14 @@ export interface SupersetRoundSheetProps {
   /** The entry so far, or `null` before anything was entered. */
   held: RoundDraft | null
   onHeld: (draft: RoundDraft) => void
+  /**
+   * TASK-020 (C46; R07): the round just saved, confirmed in the form's place
+   * — each logged movement's own actuals and effort, read back — or null for
+   * the entry. The block decides when it ends (`useSaveConfirmation`).
+   */
+  confirmed?: number | null
+  /** Log round N was accepted for `round`. */
+  onSaved?: (round: number) => void
   onCollapse: () => void
 }
 
@@ -1002,6 +1071,8 @@ export function SupersetRoundSheet({
   round,
   held,
   onHeld: setHeld,
+  confirmed = null,
+  onSaved,
   onCollapse,
 }: SupersetRoundSheetProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
@@ -1061,14 +1132,33 @@ export function SupersetRoundSheet({
     for (const { part, reading } of chosen) {
       if (reading.performed !== null) logSet(part.exercise.exerciseId, reading.performed)
     }
+    onSaved?.(round)
     return true
   }
+
+  // Each movement the round recorded, under its own name; an unticked one
+  // was not logged and is not mentioned.
+  const savedLines = confirmed === null
+    ? []
+    : parts.flatMap((part) => {
+      const set = loggedSets(part.exercise.exerciseId).find((candidate) => candidate.setNumber === confirmed)
+      return set === undefined ? [] : [{ part, set }]
+    })
+  const confirmation: SetSheetConfirmation | undefined = savedLines.length === 0 || confirmed === null
+    ? undefined
+    : {
+      entryName: `round ${confirmed}`,
+      reading: savedLines.map(({ part, set }) => (
+        <SavedSetLine key={part.exercise.exerciseId} set={set} name={`${part.ordinal} ${part.name}`} />
+      )),
+    }
 
   return (
     <SetLoggingSheet
       mode="new"
       setNumber={round}
       entryName={`round ${round}`}
+      confirmation={confirmation}
       formLabel={`Log round ${round} of ${parts.map((part) => part.name).join(' and ')}`}
       measures={readings.map(({ part, entry, reading }) => {
         // Entering a result identifies this movement. Clearing a suggestion or

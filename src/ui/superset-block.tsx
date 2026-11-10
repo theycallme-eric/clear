@@ -28,6 +28,10 @@
  *     sheet with each movement's own fields and effort (`SupersetRoundSheet`)
  *     and starts the round's one rest (REQ-012); its Log round N saves only
  *     the movements the athlete identifies, as one round.
+ *   · **Save confirms, then the rest ends it** (TASK-020: C46, R07). The
+ *     saved round is confirmed beside the same rest until that rest ends,
+ *     which collapses the sheet; Minimize ends it early, and only the block's
+ *     Rest opens round N + 1.
  *
  * Everything else is deliberately `StandardBlock`'s: `ExerciseSetLogger` reads
  * the structured prescription and corrects each saved set through the shell's one path,
@@ -53,6 +57,7 @@ import {
   type RoundDraft,
 } from './set-logger'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
+import { focusIsInSetSheet, useSaveConfirmation } from './set-save-confirmation'
 
 /**
  * The label for one member of the pair: `A1`, `A2`, `A3`.
@@ -107,6 +112,20 @@ function SupersetRound({ block }: BlockRendererProps) {
   const round = supersetRound(movements.map((exercise) => loggedSets(exercise.exerciseId)))
   const restTimer = useRestTimer()
 
+  // TASK-020 (C46; R07, R17): Log round N is confirmed beside the round's
+  // running rest, not replaced by round N + 1's form. The rest ending
+  // collapses it; Minimize ends it early; the block's Rest opens the next.
+  const saved = useSaveConfirmation({
+    open: sheet.open,
+    recorded: (entry) =>
+      movements.some((exercise) => loggedSets(exercise.exerciseId).some((set) => set.setNumber === entry)),
+    onRestEnd: () => {
+      const inSheet = focusIsInSetSheet()
+      sheet.setOpen(false)
+      if (inSheet) logButton.current?.focus()
+    },
+  })
+
   // The block's Rest action (REQ-012): open the round sheet and, when no rest
   // is running, start the block's one rest. Log round N only saves.
   const openRound = () => {
@@ -116,10 +135,14 @@ function SupersetRound({ block }: BlockRendererProps) {
     if (seconds !== null && closing !== undefined && !resting) {
       restTimer.start({ exerciseId: closing.exerciseId, label: `round ${round}`, seconds })
     }
+    // A deliberate Rest is the next entry: any confirmation is over.
+    saved.reset()
     sheet.setOpen(true)
   }
 
   const collapse = () => {
+    // An early collapse ends the confirmation; the rest ending reopens nothing.
+    saved.reset()
     sheet.setOpen(false)
     logButton.current?.focus()
   }
@@ -179,6 +202,8 @@ function SupersetRound({ block }: BlockRendererProps) {
           round={round}
           held={entry}
           onHeld={setEntry}
+          confirmed={saved.confirmed}
+          onSaved={saved.confirm}
           onCollapse={collapse}
         />,
       )}
