@@ -47,6 +47,21 @@
  * race's own record, so a correction survives a refresh (an Incomplete must
  * not come back as the clock's Complete) and older records parse unchanged.
  *
+ * TASK-032 (REQ-032) adds a key, `clear.workout-ladders`, because a ladder
+ * attempt is more than its clock: the rungs checked off, the result draft, the
+ * accidental-Finish checkpoint Undo returns to and the original cap
+ * (`ladder-recovery.ts`). Unlike the records above it is not a convenience the
+ * rows can reproduce until the block's row is saved — so it is a versioned
+ * record carrying its own session, block and attempt identity, a stale or
+ * foreign one restores nothing, and another attempt's record is never
+ * overwritten. Its clock is the For Time race's shape; a ladder clock written
+ * before the key existed (under the For Time key) is adopted, once, on first
+ * restore. Its own key, on the circuits' argument: the existing ladder clock
+ * writer (`usePersistedForTime`) rewrites the For Time record from its own
+ * state, and would drop anything stored beside it. It is dropped with the
+ * session like the others, because by then the row is saved or the workout
+ * abandoned.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -54,10 +69,32 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { Constants } from '../data/database.types'
 import type { AmrapState } from './amrap'
 import type { CircuitState, RoundTiming } from './circuit'
 import type { EmomState } from './emom'
 import type { ForTimeState } from './for-time'
+import {
+  adoptLegacyLadderClock,
+  clampLadderAttempt,
+  createLadderAttempt,
+  editLadderDraft,
+  finishLadderAttempt,
+  LADDER_ATTEMPT_VERSION,
+  ladderRecorded,
+  ladderSaveFailed,
+  ladderSaveSucceeded,
+  pauseLadderAttempt,
+  resumeLadderAttempt,
+  startLadderAttempt,
+  trackLadderProgress,
+  undoLadderFinish,
+  type LadderAttempt,
+  type LadderDraft,
+  type LadderDraftPatch,
+  type LadderFinishCheckpoint,
+  type LadderSaveState,
+} from './ladder-recovery'
 
 /** One key, overwritten: the app has one session in progress at a time. */
 export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
@@ -72,6 +109,9 @@ export const WORKOUT_FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
 
 /** The AMRAPs' key: one score per block id, on the same terms as the circuits'. */
 export const WORKOUT_AMRAP_STORAGE_KEY = 'clear.workout-amraps'
+
+/** The ladders' key: one versioned attempt per block id, with its identity (TASK-032). */
+export const WORKOUT_LADDER_STORAGE_KEY = 'clear.workout-ladders'
 
 export interface WorkoutShellState {
   readonly sessionId: string
@@ -150,7 +190,7 @@ export function writeWorkoutShellState(
 
 /**
  * Forgets everything the shell remembered locally — the open section and every
- * block's position, clock, or score. Completing and abandoning both call it
+ * block's position, clock, score or ladder attempt. Completing and abandoning both call it
  * and clear every key because an ended session has nowhere to return to.
  *
  * EXE-07's set-log queue is deliberately *not* one of these keys and must never
@@ -166,6 +206,7 @@ export function clearWorkoutShellState(storage: ShellStorage | null): void {
     storage.removeItem(WORKOUT_EMOM_STORAGE_KEY)
     storage.removeItem(WORKOUT_FOR_TIME_STORAGE_KEY)
     storage.removeItem(WORKOUT_AMRAP_STORAGE_KEY)
+    storage.removeItem(WORKOUT_LADDER_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
   }
@@ -569,4 +610,364 @@ export function usePersistedAmrap(
     writeAmrapState(latest.current, blockId, next)
   }, [blockId])
   return { state, update }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Ladder attempts (TASK-032)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SET_EFFORTS: readonly unknown[] = Constants.public.Enums.set_effort
+
+const isNonEmptyString = (value: unknown): value is string => typeof value === 'string' && value !== ''
+const isCount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0
+const isCountOrNull = (value: unknown) => value === null || isCount(value)
+const isAnswerOrNull = (value: unknown) => value === null || typeof value === 'boolean'
+
+function isLadderDraft(value: unknown): value is LadderDraft {
+  if (typeof value !== 'object' || value === null) return false
+  const draft = value as Record<string, unknown>
+  const movements = draft.movements
+  return (
+    isAnswerOrNull(draft.completed) &&
+    isCountOrNull(draft.highestRung) &&
+    (draft.effort === null || SET_EFFORTS.includes(draft.effort)) &&
+    typeof draft.notes === 'string' &&
+    typeof movements === 'object' &&
+    movements !== null &&
+    !Array.isArray(movements) &&
+    Object.values(movements).every((entry) => {
+      if (typeof entry !== 'object' || entry === null) return false
+      const movement = entry as Record<string, unknown>
+      return typeof movement.amount === 'string' && typeof movement.weight === 'string'
+    })
+  )
+}
+
+function isLadderCheckpoint(value: unknown): value is LadderFinishCheckpoint {
+  if (typeof value !== 'object' || value === null) return false
+  const checkpoint = value as Record<string, unknown>
+  return (
+    (checkpoint.pausedAt === null || typeof checkpoint.pausedAt === 'string') &&
+    isCountOrNull(checkpoint.progress) &&
+    isAnswerOrNull(checkpoint.completed)
+  )
+}
+
+function isLadderSaveState(value: unknown): value is LadderSaveState {
+  if (typeof value !== 'object' || value === null) return false
+  const save = value as Record<string, unknown>
+  switch (save.status) {
+    case 'unsaved':
+      return true
+    case 'failed':
+      return typeof save.at === 'string'
+    case 'saved':
+      return typeof save.at === 'string' && (save.source === 'save' || save.source === 'server')
+    default:
+      return false
+  }
+}
+
+/**
+ * A version-1 ladder attempt, every field accounted for. A record of another
+ * version — older or newer — is not one this build can vouch for.
+ */
+export function isLadderAttempt(value: unknown): value is LadderAttempt {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  const identity = record.identity as Record<string, unknown> | null | undefined
+  const cap = record.originalCapSeconds
+  return (
+    record.version === LADDER_ATTEMPT_VERSION &&
+    typeof identity === 'object' &&
+    identity !== null &&
+    isNonEmptyString(identity.sessionId) &&
+    isNonEmptyString(identity.blockId) &&
+    isNonEmptyString(identity.attemptId) &&
+    (cap === null || (isCount(cap) && cap >= 1)) &&
+    isForTimeState(record.clock) &&
+    isCountOrNull(record.progress) &&
+    (record.draft === null || isLadderDraft(record.draft)) &&
+    typeof record.endCarried === 'boolean' &&
+    (record.checkpoint === null || isLadderCheckpoint(record.checkpoint)) &&
+    isLadderSaveState(record.save)
+  )
+}
+
+/** Every entry under the ladders' key, as stored — including ones this build cannot read. */
+function readRawLadderEntries(storage: ShellStorage | null): Record<string, unknown> {
+  if (storage === null) return {}
+  try {
+    const raw = storage.getItem(WORKOUT_LADDER_STORAGE_KEY)
+    if (raw === null) return {}
+    const parsed: unknown = JSON.parse(raw)
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {}
+  } catch {
+    return {}
+  }
+}
+
+/**
+ * This block's attempt in this session, or null: absent, unreadable, written
+ * under another block's id, or from another workout.
+ */
+export function readLadderAttempt(
+  storage: ShellStorage | null,
+  sessionId: string,
+  blockId: string,
+): LadderAttempt | null {
+  const entry = readRawLadderEntries(storage)[blockId]
+  return isLadderAttempt(entry) &&
+    entry.identity.blockId === blockId &&
+    entry.identity.sessionId === sessionId
+    ? entry
+    : null
+}
+
+/**
+ * `written` · `refused` — this block already has another attempt in this
+ * session, which is never replaced · `unavailable` — no storage, or it refused
+ * the write (the attempt still works in memory; a reload would lose it).
+ */
+export type LadderWriteResult = 'written' | 'refused' | 'unavailable'
+
+/**
+ * Writes one block's attempt, leaving every other entry as stored — even one
+ * this build cannot read, which may be a newer build's.
+ */
+export function writeLadderAttempt(
+  storage: ShellStorage | null,
+  attempt: LadderAttempt,
+): LadderWriteResult {
+  if (storage === null) return 'unavailable'
+  const { sessionId, blockId, attemptId } = attempt.identity
+  const entries = readRawLadderEntries(storage)
+  const existing = entries[blockId]
+  if (
+    isLadderAttempt(existing) &&
+    existing.identity.sessionId === sessionId &&
+    existing.identity.blockId === blockId &&
+    existing.identity.attemptId !== attemptId
+  ) {
+    return 'refused'
+  }
+  try {
+    storage.setItem(WORKOUT_LADDER_STORAGE_KEY, JSON.stringify({ ...entries, [blockId]: attempt }))
+    return 'written'
+  } catch {
+    return 'unavailable'
+  }
+}
+
+/**
+ * Where a restored attempt came from: `stored` — this key; `legacy-clock` — a
+ * ladder clock written under the For Time key before this one existed;
+ * `fresh` — nothing usable.
+ */
+export type LadderRestoreSource = 'stored' | 'legacy-clock' | 'fresh'
+
+/**
+ * Why a stored entry was not restored: `other-session` — it belongs to another
+ * workout; `unreadable` — malformed, another version, or filed under another
+ * block's id. Neither attaches, and neither falls back to the older For Time
+ * clock, which would be at least as stale.
+ */
+export type LadderDiscard = 'other-session' | 'unreadable' | null
+
+export interface LadderRestore {
+  readonly attempt: LadderAttempt
+  readonly source: LadderRestoreSource
+  readonly discarded: LadderDiscard
+}
+
+export interface LadderRestoreInput {
+  readonly sessionId: string
+  readonly blockId: string
+  /** The block's cap now: the original cap of an attempt created or adopted here. */
+  readonly capSeconds: number | null
+  readonly rungCount: number
+  readonly mintId: () => string
+}
+
+/** This block's attempt as a reload finds it. Pure over the storage it is given. */
+export function restoreLadderAttempt(
+  storage: ShellStorage | null,
+  input: LadderRestoreInput,
+): LadderRestore {
+  const seed = {
+    sessionId: input.sessionId,
+    blockId: input.blockId,
+    capSeconds: input.capSeconds,
+    mintId: input.mintId,
+  }
+  const fresh = (discarded: LadderDiscard): LadderRestore => ({
+    attempt: createLadderAttempt(seed),
+    source: 'fresh',
+    discarded,
+  })
+
+  const entry = readRawLadderEntries(storage)[input.blockId]
+  if (entry !== undefined) {
+    if (!isLadderAttempt(entry) || entry.identity.blockId !== input.blockId) return fresh('unreadable')
+    if (entry.identity.sessionId !== input.sessionId) return fresh('other-session')
+    return { attempt: clampLadderAttempt(entry, input.rungCount), source: 'stored', discarded: null }
+  }
+
+  const legacy = readForTimeState(storage, input.blockId)
+  if (legacy !== null && legacy.startedAt !== null) {
+    return {
+      attempt: clampLadderAttempt(adoptLegacyLadderClock(seed, legacy), input.rungCount),
+      source: 'legacy-clock',
+      discarded: null,
+    }
+  }
+  return fresh(null)
+}
+
+export interface PersistedLadderOptions {
+  readonly sessionId: string
+  readonly blockId: string
+  /** The cap a raced ladder runs against (`ladderRaceCapSeconds`); stamped once. */
+  readonly capSeconds: number | null
+  /** `ladderRungs(block.exercises).length`. */
+  readonly rungCount: number
+  /** The server's word that the block's row exists (`isBlockRecorded`). */
+  readonly recorded: boolean
+  readonly storage?: ShellStorage | null
+  readonly now?: () => number
+  readonly mintId?: () => string
+}
+
+export interface PersistedLadder {
+  readonly attempt: LadderAttempt
+  readonly source: LadderRestoreSource
+  readonly discarded: LadderDiscard
+  /** False once a write did not reach storage: a reload would not find the latest state. */
+  readonly durable: boolean
+  start(): void
+  pause(): void
+  resume(): void
+  finish(): void
+  undoFinish(): void
+  /** Live check-off: the rungs completed through. */
+  track(through: number): void
+  editDraft(patch: LadderDraftPatch): void
+  /**
+   * The section save that carried this attempt's outcome succeeded. Pass the
+   * attempt id captured when the save began: an answer for another attempt
+   * changes nothing. Defaults to the current attempt.
+   */
+  saveSucceeded(attemptId?: string): void
+  /** It failed: the draft, progress and checkpoint are kept for the retry. */
+  saveFailed(attemptId?: string): void
+}
+
+interface LadderHookState {
+  readonly attempt: LadderAttempt
+  readonly source: LadderRestoreSource
+  readonly discarded: LadderDiscard
+  readonly durable: boolean
+}
+
+/**
+ * One ladder attempt, restored on mount and written on every change, in the
+ * same act, under its identity. Mount one per block (key it by block id).
+ *
+ * A restored legacy clock is written straight away so its minted attempt id is
+ * the one every later reload finds. A change that would replace another
+ * attempt's record is refused, and the stored attempt is adopted instead. Once
+ * the server reports the block's row, the record is closed as saved and no
+ * other action applies.
+ */
+export function usePersistedLadder({
+  sessionId,
+  blockId,
+  capSeconds,
+  rungCount,
+  recorded,
+  storage = defaultShellStorage(),
+  now = Date.now,
+  mintId = () => crypto.randomUUID(),
+}: PersistedLadderOptions): PersistedLadder {
+  const [state, setState] = useState<LadderHookState>(() => ({
+    ...restoreLadderAttempt(storage, { sessionId, blockId, capSeconds, rungCount, mintId }),
+    durable: true,
+  }))
+
+  // The latest values, so actions chain within one tick and stay stable.
+  const latest = useRef({ attempt: state.attempt, storage, now, rungCount, recorded })
+  useEffect(() => {
+    latest.current = { ...latest.current, storage, now, rungCount, recorded }
+  })
+
+  const apply = useCallback(
+    (step: (attempt: LadderAttempt, at: number, rungs: number) => LadderAttempt, whenRecorded = false) => {
+      const current = latest.current
+      if (current.recorded && !whenRecorded) return
+      const next = step(current.attempt, current.now(), current.rungCount)
+      if (next === current.attempt) return
+
+      const written = writeLadderAttempt(current.storage, next)
+      if (written === 'refused') {
+        const stored = readLadderAttempt(current.storage, next.identity.sessionId, next.identity.blockId)
+        if (stored === null) return
+        const adopted = clampLadderAttempt(stored, current.rungCount)
+        latest.current = { ...current, attempt: adopted }
+        setState({ attempt: adopted, source: 'stored', discarded: null, durable: true })
+        return
+      }
+      latest.current = { ...current, attempt: next }
+      setState((previous) => ({ ...previous, attempt: next, durable: written === 'written' }))
+    },
+    [],
+  )
+
+  // A legacy clock is adopted once, under a stable attempt id.
+  const adopted = state.source === 'legacy-clock' ? state.attempt : null
+  useEffect(() => {
+    if (adopted === null) return
+    const stored = latest.current.storage
+    if (readRawLadderEntries(stored)[adopted.identity.blockId] !== undefined) return
+    writeLadderAttempt(stored, adopted)
+  }, [adopted])
+
+  // The server's row is the authority: close the attempt as saved.
+  useEffect(() => {
+    if (recorded) apply((attempt, at, rungs) => ladderRecorded(attempt, rungs, at), true)
+  }, [apply, recorded])
+
+  return {
+    attempt: state.attempt,
+    source: state.source,
+    discarded: state.discarded,
+    durable: state.durable,
+    start: useCallback(() => apply((attempt, at) => startLadderAttempt(attempt, at)), [apply]),
+    pause: useCallback(() => apply((attempt, at) => pauseLadderAttempt(attempt, at)), [apply]),
+    resume: useCallback(() => apply((attempt, at) => resumeLadderAttempt(attempt, at)), [apply]),
+    finish: useCallback(() => apply((attempt, at, rungs) => finishLadderAttempt(attempt, rungs, at)), [apply]),
+    undoFinish: useCallback(() => apply((attempt, at, rungs) => undoLadderFinish(attempt, rungs, at)), [apply]),
+    track: useCallback(
+      (through: number) => apply((attempt, at, rungs) => trackLadderProgress(attempt, through, rungs, at)),
+      [apply],
+    ),
+    editDraft: useCallback(
+      (patch: LadderDraftPatch) => apply((attempt, at, rungs) => editLadderDraft(attempt, patch, rungs, at)),
+      [apply],
+    ),
+    saveSucceeded: useCallback(
+      (attemptId?: string) =>
+        apply((attempt, at, rungs) =>
+          ladderSaveSucceeded(attempt, attemptId ?? attempt.identity.attemptId, rungs, at),
+        ),
+      [apply],
+    ),
+    saveFailed: useCallback(
+      (attemptId?: string) =>
+        apply((attempt, at) => ladderSaveFailed(attempt, attemptId ?? attempt.identity.attemptId, at)),
+      [apply],
+    ),
+  }
 }

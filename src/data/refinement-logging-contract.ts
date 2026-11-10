@@ -569,13 +569,13 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     writer: BLOCK_WRITER,
     identity:
       `${BLOCK_IDENTITY}; highest_rung is the last completed rung, 1-based (Complete records the top rung); ` +
-      'the ordered progress and Finish checkpoint are TASK-013/TASK-032’s',
+      'the ordered progress and Finish checkpoint are held by TASK-032’s durable ladder attempt (session, block and attempt identity) and recorded by TASK-013',
     fields: ['block_results.highest_rung'],
     proposed: ['block_results.notes', ...TIMED_PROPOSED_COMMON, ...TIMED_PARTIALS],
     nullMeans: 'highest_rung is null when unanswered or Incomplete with no rung chosen',
     zeroMeans: 'the column admits 0 (no rung completed); the current renderer never writes it',
     update: BLOCK_UPDATE,
-    draft: 'the answer, rung and effort are the renderer’s memory (lost on reload); the race clock is clear.workout-for-time; durable drafts are TASK-032',
+    draft: 'the renderer still keeps the answer, rung and effort in memory (lost on reload) and its race clock on clear.workout-for-time; the durable owner exists (clear.workout-ladders, usePersistedLadder, TASK-032: progress, draft, Finish checkpoint, original cap) and is adopted by TASK-013/TASK-014/TASK-046/TASK-048',
     readback: {
       workout: 'the ladder card while unsaved; a saved ladder whose draft was lost claims no answer',
       history: 'History reads Highest rung N',
@@ -980,9 +980,12 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
   {
     id: 'ladder-durable-draft',
     kind: 'draft',
-    summary: 'durable ladder progress, draft, Finish checkpoint and original cap through the existing workout-persistence owner (local storage, not a database column)',
+    summary:
+      'landed by TASK-032: durable ladder progress, draft, Finish checkpoint and original cap through the existing workout-persistence owner ' +
+      '(clear.workout-ladders, one versioned record per block with session/block/attempt identity; src/state/ladder-recovery.ts over the For Time ' +
+      'clock; local storage, not a database column); visible adoption is TASK-013/TASK-014/TASK-046/TASK-048',
     basis: 'reuse: src/state/workout-persistence.ts; saved block_results stay authoritative',
-    ref: { module: 'src/state/workout-persistence.ts', name: 'usePersistedForTime', extendedBy: 'TASK-032' },
+    ref: { module: 'src/state/workout-persistence.ts', name: 'usePersistedLadder' },
     owner: 'TASK-032',
   },
   {
