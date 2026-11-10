@@ -65,13 +65,23 @@
  * (`state/generation-form.ts`); Generate workout sends nothing. The Setup and
  * History parts of the reference scene belong to TASK-025 and TASK-026.
  *
+ * TASK-025 (C52, G17, R24) adopts the Setup part as a deliberate
+ * consolidation. The reference drew a hand-made `header` (a `Setup` label and
+ * `Step 1 of N · Equipment`) over a capped `.clr-accepted-setup` scroll box.
+ * Here `SetupScene` draws `/onboarding`'s own composition in a short
+ * screen-sized frame: the Set up CLEAR title in the shared `AppHeader`, the
+ * route's `SetupProgress` in Screen's pinned layer under it, one divider (the
+ * public ScrollRegion head's rule), and the route's `SetupStepView` for the
+ * equipment step scrolling below — the same shared Screen classes, no route
+ * CSS. The draft is in memory (Home gym chosen); nothing is read or written.
+ *
  * The reference file's other scenes (cards, equipment inventory) belong to
  * other tasks; the cards scene is `gallery-refinement-cards.tsx`
  * (TASK-001/002/003).
  */
-import { useId, useState } from 'react'
+import { useId, useReducer, useState } from 'react'
 
-import { AppHeader, Button, ChoiceGroup, IntensitySlider } from '../design-system/index'
+import { AppHeader, Button, ChoiceGroup, IntensitySlider, ScrollRegion } from '../design-system/index'
 import {
   GENERATE_ACTION_LABEL,
   GENERATE_TITLE,
@@ -79,6 +89,7 @@ import {
   GenerateContextFields,
   GenerateIntent,
 } from '../app/Generate'
+import { ONBOARDING_TITLE, SetupProgress, SetupStepView } from '../app/Onboarding'
 import { RegenerateConfirmDialog, ReviewOverview, ReviewRegenerateAction } from '../app/Review'
 import { SessionOverview } from '../app/SessionDetail'
 import { DurationMetric, StreakMetric } from '../app/Summary'
@@ -99,6 +110,7 @@ import {
   type GenerationContext,
   type GenerationDraft,
 } from '../state/generation-form'
+import { EMPTY_DRAFT, onboardingReducer, STEP_TITLES } from '../state/onboarding'
 import { composedPreparationGuide, type PreparationSectionType } from '../state/preparation-guide'
 import { reviewBriefing } from '../state/review'
 import { sessionDetail } from '../state/session-detail'
@@ -397,6 +409,45 @@ export function GenerateScene({ context }: { context: GenerateSceneContext }) {
   )
 }
 
+/**
+ * `/onboarding`'s equipment step as the route pins it (TASK-025): title, step
+ * label and progress in one head over one divider, the equipment scrolling
+ * beneath, in a frame a short phone tall.
+ */
+export function SetupScene() {
+  const [draft, dispatch] = useReducer(onboardingReducer, EMPTY_DRAFT, (empty) =>
+    onboardingReducer(empty, { type: 'tier', value: 'home' }))
+  return (
+    <div
+      className="clr-screen"
+      data-gallery-setup=""
+      style={{ flex: 'none', height: 'calc(var(--spacing-1400) * 4)' }}
+    >
+      <ScrollRegion
+        head={
+          <>
+            <AppHeader>
+              <Heading className="clr-screen__title">{ONBOARDING_TITLE}</Heading>
+            </AppHeader>
+            <div className="clr-screen__pinned">
+              <SetupProgress step="location" />
+            </div>
+          </>
+        }
+        scrollerProps={{ 'aria-label': `${ONBOARDING_TITLE} content`, role: 'region', tabIndex: 0 }}
+      >
+        <div className="clr-screen__content clr-screen__content--titled-head">
+          <Card heading={STEP_TITLES.location}>
+            <div className="clr-stack">
+              <SetupStepView step="location" draft={draft} dispatch={dispatch} />
+            </div>
+          </Card>
+        </div>
+      </ScrollRegion>
+    </div>
+  )
+}
+
 export function GalleryScreens() {
   const [context, setContext] = useState<GenerateSceneContext>('returning')
   return (
@@ -411,6 +462,7 @@ export function GalleryScreens() {
         onChange={(value) => setContext(value === 'first' ? 'first' : 'returning')}
       />
       <GenerateScene key={context} context={context} />
+      <SetupScene />
     </div>
   )
 }

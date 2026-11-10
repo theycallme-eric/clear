@@ -7,6 +7,9 @@
  * payload committed is `toAnswers(draft)` and nothing assembled beside it, and
  * that committing, commit-failed and the step view are each a real screen.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent, { type UserEvent } from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
@@ -610,5 +613,97 @@ describe('U09 checkbox activation', () => {
     expect(committed?.equipment).toContain('barbell')
     expect(committed?.equipment).not.toContain('dumbbells')
     expect(committed?.avoid_patterns).toEqual(['pull'])
+  })
+})
+
+/**
+ * TASK-025 (C52, G17, R24; AC-C52-01, AC-R025-01): Set up CLEAR, the step
+ * label and its progress are pinned together in Screen's one head — the
+ * shared AppHeader and its pinned layer — over one divider, while the step's
+ * card scrolls in the region below. jsdom has no layout; the browser proof of
+ * the geometry, the scroll and focus is `e2e/refinement/task-025.spec.ts`.
+ */
+describe('TASK-025 pinned Setup title, step and progress', () => {
+  function head() {
+    const found = screen.getByRole('main').querySelector<HTMLElement>(
+      ':scope > .clr-scroll-region > .clr-scroll-region__head',
+    )
+    expect(found).not.toBeNull()
+    return found!
+  }
+  const scroller = () => screen.getByRole('region', { name: `${ONBOARDING_TITLE} content` })
+
+  it('AC-C52-01 pins the title, step label and progress in one head above the scrolling equipment', async () => {
+    const { user } = setup()
+    await onStep('location')
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+
+    const title = screen.getByRole('heading', { level: 1, name: ONBOARDING_TITLE })
+    const progress = screen.getByRole('progressbar', { name: 'Step 1 of 5' })
+    expect(head().querySelector(':scope > header')).toContainElement(title)
+    expect(head().querySelector(':scope > .clr-screen__pinned')).toContainElement(progress)
+    expect(within(head()).getByText('Step 1 of 5')).toBeVisible()
+    expect(progress).toHaveAttribute('aria-valuenow', '1')
+    expect(progress).toHaveAttribute('aria-valuemax', '5')
+    // One divider: the head's own rule; the header hands its rule over.
+    expect(head()).toHaveAttribute('data-rule')
+    // The equipment scrolls in the region beneath; nothing pinned is inside it.
+    const equipment = within(scroller()).getByRole('group', { name: 'Equipment' })
+    expect(within(equipment).getAllByRole('checkbox').length).toBeGreaterThan(10)
+    expect(scroller()).not.toContainElement(title)
+    expect(scroller()).not.toContainElement(progress)
+    expect(scroller()).toContainElement(stepCard())
+  })
+
+  it('AC-C52-01 keeps the pinned step label and progress current as the step controls move through the steps', async () => {
+    const { user } = setup()
+    await onStep('location')
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+    await user.click(next())
+    await onStep('experience')
+    expect(within(head()).getByRole('progressbar', { name: 'Step 2 of 5' })).toHaveAttribute('aria-valuenow', '2')
+    await user.click(screen.getByRole('button', { name: 'Back' }))
+    await onStep('location')
+    expect(within(head()).getByRole('progressbar', { name: 'Step 1 of 5' })).toBeInTheDocument()
+    expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+    // The draft survives the step change.
+    expect(screen.getByRole('radio', { name: 'Home gym' })).toBeChecked()
+  })
+
+  it('AC-R025-01 reuses Screen’s header and pinned slot: no bespoke sticky overlay, no second divider, no hidden progress', async () => {
+    setup()
+    await onStep('location')
+
+    const main = screen.getByRole('main')
+    // Exactly one region head, holding the header and the pinned layer only.
+    expect(main.querySelectorAll('.clr-scroll-region__head')).toHaveLength(1)
+    expect([...head().children].map((child) => child.tagName.toLowerCase() + (child.className ? `.${child.className}` : '')))
+      .toEqual(['header', 'div.clr-screen__pinned'])
+    // Nothing sticky or hidden in the route's own markup.
+    expect(main.querySelector('[style*="sticky"]')).toBeNull()
+    const progress = screen.getByRole('progressbar', { name: 'Step 1 of 5' })
+    expect(progress.closest('[aria-hidden="true"], [hidden], [inert]')).toBeNull()
+    const source = readFileSync(resolve(import.meta.dirname, 'Onboarding.tsx'), 'utf8')
+    expect(source).not.toMatch(/sticky/)
+    expect(source).toMatch(/pinnedHead=\{<SetupProgress step=\{step\} \/>\}/)
+    // The scroller stays a named, keyboard-reachable region.
+    expect(scroller()).toHaveAttribute('tabindex', '0')
+  })
+
+  it('AC-R025-01 keeps the title pinned in the header while the setup is committing and after a failed commit', async () => {
+    let attempt = 0
+    const { user } = setup({
+      completeOnboarding: async () => {
+        attempt += 1
+        return err(createError(ErrorCode.NETWORK_SERVER_ERROR, { details: { status: 500 } }))
+      },
+    })
+    await answerEverything(user)
+    await user.click(screen.getByRole('button', { name: 'Finish setup' }))
+    await screen.findByRole('button', { name: 'Try again' })
+    expect(attempt).toBe(1)
+    expect(head().querySelector(':scope > header h1')).toHaveTextContent(ONBOARDING_TITLE)
+    expect(within(head()).getByRole('progressbar', { name: 'Step 5 of 5' })).toBeInTheDocument()
+    expect(within(scroller()).getByText(COMMIT_FAILED_TITLE)).toBeInTheDocument()
   })
 })
