@@ -487,6 +487,18 @@ and walking to the next section and back must not lose it. `BlockProgress` now c
 alongside `rounds` and `roundRestSeconds`, because a renderer that has to count a window down needs
 the number and not the header's words.
 
+TASK-032 adds the ladder's durable attempt on the same terms one step further. A live ladder is
+more than its race clock: the rungs checked off, the result draft, the accidental-Finish checkpoint
+Undo returns to and the cap it was started against. `src/state/ladder-recovery.ts` is that state as
+pure arithmetic over the For Time clock (`for-time.ts`, `timed-lifecycle.ts`, `workout-clock.ts`).
+`workout-persistence.ts` keeps it under a sixth key, `clear.workout-ladders`, as one versioned record
+per block id carrying its session, block and attempt identity, with `usePersistedLadder` as the hook.
+A stale or foreign record restores nothing, another attempt's record is never replaced, and a ladder
+clock already stored under the For Time key is adopted once. Expiry is derived, the original cap is
+never re-read, and a saved row closes the attempt. It is a foundation: the route's ladder still keeps
+its answer in memory until TASK-013/014/046/048 adopt it (`src/state/README.md` lists what each must
+do).
+
 REQ-057 adds the one thing that renders *above* the route tree rather than inside it, and the
 reason is that boot is the app becoming ready rather than a screen it navigates to.
 `src/app/BootSequence.tsx` holds both halves: the Boot Sequence template's composition —

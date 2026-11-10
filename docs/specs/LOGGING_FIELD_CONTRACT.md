@@ -276,12 +276,15 @@ from a recorded completed-rounds count.
 
 Today: `highest_rung` is the last completed rung, 1-based (Complete records the top rung; Incomplete
 records the chosen rung or nothing; `ladder-for-time.md` "taps the last rung they completed"). The
-CHECK admits 0 (no rung completed), which the current renderer never writes. Draft: the answer, rung
-and effort are renderer memory (lost on reload); the race clock is `clear.workout-for-time`. History
-reads `Highest rung N`. Proposed: notes (reuse), block effort (MIG-A), per-movement partials for the
-next rung and loads (MIG-B), durable progress/draft/Finish checkpoint (`ladder-durable-draft`,
-TASK-032; ordered progress TASK-013). Owners: TASK-013, TASK-015, TASK-031, TASK-032, TASK-046,
-TASK-047, TASK-048, TASK-019.
+CHECK admits 0 (no rung completed), which the current renderer never writes. Draft: the renderer
+still keeps the answer, rung and effort in memory (lost on reload) and its race clock on
+`clear.workout-for-time`. The durable owner exists (`ladder-durable-draft`, landed by TASK-032):
+`clear.workout-ladders`, one versioned record per block with session/block/attempt identity, holding
+ordered progress, the draft, the Finish checkpoint and the original cap on the For Time clock
+(`src/state/ladder-recovery.ts`, `usePersistedLadder`); TASK-013, TASK-014, TASK-046 and TASK-048
+adopt it. History reads `Highest rung N`. Proposed: notes (reuse), block effort (MIG-A), per-movement
+partials for the next rung and loads (MIG-B); ordered progress is recorded by TASK-013. Owners:
+TASK-013, TASK-015, TASK-031, TASK-032, TASK-046, TASK-047, TASK-048, TASK-019.
 
 ## 3. Field matrix
 
@@ -364,7 +367,7 @@ the `set_effort` type.
 | Correction of a saved timed result | **Reuse** (no migration): a new client method, `block-result-correction` | `grant select, insert, update, delete on public.block_results to authenticated` and the `block_results_update_own` policy (20260921000004). |
 | Block categorical effort | **Migration MIG-A** | §4: no categorical column on `block_results`; every candidate column has a different meaning. |
 | Per-movement partials (AMRAP next round, ladder next rung, For Time Incomplete — single pass, or after a recorded rounds count) and per-movement loads | **Migration MIG-B** (a new table) | See below. |
-| Durable ladder progress, draft, Finish checkpoint, original cap | **Reuse** the local persistence owner (`src/state/workout-persistence.ts`); not a database field | Saved `block_results` stay authoritative; TASK-032. |
+| Durable ladder progress, draft, Finish checkpoint, original cap | **Reuse** the local persistence owner (`src/state/workout-persistence.ts`, landed by TASK-032 as `usePersistedLadder` under `clear.workout-ladders`); not a database field | Saved `block_results` stay authoritative; TASK-032. |
 | Ordered ladder progress | **Reuse** `highest_rung` (last completed rung, 0 admitted) | 20260921000004 CHECK `highest_rung >= 0`; TASK-013 owns the live check-off. |
 
 Why per-movement timed partials and loads cannot reuse `exercise_set_logs` (rehearsed in check-02
@@ -454,7 +457,7 @@ is touched, and no writer is added.
 | `movement-actuals-writer` | writer | write and correct the block's movement rows idempotently, with or after the block row, keeping the draft on failure | MIG-B | TASK-031 |
 | `timed-read-model` | read model | History readings for block effort and movement actuals | MIG-A, MIG-B | TASK-031 |
 | `timed-entry` | draft | per-movement partial and load entry, effort and notes, truthful across edit and retry | §6 | TASK-015 |
-| `ladder-durable-draft` | draft | durable ladder progress, draft, Finish checkpoint and original cap | `workout-persistence.ts` | TASK-032 |
+| `ladder-durable-draft` | draft | landed: durable ladder progress, draft, Finish checkpoint and original cap — `usePersistedLadder` (`clear.workout-ladders`) over `src/state/ladder-recovery.ts`; adopted by TASK-013/014/046/048 | `workout-persistence.ts` | TASK-032 |
 | `visible-proof` | read model | Workout → Summary → History save, retry and reload proof on the real test lane (disposable namespaced users) | PRE-001 + `LIVE-PRE-1` | TASK-047 |
 | `LIVE-PRE-1` | live authority | owner decision: apply MIG-A and MIG-B to the hosted project TASK-047's real lane writes to — per the repository's docs, the reused live (production) project | no task in this body is authorised to change a hosted database | owner |
 
@@ -600,7 +603,8 @@ writer is added to the gallery or anywhere else.
   comments are left; `DATA_MODEL.md` §8's timer-contract line said the same and is corrected by this
   task (documentation only).
 - The EMOM note and the ladder answer are memory-only drafts today (TASK-011, TASK-010); durability is
-  TASK-032 (ladder) and TASK-031/TASK-047 (results).
+  TASK-032 (ladder; the owner has landed, its route adoption is TASK-013/014/046/048) and
+  TASK-031/TASK-047 (results).
 
 ## 11. Sources and traceability
 
