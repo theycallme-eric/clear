@@ -76,10 +76,21 @@
  * too (as the EMOM did), so a load is stated in the gallery's known unit as
  * the route states the profile's. Memory only: typing changes the gallery's
  * copy; nothing is saved.
+ *
+ * TASK-018 (C44, C57, C58, C59; P01, P02, P03): `?state=ladder-long` is the
+ * accepted long dialog's viewport, outline and scrollbar contract — the shared
+ * `LoggingOverlay` (`refinements/logging-overlay.tsx`, created by this task)
+ * holding the twelve-round ladder's `TimedResultLog` over the register's
+ * memory controller. It is a provider reference, not a route: the route's
+ * ladder keeps its log inline in its card (`?state=ladder`, unchanged) until
+ * TASK-046 moves the timed families into the frame, and TASK-041 closes the
+ * geometry on the routes. The selected header and backdrop are TASK-016's.
+ * No Save, no writer, nothing leaves memory.
  */
 import { useState, type ReactNode } from 'react'
 
 import { partialRoundFor } from '../data/refinement-logging-rules'
+import { Button } from '../design-system/index'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
 import { ladderRungs, ladderUnit } from '../state/ladder'
 import { ladderPartialRound } from '../state/ladder-recovery'
@@ -92,6 +103,7 @@ import { EmomBlock } from '../ui/emom-block'
 import { ForTimeBlock } from '../ui/for-time-block'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { LadderBlock } from '../ui/ladder-block'
+import { LoggingOverlay } from '../ui/refinements/logging-overlay'
 import { QuantitySelector } from '../ui/refinements/quantity'
 import {
   TimedResultLog,
@@ -104,7 +116,7 @@ import {
 import { SectionLabelContext } from '../ui/section-label-context'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
 import { AMRAP_BLOCK } from './gallery-refinement-cards-data'
-import { galleryLadderProgress } from './gallery-refinement-flow-data'
+import { galleryLadderProgress, type LadderRoundCount } from './gallery-refinement-flow-data'
 import {
   GALLERY_AMRAP_ATTEMPTS,
   GALLERY_EMOM_ATTEMPTS,
@@ -400,6 +412,7 @@ function MemoryCompletionLog({
   saved,
   through,
   movements,
+  ladderRounds = 4,
 }: {
   format: CompletionResultLog['format']
   initial: CompletionResult
@@ -408,11 +421,13 @@ function MemoryCompletionLog({
   through?: number
   /** TASK-015: entries already typed, by the gallery ladder's exercise ids' index. */
   movements?: MovementEntryLog['values']
+  /** TASK-018: the gallery ladder's length; the long ladder's log is the twelve-round one. */
+  ladderRounds?: LadderRoundCount
 }) {
   const [value, setValue] = useState<CompletionResult>(initial)
   // TASK-013: a ladder's log draws its rounds completed once answered — here
-  // over the accepted four-rung ladder, the prefix held in memory.
-  const [block] = useState(() => galleryLadderProgress(4))
+  // over the accepted four-rung ladder (or TASK-018's twelve), the prefix held in memory.
+  const [block] = useState(() => galleryLadderProgress(ladderRounds))
   const [completedThrough, setCompletedThrough] = useState<number | null>(through ?? null)
   // TASK-015: the ladder's per-movement entries for the round after the prefix, held in memory.
   const [entries, setEntries] = useState<MovementEntryLog['values']>(() => movements ?? {})
@@ -508,4 +523,83 @@ export function TimedResultLogEmomBlank() {
 /** The EMOM's end log with an exception written in the notes. */
 export function TimedResultLogEmomNoted() {
   return <MemoryEmomLog initial={{ notes: 'Dropped to 10 swings from minute 7.' }} />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-018 — `?state=ladder-long` and the LoggingOverlay specimens (C44, C57–C59)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The shared focused frame around one memory-held log: closed until its
+ * opener is pressed, so a page of specimens never opens a modal by itself,
+ * and reopened as often as asked. Nothing is saved: the log inside is the
+ * register's memory controller, with no Save and no writer.
+ */
+function MemoryLoggingOverlay({ opener, title, children }: { opener: string; title: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="clr-stack" data-logging-overlay-example="">
+      <div>
+        <Button onClick={() => setOpen(true)}>{opener}</Button>
+      </div>
+      <LoggingOverlay open={open} title={title} onClose={() => setOpen(false)}>
+        {children}
+      </LoggingOverlay>
+    </div>
+  )
+}
+
+/**
+ * The long ladder's log: the shared `TimedResultLog` over the gallery's
+ * twelve-round ladder, Incomplete through round 7 — its twelve rep-first
+ * tiles, each movement's round-8 amount (one typed) and the effort faces —
+ * long enough on any phone to scroll inside the frame.
+ */
+function LongLadderLog() {
+  const [block] = useState(() => galleryLadderProgress(12))
+  return (
+    <MemoryCompletionLog
+      format="ladder"
+      ladderRounds={12}
+      initial={{ completed: false, effort: null }}
+      through={7}
+      movements={{ [block.exercises[0].exerciseId]: { amount: '5', weight: '' } }}
+    />
+  )
+}
+
+/**
+ * The accepted `ladder-long` state (TASK-018: C44, C57, C58, C59; P01–P03):
+ * the shared `LoggingOverlay` holding the long ladder's log, the final long
+ * dialog viewport, outline and scrollbar contract. One stationary frame; only
+ * the inside scrolls, to the inner lower border, with no scrollbar and no
+ * outline around the frame on open or reopen. The route's ladder still logs
+ * inline in its card until TASK-046 moves it into this frame (`?state=ladder`).
+ */
+export function GalleryLadderLongResults() {
+  return (
+    <div className="clr-stack" data-gallery-ladder-long="">
+      <MemoryLoggingOverlay opener="Open long ladder results" title="Ladder · 12 rounds">
+        <LongLadderLog />
+      </MemoryLoggingOverlay>
+    </div>
+  )
+}
+
+/** A long form: the twelve-round ladder's log, scrolling inside the frame. */
+export function LoggingOverlayLongLadder() {
+  return (
+    <MemoryLoggingOverlay opener="Open the long ladder log" title="Ladder · 12 rounds">
+      <LongLadderLog />
+    </MemoryLoggingOverlay>
+  )
+}
+
+/** A short form: the EMOM's end log, as tall as its content, with no scrolling. */
+export function LoggingOverlayShortEmom() {
+  return (
+    <MemoryLoggingOverlay opener="Open the EMOM log" title="EMOM · 10 minutes">
+      <MemoryEmomLog initial={{ notes: '' }} />
+    </MemoryLoggingOverlay>
+  )
 }

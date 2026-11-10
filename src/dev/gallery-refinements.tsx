@@ -64,13 +64,27 @@
  * TASK-034's reading from one synthetic composition, then its separate
  * preparation clock with Start / Pause and Add 30s and no Dismiss, in memory
  * (`gallery-refinement-scenes.tsx`).
+ *
+ * `ladder-long`: the focused logging frame's contained viewport, outline and
+ * scrollbar contract (TASK-018: C44, C57, C58, C59; P01–P03) — the shared
+ * `LoggingOverlay` holding the twelve-round ladder's `TimedResultLog` over a
+ * memory controller: one stationary frame, only the inside scrolling, to the
+ * inner lower border, with no scrollbar and no outline around the frame on
+ * open or reopen. A provider reference: the routes adopt the frame with
+ * TASK-043–046 (`gallery-refinement-forms.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
-import { GalleryAmrapResults, GalleryEmomResults, GalleryForTimeResults, GalleryLadderResults } from './gallery-refinement-forms'
+import {
+  GalleryAmrapResults,
+  GalleryEmomResults,
+  GalleryForTimeResults,
+  GalleryLadderLongResults,
+  GalleryLadderResults,
+} from './gallery-refinement-forms'
 import { GalleryOverviewSummary, GalleryPreparation } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
@@ -91,6 +105,7 @@ const REFINEMENT_STATES = [
   { id: 'amrap', title: 'AMRAP results', Render: GalleryAmrapResults },
   { id: 'for_time', title: 'For Time results', Render: GalleryForTimeResults },
   { id: 'ladder', title: 'Ladder results', Render: GalleryLadderResults },
+  { id: 'ladder-long', title: 'Long ladder results · final scrolling', Render: GalleryLadderLongResults },
   { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
   { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
 ] as const

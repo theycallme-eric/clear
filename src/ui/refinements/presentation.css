@@ -758,3 +758,139 @@ html[data-reduce-motion] .clr-deadline-edge {
   margin: 0;
   color: var(--text-secondary);
 }
+
+/* TASK-018 (C44, C57, C58, C59; P01, P02, P03; R16, R128, R129, R140): the
+ * focused logging frame's contained viewport, one stationary frame and its
+ * inner scroll (`logging-overlay.tsx`, the accepted `.clr-accepted-log`).
+ *
+ * The dialog's box is the visible viewport: the overlay keeps
+ * `--logging-visible-top` / `--logging-visible-height` on the visual viewport
+ * while open, so an on-screen keyboard shrinks the space the frame is centred
+ * in instead of covering it; without one, the whole viewport. */
+.clr-accepted-log {
+  width: min(calc(100% - var(--spacing-400)), var(--logging-dialog-width));
+  max-width: none;
+  max-height: none;
+  inset-block-start: var(--logging-visible-top, var(--spacing-0));
+  inset-block-end: calc(100% - var(--logging-visible-top, var(--spacing-0)) - var(--logging-visible-height, 100%));
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+}
+
+.clr-accepted-log__emission {
+  --bleed: var(--border-card);
+  width: 100%;
+}
+
+/* One stationary frame. It never scrolls: its height is the available space —
+ * the visible viewport less the accepted gap and the safe areas, never a
+ * fixed fraction of the screen — and a shorter form is as tall as its
+ * content. The border-width padding seats the scroller on the ring's inner
+ * edge, so whatever scrolls is clipped exactly at the inner border. */
+.clr-accepted-log__frame {
+  --surface: var(--surface-card);
+  --brd: var(--border-card);
+  width: 100%;
+  max-height: calc(
+    min(100dvh, var(--logging-visible-height, 100dvh)) - var(--logging-viewport-gap)
+      - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  );
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--border-width);
+}
+
+/* The one scrolling region. No bottom inset (P01): a partly visible control
+ * runs to the inner lower border. Its own clip follows the ring's inner
+ * chamfer, so content is cut on the inner diagonal and never paints over the
+ * cut. Every scrollbar is hidden, overlay scrollbars included (P03); wheel,
+ * touch, keyboard and focus scrolling are untouched. Nothing is wide enough
+ * to scroll sideways: the scroller and its body shrink to the frame
+ * (`min-width: 0`) and the logs inside wrap, so no content is clipped away
+ * either (and no horizontal clipping workaround is used, per the 0.14.3
+ * contract). */
+.clr-accepted-log__scroll {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: var(--logging-inline-padding) var(--logging-inline-padding) 0;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - (var(--chamfer-lg) - var(--border-width) * 0.414)),
+    calc(100% - (var(--chamfer-lg) - var(--border-width) * 0.414)) 100%,
+    0 100%
+  );
+}
+
+.clr-accepted-log__scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* P02: the containers are structure, not controls. The browser focuses the
+ * keyboard-focusable scroller (or the dialog itself) when the modal opens or
+ * blank space is tapped, and paints its default blue rounded ring around the
+ * whole container; no Foundation focus rule covers either. They show no
+ * outline. Foundation's fallback chamfer ring (where FocusBrackets is not
+ * mounted) would double the whole frame's border while any control inside is
+ * focus-visible; the frame keeps its own border. Controls inside keep their
+ * own focus indicators. */
+.clr-accepted-log:is(:focus, :focus-visible),
+.clr-accepted-log .clr-accepted-log__frame:is(:focus, :focus-visible, :has(:focus-visible)),
+.clr-accepted-log .clr-accepted-log__scroll:is(:focus, :focus-visible),
+.clr-accepted-log .clr-accepted-log__body:is(:focus, :focus-visible) {
+  outline: none;
+}
+
+.clr-accepted-log .clr-accepted-log__frame:is(:focus-visible, :has(:focus-visible))::after {
+  background-color: var(--brd);
+}
+
+.clr-accepted-log .clr-accepted-log__frame:is(:focus-visible, :has(:focus-visible))::before {
+  inset: var(--bw);
+}
+
+.clr-accepted-log__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-300);
+  margin-block-end: var(--logging-section-gap);
+}
+
+.clr-accepted-log__head h2 {
+  margin: 0;
+  min-width: 0;
+  line-height: 1;
+  font-family: var(--font-display);
+  font-size: var(--heading-h2-size);
+  color: var(--text-card-header);
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.clr-accepted-log__head > .clr-bleed {
+  flex: none;
+}
+
+/* The end of the content: the section gap below the last control, inside the
+ * scrolling region, so it is reached only at the bottom of a long form. */
+.clr-accepted-log__body {
+  min-width: 0;
+  padding-block-end: var(--logging-section-gap);
+}
+
+/* P01: no interior line. Inline in a card the timed log is set apart from the
+ * work above it by its own rule; inside the frame there is nothing above it to
+ * separate, and that rule would cross the form under the header. */
+.clr-accepted-log .clr-timed-log {
+  border: 0;
+  padding: 0;
+}

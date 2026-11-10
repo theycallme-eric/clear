@@ -32,4 +32,15 @@
    * its load — tighter than the result group's field gap, so the two read as
    * one movement. The accepted reference's value. */
   --logging-movement-gap: var(--spacing-300);
+  /* TASK-018 (C44, C57; R16; REUSE.md "one stationary frame and inner
+   * scroll"): the focused logging frame's width cap, the space it leaves
+   * around itself in the visible viewport (its height is the rest, never a
+   * fraction of the screen), the inline inset of its scrolling content, and
+   * the gap under its header and after its last control. The accepted
+   * reference's values; Foundation has no width token, so the dialog's cap is
+   * the reference's own 32rem, stated once here. */
+  --logging-dialog-width: 32rem;
+  --logging-viewport-gap: var(--spacing-800);
+  --logging-inline-padding: var(--spacing-400);
+  --logging-section-gap: var(--spacing-600);
 }
