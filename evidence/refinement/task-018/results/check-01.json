@@ -1,0 +1,84 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-018",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/logging-overlay.test.tsx",
+    "--testNamePattern",
+    "scroll|outline|viewport",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-018/required-cases.json",
+    "sha256": "1ceb1728ca650c90cfbbef1ec4fee840924898aaae7ed220f1752a355437a6c4"
+  },
+  "targets": [
+    {
+      "path": "src/ui/logging-overlay.test.tsx",
+      "sha256": "e1a284c8939f5dd3ef0e0171ab6d559a584ff4ebbe5cf4ce6b1490fddb757c4b"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 scroll: one stationary continuous frame holds the only scrolling region, and the long log’s Notes and Save are inside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C57-01 AC-R018-01 scroll: the scrolling region meets the inner lower border — no bottom inset, clipped on the inner chamfer, and no interior line crossing the form",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: opening and reopening never focus the frame or the scroller — the opening focus lands on the X control",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: the diagnosed owners — the browser’s default ring on a focused scroller or dialog, and Foundation’s fallback chamfer ring on the frame — never reach the containers, and the opening focus moves to the X in the same commit as showModal",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: intentional keyboard focus is kept — Tab moves from the X through the controls to Notes and Save, and no control loses its focus indicator",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C59-01 AC-R018-03 scroll: every scrollbar is hidden, overlay scrollbars included, while wheel, touch, keyboard and focus scrolling still work and nothing scrolls sideways",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: the frame’s height is the visible viewport less the gap and safe areas — it follows an on-screen keyboard and is never a half-height cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: a short form fits its content with Save in reach, and without a visual viewport the dynamic viewport is the fallback",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > JOURNEY-018 viewport: gallery ladder-long draws the shared frame around the actual TimedResultLog — opened, closed and reopened, scrolling inside, nothing saved",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}
