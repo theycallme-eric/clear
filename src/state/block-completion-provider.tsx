@@ -35,9 +35,23 @@
  *   · **Does not own** how a failure is shown or what happens next. The forward
  *     action receives the error, keeps the athlete where they are, and offers
  *     the retry.
+ *   · **Owns the richer timed save (TASK-015, REQ-015, C37)**, still as this
+ *     one path. A timed renderer may report, beside its outcome, the log's
+ *     categorical effort and each movement's typed partial and load
+ *     (`TimedResultReport`). When that report carries anything, the forward
+ *     action saves the block through TASK-031's provider
+ *     (`src/state/timed-results.ts`: the row, corrected in place on its unique
+ *     key's 23505, then the `block_movement_results` rows, each movement's
+ *     round decided by TASK-030's rules from the reported outcome and never
+ *     from the plan). Row ids are minted here once per block, so a retry sends
+ *     the same identities and converges on the same rows — a refused movement
+ *     write leaves the block unrecorded here, so the retry restates the row
+ *     and writes the movements once, never twice. A report with no effort and
+ *     no typed entry takes the bare insert below, byte for byte as before.
  *
- * Effort is not asked (E04): every row is written with `perceived_effort`
- * `null` through TASK-029's nullable writer, and nothing defaults it.
+ * The numeric effort is not asked (E04): every row is written with
+ * `perceived_effort` `null` through TASK-029's nullable writer, and nothing
+ * defaults it or derives it from the category.
  *
  * It lives beside `auth-provider.tsx` for the same reason that one does: this
  * is the React half of a state contract — subscribe, reduce, render.
@@ -50,9 +64,11 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
   type SectionCompletionApi,
+  type TimedResultReport,
 } from './block-completion'
 import type { AppError, Result } from './errors'
 import { ErrorCode, isErr, ok } from './errors'
+import { reportedTimedEntries, saveTimedResult, timedDraftFromReport, timedResultRequest } from './timed-results'
 import type { BlockProgress } from './workout-progress'
 import { useWorkoutClients } from './workout-queries'
 
@@ -90,6 +106,10 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
   // forward tap in the same render must see the first one's progress.
   const written = useRef(new Set<string>())
   const outcomes = useRef(new Map<string, BlockOutcome>())
+  // TASK-015: the timed logs' latest reports, and the movement row ids minted
+  // once per block so every retry addresses the same rows.
+  const timedReports = useRef(new Map<string, TimedResultReport>())
+  const movementRowIds = useRef(new Map<string, Record<string, string>>())
   const inFlight = useRef<Promise<Result<undefined>> | null>(null)
   // TASK-014: renderers told the moment a block's row is known to exist.
   const recordedListeners = useRef(new Map<string, Set<() => void>>())
@@ -149,6 +169,36 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
     outcomes.current.set(blockId, outcome)
   }, [])
 
+  // TASK-015: kept the same way, so a walk to the next section and back does
+  // not lose a typed entry the forward action has not saved yet.
+  const reportTimedResult = useCallback((blockId: string, report: TimedResultReport | null) => {
+    if (report === null) timedReports.current.delete(blockId)
+    else timedReports.current.set(blockId, report)
+  }, [])
+
+  /**
+   * TASK-015: the richer save for a block whose timed log reported an effort
+   * or a typed movement entry — through TASK-031's provider, over the same
+   * writers. Pure in what it sends: the same report builds the same request.
+   */
+  const saveTimed = useCallback(async (blockId: string, outcome: BlockOutcome, report: TimedResultReport): Promise<Result<unknown>> => {
+    const block = latest.current.blocks.find((candidate) => candidate.blockId === blockId)
+    if (block === undefined) return ok(undefined)
+    let rowIds = movementRowIds.current.get(blockId)
+    if (rowIds === undefined) {
+      rowIds = Object.fromEntries(block.exercises.map((exercise) => [exercise.exerciseId, crypto.randomUUID()]))
+      movementRowIds.current.set(blockId, rowIds)
+    }
+    const request = timedResultRequest(timedDraftFromReport(blockId, outcome, report, rowIds), {
+      block: { id: blockId, rounds: block.rounds },
+      movements: block.exercises.map((exercise) => exercise.prescription),
+      ...(report.rungCount === undefined ? {} : { rungCount: report.rungCount }),
+      weightUnit: report.weightUnit,
+    })
+    if (isErr(request)) return request
+    return saveTimedResult(latest.current.blockResults, request.value)
+  }, [])
+
   const completeSection = useCallback(
     (blockIds: readonly string[]): Promise<Result<undefined>> => {
       if (inFlight.current !== null) return inFlight.current
@@ -165,11 +215,17 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
           // In order, one at a time: a failure stops the save with every
           // earlier block recorded, so the retry resumes rather than repeats.
           for (const blockId of outstanding) {
-            const result = await latest.current.blockResults.record({
-              blockId,
-              outcome: outcomes.current.get(blockId) ?? {},
-              perceivedEffort: null,
-            })
+            const outcome = outcomes.current.get(blockId) ?? {}
+            const timed = timedReports.current.get(blockId)
+            // TASK-015: a timed log with something new saves through the
+            // richer provider; otherwise the insert every renderer made before.
+            const result = timed !== undefined && reportedTimedEntries(timed)
+              ? await saveTimed(blockId, outcome, timed)
+              : await latest.current.blockResults.record({
+                  blockId,
+                  outcome,
+                  perceivedEffort: null,
+                })
             if (isErr(result) && !isAlreadyRecorded(result.error)) return result
 
             remember(blockId)
@@ -189,17 +245,18 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
       void pending.then(settle, settle)
       return pending
     },
-    [remember],
+    [remember, saveTimed],
   )
 
   const completion = useMemo<BlockCompletionApi>(
     () => ({
       reportOutcome,
+      reportTimedResult,
       isBlockRecorded: (blockId) => recorded.has(blockId),
       sessionId,
       onBlockRecorded,
     }),
-    [onBlockRecorded, recorded, reportOutcome, sessionId],
+    [onBlockRecorded, recorded, reportOutcome, reportTimedResult, sessionId],
   )
 
   const section = useMemo<SectionCompletionApi>(

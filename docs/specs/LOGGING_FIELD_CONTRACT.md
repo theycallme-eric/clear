@@ -236,8 +236,15 @@ Moments 13–16 write one `block_results` row each through the shell's one write
   (`createWorkoutClients().blockResults.correct`: an UPDATE of the row by `block_id`, restating every
   outcome column, the notes and the categorical effort) and the save provider that uses it on the
   insert's 23505 (`saveTimedResult`), so a changed retry after a lost answer is corrected, not
-  re-inserted. No shipped path calls either yet (TASK-047 wires them); until then the shipped
-  section save still absorbs a changed retry by the 409 rule.
+  re-inserted. TASK-015 wired that provider into the shell's one completion path
+  (`BlockCompletionProvider`, the only caller): a timed renderer reports the log's categorical
+  effort and each movement's typed entry beside its outcome (`reportTimedResult`), and the
+  section's forward action saves a block whose report carries either through `saveTimedResult`
+  (row → correction on 23505 → movement rows, ids minted once per block in the shell); a report
+  with no effort and no typed entry takes the bare insert, byte for byte as before, and a changed
+  retry of such a save is still absorbed by the 409 rule. A refused movement write leaves the
+  block unrecorded in the shell and the athlete on the section with the existing dialog; the retry
+  restates the row and writes the movements once.
 - **Readback:** History `blockOutcome` (per structure) plus block notes; `perceived_effort` as
   `N of 10` for older rows.
 
@@ -255,18 +262,30 @@ TASK-019.
 
 Today: `amrapOutcome` reports `elapsedSeconds` and, once the window has closed, `roundsCompleted`
 and `partialRoundReps` when recorded; blank is null and an explicit 0 is stored (TASK-009). Draft:
-`clear.workout-amraps`, restored on reload. History reads `Rounds N` and `Partial round N reps`.
-Proposed: notes (reuse `block_results.notes`, no migration), block effort (MIG-A), per-movement
-next-round partials and loads (MIG-B). Owners: TASK-031, TASK-015, TASK-046, TASK-047, TASK-019.
+`clear.workout-amraps`, restored on reload — since TASK-015 also each movement's typed next-round
+amount and load (`AmrapState.movements`, written on every keystroke; a change of the rounds count
+clears the amounts and keeps the loads). The amount is asked only once a rounds count is recorded
+(round `rounds_completed + 1`; an explicit 0 gives round 1); "Reps into the next round" stays
+beside it, neither derived from the other. Saved by the section's forward action through the
+shell's one path as `block_movement_results` rows (TASK-015); once saved the fields keep their
+values and are no longer offered. History reads `Rounds N`, `Partial round N reps` and each
+movement's `Round N · amount · load`. Proposed still: notes (reuse `block_results.notes`), block
+effort (MIG-A, no AMRAP effort field yet). Owners: TASK-031, TASK-015, TASK-046, TASK-047, TASK-019.
 
 ### `for_time`
 
 Today: `forTimeOutcome` reports `elapsedSeconds` and the completion answer as `completedUnderCap`;
 the athlete's Complete/Incomplete is kept as `workCompleted` on `clear.workout-for-time` (TASK-010);
-null before the end, with no cap, or when recorded mid-race. The effort faces are memory-only and
-not saved. History reads `Elapsed` and `Cap · Finished under the cap / Stopped at the cap /
-Incomplete` (no rounds reading). Proposed: notes (reuse), block effort (MIG-A), per-movement amounts
-when Incomplete and loads (MIG-B). Owners: TASK-031, TASK-015, TASK-046, TASK-047, TASK-019.
+null before the end, with no cap, or when recorded mid-race. The effort faces are the renderer's
+memory (not stored), reported to the shell and saved as `block_results.effort` (TASK-015, MIG-A).
+Since TASK-015 the record also holds each movement's typed entry (`ForTimeState.movements`): a
+single pass answered Incomplete asks each movement's completed amount for round 1 and its load; a
+multi-round race (`rounds` > 1) asks loads only — no partial round and no new rounds-count control
+(owner decision, 2026-11-10); a change of answer clears the amounts and keeps the loads. Saved
+through the shell's one path as `block_movement_results` rows. History reads `Elapsed`, `Cap ·
+Finished under the cap / Stopped at the cap / Incomplete` (no rounds reading) and each movement's
+`Round 1 · amount · load`. Proposed still: notes (reuse). Owners: TASK-031, TASK-015, TASK-046,
+TASK-047, TASK-019.
 
 Rounds. `workout_blocks.rounds` is a nullable int with no For Time restriction (20260921000003
 `workout_blocks_rounds_positive`; the generation contract's `rounds` is fixed rounds or null), so a
@@ -291,17 +310,24 @@ ordered progress, the draft, the Finish checkpoint and the original cap on the F
 (`src/state/ladder-recovery.ts`, `usePersistedLadder`); TASK-013, TASK-014, TASK-046 and TASK-048
 adopt it. TASK-014 adopted the Finish checkpoint as the log's quiet Undo: it restores the attempt
 before a saved row exists and writes nothing; the shell's word that the row exists
-(`onBlockRecorded`) closes the record in the same act as the save. History reads `Highest rung N`. Proposed: notes (reuse), block effort (MIG-A), per-movement
-partials for the next rung and loads (MIG-B); ordered progress is recorded by TASK-013. Owners:
+(`onBlockRecorded`) closes the record in the same act as the save. TASK-015 adopted the draft's
+`movements`: while Incomplete with a rung stated and a rung left, the log asks each movement's
+completed amount for the round after the prefix (bounded by that movement's target at that rung)
+and its load; a change of rung clears the amounts and keeps the loads (`editLadderDraft`); the
+effort faces stay the renderer's memory, reported and saved as `block_results.effort`. Saved
+through the shell's one path as `block_movement_results` rows; a saved ladder claims no draft
+(TASK-048 reads the row back). History reads `Highest rung N` and each movement's `Rung N · amount
+· load`. Proposed still: notes (reuse); ordered progress is recorded by TASK-013. Owners:
 TASK-013, TASK-015, TASK-031, TASK-032, TASK-046, TASK-047, TASK-048, TASK-019.
 
 ## 3. Field matrix
 
 Status: `existing` (written today), `legacy` (kept for history; the current UI writes null),
 `prescription` (read by logging, never written by it), `proposed-migration` (needs MIG-A or MIG-B),
-`pending-live-migration` (TASK-031: declared by a repository migration and in the generated types,
-with a client writer and History reader, but no shipped path calls the writer yet and the migration
-is not applied to the hosted project until `LIVE-PRE-1`).
+`pending-live-migration` (TASK-031's name, kept as these fields' identity: declared by a repository
+migration and in the generated types, with a client writer and History reader; applied to the
+hosted project by the owner's `LIVE-PRE-1` on 2026-11-10 and written by the shell's one completion
+path since TASK-015, §13).
 Writers: S = `setLogs.mutate`, B = `blockResults.record`, N = `exercises.saveNotes`,
 D = `saveDebrief`, R = `mark`. History: H = `sessionDetail` (`loggedSet` / `blockOutcome`),
 W = Workout set row (`loggedSetFromRow`); conditioning = `conditioning_history` (20260921000012) read
@@ -446,24 +472,24 @@ Implemented as pure functions in the typed contract and proven in check-02.
   1–10 scale (`timed-read-model`, TASK-031). The reconstruction carries each exercise's
   `movement_result` (MIG-B redefines `session_reconstruction`). TASK-047 proves Workout → Summary →
   History save, retry and reload.
-- **Open, for TASK-015 (not decided here):** whether the AMRAP keeps its single "Reps into the next
-  round" count (`partial_round_reps`) once per-movement next-round amounts exist. Neither may be
-  derived from the other; `conditioning`'s like-for-like score reads only `partial_round_reps`.
-- **Open, for TASK-015 (not decided here): the multi-round For Time amount.** Whether the For Time
-  log records a completed-rounds count at all (the existing `rounds_completed` column, which
-  conditioning already reads for a capped For Time but no For Time writes, or none); whether a
-  movement's amount is the reps of the round the athlete stopped in (as `round_number` implies) or a
-  total across rounds; and whether `partial_round_reps` is written beside the per-movement amounts.
-  Neither count may be derived from the per-movement amounts or the reverse, and no count may be
-  filled from the plan. Until TASK-015 decides and records a count, a multi-round For Time has no
-  round identity and no movement amount; a single pass keeps round 1, where in-round and total are
-  the same thing.
+- **Decided for TASK-015 (owner decision, 2026-11-10): the AMRAP keeps its single "Reps into the
+  next round"** count (`partial_round_reps`, read by the conditioning score) beside the per-movement
+  next-round amounts; neither is derived from the other. The per-movement amounts are asked only
+  once a rounds count is recorded (an explicit 0 gives round 1), per `partialRoundFor`.
+- **Decided for TASK-015 (owner decision, 2026-11-10): the multi-round For Time records loads
+  only** — no partial round, no new rounds-count control, and `partial_round_reps` is not written.
+  So a multi-round race keeps no round identity and no movement amount (`partialRoundFor` is
+  unchanged); a single pass keeps round 1, where in-round and total are the same thing. Nothing is
+  derived from the per-movement amounts or filled from the plan.
 
 ## 7. Isolated prerequisites (AC-R030-03)
 
 TASK-030 applied nothing. TASK-031 (#658) landed both migrations as repository files. They are
-**Not applied** to any hosted project: no hosted database is touched, and nothing in the repository
-applies a migration.
+**Applied** to the hosted project by the owner — LIVE-PRE-1, option A, 2026-11-10, performed
+outside this repository and verified by 18 read-only schema/privilege checks with zero rows
+(result file `project-workspaces/clear-visual-refinement-2026-11-03/handoffs/LIVE-PRE-1-RESULT-20261110.md`, in the support workspace). Nothing in
+the repository applies a migration; TASK-015 adopted the landed writers through the shell's one
+completion path once the result file confirmed it.
 
 | Id | Kind | What | Basis | Owner |
 | --- | --- | --- | --- | --- |
@@ -473,17 +499,17 @@ applies a migration.
 | `movement-actual-schema` | schema | landed: `blockMovementResultRowSchema` (mirrors MIG-B's CHECKs) and the reconstruction's `movement_result` (default null) | MIG-B | TASK-031 |
 | `block-result-correction` | writer | landed: `createWorkoutClients().blockResults.correct` (`blockResultCorrection`), an UPDATE by `block_id` answered with the stored row; unwired | reuse (§5) | TASK-031 |
 | `movement-actuals-writer` | writer | landed: `createWorkoutClients().blockResults.recordMovements` — insert, restate on 23505, delete when cleared, in order; unwired | MIG-B | TASK-031 |
-| `timed-result-save` | writer | landed: `src/state/timed-results.ts` — `timedResultDraft`, `timedResultRequest`, `saveTimedResult` (record → correct on 23505 → recordMovements), `timedSaveSettled` (draft kept on failure); the data provider for TASK-015/019/026/047; imported by no shipped path | the writers above | TASK-031 |
+| `timed-result-save` | writer | landed: `src/state/timed-results.ts` — `timedResultDraft`, `timedResultRequest`, `saveTimedResult` (record → correct on 23505 → recordMovements), `timedSaveSettled` (draft kept on failure); the data provider for TASK-015/019/026/047; adopted by `BlockCompletionProvider` only (TASK-015: `timedDraftFromReport`, `reportedTimedEntries`) | the writers above | TASK-031 |
 | `timed-read-model` | read model | landed: `sessionDetail` → `BlockDetailView.effort` and `movementActuals` (`movementActualReadings`) | MIG-A, MIG-B | TASK-031 |
-| `timed-entry` | draft | per-movement partial and load entry, effort and notes, truthful across edit and retry | §6 | TASK-015 |
+| `timed-entry` | draft | landed by TASK-015: per-movement partial and load entry in `TimedResultLog` (AMRAP, For Time and ladder families; labels from the recorded progress; blank unrecorded, 0 kept; the same rule that builds the row refuses inline), the entries on each family's own draft owner, the effort reported and saved as the block's category; saved through the shell's one path | §6; `src/data/refinement-logging-rules.ts` | TASK-015 |
 | `ladder-durable-draft` | draft | landed: durable ladder progress, draft, Finish checkpoint and original cap — `usePersistedLadder` (`clear.workout-ladders`) over `src/state/ladder-recovery.ts`; adopted by TASK-013/014/046/048 | `workout-persistence.ts` | TASK-032 |
 | `visible-proof` | read model | Workout → Summary → History save, retry and reload proof on the real test lane (disposable namespaced users) | PRE-001 + `LIVE-PRE-1` | TASK-047 |
 | `LIVE-PRE-1` | live authority | owner decision: apply MIG-A and MIG-B to the hosted project TASK-047's real lane writes to — per the repository's docs, the reused live (production) project | no task in this body is authorised to change a hosted database | owner |
 
-`LIVE-PRE-1` is not covered by PRE-001 (which checks only Auth health and REST availability).
-Without it TASK-047 cannot prove a real write of these fields.
+`LIVE-PRE-1` is not covered by PRE-001 (which checks only Auth health and REST availability). It
+was taken by the owner on 2026-11-10; TASK-047's real-lane proof can now be made.
 
-### Exact live authority still required (TASK-031; not taken)
+### Exact live authority (TASK-031 exposed it; the owner took it on 2026-11-10)
 
 - **What:** exactly two migrations, in order — `20261110000029_block_result_effort.sql` (MIG-A) then
   `20261110000030_block_movement_results.sql` (MIG-B). Both are additive: one nullable column, one
@@ -500,16 +526,20 @@ Without it TASK-047 cannot prove a real write of these fields.
 - **How (documented release step, for the owner):** `docs/process/generation-reliability/release-checklist.md`
   §3.1 — a tracked push dry run that must list only these two files, then the push; then fresh hosted
   Standing RLS.
-- **What waits on it:** TASK-047's real write/readback proof. The shipped app does not: every
-  shipped save omits `effort` and never touches `block_movement_results`, and the hosted
-  reconstruction without `movement_result` reads as "nothing recorded".
-- **Known consequence until it is applied:** the hosted Standing RLS matrix
-  (`.github/workflows/rls-standing.yml`, gated by `E2E_LIVE_SCHEMA_READY`) now includes
-  `block_movement_results` (the disposition audit requires every migrated table) and will report the
-  table missing on the hosted project — as it reported migration 28's table before the 2026-10-28
-  release. The disposition is `seeded: false` so the shared fixture seed (and the D6 and appearance
-  specs that use it) keeps working on the current hosted schema; seed a row and flip it to
-  `seeded: true` in the change that applies MIG-B.
+- **Taken (owner, 2026-11-10):** exactly those two files, in order, applied through the owner's
+  authorised procedure and verified read-only (18/18 checks; history aligned to the repository
+  versions; zero movement rows and zero non-null efforts; the reconstruction body equal to MIG-B).
+  Recorded in `project-workspaces/clear-visual-refinement-2026-11-03/handoffs/LIVE-PRE-1-RESULT-20261110.md`.
+- **What waited on it:** TASK-015's adoption of the writers (done, through the shell's one
+  completion path) and TASK-047's real write/readback proof (still TASK-047's). A shipped save
+  with no effort and no typed entry still omits `effort` and never touches
+  `block_movement_results`.
+- **Access-policy register (TASK-015):** with MIG-B live, `scripts/e2e/dispositions.mjs` lists
+  `block_movement_results` as `seeded: true` and the shared seed (`scripts/e2e/lifecycle.mjs`)
+  writes one row per slot on the seeded workout exercise, so the hosted Standing RLS matrix
+  (`.github/workflows/rls-standing.yml`, gated by `E2E_LIVE_SCHEMA_READY`) has its positive
+  control; the matrix's owner write restates the row's `weight` because MIG-B grants no
+  `created_at` update.
 
 Nothing applies a migration automatically: no repository workflow pushes migrations (CI only checks
 `database.types.ts` against the migration files, `npm run gen:types -- --check`).
@@ -539,8 +569,15 @@ Nothing applies a migration automatically: no repository workflow pushes migrati
   notes, null versus zero versus unreported, correction identity, retained errors with the draft
   kept, idempotent retry without duplicate rows (23505 and lost answers), the hosted-schema
   degradation, and History reading actual entries rather than planned values.
-- **Not proven here:** that Postgres agrees with the double (the real lane is TASK-047's, behind
-  `LIVE-PRE-1`), any proposed write (no table exists), or any route behaviour.
+- **TASK-015 check-01** (`src/ui/timed-result-log.test.tsx`, the TASK-015 cases) and **check-02**
+  (`e2e/refinement/task-015.spec.ts`): the entry on the real `/workout` route — which fields
+  appear for which family and progress, their labels, units, bounds and inline refusals; blank
+  versus zero; the save through the shell's one path over the migration-transcribed double
+  (rows, identity, effort as a category, a refused movement write with the draft kept, the retry
+  converging without a duplicate); readback after a reload and once saved; History; the gallery
+  states `amrap`, `for_time` and `ladder` over memory only.
+- **Not proven here:** that Postgres agrees with the double (the real lane is TASK-047's), or
+  the Workout → Summary → History proof on that lane.
 
 ## 9. Gallery disposition: not applicable
 
@@ -555,6 +592,14 @@ adds no consumer of the new writers or read-model fields, so no gallery state ad
 gallery/preview literals that build a `BlockDetailView` (`src/dev/gallery-registry.tsx`,
 `src/app/FormatPreview.tsx`) only state the new fields as unanswered/empty, which changes nothing
 they render. No synthetic production writer is added.
+
+TASK-015 adopts the accepted states `amrap`, `for_time` and `ladder` (reference
+`eded158cfd928d382c9a9409e2c372270312741d`) through actual consumer adoption: those states already
+render the route's own `AmrapBlock`, `ForTimeBlock` and `LadderBlock`, so the per-movement fields
+they now draw are the route's, over memory-only records and the shell's own completion path with
+refusing clients — no gallery-only form, no duplicated route CSS and no synthetic writer. The
+AMRAP's finished-early attempt and the For Time's capped attempt seed one typed entry each as
+examples (distinct from the plan's targets and loads).
 
 ## 10. Observations recorded, not changed
 
@@ -595,10 +640,13 @@ they render. No synthetic production writer is added.
 
 ## 12. TASK-031 landing (amendment)
 
-- Migrations: §7 (landed, **not applied**; `LIVE-PRE-1` is the owner's).
-- Statuses: `block_results.effort` and every `block_movement_results.*` field are now
-  `pending-live-migration`; the moments still list them as proposed, because no shipped entry
-  writes them (TASK-015 entry, TASK-047 wiring and proof).
+- Migrations: §7 (landed; **applied** by the owner's `LIVE-PRE-1` on 2026-11-10, after this
+  amendment was written).
+- Statuses: `block_results.effort` and every `block_movement_results.*` field carry the
+  `pending-live-migration` status TASK-031 introduced; the status name is TASK-031's and is kept
+  as the matrix's identity for these fields, now read as "declared by a repository migration,
+  applied to the hosted project on 2026-11-10, written by the shell's one completion path since
+  TASK-015 (§13)".
 - Changes from the TASK-030 draft: `updated_at` is stamped by the existing `set_updated_at()`
   trigger instead of being granted to the client; the `performed` reconstruction keeps a superseded
   prescription that carries a movement result (as it keeps one with set logs, D6); the correction
@@ -607,3 +655,21 @@ they render. No synthetic production writer is added.
   `details.reason: 'migration-not-applied'` and `details.migration`; nothing is dropped to make it
   pass, and the caller keeps its draft.
 - JOURNEY-031 is **not** claimed complete; TASK-047 owns it.
+
+## 13. TASK-015 adoption (amendment)
+
+- Entry: `TimedResultLog` draws the accepted per-movement groups for its AMRAP, For Time and
+  ladder families (`movements`: the block's exercises, the consumer's `partialRound`, the unit, the
+  typed values and one writer per movement). An amount field appears only while a partial round
+  applies, labelled with that round (`Completed in round N`; the single-pass For Time's
+  `Completed`) in the movement's own unit and bounded where §6 bounds it; a load field only on a
+  loaded movement, in the athlete's unit. The same `movementActualFromDraft` that builds the row
+  says inline what an entry is refused on. EMOM loads and notes for the other families are not
+  drawn (TASK-046).
+- Drafts: `AmrapState.movements`, `ForTimeState.movements` (new optional fields on the existing
+  records; absent until typed, so older records are rewritten unchanged) and the ladder's
+  `LadderDraft.movements` (TASK-032's). Effort stays the renderer's memory.
+- Save: `BlockCompletionApi.reportTimedResult` (the one control, `BlockCompletionControl`) →
+  `BlockCompletionProvider` → `saveTimedResult`, as §2 and §7 state. Rules the shipped graph runs
+  live in `src/data/refinement-logging-rules.ts`, re-exported unchanged by the contract module.
+- Decisions recorded in §6; the register and the seed in §7.

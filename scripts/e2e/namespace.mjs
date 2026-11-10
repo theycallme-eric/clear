@@ -129,6 +129,8 @@ export function fixtureIds(namespace = NAMESPACE) {
     forgedSetLog: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
     forgedSavedWorkout: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
     forgedMovementResult: { a: id(5, 'a', namespace), b: id(5, 'b', namespace) },
+    // TASK-015: the seeded movement actual on each slot's workout exercise.
+    movementResult: { a: id(2, 'a', namespace), b: id(2, 'b', namespace) },
   }
 }
 

@@ -32,7 +32,7 @@
  */
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
 
-import type { BlockOutcome } from '../state/block-completion'
+import type { BlockOutcome, TimedResultReport } from '../state/block-completion'
 import type { BlockProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
@@ -77,6 +77,8 @@ const FIELD_ROW_STYLE: CSSProperties = {
 export interface BlockPanelCompletion {
   /** What this structure observed. `{}` when it observed nothing. */
   outcome: BlockOutcome
+  /** TASK-015: a timed log's effort and per-movement entries, saved beside the row. */
+  timed?: TimedResultReport | null
 }
 
 /**
@@ -140,7 +142,7 @@ export function BlockPanel({
       coaching={grouped ? <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} /> : undefined}
     >
       <GroupCoachingContext value={grouped}>{children}</GroupCoachingContext>
-      <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
+      <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} timed={completion.timed ?? null} />
     </WorkoutCard>
   )
 

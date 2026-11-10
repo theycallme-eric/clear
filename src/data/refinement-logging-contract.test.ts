@@ -933,10 +933,11 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
       format: 'for_time', unit: 'reps_per_minute', value: 4.5, completedUnderCap: false,
     })
 
-    // The specification states the same rule and leaves the amount's meaning open for TASK-015.
+    // The specification states the same rule; the multi-round amount's meaning,
+    // left open for TASK-015, is recorded there as decided (loads only).
     const spec = read('docs/specs/LOGGING_FIELD_CONTRACT.md')
     expect(spec).toContain('For Time: round `1` only for a single-pass block')
-    expect(spec).toMatch(/Open, for TASK-015[^\n]*multi-round For Time/)
+    expect(spec).toMatch(/Decided for TASK-015[^\n]*multi-round For Time records loads\s+only/)
   })
 
   it('AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them', async () => {
@@ -965,20 +966,25 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
     expect(contract).not.toMatch(/\bfetch\(|createSupabaseClient|\.from\(|\.rpc\(|createWorkoutClients\(|from 'zod'/)
 
     const spec = read('docs/specs/LOGGING_FIELD_CONTRACT.md')
-    expect(spec).toMatch(/Not applied/)
+    // Applied by the owner's LIVE-PRE-1 (2026-11-10), recorded as such — not by
+    // anything in this repository.
+    expect(spec).toMatch(/\*\*Applied\*\* to the hosted project/)
     expect(PROPOSED_PATHS.find((path) => path.id === 'MIG-A')).toMatchObject({ owner: 'TASK-031' })
     expect(PROPOSED_PATHS.find((path) => path.id === 'LIVE-PRE-1')).toMatchObject({ kind: 'live-authority', owner: 'owner' })
     for (const id of ['block-result-correction', 'movement-actuals-writer', 'timed-read-model', 'timed-result-save']) {
       expect(PROPOSED_PATHS.find((path) => path.id === id), id).toMatchObject({ owner: 'TASK-031' })
     }
 
-    // The shipped writers still cannot send them: the shell's one completion
-    // path never names the correction or the movement writer, and a completion
-    // with no effort (every renderer's today) names no new column.
+    // The shipped writers reach them through one path only (TASK-015 adopted
+    // TASK-031's provider): the shell's completion provider is the one shipped
+    // importer of `timed-results.ts`, no renderer or route names the
+    // correction or the movement writer, and a completion with no effort and
+    // no typed entry still names no new column.
     const runtime = readdirSync(join(REPO_ROOT, 'src'), { recursive: true, encoding: 'utf8' })
       .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file) && !file.startsWith('test/') && !file.startsWith('test\\'))
     const callers = runtime.filter((file) => /blockResults\.(?:correct|recordMovements)\(|from '[./]*state\/timed-results'|from '\.\/timed-results'/.test(read(`src/${file}`)))
-    expect(callers).toEqual([])
+    expect(callers).toEqual(['state/block-completion-provider.tsx'])
+    expect(runtime.filter((file) => /from '[./]*data\/refinement-logging-contract'/.test(read(`src/${file}`))).sort()).toEqual(['state/ladder-recovery.ts'])
     const double = createLoggingDouble({ snapshot: session(), schema: 'hosted-before-timed-actuals' })
     const { workout } = clientsFor(double)
     const at = layout(session())

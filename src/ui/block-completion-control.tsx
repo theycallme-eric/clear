@@ -22,7 +22,7 @@
 import { useEffect, type CSSProperties } from 'react'
 
 import { Check } from '../design-system/index'
-import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
+import { useBlockCompletion, type BlockOutcome, type TimedResultReport } from '../state/block-completion'
 
 const SAVED_STYLE: CSSProperties = {
   display: 'flex',
@@ -40,16 +40,28 @@ export interface BlockCompletionControlProps {
   blockId: string
   /** What this structure observed. `{}` when it observed nothing. */
   outcome: BlockOutcome
+  /**
+   * TASK-015 (C37): a timed log's effort and per-movement entries, as typed,
+   * for the shell to save beside the row through the same path. Omitted or
+   * null, the block reports its outcome alone, as every renderer did before.
+   */
+  timed?: TimedResultReport | null
 }
 
-export function BlockCompletionControl({ blockId, outcome }: BlockCompletionControlProps) {
-  const { reportOutcome, isBlockRecorded } = useBlockCompletion()
+export function BlockCompletionControl({ blockId, outcome, timed = null }: BlockCompletionControlProps) {
+  const { reportOutcome, reportTimedResult, isBlockRecorded } = useBlockCompletion()
 
   // Every change is reported, so the forward action saves what the block
   // observed at the moment it was pressed — never more than that.
   useEffect(() => {
     reportOutcome(blockId, outcome)
   }, [blockId, outcome, reportOutcome])
+
+  // TASK-015 (C37): the timed log's effort and typed entries, the same way —
+  // one more thing the forward action saves, never a second writer.
+  useEffect(() => {
+    reportTimedResult?.(blockId, timed)
+  }, [blockId, reportTimedResult, timed])
 
   if (!isBlockRecorded(blockId)) return null
 

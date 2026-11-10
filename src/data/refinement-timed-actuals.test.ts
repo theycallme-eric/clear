@@ -763,12 +763,17 @@ describe('TASK-031 richer timed-result writers and read models', () => {
     const section = spec.slice(spec.indexOf('## 7. Isolated prerequisites'), spec.indexOf('## 8. Validation'))
     expect(section).toContain(MIG_A.split('/').at(-1))
     expect(section).toContain(MIG_B.split('/').at(-1))
-    expect(section).toMatch(/\*\*Not applied\*\*/)
-    expect(section).toMatch(/Exact live authority still required \(TASK-031; not taken\)/)
+    // TASK-015 supersedes the "not taken" clause: the owner took LIVE-PRE-1 on
+    // 2026-11-10 (option A), outside this repository, and the section records
+    // exactly that — which files, which project, who, and the result file —
+    // while nothing in the repository applies a migration.
+    expect(section).toMatch(/\*\*Applied\*\* to the hosted project/)
+    expect(section).toMatch(/Exact live authority \(TASK-031 exposed it; the owner took it on 2026-11-10\)/)
     expect(section).toContain('qxckevxniacktaqecypl')
     expect(section).toMatch(/\*\*Who:\*\* the owner/)
     expect(section).toMatch(/production schema\s+change/)
     expect(section).toContain('rls-standing.yml')
+    expect(section).toContain('LIVE-PRE-1-RESULT-20261110.md')
     expect(PROPOSED_PATHS.find((path) => path.id === 'LIVE-PRE-1')).toMatchObject({ kind: 'live-authority', owner: 'owner' })
 
     const note = read('docs/journal/clear-refinement-20261103/TASK-031.md')
@@ -776,39 +781,61 @@ describe('TASK-031 richer timed-result writers and read models', () => {
     expect(note).toMatch(/not applied/i)
     expect(note).toMatch(/JOURNEY-031 is not claimed complete/)
 
-    // The disposition audit's entry is unseeded so the shared hosted seed keeps working.
+    // With MIG-B live, the disposition audit's entry is seeded (TASK-015), so
+    // the hosted Standing RLS matrix has its positive control: the shared
+    // fixture seed writes one row per slot.
     const dispositions = read('scripts/e2e/dispositions.mjs')
-    expect(dispositions).toMatch(/table: 'block_movement_results',\s+standing: 'cross-user',\s+ownerColumn: null,\s+seeded: false,/)
+    expect(dispositions).toMatch(/table: 'block_movement_results',\s+standing: 'cross-user',\s+ownerColumn: null,\s+(?:\/\/[^\n]*\n\s*)*seeded: true,/)
+    expect(read('scripts/e2e/lifecycle.mjs')).toMatch(/insertRows\('block_movement_results'/)
   })
 
   it('TASK-AC-D37D178270A8 the data providers exist for TASK-015, TASK-019, TASK-026 and TASK-047, no shipped route or renderer adopts them yet, and JOURNEY-031 is not claimed', () => {
+    // TASK-015 supersedes this case's time-bound clause ("no shipped route or
+    // renderer adopts them yet"): the providers are now adopted, and only
+    // through `BlockCompletionProvider` — still the one path that saves a
+    // block. The isolation asserted here is the same one, stated as the
+    // adoption it became: no renderer, route or second provider reaches the
+    // writers. JOURNEY-031's visible real-lane proof stays TASK-047's.
     for (const id of ['block-result-correction', 'movement-actuals-writer', 'timed-result-save', 'timed-read-model', 'block-effort-schema', 'movement-actual-schema']) {
       const path = PROPOSED_PATHS.find((candidate) => candidate.id === id)
       expect(path, id).toMatchObject({ owner: 'TASK-031' })
       expect(path?.ref?.proposedBy, id).toBeUndefined()
     }
-    expect(PROPOSED_PATHS.find((path) => path.id === 'timed-entry')).toMatchObject({ owner: 'TASK-015', ref: { extendedBy: 'TASK-015' } })
+    expect(PROPOSED_PATHS.find((path) => path.id === 'timed-entry')).toMatchObject({ owner: 'TASK-015', ref: { module: 'src/ui/refinements/timed-result-log.tsx', name: 'TimedResultLog' } })
+    expect(PROPOSED_PATHS.find((path) => path.id === 'timed-entry')?.ref?.extendedBy).toBeUndefined()
     expect(PROPOSED_PATHS.find((path) => path.id === 'visible-proof')).toMatchObject({ owner: 'TASK-047' })
 
     // The real exports the dependants build on.
     const provider = read('src/state/timed-results.ts')
-    for (const name of ['timedResultDraft', 'timedResultRequest', 'saveTimedResult', 'timedSaveSettled']) {
+    for (const name of ['timedResultDraft', 'timedResultRequest', 'saveTimedResult', 'timedSaveSettled', 'timedDraftFromReport', 'reportedTimedEntries']) {
       expect(provider, name).toMatch(new RegExp(`export (?:async )?function ${name}\\b`))
     }
     expect(read('src/state/session-detail.ts')).toMatch(/export function movementActualReadings\b/)
 
-    // No shipped file adopts them: no entry UI, no route wiring, the shell's
-    // one completion path unchanged (still `perceivedEffort: null`, no effort).
+    // Adopted through the shell's one completion path and nowhere else: the
+    // provider is the one shipped importer of `timed-results.ts`; no renderer,
+    // route or other module names the correction or the movement writer; the
+    // read model is still read only by History's derivation.
     const runtime = readdirSync(join(REPO_ROOT, 'src'), { recursive: true, encoding: 'utf8' })
       .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file) && !/^test[/\\]/.test(file))
     const adopters = runtime.filter((file) => /timed-results'|blockResults\.(?:correct|recordMovements)\(|movementActualReadings\(/.test(read(`src/${file}`)))
-    expect(adopters.sort()).toEqual(['state/session-detail.ts'])
-    expect(read('src/state/block-completion-provider.tsx')).not.toMatch(/\beffort:/)
+    expect(adopters.sort()).toEqual(['state/block-completion-provider.tsx', 'state/session-detail.ts'])
+    const shell = read('src/state/block-completion-provider.tsx')
+    expect(shell).toMatch(/saveTimedResult\(/)
+    expect(shell).not.toMatch(/blockResults\.(?:correct|recordMovements)\(/)
+    // The bare insert is still what a report with nothing new sends: the
+    // provider never names an effort itself, and the numeric effort stays null.
+    expect(shell).not.toMatch(/\beffort:/)
+    expect(shell).toMatch(/perceivedEffort: null/)
+    const renderers = runtime.filter((file) => file.startsWith('ui/') && /saveTimedResult|timedResultRequest|blockResults\./.test(read(`src/${file}`)))
+    expect(renderers).toEqual([])
 
-    // The contract module stays out of the shipped graph (bundle).
+    // The contract module stays out of the shipped graph (bundle): the rules
+    // the shell and the log run live in `refinement-logging-rules.ts`.
     const imported = runtime.filter((file) => /refinement-logging-contract'/.test(read(`src/${file}`)))
-    expect(imported.sort()).toEqual(['state/ladder-recovery.ts', 'state/timed-results.ts'])
+    expect(imported.sort()).toEqual(['state/ladder-recovery.ts'])
     expect(read('src/state/ladder-recovery.ts')).toMatch(/import type \{[^}]*\} from '\.\.\/data\/refinement-logging-contract'/)
+    expect(provider).toMatch(/from '\.\.\/data\/refinement-logging-rules'/)
 
     expect(read('docs/journal/clear-refinement-20261103/TASK-031.md')).toMatch(/JOURNEY-031 is not claimed complete/)
   })

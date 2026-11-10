@@ -34,8 +34,11 @@
  * existing three-face effort (`TimedResultLog`). Its starting point follows
  * the work the ladder actually tracked and its clock, never a Finish alone.
  * Before the attempt ends nothing is chosen, and the athlete may still answer
- * at any time, as before. Effort is never written, because no categorical
- * block-effort field exists yet (R116): it stays this renderer's memory.
+ * at any time, as before. Effort stays this renderer's memory (unstored);
+ * since TASK-015 it is reported to the shell and saved as the block's
+ * categorical `effort`, never a number. TASK-015 also asks each movement's
+ * completed amount for the round after the stated prefix, and its load, on
+ * the durable draft (`useLadderResult`).
  *
  * **Ordered live progress and its handoff** (TASK-013; C33, C34, C36; R69,
  * R77, R88, R89, R92, R93, R99, R118, R124). While a raced ladder's clock runs
@@ -118,9 +121,9 @@
  * reached" (DATA_MODEL §`block_results`). The screen never says it that way:
  * a rung is identified to the user by its target, per the quickfix spec.
  */
-import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 
-import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
+import { useBlockCompletion, type BlockOutcome, type TimedResultReport } from '../state/block-completion'
 import { forTimeTicking, type ForTimePhase } from '../state/for-time'
 import {
   explicitLadderTiming,
@@ -150,9 +153,12 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ForTimeClock } from './for-time-block'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { LadderPrescription, type LadderRoundContext, type LadderRoundsProgress } from './refinements/ladder'
-import { TimedResultLog } from './refinements/timed-result-log'
+import { TimedResultLog, UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
 import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
+
+/** No entry typed yet: one frozen object, so a report with nothing new is the same report. */
+const NO_ENTRIES: Readonly<Record<string, never>> = Object.freeze({})
 
 /**
  * A session id for a bare completion seam that supplies none (a test mounting
@@ -285,23 +291,41 @@ function liveProgress({ ladder, view, rungs }: LadderAttemptHandle): LadderRound
  * answer rather than a starting point the row may contradict (TASK-032's
  * `saved-elsewhere`). Reading the saved result back is TASK-048's.
  *
- * Effort stays this renderer's memory: no categorical block-effort field or
- * writer exists yet (R116; TASK-046, TASK-047), so a category is neither saved
- * nor stored.
+ * Effort stays this renderer's memory (unstored), reported to the shell as the
+ * block's categorical effort (TASK-015) and never a number.
+ *
+ * TASK-015 (C37; AC-C37-01, AC-R015-01): the per-movement partial and load
+ * entries are the durable draft's `movements` (TASK-032's owner, built for
+ * them), so they survive a reload and an Undo; a partial belongs to the round
+ * after the stated prefix (`ladderPartialRound`, the same round the log names
+ * as where partial work belongs) and is asked only while one is stated and a
+ * rung is left; a change of rung clears the amounts and keeps the loads (the
+ * owner's `editLadderDraft`). They reach the row through the shell's one
+ * completion path as the block's timed report, with the rung count the
+ * partial's round is bounded by.
  */
 function useLadderResult(
   block: BlockRendererProps['block'],
   { ladder, view, rungs, recorded, undoFinish }: LadderAttemptHandle,
   ended: boolean,
-): { outcome: BlockOutcome; log: ReactNode } {
+): { outcome: BlockOutcome; timed: TimedResultReport; log: ReactNode } {
   const [effort, setEffort] = useState<SetEffort | null>(null)
   const saved = recorded || !view.editable
   const draft = view.draft
   const completed = draft?.completed ?? (ended && view.editable ? false : null)
   const completedThrough = completed === true ? rungs.length : (draft?.highestRung ?? null)
+  const weightUnit = useShellWeightUnit() ?? UNSCOPED_WEIGHT_UNIT
+  const movements = draft?.movements ?? NO_ENTRIES
+  const partialRound = completed === false ? ladderPartialRound(completedThrough, rungs.length) : null
+  const rungCount = rungs.length
+  const timed = useMemo<TimedResultReport>(
+    () => ({ family: 'ladder', effort, movements, weightUnit, rungCount }),
+    [effort, movements, rungCount, weightUnit],
+  )
 
   return {
     outcome: view.outcome,
+    timed,
     log:
       rungs.length === 0 ? null : (
         <TimedResultLog
@@ -316,12 +340,24 @@ function useLadderResult(
                   unit: ladderUnit(block.exercises),
                   completedThrough,
                   // AC-R013-01: partial work belongs to the round after the prefix.
-                  partialRound: completed ? null : ladderPartialRound(completedThrough, rungs.length),
+                  partialRound,
                   onChange: (through) => ladder.editDraft({ completed: through === rungs.length, highestRung: through }),
                 }
           }
           // TASK-014 (C38, C39): while the athlete's Finish can be undone.
           completionAction={view.undo.available ? { label: UNDO_FINISH_LABEL, onAction: undoFinish } : null}
+          // TASK-015 (C37): the entries for the round after the prefix, and the loads.
+          movements={
+            completed === null
+              ? null
+              : {
+                  exercises: block.exercises,
+                  partialRound,
+                  weightUnit,
+                  values: movements,
+                  onChange: (exerciseId, entry) => ladder.editDraft({ movements: { [exerciseId]: entry } }),
+                }
+          }
           onChange={(next) => {
             if (next.completed !== null && next.completed !== completed) {
               // Complete is every round; Incomplete states its round again,
@@ -445,7 +481,7 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
     <BlockPanel
       block={block}
       timer={race.timer}
-      completion={{ outcome: result.outcome }}
+      completion={{ outcome: result.outcome, timed: result.timed }}
     >
       {block.exercises.length === 0 ? (
         <BlockPanel.EmptyNote />
@@ -608,7 +644,7 @@ function TimedLadder({
     <BlockPanel
       block={block}
       timer={timer}
-      completion={{ outcome: result.outcome }}
+      completion={{ outcome: result.outcome, timed: result.timed }}
     >
       {block.exercises.length === 0 ? (
         <BlockPanel.EmptyNote />

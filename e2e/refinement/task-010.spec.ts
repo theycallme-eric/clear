@@ -350,7 +350,10 @@ async function readResultLog(card: Locator): Promise<ResultLogGeometry> {
       },
       workBottom: Math.max(...work.map((node) => node.getBoundingClientRect().bottom)),
       title: box(form.querySelector('.clr-timed-log__title')!),
-      groups: [...form.querySelectorAll('.clr-timed-log__group')].map(box),
+      // TASK-015 (C37): the per-movement groups sit between the result and
+      // the effort and are not result groups; the two this contract reads
+      // are the result group and the effort group.
+      groups: [...form.querySelectorAll('.clr-timed-log__group:not(.clr-timed-log__group--movement)')].map(box),
       completion: question(legends.completion),
       effort: question(legends.effort)!,
       selectedRole: probe('--border-selected'),
@@ -514,8 +517,8 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await expect(page.getByRole('heading', { name: COOLDOWN_SECTION_TITLE, exact: true })).toBeVisible()
 
     // The For Time's row, both times it was sent: the athlete's Incomplete as
-    // false, the time it took — and no effort, the face never turned into a
-    // number. The ladder nobody started records nothing.
+    // false, the time it took — and the face never turned into a number. The
+    // ladder nobody started records nothing.
     const forTimeRows = app.saves.filter((body) => body.block_id === app.forTimeBlockId)
     expect(forTimeRows).toHaveLength(2)
     for (const body of forTimeRows) {
@@ -523,9 +526,17 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     }
     const ladderRows = app.saves.filter((body) => body.block_id === app.ladderBlockId)
     expect(ladderRows.map(resultColumns)).toEqual([{ ...NOTHING_RECORDED, block_id: app.ladderBlockId }])
-    // No category anywhere and no column beyond the existing ones: the only
-    // effort column is the numeric one, and it stays null.
-    for (const body of app.saves) {
+    // TASK-015 (AC-R015-02; MIG-A applied by the owner's LIVE-PRE-1): the
+    // chosen face travels with the For Time's row as its categorical `effort`
+    // — the category word, in its own column — while the numeric effort
+    // column stays null and no category is ever written into it. The ladder,
+    // with no face chosen, names no effort column at all.
+    for (const body of forTimeRows) {
+      expect(body.effort).toBe('too_easy')
+      expect(body.perceived_effort).toBeNull()
+      expect(Object.keys(body).sort()).toEqual([...Object.keys(resultColumns(body)), 'effort'].sort())
+    }
+    for (const body of ladderRows) {
       expect(JSON.stringify(body)).not.toMatch(/too_hard|about_right|too_easy/)
       expect(Object.keys(body).sort()).toEqual(Object.keys(resultColumns(body)).sort())
     }

@@ -24,6 +24,7 @@
 import { createContext, use } from 'react'
 
 import type { Enums, TablesInsert, TablesUpdate } from '../data/database.types.ts'
+import type { MovementActualDraft, TimedFamily } from '../data/refinement-logging-rules'
 import type { Result } from './errors'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -194,6 +195,33 @@ export function isPerceivedEffort(value: number): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TASK-015 — the timed log's richer report (REQ-015, C37)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What a timed renderer reports beside its outcome: the optional categorical
+ * effort and each movement's partial amount and actual load exactly as the
+ * athlete typed them, with the unit a load is stated in and, for a ladder, how
+ * many rungs it has. The shell turns it into the block's `effort` and its
+ * `block_movement_results` rows through TASK-031's save provider
+ * (`src/state/timed-results.ts`), deciding every round identity from the
+ * reported outcome with TASK-030's rules — never from a planned target. A
+ * report with no effort and no typed entry changes nothing: the save is the
+ * one every renderer made before the fields existed.
+ */
+export interface TimedResultReport {
+  readonly family: TimedFamily
+  /** The existing three categories, or null when unanswered. Never a number. */
+  readonly effort: Enums<'set_effort'> | null
+  /** Each movement's typed entry by `workout_exercises.id`; blank is not recorded. */
+  readonly movements: Readonly<Record<string, MovementActualDraft>>
+  /** The unit a typed load is stated in: the athlete's choice, else the profile's. */
+  readonly weightUnit: Enums<'weight_unit'>
+  /** A ladder's rung count (`ladderRungs(...).length`); its partial's round is bounded by it. */
+  readonly rungCount?: number
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The seam the renderers use
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -205,6 +233,16 @@ export interface BlockCompletionApi {
    * every outcome column `null` — because a tap is not an observation.
    */
   reportOutcome(blockId: string, outcome: BlockOutcome): void
+  /**
+   * TASK-015 (C37): tells the shell what the block's timed log holds beside
+   * the outcome — the categorical effort and each movement's typed partial
+   * and load (`TimedResultReport`); null withdraws an earlier report. Saved
+   * by the same forward action through the same path, after the block row,
+   * and only when the report carries something. The shell's provider always
+   * supplies it; a bare test seam may omit it, and then nothing richer is
+   * reported.
+   */
+  reportTimedResult?(blockId: string, report: TimedResultReport | null): void
   /** Blocks the shell has already written a result for, this session. */
   isBlockRecorded(blockId: string): boolean
   /**

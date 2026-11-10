@@ -22,23 +22,29 @@
  *   · `timedSaveSettled` — what the caller keeps: the draft, always, and the
  *     error until a retry succeeds.
  *
- * What it is not: it is not wired. No shipped route, renderer or provider
- * imports this module or calls `blockResults.correct` / `recordMovements`;
- * `BlockCompletionProvider` remains the one path that saves a block, and
- * TASK-047 adopts this provider through it. The writers need MIG-A and MIG-B
- * on the project they write to, which is the owner's LIVE-PRE-1; without
- * them a save refuses explicitly (`details.migration`) and the draft stays.
+ * Where it is wired (TASK-015, REQ-015): only `BlockCompletionProvider`
+ * (`src/state/block-completion-provider.tsx`) imports this module. It stays
+ * the one path that saves a block: when a timed renderer's report carries an
+ * effort or a typed movement entry, the section's forward action builds the
+ * draft from that report (`timedDraftFromReport`) and saves it here instead of
+ * the bare insert; a report with nothing new takes the insert every renderer
+ * made before, byte for byte (`reportedTimedEntries`). No renderer calls
+ * `blockResults.correct` / `recordMovements`. MIG-A and MIG-B were applied to
+ * the hosted project by the owner's LIVE-PRE-1 (2026-11-10); a project
+ * without them still refuses explicitly (`details.migration`) and the draft
+ * stays.
  */
 import type { Enums } from '../data/database.types'
 import {
   movementActualFromDraft,
+  movementEntryBlank,
   partialRoundFor,
   type MovementActualDraft,
   type PartialRoundInput,
   type PrescribedColumnsWithEquipment,
   type TimedFamily,
-} from '../data/refinement-logging-contract'
-import type { BlockCompletion, BlockOutcome, MovementResultWrite } from './block-completion'
+} from '../data/refinement-logging-rules'
+import type { BlockCompletion, BlockOutcome, MovementResultWrite, TimedResultReport } from './block-completion'
 import { createError, err, ErrorCode, isErr, ok, type AppError, type Result } from './errors'
 import type { BlockMovementResultRow, BlockResultRow, WorkoutBlockRow } from './schemas'
 
@@ -94,6 +100,41 @@ export function timedResultDraft(
     notes: '',
     movements: Object.fromEntries(movements.map(({ id }) => [id, { amount: '', weight: '' }])),
     rowIds: Object.fromEntries(movements.map(({ id }) => [id, mint()])),
+  }
+}
+
+/**
+ * TASK-015: whether a renderer's report carries anything the bare block
+ * insert would not — a category, or a typed amount or load. With none, the
+ * section save is the one every renderer made before these fields existed.
+ */
+export function reportedTimedEntries(report: TimedResultReport): boolean {
+  return report.effort !== null || Object.values(report.movements).some((entry) => !movementEntryBlank(entry))
+}
+
+/**
+ * TASK-015: the draft the section's forward action saves, from the block's
+ * reported outcome and the timed log's report. The outcome is the renderer's
+ * own (its notes travel as the draft's `notes`); the effort and the typed
+ * entries are the report's; the row ids are the shell's, minted once per
+ * block so a retry sends the same identities.
+ */
+export function timedDraftFromReport(
+  blockId: string,
+  outcome: BlockOutcome,
+  report: TimedResultReport,
+  rowIds: Readonly<Record<string, string>>,
+): TimedResultDraft {
+  const { notes, effort: _effort, ...observed } = outcome
+  void _effort
+  return {
+    blockId,
+    family: report.family,
+    outcome: observed,
+    effort: report.effort,
+    notes: notes ?? '',
+    movements: report.movements,
+    rowIds,
   }
 }
 

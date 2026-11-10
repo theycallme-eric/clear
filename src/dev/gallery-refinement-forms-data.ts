@@ -18,6 +18,14 @@
  *
  * TASK-011 adds the accepted `emom` state's attempts (below): the minute grid
  * the route's own EMOM keeps (`emom.ts`), seeded the same way.
+ *
+ * TASK-015 (C37) seeds, on the AMRAP finished early and the For Time run into
+ * its cap, one typed per-movement entry each — the loaded movement's
+ * next-round amount and actual load — as the route's own records now hold
+ * them (`AmrapState.movements`, `ForTimeState.movements`). The values are
+ * examples, deliberately unlike the plan's targets and loads, so nothing in
+ * the gallery can be mistaken for a field filled from the prescription; each
+ * record is built against the block's own exercise ids.
  */
 import type { AmrapState } from '../state/amrap'
 import type { EmomState } from '../state/emom'
@@ -61,8 +69,8 @@ export interface GalleryAmrapAttemptSpec {
   readonly block: Block
   /** The gallery block index the attempt's ids are drawn from. */
   readonly blockIndex: number
-  /** The AMRAP's own stored record for this attempt, read against `now`. */
-  record(now: number): AmrapState
+  /** The AMRAP's own stored record for this attempt, read against `now`, over the block's exercises. */
+  record(now: number, block: BlockProgress): AmrapState
 }
 
 const WINDOW_SECONDS = AMRAP_BLOCK.timer_seconds ?? 0
@@ -91,11 +99,14 @@ export const GALLERY_AMRAP_ATTEMPTS: readonly GalleryAmrapAttemptSpec[] = [
     title: 'Finished early · 3 rounds and an observed zero',
     block: ACCEPTED_SAMPLE_AMRAP,
     blockIndex: 61,
-    record: (now) => ({
+    record: (now, block) => ({
       startedAt: new Date(now - 400 * 1000).toISOString(),
       endedAtSeconds: 323,
       roundsCompleted: 3,
       partialRoundReps: 0,
+      // TASK-015: the kettlebell swing's round-4 amount and actual load, as
+      // typed — unlike its prescribed 12 reps and 24 kg.
+      movements: { [block.exercises[0].exerciseId]: { amount: '7', weight: '20' } },
     }),
   },
 ]
@@ -134,8 +145,8 @@ export interface GalleryRaceAttemptSpec {
   readonly title: string
   readonly block: Block
   readonly blockIndex: number
-  /** The race's own stored clock (`for-time.ts`) for this attempt, read against `now`. */
-  record(now: number): ForTimeState
+  /** The race's own stored clock (`for-time.ts`) for this attempt, read against `now`, over the block's exercises. */
+  record(now: number, block: BlockProgress): ForTimeState
 }
 
 /**
@@ -160,9 +171,12 @@ export const GALLERY_FOR_TIME_ATTEMPTS: readonly GalleryRaceAttemptSpec[] = [
     title: 'Cap reached · completion starts at Incomplete',
     block: CAPPED_SAMPLE_FOR_TIME,
     blockIndex: 71,
-    record: (now) => ({
+    record: (now, block) => ({
       startedAt: new Date(now - ((CAPPED_SAMPLE_FOR_TIME.timer_seconds ?? 0) + 60) * 1000).toISOString(),
       finishedAt: null,
+      // TASK-015: the wall ball's round-1 amount and actual load, as typed —
+      // unlike its prescribed 40 reps and 9 kg; the burpee left blank.
+      movements: { [block.exercises[0].exerciseId]: { amount: '28', weight: '8' } },
     }),
   },
 ]

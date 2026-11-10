@@ -59,11 +59,27 @@
  * never undone; it is drawn in `ladder-4` / `ladder-12`; its rep-first tiles
  * and live check-off are TASK-013's, drawn there and here), per-movement next-round
  * actuals and loads (the EMOM's applicable weights among them) and the
- * categorical effort's writer (TASK-015, TASK-031, TASK-047), new notes
- * behaviour (TASK-015, TASK-045) and the other logging contexts.
+ * categorical effort's wider adoption (TASK-046, TASK-047), new notes
+ * behaviour (TASK-045, TASK-046) and the other logging contexts.
+ *
+ * TASK-015 (C37; AC-C37-01, AC-R015-01, AC-R015-02): `?state=amrap`,
+ * `?state=for_time` and `?state=ladder` now also show the per-movement
+ * partial and load entries, because the route's own blocks draw them: the
+ * AMRAP finished early (3 rounds) asks each movement's round-4 amount and the
+ * kettlebell swing's load, with one entry seeded in its memory record; the
+ * AMRAP run into its cap with nothing entered asks only the load, because no
+ * rounds count is recorded; the For Time run into its cap (Incomplete) asks
+ * each movement's round-1 amount and the wall ball's load, one entry seeded;
+ * the one finished under the cap (Complete) asks loads only; the ladders ask
+ * the round after a stated rung once one is stated, bounded by that rung's
+ * target. Every timed state now runs under the shell's set-logging context
+ * too (as the EMOM did), so a load is stated in the gallery's known unit as
+ * the route states the profile's. Memory only: typing changes the gallery's
+ * copy; nothing is saved.
  */
 import { useState, type ReactNode } from 'react'
 
+import { partialRoundFor } from '../data/refinement-logging-rules'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
 import { ladderRungs, ladderUnit } from '../state/ladder'
 import { ladderPartialRound } from '../state/ladder-recovery'
@@ -83,9 +99,11 @@ import {
   type CompletionResult,
   type CompletionResultLog,
   type EmomResult,
+  type MovementEntryLog,
 } from '../ui/refinements/timed-result-log'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
+import { AMRAP_BLOCK } from './gallery-refinement-cards-data'
 import { galleryLadderProgress } from './gallery-refinement-flow-data'
 import {
   GALLERY_AMRAP_ATTEMPTS,
@@ -114,27 +132,51 @@ function memoryStorage(): ShellStorage {
 /** A session id the gallery's blocks report under; nothing is ever written for it. */
 const GALLERY_SESSION_ID = '00000000-0000-4000-8000-000000009000'
 
+/** The gallery's known unit; the route reads the profile's. */
+const GALLERY_WEIGHT_UNIT = 'kg' as const
+
+const noop = () => {}
+
+/**
+ * The shell around one gallery timed block, as the route draws it: the shell's
+ * own completion path (the block reports to it; with no forward action here
+ * nothing is saved, and the block-result writer refuses in any case) and its
+ * set-logging context, which carries the unit a prescribed load is stated in
+ * and, since TASK-015, the unit a typed actual load is stated in. Memory only:
+ * no queue storage, and a timed block logs no set.
+ */
+function GalleryTimedShell({ block, children }: { block: BlockProgress; children: ReactNode }) {
+  return (
+    <BlockCompletionProvider sessionId={GALLERY_SESSION_ID} blocks={[block]}>
+      <SetLoggingProvider
+        sessionId={GALLERY_SESSION_ID}
+        exercises={block.exercises}
+        weightUnit={GALLERY_WEIGHT_UNIT}
+        storage={null}
+        onFailure={noop}
+      >
+        {children}
+      </SetLoggingProvider>
+    </BlockCompletionProvider>
+  )
+}
+
 /** One ended attempt: the route's AMRAP over its own seeded memory record. */
 function GalleryAmrapAttempt({ attempt }: { attempt: GalleryAmrapAttemptSpec }) {
   const [block] = useState(() => galleryAmrapProgress(attempt.block, attempt.blockIndex))
   const [storage] = useState(() => {
     const memory = memoryStorage()
-    writeAmrapState(memory, block.blockId, attempt.record(Date.now()))
+    writeAmrapState(memory, block.blockId, attempt.record(Date.now(), block))
     return memory
   })
   return (
     <HeadingSection className="clr-stack" data-gallery-amrap={attempt.id}>
       <Heading className="label">{attempt.title}</Heading>
-      {/*
-        The shell's own completion path, over the gallery's clients: the block
-        reports what it observed to it, and with no forward action here nothing
-        is ever saved — the block-result writer refuses in any case.
-      */}
-      <BlockCompletionProvider sessionId={GALLERY_SESSION_ID} blocks={[block]}>
+      <GalleryTimedShell block={block}>
         <div data-gallery-context="workout">
           <AmrapBlock block={block} storage={storage} conditioningHistory={null} />
         </div>
-      </BlockCompletionProvider>
+      </GalleryTimedShell>
     </HeadingSection>
   )
 }
@@ -169,16 +211,16 @@ function GalleryRaceAttempt({
   const [block] = useState(() => galleryTimedProgress(attempt.block, attempt.blockIndex))
   const [storage] = useState(() => {
     const memory = memoryStorage()
-    writeForTimeState(memory, block.blockId, attempt.record(Date.now()))
+    writeForTimeState(memory, block.blockId, attempt.record(Date.now(), block))
     return memory
   })
   return (
     <HeadingSection className="clr-stack" data-gallery-race={`${family}-${attempt.id}`}>
       <Heading className="label">{attempt.title}</Heading>
-      {/* The shell's own completion path, as for the AMRAP above: nothing is ever saved. */}
-      <BlockCompletionProvider sessionId={GALLERY_SESSION_ID} blocks={[block]}>
+      {/* The shell's own completion path and unit, as for the AMRAP above: nothing is ever saved. */}
+      <GalleryTimedShell block={block}>
         <div data-gallery-context="workout">{render(block, storage)}</div>
-      </BlockCompletionProvider>
+      </GalleryTimedShell>
     </HeadingSection>
   )
 }
@@ -223,34 +265,6 @@ export function GalleryLadderResults() {
 // TASK-011 — `?state=emom` and the `cards` state's live EMOM (C31, C32)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The gallery's known unit; the route reads the profile's. */
-const GALLERY_WEIGHT_UNIT = 'kg' as const
-
-const noop = () => {}
-
-/**
- * The shell around one gallery EMOM, as the route draws it: the shell's own
- * completion path (the block reports to it; with no forward action here
- * nothing is saved, and the block-result writer refuses in any case) and its
- * set-logging context, which carries the unit a prescribed load is stated in.
- * Memory only: no queue storage, and an EMOM logs no set.
- */
-function GalleryEmomShell({ block, children }: { block: BlockProgress; children: ReactNode }) {
-  return (
-    <BlockCompletionProvider sessionId={GALLERY_SESSION_ID} blocks={[block]}>
-      <SetLoggingProvider
-        sessionId={GALLERY_SESSION_ID}
-        exercises={block.exercises}
-        weightUnit={GALLERY_WEIGHT_UNIT}
-        storage={null}
-        onFailure={noop}
-      >
-        {children}
-      </SetLoggingProvider>
-    </BlockCompletionProvider>
-  )
-}
-
 /** One ended EMOM: the route's own renderer over its seeded memory grid. */
 function GalleryEmomAttempt({ attempt }: { attempt: GalleryEmomAttemptSpec }) {
   const [block] = useState(() => galleryTimedProgress(attempt.block, attempt.blockIndex))
@@ -262,11 +276,11 @@ function GalleryEmomAttempt({ attempt }: { attempt: GalleryEmomAttemptSpec }) {
   return (
     <HeadingSection className="clr-stack" data-gallery-emom={attempt.id}>
       <Heading className="label">{attempt.title}</Heading>
-      <GalleryEmomShell block={block}>
+      <GalleryTimedShell block={block}>
         <div data-gallery-context="workout">
           <EmomBlock block={block} storage={storage} />
         </div>
-      </GalleryEmomShell>
+      </GalleryTimedShell>
     </HeadingSection>
   )
 }
@@ -296,11 +310,11 @@ export function GalleryLiveEmom({ block, blockIndex, sectionLabel }: { block: Bl
   const [progress] = useState(() => galleryTimedProgress(block, blockIndex))
   const [storage] = useState(memoryStorage)
   return (
-    <GalleryEmomShell block={progress}>
+    <GalleryTimedShell block={progress}>
       <SectionLabelContext value={sectionLabel}>
         <EmomBlock block={progress} storage={storage} />
       </SectionLabelContext>
-    </GalleryEmomShell>
+    </GalleryTimedShell>
   )
 }
 
@@ -345,23 +359,66 @@ export function TimedResultLogAmrapEntered() {
   return <MemoryAmrapLog initial={{ roundsCompleted: 4, partialRoundReps: 0 }} />
 }
 
+/**
+ * TASK-015 (C37): the AMRAP's per-movement entries held in memory here, over
+ * the route fixture's two-movement AMRAP — a loaded kettlebell swing and a
+ * bodyweight burpee. The round the amounts belong to follows the rounds count
+ * (`partialRoundFor`); the typed values are examples, unlike the plan's.
+ */
+function MemoryAmrapMovementsLog() {
+  const [block] = useState(() => galleryAmrapProgress(AMRAP_BLOCK, 62))
+  const [value, setValue] = useState<AmrapResult>({ roundsCompleted: 3, partialRoundReps: 5 })
+  const [entries, setEntries] = useState<MovementEntryLog['values']>(() => ({
+    [block.exercises[0].exerciseId]: { amount: '7', weight: '20' },
+  }))
+  const partialRound = partialRoundFor({ family: 'amrap', outcome: { ...(value.roundsCompleted === null ? {} : { roundsCompleted: value.roundsCompleted }) } })
+  return (
+    <TimedResultLog
+      format="amrap"
+      value={value}
+      onChange={setValue}
+      movements={{
+        exercises: block.exercises,
+        partialRound,
+        weightUnit: GALLERY_WEIGHT_UNIT,
+        values: entries,
+        onChange: (exerciseId, next) => setEntries((current) => ({ ...current, [exerciseId]: next })),
+      }}
+    />
+  )
+}
+
+/** Three rounds recorded: each movement's round-4 amount, the swing's load, the partial round kept beside them. */
+export function TimedResultLogAmrapMovements() {
+  return <MemoryAmrapMovementsLog />
+}
+
 /** A For Time or ladder log held in memory here; its consumer owns the record and its writer (TASK-010). */
 function MemoryCompletionLog({
   format,
   initial,
   saved,
+  through,
+  movements,
 }: {
   format: CompletionResultLog['format']
   initial: CompletionResult
   saved?: boolean
+  /** TASK-015: a ladder's stated prefix, so the round after it is asked. */
+  through?: number
+  /** TASK-015: entries already typed, by the gallery ladder's exercise ids' index. */
+  movements?: MovementEntryLog['values']
 }) {
   const [value, setValue] = useState<CompletionResult>(initial)
   // TASK-013: a ladder's log draws its rounds completed once answered — here
   // over the accepted four-rung ladder, the prefix held in memory.
   const [block] = useState(() => galleryLadderProgress(4))
-  const [completedThrough, setCompletedThrough] = useState<number | null>(null)
+  const [completedThrough, setCompletedThrough] = useState<number | null>(through ?? null)
+  // TASK-015: the ladder's per-movement entries for the round after the prefix, held in memory.
+  const [entries, setEntries] = useState<MovementEntryLog['values']>(() => movements ?? {})
   const rungs = ladderRungs(block.exercises)
   const shown = value.completed === true ? rungs.length : completedThrough
+  const partialRound = value.completed === false ? ladderPartialRound(shown, rungs.length) : null
   const rounds =
     format !== 'ladder' || value.completed === null
       ? null
@@ -369,7 +426,7 @@ function MemoryCompletionLog({
           rungs,
           unit: ladderUnit(block.exercises),
           completedThrough: shown,
-          partialRound: value.completed ? null : ladderPartialRound(shown, rungs.length),
+          partialRound,
           onChange: (through: number) => {
             setCompletedThrough(through)
             setValue({ ...value, completed: through === rungs.length })
@@ -381,6 +438,17 @@ function MemoryCompletionLog({
       value={value}
       saved={saved}
       rounds={rounds}
+      movements={
+        format !== 'ladder' || value.completed === null
+          ? null
+          : {
+              exercises: block.exercises,
+              partialRound,
+              weightUnit: GALLERY_WEIGHT_UNIT,
+              values: entries,
+              onChange: (exerciseId, next) => setEntries((current) => ({ ...current, [exerciseId]: next })),
+            }
+      }
       onChange={(next) => {
         if (next.completed === false && value.completed !== false) setCompletedThrough(null)
         setValue(next)
@@ -407,6 +475,23 @@ export function TimedResultLogLadderUnanswered() {
 /** A saved result: the completion keeps the saved answer, no longer offered as a choice. */
 export function TimedResultLogForTimeSaved() {
   return <MemoryCompletionLog format="for_time" initial={{ completed: false, effort: null }} saved />
+}
+
+/**
+ * TASK-015 (C37): a ladder Incomplete through round 2, so the log asks each
+ * movement's completed amount for round 3 — bounded by that rung's target,
+ * never filled from it — the push up's entered.
+ */
+export function TimedResultLogLadderPartial() {
+  const [block] = useState(() => galleryLadderProgress(4))
+  return (
+    <MemoryCompletionLog
+      format="ladder"
+      initial={{ completed: false, effort: null }}
+      through={2}
+      movements={{ [block.exercises[0].exerciseId]: { amount: '3', weight: '' } }}
+    />
+  )
 }
 
 /** An EMOM end log held in memory here; its consumer owns the note and its writer (TASK-011). */

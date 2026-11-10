@@ -48,6 +48,20 @@
  * the remaining time is read against the clock, so the buzzer can go while the
  * tab is asleep.
  *
+ * TASK-015 (C37; AC-C37-01, AC-R015-01, AC-R015-02): after the counts, the
+ * log draws each movement's next-round amount and actual load. The amount is
+ * asked only once a rounds count is recorded — the partial belongs to the
+ * round after it (TASK-030's `partialRoundFor`; an explicit 0 gives round 1)
+ * and a round nobody counted has no next round — and a load only on a loaded
+ * movement. "Reps into the next round" stays beside them: the conditioning
+ * score reads it, and neither is derived from the other. The entries live on
+ * the AMRAP's own record (`AmrapState.movements`), written on every keystroke
+ * like its counts and read back after a reload; a change of the rounds count
+ * clears the amounts (never carried to another round) and keeps the loads.
+ * They reach the row through the shell's one completion path as the block's
+ * timed report; once the row is saved the fields keep their values and are no
+ * longer offered.
+ *
  * Containment. The countdown is one frame of its own (TASK-007, C19, R49): it
  * stands above the block's card rather than inside it and fills the block's
  * width with its digits centred — never a short readout inside an empty wider
@@ -58,6 +72,7 @@
  */
 import { use, useMemo } from 'react'
 
+import { partialRoundFor } from '../data/refinement-logging-rules'
 import { Check } from '../design-system/index'
 import {
   amrapOutcome,
@@ -66,6 +81,7 @@ import {
   AMRAP_START,
   clampAmrapState,
   finishAmrap,
+  setAmrapMovement,
   setPartialRoundReps,
   setRoundsCompleted,
   startAmrap,
@@ -73,7 +89,7 @@ import {
   type AmrapView,
 } from '../state/amrap'
 import { AuthContext } from '../state/auth-context'
-import type { BlockOutcome } from '../state/block-completion'
+import { useBlockCompletion, type BlockOutcome, type TimedResultReport } from '../state/block-completion'
 import {
   conditioningSections,
   likeForLike,
@@ -113,7 +129,7 @@ import { GroupExerciseCoaching } from './exercise-coaching'
 import { coachesAsGroup } from './group-coaching-context'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
-import { TimedResultLog } from './refinements/timed-result-log'
+import { TimedResultLog, UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
 import { WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -155,6 +171,19 @@ export function AmrapBlock({
 
   const sectionLabel = useSectionLabel()
   const outcome = shape.size === 0 ? {} : amrapOutcome(view)
+
+  // TASK-015 (C37): the per-movement entries on the AMRAP's own record, the
+  // round they belong to from the recorded count, and the report the shell
+  // saves beside the row. Saved, the fields keep their values, no longer offered.
+  const { isBlockRecorded } = useBlockCompletion()
+  const saved = isBlockRecorded(block.blockId)
+  const weightUnit = useShellWeightUnit() ?? UNSCOPED_WEIGHT_UNIT
+  const movements = amrap.state.movements ?? NO_ENTRIES
+  const partialRound = view.phase === 'complete' ? partialRoundFor({ family: 'amrap', outcome }) : null
+  const timed = useMemo<TimedResultReport>(
+    () => ({ family: 'amrap', effort: null, movements, weightUnit }),
+    [movements, weightUnit],
+  )
 
   return (
     <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -276,6 +305,14 @@ export function AmrapBlock({
                       ),
                     )
                   }
+                  saved={saved}
+                  movements={{
+                    exercises: block.exercises,
+                    partialRound,
+                    weightUnit,
+                    values: movements,
+                    onChange: (exerciseId, entry) => amrap.update(setAmrapMovement(amrap.state, exerciseId, entry)),
+                  }}
                 />
                 {conditioningHistory === undefined ? (
                   <AmrapComparison block={block} outcome={outcome} />
@@ -294,11 +331,14 @@ export function AmrapBlock({
           AMRAP nobody started measured nothing — no rounds, no time — and says
           so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
         */}
-        <BlockCompletionControl blockId={block.blockId} outcome={outcome} />
+        <BlockCompletionControl blockId={block.blockId} outcome={outcome} timed={timed} />
       </WorkoutCard>
     </div>
   )
 }
+
+/** No entry typed yet: one frozen object, so a report with nothing new is the same report. */
+const NO_ENTRIES: AmrapState['movements'] & object = Object.freeze({})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The window
