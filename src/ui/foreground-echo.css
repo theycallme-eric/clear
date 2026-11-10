@@ -18,6 +18,12 @@
   min-width: 0;
 }
 
+/* TASK-004 (C15, R107): the echoed cell passes on shell.css's fill, so a card
+   in a metric cell fills the cell with the effect on as without it. */
+.clr-metric-grid > .clr-echo > .clr-bleed--block {
+  display: grid;
+}
+
 /* A button row: the wrapper is the row's cell, and the button still fills it. */
 .clr-actions > .clr-echo {
   display: flex;

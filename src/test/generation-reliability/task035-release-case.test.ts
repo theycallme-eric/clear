@@ -54,7 +54,8 @@ function fixture() {
     commit: COMMIT, requestId: REQUEST_ID, request, acceptance, stored,
     display: {
       overviewSuppressed: true, sectionNotesSuppressed: true,
-      intensity: '3 of 10', goal: 'Active recovery', focus: 'Full body', duration: '15 min',
+      // TASK-004 (AC-C12-01, AC-R004-01): the Overview's intensity is its value alone.
+      intensity: '3', goal: 'Active recovery', focus: 'Full body', duration: '15 min',
     },
   }
 }
@@ -105,7 +106,7 @@ describe('Task035 concrete protected release case (offline assertions only)', ()
   })
 
   it.each([
-    ['overviewSuppressed', false], ['sectionNotesSuppressed', false], ['intensity', '9 of 10'],
+    ['overviewSuppressed', false], ['sectionNotesSuppressed', false], ['intensity', '9'], ['intensity', '3 of 10'],
     ['goal', 'Balanced'], ['focus', 'Upper body'], ['duration', '45 min'],
   ] as const)('rejects incomplete or different actual display %s', (key, value) => {
     const input = fixture()

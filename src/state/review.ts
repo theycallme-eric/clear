@@ -158,8 +158,25 @@ export interface ReviewSectionView {
   readonly cadence: readonly ReviewCadence[]
 }
 
+/**
+ * What an Overview reading is (TASK-004, C14): declared by the owner of its
+ * value, so the shared fact composition can pick its glyph, order and term
+ * visibility without reading meaning out of a word. Review's facts are
+ * `duration`, `focus` (the anchor), `intensity`, `goal` and `movements`; a
+ * saved record adds its own `date` and `status`.
+ */
+export type FactKind =
+  | 'duration'
+  | 'focus'
+  | 'intensity'
+  | 'goal'
+  | 'movements'
+  | 'date'
+  | 'status'
+
 /** The header IA.md §4 asks for: intensity, anchor, goal — and the duration. */
 export interface ReviewFact {
+  readonly kind: FactKind
   readonly label: string
   readonly value: string
 }
@@ -217,9 +234,14 @@ export const ANCHOR_LABEL = 'Anchor'
 export const GOAL_LABEL = 'Goal'
 export const DURATION_LABEL = 'Duration'
 
-/** The intensity scale is 1–10, and the header says which end it is on. */
+/**
+ * The Overview's intensity reading (TASK-004: C12, R32): the value alone. The
+ * scale is still the fixed 1–10 one the value was chosen on; the reading no
+ * longer repeats `of 10`, and the value is never rescaled. Overview only —
+ * effort scores and stored data keep their own readings.
+ */
 export function briefingIntensity(effectiveIntensity: number): string {
-  return `${effectiveIntensity} of 10`
+  return String(effectiveIntensity)
 }
 
 /**
@@ -310,6 +332,24 @@ export function equipmentName(equipment: string): string {
 /** Equipment slugs that name no equipment: the body is not something to fetch. */
 const NO_EQUIPMENT: ReadonlySet<string> = new Set(['bodyweight', 'none'])
 
+/**
+ * Required equipment (REQ-006; TASK-004 C13, C14): each piece of equipment the
+ * given rows name, once, in the order it is first needed, in the user's words.
+ * Bodyweight is not equipment, so an all-bodyweight workout answers an empty
+ * list — the one case the Overview says `None — bodyweight only`. Review reads
+ * a composed prescription's `equipment`; a saved record reads the same value as
+ * persisted, `workout_exercises.equipment_used`.
+ */
+export function requiredEquipment(slugs: Iterable<string>): string[] {
+  const names: string[] = []
+  for (const slug of slugs) {
+    if (NO_EQUIPMENT.has(slug)) continue
+    const name = equipmentName(slug)
+    if (!names.includes(name)) names.push(name)
+  }
+  return names
+}
+
 /** `01`, `02` — a movement's place in its group, as the sequence line names it. */
 export function sequenceOrdinal(index: number): string {
   return String(index + 1).padStart(2, '0')
@@ -380,9 +420,10 @@ export function reviewBriefing(
   return {
     title: acceptance.workout.title,
     facts: [
-      { label: INTENSITY_LABEL, value: briefingIntensity(acceptance.effective_intensity) },
-      { label: ANCHOR_LABEL, value: formatFocus(acceptance.session_focus) },
+      { kind: 'intensity', label: INTENSITY_LABEL, value: briefingIntensity(acceptance.effective_intensity) },
+      { kind: 'focus', label: ANCHOR_LABEL, value: formatFocus(acceptance.session_focus) },
       {
+        kind: 'goal',
         label: GOAL_LABEL,
         value:
           acceptance.goal_preset === null
@@ -390,23 +431,18 @@ export function reviewBriefing(
             : GOAL_LABELS[acceptance.goal_preset],
       },
       {
+        kind: 'duration',
         label: DURATION_LABEL,
         value: briefingDuration(acceptance.effective_duration_target_mins),
       },
     ],
     adjustment: blankToNull(acceptance.adjustment_reason),
     sections,
-    equipment: [
-      ...new Set(
-        acceptance.workout.sections.flatMap((section) =>
-          section.blocks.flatMap((block) =>
-            block.exercises.flatMap((exercise) =>
-              NO_EQUIPMENT.has(exercise.equipment) ? [] : [equipmentName(exercise.equipment)],
-            ),
-          ),
-        ),
+    equipment: requiredEquipment(
+      acceptance.workout.sections.flatMap((section) =>
+        section.blocks.flatMap((block) => block.exercises.map((exercise) => exercise.equipment)),
       ),
-    ],
+    ),
     movementCount: sections.reduce((total, section) => total + section.movementCount, 0),
   }
 }

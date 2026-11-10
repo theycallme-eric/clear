@@ -44,30 +44,19 @@
  * already in `SCREEN_ATMOSPHERE`, so `RootLayout` resolves it from the pathname
  * the day the journey that owns this screen routes it.
  */
-import { useId, useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
   Button,
-  Clock,
-  Crosshair,
-  Gauge,
   Info,
   Play,
   RefreshCw,
-  Target,
 } from '../design-system/index'
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
 import { useAuth } from '../state/auth-context'
 import { createError, ErrorCode, isErr, type AppError } from '../state/errors'
-import {
-  ANCHOR_LABEL,
-  DURATION_LABEL,
-  GOAL_LABEL,
-  INTENSITY_LABEL,
-  reviewBriefing,
-  type ReviewFact,
-} from '../state/review'
+import { reviewBriefing, type ReviewFact } from '../state/review'
 import {
   applyLoadOverrides,
   reviewLoadSuggestions,
@@ -83,7 +72,8 @@ import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queri
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { ReviewSection } from '../ui/review-block'
-import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
+import { ActionRow, PhoneFooter } from '../ui/composition'
+import { EquipmentSummary, OverviewFacts } from '../ui/refinements/overview'
 import {
   LoadSuggestionDialog,
   LoadSuggestionsStatus,
@@ -295,7 +285,7 @@ export function Review({
         className="clr-stack"
         style={{ display: 'flex', flexDirection: 'column' }}
       >
-        <BriefingOverview
+        <ReviewOverview
           facts={briefing.facts}
           adjustment={briefing.adjustment}
           movementCount={briefing.movementCount}
@@ -390,56 +380,17 @@ const NO_OVERRIDES: LoadOverrides = new Map()
 // The overview
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * A glyph beside each fact. The glyph is shorthand, never the only cue: each
- * reading keeps its own `<dt>`, visible wherever the value alone would not
- * say what it is.
- */
-const FACT_GLYPHS: Readonly<Record<string, ReactNode>> = {
-  [INTENSITY_LABEL]: <Gauge size={16} />,
-  [ANCHOR_LABEL]: <Target size={16} />,
-  [GOAL_LABEL]: <Crosshair size={16} />,
-  [DURATION_LABEL]: <Clock size={16} />,
-}
-
-const LABEL_STYLE: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-100)',
-}
-
-const VALUE_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h6-size)',
-  color: 'var(--text-card-header)',
-  margin: 0,
-}
-
-const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
-
-/**
- * The order the compact row reads in: B05-03's duration, focus and intensity
- * first, then the two real facts the pictured demo row did not carry. Both stay
- * — the goal and the movement count are accepted facts of this workout, and a
- * compact row is not a reason to drop them.
- */
-const FACT_ORDER: readonly string[] = [DURATION_LABEL, ANCHOR_LABEL, INTENSITY_LABEL, GOAL_LABEL]
-
-/** Unknown labels keep their given order, after the known ones. */
-function factRank(label: string): number {
-  const rank = FACT_ORDER.indexOf(label)
-  return rank === -1 ? FACT_ORDER.length : rank
-}
-
-/**
- * Facts whose glyph and value already say what they are (`45 min`, `Lower
- * body`); their term stays for assistive technology. Intensity, goal and the
- * movement count keep a visible term: `7 of 10`, `Not set` and `5` are not
- * readable without one.
- */
-const SELF_DESCRIBING_FACTS: ReadonlySet<string> = new Set([DURATION_LABEL, ANCHOR_LABEL])
-
 export const MOVEMENTS_LABEL = 'Movements'
+
+/** The equipment group's label and its all-bodyweight reading (`refinements/overview`). */
+export { EQUIPMENT_LABEL, NO_EQUIPMENT_LABEL } from '../ui/refinements/overview'
+
+export interface ReviewOverviewProps {
+  facts: readonly ReviewFact[]
+  adjustment: string | null
+  movementCount: number
+  equipment: readonly string[]
+}
 
 /**
  * The facts, in one card under its own heading, directly beneath the page's
@@ -447,40 +398,25 @@ export const MOVEMENTS_LABEL = 'Movements'
  * (REQ-010): the card states what the workout was composed under, not a
  * narrative about it.
  *
- * B05-03: the compact workout-facts row, a glyph beside each reading, in
- * place of the tall metric grid. It is still a description list, so every
- * value keeps its term. Inside the card the row is bare; the card is the only
- * frame here.
+ * TASK-004 (C12, C13, G04, R74): the accepted Overview, drawn by the shared
+ * owners in `src/ui/refinements/overview.tsx` — the glyph-led facts wrapping
+ * with no carousel (the movement count has its glyph too, R33), intensity as
+ * its value alone (R32), then the Required equipment group under its rule.
+ * Inside the card the facts are bare; the card is the only frame here. The
+ * saved workout's Overview draws the same `OverviewFacts` (C14, R20).
  */
-function BriefingOverview({
-  facts,
-  adjustment,
-  movementCount,
-  equipment,
-}: {
-  facts: readonly ReviewFact[]
-  adjustment: string | null
-  movementCount: number
-  equipment: readonly string[]
-}) {
-  const ordered = [...facts].sort((a, b) => factRank(a.label) - factRank(b.label))
+export function ReviewOverview({ facts, adjustment, movementCount, equipment }: ReviewOverviewProps) {
   return (
     <Card heading={OVERVIEW_LABEL}>
-      <SummaryFacts aria-label={FACTS_LABEL}>
-        {ordered.map((fact) => (
-          <SummaryFact
-            key={fact.label}
-            glyph={FACT_GLYPHS[fact.label]}
-            term={fact.label}
-            termHidden={SELF_DESCRIBING_FACTS.has(fact.label)}
-          >
-            {fact.value}
-          </SummaryFact>
-        ))}
-        <SummaryFact term={MOVEMENTS_LABEL}>{movementCount}</SummaryFact>
-      </SummaryFacts>
+      <OverviewFacts
+        label={FACTS_LABEL}
+        facts={[
+          ...facts.map((fact) => ({ kind: fact.kind, term: fact.label, value: fact.value })),
+          { kind: 'movements', term: MOVEMENTS_LABEL, value: String(movementCount) },
+        ]}
+      />
 
-      <RequiredEquipment equipment={equipment} />
+      <EquipmentSummary equipment={equipment} />
 
       {/* A clamp that moved the session says so in words and with a glyph. */}
       {adjustment !== null && (
@@ -490,49 +426,6 @@ function BriefingOverview({
         </p>
       )}
     </Card>
-  )
-}
-
-/** The equipment readout's label, and the list it names. */
-export const EQUIPMENT_LABEL = 'Required equipment'
-/** An all-bodyweight workout, said rather than shown as an empty list. */
-export const NO_EQUIPMENT_LABEL = 'None — bodyweight only'
-
-const EQUIPMENT_LIST_STYLE: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 'var(--spacing-100) var(--spacing-300)',
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-}
-
-/**
- * What to have to hand before Start (REQ-006), in the overview so it is read
- * before the first section. Names only: no glyph per kind of equipment yet,
- * and no prose — this is a list of things, not an introduction to them.
- */
-function RequiredEquipment({ equipment }: { equipment: readonly string[] }) {
-  const labelId = useId()
-  return (
-    <div className="clr-stack--tight" style={STACK_STYLE}>
-      {/* A label and a value rather than paragraphs: the overview carries no
-          prose (REQ-010), and this is a reading, not a sentence. */}
-      <span id={labelId} className="clr-text-data-xs clr-text-data-xs--upper" style={LABEL_STYLE}>
-        {EQUIPMENT_LABEL}
-      </span>
-      {equipment.length === 0 ? (
-        <span style={VALUE_STYLE}>{NO_EQUIPMENT_LABEL}</span>
-      ) : (
-        <ul aria-labelledby={labelId} style={EQUIPMENT_LIST_STYLE}>
-          {equipment.map((name) => (
-            <li key={name} style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
-              {name}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   )
 }
 

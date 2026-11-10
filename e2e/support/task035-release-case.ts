@@ -109,7 +109,11 @@ export function buildTask035ReleaseObservations(input: {
     display: {
       overviewSuppressed: exact(input.display.overviewSuppressed, true, 'overview DOM suppression'),
       sectionNotesSuppressed: exact(input.display.sectionNotesSuppressed, true, 'section-note DOM suppression'),
-      intensity: exact(input.display.intensity, '3 of 10', 'displayed intensity'),
+      // TASK-004 (AC-C12-01, AC-R004-01, R32): the Overview's intensity reads
+      // its value alone. Still the effective 3 rather than the requested 9.
+      // The retained R observation checked by release-gate.mjs keeps the
+      // `3 of 10` that R displayed; that historical record is not rewritten.
+      intensity: exact(input.display.intensity, '3', 'displayed intensity'),
       goal: exact(input.display.goal, 'Active recovery', 'displayed goal'),
       focus: exact(input.display.focus, 'Full body', 'displayed anchor'),
       duration: exact(input.display.duration, '15 min', 'displayed duration'),

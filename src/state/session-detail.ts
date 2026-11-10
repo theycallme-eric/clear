@@ -31,6 +31,7 @@ import type { Enums } from '../data/database.types'
 import { formatDay, formatFocus } from './history'
 import { moodStep, type MoodStep } from './mood'
 import { prescriptionText, exerciseName } from './prescription'
+import { requiredEquipment } from './review'
 import type {
   BlockResultRow,
   ExerciseSetLogRow,
@@ -136,6 +137,14 @@ export interface SessionDetailView {
   /** `42 min`, actual where it was measured and the estimate otherwise. */
   readonly duration: string | null
   readonly intensity: number
+  /**
+   * TASK-004 (C13, C14, G04): the Required equipment the recorded rows name —
+   * each row's own `equipment_used`, once each, in the order first needed,
+   * bodyweight excluded (`requiredEquipment`, the rule Review's Overview uses).
+   * Every row this reconstruction returns counts: a swapped-out row is only
+   * returned when work was logged against it. Empty for an all-bodyweight one.
+   */
+  readonly equipment: readonly string[]
   /** The debrief's two answers. Null means it was not answered. */
   readonly mood: MoodStep | null
   readonly notes: string | null
@@ -198,6 +207,11 @@ export function sessionDetail(reconstruction: SessionReconstruction): SessionDet
     stateLabel: STATE_LABELS[reconstruction.state],
     duration: sessionDuration(session.actual_duration_mins, session.computed_duration_mins),
     intensity: session.effective_intensity,
+    equipment: requiredEquipment(
+      reconstruction.sections.flatMap((entry) =>
+        entry.blocks.flatMap((block) => block.exercises.map(({ exercise }) => exercise.equipment_used)),
+      ),
+    ),
     mood: moodStep(session.mood),
     // Whitespace is not a note. The debrief trims before writing, but a row
     // written by anything else can still hold spaces, and a notes panel with

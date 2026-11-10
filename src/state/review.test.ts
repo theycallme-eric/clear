@@ -95,16 +95,20 @@ describe('the sample the criterion is stated against', () => {
 })
 
 describe('the header IA.md §4 asks for', () => {
-  it('states the intensity on the scale it was chosen on', () => {
-    expect(factValue(briefingOf({ effective_intensity: 8 }), INTENSITY_LABEL)).toBe('8 of 10')
-    expect(briefingIntensity(1)).toBe('1 of 10')
+  // TASK-004 (AC-C12-01, AC-R004-01, R32) supersedes `N of 10`: the Overview
+  // states the value alone; the scale it was chosen on is unchanged.
+  it('states the intensity as its value on the scale it was chosen on, without "of 10"', () => {
+    expect(factValue(briefingOf({ effective_intensity: 8 }), INTENSITY_LABEL)).toBe('8')
+    expect(briefingIntensity(1)).toBe('1')
+    expect(briefingIntensity(10)).toBe('10')
+    expect(allText(briefingOf({ effective_intensity: 8 })).filter((text) => /of 10/.test(text))).toEqual([])
   })
 
   it('states the effective intensity, not the one that was asked for', () => {
     const clamped = briefingOf({ requested_intensity: 9, effective_intensity: 4 })
 
-    expect(factValue(clamped, INTENSITY_LABEL)).toBe('4 of 10')
-    expect(allText(clamped)).not.toContain('9 of 10')
+    expect(factValue(clamped, INTENSITY_LABEL)).toBe('4')
+    expect(clamped.facts.map((fact) => fact.value)).not.toContain('9')
   })
 
   it('reads the anchor out of the enum rather than reciting it', () => {

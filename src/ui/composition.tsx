@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from 'react'
 
-import { EmptyState, OverflowRail } from '../design-system/index'
+import { EmptyState } from '../design-system/index'
 
 import { useInsideCard } from './card-context'
 import { ForegroundEchoFrame } from './foreground-echo'
@@ -139,27 +139,18 @@ export function MetricFrame(props: CompositionProps) {
 }
 
 /**
- * The compact workout-facts object: one aligned row of glyph-led readings, the
- * terse sibling of `MetricGrid` for a summary read at a glance (B05-03). It is
- * not a restyled metric grid — results and scores keep their readouts. A
- * description list by default. The public rail keeps every reading reachable
- * on the same line when they exceed the available width. Its named information
- * group is one keyboard entry; horizontal keys scroll the containing viewport.
+ * The compact workout-facts object: glyph-led readings, the terse sibling of
+ * `MetricGrid` for a summary read at a glance (B05-03). It is not a restyled
+ * metric grid — results and scores keep their readouts. A description list by
+ * default, named by its own `aria-label`.
+ *
+ * TASK-004 (C12, R26, R74): no carousel. Each reading stays whole and the
+ * readings wrap onto further rows, so every fact is visible at once — no rail,
+ * arrow, hidden overflow or keyboard stop. The accepted Overview's own
+ * composition of these readings is `OverviewFacts` (`refinements/overview`).
  */
 export function SummaryFacts(props: CompositionProps) {
-  return (
-    <OverflowRail
-      className="clr-summary-facts-rail"
-      trackProps={{
-        tabIndex: 0,
-        role: 'group',
-        'aria-label': props['aria-label'] ?? 'Workout facts',
-        'aria-labelledby': props['aria-labelledby'],
-      }}
-    >
-      {composition('dl', 'clr-summary-facts', props)}
-    </OverflowRail>
-  )
+  return composition('dl', 'clr-summary-facts', props)
 }
 
 /**
