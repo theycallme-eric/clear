@@ -1,0 +1,166 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-024",
+  "description": "Generate hierarchy, focus interaction and exact copy (REQ-024; C51, G16; R06, R10, R11, R21, R23, R25; V01, V02; AC-C51-01, AC-R024-01..08; JOURNEY-024), reconciling UAT #286. On the real /generate route Goal and Focus lead the one card on one wrapping row in the shared .clr-intent-summary recipe (src/ui/refinements/presentation.css); the Focus value is itself the change control (a keyboard disclosure named by what it shows, with aria-expanded/aria-controls and a chevron cue), so no detached or paired Change focus remains; Recovery is reached inside the focus choices as its own session toggle, apart from the four mutually exclusive movement focuses, and is never recommended or selected for a first workout, nor banned; Place and Notes carry no helper lines while labels, controls, the Notes placeholder, errors and the request are unchanged; MINUTES fits through the shared public Input unit contract (src/styles/fields.css); the title is Generate and the action Generate workout; Back stays the shared framed icon-only control named Home. #286's contracts are kept: first-workout explicit required Anchor, collapsed recommended Focus with a one-workout override, stored Goal, Intensity 1-10. The accepted gallery state /gallery/refinements?state=screens (reference eded158cfd928d382c9a9409e2c372270312741d) draws the route's own GenerateBack, GenerateIntent and GenerateContextFields over an in-memory draft that sends nothing. check-01 runs the whole of src/app/Generate.test.tsx (its superseded Place/Notes helper retention and paired-action assertions migrated to the approved removals) and requires the named TASK-024 cases; check-02 proves the route in the browser at 320 and 390 with a contained synthetic session: touch, keyboard, reduced motion, reload, a first workout, a failed generation keeping the draft, and the gallery state. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-024 --check check-01 -- npx vitest run src/app/Generate.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C51-01",
+        "AC-R024-01",
+        "AC-R024-02",
+        "AC-R024-03",
+        "AC-R024-04",
+        "AC-R024-05",
+        "AC-R024-06",
+        "AC-R024-07",
+        "AC-R024-08"
+      ],
+      "files": [
+        "src/app/Generate.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 keeps Goal and Focus first with an interactive Focus value, Recovery inside its choices, the minutes unit, the Generate title and the icon-only Home back, and no Place or Notes helper",
+          "criterion": "AC-C51-01"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-01 Recovery is its own session toggle inside the focus choices, never a fifth focus value, and no detached or paired change action remains",
+          "criterion": "AC-R024-01"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-02 Goal and Focus share the summary’s larger type, and the Focus value is a keyboard disclosure with its name and expanded state",
+          "criterion": "AC-R024-02"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-03 the minutes unit is the public Input unit end cap fitted by the shared contract, with nothing Generate-specific sizing it",
+          "criterion": "AC-R024-03"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-04 the page title is Generate, and the generation action keeps its name",
+          "criterion": "AC-R024-04"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-05 Back is the shared framed icon-only control named Home, and it goes Home",
+          "criterion": "AC-R024-05"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-06 a first workout opens as a normal session: Recovery is offered unselected and recommended nowhere, and can still be chosen",
+          "criterion": "AC-R024-06"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > AC-R024-07 removes the Place and Notes helper lines and leaves no description wired to either field",
+          "criterion": "AC-R024-07"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > shows no helpers on an empty time and empty notes, with no error before submit",
+          "criterion": "AC-R024-07"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > says the time error on the field, with the unit still there and no helper returning",
+          "criterion": "AC-R024-07"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > sends a valid time as the minutes typed, and the chosen place",
+          "criterion": "AC-R024-07"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > keeps the notes limit with a note at the length limit, and sends it whole",
+          "criterion": "AC-R024-07"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-08 #286 is kept: a first workout requires one of four Anchors; history shows its Focus collapsed with the choices behind it, a different one for this workout only; the stored Goal; Intensity 1–10",
+          "criterion": "AC-R024-08"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "the screen’s composition (Form Screen template) > puts Goal and Focus first on one row, the Focus value its change control, with no paired Recovery action (C51, superseding B05-02.6/02.7)",
+          "criterion": "AC-R024-01"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "the screen’s composition (Form Screen template) > keeps Recovery beside the Anchor choices when there is no Focus to change",
+          "criterion": "AC-R024-06"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 the accepted gallery state ?state=screens draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, and sends nothing",
+          "criterion": "AC-C51-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-024 --check check-02 -- npx playwright test e2e/refinement/task-024.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C51-01",
+        "AC-R024-01",
+        "AC-R024-02",
+        "AC-R024-03",
+        "AC-R024-04",
+        "AC-R024-05",
+        "AC-R024-06",
+        "AC-R024-07",
+        "AC-R024-08",
+        "JOURNEY-024"
+      ],
+      "files": [
+        "e2e/refinement/task-024.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "project": "mobile",
+          "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 phone-320: a returning athlete reads Goal and Focus, opens the Focus choices, turns on Recovery inside them and generates",
+          "criterion": "JOURNEY-024"
+        },
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "project": "mobile",
+          "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 phone-390: a returning athlete reads Goal and Focus, opens the Focus choices, turns on Recovery inside them and generates",
+          "criterion": "JOURNEY-024"
+        },
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "project": "mobile",
+          "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 first workout phone-390: a normal session — the four Anchors are required, Recovery is offered unselected, and it generates the chosen Focus",
+          "criterion": "JOURNEY-024"
+        },
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "project": "mobile",
+          "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 keyboard, reduced motion and reopen phone-390: the Focus control opens and closes from the keyboard, an override survives a reload, and Back goes Home",
+          "criterion": "JOURNEY-024"
+        },
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "project": "mobile",
+          "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 recovery phone-320: a failed generation keeps the draft — the override, Recovery inside the choices and a note — with the accepted screen intact",
+          "criterion": "JOURNEY-024"
+        },
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "project": "mobile",
+          "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > gallery screens phone-320: the accepted state draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, with nothing read or written",
+          "criterion": "AC-C51-01"
+        }
+      ]
+    }
+  }
+}

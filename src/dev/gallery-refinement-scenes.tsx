@@ -44,21 +44,66 @@
  * `RegenerateConfirmDialog`; both answers only close it here — the gallery
  * discards nothing, navigates nowhere and runs no generation.
  *
- * The reference file's other scenes (cards, Generate / Setup / History,
- * equipment inventory) belong to other tasks; the cards scene is
- * `gallery-refinement-cards.tsx` (TASK-001/002/003).
+ * TASK-024 (C51, G16; R06, R10, R11, R21, R23, R25) adopts the Generate part
+ * of the reference's `GalleryGenerateSetupHistory` scene
+ * (`/gallery/refinements?state=screens`) as a deliberate consolidation. The
+ * reference drew a hand-made scene head, a `label` Goal, a quiet Button for
+ * the Focus that opened a dialog of five equal choices with Recovery as the
+ * fifth, and a `Time` field. Here the scene draws `/generate`'s own owners:
+ *
+ *   · `GenerateBack` beside the `Generate` title in the shared `AppHeader` —
+ *     the framed icon-only Back named for Home;
+ *   · `GenerateIntent` — Goal and Focus on one row, the Focus value itself the
+ *     disclosure, opening the four focuses inline (as #286's Edit does) and,
+ *     apart from them, the one-workout Recovery toggle: Recovery is a session
+ *     mode, never a fifth focus (R10.1). A First workout context asks for the
+ *     required Anchor with Recovery offered unselected (R11, #286);
+ *   · `GenerateContextFields` — Place, Time available with its MINUTES unit
+ *     fitted by the shared Input contract, and Notes, with no helper lines.
+ *
+ * The draft is held in memory and resolved by the route's own pure rules
+ * (`state/generation-form.ts`); Generate workout sends nothing. The Setup and
+ * History parts of the reference scene belong to TASK-025 and TASK-026.
+ *
+ * The reference file's other scenes (cards, equipment inventory) belong to
+ * other tasks; the cards scene is `gallery-refinement-cards.tsx`
+ * (TASK-001/002/003).
  */
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
-import { ChoiceGroup } from '../design-system/index'
+import { AppHeader, Button, ChoiceGroup, IntensitySlider } from '../design-system/index'
+import {
+  GENERATE_ACTION_LABEL,
+  GENERATE_TITLE,
+  GenerateBack,
+  GenerateContextFields,
+  GenerateIntent,
+} from '../app/Generate'
 import { RegenerateConfirmDialog, ReviewOverview, ReviewRegenerateAction } from '../app/Review'
 import { SessionOverview } from '../app/SessionDetail'
 import { DurationMetric, StreakMetric } from '../app/Summary'
 import { createError, ErrorCode } from '../state/errors'
+import {
+  canGenerate,
+  initialDraft,
+  REQUESTED_INTENSITY_RANGE,
+  resolveGeneration,
+  withAnchor,
+  withDuration,
+  withIntensity,
+  withLocation,
+  withNotes,
+  withOverride,
+  withRecovery,
+  type FocusHistory,
+  type GenerationContext,
+  type GenerationDraft,
+} from '../state/generation-form'
 import { composedPreparationGuide, type PreparationSectionType } from '../state/preparation-guide'
 import { reviewBriefing } from '../state/review'
 import { sessionDetail } from '../state/session-detail'
 import { Card } from '../ui/card'
+import { Heading } from '../ui/Heading'
 import { MetricGrid } from '../ui/composition'
 import { LivePreparation, PreparationGuide, PreparationTimer } from '../ui/preparation-guide'
 import { EquipmentSummary } from '../ui/refinements/overview'
@@ -256,3 +301,116 @@ export const PreparationTimerWarmUp = () => <PreparationTimer clockKey="gallery-
 export const PreparationTimerCooldown = () => <PreparationTimer clockKey="gallery-cooldown" guide={composedGuide('cooldown')} />
 export const LivePreparationWarmUp = () => <WorkoutPreparation type="warmup" />
 export const LivePreparationCooldown = () => <WorkoutPreparation type="cooldown" />
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-024: Generate's hierarchy, focus interaction and copy (`?state=screens`)
+// ─────────────────────────────────────────────────────────────────────────────
+
+type GenerateSceneContext = 'returning' | 'first'
+
+/** Synthetic places: only ids and names are drawn. */
+const GALLERY_PLACES = [
+  { id: 'gallery-place-gym', name: 'Gym' },
+  { id: 'gallery-place-home', name: 'Home' },
+] as const
+
+/** A returning athlete whose history recommends Full body at 7. */
+const GALLERY_RECOMMENDATION: FocusHistory = {
+  status: 'recommended',
+  focus: 'full_body',
+  intensity: 7,
+  reason: 'Not in your recent workouts.',
+}
+
+const GALLERY_HISTORY: Record<GenerateSceneContext, FocusHistory> = {
+  returning: GALLERY_RECOMMENDATION,
+  first: { status: 'no-completed-history' },
+}
+
+/** `/generate`'s card as the route draws it, over an in-memory draft. */
+export function GenerateScene({ context }: { context: GenerateSceneContext }) {
+  const history = GALLERY_HISTORY[context]
+  const generation: GenerationContext = { goalPreset: 'balanced', history }
+  const [draft, setDraft] = useState<GenerationDraft>(() => initialDraft(GALLERY_PLACES[0].id))
+  const [changing, setChanging] = useState(false)
+  const choicesId = useId()
+  const resolved = resolveGeneration(draft, generation)
+  const override = resolved.status === 'ready' && resolved.focusSource === 'override'
+  const expanded = changing || override
+  const range = REQUESTED_INTENSITY_RANGE
+  const intensity = resolved.intensity ?? range.start
+
+  return (
+    <div className="clr-stack" data-gallery-context={context}>
+      <AppHeader actions={<GenerateBack />}>
+        <Heading className="clr-screen__title">{GENERATE_TITLE}</Heading>
+      </AppHeader>
+      <Card>
+        <div className="clr-stack">
+          <GenerateIntent
+            goalPreset={generation.goalPreset}
+            draft={draft}
+            resolved={resolved}
+            history={history}
+            expanded={expanded}
+            choicesId={choicesId}
+            onToggleFocus={() => {
+              if (expanded) setDraft(withOverride(draft, null))
+              setChanging(!expanded)
+            }}
+            onChooseOverride={(focus) => {
+              const recommended = history.status === 'recommended' && history.focus === focus
+              setDraft(withOverride(draft, recommended ? null : focus))
+            }}
+            onChooseAnchor={(anchor) => setDraft(withAnchor(draft, anchor))}
+            onToggleRecovery={() => {
+              if (!draft.recovery) setChanging(true)
+              setDraft(withRecovery(draft, !draft.recovery))
+            }}
+            onRetryHistory={() => {}}
+          />
+          <IntensitySlider
+            label="Intensity"
+            min={range.min}
+            max={range.max}
+            step={1}
+            value={intensity}
+            valueText={`${intensity} of ${range.max}`}
+            onChange={(value: number) => setDraft(withIntensity(draft, value))}
+          />
+          <GenerateContextFields
+            places={GALLERY_PLACES}
+            locationId={draft.locationId}
+            durationMins={draft.durationMins}
+            notes={draft.notes}
+            onLocation={(value) => setDraft(withLocation(draft, value))}
+            onDuration={(value) => setDraft(withDuration(draft, value))}
+            onNotes={(value) => setDraft(withNotes(draft, value))}
+          />
+        </div>
+      </Card>
+      {/* Inert here: the gallery composes nothing and sends nothing. */}
+      <Button variant="primary" size="lg" disabled={!canGenerate(draft, generation)}>
+        {GENERATE_ACTION_LABEL}
+      </Button>
+    </div>
+  )
+}
+
+export function GalleryScreens() {
+  const [context, setContext] = useState<GenerateSceneContext>('returning')
+  return (
+    <div className="clr-stack" data-gallery-screens={context}>
+      <ChoiceGroup
+        legend="Generate context"
+        value={context}
+        options={[
+          { value: 'returning', label: 'Returning athlete' },
+          { value: 'first', label: 'First workout' },
+        ]}
+        onChange={(value) => setContext(value === 'first' ? 'first' : 'returning')}
+      />
+      <GenerateScene key={context} context={context} />
+    </div>
+  )
+}

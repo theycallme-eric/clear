@@ -759,6 +759,83 @@ html[data-reduce-motion] .clr-deadline-edge {
   color: var(--text-secondary);
 }
 
+/* TASK-024 (C51, G16; R10.1, R10.2, R21, R25): the Goal / Focus summary that
+ * leads Generate's card — `GenerateIntent` on /generate and the accepted
+ * `/gallery/refinements?state=screens`, one recipe for both. The two facts
+ * share one wrapping row in the larger paragraph face, values in the bold
+ * heading ink, so the current Goal and Focus are what the card says first.
+ * The Focus value is itself the change control: the same face, its value in
+ * the action colour on an underline, and a chevron that turns as it opens —
+ * shape, not colour alone, says it is interactive and whether it is open.
+ * Changing Focus stays secondary: no frame, no separate action row. */
+.clr-intent-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: var(--spacing-400);
+  row-gap: var(--spacing-100);
+  min-width: 0;
+}
+
+.clr-intent-summary__fact {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--paragraph-lg-size);
+  line-height: var(--paragraph-lg-line-height);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-paragraph);
+  overflow-wrap: anywhere;
+}
+
+.clr-intent-summary__fact strong {
+  font-weight: var(--font-weight-bold);
+  color: var(--ink);
+}
+
+.clr-intent-summary__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-100);
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--control-height);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.clr-intent-summary__action strong {
+  color: var(--interaction-300);
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-width);
+  text-underline-offset: var(--spacing-100);
+  transition: color var(--dur-hover) linear;
+}
+
+.clr-intent-summary__action:hover strong {
+  color: var(--interaction-100);
+}
+
+.clr-intent-summary__cue {
+  display: inline-flex;
+  flex: none;
+  color: var(--interaction-300);
+}
+
+/* The one-workout marker is a note on the Focus, not part of its prominence. */
+.clr-intent-summary__scope {
+  font-size: var(--paragraph-sm-size);
+  line-height: var(--paragraph-sm-line-height);
+  color: var(--text-secondary);
+}
+
 /* TASK-018 (C44, C57, C58, C59; P01, P02, P03; R16, R128, R129, R140): the
  * focused logging frame's contained viewport, one stationary frame and its
  * inner scroll (`logging-overlay.tsx`, the accepted `.clr-accepted-log`).
