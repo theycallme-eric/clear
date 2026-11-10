@@ -9,7 +9,10 @@
  *   · `BlockPanel` is the block's one card: identity row, the structure's own
  *     content, and the shell's single completion control at the foot. A
  *     countdown is handed to its `timer` slot and drawn beside the card, never
- *     inside it — `TimerDisplay` is already its own frame.
+ *     inside it — `TimerDisplay` is already its own frame. A block performed
+ *     as a group ends with its one Coaching and notes disclosure (TASK-005,
+ *     C16): `GroupExerciseCoaching` in the card's `coaching` slot, with the
+ *     rows' own panels stood down through `GroupCoachingContext`.
  *   · `BlockPanel.Group` is a headed group inside that card: a heading and a
  *     rule, never a second card, whatever it is rendered under.
  *   · `BlockPanel.MovementList`, `.MovementItem` and `.Movement` are the
@@ -34,6 +37,8 @@ import type { BlockProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
 import { CardContainmentContext } from './card-context'
+import { GroupExerciseCoaching } from './exercise-coaching'
+import { coachesAsGroup, GroupCoachingContext } from './group-coaching-context'
 import { HeadingSection } from './Heading'
 import { MovementList as SharedMovementList } from './refinements/movement'
 import { LiveMovement, WorkoutCard } from './refinements/workout-card'
@@ -115,6 +120,10 @@ export function BlockPanel({
   children,
 }: BlockPanelProps) {
   const sectionLabel = useSectionLabel()
+  // C16, R29 (TASK-005): a block performed as a group draws its movements'
+  // coaching and notes once, at the foot of its card, and its rows draw none.
+  // Each movement keeps its own guidance read and note writer inside it.
+  const grouped = coachesAsGroup(block)
   const card = (
     // REQ-008: a secondary label, then the compact structure badge, so the
     // badge never competes with the movement heading below it. The same static
@@ -128,8 +137,9 @@ export function BlockPanel({
         `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`
       }
       structure={block.identity}
+      coaching={grouped ? <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} /> : undefined}
     >
-      {children}
+      <GroupCoachingContext value={grouped}>{children}</GroupCoachingContext>
       <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
     </WorkoutCard>
   )

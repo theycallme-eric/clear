@@ -49,15 +49,28 @@ async function shell(prescription: Partial<WorkoutExerciseRow> = {}) {
   return double
 }
 
+/**
+ * The movement's own heading. AC-C16-01 (TASK-005): the circuit's one bottom
+ * Coaching and notes disclosure heads a labelled section with the same name,
+ * and that section is the disclosure's, not the movement row's.
+ */
+function movementHeading() {
+  const found = screen
+    .getAllByRole('heading', { name: /hollow body hold$/ })
+    .filter((heading) => heading.closest('[data-coaching-group]') === null)
+  if (found.length !== 1) throw new Error(`expected one movement heading, found ${found.length}`)
+  return found[0]
+}
+
 function row() {
-  const found = screen.getByRole('heading', { name: /hollow body hold$/ }).closest('li')
+  const found = movementHeading().closest('li')
   if (found === null) throw new Error('no owning circuit movement row')
   return found
 }
 
 /** The movement card showing for the row: its own, or the opened logger's. */
 function card() {
-  const found = screen.getByRole('heading', { name: /hollow body hold$/ }).closest('section')
+  const found = movementHeading().closest('section')
   if (found === null) throw new Error('no circuit movement card')
   return found
 }

@@ -18,6 +18,13 @@
  *     line below it — drawn by `WorkoutCard` from the block's identity — and
  *     the live EMOM, AMRAP and For Time movements state their prescribed load
  *     as their route renderers now do.
+ *   · TASK-005 (C16, R29, R36): every live grouped card ends with the actual
+ *     `GroupExerciseCoaching` in `WorkoutCard`'s `coaching` slot — one bottom
+ *     Coaching and notes disclosure with a labelled section per movement —
+ *     over memory-only library and note controllers
+ *     (`gallery-refinement-coaching.tsx`). A standard block's movements keep
+ *     their own panel on the route. Review draws none: before Start there is
+ *     no prescription row for a note.
  *
  * Same synthetic composition in both contexts (`gallery-refinement-cards-data.ts`):
  * standard, superset and circuit peers; the timed EMOM, AMRAP and For Time
@@ -33,6 +40,8 @@ import type { SessionAcceptance } from '../state/schemas'
 import { ExerciseSwapContext, type ExerciseSwapApi } from '../state/swap-context'
 import { structureDetailText, structureIdentity } from '../state/workout-progress'
 import { BlockPanel } from '../ui/block-renderers-frame'
+import { GroupExerciseCoaching } from '../ui/exercise-coaching'
+import { coachesAsGroup } from '../ui/group-coaching-context'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { MovementGroupHeader, MovementIdentity, MovementList } from '../ui/refinements/movement'
 import { liveMovementReadings } from '../ui/refinements/movement-readings'
@@ -47,6 +56,8 @@ import {
   TEN_STATION_CIRCUIT_BLOCK,
   TIMED_BLOCKS,
 } from './gallery-refinement-cards-data'
+import { GalleryCoachingClients } from './gallery-refinement-coaching'
+import { galleryExerciseProgress } from './gallery-refinement-coaching-data'
 
 type Block = SessionAcceptance['workout']['sections'][number]['blocks'][number]
 
@@ -122,13 +133,21 @@ function LiveBlockMovement({ block, prescription, position }: { block: Block; pr
 
 /**
  * One live block: the live frame's own `WorkoutCard` with the section label
- * the shell provides, then its movement list. The completion seam stays the
- * shell's alone, so this state draws no completion and provides no completion
- * context.
+ * the shell provides, then its movement list and, for a grouped block, the
+ * actual bottom Coaching and notes disclosure `BlockPanel` hands the card. The
+ * completion seam stays the shell's alone, so this state draws no completion
+ * and provides no completion context.
  */
-function WorkoutBlock({ block, sectionLabel }: { block: Block; sectionLabel: string }) {
+function WorkoutBlock({ block, blockIndex, sectionLabel }: { block: Block; blockIndex: number; sectionLabel: string }) {
+  const exercises = galleryExerciseProgress(block, blockIndex)
+  const grouped = coachesAsGroup({ structureType: block.structure_type, exercises })
   return (
-    <WorkoutCard context="workout" title={sectionLabel} structure={structureIdentity(block)}>
+    <WorkoutCard
+      context="workout"
+      title={sectionLabel}
+      structure={structureIdentity(block)}
+      coaching={grouped ? <GroupExerciseCoaching format={structureIdentity(block).format} exercises={exercises} /> : undefined}
+    >
       <BlockPanel.MovementList label={LIST_LABELS[block.structure_type] ?? 'Movements in this block'}>
         {block.exercises.map((prescription, position) => (
           <BlockPanel.MovementItem key={`${prescription.exercise_id}-${position}`}>
@@ -144,9 +163,11 @@ export function WorkoutContextCards({ blocks = [STANDARD_BLOCK, SUPERSET_BLOCK, 
   // The same section label the live shell provides around a section's blocks.
   const sectionLabel = reviewBriefing(peerGroupingAcceptance({ blocks }), GALLERY_UNIT).sections[0].title
   return (
-    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-      {blocks.map((block, index) => <WorkoutBlock key={index} block={block} sectionLabel={sectionLabel} />)}
-    </div>
+    <GalleryCoachingClients>
+      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+        {blocks.map((block, index) => <WorkoutBlock key={index} block={block} blockIndex={index} sectionLabel={sectionLabel} />)}
+      </div>
+    </GalleryCoachingClients>
   )
 }
 

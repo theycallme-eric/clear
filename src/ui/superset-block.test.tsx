@@ -217,8 +217,11 @@ function logRoundButton(round: number): HTMLElement {
 
 /** Every movement's heading, in the order the document lays them out. */
 function movementHeadings(): string[] {
+  // AC-C16-01 (TASK-005): the card's one Coaching and notes disclosure heads a
+  // labelled section per movement; those are the disclosure's, not the rows'.
   return screen
     .getAllByRole('heading')
+    .filter((heading) => heading.closest('[data-coaching-group]') === null)
     .map((heading) => heading.textContent ?? '')
 }
 

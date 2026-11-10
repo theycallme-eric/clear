@@ -34,8 +34,15 @@
  * actions, a timed meta line and a Coaching and notes disclosure in one place.
  * Here each consumer supplies its own data and actions. The format badge and
  * its details line are composed here from the consumer's identity (TASK-003);
- * the grouped Coaching and notes disclosure, the session header and the
- * preparation cards are not composed by this card.
+ * the session header and the preparation cards are not composed by this card.
+ *
+ * TASK-005 (C16, G11, R29, R36): the card owns where the grouped Coaching and
+ * notes disclosure sits — its `coaching` slot, drawn once, at the foot of the
+ * card after the block's work and actions, as the reference draws it. What
+ * fills the slot is the consumer's: the live block hands it the actual
+ * `GroupExerciseCoaching` over its movements, whose guidance reads and note
+ * writers stay per movement. Review passes nothing — before Start there is no
+ * prescription row for a note to be written to.
  */
 import type { ReactNode } from 'react'
 
@@ -67,11 +74,17 @@ export interface WorkoutCardProps {
   structure?: StructureIdentity | null
   /** The card's role, where the structure's state changes it. */
   role?: CardRole
+  /**
+   * The block's one Coaching and notes disclosure (C16), drawn at the foot of
+   * the card after everything else. The consumer supplies the actual owner;
+   * the card only places it.
+   */
+  coaching?: ReactNode
   children?: ReactNode
 }
 
-/** One block's card, in Review and in the live workout (R30, R37, C07, C08, C09). */
-export function WorkoutCard({ context, title, heading = false, structure = null, role, children }: WorkoutCardProps) {
+/** One block's card, in Review and in the live workout (R30, R37, C07, C08, C09, C16). */
+export function WorkoutCard({ context, title, heading = false, structure = null, role, coaching, children }: WorkoutCardProps) {
   return (
     <Card role={role}>
       <div className="clr-stack clr-workout-card" data-workout-card={context}>
@@ -83,6 +96,7 @@ export function WorkoutCard({ context, title, heading = false, structure = null,
           meta={structure === null ? undefined : structureDetailText(structure)}
         />
         {children}
+        {coaching}
       </div>
     </Card>
   )

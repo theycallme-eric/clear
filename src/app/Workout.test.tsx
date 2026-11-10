@@ -48,6 +48,7 @@ import {
 import {
   CATALOG_SOURCE_TEXT,
   NO_CUES_TEXT,
+  NO_DEFINITION_TEXT,
   NO_REGRESSION_TEXT,
   NOTE_FAILED_TEXT,
   NOTE_SAVED_TEXT,
@@ -1200,8 +1201,15 @@ describe('Workout — coaching and notes', () => {
     expect(document.body).not.toHaveTextContent(SECTION_NOTE)
   })
 
-  it('opens one movement’s coaching on demand, inside that movement, and closes it (U38)', async () => {
+  // AC-C16-01 (TASK-005; C16, R29) supersedes the per-movement disclosures a
+  // superset drew inside each row: the pair has one bottom Coaching and notes
+  // disclosure with a labelled section per movement. U38 still holds — on
+  // demand, and each movement's cues under its own name.
+  it('opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)', async () => {
     const user = userEvent.setup()
+    const definition = vi.fn(async (slug: string) =>
+      ok(slug === 'back-squat' ? definitionFixture() : null),
+    )
     await shell({
       session: activeSession([{
         title: 'Accessory',
@@ -1215,33 +1223,35 @@ describe('Workout — coaching and notes', () => {
           ],
         }],
       }]),
-      definitions: { 'back-squat': definitionFixture() },
+      exercises: { definition },
     })
 
-    const squat = screen.getByRole('button', { name: PANEL })
-    const row = screen.getByRole('button', { name: 'Coaching and notes — barbell row' })
-    expect(squat).toHaveAttribute('aria-expanded', 'false')
-    expect(row).toHaveAttribute('aria-expanded', 'false')
+    // No disclosure inside either movement's row.
+    expect(screen.queryByRole('button', { name: PANEL })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Coaching and notes — barbell row' })).toBeNull()
+    const GROUP = 'Coaching and notes — SUPERSET: back squat, barbell row'
+    const toggle = screen.getByRole('button', { name: GROUP })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(definition).not.toHaveBeenCalled()
 
-    // Each panel is inside its own movement, so the cues cannot be read as
-    // the partner's: the movements' rows do not contain each other's panel.
-    let movement: HTMLElement | null = squat.parentElement
-    while (movement !== null && within(movement).queryAllByRole('heading').length === 0) {
-      movement = movement.parentElement
-    }
-    if (movement === null) throw new Error('the coaching panel sits under no movement')
-    expect(within(movement).getAllByRole('heading')[0]).toHaveTextContent(/back squat/i)
-    expect(movement).not.toContainElement(row)
+    // The disclosure is the card's last part, after both movements.
+    const card = toggle.closest<HTMLElement>('[data-workout-card]')!
+    expect(card.lastElementChild).toContainElement(toggle)
+    const list = within(card).getByRole('list', { name: 'Movements in this superset' })
+    expect(list).not.toContainElement(toggle)
 
-    await user.click(squat)
-    const panel = screen.getByRole('region', { name: PANEL })
-    expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
-    expect(within(panel).getByText(CATALOG_SOURCE_TEXT)).toBeInTheDocument()
-    // Opening one movement's coaching opens nothing else.
-    expect(row).toHaveAttribute('aria-expanded', 'false')
+    await user.click(toggle)
+    const panel = screen.getByRole('region', { name: GROUP })
+    const squat = within(panel).getByRole('group', { name: 'back squat' })
+    const row = within(panel).getByRole('group', { name: 'barbell row' })
+    // Each movement's cues sit in its own labelled section, never the partner's.
+    expect(await within(squat).findByText('Brace before you descend')).toBeInTheDocument()
+    expect(within(squat).getByText(CATALOG_SOURCE_TEXT)).toBeInTheDocument()
+    expect(within(row).queryByText('Brace before you descend')).toBeNull()
+    expect(await within(row).findByText(NO_DEFINITION_TEXT)).toBeInTheDocument()
 
-    await user.click(squat)
-    expect(squat).toHaveAttribute('aria-expanded', 'false')
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
     expect(panel).toHaveAttribute('data-expanded', 'false')
   })
 
