@@ -1,0 +1,64 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-023",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/review-screen.test.tsx",
+    "--testNamePattern",
+    "AC-021",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-023/required-cases.json",
+    "sha256": "7ee09061db9e7c7be34dd9db2523324a7a7a8ca5b51c380aa07fcd34ab93f7b7"
+  },
+  "targets": [
+    {
+      "path": "src/app/review-screen.test.tsx",
+      "sha256": "eb1bb84c6616d7a975ffb3c330af7141d7e0e3f061c0e67e6ce866a0719702c0"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > is the last control in the scrolling content, after every section",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 follows the whole workout — Warm-up, the work and the Cooldown guide down to its last movement — and nothing readable follows it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > still asks before discarding, and regenerates through the existing flow",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 after the Cooldown its behaviour is unchanged: Keep it keeps the workout, Discard and regenerate runs the same flow once, and it is held while Start is in flight",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 the accepted gallery state ?state=preparation draws Review’s own Regenerate after the Cooldown, and it only asks",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 35,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 30,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

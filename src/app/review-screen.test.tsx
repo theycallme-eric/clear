@@ -7,13 +7,15 @@
  * One block per criterion, AC-019 … AC-024, over the same two-route harness
  * `Review.test.tsx` uses, so Start is asserted by arriving at `/workout`.
  */
-import { screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
-import { Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import type { SessionsClient } from '../data/sessions'
+import { PREPARATION_NAMES, preparationAcceptance } from '../dev/gallery-refinement-preparation-data'
+import { GalleryRefinements } from '../dev/gallery-refinements'
 import type { SectionCandidates } from '../data/candidates'
 import { ok, type Result } from '../state/errors'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
@@ -200,6 +202,48 @@ describe('AC-020: Start stays in the pinned action area while the content scroll
   })
 })
 
+/**
+ * TASK-023 (C50, G15, R05): the element holding the last readable words of
+ * the scrolling content, in document order — so "after all workout content"
+ * is read from what the screen says, not only from its buttons.
+ */
+function lastReadable(region: HTMLElement): HTMLElement {
+  const walker = document.createTreeWalker(region, NodeFilter.SHOW_TEXT)
+  let last: Node | null = null
+  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+    // A closed confirmation is not content: it is in the DOM but not open.
+    if (node.parentElement?.closest('dialog:not([open])')) continue
+    if ((node.textContent ?? '').trim() !== '') last = node
+  }
+  return last!.parentElement!
+}
+
+/**
+ * TASK-023: Regenerate's row is the content list's final item, and every
+ * section and every Cooldown movement comes before it.
+ */
+function expectRegenerateLast(region: HTMLElement, regenerate: HTMLElement) {
+  const row = regenerate.closest<HTMLElement>('.clr-actions')!
+  expect(row).not.toBeNull()
+  expect(row.parentElement!.lastElementChild, 'Regenerate is the last item of the list').toBe(row)
+  expect(row.contains(lastReadable(region)), 'nothing readable follows Regenerate').toBe(true)
+  for (const section of region.querySelectorAll('[data-review-section]')) {
+    expect(precedes(section, regenerate)).toBe(true)
+  }
+  const cooldown = region.querySelector<HTMLElement>('[data-preparation-guide="cooldown"]')
+  if (cooldown !== null) {
+    expect(precedes(cooldown, regenerate), 'the Cooldown guide precedes Regenerate').toBe(true)
+    const names = within(cooldown).getAllByRole('listitem')
+    expect(names.length).toBeGreaterThan(0)
+    expect(precedes(names.at(-1)!, regenerate), 'the Cooldown’s last movement precedes Regenerate').toBe(true)
+  }
+}
+
+/** A confirmation that has been answered: gone, or no longer open. */
+function closed(dialog: HTMLElement): boolean {
+  return !dialog.isConnected || !dialog.hasAttribute('open')
+}
+
 describe('AC-021: Regenerate sits at the end of the scrolling content', () => {
   it('is the last control in the scrolling content, after every section', async () => {
     renderReview()
@@ -217,6 +261,37 @@ describe('AC-021: Regenerate sits at the end of the scrolling content', () => {
     for (const section of sectionHeadings()) {
       expect(precedes(section, regenerate)).toBe(true)
     }
+    // TASK-023 (C50, R05): the spectrum ends with its Cooldown guide, and
+    // Regenerate follows it — the last item, with nothing readable below it.
+    expect(SPECTRUM.sections.at(-1)!.section_type).toBe('cooldown')
+    expect(sectionHeadings().at(-1)!.closest('[data-preparation-guide="cooldown"]')).not.toBeNull()
+    expectRegenerateLast(region, regenerate)
+  })
+
+  it('AC-C50-01 follows the whole workout — Warm-up, the work and the Cooldown guide down to its last movement — and nothing readable follows it', async () => {
+    for (const acceptance of [
+      preparationAcceptance(),
+      // The same placement when the composition has no Cooldown: still after all of it.
+      preparationAcceptance({ sections: preparationAcceptance().workout.sections.slice(0, 2) }),
+    ]) {
+      const view = renderReview(acceptance)
+      await screen.findByRole('heading', { level: 1, name: acceptance.workout.title })
+
+      const region = screen.getByRole('region', { name: SCROLL_REGION })
+      const regenerate = within(region).getByRole('button', { name: REGENERATE_LABEL })
+      const order = [...region.querySelectorAll<HTMLElement>('[data-review-section]')].map((node) => node.dataset.reviewSection)
+      expect(order).toEqual(acceptance.workout.sections.map((section) => section.section_type))
+      expectRegenerateLast(region, regenerate)
+      expect(within(region).getAllByRole('button').at(-1)).toBe(regenerate)
+
+      const cooldown = region.querySelector<HTMLElement>('[data-preparation-guide="cooldown"]')
+      if (acceptance.workout.sections.some((section) => section.section_type === 'cooldown')) {
+        expect(within(cooldown!).getAllByRole('listitem').map((item) => item.textContent)).toEqual([...PREPARATION_NAMES.cooldown])
+      } else {
+        expect(cooldown).toBeNull()
+      }
+      view.unmount()
+    }
   })
 
   it('still asks before discarding, and regenerates through the existing flow', async () => {
@@ -229,6 +304,74 @@ describe('AC-021: Regenerate sits at the end of the scrolling content', () => {
     expect(regenerated).toBe(0)
     await user.click(screen.getByRole('button', { name: 'Discard and regenerate' }))
     expect(regenerated).toBe(1)
+  })
+
+  it('AC-C50-01 after the Cooldown its behaviour is unchanged: Keep it keeps the workout, Discard and regenerate runs the same flow once, and it is held while Start is in flight', async () => {
+    const user = userEvent.setup()
+    const acceptance = preparationAcceptance()
+    let regenerated = 0
+    renderReview(acceptance, () => (regenerated += 1))
+    await screen.findByRole('heading', { level: 1, name: acceptance.workout.title })
+
+    await user.click(screen.getByRole('button', { name: REGENERATE_LABEL }))
+    const dialog = await screen.findByRole('dialog', { name: 'Discard this workout?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Keep it' }))
+    await waitFor(() => expect(closed(dialog)).toBe(true))
+    expect(regenerated).toBe(0)
+    expect(screen.getByRole('heading', { level: 1, name: acceptance.workout.title })).toBeInTheDocument()
+    expect(document.querySelector('[data-preparation-guide="cooldown"]')).not.toBeNull()
+
+    await user.click(screen.getByRole('button', { name: REGENERATE_LABEL }))
+    await user.click(await screen.findByRole('button', { name: 'Discard and regenerate' }))
+    expect(regenerated).toBe(1)
+
+    // Start in flight: Regenerate is held, still in its place after the Cooldown.
+    const pending = createWorkoutDouble({
+      session: null,
+      sessions: { accept: () => new Promise<Result<SessionSnapshot>>(() => undefined) },
+    })
+    const view = renderWithProviders(
+      <Routes>
+        <Route path="/review" element={<Review acceptance={acceptance} onRegenerate={() => (regenerated += 1)} />} />
+      </Routes>,
+      { route: '/review', ...signedIn({ workout: pending.clients }) },
+    )
+    const scope = within(view.container)
+    await scope.findByRole('heading', { level: 1, name: acceptance.workout.title })
+    await user.click(scope.getByRole('button', { name: START_LABEL }))
+    const held = scope.getByRole('button', { name: REGENERATE_LABEL })
+    expect(held).toBeDisabled()
+    expectRegenerateLast(scope.getByRole('region', { name: SCROLL_REGION }), held)
+    expect(regenerated).toBe(1)
+  })
+
+  it('AC-C50-01 the accepted gallery state ?state=preparation draws Review’s own Regenerate after the Cooldown, and it only asks', { timeout: 30_000 }, async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=preparation']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const state = document.querySelector<HTMLElement>('[data-refinement-state="preparation"]')!
+    expect(state).not.toBeNull()
+    const review = state.querySelector<HTMLElement>('[data-gallery-context="review"]')!
+    const regenerate = within(review).getByRole('button', { name: REGENERATE_LABEL })
+    expect(regenerate).not.toHaveClass('clr-btn--primary')
+    expect(regenerate).not.toHaveClass('clr-text-action')
+    const cooldown = review.querySelector<HTMLElement>('[data-preparation-guide="cooldown"]')!
+    expect(precedes(cooldown, regenerate)).toBe(true)
+    expect(within(cooldown).getAllByRole('listitem').map((item) => item.textContent)).toEqual([...PREPARATION_NAMES.cooldown])
+    const row = regenerate.closest<HTMLElement>('.clr-actions')!
+    expect(review.lastElementChild).toBe(row)
+    expect(within(review).getAllByRole('button').at(-1)).toBe(regenerate)
+
+    await user.click(regenerate)
+    const dialog = await screen.findByRole('dialog', { name: 'Discard this workout?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Discard and regenerate' }))
+    await waitFor(() => expect(closed(dialog)).toBe(true))
+    // The gallery discards nothing: the same guides and Regenerate are still there.
+    expect(review.querySelector('[data-preparation-guide="cooldown"]')).toBe(cooldown)
+    expect(within(review).getByRole('button', { name: REGENERATE_LABEL })).toBe(regenerate)
   })
 })
 
