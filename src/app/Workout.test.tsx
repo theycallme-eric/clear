@@ -875,14 +875,15 @@ describe('Workout — one forward action saves, then continues', () => {
 
   /**
    * Runs the Finisher's AMRAP window, then records two rounds after it — the
-   * result is entered only once the window has closed (REQ-014).
+   * result is entered only once the window has closed (REQ-014). TASK-009
+   * (C27, C28): on the framed rounds selector, which takes the first tap from
+   * blank; there is no Record rounds toggle.
    */
   async function performTwoRounds(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
-    await user.click(screen.getByRole('button', { name: 'Record rounds' }))
-    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
-    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+    await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
+    await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
     expect(roundsShown()).toBe('2')
   }
 

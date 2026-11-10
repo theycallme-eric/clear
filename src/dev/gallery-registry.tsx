@@ -98,6 +98,13 @@ import {
   GalleryWorkoutHeaders,
 } from './gallery-refinement-timers'
 import {
+  QuantitySelectorBlank,
+  QuantitySelectorCount,
+  QuantitySelectorZero,
+  TimedResultLogAmrapBlank,
+  TimedResultLogAmrapEntered,
+} from './gallery-refinement-forms'
+import {
   EquipmentSummaryBodyweight,
   EquipmentSummaryLoaded,
   OverviewFactsPlanned,
@@ -2205,6 +2212,27 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       { state: 'body · the warning colour, held', note: 'A deadline held at 8 seconds: timer-low frame and digits from 10 seconds; no aura while held (C23, C24).', Render: DeadlineTimerLow },
       { state: 'header · the session clock', note: 'The menu’s control height, sized to its digits.', Render: DeadlineTimerHeader },
       { state: 'the workout header row', note: 'Title, session clock and menu frame on one row (C20).', Render: GalleryWorkoutHeaders },
+    ],
+  },
+  {
+    component: 'TimedResultLog',
+    requirement: 'REQ-009',
+    module: 'src/ui/refinements/timed-result-log.tsx',
+    summary: 'TASK-009 the accepted timed-results log in the simple selected hierarchy (C26; R55, R85, R90): one form under one rule with one Log results title, then its result group with field labels and no Result, Movements or Feedback group titles. Its AMRAP family groups rounds completed and the reps into the next round as one result of two framed counts. Presentation over the consumer’s own record and writer: no draft, field or save of its own, blank stays blank and zero stays zero (C28). The route’s AMRAP places it after the work and its prescription (C25): /gallery/refinements?state=amrap. Memory-only controllers here.',
+    specimens: [
+      { state: 'AMRAP · nothing entered', note: 'Both counts blank: unreported, not zero.', Render: TimedResultLogAmrapBlank },
+      { state: 'AMRAP · rounds and an observed zero partial round', note: 'Tap down to zero; it stops there, never back to blank.', Render: TimedResultLogAmrapEntered },
+    ],
+  },
+  {
+    component: 'QuantitySelector',
+    requirement: 'REQ-009',
+    module: 'src/ui/refinements/quantity.tsx',
+    summary: 'TASK-009 the accepted framed quantity control (C27, C28; R52, R56, R57, R79, R83): one wide soft-cornered frame, the selected roomier one, holding the framed minus and plus actions (the shared secondary icon button, the interaction role in every skin) around a distinct value in the timer role. Blank reads as a dash and as not recorded; the minus taps down and stops at an explicit zero; there is no clear or reset. Memory-only controllers here.',
+    specimens: [
+      { state: 'blank · not recorded', note: 'The minus is unavailable; the plus counts up from blank.', Render: QuantitySelectorBlank },
+      { state: 'an observed zero', note: 'A zero, not a blank: the minus stops here.', Render: QuantitySelectorZero },
+      { state: 'a count', note: 'Both framed actions available.', Render: QuantitySelectorCount },
     ],
   },
   {

@@ -246,6 +246,76 @@
   justify-content: center;
 }
 
+/* Timed results, simple hierarchy — TimedResultLog (TASK-009: C25, C26, G08;
+ * R54, R55, R85, R90). The accepted `.clr-timed-log`: one form under one rule,
+ * set apart from the work above it, with one clear title and its result
+ * groups at the wider section gap; inside a group, the fields at the narrower
+ * one. No group titles in the simple hierarchy (R90 A). */
+.clr-timed-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-600);
+  min-width: 0;
+  margin: 0;
+  padding-block-start: var(--spacing-400);
+  border-block-start: var(--border-width) solid var(--border-region-rule);
+  font-family: var(--font-data);
+}
+
+.clr-timed-log__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--heading-h2-size);
+  line-height: var(--heading-h2-line-height);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--text-card-header);
+}
+
+.clr-timed-log__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+  min-width: 0;
+}
+
+/* One labelled field: its label, then its control. */
+.clr-timed-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+  min-width: 0;
+}
+
+.clr-timed-field > .label {
+  margin: 0;
+}
+
+/* The framed quantity — QuantitySelector (TASK-009: C27, C28; R52, R56, R79,
+ * R83). One wide soft-cornered structure frame, the selected roomier one:
+ * the framed minus and plus at the shared control height in its outer
+ * columns, the distinct value centred between them. */
+.clr-quantity {
+  display: grid;
+  grid-template-columns: var(--control-height) minmax(0, 1fr) var(--control-height);
+  align-items: center;
+  min-width: 0;
+  padding: var(--spacing-300);
+}
+
+.clr-quantity__value {
+  min-width: 0;
+  padding: var(--spacing-100);
+  text-align: center;
+  color: var(--text-timer);
+  font-family: var(--font-data);
+  font-size: var(--heading-h2-size);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  letter-spacing: var(--tracking-data);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Whole timer body — DeadlineTimer (TASK-007: C19, C20, G06; R42, R49, R53,
  * R96, R102, R103, R119). The accepted `.clr-accepted-timer`: one chamfered
  * timer body emitting through its own bleed — no accent-bar strip and no

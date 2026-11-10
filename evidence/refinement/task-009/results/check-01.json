@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-009",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-result-log.test.tsx",
+    "--testNamePattern",
+    "AMRAP",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-009/required-cases.json",
+    "sha256": "bc11b49882752327fa817d77ca586d8f3dd6b7b920e1167564d5c1aec3274a0c"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-result-log.test.tsx",
+      "sha256": "8b4310c4c400f0d92417bd86b7264af9f12e47aaf48251cf9c46cb2da873ca34"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C25-01 AMRAP work and its prescription precede the scoring on the real /workout route: ready, running and paused ask for no score, and once the window closes the log follows every movement",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C26-01 AMRAP rounds and the partial round are one result group under the simple log hierarchy: one Log results title, labels before their counts, no Result, Movements or Feedback group titles",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C27-01 AMRAP each count is one wide frame holding framed minus and plus actions around a distinct value, in the selected roomier geometry (AC-R009-01)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C28-01 AMRAP Clear rounds and No partial round are gone with nothing in their place: blank reads as not recorded, the minus taps down to an explicit zero and stops, and no tap ever clears a value",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP blank and an explicit zero stay apart end to end: stopping records no work, then the stored record, a reload, the saved block result and History all read blank as absent and zero as zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP a failed save keeps the entered result on screen and the retry writes it once, unchanged",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP records written before this change load and read exactly as before: rounds, an observed zero and a blank partial round each keep their meaning",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 AMRAP the accepted gallery state draws the route’s own AMRAP: work first, the grouped log and framed counts, blank beside an explicit zero, memory only",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

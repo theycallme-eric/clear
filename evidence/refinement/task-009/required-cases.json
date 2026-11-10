@@ -1,0 +1,103 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-009",
+  "description": "AMRAP prescription and concise scoring controls (REQ-009; C25, C26, C27, C28; G08; R52, R54, R55, R56, R57, R79, R83, R85, R90) delivered through the AMRAP block (src/ui/amrap-block.tsx: work and prescription before scoring), the accepted shared owners TimedResultLog (src/ui/refinements/timed-result-log.tsx: the simple log hierarchy, rounds and the partial round as one result group) and QuantitySelector (src/ui/refinements/quantity.tsx: one wide soft-cornered frame holding framed minus and plus actions around a distinct value, the selected roomier geometry, no clear or reset, blank distinct from an explicit zero) and their recipes in src/ui/refinements/presentation.css, on the real /workout route (JOURNEY-009) through the section save, a reload and the History read, and the accepted gallery state /gallery/refinements?state=amrap (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-009 --check check-01 -- npx vitest run src/ui/timed-result-log.test.tsx --testNamePattern AMRAP --passWithNoTests=false",
+      "criteria": [
+        "AC-C25-01",
+        "AC-C26-01",
+        "AC-C27-01",
+        "AC-C28-01",
+        "AC-R009-01",
+        "AC-R009-02",
+        "JOURNEY-009"
+      ],
+      "files": [
+        "src/ui/timed-result-log.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C25-01 AMRAP work and its prescription precede the scoring on the real /workout route: ready, running and paused ask for no score, and once the window closes the log follows every movement",
+          "criterion": "AC-C25-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C26-01 AMRAP rounds and the partial round are one result group under the simple log hierarchy: one Log results title, labels before their counts, no Result, Movements or Feedback group titles",
+          "criterion": "AC-C26-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C27-01 AMRAP each count is one wide frame holding framed minus and plus actions around a distinct value, in the selected roomier geometry (AC-R009-01)",
+          "criterion": "AC-C27-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C28-01 AMRAP Clear rounds and No partial round are gone with nothing in their place: blank reads as not recorded, the minus taps down to an explicit zero and stops, and no tap ever clears a value",
+          "criterion": "AC-C28-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP blank and an explicit zero stay apart end to end: stopping records no work, then the stored record, a reload, the saved block result and History all read blank as absent and zero as zero",
+          "criterion": "AC-R009-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP a failed save keeps the entered result on screen and the retry writes it once, unchanged",
+          "criterion": "AC-R009-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP records written before this change load and read exactly as before: rounds, an observed zero and a blank partial round each keep their meaning",
+          "criterion": "AC-R009-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 AMRAP the accepted gallery state draws the route’s own AMRAP: work first, the grouped log and framed counts, blank beside an explicit zero, memory only",
+          "criterion": "AC-R009-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-009 --check check-02 -- npx playwright test e2e/refinement/task-009.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C25-01",
+        "AC-C26-01",
+        "AC-C27-01",
+        "AC-C28-01",
+        "AC-R009-01",
+        "AC-R009-02",
+        "JOURNEY-009"
+      ],
+      "files": [
+        "e2e/refinement/task-009.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-009.spec.ts",
+          "project": "mobile",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 touch phone-390 Signal: the work precedes the grouped log; the framed counts tap up and down to an explicit zero beside a blank; a reload, a failed save and its retry, the saved row and History keep them apart",
+          "criterion": "AC-R009-02"
+        },
+        {
+          "file": "e2e/refinement/task-009.spec.ts",
+          "project": "mobile",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 keyboard phone-320 reduced motion: the cap closes the window with nothing entered; the counts are reached and operated by keyboard; blank rounds and an explicit zero partial round are saved as null and 0",
+          "criterion": "AC-C28-01"
+        },
+        {
+          "file": "e2e/refinement/task-009.spec.ts",
+          "project": "mobile",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 gallery amrap phone-390: the route’s own AMRAP ended by its cap and ended early, work first, the grouped log and framed counts, blank beside an explicit zero, with no network",
+          "criterion": "AC-C27-01"
+        }
+      ]
+    }
+  }
+}
