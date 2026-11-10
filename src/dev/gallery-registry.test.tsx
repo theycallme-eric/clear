@@ -80,6 +80,10 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   WorkoutNavigation: 'EXE-01 — prev/next/finish over a session’s sections',
   RestTimerBar:
     'EXE-05 — the session’s one rest, read from the shell’s provider against the wall clock; it draws nothing until a set is logged',
+  // TASK-022 (R15): the rest timer's own pattern, drawn once and shared by the
+  // rest and the preparation clock; it is framed through PreparationTimer.
+  CountdownCard:
+    'EXE-05 / TASK-022 — the rest-timer pattern RestTimerBar and PreparationTimer draw; framed through PreparationTimer and /gallery/refinements?state=preparation',
   BlockEffortDialog: 'EXE-01 — the perceived-effort capture, opened at block completion',
   AbandonConfirmDialog:
     'EXE-01 — `ConfirmDialog critical` with fixed copy; the surface is framed under ConfirmDialog, and what is new here is the wording, reviewed where it is asked',

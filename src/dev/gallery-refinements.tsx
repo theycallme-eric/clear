@@ -56,6 +56,14 @@
  * (`gallery-refinement-forms.tsx`). The `cards` state's Workout EMOM is the
  * same route block, ready: its minute, minute assignment and Next marker,
  * without the NOT STARTED caption.
+ *
+ * `preparation`: the accepted concise Warm-up and Cooldown (TASK-022: C49;
+ * R01, R13, R14, R15, R36) — Review's guides around its worked section, and
+ * the live workout's own `LivePreparation`: each guide's stable title, its
+ * approximate time and its movement names on separate lines, read by
+ * TASK-034's reading from one synthetic composition, then its separate
+ * preparation clock with Start / Pause and Add 30s and no Dismiss, in memory
+ * (`gallery-refinement-scenes.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -63,7 +71,7 @@ import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
 import { GalleryAmrapResults, GalleryEmomResults, GalleryForTimeResults, GalleryLadderResults } from './gallery-refinement-forms'
-import { GalleryOverviewSummary } from './gallery-refinement-scenes'
+import { GalleryOverviewSummary, GalleryPreparation } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
 function GalleryLadderFour() {
@@ -84,6 +92,7 @@ const REFINEMENT_STATES = [
   { id: 'for_time', title: 'For Time results', Render: GalleryForTimeResults },
   { id: 'ladder', title: 'Ladder results', Render: GalleryLadderResults },
   { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
+  { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
 ] as const
 
 export function GalleryRefinements() {

@@ -56,6 +56,7 @@ import {
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
 import { useAuth } from '../state/auth-context'
 import { createError, ErrorCode, isErr, type AppError } from '../state/errors'
+import { composedPreparationGuide } from '../state/preparation-guide'
 import { reviewBriefing, type ReviewFact } from '../state/review'
 import {
   applyLoadOverrides,
@@ -71,6 +72,7 @@ import { useProfileQuery } from '../state/user-queries'
 import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queries'
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
+import { PreparationGuide } from '../ui/preparation-guide'
 import { ReviewSection } from '../ui/review-block'
 import { ActionRow, PhoneFooter } from '../ui/composition'
 import { EquipmentSummary, OverviewFacts } from '../ui/refinements/overview'
@@ -310,15 +312,28 @@ export function Review({
           />
         ) : null}
 
-        {briefing.sections.map((section) => (
-          <ReviewSection
-            key={section.key}
-            section={section}
-            suggestions={suggestions}
-            overrides={overrides}
-            onExplain={setExplaining}
-          />
-        ))}
+        {briefing.sections.map((section, index) => {
+          // TASK-022 (C49; R01, R13): a Warm-up or Cooldown is the concise
+          // guide — its title, approximate time and movement names, read by
+          // TASK-034 from the composition Start persists — never its blocks'
+          // prescriptions. Every other section is its blocks, as before.
+          const composed = personalizedAcceptance.workout.sections[index]
+          const guide = composed === undefined ? null : composedPreparationGuide(composed)
+          return guide === null ? (
+            <ReviewSection
+              key={section.key}
+              section={section}
+              suggestions={suggestions}
+              overrides={overrides}
+              onExplain={setExplaining}
+            />
+          ) : (
+            // The same section wrapper every Review section has.
+            <div key={section.key} className="clr-stack" data-review-section={section.type}>
+              <PreparationGuide reading={{ status: 'ready', guide }} type={guide.type} />
+            </div>
+          )
+        })}
 
         {/* REQ-006: the way out of this composition, once it has been read.
             Discarding is confirmed and irreversible, so it is a framed button

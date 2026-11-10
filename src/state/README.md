@@ -115,5 +115,5 @@ typed source record is `PREPARATION_GUIDE_SOURCES`. Each field reads one owner:
 
 | Task | Consumes | What it must do |
 | --- | --- | --- |
-| TASK-022 (concise Warm-up and Cooldown) | `composedPreparationGuide` (Review), `persistedPreparationGuide` / `preparationGuideReading` (Workout), `PreparationGuide` (`title`, `durationText`, `movements[].name`) | Draw these readings on `/review`, `/workout` and the gallery `preparation` state. Never draw a fixed duration, a count or a sample list. |
+| TASK-022 (concise Warm-up and Cooldown) | `composedPreparationGuide` (Review), `persistedPreparationGuide` / `preparationGuideReading` (Workout), `PreparationGuide` (`title`, `durationText`, `movements[].name`, `approximateMinutes`) | Done: `src/ui/preparation-guide.tsx` draws these readings on `/review`, `/workout` and the gallery `preparation` state, with no fixed duration, count or sample list. The live guide's separate clock (`preparation-clock.ts`) counts `approximateMinutes` down. |
 | TASK-023 (Regenerate after the workout) | — | Keep the guide's section in Review's section order. Regenerate comes after the Cooldown. |

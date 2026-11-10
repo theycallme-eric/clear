@@ -7,10 +7,16 @@
  *
  * Two sections, in the order the shell opens them:
  *
- *   · **Warm-up** — the preparation section the workout opens on: a timed
- *     hold (its own movement countdown) with a prescribed rest, so a
- *     preparation clock and the session's one rest are both reachable from
- *     the entry state.
+ *   · **Core** — the section the workout opens on: a timed prep hold (its
+ *     own movement countdown) with a prescribed rest, so a movement countdown
+ *     and the session's one rest are both reachable from the entry state.
+ *     TASK-022 (R01, R13, C49) superseded this section's former type: a
+ *     Warm-up is now drawn as its concise guide with its own separate
+ *     preparation clock rather than set-by-set movement cards, so a timed hold
+ *     with a logged set and a rest can no longer be reached inside one. The
+ *     hold, its countdown, its rest and its log are unchanged; only the
+ *     section that holds them is a non-preparation one. The preparation clock
+ *     itself is TASK-022's proof (`src/ui/preparation-guide.test.tsx`).
  *   · **Strength and conditioning** — a standard lift whose card's Rest
  *     opens the logging sheet with the rest running (the journey's "open a
  *     log while rest is running"), a circuit with a timed station, a round
@@ -104,10 +110,11 @@ export const TIMER_FRAME_LISTS: Readonly<Record<'emom' | 'amrap' | 'for_time' | 
   ladder: 'Rounds in this ladder',
 }
 
-export const PREPARATION_SECTION = 'Warm-up'
+/** The opening section's generated title (never shown: the header reads its type). */
+export const PREPARATION_SECTION = 'Prepare the trunk'
 export const MAIN_SECTION = 'Strength and conditioning'
 
-/** JOURNEY-007's entry: the preparation section first, then every other clock. */
+/** JOURNEY-007's entry: the timed prep hold's section first, then every other clock. */
 export function timerFramesAcceptance({ locationId = null }: { locationId?: string | null } = {}): SessionAcceptance {
   const main = peerGroupingAcceptance({ locationId, blocks: Object.values(TIMER_FRAME_BLOCKS) })
   return {
@@ -117,7 +124,7 @@ export function timerFramesAcceptance({ locationId = null }: { locationId?: stri
       ...main.workout,
       title: 'Synthetic timer frames workout',
       sections: [
-        { section_type: 'warmup', section_title: PREPARATION_SECTION, section_notes: null, blocks: [WARM_UP_BLOCK] },
+        { section_type: 'core', section_title: PREPARATION_SECTION, section_notes: null, blocks: [WARM_UP_BLOCK] },
         { ...main.workout.sections[0], section_title: MAIN_SECTION },
       ],
     },
