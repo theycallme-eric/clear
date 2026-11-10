@@ -1,0 +1,73 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-024",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-024.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-024/required-cases.json",
+    "sha256": "2283c0b3455dd101aca40403df1755decc9c146ca8fcc169e479b863655a5b72"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-024.spec.ts",
+      "sha256": "4b68d7afa64316ac67169ab2ecd86189c4d97ffa0bdab7169c90689a11522881"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 phone-320: a returning athlete reads Goal and Focus, opens the Focus choices, turns on Recovery inside them and generates",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 phone-390: a returning athlete reads Goal and Focus, opens the Focus choices, turns on Recovery inside them and generates",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 first workout phone-390: a normal session — the four Anchors are required, Recovery is offered unselected, and it generates the chosen Focus",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 keyboard, reduced motion and reopen phone-390: the Focus control opens and closes from the keyboard, an override survives a reload, and Back goes Home",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 recovery phone-320: a failed generation keeps the draft — the override, Recovery inside the choices and a note — with the accepted screen intact",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "name": "TASK-024 Generate hierarchy, focus interaction and exact copy > gallery screens phone-320: the accepted state draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, with nothing read or written",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 6
+  },
+  "problems": []
+}

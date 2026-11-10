@@ -566,11 +566,11 @@ backendTest('Generate: real session with named recent/stale history fixture and 
     await visibleText(page, /^No \w+ in 16 days\.$/)
     await expect(page.getByRole('slider')).toHaveValue('7')
   })
-  await page.getByRole('button', { name: 'Change focus', exact: true }).click()
+  await page.getByRole('button', { name: /^Focus:/ }).click()
   await page.getByRole('group', { name: 'Focus for this workout', exact: true })
     .getByRole('button', { name: 'Upper body', exact: true }).click()
   await evidence.route('Generate', '/generate', 'focus-override', 'Generate', async () => {
-    await expect(page.getByRole('button', { name: 'Change focus', exact: true })).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('button', { name: /^Focus:/ })).toHaveAttribute('aria-expanded', 'true')
     await expect(page.getByRole('group', { name: 'Focus for this workout', exact: true })
       .getByRole('button', { name: 'Upper body', exact: true })).toHaveAttribute('aria-pressed', 'true')
     expect(new URL(page.url()).searchParams.get('override')).toBe('upper_body')

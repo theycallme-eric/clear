@@ -75,6 +75,15 @@
  * title (wrapping on a phone) and the framed icon-only X on its visible top.
  * A provider reference: the routes adopt the frame with TASK-043–046
  * (`gallery-refinement-forms.tsx`).
+ *
+ * `screens`: Generate's accepted hierarchy, focus interaction and copy
+ * (TASK-024: C51; R06, R10, R11, R21, R23, R25) — `/generate`'s own
+ * `GenerateBack`, `GenerateIntent` and `GenerateContextFields`: Goal and Focus
+ * on one row, the Focus value the disclosure for the four focuses with the
+ * one-workout Recovery toggle apart from them, Place and Notes without helper
+ * lines and the fitted MINUTES unit, for a returning athlete and a first
+ * workout, over an in-memory draft that sends nothing
+ * (`gallery-refinement-scenes.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -88,7 +97,7 @@ import {
   GalleryLadderLongResults,
   GalleryLadderResults,
 } from './gallery-refinement-forms'
-import { GalleryOverviewSummary, GalleryPreparation } from './gallery-refinement-scenes'
+import { GalleryOverviewSummary, GalleryPreparation, GalleryScreens } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
 function GalleryLadderFour() {
@@ -111,6 +120,7 @@ const REFINEMENT_STATES = [
   { id: 'ladder-long', title: 'Long ladder results · final scrolling', Render: GalleryLadderLongResults },
   { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
   { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
+  { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields', Render: GalleryScreens },
 ] as const
 
 export function GalleryRefinements() {

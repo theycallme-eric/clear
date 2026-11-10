@@ -22,8 +22,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { WORKOUT_ROUTE } from '../app/ActiveSessionPrompt'
 import {
-  CHANGE_FOCUS_LABEL,
   FIRST_WORKOUT_MESSAGE,
+  FOCUS_TERM,
   OVERRIDE_GROUP_LABEL,
   OVERRIDE_SCOPE,
   RECOVERY_LABEL,
@@ -190,8 +190,13 @@ const chipIn = (name: string, label: string) =>
   within(group(name)).getByRole('button', { name: new RegExp(label, 'i') })
 const cta = () => screen.getByRole('button', { name: /generate workout/i })
 const slider = () => screen.getByRole('slider')
-const focusLine = () => screen.getByText(/^Focus:/)
+/** TASK-024 (C51): the Focus value is its own change control, Recovery inside its choices. */
+const focusControl = () => screen.getByRole('button', { name: new RegExp(`^${FOCUS_TERM}:`) })
+const focusLine = () => focusControl().closest<HTMLElement>('[data-intent-fact="focus"]')!
 const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
+async function openFocus(user: ReturnType<typeof userEvent.setup>) {
+  if (focusControl().getAttribute('aria-expanded') !== 'true') await user.click(focusControl())
+}
 
 /** Start on Review: the session is accepted, then begun. */
 async function startWorkout({ user, accepted, router }: Visit, expected: number) {
@@ -271,7 +276,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     expect(focusLine()).toHaveTextContent('Lower body')
 
-    await user.click(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL }))
+    await openFocus(user)
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
 
     expect(focusLine()).toHaveTextContent('Upper body')
@@ -399,7 +404,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted, router } = journey
     const INTENT = { goal: 'strength', focus: 'upper_body' }
 
-    await user.click(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL }))
+    await openFocus(user)
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
 
     // Generation one: two presses in one tick are one call.
@@ -464,6 +469,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted } = journey
     const RECOVERY = { goal: 'active_recovery', focus: 'lower_body' }
 
+    await openFocus(user)
     await user.click(recovery())
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
@@ -511,6 +517,8 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const fresh = visit({ goal: journey.store.profile.goal_preset })
 
     expect(screen.getByText('Hypertrophy')).toBeInTheDocument()
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await openFocus(fresh.user)
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
 
     await fresh.user.click(cta())

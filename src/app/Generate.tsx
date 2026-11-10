@@ -39,11 +39,38 @@
  *      chosen. A bare Focus in the URL is not a choice the athlete made here,
  *      so the prefill seeds nothing.
  *   5. **What is decided for this workout only is said as that, and lives in
- *      the URL.** `Change focus` reveals the four choices beside a
- *      recommendation, and a chosen one is marked `this workout only` until it
- *      is dismissed; `Recovery session` makes this one draft a Recovery one,
+ *      the URL.** The Focus value itself is the disclosure that reveals the
+ *      four choices beside a recommendation, and a chosen one is marked `this
+ *      workout only` until it is dismissed; `Recovery session`, reached inside
+ *      those choices as its own toggle, makes this one draft a Recovery one,
  *      with Power refused in text. Both are the draft's explicit intent
  *      parameters, so a refresh restores them, and neither writes the profile.
+ *
+ * TASK-024 (REQ-024; C51, G16; R06, R10, R11, R21, R23, R25; reconciling UAT
+ * #286). Accepted gallery reference eded158cfd928d382c9a9409e2c372270312741d,
+ * `/gallery/refinements?state=screens`, which draws this file's own
+ * `GenerateBack`, `GenerateIntent` and `GenerateContextFields`:
+ *
+ *   · Goal and Focus lead the one card on one wrapping row, in the shared
+ *     `.clr-intent-summary` recipe's larger type (R10.2, R21). The Focus value
+ *     is the change control — a keyboard disclosure named by what it shows,
+ *     with its expanded state and a chevron cue (R25) — so no detached or
+ *     paired `Change focus` action remains (R06, R10.1).
+ *   · Recovery is reached inside the focus choices as its own session toggle,
+ *     apart from the four mutually exclusive movement-focus values; it never
+ *     becomes a fifth focus (R10.1). A first workout opens as a normal session
+ *     with Recovery offered unselected and never recommended (R11).
+ *   · Place and Notes carry no helper lines (R23); their labels, controls, the
+ *     Notes placeholder, errors and the request are unchanged. MINUTES fits its
+ *     slot through the public Input `unit` contract (`styles/fields.css`), with
+ *     nothing set here (R10.3). The title stays `Generate` and the action
+ *     `Generate workout` (R10.4); Back stays the shared framed icon-only
+ *     control named for its destination, Home (R10.5, #286).
+ *   · #286's data and behaviour contracts are kept as they were: a first
+ *     workout asks for one of four Anchors and requires one; a history
+ *     recommendation is shown collapsed, its choices behind the Focus control,
+ *     and a different choice is for this workout only; the Goal is the stored
+ *     standing value; Intensity is always 1–10.
  *
  * Pressing Generate hands the screen to the shared Loading host (REQ-004): the
  * Loading screen is the screen for the whole run, success lands on Review with
@@ -62,6 +89,8 @@ import {
   AlertCircle,
   ArrowLeft,
   Button,
+  ChevronDown,
+  ChevronRight,
   Chip,
   EmptyState,
   FormField,
@@ -110,6 +139,7 @@ import {
   type FocusHistory,
   type GenerationContext,
   type GenerationDraft,
+  type GenerationResolution,
   type RequestPrefill,
 } from '../state/generation-form'
 import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
@@ -132,6 +162,9 @@ import { DeloadBanner } from '../ui/deload-banner'
 import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { Select } from '../ui/select'
 import { ErrorView, LoadingView } from '../ui/view-state'
+// C51: the Goal/Focus summary is the shared refinement recipe, not route CSS.
+import '../ui/refinements/tokens.css'
+import '../ui/refinements/presentation.css'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen, type ScreenHeader } from './Screen'
 
@@ -212,8 +245,18 @@ export const HISTORY_ERROR_MESSAGE =
   'Your history could not be read. Retry, or choose the focus for this workout.'
 export const HISTORY_RETRY_LABEL = 'Retry'
 
+/** The page title (R10.4), and the generation action, which keeps its name. */
+export const GENERATE_TITLE = 'Generate'
+export const GENERATE_ACTION_LABEL = 'Generate workout'
+
+/** R10.5 / #286: the shared framed icon-only Back, named for where it goes. */
+export const HOME_BACK_LABEL = 'Home'
+
+/** The summary's two facts (C51). The Focus fact is also its change control. */
+export const GOAL_TERM = 'Goal'
+export const FOCUS_TERM = 'Focus'
+
 /** The deliberate way off a recommendation, and the way back to it (REQ-007). */
-export const CHANGE_FOCUS_LABEL = 'Change focus'
 export const OVERRIDE_GROUP_LABEL = 'Focus for this workout'
 export const OVERRIDE_SCOPE = 'this workout only'
 export const OVERRIDE_CANCEL_LABEL = 'Use the recommended focus'
@@ -221,11 +264,13 @@ export const OVERRIDE_CANCEL_LABEL = 'Use the recommended focus'
 /** The one-workout Recovery mode, and what it says while it is on (REQ-008). */
 export const RECOVERY_LABEL = 'Recovery session'
 
-/** The field copy, kept short (U28). The unit is spelled out, never `min`. */
+/**
+ * The field copy, kept short (U28). The unit is spelled out, never `min`.
+ * Place and Notes carry no helper lines (R23): the label, the control and the
+ * Notes placeholder say what each is for.
+ */
 export const DURATION_LABEL = 'Time available'
 export const DURATION_UNIT = 'minutes'
-export const PLACE_HELPER = 'Uses this place’s equipment.'
-export const NOTES_HELPER = 'Optional, today only. Ongoing limits go in Settings.'
 export const NOTES_PLACEHOLDER = 'Tight hamstrings today.'
 
 export function Generate() {
@@ -287,22 +332,16 @@ export function Generate() {
   // GEN-05's screen has no route of its own: while a run this screen started is
   // in flight — or has failed and is being answered — the shared host makes it
   // the screen, and cancelling puts the form back where the user left it.
-  // REQ-007: Back is the shared framed icon-only housing; its name stays "Home".
+  // REQ-007 / R10.5: Back is the shared framed icon-only housing; its name stays "Home".
   const header: ScreenHeader = {
-    actions: (
-      <IconButton
-        label="Home"
-        icon={<ArrowLeft size={20} />}
-        onClick={() => void navigate('/')}
-      />
-    ),
+    actions: <GenerateBack onHome={() => void navigate('/')} />,
   }
 
   return (
     <GenerationLoadingHost generation={generation} cancelTo={cancelTo}>
       {needsSettings ? (
         <Screen
-          title="Generate"
+          title={GENERATE_TITLE}
           header={header}
           pinnedFoot={
             <PhoneFooter>
@@ -326,14 +365,14 @@ export function Generate() {
           </ForegroundEchoFrame>
         </Screen>
       ) : state.status === 'loading' ? (
-        <Screen title="Generate" header={header}>
+        <Screen title={GENERATE_TITLE} header={header}>
           <LoadingView
             label={profileSettled ? 'Reading your places' : 'Reading your profile'}
           />
         </Screen>
       ) : state.status === 'error' ? (
         <Screen
-          title="Generate"
+          title={GENERATE_TITLE}
           header={header}
           pinnedFoot={
             <PhoneFooter>
@@ -355,7 +394,7 @@ export function Generate() {
         </Screen>
       ) : state.status === 'empty' ? (
         <Screen
-          title="Generate"
+          title={GENERATE_TITLE}
           header={header}
           pinnedFoot={
             <PhoneFooter>
@@ -430,23 +469,14 @@ function GenerateForm({
   const context = contextFrom(goalPreset, focusHistory)
   const resolved = resolveGeneration(draft, context)
 
-  // A Focus the athlete chose is theirs and is shown as chosen, whatever the
-  // read is doing: a retry that succeeds does not take it back (REQ-006).
-  const focusLoading = focusHistory === null && draft.anchor === null
-  const recommended =
-    resolved.status === 'ready' && resolved.focusSource === 'recommended' ? resolved : null
-  // A Focus chosen over a recommendation history still makes. With no
-  // recommendation the same choice is the manual one and carries no marker.
-  const override =
-    resolved.status === 'ready' && resolved.focusSource === 'override' ? resolved : null
-  // A Focus to show beside the Goal, and so one for `Change focus` to change.
-  const focused = recommended !== null || override !== null
+  // A Focus chosen over a recommendation history still makes.
+  const override = focusSourceOf(resolved) === 'override'
 
-  // The choices under `Change focus` open with an override in force — a
+  // The choices behind the Focus control open with an override in force — a
   // refreshed one included — and with Recovery, whose refused Power stays seen.
   const focusChoices = useId()
   const [changing, setChanging] = useState(draft.anchor !== null || draft.recovery)
-  const expanded = changing || override !== null
+  const expanded = changing || override
 
   // The draft's intent is written where a refresh will find it. Replaced rather
   // than pushed: an edit to a draft is not a place to go back to.
@@ -490,7 +520,6 @@ function GenerateForm({
   const intensityHint = useId()
   const range = REQUESTED_INTENSITY_RANGE
   const intensity = resolved.intensity ?? draft.intensity ?? range.start
-  const standingGoal = GENERATION_GOALS.find((goal) => goal.value === goalPreset)
   const intensityNoted =
     resolved.goal === null || clampIntensity(resolved.goal, intensity) !== intensity
 
@@ -507,7 +536,7 @@ function GenerateForm({
     setDraft(withOverride(draft, isRecommended ? null : focus))
   }
 
-  /** §2.3: a Power choice is cleared, not substituted, so the choices are shown. */
+  /** §2.3: a Power choice is cleared, not substituted, so the choices stay shown. */
   function toggleRecovery() {
     if (!draft.recovery) setChanging(true)
     setDraft(withRecovery(draft, !draft.recovery))
@@ -566,7 +595,7 @@ function GenerateForm({
   return (
     <>
       <Screen
-        title="Generate"
+        title={GENERATE_TITLE}
         header={header}
         pinnedFoot={
           <PhoneFooter>
@@ -577,7 +606,7 @@ function GenerateForm({
                 disabled={!canGenerate(draft, context)}
                 onClick={submit}
               >
-                Generate workout
+                {GENERATE_ACTION_LABEL}
               </Button>
             </ActionRow>
           </PhoneFooter>
@@ -593,140 +622,22 @@ function GenerateForm({
             </p>
           )}
 
-        {/* Goal and Focus at the top, said alike (B05-02.6/02.7). The Goal is
-            the profile's standing one, as context (U26); it is changed in
-            Settings, never asked per workout (REQ-001). */}
-        <div className="clr-stack clr-stack--tight">
-          <p style={{ margin: 0 }}>
-            Goal: <strong>{standingGoal?.label}</strong>
-          </p>
-          {focused && (
-            <p style={{ margin: 0 }}>
-              Focus:{' '}
-              <strong>
-                {ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label}
-              </strong>
-              {override !== null && ` — ${OVERRIDE_SCOPE}`}
-            </p>
-          )}
-        </div>
-
-        {/* Recovery — the secondary, one-workout mode — and the way off the
-            Focus: one action group beneath them (B05-02.7). This semantic
-            pair keeps one control row; label words may wrap inside their
-            cells, with Recovery's tick and both behaviours intact. With no
-            Focus to change, Recovery stands alone.
-            The standing Goal is untouched by Recovery, and Power's refusal is
-            said in text (§2.3). */}
-        <div className="clr-stack clr-stack--tight">
-          {focused ? (
-            <ActionGroup className="clr-action-group--paired-labels">
-              <Chip selected={draft.recovery} onClick={toggleRecovery}>
-                {RECOVERY_LABEL}
-              </Chip>
-              <Button
-                variant="quiet"
-                aria-expanded={expanded}
-                aria-controls={expanded ? focusChoices : undefined}
-                onClick={toggleChanging}
-              >
-                {CHANGE_FOCUS_LABEL}
-              </Button>
-            </ActionGroup>
-          ) : (
-            <div className="clr-row" style={CHIP_ROW}>
-              <Chip selected={draft.recovery} onClick={toggleRecovery}>
-                {RECOVERY_LABEL}
-              </Chip>
-            </div>
-          )}
-          {draft.recovery && (
-            <p style={{ margin: 0 }}>
-              {RECOVERY_NOTE} {POWER_REFUSAL}
-            </p>
-          )}
-        </div>
-
-        {/* Focus — recommended from history when history can, asked for when it
-            cannot, and never drawn before the read has answered */}
-        {focusLoading ? (
-          <LoadingView label={HISTORY_LOADING_LABEL} />
-        ) : focused ? (
-          // An override holds the choices open, so `expanded` covers both.
-          expanded && (
-          <div className="clr-stack clr-stack--tight">
-            {override !== null && (
-              <ActionGroup>
-                <Button variant="quiet" onClick={() => chooseOverride(null)}>
-                  {OVERRIDE_CANCEL_LABEL}
-                </Button>
-              </ActionGroup>
-            )}
-            {/* The override's choices. Power stays visible under Recovery,
-                disabled, with the refusal said beside the Recovery action. */}
-            {expanded && (
-              <div
-                id={focusChoices}
-                className="clr-row"
-                role="group"
-                aria-label={OVERRIDE_GROUP_LABEL}
-                style={CHIP_ROW}
-              >
-                {ANCHORS.map((anchor) => (
-                  <Chip
-                    key={anchor.value}
-                    selected={resolved.focus === anchor.value}
-                    disabled={!anchorAllowed(resolved.goal, anchor.value)}
-                    onClick={() => chooseOverride(anchor.value)}
-                  >
-                    {anchor.label}
-                  </Chip>
-                ))}
-              </div>
-            )}
-          </div>
-          )
-        ) : (
-          <>
-            {focusHistory?.status === 'history-error' && (
-              <div className="clr-stack clr-stack--tight">
-                <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
-                  {HISTORY_ERROR_MESSAGE}
-                </p>
-                <ActionGroup>
-                  <Button variant="quiet" onClick={history.refetch}>
-                    {HISTORY_RETRY_LABEL}
-                  </Button>
-                </ActionGroup>
-              </div>
-            )}
-
-            {/* §2.3: Recovery offers no Power, and the Recovery action says why */}
-            <FormField
-              label="Anchor"
-              required
-              helperText={
-                needsFirstWorkoutGuidance(draft, focusHistory)
-                  ? FIRST_WORKOUT_MESSAGE
-                  : undefined
-              }
-              errorText={refusal?.fields.focus}
-            >
-              <div className="clr-row" role="group" aria-label="Anchor" style={CHIP_ROW}>
-                {ANCHORS.map((anchor) => (
-                  <Chip
-                    key={anchor.value}
-                    selected={draft.anchor === anchor.value}
-                    disabled={!anchorAllowed(resolved.goal, anchor.value)}
-                    onClick={() => setDraft(withAnchor(draft, anchor.value))}
-                  >
-                    {anchor.label}
-                  </Chip>
-                ))}
-              </div>
-            </FormField>
-          </>
-        )}
+        {/* Goal and Focus lead the card, the Focus value its own change
+            control with Recovery inside its choices (C51; R10.1, R10.2). */}
+        <GenerateIntent
+          goalPreset={goalPreset}
+          draft={draft}
+          resolved={resolved}
+          history={focusHistory}
+          expanded={expanded}
+          choicesId={focusChoices}
+          focusError={refusal?.fields.focus}
+          onToggleFocus={toggleChanging}
+          onChooseOverride={chooseOverride}
+          onChooseAnchor={(anchor) => setDraft(withAnchor(draft, anchor))}
+          onToggleRecovery={toggleRecovery}
+          onRetryHistory={history.refetch}
+        />
 
         {/* Deload — above the intensity selector (IA §4), and only when §4 fired */}
         {suggestion !== null && (
@@ -758,40 +669,18 @@ function GenerateForm({
           )}
         </div>
 
-        <Select
-          label="Place"
-          value={draft.locationId ?? ''}
-          options={places.map((location) => ({
-            value: location.id,
-            label: location.name,
-          }))}
-          helperText={PLACE_HELPER}
-          errorText={refusal?.fields.location_id}
-          onChange={(value) => setDraft(withLocation(draft, value))}
+        {/* R23: Place and Notes without helper lines; R10.3: the unit fits
+            through the public Input contract. */}
+        <GenerateContextFields
+          places={places}
+          locationId={draft.locationId}
+          durationMins={draft.durationMins}
+          notes={draft.notes}
+          errors={refusal?.fields}
+          onLocation={(value) => setDraft(withLocation(draft, value))}
+          onDuration={(value) => setDraft(withDuration(draft, value))}
+          onNotes={(value) => setDraft(withNotes(draft, value))}
         />
-
-        <Input
-          label={DURATION_LABEL}
-          type="number"
-          inputMode="numeric"
-          min={1}
-          value={draft.durationMins}
-          unit={DURATION_UNIT}
-          errorText={refusal?.fields.requested_duration_mins}
-          onChange={(value) => setDraft(withDuration(draft, value))}
-        />
-
-          <Input
-            label="Notes"
-            multiline
-            rows={3}
-            value={draft.notes}
-            placeholder={NOTES_PLACEHOLDER}
-            helperText={NOTES_HELPER}
-            errorText={refusal?.fields.notes}
-            maxLength={NOTES_MAX_LENGTH}
-            onChange={(value) => setDraft(withNotes(draft, value))}
-          />
         </div>
         </Card>
       </Screen>
@@ -832,6 +721,273 @@ function GenerateForm({
           flagged. You know things it doesn’t — this is the only time it asks.
         </p>
       </AppDialog>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-024 (C51): the route's own presentation, shared with the accepted
+// gallery state `/gallery/refinements?state=screens`
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Where the resolved Focus came from, or null while there is none to show. */
+function focusSourceOf(
+  resolved: GenerationResolution,
+): 'recommended' | 'override' | 'manual' | null {
+  return resolved.status === 'ready' ? resolved.focusSource : null
+}
+
+/**
+ * R10.5 / #286: the shared framed icon-only Back. Its name is its destination;
+ * there is no arrow-plus-HOME label beside it.
+ */
+export function GenerateBack({ onHome }: { onHome?: () => void }) {
+  return <IconButton label={HOME_BACK_LABEL} icon={<ArrowLeft size={20} />} onClick={onHome} />
+}
+
+export interface GenerateIntentProps {
+  /** The loaded profile's `goal_preset`, exactly as stored. */
+  readonly goalPreset: GoalPreset | null
+  readonly draft: GenerationDraft
+  readonly resolved: GenerationResolution
+  /** What history says about a Focus; null while the read is in flight. */
+  readonly history: FocusHistory | null
+  /** Whether the choices behind a shown Focus are open. */
+  readonly expanded: boolean
+  /** The id the Focus control names as the region it opens. */
+  readonly choicesId: string
+  /** The refusal sentence for the Focus, when a send was refused. */
+  readonly focusError?: string
+  readonly onToggleFocus: () => void
+  /** A Focus for this workout only, or null to return to the recommendation. */
+  readonly onChooseOverride: (focus: GenerationDraft['anchor']) => void
+  /** The manual Anchor, where history has nothing to recommend. */
+  readonly onChooseAnchor: (anchor: NonNullable<GenerationDraft['anchor']>) => void
+  readonly onToggleRecovery: () => void
+  readonly onRetryHistory: () => void
+}
+
+/**
+ * The Goal and Focus summary and the focus interaction (C51; R10.1, R10.2,
+ * R21, R25; R11; #286).
+ *
+ * Goal and Focus share one wrapping row in the shared `.clr-intent-summary`
+ * recipe. Where history recommends a Focus — or one was chosen over it for
+ * this workout — the Focus value is itself the disclosure: a button named by
+ * what it shows, with its expanded state, that opens the four choices and,
+ * apart from them, the one-workout Recovery toggle. Recovery is a session
+ * mode and the four are movement focuses, so Recovery is never one of them.
+ *
+ * Where nothing is recommended — a first workout, stale history, a failed
+ * read — the four are asked for as the required Anchor field, with Recovery
+ * offered beside it unselected: a first workout is a normal session.
+ */
+export function GenerateIntent({
+  goalPreset,
+  draft,
+  resolved,
+  history,
+  expanded,
+  choicesId,
+  focusError,
+  onToggleFocus,
+  onChooseOverride,
+  onChooseAnchor,
+  onToggleRecovery,
+  onRetryHistory,
+}: GenerateIntentProps) {
+  const goal = GENERATION_GOALS.find((option) => option.value === goalPreset)?.label
+  // A Focus the athlete chose is theirs and is shown as chosen, whatever the
+  // read is doing: a retry that succeeds does not take it back (REQ-006).
+  const loading = history === null && draft.anchor === null
+  const source = focusSourceOf(resolved)
+  // With no recommendation a chosen Focus is the manual one and stays a field.
+  const shown = source === 'recommended' || source === 'override'
+  const focus = ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label
+
+  // Its own toggle, never a fifth focus: Recovery changes the session's Goal
+  // for this workout and leaves the movement focus as it is (§2.3, R10.1).
+  const recoveryChoice = (
+    <div className="clr-row" style={CHIP_ROW} data-generate-recovery="">
+      <Chip selected={draft.recovery} onClick={onToggleRecovery}>
+        {RECOVERY_LABEL}
+      </Chip>
+    </div>
+  )
+
+  return (
+    <div className="clr-stack clr-stack--tight" data-generate-intent="">
+      <div className="clr-intent-summary">
+        <p className="clr-intent-summary__fact" data-intent-fact="goal">
+          {GOAL_TERM}: <strong>{goal}</strong>
+        </p>
+        {shown && (
+          <p className="clr-intent-summary__fact" data-intent-fact="focus">
+            <button
+              type="button"
+              className="clr-intent-summary__action clr-hit"
+              aria-expanded={expanded}
+              aria-controls={expanded ? choicesId : undefined}
+              onClick={onToggleFocus}
+            >
+              <span>
+                {FOCUS_TERM}: <strong>{focus}</strong>
+              </span>
+              {/* Icons ship aria-hidden; the shape is the state cue (R25). */}
+              <span className="clr-intent-summary__cue">
+                {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </span>
+            </button>
+            {source === 'override' && (
+              <span className="clr-intent-summary__scope"> — {OVERRIDE_SCOPE}</span>
+            )}
+          </p>
+        )}
+      </div>
+
+      {/* Recovery's meaning is said while it is on, open or closed (U29, §2.3). */}
+      {draft.recovery && (
+        <p style={{ margin: 0 }}>
+          {RECOVERY_NOTE} {POWER_REFUSAL}
+        </p>
+      )}
+
+      {loading ? (
+        <LoadingView label={HISTORY_LOADING_LABEL} />
+      ) : shown ? (
+        expanded && (
+          <div id={choicesId} className="clr-stack clr-stack--tight" data-generate-focus-choices="">
+            {source === 'override' && (
+              <ActionGroup>
+                <Button variant="quiet" onClick={() => onChooseOverride(null)}>
+                  {OVERRIDE_CANCEL_LABEL}
+                </Button>
+              </ActionGroup>
+            )}
+            {/* The override's choices. Power stays visible under Recovery,
+                disabled, with the refusal said in text. */}
+            <div className="clr-row" role="group" aria-label={OVERRIDE_GROUP_LABEL} style={CHIP_ROW}>
+              {ANCHORS.map((anchor) => (
+                <Chip
+                  key={anchor.value}
+                  selected={resolved.focus === anchor.value}
+                  disabled={!anchorAllowed(resolved.goal, anchor.value)}
+                  onClick={() => onChooseOverride(anchor.value)}
+                >
+                  {anchor.label}
+                </Chip>
+              ))}
+            </div>
+            {recoveryChoice}
+          </div>
+        )
+      ) : (
+        <div className="clr-stack clr-stack--tight" data-generate-focus-choices="">
+          {history?.status === 'history-error' && (
+            <div className="clr-stack clr-stack--tight">
+              <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+                {HISTORY_ERROR_MESSAGE}
+              </p>
+              <ActionGroup>
+                <Button variant="quiet" onClick={onRetryHistory}>
+                  {HISTORY_RETRY_LABEL}
+                </Button>
+              </ActionGroup>
+            </div>
+          )}
+
+          {/* §2.3: Recovery offers no Power, and the Recovery note says why */}
+          <FormField
+            label="Anchor"
+            required
+            helperText={
+              needsFirstWorkoutGuidance(draft, history) ? FIRST_WORKOUT_MESSAGE : undefined
+            }
+            errorText={focusError}
+          >
+            <div className="clr-row" role="group" aria-label="Anchor" style={CHIP_ROW}>
+              {ANCHORS.map((anchor) => (
+                <Chip
+                  key={anchor.value}
+                  selected={draft.anchor === anchor.value}
+                  disabled={!anchorAllowed(resolved.goal, anchor.value)}
+                  onClick={() => onChooseAnchor(anchor.value)}
+                >
+                  {anchor.label}
+                </Chip>
+              ))}
+            </div>
+          </FormField>
+          {recoveryChoice}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export interface GenerateContextFieldsProps {
+  /** The athlete's places; only their ids and names are drawn. */
+  readonly places: ReadonlyArray<Pick<Location, 'id' | 'name'>>
+  readonly locationId: string | null
+  readonly durationMins: string
+  readonly notes: string
+  /** Field path → the refusal sentence that field shows beneath itself. */
+  readonly errors?: Readonly<Record<string, string>>
+  readonly onLocation: (locationId: string) => void
+  readonly onDuration: (minutes: string) => void
+  readonly onNotes: (notes: string) => void
+}
+
+/**
+ * Place, Time available and Notes (R23, R10.3). No helper line under Place or
+ * Notes; each keeps its label, control, error and — for Notes — placeholder
+ * and length limit. The minutes unit is the public Input `unit`, fitted by the
+ * shared contract in `styles/fields.css`; nothing here sizes it.
+ */
+export function GenerateContextFields({
+  places,
+  locationId,
+  durationMins,
+  notes,
+  errors,
+  onLocation,
+  onDuration,
+  onNotes,
+}: GenerateContextFieldsProps) {
+  return (
+    <>
+      <Select
+        label="Place"
+        value={locationId ?? ''}
+        options={places.map((location) => ({
+          value: location.id,
+          label: location.name,
+        }))}
+        errorText={errors?.location_id}
+        onChange={onLocation}
+      />
+
+      <Input
+        label={DURATION_LABEL}
+        type="number"
+        inputMode="numeric"
+        min={1}
+        value={durationMins}
+        unit={DURATION_UNIT}
+        errorText={errors?.requested_duration_mins}
+        onChange={onDuration}
+      />
+
+      <Input
+        label="Notes"
+        multiline
+        rows={3}
+        value={notes}
+        placeholder={NOTES_PLACEHOLDER}
+        errorText={errors?.notes}
+        maxLength={NOTES_MAX_LENGTH}
+        onChange={onNotes}
+      />
     </>
   )
 }

@@ -295,7 +295,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 320, height: 568 }
     await expect(duration).toHaveValue('37')
     await duration.fill('41')
     await expect(duration).toHaveValue('41')
-    await expect(page.getByRole('button', { name: 'Change focus', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Focus:/ })).toBeVisible()
     await checkA11y()
 
     // A new synthetic read after an ordinary reload checks the existing
@@ -353,7 +353,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 320, height: 568 }
     // An unfinished workout is still not completed recommendation evidence.
     await expect(page.getByText('First workout: choose a starting focus.', { exact: true })).toBeVisible()
     await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Change focus', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^Focus:/ })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeDisabled()
     await checkA11y()
     fixture.assertReadOnly()
