@@ -125,9 +125,18 @@ import {
 import {
   EquipmentSummaryBodyweight,
   EquipmentSummaryLoaded,
+  LivePreparationCooldown,
+  LivePreparationWarmUp,
   OverviewFactsPlanned,
   OverviewFactsSaved,
   OverviewFactsWidest,
+  PreparationGuideCooldown,
+  PreparationGuideError,
+  PreparationGuideLoading,
+  PreparationGuideNoMovements,
+  PreparationGuideWarmUp,
+  PreparationTimerCooldown,
+  PreparationTimerWarmUp,
   SummaryFrames,
   SummaryFramesUnmeasured,
 } from './gallery-refinement-scenes'
@@ -2308,6 +2317,39 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       { state: 'superset', Render: ReviewSectionSuperset },
       { state: 'circuit', Render: ReviewSectionCircuit },
       { state: 'EMOM, AMRAP and For Time', note: 'Three cards in one section: the heading names the section once.', Render: ReviewSectionTimed },
+    ],
+  },
+  {
+    component: 'PreparationGuide',
+    requirement: 'REQ-022',
+    module: 'src/ui/preparation-guide.tsx',
+    summary: 'TASK-022 the accepted concise Warm-up and Cooldown (C49, G14; R01, R13, R36): the stable title — Warm-up or Cooldown, never a generated custom title — with its approximate total time (~N minutes) on the heading row, then the movement names on separate lines; no paragraph and no per-movement sets, reps, load, time or rest. Title, names, count and time are TASK-034’s reading of the actual prescriptions (src/state/preparation-guide.ts), never the illustrated four minutes or three rows. Review draws it as the section’s heading; the live workout as a label under its section header. Loading, a failed read and a section with no movement left keep their own meanings. The routes’ consumers are /gallery/refinements?state=preparation.',
+    specimens: [
+      { state: 'Warm-up · Review', note: 'Four movements and the time read from their prescriptions; the generated title and notes are not shown.', Render: PreparationGuideWarmUp },
+      { state: 'Cooldown · Review', note: 'Same format, its own two movements and time.', Render: PreparationGuideCooldown },
+      { state: 'loading', Render: PreparationGuideLoading },
+      { state: 'failed read, with its retry', Render: PreparationGuideError },
+      { state: 'no movement left', note: 'Says why there is no guide, never an empty one.', Render: PreparationGuideNoMovements },
+    ],
+  },
+  {
+    component: 'PreparationTimer',
+    requirement: 'REQ-022',
+    module: 'src/ui/preparation-guide.tsx',
+    summary: 'TASK-022 the separate preparation clock (R14, R15; C21): the rest timer’s own pattern (CountdownCard), counting the guide’s own approximate time down, with Start / Pause and Add 30s and no Dismiss or any other hiding action. Its own clock, distinct from the session, rest, movement and format clocks; the shared warning at 10 and 5 seconds; it records nothing. Memory-only here.',
+    specimens: [
+      { state: 'Warm-up · ready', note: 'Start runs it; Add 30s adds the rest timer’s extension.', Render: PreparationTimerWarmUp },
+      { state: 'Cooldown · ready', note: 'Its own time, from its own guide.', Render: PreparationTimerCooldown },
+    ],
+  },
+  {
+    component: 'LivePreparation',
+    requirement: 'REQ-022',
+    module: 'src/ui/preparation-guide.tsx',
+    summary: 'TASK-022 the live workout’s Warm-up or Cooldown as /workout draws it: the concise guide read from the persisted section’s active rows, then its separate preparation clock. Synthetic rows, nothing read or written.',
+    specimens: [
+      { state: 'Warm-up', Render: LivePreparationWarmUp },
+      { state: 'Cooldown', Render: LivePreparationCooldown },
     ],
   },
   {

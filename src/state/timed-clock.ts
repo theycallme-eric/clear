@@ -28,17 +28,17 @@
  * a different place — the footer, the open log, a narrower card — cannot
  * create, restart or reset the clock behind it (AC-R007-03).
  *
- * A preparation section (Warm-up, Cooldown) has no clock of its own at this
- * revision: its timed holds are movement countdowns and its rests are the
- * session's rest, each read as such. A separate preparation guide clock is
- * REQ-022's; when it exists it is one more reading here, not a change to
- * these.
+ * TASK-022 (REQ-022, R15): a preparation section (Warm-up, Cooldown) is drawn
+ * as its concise guide with its own separate preparation clock
+ * (`preparation-clock.ts`), counting the guide's approximate time down with
+ * Start, Pause and Add 30s. It is one more reading here, `preparation`, and
+ * changes none of the others.
  */
 import { spokenRest } from './rest'
 import { formatElapsed, spokenElapsed } from './workout-clock'
 
 /** The distinct functional clocks a timer frame can be reading. */
-export const TIMED_CLOCKS = ['session', 'movement', 'rest', 'format'] as const
+export const TIMED_CLOCKS = ['session', 'movement', 'rest', 'format', 'preparation'] as const
 export type TimedClock = (typeof TIMED_CLOCKS)[number]
 
 export interface TimerReading {
@@ -84,6 +84,11 @@ export function sessionReading(elapsedSeconds: number): TimerReading {
 /** The session's one rest, as `useRestTimer` reads it. */
 export function restReading(remainingSeconds: number): TimerReading {
   return countingDown('rest', 'Time remaining', remainingSeconds)
+}
+
+/** A Warm-up's or Cooldown's preparation clock, as `usePreparationClock` reads it. */
+export function preparationReading(remainingSeconds: number): TimerReading {
+  return countingDown('preparation', 'Time remaining', remainingSeconds)
 }
 
 /** A timed prescription's own countdown, as `useMovementCountdown` reads it. */

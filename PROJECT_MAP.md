@@ -153,6 +153,9 @@ rides in the quality record beside the model's estimate, for the session row to 
 The app reads that estimator once, for the Warm-up and Cooldown guide's approximate time
 (`src/state/preparation-guide.ts`, TASK-034, contract `docs/specs/PREPARATION_GUIDE_CONTRACT.md`).
 It imports the pure module rather than copying it, so there is still one duration model.
+`/review` and `/workout` draw that reading as the concise guide (`src/ui/preparation-guide.tsx`,
+TASK-022); the live guide's separate preparation clock is `src/state/preparation-clock.ts`, held per
+section by the shell's `PreparationClockProvider`, in memory only and writing nothing.
 `HARD_CHECKS` is the requirement's "the correspondence is listed" as data rather than prose — one
 row per check naming the constraint in `20260921000003_workout_domain.sql` that would refuse the row
 — and `src/test/generation-validation.test.ts` reads those declarations back out of the migration and

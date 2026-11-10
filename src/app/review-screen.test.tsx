@@ -91,7 +91,8 @@ function precedes(a: Node, b: Node): boolean {
 function sectionHeadings(): HTMLElement[] {
   return screen
     .getAllByRole('heading', { level: 2 })
-    .filter((heading) => heading.closest('[data-workout-card="review"]') !== null)
+    // TASK-022: a Warm-up or Cooldown is headed by its concise guide's card.
+    .filter((heading) => heading.closest('[data-workout-card="review"], [data-preparation-guide]') !== null)
 }
 
 /**

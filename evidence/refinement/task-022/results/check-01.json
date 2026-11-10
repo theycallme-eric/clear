@@ -1,0 +1,72 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-022",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/preparation-guide.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-022/required-cases.json",
+    "sha256": "3dea77b29d645068160a87d79781d2733d47719a1d0dedb6adb7519714d7f1f4"
+  },
+  "targets": [
+    {
+      "path": "src/ui/preparation-guide.test.tsx",
+      "sha256": "392dc21352b81b65a2f45987b7c6325a286249f43535200e9530f2ee11c7f46b"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /review route the Warm-up and Cooldown are each one concise card: the stable title, the approximate total time and the movement names on separate lines, with no generated title, prose, per-movement prescription or Swap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 the titles, names, counts and times are TASK-034’s reading of the actual prescriptions on /review and /workout alike — four and two movements, never the illustrated four minutes or three rows — and change with the data",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /workout route the open Warm-up is its concise guide under the section header, read from the session’s active rows (a swap in place), with no set logging, rest or Dismiss substitute; Next section completes it as before",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 the separate preparation clock counts the guide’s own time down with Start, Pause and Add 30s, keeps the session clock and the rest distinct, records nothing and offers no Dismiss or other hide action",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 leaving the section and coming back finds the same clock, and its warning is the shared one: colour at 10 seconds, the edge at 5 while running, none when paused or run out; Add 30s after it runs out waits for Start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 loading, a failed read, a section with no movement left and an absent section keep their meanings; a malformed persisted row is an error, never a guessed guide or clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

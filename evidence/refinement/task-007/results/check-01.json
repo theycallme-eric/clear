@@ -21,7 +21,7 @@
   "targets": [
     {
       "path": "src/state/timed-clock.test.ts",
-      "sha256": "88e4c230802c3a4a7b155806909865a04f1374cd9d5fe102ce09646cf8b7b60b"
+      "sha256": "d1c1b7519fe886082ce44fdef703fa367543ab03e1fe4b8e7c1bb43377c0de69"
     },
     {
       "path": "src/ui/timer-frame-layout.test.tsx",

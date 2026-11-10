@@ -49,10 +49,14 @@ const VIEWPORTS = { phone: PHONE, narrow: NARROW, short: SHORT } as const
 type ViewportName = keyof typeof VIEWPORTS
 const TOLERANCE = 1
 
-/** Air squat warms up; back squat and kb swing are the primary lift: three invocations. */
+/**
+ * Back squat and kb swing are the primary lift: the Review invocations. Air
+ * squat warms up; TASK-022 (C49; R01, R36) superseded its Swap: a Warm-up is
+ * the accepted concise guide — its names on separate lines, with no
+ * per-movement row or action — so it offers no Swap invocation.
+ */
 const ACCEPTANCE = makeSessionAcceptance({ date: new Date().toISOString().slice(0, 10), goal_preset: 'strength' })
 const INVOCATIONS = [
-  { slotName: 'air squat', section: 'warmup' },
   { slotName: 'back squat', section: 'primary_lift' },
   { slotName: 'kb swing', section: 'primary_lift' },
 ] as const
@@ -1089,15 +1093,16 @@ test.describe('B05 REQ-010 roomy swap selection', () => {
       await page.setViewportSize(viewport)
       const app = await syntheticReview(page, { kind: 'empty' })
       await openReview(page, visit)
-      const { dialog } = await openSwap(page, 'air squat')
+      // TASK-022: the Warm-up's air squat offers no Swap; the primary lift's back squat does.
+      const { dialog } = await openSwap(page, 'back squat')
       await expect(dialog.getByText('Nothing else fits this slot')).toBeVisible()
       const empty = await composition(dialog)
       expectRoomyFrame(empty)
       expect(empty.list).toBeNull()
       await capture(page, testInfo, `swap-empty-${viewportName}`, {
-        consumer: 'SwapDialog (warmup, Swap air squat)', state: 'empty (existing EmptyState)',
+        consumer: 'SwapDialog (primary_lift, Swap back squat)', state: 'empty (existing EmptyState)',
         criteria: ['AC-031', 'AC-049', 'AC-065'], composition: empty })
-      await dialog.getByRole('button', { name: 'Keep air squat', exact: true }).click()
+      await dialog.getByRole('button', { name: 'Keep back squat', exact: true }).click()
       await expect(dialog).toBeHidden()
       app.assertNoWrites()
     })

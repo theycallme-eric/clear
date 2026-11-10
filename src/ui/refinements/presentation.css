@@ -727,3 +727,34 @@ html[data-reduce-motion] .clr-deadline-edge {
   line-height: var(--label-xs-line-height);
   color: var(--text-secondary);
 }
+
+/* TASK-022 (C49, G14; R01, R13, R36): the concise Warm-up / Cooldown guide.
+ * The movement names, one per line, in the paragraph face: no marker, no
+ * ordinal, no per-movement prescription. The title and the approximate time
+ * are the card's own heading row. */
+.clr-preparation-guide__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-100);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clr-preparation-guide__list > li {
+  min-width: 0;
+  color: var(--text-paragraph);
+  overflow-wrap: anywhere;
+}
+
+/* The catalog name is a lower-case slug reading (`exerciseName`); the guide
+ * shows it in sentence case without changing what it says. */
+.clr-preparation-guide__list > li::first-letter {
+  text-transform: uppercase;
+}
+
+.clr-preparation-guide__empty {
+  margin: 0;
+  color: var(--text-secondary);
+}

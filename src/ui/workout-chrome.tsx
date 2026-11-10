@@ -55,9 +55,9 @@ import {
   Button,
   X,
 } from '../design-system/index'
-import { restDeadline } from '../state/countdown-urgency'
+import { restDeadline, type CountdownDeadline } from '../state/countdown-urgency'
 import { REST_EXTENSION_SECONDS, useRestTimer } from '../state/rest'
-import { restReading, sessionReading } from '../state/timed-clock'
+import { restReading, sessionReading, type TimerReading } from '../state/timed-clock'
 import type {
   SectionProgress,
   SectionStatus,
@@ -577,14 +577,68 @@ export function RestTimerBar() {
 
   const running = rest !== null && remainingSeconds > 0
   const deadline = restDeadline(running ? remainingSeconds : 0)
-  const { low } = countdownWarningState(deadline.remaining, deadline.running)
 
   if (!running) return null
 
   const fraction = rest.totalSeconds > 0 ? remainingSeconds / rest.totalSeconds : 0
 
   return (
-    <section aria-label="Rest" className="clr-rest-bar" data-urgent={low ? 'true' : 'false'}>
+    <CountdownCard
+      name="Rest"
+      glyph={<Rest />}
+      label={<>Rest after {rest.label}</>}
+      reading={restReading(remainingSeconds)}
+      deadline={deadline}
+      fraction={fraction}
+      actions={
+        <>
+          <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
+            Add {REST_EXTENSION_SECONDS}s
+          </Button>
+          <Button variant="quiet" icon={<X />} onClick={skip}>
+            Skip rest
+          </Button>
+        </>
+      }
+    />
+  )
+}
+
+export interface CountdownCardProps {
+  /** The region's accessible name: `Rest`, `Warm-up timer`. */
+  name: string
+  /** The label's glyph, beside its words, so colour is never the only cue. */
+  glyph: ReactNode
+  /** What the countdown is for, in the card's label face. */
+  label: ReactNode
+  /** The clock's own reading, from its owner (`state/timed-clock.ts`). */
+  reading: TimerReading
+  /** The clock's own deadline, for the shared warning (TASK-008). */
+  deadline: CountdownDeadline
+  /** How much of the clock is left, 0 to 1: the stepped fill. */
+  fraction: number
+  /** The clock's own actions, one row under the fill. */
+  actions: ReactNode
+}
+
+/**
+ * The rest timer's pattern, drawn once (EXE-05; R15): one timer-role card
+ * holding its glyph-led label, the shared whole timer body (`DeadlineTimer`)
+ * at the card's full width, the once-said "Final 10 seconds", the stepped
+ * fill and one row of actions. The session's rest draws it, and so does a
+ * Warm-up's or Cooldown's separate preparation clock (TASK-022), so the two
+ * share one layout rather than a second invented one; each passes its own
+ * clock's reading, deadline and actions. It holds no clock and writes nothing.
+ *
+ * TASK-007 (C19, R17, R103): the readout is the shared whole timer body,
+ * filling the card's width with its digits centred — in the footer and in the
+ * open log alike. Labelled once and not live: the milestone is what speaks.
+ */
+export function CountdownCard({ name, glyph, label, reading, deadline, fraction, actions }: CountdownCardProps) {
+  const { low } = countdownWarningState(deadline.remaining, deadline.running)
+
+  return (
+    <section aria-label={name} className="clr-rest-bar" data-urgent={low ? 'true' : 'false'}>
       <Card role={low ? 'timer-low' : 'timer'}>
         <p
           style={{
@@ -595,17 +649,11 @@ export function RestTimerBar() {
           }}
         >
           <span aria-hidden="true" style={{ display: 'flex' }}>
-            <Rest />
+            {glyph}
           </span>
-          Rest after {rest.label}
+          {label}
         </p>
-        {/*
-          TASK-007 (C19, R17, R103): the rest's readout is the shared whole
-          timer body, filling the card's width with its digits centred — in
-          the footer and in the open log alike. Labelled once and not live:
-          the milestone below is what speaks.
-        */}
-        <DeadlineTimer reading={restReading(remainingSeconds)} size="var(--label-xl-size)" deadline={deadline} />
+        <DeadlineTimer reading={reading} size="var(--label-xl-size)" deadline={deadline} />
         {low && (
           <p
             role="status"
@@ -624,12 +672,7 @@ export function RestTimerBar() {
         </div>
 
         <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
-            Add {REST_EXTENSION_SECONDS}s
-          </Button>
-          <Button variant="quiet" icon={<X />} onClick={skip}>
-            Skip rest
-          </Button>
+          {actions}
         </div>
       </Card>
     </section>

@@ -82,6 +82,31 @@ const ACCEPTANCE = makeSessionAcceptance({
   workout: makeStructureSpectrumWorkout({ estimated_duration_mins: 71 }),
 })
 
+/**
+ * TASK-022 (C49; R01, R13): a Warm-up or Cooldown is drawn as its concise
+ * guide — title, approximate time, movement names — never as prescriptions.
+ * The spectrum's range (its warm-up air squat) and its timed per-side hold
+ * (its cooldown couch stretch) are still prescriptions any other section
+ * draws as themselves, so the shape cases read them from the same spectrum
+ * with those two sections composed as Mobility and Core.
+ */
+const SPECTRUM_AS_WORK = makeSessionAcceptance({
+  ...ACCEPTANCE,
+  workout: {
+    ...ACCEPTANCE.workout,
+    sections: ACCEPTANCE.workout.sections.map((section) =>
+      section.section_type === 'warmup'
+        ? { ...section, section_type: 'mobility' as const }
+        : section.section_type === 'cooldown'
+          ? { ...section, section_type: 'core' as const }
+          : section,
+    ),
+  },
+})
+
+/** The sections Review draws as blocks rather than as a concise guide. */
+const isPreparation = (type: string) => type === 'warmup' || type === 'cooldown'
+
 /** The persisted session `accept` answers with; `start` moves it to active. */
 const PERSISTED = snapshotFixture({ state: 'prescribed' })
 
@@ -219,12 +244,16 @@ describe('all generated content renders', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const cards = [...screen.getByRole('main').querySelectorAll<HTMLElement>('.clr-card')]
-    const blocks = ACCEPTANCE.workout.sections.flatMap((section) => section.blocks)
+    // TASK-022: the Warm-up and Cooldown are each one concise guide card.
+    const worked = ACCEPTANCE.workout.sections.filter((section) => !isPreparation(section.section_type))
+    const guides = ACCEPTANCE.workout.sections.length - worked.length
+    const blocks = worked.flatMap((section) => section.blocks)
     const blockCards = [...document.querySelectorAll<HTMLElement>('[data-workout-card="review"]')]
 
-    // One overview card and one card per block, each with its single bar.
+    // One overview card, one card per block and one per guide, each with its single bar.
     expect(blockCards).toHaveLength(blocks.length)
-    expect(cards).toHaveLength(blocks.length + 1)
+    expect(document.querySelectorAll('.clr-card [data-preparation-guide]')).toHaveLength(guides)
+    expect(cards).toHaveLength(blocks.length + guides + 1)
     for (const block of blockCards) {
       const card = block.closest<HTMLElement>('.clr-card')!
       expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
@@ -284,7 +313,8 @@ describe('all generated content renders', () => {
 
     const headings = screen
       .getAllByRole('heading', { level: 2 })
-      .filter((heading) => heading.closest('[data-workout-card="review"]') !== null)
+      // TASK-022: the Warm-up and Cooldown are headed by their concise guide's card.
+      .filter((heading) => heading.closest('[data-workout-card="review"], [data-preparation-guide]') !== null)
       .map((heading) => heading.textContent ?? '')
     expect(headings).toEqual(['Warm-up', 'Primary lift', 'Accessory', 'Conditioning', 'Cooldown'])
     expect(screen.queryAllByRole('button', { expanded: true })).toEqual([])
@@ -432,7 +462,7 @@ describe('all generated content renders', () => {
   })
 
   it('renders each target kind as its own shape', async () => {
-    renderReview()
+    renderReview({ acceptance: SPECTRUM_AS_WORK })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const text = briefingText()
@@ -443,7 +473,7 @@ describe('all generated content renders', () => {
   })
 
   it('renders time and distance as themselves rather than as reps', async () => {
-    renderReview()
+    renderReview({ acceptance: SPECTRUM_AS_WORK })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const text = briefingText()
@@ -466,7 +496,7 @@ describe('all generated content renders', () => {
 
   it('moves tempo off the rows into an optional, collapsed detail that keeps it', async () => {
     const user = userEvent.setup()
-    renderReview()
+    renderReview({ acceptance: SPECTRUM_AS_WORK })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     expect(briefingText()).not.toContain('Tempo 3-1-1-0')
@@ -924,12 +954,17 @@ describe('swapping a movement happens in Review, under the original constraints 
     })
   })
 
-  it('offers a swap on every movement, named for the movement', () => {
+  it('offers a swap on every prescribed movement, named for the movement', () => {
     renderReview({ acceptance: SWAPPABLE, candidateSets: CANDIDATE_SETS })
 
-    for (const name of ['air squat', 'back squat', 'kb swing']) {
+    for (const name of ['back squat', 'kb swing']) {
       expect(screen.getByRole('button', { name: `Swap ${name}` })).toBeEnabled()
     }
+    // TASK-022 (C49; R01, R36): the Warm-up is its accepted concise guide —
+    // the movement's name on its own line, with no per-movement row or action.
+    const guide = screen.getByRole('list', { name: 'Warm-up movements' })
+    expect(within(guide).getByRole('listitem')).toHaveTextContent(/^air squat$/)
+    expect(screen.queryByRole('button', { name: 'Swap air squat' })).toBeNull()
   })
 
   it('reads alternatives for this composition only when asked, and offers only what fits', async () => {

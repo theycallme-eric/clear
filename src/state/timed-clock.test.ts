@@ -79,7 +79,9 @@ describe('TASK-007 distinct functional clocks', () => {
     ])
     // Four clocks, four identities: none of them is another's reading.
     expect(new Set(readings.map(({ clock }) => clock)).size).toBe(4)
-    expect([...TIMED_CLOCKS]).toEqual(['session', 'movement', 'rest', 'format'])
+    // TASK-022 (R15, C21) adds the Warm-up / Cooldown preparation clock as a
+    // fifth distinct reading; its own proof is src/ui/preparation-guide.test.tsx.
+    expect([...TIMED_CLOCKS]).toEqual(['session', 'movement', 'rest', 'format', 'preparation'])
   })
 
   it('AC-C21-01 a section Pause freezes only its format clock and its cap; the session clock, the rest and a running countdown run on', () => {
