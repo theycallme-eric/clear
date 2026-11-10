@@ -23,6 +23,8 @@ import { ErrorCode, isErr, isOk } from './errors'
 import { restore } from './favorites'
 import { isLadderScheme } from './ladder'
 import { savedWorkoutFixture } from '../test/workout-double'
+import { LOGGING_FIELDS, LOGGING_MOMENTS } from '../data/refinement-logging-contract'
+import { PERCEIVED_EFFORT_MAX, PERCEIVED_EFFORT_MIN, isPerceivedEffort } from './block-completion'
 import {
   makeLadderTimingBlock,
   makeSessionAcceptance,
@@ -52,6 +54,7 @@ import {
   type Profile,
   type UserConstraintRow,
 } from './schemas'
+import * as schemas from './schemas'
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..')
 const read = (path: string) => readFileSync(join(REPO_ROOT, path), 'utf8')
@@ -997,4 +1000,206 @@ describe('the vocabularies come from the generated enums, not from here', () => 
 
     return { ...workout, sections: [{ ...sections[0], section_type }] }
   }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-030 (REQ-030) — the logging field contract, at the schema boundary
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// `docs/specs/LOGGING_FIELD_CONTRACT.md` names, for every logging moment, the
+// schema its rows are read through. These cases hold those schemas to the
+// matrix: null is not zero for every column it names, the three kinds of
+// effort never stand in for one another, and every schema it names is here.
+
+describe('TASK-030 logging field ownership at the schema boundary', () => {
+  const blockResult = {
+    id: '90000001-0000-4000-8000-000000000000',
+    block_id: '70000001-0000-4000-8000-000000000000',
+    elapsed_seconds: null,
+    completed_under_cap: null,
+    rounds_completed: null,
+    partial_round_reps: null,
+    minutes_completed: null,
+    highest_rung: null,
+    perceived_effort: null,
+    notes: null,
+    created_at: '2026-09-24T09:30:00+00:00',
+  }
+
+  const setLog = {
+    id: 'a0000001-0000-4000-8000-000000000000',
+    workout_exercise_id: '80000001-0000-4000-8000-000000000000',
+    prescription_revision_status: 'active',
+    set_number: 1,
+    actual_reps: null,
+    actual_duration_seconds: null,
+    actual_distance: null,
+    actual_distance_unit: null,
+    weight: null,
+    weight_unit: 'kg',
+    rpe: null,
+    is_warmup_set: false,
+    created_at: '2026-09-24T09:10:00+00:00',
+    effort: null,
+    mutation_revision: 0,
+    last_mutation_id: null,
+  }
+
+  const issuePaths = (result: { success: boolean; error?: Parameters<typeof schemaIssues>[0] }) =>
+    result.success || result.error === undefined ? [] : schemaIssues(result.error).map((issue) => issue.path)
+
+  it('AC-R030-02 block_results.perceived_effort keeps its legacy numeric 1-10 meaning and refuses every effort category', () => {
+    for (let effort = 1; effort <= 10; effort += 1) {
+      const parsed = blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: effort })
+      expect(parsed.success && parsed.data.perceived_effort, String(effort)).toBe(effort)
+    }
+    expect(blockResultRowSchema.safeParse(blockResult).success).toBe(true)
+
+    // A category is not a point on the scale: each one is refused at the column.
+    for (const category of Constants.public.Enums.set_effort) {
+      const parsed = blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: category })
+      expect(parsed.success, category).toBe(false)
+      expect(issuePaths(parsed), category).toEqual(['perceived_effort'])
+    }
+    for (const outOfRange of [0, 11, 6.5, '7']) {
+      expect(blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: outOfRange }).success, String(outOfRange)).toBe(false)
+    }
+
+    // The legacy scale is exactly 1–10 at both ends, and the writer's pre-send
+    // check (isPerceivedEffort, named by the matrix) agrees with the column at
+    // every boundary: 0 is not "very easy", and nothing beyond 10 exists.
+    expect([PERCEIVED_EFFORT_MIN, PERCEIVED_EFFORT_MAX]).toEqual([1, 10])
+    for (const value of [-1, 0, 0.5, 1, 1.5, 9.5, 10, 10.5, 11]) {
+      const column = blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: value }).success
+      expect(isPerceivedEffort(value), String(value)).toBe(column)
+      expect(column, String(value)).toBe(value === 1 || value === 10)
+    }
+
+    // No categorical block column exists to read yet (MIG-A is TASK-031's):
+    // a category beside the row is not carried into what the app reads.
+    const parsed = blockResultRowSchema.safeParse({ ...blockResult, effort: 'too_easy' })
+    expect(parsed.success && Object.keys(parsed.data)).not.toContain('effort')
+  })
+
+  it('AC-R030-02 per-set effort is exactly the three categories, unanswered is null, and the historical rpe beside it is never rewritten', () => {
+    expect(schemas.setEffortSchema.options).toEqual([...Constants.public.Enums.set_effort])
+    expect(Constants.public.Enums.set_effort).toEqual(['too_hard', 'about_right', 'too_easy'])
+
+    for (const category of Constants.public.Enums.set_effort) {
+      const parsed = schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, effort: category })
+      expect(parsed.success && parsed.data.effort, category).toBe(category)
+    }
+    // Unanswered — including a row read before the column existed — is null, never the middle face.
+    const { effort: _absent, ...older } = setLog
+    void _absent
+    const legacy = schemas.exerciseSetLogRowSchema.safeParse(older)
+    expect(legacy.success && legacy.data.effort).toBeNull()
+    for (const notACategory of [1, 5, 7, 10, 'hard', 'medium', '']) {
+      const parsed = schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, effort: notACategory })
+      expect(parsed.success, String(notACategory)).toBe(false)
+      expect(issuePaths(parsed), String(notACategory)).toEqual(['effort'])
+    }
+
+    // The historical numeric RPE and the category live side by side, each unchanged.
+    const both = schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, actual_reps: 5, rpe: 8, effort: 'too_easy' })
+    expect(both.success && [both.data.rpe, both.data.effort]).toEqual([8, 'too_easy'])
+    for (const rpe of [0, 11, 'too_hard']) {
+      expect(schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, rpe }).success, String(rpe)).toBe(false)
+    }
+  })
+
+  it('AC-R030-02 the session’s five-step mood is a different question from any effort', () => {
+    for (let mood = 1; mood <= 5; mood += 1) {
+      expect(schemas.sessionDebriefSchema.safeParse({ mood, session_notes: null }).success, String(mood)).toBe(true)
+    }
+    expect(schemas.sessionDebriefSchema.safeParse({ mood: null, session_notes: null }).success).toBe(true)
+    for (const mood of [0, 6, 2.5, ...Constants.public.Enums.set_effort]) {
+      expect(schemas.sessionDebriefSchema.safeParse({ mood, session_notes: null }).success, String(mood)).toBe(false)
+    }
+  })
+
+  it('AC-R030-01 every outcome and measurement column the matrix names keeps null distinct from zero', () => {
+    // block_results: zero is an observation; null is the absence; negatives and fractions are refused.
+    for (const column of ['elapsed_seconds', 'rounds_completed', 'partial_round_reps', 'minutes_completed', 'highest_rung']) {
+      const zero = blockResultRowSchema.safeParse({ ...blockResult, [column]: 0 })
+      expect(zero.success && (zero.data as Record<string, unknown>)[column], column).toBe(0)
+      const blank = blockResultRowSchema.safeParse({ ...blockResult, [column]: null })
+      expect(blank.success && (blank.data as Record<string, unknown>)[column], column).toBeNull()
+      expect(blockResultRowSchema.safeParse({ ...blockResult, [column]: -1 }).success, column).toBe(false)
+      expect(blockResultRowSchema.safeParse({ ...blockResult, [column]: 1.5 }).success, column).toBe(false)
+    }
+    for (const answer of [true, false, null]) {
+      const parsed = blockResultRowSchema.safeParse({ ...blockResult, completed_under_cap: answer })
+      expect(parsed.success && parsed.data.completed_under_cap, String(answer)).toBe(answer)
+    }
+    expect(blockResultRowSchema.safeParse({ ...blockResult, completed_under_cap: 0 }).success).toBe(false)
+    const noted = blockResultRowSchema.safeParse({ ...blockResult, notes: 'Minute 7: scaled' })
+    expect(noted.success && noted.data.notes).toBe('Minute 7: scaled')
+
+    // exercise_set_logs: the same, per measurement, and the unit is never absent.
+    for (const column of ['actual_reps', 'actual_duration_seconds']) {
+      const zero = schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, [column]: 0 })
+      expect(zero.success && (zero.data as Record<string, unknown>)[column], column).toBe(0)
+      expect(schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, [column]: -1 }).success, column).toBe(false)
+      expect(schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, [column]: 2.5 }).success, column).toBe(false)
+    }
+    for (const column of ['actual_distance', 'weight']) {
+      const zero = schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, [column]: 0, actual_distance_unit: 'm' })
+      expect(zero.success && (zero.data as Record<string, unknown>)[column], column).toBe(0)
+      const fractional = schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, [column]: 22.5, actual_distance_unit: 'm' })
+      expect(fractional.success && (fractional.data as Record<string, unknown>)[column], column).toBe(22.5)
+      expect(schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, [column]: -1 }).success, column).toBe(false)
+    }
+    expect(schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, weight_unit: null }).success).toBe(false)
+    expect(schemas.exerciseSetLogRowSchema.safeParse({ ...setLog, actual_distance_unit: 'yd' }).success).toBe(false)
+
+    // Every existing column the matrix names on these two tables is one these schemas read.
+    const shapes: Record<string, Record<string, unknown>> = {
+      block_results: blockResultRowSchema.shape,
+      exercise_set_logs: schemas.exerciseSetLogRowSchema.shape,
+    }
+    const named = LOGGING_FIELDS.filter((field) => field.table in shapes && field.status !== 'proposed-migration')
+    expect(named.length).toBeGreaterThan(10)
+    for (const field of named) expect(Object.keys(shapes[field.table]), field.id).toContain(field.column)
+    // …and the proposed categorical block column is not read yet.
+    expect(Object.keys(blockResultRowSchema.shape)).not.toContain('effort')
+  })
+
+  it('AC-R030-01 the rest-day mark and the debrief validate their reasons and notes as their columns do', () => {
+    expect(schemas.restDayReasonSchema.options).toEqual([...Constants.public.Enums.rest_day_reason])
+    for (const reason of Constants.public.Enums.rest_day_reason) {
+      expect(schemas.restDayMarkSchema.safeParse({ day: '2026-09-25', reason, note: null }).success, reason).toBe(true)
+    }
+    // No invented reasons, and a day is a calendar day.
+    expect(schemas.restDayMarkSchema.safeParse({ day: '2026-09-25', reason: 'travel', note: null }).success).toBe(false)
+    expect(schemas.restDayMarkSchema.safeParse({ day: '2026-09-25T00:00:00Z', reason: 'rest', note: null }).success).toBe(false)
+    // The note column is supported (the writer sends null) and bounded like all user prose.
+    expect(schemas.restDayMarkSchema.safeParse({ day: '2026-09-25', reason: 'rest', note: 'x'.repeat(2000) }).success).toBe(true)
+    expect(schemas.restDayMarkSchema.safeParse({ day: '2026-09-25', reason: 'rest', note: 'x'.repeat(2001) }).success).toBe(false)
+
+    expect(schemas.sessionDebriefSchema.safeParse({ mood: null, session_notes: 'x'.repeat(2000) }).success).toBe(true)
+    expect(schemas.sessionDebriefSchema.safeParse({ mood: null, session_notes: 'x'.repeat(2001) }).success).toBe(false)
+    // A movement note is the prescription row's nullable text.
+    const noteShape = schemas.workoutExerciseRowSchema.shape.exercise_notes
+    expect(noteShape.safeParse(null).success).toBe(true)
+    expect(noteShape.safeParse('Belt on the top set').success).toBe(true)
+  })
+
+  it('AC-R030-01 every schema the logging matrix names is a schema exported from this file', () => {
+    const exported = schemas as unknown as Record<string, unknown>
+    const refs = [
+      ...LOGGING_MOMENTS.flatMap((moment) => [...moment.schemas, ...moment.validators]),
+      ...LOGGING_FIELDS.flatMap((field) => field.validators),
+    ].filter((ref) => ref.module === 'src/state/schemas.ts')
+
+    expect(refs.length).toBeGreaterThan(0)
+    for (const ref of refs) {
+      const found = exported[ref.name] as { safeParse?: unknown } | undefined
+      expect(typeof found?.safeParse, ref.name).toBe('function')
+    }
+    // Every moment is read through at least one schema here.
+    for (const moment of LOGGING_MOMENTS) {
+      expect(moment.schemas.some((ref) => ref.module === 'src/state/schemas.ts'), moment.id).toBe(true)
+    }
+  })
 })

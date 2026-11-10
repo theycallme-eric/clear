@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-030",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/state/schemas.test.ts",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-030/required-cases.json",
+    "sha256": "90e3ec57ebcfb854faa0f68483d303d32df4d68bc99e7a7d685f3d7b78ed5dfd"
+  },
+  "targets": [
+    {
+      "path": "src/state/schemas.test.ts",
+      "sha256": "4f16da2c8de0100bbf5403ad3a968b88c161b8a1c333491deef01dab8d2bce9c"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/state/schemas.test.ts",
+      "name": "TASK-030 logging field ownership at the schema boundary > AC-R030-02 block_results.perceived_effort keeps its legacy numeric 1-10 meaning and refuses every effort category",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/schemas.test.ts",
+      "name": "TASK-030 logging field ownership at the schema boundary > AC-R030-02 per-set effort is exactly the three categories, unanswered is null, and the historical rpe beside it is never rewritten",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/schemas.test.ts",
+      "name": "TASK-030 logging field ownership at the schema boundary > AC-R030-02 the session’s five-step mood is a different question from any effort",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/schemas.test.ts",
+      "name": "TASK-030 logging field ownership at the schema boundary > AC-R030-01 every outcome and measurement column the matrix names keeps null distinct from zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/schemas.test.ts",
+      "name": "TASK-030 logging field ownership at the schema boundary > AC-R030-01 the rest-day mark and the debrief validate their reasons and notes as their columns do",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/schemas.test.ts",
+      "name": "TASK-030 logging field ownership at the schema boundary > AC-R030-01 every schema the logging matrix names is a schema exported from this file",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 112,
+    "passed": 112,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 112
+  },
+  "problems": []
+}
