@@ -20,11 +20,13 @@
  * storage (`gallery-refinement-flow.tsx`).
  *
  * `urgency`: the whole timer body (TASK-007, C19, C21) drawn by each clock's
- * actual consumer — a movement countdown, the race clock toward its cap, a
- * format countdown, the session's rest and the elapsed-only session clock
+ * actual consumer — a movement countdown, the race clock toward its cap, the
+ * session's rest and the elapsed-only session clock — and the recovered soft
+ * countdown warning (TASK-008: C22, C23, C24, C61; P05) through the same
+ * owner: colour at ten seconds, one soft aura in phase with its timer at five,
+ * a count-up cap, an open native log over the warning and a still preview
  * (`gallery-refinement-timers.tsx`). The `cards` state's Workout context opens
- * with the route's one-row workout header (C20). The recovered soft warning
- * (C22–C24, C61) is TASK-008's addition to this state.
+ * with the route's one-row workout header (C20).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -47,7 +49,7 @@ const REFINEMENT_STATES = [
   { id: 'overview', title: 'Overview and Summary frames', Render: GalleryOverviewSummary },
   { id: 'ladder-4', title: 'Live ladder · 4 rounds', Render: GalleryLadderFour },
   { id: 'ladder-12', title: 'Live ladder · 12 rounds', Render: GalleryLadderTwelve },
-  { id: 'urgency', title: 'Whole timer frames · countdown, cap and elapsed clocks', Render: GalleryTimerFrames },
+  { id: 'urgency', title: 'Countdown warning and whole timer frames · countdown, cap and elapsed clocks', Render: GalleryTimerFrames },
 ] as const
 
 export function GalleryRefinements() {

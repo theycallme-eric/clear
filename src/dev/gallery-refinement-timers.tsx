@@ -16,19 +16,30 @@
  *     cap, running, paused and in its last seconds; a format countdown in its
  *     shipped low state; the session's one rest under the actual rest
  *     provider; and the elapsed-only session clock. Every frame is one chamfer
- *     filling its width with centred digits. The recovered soft deadline
- *     warning and its peripheral cue (C22–C24, C61) are TASK-008's, added to
- *     this same state through the same owner; nothing here draws them yet.
+ *     filling its width with centred digits.
+ *   · TASK-008 (C22, C23, C24, C61; R120, R125, R126, R133, R135, R144; P05)
+ *     adds the recovered soft deadline warning to the same state, through the
+ *     same owner (`DeadlineTimer`, `countdown-warning.ts`): the format
+ *     countdown becomes `GalleryDeadlineWarning`, a memory-only deadline that
+ *     can be inspected at ten and five seconds, run and paused, switched to a
+ *     count-up race toward its cap, opened under a native log dialog (the
+ *     one aura moves into the dialog's top layer, in phase), and previewed
+ *     still. The movement countdown and the rest warn the same way when run
+ *     into their last seconds; the elapsed-only session clock never does.
  *
  * Every controller here is memory-only: the countdown and the rest are the
- * real hooks over the browser clock, and nothing is read from or written to
- * an account.
+ * real hooks over the browser clock, the warning demonstration's deadline is
+ * component state, and nothing is read from or written to an account.
  */
-import { AppHeader, Button } from '../design-system/index'
+import { useEffect, useState } from 'react'
+
+import { AppHeader, Button, Checkbox } from '../design-system/index'
+import type { CountdownDeadline } from '../state/countdown-urgency'
 import { RestTimerProvider } from '../state/rest-provider'
 import { useRestTimer } from '../state/rest'
 import { forTimeView, type ForTimeState } from '../state/for-time'
-import { formatCountdownReading, sessionReading } from '../state/timed-clock'
+import { formatCountdownReading, raceReading, sessionReading } from '../state/timed-clock'
+import { AppDialog } from '../ui/app-dialog'
 import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { ForTimeClock } from '../ui/for-time-block'
 import { Heading, HeadingSection } from '../ui/Heading'
@@ -99,6 +110,85 @@ function RestSpecimen() {
   )
 }
 
+/** The count-up race's cap in the warning demonstration. */
+const DEMO_CAP_SECONDS = 60
+
+/**
+ * TASK-008: the warning, demonstrated on one memory-only deadline through the
+ * shared owner. Its seconds are component state read against the browser
+ * clock; nothing is stored or written, and nothing here is a functional clock
+ * of the app's. Inspect holds the deadline at ten or five seconds (the colour,
+ * and no aura while held); Run counts it down (the breathe and the one aura in
+ * the last five, gone on Pause and at zero). The count-up race reads the same
+ * deadline as its cap minus its elapsed time. The open log draws the same
+ * deadline again inside a native dialog: still one aura, now in the dialog's
+ * top layer, breathing in phase with both timers.
+ */
+function GalleryDeadlineWarning() {
+  const [seconds, setSeconds] = useState(12)
+  const [endsAt, setEndsAt] = useState<number | null>(null)
+  const [cap, setCap] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [still, setStill] = useState(false)
+  const running = endsAt !== null && seconds > 0
+
+  useEffect(() => {
+    if (endsAt === null) return
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))
+      setSeconds(left)
+      if (left === 0) setEndsAt(null)
+    }
+    const timer = setInterval(tick, 250)
+    return () => clearInterval(timer)
+  }, [endsAt])
+
+  const hold = (at: number) => {
+    setEndsAt(null)
+    setSeconds(at)
+  }
+  const deadline: CountdownDeadline = { remaining: seconds, running }
+  const reading = cap ? raceReading(DEMO_CAP_SECONDS - seconds, seconds) : formatCountdownReading(seconds)
+  const cue = <DeadlineTimer reading={reading} deadline={deadline} still={still} />
+
+  return (
+    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }} data-gallery-deadline-warning="">
+      <div className="clr-timed-actions">
+        <Button variant="secondary" onClick={() => hold(10)}>Inspect 10 seconds</Button>
+        <Button variant="secondary" onClick={() => hold(5)}>Inspect 5 seconds</Button>
+      </div>
+      <div className="clr-timed-actions">
+        <Button
+          variant="primary"
+          onClick={() => (running ? setEndsAt(null) : setEndsAt(Date.now() + seconds * 1000))}
+          disabled={!running && seconds === 0}
+        >
+          {running ? 'Pause' : 'Run countdown'}
+        </Button>
+        <Button variant="secondary" onClick={() => setCap((value) => !value)}>
+          {cap ? 'Show countdown' : 'Show count-up cap'}
+        </Button>
+        <Button variant="secondary" onClick={() => setOpen(true)}>Open log over the warning</Button>
+      </div>
+      <Checkbox label="Still preview (reduced motion)" checked={still} onChange={setStill} />
+      {cue}
+      <AppDialog
+        open={open}
+        title="Log set"
+        onClose={() => setOpen(false)}
+        actions={<Button variant="secondary" onClick={() => setOpen(false)}>Close log</Button>}
+      >
+        {open ? (
+          <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+            <p style={{ margin: 0 }}>The deadline stays visible over the open log, with one aura above it.</p>
+            {cue}
+          </div>
+        ) : null}
+      </AppDialog>
+    </div>
+  )
+}
+
 /** The stable `urgency` state's frames: every clock's actual consumer, whole. */
 export function GalleryTimerFrames() {
   return (
@@ -117,8 +207,8 @@ export function GalleryTimerFrames() {
         ))}
       </HeadingSection>
       <HeadingSection className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <Heading>A format countdown · a minute&apos;s last seconds</Heading>
-        <DeadlineTimer reading={formatCountdownReading(8)} low />
+        <Heading>The recovered countdown warning · colour at 10, one soft aura at 5</Heading>
+        <GalleryDeadlineWarning />
       </HeadingSection>
       <HeadingSection className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
         <Heading>The session&apos;s rest · the same card in the footer and the open log</Heading>
@@ -142,8 +232,9 @@ export function DeadlineTimerBody() {
   return <DeadlineTimer reading={formatCountdownReading(42)} />
 }
 
+/** A deadline held at eight seconds: the colour at ten, and no aura while held. */
 export function DeadlineTimerLow() {
-  return <DeadlineTimer reading={formatCountdownReading(8)} low />
+  return <DeadlineTimer reading={formatCountdownReading(8)} deadline={{ remaining: 8, running: false }} />
 }
 
 export function DeadlineTimerHeader() {

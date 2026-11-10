@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-008",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-008.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-008/required-cases.json",
+    "sha256": "8ab5a84b65898841385f556caf15f3c08f4875992a14224399e1a67adde77d96"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-008.spec.ts",
+      "sha256": "7a562e3c546e8e01d55bab936d9fb63944ffade728c01655f0909d920f9a51bb"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: a running countdown takes the colour at 10 and one soft edge at 5, breathing in phase with its timer over multiple cycles and numeric ticks; pause and expiry end it; elapsed-only clocks stay neutral",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog's top layer and back on the same phase, and nothing is written",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 reduced motion phone-320: the urgent timer and the one edge hold a steady .5 with no animation, cover the narrow viewport, and lose no word, digit or colour",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the shared owner — held at 10 and 5, run into its last five, a count-up cap, an open native log with one edge in phase, and the still preview — with no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

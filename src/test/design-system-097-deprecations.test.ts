@@ -256,6 +256,19 @@ describe('the production app speaks one dialect per component', () => {
     }
   })
 
+  /**
+   * Ledger EXC-07 (clear-refinement-20261103 TASK-008: C22, C61; R133, R135,
+   * R144; P05): the recovered countdown warning's one smooth breathe, which
+   * the owner selected over the shipped four-second stepped micro-pulse. It is
+   * the accepted gallery owner's `clr-deadline-breathe`, declared once in the
+   * accepted recipe file on the owner-selected values in `tokens.css`, and
+   * used by the deadline timer and its one screen-edge aura only. Any other
+   * local keyframes, or this one anywhere else, still fail.
+   */
+  const OWNER_SELECTED_KEYFRAMES: Readonly<Record<string, string>> = {
+    'clr-deadline-breathe': 'src/ui/refinements/presentation.css',
+  }
+
   it('animates only with the keyframes the package ships', () => {
     const vendorCss = ['css/foundation.css', 'css/motion.css']
       .map((file) => readFileSync(resolve(vendor, file), 'utf-8'))
@@ -273,14 +286,34 @@ describe('the production app speaks one dialect per component', () => {
         extname(path) === '.css'
           ? withoutComments(readFileSync(path, 'utf-8'))
           : strings(parse(path)).join('\n')
-      expect(source, `${repoPath(path)}: local @keyframes`).not.toMatch(/@keyframes/)
+      const allowed = Object.entries(OWNER_SELECTED_KEYFRAMES)
+        .filter(([, file]) => file === repoPath(path))
+        .map(([name]) => name)
+      const local = [...source.matchAll(/@keyframes\s+([\w-]+)/g)].map((match) => match[1])
+      expect(local, `${repoPath(path)}: local @keyframes`).toEqual(allowed)
+      expect(source.match(/@keyframes/g) ?? [], `${repoPath(path)}: local @keyframes`).toHaveLength(allowed.length)
 
       const names = [...source.matchAll(/animation(?:-name)?\s*:\s*([^;}]+)/g)]
         .flatMap((match) => match[1].split(','))
         .flatMap((part) => part.trim().split(/\s+/))
         .filter((token) => /^[a-z!][\w-]*$/i.test(token) && !keywords.has(token))
-      for (const name of names) expect(shipped, `${repoPath(path)}: ${name}`).toContain(name)
+      for (const name of names) {
+        if (allowed.includes(name)) continue
+        expect(shipped, `${repoPath(path)}: ${name}`).toContain(name)
+      }
     }
+  })
+
+  it('declares the owner-selected countdown warning breathe once, on its tokens (EXC-07)', () => {
+    const recipe = withoutComments(readFileSync(resolve(src, 'ui/refinements/presentation.css'), 'utf-8'))
+    const keyframes = /@keyframes clr-deadline-breathe\s*\{([\s\S]*?)\n\}/.exec(recipe)?.[1] ?? ''
+    expect(keyframes.replace(/\s+/g, ' ').trim()).toBe(
+      '0%, 100% { opacity: var(--countdown-warning-opacity-min); } 50% { opacity: var(--countdown-warning-opacity-max); }',
+    )
+    const uses = [...recipe.matchAll(/animation\s*:\s*([^;}]+)/g)].map((match) => match[1].trim())
+    expect(uses.filter((use) => use.includes('clr-deadline-breathe'))).toEqual([
+      'clr-deadline-breathe var(--countdown-warning-period) var(--countdown-warning-easing) infinite',
+    ])
   })
 
   it('composes only the public entry, the skin initialiser and the one stylesheet', () => {

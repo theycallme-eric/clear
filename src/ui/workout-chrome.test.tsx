@@ -41,6 +41,7 @@ const MOTION_CSS = readFileSync(
   'utf-8',
 )
 const REST_BAR_CSS = readFileSync(resolve(import.meta.dirname, 'rest-timer-bar.css'), 'utf-8')
+const PRESENTATION_CSS = readFileSync(resolve(import.meta.dirname, 'refinements/presentation.css'), 'utf-8')
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -599,10 +600,15 @@ describe('RestTimerBar', () => {
 
     // Not low: nothing pulses and nothing claims the loop.
     expect(restBar()).not.toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(restBar()).not.toHaveAttribute('data-loop')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).not.toHaveAttribute('data-loop')
   })
 
-  it('goes low as the shipped low state: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+  // TASK-008 (C22, C23, C61; R133, R135) supersedes "pulsing to 80%": the
+  // colour still comes at ten seconds, but the card no longer takes the
+  // shipped four-second stepped micro-pulse. In the final five the rest's
+  // whole timer frame breathes with the one soft screen-edge aura.
+  it('goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow', async () => {
     reduceMotion(false)
     await restWith(8)
 
@@ -616,9 +622,10 @@ describe('RestTimerBar', () => {
     expect(restDigits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
     expect(restDigits().querySelectorAll('.clr-tumble')).toHaveLength(4)
 
-    // The pulse is on the whole card and is the view's running loop.
-    expect(restBar()).toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    // Eight seconds left is the colour alone: nothing pulses yet, no edge.
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
+    expect(restBar()).not.toHaveAttribute('data-loop')
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
 
     // No glow of the timer's own: the extra glow is the primary action's.
     expect(document.querySelector('.clr-glow')).toBeNull()
@@ -627,8 +634,25 @@ describe('RestTimerBar', () => {
     expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
     expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
     expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
-    expect(MOTION_CSS.includes('@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }')).toBe(true)
-    expect(MOTION_CSS.includes('.clr-pulse-micro { animation: clr-micro-pulse var(--dur-idle) var(--step-2) infinite; }')).toBe(true)
+  })
+
+  it('breathes with the one soft screen edge in its final five seconds: the timer frame on the running loop, not the card', async () => {
+    reduceMotion(false)
+    const { clock } = await restWith(8)
+    clock.advance(3)
+    returnToForeground()
+
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(timer).toHaveTextContent('00:05')
+    expect(timer).toHaveAttribute('data-urgent', 'true')
+    expect(timer).toHaveAttribute('data-loop', 'run')
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restBar()).not.toHaveAttribute('data-loop')
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toHaveAttribute('data-loop', 'run')
+    expect(edges[0]).toHaveAttribute('aria-hidden', 'true')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 
   it('steps the fill to the low colour on the same schedule, with no glow in its styles', () => {
@@ -666,7 +690,7 @@ describe('RestTimerBar', () => {
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:38')
     expect(restBar()).toHaveAttribute('data-urgent', 'false')
     expect(restBar()).not.toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).not.toHaveAttribute('data-loop')
     expect(restCardBody()).toHaveClass('clr-chamfer--timer')
     expect(screen.queryByText('Final 10 seconds')).not.toBeInTheDocument()
 
@@ -686,47 +710,57 @@ describe('RestTimerBar', () => {
       '[data-loop]',
     ) as HTMLElement
 
-    // A rest that is not low has no loop, so the wait keeps its own.
+    // A rest with time left has no loop, so the wait keeps its own.
+    const timer = () => screen.getByRole('timer', { name: 'Time remaining' })
     expect(wait).toHaveAttribute('data-loop', 'run')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(timer()).not.toHaveAttribute('data-loop')
 
+    // TASK-008 (C23): the colour at ten seconds is no loop of its own.
     clock.advance(52)
     returnToForeground()
+    expect(wait).toHaveAttribute('data-loop', 'run')
 
-    // Low: the pulse carries more state, so it runs and the wait is stilled —
-    // still on screen, still busy, still saying what it is waiting for.
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    // The final five (TASK-008, C61): the warning carries more state, so it runs
+    // — the timer and its one aura, together — and the wait is stilled: still on
+    // screen, still busy, still saying what it is waiting for.
+    clock.advance(3)
+    returnToForeground()
+    expect(timer()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === timer() || node.matches('[data-countdown-edge]'))).toBe(true)
 
     await user.click(screen.getByRole('button', { name: 'Skip rest' }))
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
   })
 
   it('is still under reduced motion and loses nothing it was saying', async () => {
     reduceMotion(true)
-    await restWith(8)
+    await restWith(5)
 
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    // TASK-008 (C22): the urgent timer and its aura are still, at a steady .5.
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-countdown-edge]')).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
 
     // The reading, the word, the colour role and the controls are all there.
     expect(restBar()).toHaveAttribute('data-urgent', 'true')
     expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
     expect(restDigits().style.color).toBe('var(--text-timer-low)')
-    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:08')
-    expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:05')
+    expect(screen.getByText('5 seconds left')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
     expect(screen.getByText('Rest after Back Squat')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add 30s' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Skip rest' })).toBeEnabled()
 
-    // The shipped rule that makes a stilled or reduced pulse static.
-    expect(MOTION_CSS).toMatch(
-      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
+    // The shared rule that makes the stilled warning static (presentation.css).
+    expect(PRESENTATION_CSS).toMatch(
+      /prefers-reduced-motion: reduce\) \{\s*\.clr-accepted-timer__body\[data-urgent\],\s*\.clr-deadline-edge \{\s*animation: none !important;/,
     )
   })
 })

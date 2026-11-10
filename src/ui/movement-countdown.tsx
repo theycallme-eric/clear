@@ -23,27 +23,26 @@
  * its digits centred, with no accent-bar strip or second chamfer inside it.
  * It reads this countdown and no other clock (C21).
  *
- * The final five seconds take the shipped low state — the timer-low frame and
- * digits, and the 80% pulse as the view's one urgent loop — and, while the
- * countdown runs, the screen-edge cue (`movement-countdown.css`). Under reduced
- * motion both are still and both stay drawn.
+ * TASK-008 (C22, C23, C24, C61; R120, R125, R126): its warning is the shared
+ * one, drawn by `DeadlineTimer` from this countdown's own deadline — the
+ * timer-low colour from ten seconds left, and in the final five, while it
+ * runs, the timer's smooth breathe with the one soft screen-edge aura in the
+ * same phase. Pause and the end stop the breathe and the aura. Under reduced
+ * motion both hold a steady .5 and stay drawn. The countdown's former own
+ * edge portal and its hard-outlined `.clr-countdown-edge` are retired into
+ * that one owner, so no second edge can compete with another deadline's.
  *
  * `MovementCountdown` holds its own clock. An owner that must keep one clock
  * across views it mounts and unmounts — a circuit row whose load entry opens
  * and closes — holds `useMovementCountdown` itself and draws
  * `MovementCountdownView` in whichever card is showing.
  */
-import { createPortal } from 'react-dom'
-
 import { Button, Pause, Play, RefreshCw } from '../design-system/index'
-import {
-  COUNTDOWN_LOW_SECONDS,
-  useMovementCountdown,
-  type MovementCountdownApi,
-} from '../state/movement-countdown'
+import { movementCountdownDeadline } from '../state/countdown-urgency'
+import { useMovementCountdown, type MovementCountdownApi } from '../state/movement-countdown'
 import { movementReading } from '../state/timed-clock'
 import { ActionGroup } from './composition'
-import { useInterfaceLoop } from './motion'
+import { COUNTDOWN_WARNING_THRESHOLDS, countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import './movement-countdown.css'
 
@@ -76,9 +75,8 @@ export interface MovementCountdownViewProps {
 export function MovementCountdownView({ clock, movement }: MovementCountdownViewProps) {
   const { status, remainingSeconds, start, pause, reset } = clock
 
-  const low = status !== 'ready' && remainingSeconds <= COUNTDOWN_LOW_SECONDS
-  const urgent = status === 'running' && low
-  const loop = useInterfaceLoop('urgent', urgent)
+  const deadline = movementCountdownDeadline(status, remainingSeconds)
+  const { low, urgent } = countdownWarningState(deadline.remaining, deadline.running)
 
   return (
     <section
@@ -90,8 +88,7 @@ export function MovementCountdownView({ clock, movement }: MovementCountdownView
         <DeadlineTimer
           reading={movementReading(remainingSeconds)}
           size="var(--heading-h1-size)"
-          low={low}
-          pulse={urgent ? loop : undefined}
+          deadline={deadline}
         />
       </div>
 
@@ -132,19 +129,10 @@ export function MovementCountdownView({ clock, movement }: MovementCountdownView
         aria-live="polite"
         style={{ ...STATUS_STYLE, color: low ? 'var(--text-timer-low)' : 'var(--text-card-label)' }}
       >
-        {urgent ? `Final ${COUNTDOWN_LOW_SECONDS} seconds` : status === 'finished' ? 'Countdown done' : ''}
+        {urgent
+          ? `Final ${COUNTDOWN_WARNING_THRESHOLDS.pulseSeconds} seconds`
+          : status === 'finished' ? 'Countdown done' : ''}
       </p>
-
-      {urgent &&
-        createPortal(
-          <div
-            aria-hidden="true"
-            className="clr-countdown-edge clr-pulse-micro"
-            data-countdown-edge=""
-            {...loop}
-          />,
-          document.body,
-        )}
     </section>
   )
 }

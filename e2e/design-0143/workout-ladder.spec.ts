@@ -513,7 +513,9 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   const [laddered, companion] = world.catalog
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const sessionTime = page.getByRole('timer', { name: 'Session time', exact: true })
-  const countdown = page.locator('[data-urgent]').filter({ has: timer })
+  // TASK-008 (C23): the interval's whole frame carries the low colour from ten
+  // seconds left (`data-low`); the breathe and the one edge are the last five's.
+  const countdown = page.locator('[data-timer-frame]').filter({ has: timer })
 
   await page.clock.install({ time: Date.now() })
   await visit('/workout')
@@ -569,7 +571,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await expect(page.getByText('ROUND 2 OF 4', { exact: true })).toBeVisible()
   await expect(round(page, 0, 2)).toHaveAttribute('aria-current', 'step')
   await expect(timer).toContainText('01:10')
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
   // However long has passed, the free-paced and capped ladders show no progress.
   await expectNoLiveRound(page, 1, FREE_PACED.rounds)
   await expectNoLiveRound(page, 2, CAPPED.rounds)
@@ -578,14 +580,17 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // The end-of-interval cue, with nothing to press.
   await page.clock.pauseAt(scheduleStart + 145_000)
   await expect(timer).toContainText('00:05')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
+  // Five seconds before the next start, while the schedule runs: the timer breathes with one edge.
+  await expect(timer).toHaveAttribute('data-urgent', 'true')
+  await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)
 
   // Backgrounded (phone on the floor) into round 3: read from the wall clock.
   await background(page, scheduleStart + 160_000)
   await expect(page.getByText('ROUND 3 OF 4', { exact: true })).toBeVisible()
   await expect(round(page, 0, 3)).toHaveAttribute('aria-current', 'step')
   await expect(timer).toContainText('01:05')
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
   await projectRender(page, testInfo, 'scheduled-round-3')
 
   // Refreshed inside round 4: restored from the stored start, not restarted.

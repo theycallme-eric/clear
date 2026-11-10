@@ -367,14 +367,30 @@ describe('Countdown framing matches the session clock (AC-052)', () => {
 })
 
 describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
-  it('crosses into the low state and lights the screen edge in the final five seconds only', async () => {
+  // TASK-008 (C22, C23, C24, C61; R126, R133, R135) supersedes this section's
+  // former thresholds and cue: the colour now comes at ten seconds left, as for
+  // every deadline (R126: the five-second movement baseline is not a reason to
+  // differ), and the final five's cue is the shared recovered soft aura, drawn
+  // once by DeadlineTimer in phase with the timer's smooth breathe — no longer
+  // this countdown's own hard-outlined edge on the stepped micro-pulse.
+  it('crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only', async () => {
     reduceMotion(false)
     await shell()
 
     fireEvent.click(control('Start'))
-    advance(24)
-    expect(countdown()).toHaveTextContent('00:06')
+    advance(19)
+    expect(countdown()).toHaveTextContent('00:11')
     expect(countdown()).toHaveClass('clr-chamfer--timer')
+    expect(edgeCue()).toBeNull()
+
+    advance(1)
+    expect(countdown()).toHaveTextContent('00:10')
+    expect(countdown()).toHaveClass('clr-chamfer--timer-low')
+    expect(edgeCue()).toBeNull()
+
+    advance(4)
+    expect(countdown()).toHaveTextContent('00:06')
+    expect(countdown()).toHaveClass('clr-chamfer--timer-low')
     expect(edgeCue()).toBeNull()
     expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('')
 
@@ -383,13 +399,16 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     expect(countdown()).toHaveClass('clr-chamfer--timer-low')
     const bleed = countdown().parentElement as HTMLElement
     expect(bleed.style.getPropertyValue('--bleed')).toBe('var(--border-timer-low)')
-    expect(bleed).toHaveClass('clr-pulse-micro')
-    expect(bleed).toHaveAttribute('data-loop', 'run')
+    expect(bleed).not.toHaveClass('clr-pulse-micro')
+    // The timer itself breathes, on the view's running loop.
+    expect(countdown()).toHaveAttribute('data-urgent', 'true')
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
     expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('Final 5 seconds')
 
     const edge = edgeCue() as HTMLElement
     expect(edge).not.toBeNull()
-    expect(edge).toHaveClass('clr-countdown-edge', 'clr-pulse-micro')
+    expect(edge).toHaveClass('clr-deadline-edge')
+    expect(edge).not.toHaveClass('clr-pulse-micro')
     expect(edge).toHaveAttribute('aria-hidden', 'true')
     expect(edge).toHaveAttribute('data-loop', 'run')
     // On the viewport, not inside the card.
@@ -398,11 +417,12 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     // The session clock never takes the low state.
     expect(sessionClock()).not.toHaveClass('clr-chamfer--timer-low')
 
-    // Paused in the final stretch: still low, but no edge and no pulse.
+    // Paused in the final stretch: still low, but no edge and no breathe.
     fireEvent.click(control('Pause'))
     expect(countdown()).toHaveClass('clr-chamfer--timer-low')
     expect(edgeCue()).toBeNull()
-    expect(countdown().parentElement).not.toHaveClass('clr-pulse-micro')
+    expect(countdown()).not.toHaveAttribute('data-urgent')
+    expect(countdown()).not.toHaveAttribute('data-loop')
   })
 
   it('keeps the low state and the edge, still, under reduced motion', async () => {
@@ -412,20 +432,22 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     fireEvent.click(control('Start'))
     advance(27)
     expect(countdown()).toHaveClass('clr-chamfer--timer-low')
-    expect(countdown().parentElement).toHaveAttribute('data-loop', 'still')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
     const edge = edgeCue() as HTMLElement
     expect(edge).not.toBeNull()
     expect(edge).toHaveAttribute('data-loop', 'still')
     expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('Final 5 seconds')
   })
 
-  it('animates only with the shipped pulse, which reduced motion stills — no new flashing', () => {
-    expect(COUNTDOWN_CSS).not.toMatch(/@keyframes|animation|transition|opacity/)
-    expect(COUNTDOWN_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*position:\s*fixed/)
-    expect(COUNTDOWN_CSS).toMatch(/var\(--border-timer-low\)/)
-    // The vendor's reduced-motion block stills the one pulse the cue uses.
-    const reduced = MOTION_CSS.slice(MOTION_CSS.indexOf('@media (prefers-reduced-motion: reduce)'))
-    expect(reduced).toContain('.clr-pulse-micro')
+  it('animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own', () => {
+    // The countdown's own stylesheet draws no edge and animates nothing.
+    expect(COUNTDOWN_CSS.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/@keyframes|animation|transition|opacity|box-shadow|position:\s*fixed/)
+    // The one edge is the shared recipe: fixed to the viewport, soft, and still under reduced motion.
+    expect(PRESENTATION_CSS).toMatch(/\.clr-deadline-edge\s*\{[^}]*position:\s*fixed/)
+    expect(PRESENTATION_CSS).toMatch(/inset 0 0 var\(--countdown-warning-edge-softness\) var\(--urgency-a400\)/)
+    const reduced = PRESENTATION_CSS.slice(PRESENTATION_CSS.indexOf('@media (prefers-reduced-motion: reduce)', PRESENTATION_CSS.indexOf('.clr-deadline-edge')))
+    expect(reduced).toMatch(/\.clr-deadline-edge \{\s*animation: none !important;/)
+    expect(MOTION_CSS).toContain('.clr-pulse-micro')
   })
 
   it('records no movement result when the countdown runs out', async () => {

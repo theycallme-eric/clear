@@ -55,6 +55,7 @@ import {
   Button,
   X,
 } from '../design-system/index'
+import { restDeadline } from '../state/countdown-urgency'
 import { REST_EXTENSION_SECONDS, useRestTimer } from '../state/rest'
 import { restReading, sessionReading } from '../state/timed-clock'
 import type {
@@ -68,6 +69,7 @@ import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
 import { CollapsibleSection } from './collapsible-section'
 import { useInterfaceLoop } from './motion'
+import { COUNTDOWN_WARNING_THRESHOLDS, countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import './rest-timer-bar.css'
 import './workout-navigation.css'
@@ -544,9 +546,6 @@ export function WorkoutMenu({ onAbandon, defaultOpen = false }: WorkoutMenuProps
 // Rest
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The last stretch of a rest, where the card crosses into the timer's low state. */
-const REST_URGENT_SECONDS = 10
-
 /**
  * The session's one rest, between sets (EXE-05).
  *
@@ -561,33 +560,32 @@ const REST_URGENT_SECONDS = 10
  * logged. The only moving parts are the digits, which tumble when they change,
  * the fill, which steps, and the low state.
  *
- * The low state is the shipped one and nothing more. The card changes role, so
- * bar, body and digits step to the low colours over `--dur-alert`, and the
- * whole card takes `.clr-pulse-micro` — the dim to 80% — with no glow of its
- * own. The pulse is an `urgent` claim on the view's one loop: it outranks a
- * loading region waiting beside it, and under reduced motion it is still, with
- * the word, the digits and the colour all unchanged.
+ * Its warning is the shared one (TASK-008: C22, C23, C24, C61; R126), read
+ * from this rest's own deadline. From ten seconds left the card changes role,
+ * so bar, body, fill and digits step to the low colours over `--dur-alert`,
+ * and "Final 10 seconds" is said once (`data-urgent` on the section is that
+ * stretch, the fill's colour hook). In the final five the rest's whole timer
+ * frame (`DeadlineTimer`) breathes with the one soft screen-edge aura on the
+ * shared 1.5 s phase, as an `urgent` claim on the view's one loop — it
+ * outranks a loading region waiting beside it — in the footer and in the
+ * open log alike. The card itself no longer takes the shipped four-second
+ * stepped micro-pulse (R133, R135). Under reduced motion the timer and the
+ * aura hold a steady .5, with the word, the digits and the colour unchanged.
  */
 export function RestTimerBar() {
   const { rest, remainingSeconds, extend, skip } = useRestTimer()
 
   const running = rest !== null && remainingSeconds > 0
-  const urgent = running && remainingSeconds <= REST_URGENT_SECONDS
-  const loop = useInterfaceLoop('urgent', urgent)
+  const deadline = restDeadline(running ? remainingSeconds : 0)
+  const { low } = countdownWarningState(deadline.remaining, deadline.running)
 
   if (!running) return null
 
   const fraction = rest.totalSeconds > 0 ? remainingSeconds / rest.totalSeconds : 0
 
   return (
-    // The pulse runs on the wrapper so bar and body dim together.
-    <section
-      aria-label="Rest"
-      className={urgent ? 'clr-rest-bar clr-pulse-micro' : 'clr-rest-bar'}
-      data-urgent={urgent ? 'true' : 'false'}
-      {...loop}
-    >
-      <Card role={urgent ? 'timer-low' : 'timer'}>
+    <section aria-label="Rest" className="clr-rest-bar" data-urgent={low ? 'true' : 'false'}>
+      <Card role={low ? 'timer-low' : 'timer'}>
         <p
           style={{
             ...labelStyle,
@@ -607,14 +605,14 @@ export function RestTimerBar() {
           the footer and in the open log alike. Labelled once and not live:
           the milestone below is what speaks.
         */}
-        <DeadlineTimer reading={restReading(remainingSeconds)} size="var(--label-xl-size)" low={urgent} />
-        {urgent && (
+        <DeadlineTimer reading={restReading(remainingSeconds)} size="var(--label-xl-size)" deadline={deadline} />
+        {low && (
           <p
             role="status"
             aria-live="polite"
             style={{ ...labelStyle, color: 'var(--text-timer-low)' }}
           >
-            Final 10 seconds
+            Final {COUNTDOWN_WARNING_THRESHOLDS.colorSeconds} seconds
           </p>
         )}
 

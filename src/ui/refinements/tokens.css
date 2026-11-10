@@ -1,6 +1,9 @@
 /* App-owned accepted refinement recipes, layered over immutable Foundation 0.14.3.
- * Existing DS tokens stay canonical. Only repeated composition decisions receive
- * a semantic variable here; every value resolves to an existing Foundation token.
+ * Existing DS tokens stay canonical. Only repeated composition decisions and
+ * exact owner-selected effect values receive a semantic variable here. Every
+ * composition value resolves to an existing Foundation token; the one effect
+ * whose exact values the owner selected (the recovered countdown warning, R135,
+ * R144) states them once, here, and nowhere else.
  *
  * Accepted gallery reference eded158cfd928d382c9a9409e2c372270312741d,
  * /gallery/refinements?state=cards (REUSE.md). Later refinement tasks add their
@@ -12,4 +15,16 @@
   --movement-peer-gap: var(--spacing-400);
   /* G01: name row, prescription and attached content inside one movement. */
   --movement-tier-gap: var(--spacing-200);
+  /* TASK-008 (C22, C61; R133, R135, R144; P05) — the recovered October 26
+   * countdown warning, exactly as the owner selected it: a 70 CSS px soft
+   * urgency-a400 inset vignette breathing .2 → .8 → .2 on one smooth 1.5 s
+   * cycle, and a static .5 under reduced motion or the still policy. The
+   * deadline timer and the aura share this one cycle (P05). Its smooth curve
+   * is ledger EXC-07: the one named app-owned easing, by owner decision. */
+  --countdown-warning-edge-softness: 70px;
+  --countdown-warning-period: 1.5s;
+  --countdown-warning-easing: ease-in-out;
+  --countdown-warning-opacity-min: .2;
+  --countdown-warning-opacity-max: .8;
+  --countdown-warning-opacity-still: .5;
 }

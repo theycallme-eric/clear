@@ -29,8 +29,11 @@ export function movementCountdownSeconds(prescription: PrescribedColumns, setNum
   return null
 }
 
-/** The final stretch, where the countdown crosses into the timer's low state. */
-export const COUNTDOWN_LOW_SECONDS = 5
+/*
+ * Its warning thresholds (colour at ten, edge at five) are the shared rule in
+ * `src/ui/refinements/countdown-warning.ts` (TASK-008, C23), read through
+ * `state/countdown-urgency.ts`; the countdown keeps no threshold of its own.
+ */
 
 /** Fast enough that the displayed second is never visibly stale (EXE-01). */
 const TICK_MS = 250

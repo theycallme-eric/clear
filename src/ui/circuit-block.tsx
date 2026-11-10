@@ -67,6 +67,7 @@ import {
   type CircuitView,
   type RoundTiming,
 } from '../state/circuit'
+import { circuitRestDeadline } from '../state/countdown-urgency'
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
 import { useSetLogging } from '../state/set-logging'
@@ -83,7 +84,6 @@ import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSetLogger } from './set-logger'
 import { MovementCountdownView } from './movement-countdown'
 import { liveMovementReadings } from './refinements/movement-readings'
-import { useInterfaceLoop } from './motion'
 import { DeadlineTimer } from './refinements/deadline-timer'
 
 export interface CircuitBlockProps extends BlockRendererProps {
@@ -116,23 +116,19 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   const roundClock = view.phase === 'work' && roundStartedAt !== null ? roundSeconds : null
 
   const resting = shape.size > 0 && view.phase === 'rest'
-  const urgent = resting && view.restRemaining <= 10
-  const loop = useInterfaceLoop('urgent', urgent)
 
   return (
     <BlockPanel
       block={block}
       // The round boundary's one countdown: the shared whole timer body, a
-      // real deadline with the shipped low state in its last ten seconds (the
-      // threshold `TimerDisplay` drew it at), beside the card.
+      // real deadline, beside the card. Its warning is the shared one, read
+      // from the rest's own deadline (TASK-008: C22, C23, C24, C61): colour
+      // from ten seconds left, the breathe with the one soft screen-edge aura
+      // in the last five.
       timer={
         resting ? (
-          <div
-            style={{ display: 'flex', flexDirection: 'column' }}
-            data-urgent={urgent ? 'true' : 'false'}
-            {...loop}
-          >
-            <DeadlineTimer reading={formatCountdownReading(view.restRemaining)} low={urgent} pulse={urgent || undefined} />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DeadlineTimer reading={formatCountdownReading(view.restRemaining)} deadline={circuitRestDeadline(view)} />
           </div>
         ) : null
       }

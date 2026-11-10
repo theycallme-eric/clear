@@ -101,23 +101,23 @@ function nestedCards(): HTMLElement[] {
   return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
 }
 
-function RaiseLowRest() {
+function RaiseUrgentRest() {
   const rest = useRestTimer()
   return (
     <button
       type="button"
-      onClick={() => rest.start({ exerciseId: 'ex-1', label: 'Back Squat', seconds: 8 })}
+      onClick={() => rest.start({ exerciseId: 'ex-1', label: 'Back Squat', seconds: 5 })}
     >
-      Raise low rest
+      Raise urgent rest
     </button>
   )
 }
 
-/** The panel beside the shell's rest bar, and a control that raises a low rest. */
+/** The panel beside the shell’s rest bar, and a control that raises an urgent (five-second) rest. */
 function besideRest(panel: ReactNode): ReactNode {
   return (
     <RestTimerProvider now={() => 1_000_000}>
-      <RaiseLowRest />
+      <RaiseUrgentRest />
       {panel}
       <RestTimerBar />
     </RestTimerProvider>
@@ -388,7 +388,11 @@ describe('the panel is one group, with its labels inside', () => {
   })
 })
 
-describe('the panel’s waits and a low rest keep one loop between them', () => {
+// TASK-008 (C23, C61): the rest's warning holds the view's loop in its final
+// five seconds (the colour at ten is no loop of its own), so the rest raised
+// here is a five-second one, and what runs is the warning — the rest's timer
+// and its one aura — rather than the card's former stepped micro-pulse.
+describe('the panel’s waits and an urgent rest keep one loop between them', () => {
   function guidanceWait(panel: HTMLElement): HTMLElement {
     return within(panel).getByRole('status', { busy: true })
   }
@@ -397,7 +401,17 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     return screen.getByRole('region', { name: 'Rest' })
   }
 
-  it('runs the guidance’s wait until the rest goes low, then stills it — still busy', async () => {
+  function restTimer(): HTMLElement {
+    return within(restBar()).getByRole('timer', { name: 'Time remaining' })
+  }
+
+  /** Every running loop is the one warning: the rest's timer or its aura. */
+  function onlyTheWarningRuns(): boolean {
+    return [...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === restTimer() || node.matches('[data-countdown-edge]'))
+  }
+
+  it('runs the guidance’s wait until the rest is urgent, then stills it — still busy', async () => {
     reduceMotion(false)
     mount({ exercises: { definition: () => never() } }, besideRest)
     const panel = await open()
@@ -405,14 +419,14 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     const wait = guidanceWait(panel)
     expect(wait).toHaveAttribute('data-loop', 'run')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
 
-    expect(restBar()).toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(onlyTheWarningRuns()).toBe(true)
 
     // The rest ends and the wait, which never stopped being one, moves again.
     await userEvent.click(screen.getByRole('button', { name: 'Skip rest' }))
@@ -434,19 +448,19 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     expect(row).toHaveAttribute('data-loop', 'run')
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
     expect(row).toHaveAttribute('data-loop', 'still')
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(onlyTheWarningRuns()).toBe(true)
   })
 
   it('is static under reduced motion and still says everything', async () => {
     reduceMotion(true)
     mount({ exercises: { definition: () => never() } }, besideRest)
     const panel = await open()
-    await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
 
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
 
@@ -455,7 +469,7 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     expect(wait).toHaveTextContent('Reading coaching for back squat')
     expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
     expect(within(restBar()).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent(
-      '00:08',
+      '00:05',
     )
     expect(within(restBar()).getByText('Final 10 seconds')).toBeInTheDocument()
   })

@@ -130,9 +130,16 @@ function timerFrame(): HTMLElement {
   return readout().closest('.clr-card__body') as HTMLElement
 }
 
-/** The clock as a whole: the element that owns the pulse and the loop claim. */
+/**
+ * TASK-008: the readout itself is what breathes and claims the loop in the
+ * last five seconds before the cap; its whole frame carries the low colour.
+ */
 function raceClock(): HTMLElement {
-  return readout().closest('[data-loop]') as HTMLElement
+  return readout()
+}
+
+function edges(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>('[data-countdown-edge]')]
 }
 
 function digits(): HTMLElement {
@@ -239,7 +246,10 @@ describe('while the clock runs', () => {
     expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 
-  it('turns urgent in the last ten seconds — words, pulse and hue together', async () => {
+  // TASK-008 (C23, R126): the hue and the words come at ten seconds before the
+  // cap, and the breathe with the one soft edge in the last five — read from
+  // the cap minus the elapsed time, never from the count-up digits.
+  it('turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five', async () => {
     const user = userWithTimers()
     renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
 
@@ -247,11 +257,17 @@ describe('while the clock runs', () => {
 
     await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
 
-    // The sentence changes, not just the colour — the pulse is disabled under
-    // `prefers-reduced-motion`, so the words have to carry it too.
+    // The sentence changes, not just the colour — the breathe is still under
+    // reduced motion, so the words have to carry it too.
     expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
     expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
-    expect(raceClock()).toHaveClass('clr-pulse-micro')
+    expect(raceClock()).not.toHaveAttribute('data-urgent')
+    expect(edges()).toHaveLength(0)
+
+    await wallClockReaches(START + (CAP_SECONDS - 5) * 1000)
+    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
+    expect(edges()).toHaveLength(1)
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 })
 
@@ -542,7 +558,12 @@ describe('For Time draws with the shared block frame', () => {
   })
 })
 
-describe('the clock takes the shipped low state and nothing more', () => {
+// TASK-008 (C22, C23, C24, C61) supersedes "the shipped low state and nothing
+// more": the card still takes the timer-low role at ten seconds before the cap,
+// but no longer the stepped 80% micro-pulse. In the last five seconds of a
+// running race the readout breathes with the one soft screen-edge aura; pause,
+// a finish and the cap end it, and the capped outcome keeps its own colour.
+describe('the clock takes the shared countdown warning', () => {
   it('is not low, and claims no loop, while there is time left', async () => {
     reduceMotion(false)
     const user = userWithTimers()
@@ -552,12 +573,13 @@ describe('the clock takes the shipped low state and nothing more', () => {
     await wallClockReaches(START + (CAP_SECONDS - 11) * 1000)
 
     expect(screen.getByText('Cap in 00:11')).toBeInTheDocument()
-    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(raceClock()).not.toHaveAttribute('data-urgent')
+    expect(raceClock()).not.toHaveAttribute('data-loop')
+    expect(readout().parentElement).not.toHaveAttribute('data-low')
     expect(digits().style.color).toBe('var(--text-timer)')
   })
 
-  it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+  it('goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five', async () => {
     reduceMotion(false)
     const user = userWithTimers()
     renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
@@ -568,6 +590,7 @@ describe('the clock takes the shipped low state and nothing more', () => {
     // One role change moves bar, body and emission together.
     expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(timerFrame()).not.toHaveClass('clr-chamfer--timer')
+    expect(readout().parentElement).toHaveAttribute('data-low')
     expect(nestedCards()).toEqual([])
 
     // The digits cross over on the frame's schedule, and each one tumbles.
@@ -575,26 +598,27 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
     expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
 
-    // The pulse is on the whole timer card and is the view's running loop.
-    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
-    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
-    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    // The colour alone at ten: no stepped pulse, no loop, no edge.
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(raceClock()).not.toHaveAttribute('data-loop')
+    expect(edges()).toHaveLength(0)
 
     // No glow of the timer's own: the extra glow is the primary action's.
-    expect(raceClock().querySelector('.clr-glow')).toBeNull()
+    expect(readout().closest('.clr-card')?.querySelector('.clr-glow') ?? null).toBeNull()
+
+    // The last five: the readout breathes on the view's running loop, with one edge.
+    await wallClockReaches(START + (CAP_SECONDS - 5) * 1000)
+    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    expect(edges()).toHaveLength(1)
 
     // What those classes resolve to in the shipped package.
     expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
     expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
     expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
-    expect(
-      MOTION_CSS.includes(
-        '@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }',
-      ),
-    ).toBe(true)
   })
 
-  it('gives the loop up at the cap and at a finish, keeping the outcome’s colours', async () => {
+  it('gives the warning up at the cap and at a finish, keeping the outcome’s colours', async () => {
     reduceMotion(false)
     const user = userWithTimers()
     const capped = renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
@@ -604,11 +628,13 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(raceClock()).toHaveAttribute('data-loop', 'run')
 
     await wallClockReaches(START + CAP_SECONDS * 1000)
+    // "Cap reached" keeps its own outcome colour; the warning itself is over.
     expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(raceClock()).not.toHaveAttribute('data-urgent')
+    expect(raceClock()).not.toHaveAttribute('data-loop')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(edges()).toHaveLength(0)
     capped.unmount()
 
     clock = START
@@ -620,8 +646,9 @@ describe('the clock takes the shipped low state and nothing more', () => {
     await user.click(screen.getByRole('button', { name: 'Finish' }))
     expect(timerFrame()).toHaveClass('clr-chamfer--timer')
     expect(digits().style.color).toBe('var(--text-timer)')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(raceClock()).not.toHaveAttribute('data-loop')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(edges()).toHaveLength(0)
   })
 
   it('stays a labelled timer that is not a live region', async () => {
@@ -655,24 +682,29 @@ describe('the clock takes the shipped low state and nothing more', () => {
 
     // A clock with time left has no loop, so the wait keeps its own.
     expect(wait).toHaveAttribute('data-loop', 'run')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(raceClock()).not.toHaveAttribute('data-loop')
 
+    // TASK-008: the colour at eight seconds left is no loop of its own.
     await wallClockReaches(START + (CAP_SECONDS - 8) * 1000)
+    expect(wait).toHaveAttribute('data-loop', 'run')
 
-    // Low: the pulse carries more state, so it runs and the wait is stilled —
-    // still on screen, still busy, still saying what it is waiting for.
+    // The last five: the warning carries more state, so it runs and the wait is
+    // stilled — still on screen, still busy, still saying what it is waiting for.
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
     expect(raceClock()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for the next movement')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === raceClock() || node.matches('[data-countdown-edge]'))).toBe(true)
 
     // The cap arrives: nothing is running out, and the wait has its loop back.
     await wallClockReaches(START + CAP_SECONDS * 1000)
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(edges()).toHaveLength(0)
     expect(APP_MOTION_CSS).toMatch(
-      /\[data-loop='still'\]\.clr-pulse-micro,[\s\S]*?\{[^}]*animation: none/,
+      /\[data-loop='still'\] \.clr-scan-band,[\s\S]*?\{[^}]*animation: none/,
     )
   })
 
@@ -682,24 +714,21 @@ describe('the clock takes the shipped low state and nothing more', () => {
     renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
 
     await user.click(screen.getByRole('button', { name: 'Start For Time' }))
-    await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
 
+    // TASK-008 (C22): the urgent readout and its aura are still, at a steady .5.
     expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(edges()[0]).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
 
     // The reading, the words, the colour role and the controls are all there.
     expect(raceClock()).toHaveAttribute('data-urgent', 'true')
     expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(readout()).toHaveTextContent('07:53')
+    expect(readout()).toHaveTextContent('07:56')
     expect(screen.getByText('Racing the clock')).toBeInTheDocument()
-    expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
+    expect(screen.getByText('Cap in 00:04 — finish now')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled()
-
-    // The shipped rule that makes a reduced pulse static.
-    expect(MOTION_CSS).toMatch(
-      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
-    )
   })
 })
 

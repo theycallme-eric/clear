@@ -24,20 +24,54 @@
  * It has no clock of its own and writes nothing. What it draws is a
  * `TimerReading` from `state/timed-clock.ts`, taken from the clock's existing
  * owner; drawing it in another place cannot start, restart or reset that
- * clock (C21). The low state and its pulse are still each consumer's existing
- * threshold and `urgent` loop claim, passed in unchanged: when eligibility,
- * the recovered soft warning and its peripheral cue change (C22–C24, C61),
- * that is TASK-008's change, through `countdown-warning.ts` and this owner.
+ * clock (C21).
+ *
+ * TASK-008 (C22, C23, C24, C61; G06; R120, R125, R126, R133, R135, R144; P05)
+ * makes it the one owner of the recovered countdown warning, consolidating
+ * the R7 `useCountdownUrgency` hook, every consumer's own low threshold and
+ * loop claim, and the movement countdown's own screen-edge portal:
+ *
+ *   · **Eligibility** is `countdown-warning.ts`, read from the deadline the
+ *     consumer passes (`state/countdown-urgency.ts`, from the clock's own
+ *     owner): the timer-low colour at ten seconds, the breathe and the edge at
+ *     five while running, nothing on pause, expiry or an elapsed-only clock.
+ *   · **One loop.** The warning is one coordinated loop: each urgent timer
+ *     claims the view's one `urgent` loop (`motion.ts`), so a wait beside it
+ *     is stilled, and while the warning holds the loop every urgent timer and
+ *     the aura breathe together — never two competing pulses.
+ *   · **One edge.** However many deadlines are urgent, exactly one decorative
+ *     pointer-transparent aura is drawn — by the first urgent timer — over the
+ *     whole viewport, portalled into the topmost open native dialog so it
+ *     shows above an open log, otherwise onto the document body.
+ *   · **One phase.** The timer's breathe and the aura's are the same keyframes
+ *     on the same period and easing, and both are pinned to the document
+ *     timeline's epoch, so they brighten and fade together over every cycle,
+ *     whatever the numeric ticks and wherever the aura is portalled (P05).
+ *   · **Still.** Under reduced motion (the device's or the app's own choice)
+ *     or the still policy, the timer and the aura hold a steady .5.
+ *
+ * The warning is presentation only: it starts, pauses and stores nothing, and
+ * never records performed work (C24).
  *
  * Accessibility is the app's operational rule, unchanged: the timer is named
  * once by its label and is not a live region; the digits are decorative and
  * the value is said in words.
  */
-import type { CSSProperties } from 'react'
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react'
+import { createPortal } from 'react-dom'
 
+import { NO_DEADLINE, type CountdownDeadline } from '../../state/countdown-urgency'
 import type { TimerReading } from '../../state/timed-clock'
 import { ForegroundEchoFrame } from '../foreground-echo'
-import type { InterfaceLoop } from '../motion'
+import { useInterfaceLoop, type InterfaceLoop, type InterfaceLoopState } from '../motion'
+import { countdownWarningState } from './countdown-warning'
 import './presentation.css'
 
 export type TimerPlacement = 'body' | 'header'
@@ -54,15 +88,22 @@ export interface DeadlineTimerProps {
   size?: string
   /** A short caption drawn inside the frame, before the digits. */
   caption?: string
-  /** The shipped low state: emission, body and digits take timer-low. */
-  low?: boolean
   /**
-   * The low state's 80% pulse, as a claim on the view's one loop: the frame
-   * pulses while that claim runs and is still otherwise. `true` when the
-   * consumer's own wrapper already carries the claim, as the shipped
-   * `TimerDisplay`'s wrappers did.
+   * TASK-008: the live deadline this clock's warning reads, from the clock's
+   * own owner (`state/countdown-urgency.ts`). Omitted for an elapsed-only
+   * clock, and `NO_DEADLINE` before a start or after the end: no warning.
    */
-  pulse?: InterfaceLoop | true
+  deadline?: CountdownDeadline
+  /**
+   * An ended clock's own outcome drawn in the timer-low role — For Time's
+   * "Cap reached". Not the warning: it never breathes or lights the edge.
+   */
+  lowOutcome?: boolean
+  /**
+   * The still policy, previewed: the reduced-motion treatment (a steady .5,
+   * no animation) without changing the device's or the app's own choice.
+   */
+  still?: boolean
 }
 
 /** The emission follows the frame's role: timer, or timer-low. */
@@ -79,39 +120,176 @@ export function DeadlineTimer({
   placement = 'body',
   size = DEFAULT_SIZE[placement],
   caption,
-  low = false,
-  pulse,
+  deadline = NO_DEADLINE,
+  lowOutcome = false,
+  still = false,
 }: DeadlineTimerProps) {
+  const warning = countdownWarningState(deadline.remaining, deadline.running)
+  const low = warning.low || lowOutcome
+  const { loop, ownsEdge } = useCountdownUrgency(warning.urgent, still)
+  const body = useRef<HTMLSpanElement>(null)
+  const state = loop['data-loop']
+
+  // A new breathe starts on the document timeline's epoch, as the aura's does.
+  useLayoutEffect(() => {
+    if (warning.urgent) alignPhase(body.current)
+  }, [warning.urgent, state])
+
   return (
-    <ForegroundEchoFrame>
-      <span
-        className={[
-          'clr-bleed',
-          'clr-accepted-timer',
-          `clr-accepted-timer--${placement}`,
-          pulse === undefined ? null : 'clr-pulse-micro',
-        ].filter(Boolean).join(' ')}
-        data-timer-frame={placement}
-        data-clock={reading.clock}
-        data-low={low || undefined}
-        style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
-        {...(pulse === true ? undefined : pulse)}
-      >
+    <>
+      <ForegroundEchoFrame>
         <span
-          role="timer"
-          aria-label={reading.label}
-          className={`clr-chamfer clr-chamfer--md clr-accepted-timer__body ${low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'}`}
+          className={['clr-bleed', 'clr-accepted-timer', `clr-accepted-timer--${placement}`].join(' ')}
+          data-timer-frame={placement}
+          data-clock={reading.clock}
+          data-low={low || undefined}
+          style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
         >
-          {caption === undefined ? null : (
-            <span aria-hidden="true" className="clr-accepted-timer__caption">
-              {caption}
-            </span>
-          )}
-          <TimerDigits text={reading.text} size={size} low={low} />
-          <span className="a11y-hidden">{reading.spoken}</span>
+          <span
+            ref={body}
+            role="timer"
+            aria-label={reading.label}
+            className={`clr-chamfer clr-chamfer--md clr-accepted-timer__body ${low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'}`}
+            data-urgent={warning.urgent ? 'true' : undefined}
+            {...(warning.urgent ? loop : undefined)}
+          >
+            {caption === undefined ? null : (
+              <span aria-hidden="true" className="clr-accepted-timer__caption">
+                {caption}
+              </span>
+            )}
+            <TimerDigits text={reading.text} size={size} low={low} />
+            <span className="a11y-hidden">{reading.spoken}</span>
+          </span>
         </span>
-      </span>
-    </ForegroundEchoFrame>
+      </ForegroundEchoFrame>
+      {ownsEdge ? <DeadlineEdge loop={loop} /> : null}
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The one loop, the one edge and the one phase
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The keyframes the timer and the aura share (`presentation.css`). */
+const WARNING_KEYFRAMES = 'clr-deadline-breathe'
+
+/**
+ * Pin each of the element's warning breathes to the document timeline's epoch.
+ * Every breathe then shares one phase, wherever and whenever it started: a
+ * timer that went urgent a second after another, or an aura portalled into a
+ * dialog that just opened, brightens and fades with the rest (P05).
+ */
+function alignPhase(element: Element | null) {
+  if (element === null || typeof element.getAnimations !== 'function') return
+  for (const animation of element.getAnimations()) {
+    if ((animation as CSSAnimation).animationName === WARNING_KEYFRAMES && animation.startTime !== 0) {
+      animation.startTime = 0
+    }
+  }
+}
+
+/**
+ * The urgent timers, in the order they went urgent, with the state of each
+ * one's claim on the view's one `urgent` loop. The warning is one loop: it
+ * runs when any of its claims holds the view's loop — an urgent claim
+ * outranks every other kind, so it does unless motion is reduced — and then
+ * every urgent timer and the aura breathe together, on the one phase. The
+ * first claim draws the one edge.
+ */
+const warningClaims = new Map<string, InterfaceLoopState>()
+const warningListeners = new Set<() => void>()
+let warning: { readonly owner: string | null; readonly state: InterfaceLoopState } = { owner: null, state: 'still' }
+
+function settleWarning() {
+  const owner = warningClaims.keys().next().value ?? null
+  const state: InterfaceLoopState = [...warningClaims.values()].includes('run') ? 'run' : 'still'
+  if (owner === warning.owner && state === warning.state) return
+  warning = { owner, state }
+  for (const listener of warningListeners) listener()
+}
+
+function subscribeWarning(listener: () => void) {
+  warningListeners.add(listener)
+  return () => {
+    warningListeners.delete(listener)
+  }
+}
+
+const readWarning = () => warning
+
+/**
+ * R7's `useCountdownUrgency`, consolidated into the accepted owner: while the
+ * deadline is urgent, claim the view's one `urgent` loop (so a wait beside it
+ * is stilled) and a place in the one warning. The claims end with the urgency
+ * — on pause, on expiry, and when the timer unmounts — so nothing urgent is
+ * left behind on another screen or in a closed dialog.
+ */
+function useCountdownUrgency(urgent: boolean, still: boolean) {
+  const id = useId()
+  const own = useInterfaceLoop('urgent', urgent)['data-loop']
+
+  // Its place in the warning, held for as long as it is urgent: the order of
+  // the claims (and so the edge's owner) never moves when a loop state does.
+  useLayoutEffect(() => {
+    if (!urgent) return
+    warningClaims.set(id, 'still')
+    return () => {
+      warningClaims.delete(id)
+      settleWarning()
+    }
+  }, [id, urgent])
+
+  // Its claim's loop state, kept current in that same place.
+  useLayoutEffect(() => {
+    if (!urgent || !warningClaims.has(id)) return
+    warningClaims.set(id, own)
+    settleWarning()
+  }, [id, urgent, own])
+
+  const shared = useSyncExternalStore(subscribeWarning, readWarning, readWarning)
+  const loop: InterfaceLoop = { 'data-loop': still ? 'still' : shared.state }
+  return { loop, ownsEdge: urgent && shared.owner === id }
+}
+
+/** The topmost open native dialog, or the body when none is open. */
+function edgeHost(): HTMLElement {
+  const dialogs = document.querySelectorAll<HTMLDialogElement>('dialog[open]')
+  return dialogs.length > 0 ? dialogs[dialogs.length - 1] : document.body
+}
+
+/**
+ * Where the aura is drawn. An open native dialog is in the top layer, above
+ * everything on the page, so the aura follows it there — above an open log —
+ * and comes back to the body when it closes.
+ */
+function useEdgeHost(): HTMLElement {
+  const [host, setHost] = useState(edgeHost)
+  useLayoutEffect(() => {
+    const update = () => setHost(edgeHost())
+    update()
+    const observer = new MutationObserver(update)
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['open'] })
+    return () => observer.disconnect()
+  }, [])
+  return host
+}
+
+/**
+ * The one soft screen-edge aura: decorative (`aria-hidden`), pointer
+ * transparent, covering the whole viewport, breathing on the shared phase.
+ */
+function DeadlineEdge({ loop }: { loop: InterfaceLoop }) {
+  const edge = useRef<HTMLDivElement>(null)
+  const host = useEdgeHost()
+  const state = loop['data-loop']
+  useLayoutEffect(() => {
+    alignPhase(edge.current)
+  }, [host, state])
+  return createPortal(
+    <div ref={edge} aria-hidden="true" className="clr-deadline-edge" data-countdown-edge="" {...loop} />,
+    host,
   )
 }
 

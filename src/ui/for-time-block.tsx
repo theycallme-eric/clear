@@ -16,12 +16,13 @@
  *     warning glyph.
  *
  * **Urgency appears near the cap and nowhere else** (colour doctrine, ATOMIC.md
- * §3): red here is time pressure, never danger. So it is scoped to the last
- * `FOR_TIME_URGENCY_SECONDS` of a *running* cap and to the capped outcome itself,
- * and it never arrives as hue alone — the words change ("Cap in 0:07 — finish
- * now"), a glyph appears beside them, and the readout pulses while the seconds
- * are actually running out. The pulse is disabled under `prefers-reduced-motion`
- * (motion.css), which is exactly why the words have to carry it too.
+ * §3): red here is time pressure, never danger. So it is scoped to the last ten
+ * seconds before the cap (TASK-008, C23: the shared warning's colour at ten,
+ * held while paused) and to the capped outcome itself, and it never arrives as
+ * hue alone — the words change ("Cap in 0:07 — finish now" while it runs), a
+ * glyph appears beside them, and in the last five seconds of a running race the
+ * readout breathes with the one soft screen-edge aura. The breathe is still
+ * under reduced motion, which is exactly why the words have to carry it too.
  *
  * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
  * card, the identity row and the single completion are `BlockPanel`'s, the
@@ -51,6 +52,7 @@ import {
   type ForTimePhase,
   type ForTimeView,
 } from '../state/for-time'
+import { raceCapDeadline } from '../state/countdown-urgency'
 import { prescriptionText } from '../state/prescription'
 import { useShellWeightUnit } from '../state/set-logging'
 import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
@@ -64,7 +66,7 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
-import { useInterfaceLoop } from './motion'
+import { countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -165,14 +167,19 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
  * 23 seconds" rather than "06 colon 23", and hears it when the user asks:
  * `role="timer"` here is labelled, never live.
  *
- * The low state is the shipped one and nothing more. The card changes role, so
- * bar, body and digits step to the low colours over `--dur-alert`, and the
- * whole card takes `.clr-pulse-micro` — the dim to 80% — with no glow of its
- * own. The pulse is an `urgent` claim on the view's one loop, held only while
- * the seconds are actually running out: it outranks a wait beside it, it is
- * still under reduced motion with the words, digits and colour unchanged, and a
- * capped block gives it up — pulsing it would animate a number that has stopped
- * moving.
+ * Its warning is the shared one (TASK-008: C22, C23, C24, C61; R126: a
+ * count-up cap warns on the cap, never on the number it shows), read from the
+ * race's own deadline — the cap minus the elapsed time. From ten seconds before
+ * the cap the card changes role, so bar, body and digits step to the low
+ * colours over `--dur-alert`, and the cap line says "finish now". In the last
+ * five, while the clock runs, the race's whole timer frame breathes with the
+ * one soft screen-edge aura in the same phase — an `urgent` claim on the view's
+ * one loop that outranks a wait beside it. Paused, the race holds its colour
+ * and loses the breathe and the aura. The cap ends the warning; "Cap reached"
+ * keeps its own outcome treatment (the timer-low role, its glyph and words),
+ * which never breathes. The card no longer takes the shipped four-second
+ * stepped micro-pulse (R133, R135). Under reduced motion the timer and the aura
+ * hold a steady .5, with the words, digits and colour unchanged.
  */
 export function ForTimeClock({
   view,
@@ -182,16 +189,12 @@ export function ForTimeClock({
   /** The outcome in words, by phase. The timed ladder states its own ending. */
   words?: Readonly<Record<ForTimePhase, string>>
 }) {
-  const low = view.urgent || view.phase === 'capped'
-  const loop = useInterfaceLoop('urgent', view.urgent)
+  const deadline = raceCapDeadline(view)
+  const capped = view.phase === 'capped'
+  const low = countdownWarningState(deadline.remaining, deadline.running).low || capped
 
   return (
-    // The pulse runs on the wrapper so bar and body dim together.
-    <div
-      className={view.urgent ? 'clr-pulse-micro' : undefined}
-      data-urgent={view.urgent ? 'true' : 'false'}
-      {...loop}
-    >
+    <div>
       <Card role={low ? 'timer-low' : 'timer'}>
         {/*
           The outcome in words, and the one thing here that changes without
@@ -206,7 +209,8 @@ export function ForTimeClock({
         <DeadlineTimer
           reading={raceReading(view.elapsedSeconds, view.remainingSeconds)}
           size="var(--label-xl-size)"
-          low={low}
+          deadline={deadline}
+          lowOutcome={capped}
         />
 
         <CapLine view={view} />

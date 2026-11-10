@@ -1,0 +1,107 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-008",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/state/countdown-urgency.test.ts",
+    "src/ui/countdown-urgency.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-008/required-cases.json",
+    "sha256": "8ab5a84b65898841385f556caf15f3c08f4875992a14224399e1a67adde77d96"
+  },
+  "targets": [
+    {
+      "path": "src/state/countdown-urgency.test.ts",
+      "sha256": "2cb99785cfc2a8f401f24f7bdef4c4adf59d182edc48ac6c9e89d7f4d6bce3ec"
+    },
+    {
+      "path": "src/ui/countdown-urgency.test.tsx",
+      "sha256": "ebc2dbe5ffca6ef4b0af7b006c2c6095f3107a61819aa473876674171f3c90cd"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C23-01 the accepted rule: colour at 10 seconds left, the edge only while running at 5 and under, nothing at 11, at zero or for an unusable reading",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-R008-03 every countdown family warns on its own owner's remaining time: a movement countdown, the rest, an EMOM minute, an AMRAP window, a scheduled interval and a circuit round rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C23-01 a count-up race warns on its cap minus elapsed, never on the number it shows: For Time and the raced ladder",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C24-01 pause holds the colour and stops the edge; resume brings it back; expiry, a finish and the cap end it",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-R008-03 elapsed-only clocks stay neutral at every reading: the session clock, a round's elapsed time and a race with no cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C24-01 a warning records no work: reading every deadline stores nothing, starts nothing and changes no owner's record",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap's outcome never breathes",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C61-01 the timer and the aura share one phase: each breathe is pinned to the document timeline's epoch when it starts, again when the aura moves into or out of a dialog or the deadline resumes, and never restarted by a numeric tick",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the shared owner: held at 10 and 5, run into its last five, as a count-up cap, under an open native log with one aura in phase, and still",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 13
+  },
+  "problems": []
+}
