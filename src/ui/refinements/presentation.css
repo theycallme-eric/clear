@@ -291,6 +291,27 @@
   margin: 0;
 }
 
+/* Work completed — TimedResultLog (TASK-010: C29; R78, R86, R87). The accepted
+ * `.clr-timed-completion`: Complete and Incomplete share one row at every
+ * width. The two chips of the shared ChoiceGroup divide the row evenly and
+ * never wrap; each answer is centred in its chip. The radiogroup's own inline
+ * wrap is what the first rule overrides; the chip surface, tick, focus and
+ * disabled role stay the component's own. Tokens only. */
+.clr-timed-completion [role="radiogroup"] {
+  flex-wrap: nowrap !important;
+}
+
+.clr-timed-completion [role="radiogroup"] > .clr-bleed {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.clr-timed-completion [role="radio"] {
+  width: 100%;
+  justify-content: center;
+  padding-inline: var(--spacing-100) !important;
+}
+
 /* The framed quantity — QuantitySelector (TASK-009: C27, C28; R52, R56, R79,
  * R83). One wide soft-cornered structure frame, the selected roomier one:
  * the framed minus and plus at the shared control height in its outer

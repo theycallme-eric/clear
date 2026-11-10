@@ -814,3 +814,41 @@ describe('a restored session keeps its explicit ladder timing (REQ-018)', () => 
     )
   })
 })
+
+describe('For Time records keep the completion answer — TASK-010 (C29)', () => {
+  function memoryStorage(): ShellStorage {
+    const values = new Map<string, string>()
+    return {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => void values.set(key, value),
+      removeItem: (key) => void values.delete(key),
+    }
+  }
+
+  const finished = { startedAt: '2026-11-09T09:00:00.000Z', finishedAt: '2026-11-09T09:06:23.000Z' }
+
+  it('round-trips the athlete’s Complete or Incomplete under the existing key, beside the clock', () => {
+    const storage = memoryStorage()
+    writeForTimeState(storage, 'block-a', { ...finished, workCompleted: false })
+    writeForTimeState(storage, 'block-b', { ...finished, workCompleted: true })
+
+    expect(readForTimeState(storage, 'block-a')).toEqual({ ...finished, workCompleted: false })
+    expect(readForTimeState(storage, 'block-b')).toEqual({ ...finished, workCompleted: true })
+    expect(Object.keys(JSON.parse(storage.getItem(WORKOUT_FOR_TIME_STORAGE_KEY) ?? '{}'))).toEqual(['block-a', 'block-b'])
+  })
+
+  it('reads a record written before the question existed exactly as it was', () => {
+    const storage = memoryStorage()
+    storage.setItem(WORKOUT_FOR_TIME_STORAGE_KEY, JSON.stringify({ 'block-a': finished, 'block-b': { ...finished, pausedAt: null } }))
+
+    expect(readForTimeState(storage, 'block-a')).toEqual(finished)
+    expect(readForTimeState(storage, 'block-b')).toEqual({ ...finished, pausedAt: null })
+  })
+
+  it('refuses a record whose answer is not a yes or a no', () => {
+    const storage = memoryStorage()
+    storage.setItem(WORKOUT_FOR_TIME_STORAGE_KEY, JSON.stringify({ 'block-a': { ...finished, workCompleted: 'complete' } }))
+
+    expect(readForTimeState(storage, 'block-a')).toBeNull()
+  })
+})

@@ -459,12 +459,15 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
     expect(emom.queryByText(/The clock has run every prescribed minute/)).toBeNull()
 
     // Ladder: Finish stops its clock; how it ended is still the athlete's to say.
+    // TASK-010 (C29; R78, R87, R124) supersedes the question's wording: the
+    // shared log's Work completed, starting at Incomplete with no rung because
+    // nothing was tracked — Finish alone never marks every rung.
     await user.click(button('ladder', 'Start ladder'))
     advance(200)
     await user.click(button('ladder', 'Finish'))
     expect(blockTime('ladder')).toContain('03:20')
     expect(controls('ladder')).toEqual([])
-    expect(within(cardOf('ladder')).getByRole('group', { name: 'How did this block end?' })).toBeInTheDocument()
+    expect(within(cardOf('ladder')).getByRole('group', { name: 'Work completed' })).toBeInTheDocument()
 
     // The section's forward action records what each block observed — and only that.
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))

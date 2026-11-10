@@ -834,7 +834,8 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
 
     // Make the production ladder interactive, then use the real radio group.
     // No scrollIntoView or geometry writes precede focus or selection reveal.
-    await page.getByRole('radio', { name: 'Hit the time cap', exact: true }).check()
+    // TASK-010 (C29; R78, R87): Incomplete replaces "Hit the time cap"; it opens the same rung question.
+    await page.getByRole('radio', { name: 'Incomplete', exact: true }).check()
     const radios = rail.getByRole('radio')
     await expect(radios).toHaveCount(RUNGS.length)
     const first = radios.first()

@@ -1,0 +1,84 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-010",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-result-log.test.tsx",
+    "--testNamePattern",
+    "completion|effort",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-010/required-cases.json",
+    "sha256": "7630d75e8f2d2f5585faed776b7fdae708703374b6788a2947d2a524d833cef8"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-result-log.test.tsx",
+      "sha256": "54cac85fcd5dbc91dd787627742218d7577938608030fd3f27fe7073fcc4910f"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-C29-01 Complete and Incomplete share one row in the For Time and ladder logs on the real /workout route: one Work completed question, two equal answers side by side under the accepted recipe, after the work",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 For Time completion starts where the race ended — Finish under the cap at Complete, the cap at Incomplete — stopping mid-race or with no cap claims nothing, and the athlete corrects either way",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 ladder completion follows the work it tracked: nothing is chosen before the attempt ends; Finish, the cap and a schedule run out, with nothing tracked, start at Incomplete with no rung — never every rung — and only the athlete’s Complete records the top rung",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 completion end to end: the stored answer, a reload, the saved block results, a return to the saved section and History keep Complete and Incomplete apart",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-C30-01 effort is optional and unanswered stays null: the existing three faces with no default, Clear back to null, and never a numeric block effort or a session mood",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-R010-02 effort reuses Frown, Meh and Smile with their established words, order, categories, selected tick, focus and keyboard behaviour: no new icon, scale or wording",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 a failed save keeps the completion answer and the effort on screen, and the retry writes the same completion once with no effort",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 For Time records written before the completion question load and read as before: a finish reads Complete and a cap Incomplete, the same completed_under_cap they always saved, and nothing is rewritten",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > JOURNEY-010 the accepted for_time and ladder gallery states draw the route’s own logs: completion at the route’s starting point, the existing effort faces unanswered, live over memory only",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 17,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 8,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}

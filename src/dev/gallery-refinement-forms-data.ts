@@ -11,12 +11,18 @@
  * Synthetic and in memory only: no account, no catalog read, no write. Each
  * attempt is the record the route's own AMRAP keeps (`amrap.ts`), seeded into
  * the gallery mount's memory storage — never the route's.
+ *
+ * TASK-010 adds the accepted `for_time` and `ladder` states' attempts (below):
+ * the race clock each block's own renderer keeps (`for-time.ts`), seeded the
+ * same way.
  */
 import type { AmrapState } from '../state/amrap'
+import type { ForTimeState } from '../state/for-time'
 import type { SessionAcceptance } from '../state/schemas'
 import { structureIdentity, type BlockProgress } from '../state/workout-progress'
-import { AMRAP_BLOCK } from './gallery-refinement-cards-data'
+import { AMRAP_BLOCK, FOR_TIME_BLOCK } from './gallery-refinement-cards-data'
 import { galleryExerciseProgress } from './gallery-refinement-coaching-data'
+import { LADDER_CAP_SECONDS, timedLadderBlock } from './gallery-refinement-flow-data'
 
 type Block = SessionAcceptance['workout']['sections'][number]['blocks'][number]
 
@@ -86,6 +92,101 @@ export const GALLERY_AMRAP_ATTEMPTS: readonly GalleryAmrapAttemptSpec[] = [
       endedAtSeconds: 323,
       roundsCompleted: 3,
       partialRoundReps: 0,
+    }),
+  },
+]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-010 — `?state=for_time` and `?state=ladder` (C29, C30)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The accepted reference's For Time results sample is the route fixture's For
+ * Time (`FOR_TIME_BLOCK`: forty wall balls with a 9 kg medicine ball under a
+ * 15:00 cap). Its capped companion here adds a bodyweight burpee under a
+ * 10:00 cap, so the two cards' own landmarks keep distinct names on one page.
+ */
+export const CAPPED_SAMPLE_FOR_TIME: Block = {
+  ...FOR_TIME_BLOCK,
+  timer_seconds: 600,
+  exercises: [...FOR_TIME_BLOCK.exercises, AMRAP_BLOCK.exercises[1]],
+}
+
+/**
+ * The accepted ladder results sample (`gallery-refinement-flow-data.ts`): the
+ * push up rising two reps a round with its fixed burpee, four rounds under one
+ * 07:00 cap. Its capped companion is the push up alone, for distinct landmarks.
+ */
+export const ACCEPTED_SAMPLE_LADDER: Block = timedLadderBlock(4)
+export const CAPPED_SAMPLE_LADDER: Block = { ...ACCEPTED_SAMPLE_LADDER, exercises: [ACCEPTED_SAMPLE_LADDER.exercises[0]] }
+
+/** A For Time block or a timed ladder as the live shell hands it to its renderer. */
+export function galleryTimedProgress(block: Block, blockIndex: number): BlockProgress {
+  return { ...galleryAmrapProgress(block, blockIndex), ladderTiming: block.ladder_timing ?? null }
+}
+
+export interface GalleryRaceAttemptSpec {
+  readonly id: 'finish' | 'cap'
+  readonly title: string
+  readonly block: Block
+  readonly blockIndex: number
+  /** The race's own stored clock (`for-time.ts`) for this attempt, read against `now`. */
+  record(now: number): ForTimeState
+}
+
+/**
+ * JOURNEY-010's For Time entries: finished under the cap at 06:23 — the
+ * completion starts at Complete — and run into its cap — it starts at
+ * Incomplete. Neither has been answered, so each shows its starting point,
+ * and the effort is unanswered.
+ */
+export const GALLERY_FOR_TIME_ATTEMPTS: readonly GalleryRaceAttemptSpec[] = [
+  {
+    id: 'finish',
+    title: 'Finished under the cap · completion starts at Complete',
+    block: FOR_TIME_BLOCK,
+    blockIndex: 70,
+    record: (now) => ({
+      startedAt: new Date(now - 420 * 1000).toISOString(),
+      finishedAt: new Date(now - 37 * 1000).toISOString(),
+    }),
+  },
+  {
+    id: 'cap',
+    title: 'Cap reached · completion starts at Incomplete',
+    block: CAPPED_SAMPLE_FOR_TIME,
+    blockIndex: 71,
+    record: (now) => ({
+      startedAt: new Date(now - ((CAPPED_SAMPLE_FOR_TIME.timer_seconds ?? 0) + 60) * 1000).toISOString(),
+      finishedAt: null,
+    }),
+  },
+]
+
+/**
+ * JOURNEY-010's ladder entries: Finish pressed at 03:20 and the cap run out,
+ * both with nothing tracked rung by rung — so both start at Incomplete with
+ * no rung, never at every rung.
+ */
+export const GALLERY_LADDER_ATTEMPTS: readonly GalleryRaceAttemptSpec[] = [
+  {
+    id: 'finish',
+    title: 'Finished at 03:20 · nothing tracked, so Incomplete',
+    block: ACCEPTED_SAMPLE_LADDER,
+    blockIndex: 80,
+    record: (now) => ({
+      startedAt: new Date(now - 260 * 1000).toISOString(),
+      finishedAt: new Date(now - 60 * 1000).toISOString(),
+    }),
+  },
+  {
+    id: 'cap',
+    title: 'Cap reached · Incomplete until the athlete says otherwise',
+    block: CAPPED_SAMPLE_LADDER,
+    blockIndex: 81,
+    record: (now) => ({
+      startedAt: new Date(now - (LADDER_CAP_SECONDS + 30) * 1000).toISOString(),
+      finishedAt: null,
     }),
   },
 ]
