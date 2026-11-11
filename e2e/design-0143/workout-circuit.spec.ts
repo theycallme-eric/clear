@@ -778,6 +778,12 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     await page.getByRole('button', { name: 'Finish round 1', exact: true }).click()
     const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
     await expect(timer).toBeVisible()
+    // TASK-021: Finish round confirms the round in the shared focused log,
+    // which holds this same rest while open; closing it returns the rest to the
+    // card and the workout behind it to reach.
+    await page.getByRole('dialog', { name: 'Round 1 recorded', exact: true })
+      .getByRole('button', { name: 'Close log', exact: true }).click()
+    await expect(timer).toBeVisible()
     const exercise = display(world.catalog[1].id)
     await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
     const sheet = page.locator('[data-set-sheet-slot]')

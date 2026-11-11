@@ -112,6 +112,13 @@
  * backdrop, beside the session's one rest, over the shell's own set-logging
  * provider with set observations answered in memory
  * (`gallery-refinement-set-logging.tsx`).
+ *
+ * `circuit-round`: the recorded round and its take back (TASK-021: C48; R18,
+ * R103, R104, R105) — the route's own `CircuitBlock`, round 1's clock seeded
+ * in the mount's memory, whose Finish round opens `Round 1 recorded` in the
+ * shared focused logging dialog: the framed Close log X, the round time read
+ * back, the circuit's own rest at full width and Take back this round
+ * (`gallery-refinement-circuit.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -136,6 +143,7 @@ import {
   GallerySetCorrection,
   GalleryTimedMovementSet,
 } from './gallery-refinement-set-logging'
+import { GalleryCircuitRound } from './gallery-refinement-circuit'
 
 function GalleryLadderFour() {
   return <GalleryLadderFlow rounds={4} />
@@ -166,6 +174,7 @@ const REFINEMENT_STATES = [
   { id: 'distance-movement', title: 'Distance movement · set logging', Render: GalleryDistanceMovementSet },
   { id: 'extra-set', title: 'Extra set · set logging', Render: GalleryExtraSet },
   { id: 'set-correction', title: 'Saved-set correction', Render: GallerySetCorrection },
+  { id: 'circuit-round', title: 'Circuit round · recorded round and take back', Render: GalleryCircuitRound },
 ] as const
 
 export function GalleryRefinements() {

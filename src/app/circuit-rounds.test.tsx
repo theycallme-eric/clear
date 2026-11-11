@@ -16,7 +16,7 @@
  *   · the round history shows each round's elapsed duration and no wall-clock
  *     start or end, while the stored start and end stay whole (AC-063).
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -423,7 +423,9 @@ describe('AC-063 — round history shows durations, never wall-clock times', () 
     ])
 
     // A refresh comes back to the same durations, and the stored times are untouched.
-    document.body.innerHTML = ''
+    // (Unmounted rather than wiped: since TASK-021 the circuit's recorded-round
+    // dialog is portalled to the body, and React removes what it mounted.)
+    cleanup()
     mount(double)
     const history = await screen.findByRole('list', { name: 'Round times' })
     expect(within(history).getAllByRole('listitem').map((item) => item.textContent)).toEqual([

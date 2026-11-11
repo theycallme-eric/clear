@@ -1,0 +1,73 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-021",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-021.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-021/required-cases.json",
+    "sha256": "5507393fd235da8e6917d5c40085251d19ba37c7478899d74553d0ff02e77118"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-021.spec.ts",
+      "sha256": "520376d8dacdead8488386876140b266a958e21c6286b39964797bbf29965cfd"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "name": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 touch phone-390: Finish round opens Round N recorded with its X at the title top and the circuit rest at full width; Take back this round, Close log and the rest ending keep round times, active time and history; an optional actual and the recorded rounds survive a refused save and read back in History",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "name": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 keyboard phone-320 reduced motion Signal: Enter records the round into the log with focus on its X, Tab reaches Take back this round, Escape returns to the round clock, the final seconds stay still in the log, and a reload mid-rest comes back to the card and its rest, never to the log",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round clear phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round vapour phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round signal phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round mono phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 6
+  },
+  "problems": []
+}

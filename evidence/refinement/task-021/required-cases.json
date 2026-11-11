@@ -1,0 +1,109 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-021",
+  "description": "Circuit round/Undo and measurement behavior remains intact (#648; REQ-021, C48, G13; R18, R103, R104, R105; V13; AC-C48-01, AC-R021-01, AC-R021-02; completion owner of JOURNEY-021). On the real /workout route the circuit's one controller (src/state/circuit.ts, usePersistedCircuit; CircuitBlock) keeps Start round, Finish round, the round's elapsed clock, the shared rest between rounds, Take back a round and the round-time history; Finish round N now confirms the round in the shared focused LoggingOverlay titled Round N recorded - the framed icon-only Close log X aligned to the title top, the recorded round time read back from the stored history, the circuit's own rest as the shared whole timer body (DeadlineTimer) at the log's full content width and drawn once, and Take back this round (takeBackRound). The log closes when the rest it was recorded into ends (or the card's Start round ends it early), stays until closed with no rest, is closed by its X or Escape without changing anything, and is never reopened by a reload. check-01 proves the controller and the log over an injected wall clock; check-02 proves the journey in the browser on a contained synthetic session at 390 (touch: Take back, close, rest end, an optional movement actual, a refused block save and its retry, and History reading the saved rounds and the actual on /history/:id) and 320 (keyboard, reduced motion, Signal, final-seconds warning in the log, reload mid-rest), and opens the accepted gallery state ?state=circuit-round (reference eded158cfd928d382c9a9409e2c372270312741d, the route CircuitBlock in memory) in all four skins at 390. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-021 --check check-01 -- npx vitest run src/ui/circuit-block.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C48-01",
+        "AC-R021-01",
+        "AC-R021-02"
+      ],
+      "files": [
+        "src/ui/circuit-block.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Finish round N opens Round N recorded: the framed Close log X alone in the header, the round time read back, the circuit rest at the log’s full width and Take back this round",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Take back this round un-records the round, ends its rest, closes the log and resumes the round’s own clock, with focus on Finish round",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 the rest runs on in the log and ends it: at rest end the log closes by itself, records nothing more and the next round’s clock runs; the card’s early Start round ends it too",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Close log and Escape close it without changing anything: the same rest goes on, back on the card, with Start round N and Take back a round",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log reads the round and Take back this round with no timer, and stays until closed",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-C48-01 round recording, active round time and the round-time history are kept through the log, and a refresh comes back to the card, never to the log",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-01 one circuit controller: the log’s taps are the circuit’s own Finish round and Take back, written only to the circuit record, with the original scoring",
+          "criterion": "AC-R021-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-021 --check check-02 -- npx playwright test e2e/refinement/task-021.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C48-01",
+        "AC-R021-01",
+        "AC-R021-02",
+        "JOURNEY-021"
+      ],
+      "files": [
+        "e2e/refinement/task-021.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-021.spec.ts",
+          "project": "mobile",
+          "name": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 touch phone-390: Finish round opens Round N recorded with its X at the title top and the circuit rest at full width; Take back this round, Close log and the rest ending keep round times, active time and history; an optional actual and the recorded rounds survive a refused save and read back in History",
+          "criterion": "JOURNEY-021"
+        },
+        {
+          "file": "e2e/refinement/task-021.spec.ts",
+          "project": "mobile",
+          "name": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 keyboard phone-320 reduced motion Signal: Enter records the round into the log with focus on its X, Tab reaches Take back this round, Escape returns to the round clock, the final seconds stay still in the log, and a reload mid-rest comes back to the card and its rest, never to the log",
+          "criterion": "JOURNEY-021"
+        },
+        {
+          "file": "e2e/refinement/task-021.spec.ts",
+          "project": "mobile",
+          "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round clear phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "e2e/refinement/task-021.spec.ts",
+          "project": "mobile",
+          "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round vapour phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "e2e/refinement/task-021.spec.ts",
+          "project": "mobile",
+          "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round signal phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "e2e/refinement/task-021.spec.ts",
+          "project": "mobile",
+          "name": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round mono phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+          "criterion": "AC-R021-02"
+        }
+      ]
+    }
+  }
+}
