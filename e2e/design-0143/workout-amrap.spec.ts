@@ -398,19 +398,38 @@ async function expectHandsOff(page: Page) {
   await expect(main.getByText(/round goal|target rounds|expected rounds|predicted/i)).toHaveCount(0)
 }
 
-/** The count the rounds selector is showing. */
+/**
+ * TASK-046 (C45; R100): the AMRAP's card holds one "Log results" action once
+ * the window has closed; the counts are in the log it opens, the shared
+ * focused dialog titled "Log results", over a workout inert while it is open.
+ */
+const logDialog = (page: Page) => page.getByRole('dialog', { name: 'Log results', exact: true })
+
+async function openLog(page: Page) {
+  if ((await logDialog(page).count()) > 0) return
+  await page.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true }).click()
+  await expect(logDialog(page)).toBeVisible()
+}
+
+async function closeLog(page: Page) {
+  if ((await logDialog(page).count()) === 0) return
+  await logDialog(page).getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(logDialog(page)).toHaveCount(0)
+}
+
+/** The count the rounds selector is showing, in the open log. */
 function roundsShown(page: Page): Locator {
-  return page.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('status')
+  return logDialog(page).getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('status')
 }
 
-/** The count the partial-round selector is showing. */
+/** The count the partial-round selector is showing, in the open log. */
 function partialShown(page: Page): Locator {
-  return page.getByRole('group', { name: 'Reps into the next round', exact: true }).getByRole('status')
+  return logDialog(page).getByRole('group', { name: 'Reps into the next round', exact: true }).getByRole('status')
 }
 
-/** One framed count's action (TASK-009, C27): `Increase rounds completed`, `Decrease reps into the next round`. */
+/** One framed count's action (TASK-009, C27), in the open log. */
 function countAction(page: Page, name: string): Locator {
-  return page.locator('main').getByRole('button', { name, exact: true })
+  return logDialog(page).getByRole('button', { name, exact: true })
 }
 
 /** TASK-009 (C28, R57): no reset or toggle remains to clear or open a count. */
@@ -545,6 +564,7 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   await expect(page.getByText('Cap reached', { exact: true })).toBeVisible()
   await expect(timer).toHaveCount(0)
   // TASK-009 (C26, C28): offered as the log's two blank counts.
+  await openLog(page)
   await expect(roundsShown(page)).toHaveAttribute('data-quantity-value', 'blank')
   await expect(partialShown(page)).toHaveAttribute('data-quantity-value', 'blank')
   await expectNoResetControls(page)
@@ -579,19 +599,26 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   // The edit survives a refresh.
   await page.reload()
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
+  await openLog(page)
   await expect(roundsShown(page)).toHaveText('2')
   await expect(partialShown(page)).toHaveText('0')
 
   // Save recovery: the shared forward action fails once, the athlete stays on
   // the AMRAP with the result intact, and the retry is the same action again.
+  // TASK-046: the log is closed first; with the failure dismissed, the
+  // reopened log reads the result, and the retry is the forward action again.
   const failure = await failFirstBlockSave(page)
   try {
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText('That didn’t save')
     expect(failure.failed()).toBe(1)
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click()
+    await openLog(page)
     await expect(roundsShown(page)).toHaveText('2')
-    await dialog.getByRole('button', { name: 'Try again', exact: true }).click()
+    await closeLog(page)
+    await page.getByRole('button', { name: 'Next section', exact: true }).click()
   } finally {
     await failure.dispose()
   }
@@ -621,6 +648,7 @@ test('JOURNEY-024: a result left blank never blocks completion and is stored as 
   await expect(page.getByText('01:35 on the clock')).toBeVisible()
   await expect(page.getByText('Cap reached', { exact: true })).toHaveCount(0)
   // TASK-009 (C28): blank counts — stopping early filled nothing in.
+  await openLog(page)
   await expect(roundsShown(page)).toHaveAttribute('data-quantity-value', 'blank')
   await expect(partialShown(page)).toHaveAttribute('data-quantity-value', 'blank')
   await expect(page.getByText(/^Score:/)).toHaveCount(0)
@@ -631,6 +659,7 @@ test('JOURNEY-024: a result left blank never blocks completion and is stored as 
   await expectNoResetControls(page)
   await expect(roundsShown(page)).toHaveAttribute('data-quantity-value', 'blank')
 
+  await closeLog(page)
   await page.getByRole('button', { name: 'Next section', exact: true }).click()
   await finishToSummary(page)
 

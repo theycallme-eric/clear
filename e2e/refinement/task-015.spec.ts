@@ -310,13 +310,48 @@ function cardOf(scope: Page | Locator, list: string): Locator {
   })
 }
 
-/** The block's log: its card's one form, headed "Log results" (deliberately not a landmark). */
+/**
+ * TASK-046 (C45; R100): a block's card holds one "Log results" action where
+ * its log was; the log — the same form — opens in the shared focused dialog
+ * titled "Log results", over a workout that is inert while it is open.
+ */
+function openerOf(card: Locator): Locator {
+  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+}
+
+/** The block's log: the open focused dialog's one form, named by its title "Log results". */
 function logOf(card: Locator): Locator {
-  return card.locator('form.clr-timed-log').filter({ has: card.page().getByRole('heading', { name: 'Log results', exact: true }) })
+  return card.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+}
+
+/** Opens the card's log (closing any other first) and returns it. */
+async function openLog(card: Locator): Promise<Locator> {
+  if ((await openerOf(card).getAttribute('aria-expanded')) !== 'true') {
+    await closeLog(card.page())
+    await openerOf(card).click()
+  }
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Opens the card's log by keyboard: the action focused, then Enter. */
+async function openLogByKeyboard(card: Locator): Promise<Locator> {
+  await openerOf(card).focus()
+  await card.page().keyboard.press('Enter')
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Closes the open log with its framed X. */
+async function closeLog(page: Page) {
+  const open = page.locator('dialog.clr-accepted-log[open]')
+  if ((await open.count()) === 0) return
+  await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(open).toHaveCount(0)
 }
 
 function completionOf(card: Locator): Locator {
-  return card.getByRole('group', { name: 'Work completed', exact: true })
+  return logOf(card).getByRole('group', { name: 'Work completed', exact: true })
 }
 
 /** One movement's group in a log, by its name. */
@@ -449,6 +484,9 @@ async function attachCard(page: Page, card: Locator, name: string) {
     await page.evaluate(() => document.querySelectorAll('.clr-scroll-region__scroller').forEach((scroller) => scroller.scrollTo(0, 0)))
     await settle(page)
     await test.info().attach(`${name}.png`, { body: await card.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    // TASK-046: the log itself is in the open focused dialog.
+    const open = page.locator('dialog.clr-accepted-log[open] [data-logging-frame]')
+    if ((await open.count()) > 0) await test.info().attach(`${name}-log.png`, { body: await open.screenshot({ caret: 'hide' }), contentType: 'image/png' })
   } finally {
     await page.setViewportSize(viewport)
     await settle(page)
@@ -489,8 +527,8 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await card.getByRole('button', { name: 'Start For Time', exact: true }).tap()
     await pass(page, 90)
     await card.getByRole('button', { name: 'Finish', exact: true }).tap()
-    const log = logOf(card)
-    await expect(log).toBeVisible()
+    // TASK-046: the card's "Log results" action opens the log.
+    const log = await openLog(card)
     await settle(page)
 
     // Complete: the work is done, so no partial; the loaded wall ball's load alone.
@@ -529,7 +567,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await expect(movementOf(log, 'wall ball')).toContainText('Enter a weight of zero or more')
     await weightOf(log, 'wall ball').fill('8')
     await expect(weightOf(log, 'wall ball')).not.toHaveAttribute('aria-invalid', 'true')
-    await card.getByRole('group', { name: 'Effort · optional', exact: true }).getByRole('radio', { name: 'Too hard', exact: true }).tap()
+    await logOf(card).getByRole('group', { name: 'Effort · optional', exact: true }).getByRole('radio', { name: 'Too hard', exact: true }).tap()
     await settle(page)
     expectEntryContract(await readEntryGeometry(log), 'For Time Incomplete, entered @phone-390')
     await noHorizontalOverflow(page)
@@ -541,27 +579,36 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await page.reload()
     await expect(page.getByRole('list', { name: ACTUALS_FOR_TIME_WORK_LIST, exact: true })).toBeVisible()
     await settle(page)
+    await openLog(card)
     expect(await chosen(completionOf(card))).toEqual(['Incomplete'])
     await expect(amountOf(log, 'wall ball')).toHaveValue('28')
     await expect(weightOf(log, 'wall ball')).toHaveValue('8')
     await expect(amountOf(log, 'plank')).toHaveValue('45')
-    await card.getByRole('group', { name: 'Effort · optional', exact: true }).getByRole('radio', { name: 'Too hard', exact: true }).tap()
+    await logOf(card).getByRole('group', { name: 'Effort · optional', exact: true }).getByRole('radio', { name: 'Too hard', exact: true }).tap()
     // The unit the load is stated in, as the field shows it: the profile's.
     const unit = (await movementOf(log, 'wall ball').locator('.clr-field__unit').last().textContent()) ?? ''
     expect(unit).toMatch(/^(kg|lb)$/)
 
     // The forward action: the For Time's row lands and its first movement
     // write is refused. The athlete stays, with every entry and the dialog.
+    // TASK-046: the log is closed first (the workout behind it is inert);
+    // with the failure dismissed, the reopened log reads every entry, and the
+    // retry is the same forward action the failure's Try again runs.
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText('That didn’t save')
+    expect(app.blockRow(app.forTimeBlockId)).not.toBeNull()
+    expect(app.movementRowCount()).toBe(0)
+    await dialog.getByRole('button', { name: 'Close', exact: true }).tap()
+    await expect(dialog).toHaveCount(0)
+    await openLog(card)
     await expect(amountOf(log, 'wall ball')).toHaveValue('28')
     await expect(weightOf(log, 'wall ball')).toHaveValue('8')
     await expect(amountOf(log, 'plank')).toHaveValue('45')
     await expect(amountOf(log, 'wall ball')).toBeEnabled()
-    expect(app.blockRow(app.forTimeBlockId)).not.toBeNull()
-    expect(app.movementRowCount()).toBe(0)
-    await dialog.getByRole('button', { name: 'Try again', exact: true }).tap()
+    await closeLog(page)
+    await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     await expect(page.getByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE, exact: true })).toBeVisible()
 
     // What was sent: the For Time's insert, then its 23505 retry corrected in
@@ -593,6 +640,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     // Back to the saved section: the entries read back and are no longer offered.
     await page.getByRole('button', { name: 'Previous', exact: true }).tap()
     await expect(page.getByRole('heading', { name: ACTUALS_SECTION_TITLE, exact: true })).toBeVisible()
+    await openLog(card)
     await expect(amountOf(log, 'wall ball')).toHaveValue('28')
     await expect(amountOf(log, 'wall ball')).toBeDisabled()
     await expect(weightOf(log, 'wall ball')).toHaveValue('8')
@@ -601,6 +649,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await expect(amountOf(log, 'plank')).toBeDisabled()
     await expect(card.getByText('Block saved', { exact: true })).toBeVisible()
     await attachCard(page, card, 'for-time-saved-readback-signal-phone-390')
+    await closeLog(page)
 
     // History reads the row back: stopped before its cap, as Incomplete.
     await visit(`/history/${app.sessionId}`)
@@ -624,8 +673,8 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await pass(page, 120)
     await card.getByRole('button', { name: 'Finish early', exact: true }).focus()
     await page.keyboard.press('Enter')
-    const log = logOf(card)
-    await expect(log).toBeVisible()
+    // TASK-046: the card's "Log results" action, by keyboard, opens the log.
+    const log = await openLogByKeyboard(card)
     await settle(page)
 
     // Nothing counted: no round to attach a partial to, so no amount field;
@@ -636,7 +685,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     // Two rounds by keyboard: each movement's round-3 amount in its own unit —
     // reps, reps, metres — and still one load field; the partial reps count
     // beside them.
-    const plusRounds = card.getByRole('button', { name: 'Increase rounds completed', exact: true })
+    const plusRounds = logOf(card).getByRole('button', { name: 'Increase rounds completed', exact: true })
     await plusRounds.focus()
     await page.keyboard.press('Enter')
     await page.keyboard.press('Enter')
@@ -646,10 +695,10 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
       { name: 'burpee', fields: ['Completed in round 3'], units: ['reps'] },
       { name: 'row', fields: ['Completed in round 3'], units: ['m'] },
     ])
-    const plusReps = card.getByRole('button', { name: 'Increase reps into the next round', exact: true })
+    const plusReps = logOf(card).getByRole('button', { name: 'Increase reps into the next round', exact: true })
     await plusReps.focus()
     for (let reps = 0; reps < 5; reps += 1) await page.keyboard.press('Enter')
-    await expect(card.getByRole('status', { name: 'Reps into the next round', exact: true })).toHaveText('5')
+    await expect(logOf(card).getByRole('status', { name: 'Reps into the next round', exact: true })).toHaveText('5')
 
     // Keyboard through the fields: the swing's amount, Tab to its load, Tab to
     // the burpee's amount; the row left blank; nothing filled from the plan.
@@ -689,7 +738,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
 
     // A count corrected by keyboard moves the round: every amount clears —
     // the burpee's zero included, never carried to round 2 — and the load stays.
-    await card.getByRole('button', { name: 'Decrease rounds completed', exact: true }).focus()
+    await logOf(card).getByRole('button', { name: 'Decrease rounds completed', exact: true }).focus()
     await page.keyboard.press('Enter')
     await expect(log.getByText('Completed in round 2', { exact: true })).toHaveCount(3)
     await expect(amountOf(log, 'kettlebell swing')).toHaveValue('')
@@ -709,7 +758,9 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     // Saved by keyboard: the AMRAP's row with its counts as corrected (one
     // round, five reps into the next), then one movement row per entered
     // movement — the swing's round-2 reps and load, the burpee's explicit
-    // zero — and none for the blank row.
+    // zero — and none for the blank row. TASK-046: Escape closes the log first.
+    await page.keyboard.press('Escape')
+    await expect(log).toHaveCount(0)
     const next = page.getByRole('button', { name: 'Next section', exact: true })
     await next.focus()
     await page.keyboard.press('Enter')
@@ -734,13 +785,15 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await pass(page, 200)
     await race.getByRole('button', { name: 'Finish', exact: true }).focus()
     await page.keyboard.press('Enter')
-    const raceLog = logOf(race)
+    const raceLog = await openLogByKeyboard(race)
     await completionOf(race).getByRole('radio', { name: 'Incomplete', exact: true }).focus()
     await page.keyboard.press('Space')
     expect(await movementGroups(raceLog)).toEqual([{ name: 'thruster', fields: ['Weight used'], units: ['kg'] }])
     await expect(raceLog.getByRole('group', { name: 'Rounds completed', exact: true })).toHaveCount(0)
     await weightOf(raceLog, 'thruster').focus()
     await page.keyboard.type('35')
+    await page.keyboard.press('Escape')
+    await expect(raceLog).toHaveCount(0)
     await next.focus()
     await page.keyboard.press('Enter')
     await expect(page.getByRole('heading', { name: ACTUALS_COOLDOWN_TITLE, exact: true })).toBeVisible()
@@ -766,19 +819,20 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     const amrapRoot = page.locator('[data-refinement-state="amrap"]')
     await expect(amrapRoot.getByRole('heading', { name: 'AMRAP results', exact: true })).toBeVisible()
     const early = cardOf(amrapRoot.locator('[data-gallery-amrap="early"]'), ACTUALS_AMRAP_WORK_LIST)
-    const earlyLog = logOf(early)
-    await expect(earlyLog).toBeVisible()
+    // TASK-046: each card's "Log results" action opens its log.
+    const earlyLog = await openLog(early)
     await settle(page)
     expect(await movementGroups(earlyLog)).toEqual([{ name: 'kb swing', fields: ['Completed in round 4', 'Weight used'], units: ['reps', 'kg'] }])
     await expect(amountOf(earlyLog, 'kb swing')).toHaveValue('7')
     await expect(weightOf(earlyLog, 'kb swing')).toHaveValue('20')
-    await expect(early.getByRole('status', { name: 'Reps into the next round', exact: true })).toHaveText('0')
+    await expect(logOf(early).getByRole('status', { name: 'Reps into the next round', exact: true })).toHaveText('0')
     expectEntryContract(await readEntryGeometry(earlyLog), 'gallery amrap early')
     const capped = cardOf(amrapRoot.locator('[data-gallery-amrap="cap"]'), ACTUALS_AMRAP_WORK_LIST)
-    expect(await movementGroups(logOf(capped))).toEqual([{ name: 'kb swing', fields: ['Weight used'], units: ['kg'] }])
+    expect(await movementGroups(await openLog(capped))).toEqual([{ name: 'kb swing', fields: ['Weight used'], units: ['kg'] }])
+    await openLog(early)
     await test.info().attach('gallery-amrap-entries-signal-phone-390.png', { body: await amrapRoot.locator('[data-gallery-amrap="early"]').screenshot({ caret: 'hide' }), contentType: 'image/png' })
     // Live over memory: a count moves the round and clears the amount, keeping the load.
-    await early.getByRole('button', { name: 'Increase rounds completed', exact: true }).tap()
+    await logOf(early).getByRole('button', { name: 'Increase rounds completed', exact: true }).tap()
     await expect(earlyLog.getByText('Completed in round 5', { exact: true })).toBeVisible()
     await expect(amountOf(earlyLog, 'kb swing')).toHaveValue('')
     await expect(weightOf(earlyLog, 'kb swing')).toHaveValue('20')
@@ -792,8 +846,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     const forTimeRoot = page.locator('[data-refinement-state="for_time"]')
     await expect(forTimeRoot.getByRole('heading', { name: 'For Time results', exact: true })).toBeVisible()
     const capRace = cardOf(forTimeRoot.locator('[data-gallery-race="for-time-cap"]'), ACTUALS_FOR_TIME_WORK_LIST)
-    const capLog = logOf(capRace)
-    await expect(capLog).toBeVisible()
+    const capLog = await openLog(capRace)
     await settle(page)
     expect(await movementGroups(capLog)).toEqual([
       { name: 'wall ball', fields: ['Completed', 'Weight used'], units: ['reps', 'kg'] },
@@ -804,7 +857,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await expect(amountOf(capLog, 'burpee')).toHaveValue('')
     expectEntryContract(await readEntryGeometry(capLog), 'gallery for_time cap')
     const finishRace = cardOf(forTimeRoot.locator('[data-gallery-race="for-time-finish"]'), ACTUALS_FOR_TIME_WORK_LIST)
-    expect(await movementGroups(logOf(finishRace))).toEqual([{ name: 'wall ball', fields: ['Weight used'], units: ['kg'] }])
+    expect(await movementGroups(await openLog(finishRace))).toEqual([{ name: 'wall ball', fields: ['Weight used'], units: ['kg'] }])
     await expect(weightOf(logOf(finishRace), 'wall ball')).toHaveValue('')
     await test.info().attach('gallery-for-time-entries-signal-phone-390.png', { body: await forTimeRoot.locator('[data-gallery-race="for-time-cap"]').screenshot({ caret: 'hide' }), contentType: 'image/png' })
     await noHorizontalOverflow(page)
@@ -817,8 +870,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     const ladderRoot = page.locator('[data-refinement-state="ladder"]')
     await expect(ladderRoot.getByRole('heading', { name: 'Ladder results', exact: true })).toBeVisible()
     const ladderFinish = cardOf(ladderRoot.locator('[data-gallery-race="ladder-finish"]'), ACTUALS_LADDER_WORK_LIST)
-    const ladderLog = logOf(ladderFinish)
-    await expect(ladderLog).toBeVisible()
+    const ladderLog = await openLog(ladderFinish)
     await settle(page)
     expect(await chosen(completionOf(ladderFinish))).toEqual(['Incomplete'])
     expect(await movementGroups(ladderLog)).toEqual([])

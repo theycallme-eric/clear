@@ -98,7 +98,8 @@ import { Card } from './card'
 import { countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
-import { TimedResultLog, UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
+import { UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
+import { TimedResultDialog } from './refinements/timed-result-dialog'
 import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
@@ -198,10 +199,12 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
 
           {/*
             TASK-010 (C29, C30): the result, after the work, once the race has
-            ended. Ready, running and paused ask for nothing.
+            ended. Ready, running and paused ask for nothing. TASK-046 (C45;
+            R100): one "Log results" action in its place opens the same log in
+            the shared focused dialog.
           */}
           {ended && (
-            <TimedResultLog
+            <TimedResultDialog
               format="for_time"
               value={{ completed, effort }}
               askCompletion={view.capSeconds !== null}

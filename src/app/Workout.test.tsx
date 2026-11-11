@@ -39,6 +39,7 @@ import type { BlockResultRow } from '../state/schemas'
 import { WORKOUT_SHELL_STORAGE_KEY } from '../state/workout-persistence'
 import { sessionProgress } from '../state/workout-progress'
 import { AppProviders, signedIn } from '../test/render'
+import { closeTimedLogs, queryTimedLog } from '../test/timed-log-dialog'
 import {
   completedSession,
   createFakeSummaryClient,
@@ -897,9 +898,13 @@ describe('Workout — one forward action saves, then continues', () => {
   }
 
   /** The AMRAP's live round count, as the athlete reads it. */
+  /** TASK-046: read in the AMRAP's log, opened from its card's "Log results" and closed again. */
   function roundsShown(): string | null {
-    return within(screen.getByRole('group', { name: 'Rounds completed' })).getByRole('status')
+    queryTimedLog()
+    const shown = within(screen.getByRole('group', { name: 'Rounds completed' })).getByRole('status')
       .textContent
+    closeTimedLogs()
+    return shown
   }
 
   /**
@@ -911,8 +916,11 @@ describe('Workout — one forward action saves, then continues', () => {
   async function performTwoRounds(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    // TASK-046: entered in the log the card's "Log results" opens, then closed.
+    await user.click(screen.getByRole('button', { name: 'Log results' }))
     await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
     await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     expect(roundsShown()).toBe('2')
   }
 

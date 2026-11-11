@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/logging-overlay.test.tsx",
-      "sha256": "d0b5cf39300d601bf082ead8dba9216506aae8c9f898b21dcfdf0f0ccc7c2a59"
+      "sha256": "f675e2a3c3d8b5ba1d76392fbc4adcba9129075fbc5e56b21c03c64ab9bd415b"
     }
   ],
   "requiredCases": [

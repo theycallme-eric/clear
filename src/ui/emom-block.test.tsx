@@ -47,6 +47,7 @@ import { SetLoggingProvider } from '../state/set-logging-provider'
 import { writeEmomState, type ShellStorage } from '../state/workout-persistence'
 import { sessionProgress, type BlockProgress } from '../state/workout-progress'
 import { AppProviders } from '../test/render'
+import { timedLog } from '../test/timed-log-dialog'
 import {
   createWorkoutDouble,
   FIXTURE_SESSION_ID,
@@ -440,6 +441,10 @@ describe('the minute boundary flips the active work', () => {
     // (C31; R43, R84) supersedes the closing sentence with the end log: no
     // minutes counter, only the optional notes for an exception.
     expect(screen.queryByText(/The clock has run every prescribed minute/)).not.toBeInTheDocument()
+    // TASK-046 (C45; R43, R100): the card's real Log action opens it in the
+    // shared focused dialog, titled "Log results".
+    expect(screen.getByRole('button', { name: 'Log results' })).toBeInTheDocument()
+    expect(timedLog().closest('dialog')).not.toBeNull()
     expect(screen.getByRole('heading', { name: 'Log results' })).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: 'Notes · optional' })).toBeInTheDocument()
     expect(screen.queryByText(/minutes? completed/i)).not.toBeInTheDocument()
@@ -768,6 +773,9 @@ describe('execution is hands-off (REQ-014)', () => {
     // TASK-011 (C31; R43, R84) supersedes "no entry field once the schedule
     // ends": the end log's one field is the optional notes for an exception.
     // Still no set form, no count, no Minute done and no exertion prompt.
+    // TASK-046: none on the card; the notes are in the log its action opens.
+    expectHandsOff()
+    timedLog()
     expectHandsOff(['Notes · optional'])
   })
 

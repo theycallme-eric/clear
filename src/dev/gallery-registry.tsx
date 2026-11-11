@@ -124,6 +124,9 @@ import {
   TimedResultLogLadderIncomplete,
   TimedResultLogLadderPartial,
   TimedResultLogLadderUnanswered,
+  TimedResultDialogAmrap,
+  TimedResultDialogEmom,
+  TimedResultDialogForTimeSecondary,
 } from './gallery-refinement-forms'
 import {
   EquipmentSummaryBodyweight,
@@ -2297,6 +2300,17 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       { state: 'For Time · saved', note: 'The saved answer, no longer offered as a choice: the chips’ shared disabled role.', Render: TimedResultLogForTimeSaved },
       { state: 'EMOM · schedule ended', note: 'No counter and no completion question: only the optional notes, blank.', Render: TimedResultLogEmomBlank },
       { state: 'EMOM · an exception noted', note: 'The exception in the athlete’s own words; nothing counts a minute.', Render: TimedResultLogEmomNoted },
+    ],
+  },
+  {
+    component: 'TimedResultDialog',
+    requirement: 'REQ-019',
+    module: 'src/ui/refinements/timed-result-dialog.tsx',
+    summary: 'TASK-046 the four timed-result families in the shared focused dialog (C45; G07; R43, R81, R82, R100, R115, R116): where an EMOM, AMRAP, For Time or ladder block drew its TimedResultLog inline, its card now holds one Log results action in the shared full-width action row — primary once the attempt has ended, secondary for a log drawn before then (the ladder’s) — and the same log, with the consumer’s own props, opens in LoggingOverlay titled Log results (its one title), closed by the framed X or Escape with every entry kept for the reopen. No Save is added: the route saves the block through the section’s forward action as before, and the dialog owns no clock. The ladder’s Undo finish closes the log as it resumes the attempt. The route’s own adoption: /gallery/refinements?state=emom, ?state=amrap, ?state=for_time and ?state=ladder. Memory-only logs here.',
+    specimens: [
+      { state: 'EMOM · schedule ended', note: 'Log results opens the end log’s optional notes; close and reopen keeps what was typed.', Render: TimedResultDialogEmom },
+      { state: 'AMRAP · three rounds and a zero', note: 'The two framed counts in the focused log, under its one title.', Render: TimedResultDialogAmrap },
+      { state: 'For Time · before an answer, secondary action', note: 'The secondary opener a log drawn before its attempt ends takes; nothing chosen.', Render: TimedResultDialogForTimeSecondary },
     ],
   },
   {

@@ -446,12 +446,35 @@ function round(page: Page, ladder: number, number: number): Locator {
 }
 
 /**
- * The `n`th ladder's ending question. TASK-010 (C29; R78, R87): the shared
+ * The open ladder log's ending question. TASK-010 (C29; R78, R87): the shared
  * result log's Work completed, Complete beside Incomplete, replacing "How did
  * this block end?" with "Finished the ladder" / "Hit the time cap".
  */
-function ending(page: Page, index: number): Locator {
-  return page.getByRole('group', { name: 'Work completed', exact: true }).nth(index)
+function ending(page: Page): Locator {
+  // TASK-046: in the ladder's log that is open in the shared focused dialog
+  // (`openLog(page, n)` opens the `n`th ladder's).
+  return openLadderLog(page).getByRole('group', { name: 'Work completed', exact: true })
+}
+
+/**
+ * TASK-046 (C45; R100): each ladder's card holds one "Log results" action
+ * where its log was; the log opens in the shared focused dialog titled "Log
+ * results", one at a time, over a workout that is inert while it is open.
+ */
+function openLadderLog(page: Page): Locator {
+  return page.locator('dialog.clr-accepted-log[open]')
+}
+
+async function openLog(page: Page, index: number) {
+  await closeLog(page)
+  await page.locator('[data-timed-log-opener]').nth(index).getByRole('button', { name: 'Log results', exact: true }).click()
+  await expect(openLadderLog(page)).toBeVisible()
+}
+
+async function closeLog(page: Page) {
+  if ((await openLadderLog(page).count()) === 0) return
+  await openLadderLog(page).getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(openLadderLog(page)).toHaveCount(0)
 }
 
 /**
@@ -647,15 +670,18 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // free-paced ladder; reached the second rung inside the cap. TASK-010
   // (AC-R010-01): the schedule run out already starts its log at Incomplete,
   // never at every rung, so Complete is the athlete's own answer.
-  await expect(ending(page, 0).getByRole('radio', { name: 'Incomplete', exact: true })).toBeChecked()
-  await ending(page, 0).getByRole('radio', { name: 'Complete', exact: true }).check()
-  await ending(page, 1).getByRole('radio', { name: 'Complete', exact: true }).check()
-  await ending(page, 2).getByRole('radio', { name: 'Incomplete', exact: true }).check()
+  await openLog(page, 0)
+  await expect(ending(page).getByRole('radio', { name: 'Incomplete', exact: true })).toBeChecked()
+  await ending(page).getByRole('radio', { name: 'Complete', exact: true }).check()
+  await openLog(page, 1)
+  await ending(page).getByRole('radio', { name: 'Complete', exact: true }).check()
+  await openLog(page, 2)
+  await ending(page).getByRole('radio', { name: 'Incomplete', exact: true }).check()
   // TASK-013 (C33, C34; R88, R99): how far is each answered ladder's result
   // log "Rounds completed" — rep-first tiles named by round and target, the
   // prefix pressed and counted — in place of the "How far did you get?" radios.
-  // All three ladders are answered, so the capped one's is the third.
-  const reached = page.getByRole('group', { name: 'Rounds completed', exact: true }).nth(2)
+  // All three ladders are answered; the capped one's (the third) is open.
+  const reached = openLadderLog(page).getByRole('group', { name: 'Rounds completed', exact: true })
   const secondRung = reached.getByRole('button', { name: `Round 2: ${CAPPED_RUNGS[1]} reps`, exact: true })
   await secondRung.click()
   await expect(secondRung).toHaveAttribute('aria-pressed', 'true')
@@ -667,14 +693,21 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // the section with every declaration intact, and the retry is the same action.
   const failure = await failFirstBlockSave(page)
   try {
+    // TASK-046: the log is closed first; with the failure dismissed, the
+    // reopened logs read every declaration, and the retry is the forward action.
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText('That didn’t save')
     expect(failure.failed()).toBe(1)
     await expect(page.getByText('COMPLETE', { exact: true })).toBeVisible()
-    await expect(ending(page, 1).getByRole('radio', { name: 'Complete', exact: true })).toBeChecked()
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click()
+    await openLog(page, 1)
+    await expect(ending(page).getByRole('radio', { name: 'Complete', exact: true })).toBeChecked()
+    await openLog(page, 2)
     await expect(secondRung).toHaveAttribute('aria-pressed', 'true')
-    await dialog.getByRole('button', { name: 'Try again', exact: true }).click()
+    await closeLog(page)
+    await page.getByRole('button', { name: 'Next section', exact: true }).click()
   } finally {
     await failure.dispose()
   }

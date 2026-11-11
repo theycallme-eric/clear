@@ -132,6 +132,7 @@ import {
   ladderHandoffSnapshot,
 } from '../test/ladder-handoff-fixture'
 import { AppProviders, signedIn } from '../test/render'
+import { closeTimedLogs, openTimedLogDialogs, queryTimedLog, timedLog, timedLogOpener } from '../test/timed-log-dialog'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
 import { createWorkoutDouble, snapshotFixture, type BlockFixture, type WorkoutDoubleOptions } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
@@ -558,9 +559,11 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
     await user.click(button('ladder', 'Finish'))
     expect(blockTime('ladder')).toContain('03:20')
     expect(controls('ladder')).toEqual([])
-    expect(within(cardOf('ladder')).getByRole('group', { name: 'Work completed' })).toBeInTheDocument()
+    // TASK-046: the question is in the log the card's "Log results" opens.
+    expect(within(timedLog(cardOf('ladder'))).getByRole('group', { name: 'Work completed' })).toBeInTheDocument()
 
     // The section's forward action records what each block observed — and only that.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
     await waitFor(() => expect(double.recorded()).toHaveLength(4))
     const outcome = (id: string): BlockOutcome => double.recorded().find((row) => row.blockId === id)!.outcome
@@ -602,6 +605,7 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
     expect(screen.getByRole('button', { name: 'Finish workout' })).toBeEnabled()
 
     // Finish workout is still the one action that saves and ends the workout.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
     await waitFor(() => expect(double.completed()).toHaveLength(1))
   })
@@ -724,11 +728,14 @@ function emomTime(scope?: HTMLElement): string {
   return within(emomStack(scope)).getByRole('timer').textContent ?? ''
 }
 
-/** The end log: the card's one form, headed "Log results". */
+/**
+ * The end log. TASK-046 (C45; R43, R100): the card holds one "Log results"
+ * action, and the same form opens in the shared focused dialog titled "Log
+ * results"; null when the card offers no log. Never inline in the card.
+ */
 function queryEmomLog(scope?: HTMLElement): HTMLElement | null {
-  const forms = emomCard(scope).querySelectorAll<HTMLElement>('form.clr-timed-log')
-  expect(forms.length).toBeLessThanOrEqual(1)
-  return forms[0] ?? null
+  expect(emomCard(scope).querySelectorAll('form.clr-timed-log')).toHaveLength(0)
+  return queryTimedLog(emomCard(scope))
 }
 
 function emomLog(scope?: HTMLElement): HTMLElement {
@@ -954,17 +961,22 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     // R43: the log replaces the closing sentence that only said it was done.
     expect(within(emomCard()).queryByText(/The clock has run every prescribed minute/)).toBeNull()
 
-    // After the work and its prescription, before the card's coaching.
+    // After the work and its prescription, before the card's coaching —
+    // TASK-046: the log's place on the card is its "Log results" action.
     const list = within(emomCard()).getByRole('list', { name: EMOM_WORK_LIST })
+    const opener = timedLogOpener(emomCard())!
+    expect(follows(opener, list)).toBe(true)
     expect(follows(log, list)).toBe(true)
-    expect(follows(log, within(emomCard()).getByText(`${EMOM_REST_SECONDS}s rest at the end of each minute`))).toBe(true)
+    expect(follows(opener, within(emomCard()).getByText(`${EMOM_REST_SECONDS}s rest at the end of each minute`))).toBe(true)
     const coaching = emomCard().querySelector('[data-coaching-group]')!
-    expect(follows(coaching, log)).toBe(true)
+    expect(follows(coaching, opener)).toBe(true)
     expect(emomCard().lastElementChild).toBe(coaching)
 
     // One title, one group, one field: the optional notes. No counter, no
-    // completion question, no confirmation step, no effort here.
-    expect(within(log).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results'])
+    // completion question, no confirmation step, no effort here. TASK-046:
+    // the one title is the focused dialog's, and the form draws none.
+    expect(within(log.closest('dialog')!).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results'])
+    expect(within(log).queryAllByRole('heading')).toEqual([])
     const groups = log.querySelectorAll('.clr-timed-log__group')
     expect(groups).toHaveLength(1)
     const fields = log.querySelectorAll('input, textarea, select, output')
@@ -1005,6 +1017,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     await user.type(notesField(), EXCEPTION_NOTE)
 
     // The section's forward action saves the block: its note, and nothing counted.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
     expect(double.recorded()).toEqual([{ blockId: block.blockId, outcome: { notes: EXCEPTION_NOTE }, perceivedEffort: null }])
@@ -1014,6 +1027,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
 
     // Back to the saved section: the schedule still reads as it ended; the log
     // has stepped aside (no correction writer), and the shell says it saved.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     expect(await screen.findByRole('heading', { name: EMOM_SECTION_TITLE })).toBeInTheDocument()
     expect(scheduleLines()).toEqual(['MIN 10 OF 10', 'COMPLETE'])
@@ -1067,6 +1081,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     expect(scheduleLines()).toEqual(['MIN 3 OF 10', 'FINISHED EARLY'])
     expect(notesField()).toHaveValue('')
     await user.type(notesField(), EARLY_NOTE)
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
     expect(second.double.recorded()).toEqual([{ blockId: second.block.blockId, outcome: { notes: EARLY_NOTE }, perceivedEffort: null }])
@@ -1089,6 +1104,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     await user.click(within(emomCard()).getByRole('button', { name: 'Start EMOM' }))
     advance(200)
     expect(queryEmomLog()).toBeNull()
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
     expect(third.double.recorded()).toEqual([{ blockId: third.block.blockId, outcome: {}, perceivedEffort: null }])
@@ -1111,6 +1127,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     const grid = storedEmomRaw()
     await user.type(notesField(), EXCEPTION_NOTE)
 
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     const failed = await screen.findByRole('dialog')
     expect(failed).toHaveTextContent('That didn’t save')
@@ -1157,6 +1174,7 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
       // Loaded, not rewritten.
       expect(storedEmomRaw(), label).toBe(raw)
       // Saved as before: no note given, nothing counted — the same `{}` an older build saved.
+      closeTimedLogs()
       await user.click(screen.getByRole('button', { name: 'Next section' }))
       expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
       expect(double.recorded().map((row) => row.outcome), label).toEqual([{}])
@@ -1323,8 +1341,10 @@ function liveCount(key: LadderKey): string | null {
   return within(prescription).queryByRole('status')?.textContent ?? null
 }
 
+/** TASK-046: the ladder's log, opened from its card's "Log results" action into the shared focused dialog. */
 function ladderLog(key: LadderKey): HTMLElement {
-  const form = ladderCardOf(key).querySelector<HTMLElement>('form.clr-timed-log')
+  expect(ladderCardOf(key).querySelectorAll('form.clr-timed-log')).toHaveLength(0)
+  const form = queryTimedLog(ladderCardOf(key))
   if (form === null) throw new Error(`the ${key} ladder has no result log`)
   return form
 }
@@ -1392,6 +1412,7 @@ const NOTHING_BUT_THE_RUNG = {
 }
 
 async function saveLadders(user: ReturnType<typeof userEvent.setup>) {
+  closeTimedLogs()
   await user.click(screen.getByRole('button', { name: 'Next section' }))
   await screen.findByRole('heading', { name: HANDOFF_COOLDOWN_TITLE })
 }
@@ -1797,6 +1818,7 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
 
     // Back to the saved section: the saved row is the answer, so no draft is
     // claimed over it and nothing is offered as a choice; no clock action.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByText(LONG_TIMING_LINE)
     for (const key of ['long', 'short'] as const) {
@@ -1841,7 +1863,7 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
     expect(within(screen.getByRole('list', { name: LADDER_ROUNDS_LIST })).getAllByRole('button')).toHaveLength(6)
     expect(uncapped.last()).toEqual({})
     await user.click(screen.getByRole('button', { name: 'Finish' }))
-    expect(within(screen.getByRole('group', { name: ROUNDS_COMPLETED })).getAllByRole('button')
+    expect(within(within(timedLog()).getByRole('group', { name: ROUNDS_COMPLETED })).getAllByRole('button')
       .filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toHaveLength(2)
     expect(uncapped.last()).toEqual({ highestRung: 2 })
     expect(JSON.parse(open.raw(WORKOUT_LADDER_STORAGE_KEY)!)[uncapped.block.blockId]).toMatchObject({
@@ -1879,14 +1901,14 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
     })
     advance(120)
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
-    const ending = screen.getByRole('group', { name: WORK_COMPLETED })
+    const ending = within(timedLog()).getByRole('group', { name: WORK_COMPLETED })
     expect(within(ending).getByRole('radio', { name: 'Incomplete' })).toHaveAttribute('aria-checked', 'true')
     expect(run.last()).toEqual({})
-    await user.click(within(screen.getByRole('group', { name: ROUNDS_COMPLETED })).getByRole('button', { name: 'Round 2: 5 reps' }))
+    await user.click(within(within(timedLog()).getByRole('group', { name: ROUNDS_COMPLETED })).getByRole('button', { name: 'Round 2: 5 reps' }))
     expect(run.last()).toEqual({ highestRung: 2 })
     run.unmount()
     const reopened = mountDirect(schedule, scheduled, timing)
-    expect(within(screen.getByRole('group', { name: ROUNDS_COMPLETED })).getByRole('status')).toHaveTextContent('2 of 3 rounds completed')
+    expect(within(within(timedLog()).getByRole('group', { name: ROUNDS_COMPLETED })).getByRole('status')).toHaveTextContent('2 of 3 rounds completed')
     expect(reopened.last()).toEqual({ highestRung: 2 })
   }, LADDER_TIMEOUT)
 
@@ -1912,7 +1934,8 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
       await user.click(within(card).getByRole('button', { name: 'Finish' }))
 
       // The handoff: Incomplete through R2, rep-first, the accepted push up's targets.
-      const log = card.querySelector<HTMLElement>('form.clr-timed-log')!
+      // TASK-046: in the log the card's "Log results" opens.
+      const log = timedLog(card)
       expect(within(within(log).getByRole('group', { name: WORK_COMPLETED })).getByRole('radio', { name: 'Incomplete' }))
         .toHaveAttribute('aria-checked', 'true')
       const tiles = within(within(log).getByRole('group', { name: ROUNDS_COMPLETED })).getAllByRole('button')
@@ -2214,6 +2237,7 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     expect(resultPressed('long')).toEqual(through(6))
 
     // The save fails: nothing is written, and nothing is discarded.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     const failed = await screen.findByRole('dialog')
     expect(failed).toHaveTextContent('That didn’t save')
@@ -2244,6 +2268,7 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     // Its row saves, the next block's does not: the athlete stays on the
     // section, and the saved attempt offers no Undo — at once.
     refuse = (completion) => completion.blockId === third.short.blockId
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     const partial = await screen.findByRole('dialog')
     expect(record).toHaveBeenCalledTimes(3)
@@ -2275,6 +2300,7 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
       blockResults: { record },
       sessions: { asPerformed: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)) },
     })
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByText(LONG_TIMING_LINE)
     for (const key of ['long', 'short'] as const) {
@@ -2292,18 +2318,24 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
     await openLadders()
 
-    // Never offered before an athlete's Finish: ready, running or paused.
+    // Never offered before an athlete's Finish: ready, running or paused
+    // (TASK-046: read in the ladder's log, opened from its card).
     expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    expect(undoOf('long')).toBeNull()
+    closeTimedLogs()
     await user.click(ladderButton('long', 'Start ladder'))
     advance(90)
-    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    expect(undoOf('long')).toBeNull()
+    closeTimedLogs()
     await user.click(ladderButton('long', 'Pause'))
-    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    expect(undoOf('long')).toBeNull()
+    closeTimedLogs()
     await user.click(ladderButton('long', 'Resume'))
     await user.click(liveToggles('long')[2])
     await user.click(ladderButton('long', 'Finish'))
 
     // One action, in the result group: after Work completed, before Rounds completed.
+    expect(within(ladderLog('long')).getAllByRole('button', { name: UNDO_FINISH })).toHaveLength(1)
     expect(screen.getAllByRole('button', { name: UNDO_FINISH })).toHaveLength(1)
     const undo = undoOf('long')!
     const group = answerGroup('long').closest<HTMLElement>('.clr-timed-log__group')!
@@ -2389,7 +2421,8 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
       await user.click(within(card).getByRole('button', { name: 'Finish' }))
 
       // The route's log, with its Undo between the answer and the rounds.
-      const log = card.querySelector<HTMLElement>('form.clr-timed-log')!
+      // TASK-046: in the log the card's "Log results" opens.
+      let log = timedLog(card)
       const undo = within(log).getByRole('button', { name: UNDO_FINISH })
       const answer = within(log).getByRole('group', { name: WORK_COMPLETED })
       const tiles = within(log).getByRole('group', { name: ROUNDS_COMPLETED })
@@ -2399,13 +2432,16 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
       expect(undo).toHaveClass('clr-btn--quiet')
 
       // Undo: running again, the two rounds still checked, the log open again.
+      // TASK-046: Undo closes the focused log; it is read by reopening it.
       await user.click(undo)
+      expect(openTimedLogDialogs()).toEqual([])
       expect(within(card).getByRole('button', { name: 'Pause' })).toBeInTheDocument()
       expect(within(grid).getAllByRole('button').map((tile) => tile.getAttribute('aria-pressed'))).toEqual(
         through(rounds).map((n) => String(n <= 2)),
       )
       expect(within(card.querySelector<HTMLElement>('[data-ladder-prescription]')!).getByRole('status'))
         .toHaveTextContent(`2 of ${rounds} rounds completed`)
+      log = timedLog(card)
       expect(within(log).queryByRole('button', { name: UNDO_FINISH })).toBeNull()
       expect(within(log).queryByRole('group', { name: ROUNDS_COMPLETED })).toBeNull()
       // Finish again: the same two rounds, Incomplete.
@@ -2456,14 +2492,14 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     await user.click(within(grid()).getAllByRole('button')[1])
     await user.click(screen.getByRole('button', { name: 'Finish' }))
     // The carried progress is the answer — not the older record's Complete.
-    const answer = () => within(screen.getByRole('group', { name: WORK_COMPLETED })).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)
+    const answer = () => within(within(timedLog()).getByRole('group', { name: WORK_COMPLETED })).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)
     expect(answer()).toEqual(['Incomplete'])
     expect(last()).toEqual({ highestRung: 2 })
-    await user.click(screen.getByRole('button', { name: UNDO_FINISH }))
+    await user.click(within(timedLog()).getByRole('button', { name: UNDO_FINISH }))
     // Back before Finish: no answer at all, the older Complete included.
     expect(answer()).toEqual([])
     expect(last()).toEqual({})
-    expect(screen.queryByRole('group', { name: ROUNDS_COMPLETED })).toBeNull()
+    expect(within(timedLog()).queryByRole('group', { name: ROUNDS_COMPLETED })).toBeNull()
     expect(within(grid()).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toHaveLength(2)
     expect(JSON.parse(storage.raw(WORKOUT_LADDER_STORAGE_KEY)!)[block.blockId].draft).toMatchObject({ completed: null, highestRung: 2 })
     // The older record is left exactly as it was.
@@ -2479,7 +2515,8 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     await user.click(button('for_time', TIMED_START.for_time))
     advance(90)
     await user.click(button('for_time', TIMED_FINISH.for_time))
-    expect(within(cardOf('for_time')).getByRole('group', { name: WORK_COMPLETED })).toBeInTheDocument()
+    // TASK-046: read in the log its card's "Log results" opens.
+    expect(within(timedLog(cardOf('for_time'))).getByRole('group', { name: WORK_COMPLETED })).toBeInTheDocument()
     expect(screen.queryAllByRole('button', { name: /undo/i })).toEqual([])
   }, UNDO_TIMEOUT)
 })

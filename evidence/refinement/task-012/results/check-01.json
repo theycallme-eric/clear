@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/ladder-rungs.test.tsx",
-      "sha256": "12832892bca0d0955032122ce0432e7277c5b519218ed57d85b35288320f1a73"
+      "sha256": "2c7b84eac83d5b71588694369ea45a921f7425ea6fa98ceab436e54a9e0889f9"
     }
   ],
   "requiredCases": [

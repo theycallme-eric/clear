@@ -47,6 +47,7 @@ import {
   type CompactLadderKey,
 } from '../test/compact-ladder-fixture'
 import { AppProviders, signedIn } from '../test/render'
+import { timedLog, timedLogOpener } from '../test/timed-log-dialog'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
 import { createWorkoutDouble, snapshotFixture, type BlockFixture, type ExerciseFixture } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
@@ -275,11 +276,13 @@ describe('TASK-012 compact truthful ladder prescription', () => {
     expect(prescription.querySelectorAll('button, input, a, select, textarea, [tabindex], [role="button"]')).toHaveLength(0)
 
     // Order on the card: the identity and cap, the top Start (TASK-006), the
-    // prescription, then the result log (TASK-010).
+    // prescription, then the result log (TASK-010) — TASK-046: its place on
+    // the card is the "Log results" action, which opens the log's question.
     const actions = card.querySelector<HTMLElement>('[data-timed-actions="top"]')!
     expect(follows(actions, timingLine(card, 'accepted'))).toBe(true)
     expect(follows(prescription, actions)).toBe(true)
-    expect(follows(within(card).getByRole('group', { name: 'Work completed' }), grid(card))).toBe(true)
+    expect(follows(timedLogOpener(card)!, grid(card))).toBe(true)
+    expect(follows(within(timedLog(card)).getByRole('group', { name: 'Work completed' }), grid(card))).toBe(true)
 
     // The accepted recipe, from the cascade: a grid that wraps into as many
     // columns as fit, and lines that wrap inside their tile (readable wrapping).
@@ -424,7 +427,8 @@ describe('TASK-012 compact truthful ladder prescription', () => {
     // The cap: Incomplete with no rung (TASK-010); how far is asked, and the
     // prescription is still every round as before. TASK-013 (C33, C34): how
     // far is the result log's "Rounds completed", rep-first, one tile a rung.
-    const howFar = within(mounted.card).getByRole('group', { name: 'Rounds completed' })
+    // TASK-046: in the log the card's "Log results" action opens.
+    const howFar = within(timedLog(mounted.card)).getByRole('group', { name: 'Rounds completed' })
     expect(within(howFar).getAllByRole('button')).toHaveLength(12)
     expect(tiles(mounted.card)).toEqual(before)
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})

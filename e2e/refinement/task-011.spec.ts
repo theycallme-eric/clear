@@ -260,9 +260,37 @@ function timerOf(scope: Page | Locator): Locator {
   return stackOf(scope).getByRole('timer', { name: 'Time remaining', exact: true })
 }
 
-/** The end log: its card's one form, headed "Log results" (deliberately not a landmark). */
+/**
+ * TASK-046 (C45; R43, R100): the EMOM's card holds one "Log results" action
+ * where its end log was — R43's real Log action — and the log, the same
+ * form, opens in the shared focused dialog titled "Log results".
+ */
+function openerOf(scope: Page | Locator): Locator {
+  return cardOf(scope).locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+}
+
+/** The end log: the open focused dialog's one form, named by its title "Log results". */
 function logOf(scope: Page | Locator): Locator {
-  return cardOf(scope).locator('form.clr-timed-log').filter({ has: pageOf(scope).getByRole('heading', { name: 'Log results', exact: true }) })
+  return pageOf(scope).locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+}
+
+/** Opens the end log from the card's action (unless it is open) and returns it. */
+async function openLog(scope: Page | Locator): Promise<Locator> {
+  const opener = openerOf(scope)
+  if ((await opener.getAttribute('aria-expanded')) !== 'true') {
+    await closeLog(pageOf(scope))
+    await opener.click()
+  }
+  await expect(logOf(scope)).toBeVisible()
+  return logOf(scope)
+}
+
+/** Closes the open log with its framed X: the workout behind it is inert while it is open. */
+async function closeLog(page: Page) {
+  const open = page.locator('dialog.clr-accepted-log[open]')
+  if ((await open.count()) === 0) return
+  await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(open).toHaveCount(0)
 }
 
 function notesOf(scope: Page | Locator): Locator {
@@ -322,6 +350,10 @@ type Box = { top: number; bottom: number; left: number; right: number; width: nu
 interface LogGeometry {
   workBottom: number
   restBottom: number
+  /** TASK-046: the log's place on the card, its "Log results" action. */
+  opener: Box
+  /** TASK-046: the form is held by the shared focused dialog's frame. */
+  held: boolean
   form: Box
   formRuleWidth: number
   formContent: { left: number; right: number }
@@ -338,7 +370,7 @@ async function readLog(scope: Page | Locator): Promise<LogGeometry> {
       const rect = node.getBoundingClientRect()
       return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height }
     }
-    const form = card.querySelector('form.clr-timed-log')!
+    const form = document.querySelector('dialog.clr-accepted-log[open] form.clr-timed-log')!
     const formStyle = getComputedStyle(form)
     const movements = [...card.querySelectorAll('ol, ul')].find((node) => node.getAttribute('aria-label') === list)!
     const restNote = [...card.querySelectorAll('p')].find((line) => line.textContent === rest)
@@ -347,13 +379,15 @@ async function readLog(scope: Page | Locator): Promise<LogGeometry> {
     return {
       workBottom: Math.max(...[...card.querySelectorAll('[data-movement-identity]')].map((node) => node.getBoundingClientRect().bottom), movements.getBoundingClientRect().bottom),
       restBottom: restNote === undefined ? 0 : restNote.getBoundingClientRect().bottom,
+      opener: box(card.querySelector('[data-timed-log-opener]')!),
+      held: form.closest('[data-logging-frame]') !== null,
       form: box(form),
       formRuleWidth: parseFloat(formStyle.borderTopWidth),
       formContent: {
         left: form.getBoundingClientRect().left + parseFloat(formStyle.paddingLeft),
         right: form.getBoundingClientRect().right - parseFloat(formStyle.paddingRight),
       },
-      title: box(form.querySelector('.clr-timed-log__title')!),
+      title: box(form.closest('dialog')!.querySelector('.clr-accepted-log__title')!),
       field: box(field),
       label: box(label),
       coachingTop: card.querySelector('[data-coaching-group]')!.getBoundingClientRect().top,
@@ -365,10 +399,14 @@ const TOLERANCE = 1
 
 /** The end log read from the browser: after the work, before coaching, one full-width field. */
 function expectLogContract(geometry: LogGeometry, label: string) {
-  expect(geometry.form.top, `${label}: the log after the work`).toBeGreaterThanOrEqual(geometry.workBottom - TOLERANCE)
-  expect(geometry.form.top, `${label}: the log after the minute's rest`).toBeGreaterThanOrEqual(geometry.restBottom - TOLERANCE)
-  expect(geometry.coachingTop, `${label}: coaching after the log`).toBeGreaterThanOrEqual(geometry.form.bottom - TOLERANCE)
-  expect(geometry.formRuleWidth, `${label}: the log's rule`).toBeGreaterThan(0)
+  // TASK-046: on the card, the log's place is its "Log results" action; the
+  // log itself is held by the focused dialog's frame, which sets it apart
+  // (so no interior rule is drawn inside it, P01).
+  expect(geometry.opener.top, `${label}: the log after the work`).toBeGreaterThanOrEqual(geometry.workBottom - TOLERANCE)
+  expect(geometry.opener.top, `${label}: the log after the minute's rest`).toBeGreaterThanOrEqual(geometry.restBottom - TOLERANCE)
+  expect(geometry.coachingTop, `${label}: coaching after the log`).toBeGreaterThanOrEqual(geometry.opener.bottom - TOLERANCE)
+  expect(geometry.held, `${label}: the log held by the focused frame`).toBe(true)
+  expect(geometry.formRuleWidth, `${label}: no interior rule in the frame`).toBe(0)
   expect(geometry.label.top, `${label}: the title, then the field's label`).toBeGreaterThanOrEqual(geometry.title.bottom - TOLERANCE)
   expect(geometry.label.bottom, `${label}: the label above its field`).toBeLessThanOrEqual(geometry.field.top + TOLERANCE)
   expect(geometry.field.left, `${label}: the notes span the log`).toBeLessThanOrEqual(geometry.formContent.left + TOLERANCE)
@@ -472,6 +510,7 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await page.clock.pauseAt(start + 121_000)
     await expect(timerOf(page)).toContainText('00:59')
     await expect.poll(() => scheduleLines(page)).toEqual(['MIN 2 OF 10', 'PAUSED'])
+    await expect(openerOf(page)).toHaveCount(0)
     await expect(logOf(page)).toHaveCount(0)
     await card.getByRole('button', { name: 'Resume', exact: true }).tap()
     await expect.poll(() => scheduleLines(page)).toEqual(['MIN 2 OF 10'])
@@ -480,8 +519,10 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await page.clock.pauseAt(start + 60_000 + 600_000 + 5_000)
     await expect(timerOf(page)).toContainText('00:00')
     await expect.poll(() => scheduleLines(page)).toEqual(['MIN 10 OF 10', 'COMPLETE'])
-    await expect(logOf(page)).toBeVisible()
     await expect(card.getByText(/The clock has run every prescribed minute/)).toHaveCount(0)
+    // TASK-046: the card's real Log action opens the log in the focused dialog.
+    await openerOf(page).tap()
+    await expect(logOf(page)).toBeVisible()
     await expectNoTally(page)
     await expect(notesOf(page)).toHaveValue('')
     await settle(page)
@@ -501,14 +542,22 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await attachBlock(page, 'emom-ended-note-signal-phone-390')
 
     // The section's forward action saves. The first save is refused: the
-    // athlete stays, with the note and the ended schedule intact.
+    // athlete stays, with the note and the ended schedule intact. TASK-046:
+    // the log is closed first (the workout behind it is inert); with the
+    // failure dismissed, the reopened log reads the note, and the retry is
+    // the same forward action the failure's Try again runs.
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText('That didn’t save')
     expect(app.saves).toHaveLength(1)
-    await expect(notesOf(page)).toHaveValue(EXCEPTION_NOTE)
     await expect.poll(() => scheduleLines(page)).toEqual(['MIN 10 OF 10', 'COMPLETE'])
-    await dialog.getByRole('button', { name: 'Try again', exact: true }).tap()
+    await dialog.getByRole('button', { name: 'Close', exact: true }).tap()
+    await expect(dialog).toHaveCount(0)
+    await openLog(page)
+    await expect(notesOf(page)).toHaveValue(EXCEPTION_NOTE)
+    await closeLog(page)
+    await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     await expect(page.getByRole('heading', { name: COOLDOWN_SECTION_TITLE, exact: true })).toBeVisible()
 
     // Both attempts sent the same row: the note, and no minutes, time or completion.
@@ -551,10 +600,7 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await expect(stackOf(page).getByText('COMPLETE', { exact: true })).toHaveCount(0)
     const stopped = { startedAt: new Date(start).toISOString(), workDoneMinute: null, finishedAt: new Date(start + 130_000).toISOString() }
     expect(await storedGrid(page, app.emomBlockId)).toEqual(stopped)
-    await expect(logOf(page)).toBeVisible()
-    await expectNoTally(page)
-    await settle(page)
-    expectLogContract(await readLog(page), 'early @phone-320')
+    await expect(openerOf(page)).toBeVisible()
 
     // The clock running on never turns the early end into a completed schedule.
     await page.clock.pauseAt(start + 900_000)
@@ -563,9 +609,22 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await page.clock.resume()
 
     // The notes are reached by keyboard: Tab from the top of the page.
+    // TASK-046: Tab reaches the card's "Log results" action; Enter opens the
+    // log with the focus on its X, and Tab reaches the notes.
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
     let reached = false
     for (let press = 0; press < 40 && !reached; press += 1) {
+      await page.keyboard.press('Tab')
+      reached = await openerOf(page).evaluate((opener) => opener === document.activeElement)
+    }
+    expect(reached, 'the Log results action is in the tab order').toBe(true)
+    await page.keyboard.press('Enter')
+    await expect(logOf(page)).toBeVisible()
+    await expectNoTally(page)
+    await settle(page)
+    expectLogContract(await readLog(page), 'early @phone-320')
+    reached = false
+    for (let press = 0; press < 5 && !reached; press += 1) {
       await page.keyboard.press('Tab')
       reached = await notesOf(page).evaluate((field) => field === document.activeElement)
     }
@@ -593,11 +652,16 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await settle(page)
     await expect.poll(() => scheduleLines(page)).toEqual(['MIN 3 OF 10', 'FINISHED EARLY'])
     expect(await storedGrid(page, app.emomBlockId)).toEqual(stopped)
+    await openerOf(page).focus()
+    await page.keyboard.press('Enter')
     await expect(notesOf(page)).toHaveValue('')
     await notesOf(page).focus()
     await page.keyboard.type(EARLY_NOTE)
 
     // Saved by keyboard: the note, and no minutes, elapsed time or completion.
+    // TASK-046: Escape closes the log first.
+    await page.keyboard.press('Escape')
+    await expect(logOf(page)).toHaveCount(0)
     const next = page.getByRole('button', { name: 'Next section', exact: true })
     await next.focus()
     await page.keyboard.press('Enter')
@@ -631,22 +695,27 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     } as const
     for (const [attempt, { lines }] of Object.entries(attempts)) {
       const scope = state.locator(`[data-gallery-emom="${attempt}"]`)
-      await expect(logOf(scope)).toBeVisible()
       await expect.poll(() => scheduleLines(scope)).toEqual(lines)
       await expectNoRetiredCaption(scope)
+      // TASK-046: the route's own "Log results" action opens the log.
+      await openLog(scope)
       await expectNoTally(scope)
       await settle(page)
       expectLogContract(await readLog(scope), `gallery ${attempt}`)
       await test.info().attach(`gallery-emom-${attempt}-signal-phone-390.png`, { body: await scope.screenshot({ caret: 'hide', animations: 'disabled' }), contentType: 'image/png' })
+      await test.info().attach(`gallery-emom-${attempt}-log-signal-phone-390.png`, { body: await page.screenshot({ caret: 'hide', animations: 'disabled' }), contentType: 'image/png' })
+      await closeLog(page)
     }
     const early = state.locator('[data-gallery-emom="early"]')
     await expect(early.getByText('Finished early, in minute 4 of 8. Continue when you are ready.', { exact: true })).toBeVisible()
     await expect(state.getByText(/The clock has run every prescribed minute/)).toHaveCount(0)
     // Live over memory only.
+    await openLog(state.locator('[data-gallery-emom="complete"]'))
     await notesOf(state.locator('[data-gallery-emom="complete"]')).fill('Swings unbroken')
     await expect(notesOf(state.locator('[data-gallery-emom="complete"]'))).toHaveValue('Swings unbroken')
     await noHorizontalOverflow(page)
     await checkJourneyA11y(page)
+    await closeLog(page)
 
     // `?state=cards`, timed composition: the Workout EMOM is the route's own block, ready.
     await visit('/gallery/refinements?state=cards')

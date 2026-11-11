@@ -87,6 +87,7 @@ import { Button, Input } from '../design-system/index'
 import { ladderRungs, ladderUnit } from '../state/ladder'
 import { ladderPartialRound } from '../state/ladder-recovery'
 import { SetLoggingContext, type SetLoggingApi } from '../state/set-logging'
+import { timedLog } from '../test/timed-log-dialog'
 import { MovementCountdown } from './movement-countdown'
 import { SupersetRoundSheet, type RoundDraft } from './set-logger'
 import {
@@ -1535,8 +1536,11 @@ describe('TASK-017 movement groups and label/control rhythm', () => {
           <GalleryRefinements />
         </MemoryRouter>,
       )
+      // TASK-046: each race's log opens from its card's "Log results" action
+      // into the shared focused frame; nothing is drawn inline in the card.
       const cap = document.querySelector<HTMLElement>('[data-gallery-race="for-time-cap"]')!
-      const form = cap.querySelector<HTMLFormElement>('form.clr-timed-log')!
+      expect(cap.querySelector('form.clr-timed-log')).toBeNull()
+      const form = timedLog(cap)
       const groups = movementGroupsOf(form)
       expect(groups.map((group) => within(group).getByRole('heading').textContent)).toEqual(['wall ball', 'burpee'])
       for (const group of groups) expect(group).toHaveClass('clr-logging-movement')
@@ -1546,12 +1550,16 @@ describe('TASK-017 movement groups and label/control rhythm', () => {
 
       // The finished race: one movement group, so no extra gap is drawn.
       const finish = document.querySelector<HTMLElement>('[data-gallery-race="for-time-finish"]')!
-      const finished = movementGroupsOf(finish.querySelector('form.clr-timed-log')!)
+      expect(finish.querySelector('form.clr-timed-log')).toBeNull()
+      const finishedForm = timedLog(finish)
+      const finished = movementGroupsOf(finishedForm)
       expect(finished).toHaveLength(1)
       expect(px(cascaded(finished[0], 'margin-block-start'))).toBe(0)
 
-      // Provider acceptance only: the route's logs are still inline in their cards.
-      expect(document.querySelector('dialog.clr-accepted-log')).toBeNull()
+      // TASK-046 supersedes "no route claims the frame yet": the route's own
+      // For Time logs are now held by the shared frame, with the same rhythm.
+      expect(form.closest('dialog.clr-accepted-log')).not.toBeNull()
+      expect(finishedForm.closest('dialog.clr-accepted-log')).not.toBeNull()
       expect(fetch).not.toHaveBeenCalled()
     },
     HEAVY,
