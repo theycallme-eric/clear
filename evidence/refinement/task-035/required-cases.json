@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-035",
+  "description": "Retain adaptive-training/progress report definition as explicit follow-up (REQ-035; AC-R035-01, AC-R035-02). Definition-only: no route, screen, chart, metric set, report frequency, profile, writer, migration or gallery state. The record is docs/definitions/clear-refinement-20261103/TASK-035.md, checked by TASK-039’s shared definition-record checker (scripts/refinement/verify-definition-record.mjs) with the extra sections Derived readings, Future targets, Where these readings appear today and Non-gallery disposition. check-01 proves: every claim bullet cites a source and every source is cited; every identifier a claim names occurs in the verified bytes of a source it cites (base: blobs at 03087f7, repo: files, ref:accepted-gallery objects from the out-of-Git store); recorded observations (O), derived readings (D) and future targets (T) stay apart; one exact owner decision (R03-PLACEMENT-CONTENT, Owner: Eric) chooses between placement options P1-P5 and content categories C1-C6 with none pre-selected; every route named exists in src/app/router.tsx and none is a report route; R03/G19/REQ-035/both criteria/TASK-035/#662 and all six evidence ids stay in Traceability, and the accepted coverage map still records REQ-035 as an explicit non-gallery disposition (accepted gallery eded158cfd928d382c9a9409e2c372270312741d); no report is claimed implemented. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "node-test",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-035 --check check-01 -- node --test scripts/refinement/task-035-definition.test.mjs",
+      "criteria": [
+        "AC-R035-01",
+        "AC-R035-02"
+      ],
+      "files": [
+        "scripts/refinement/task-035-definition.test.mjs"
+      ],
+      "cases": [
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the record passes the shared definition-record checker with its derived readings, future targets, current surfaces and non-gallery disposition",
+          "criterion": "AC-R035-01"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 every claim cites a listed source and every listed source is cited",
+          "criterion": "AC-R035-01"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the identifiers each claim names occur in the sources that claim cites",
+          "criterion": "AC-R035-01"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 completed observations, derived readings and future targets stay apart",
+          "criterion": "AC-R035-01"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the remaining owner decision is exact, names its owner and chooses between options none of which is pre-selected",
+          "criterion": "AC-R035-01"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 no route, chart, metric set, report frequency or editable duplicate profile is invented",
+          "criterion": "AC-R035-01"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 the follow-up stays visible in source-to-task traceability and the accepted map still records its non-gallery disposition",
+          "criterion": "AC-R035-02"
+        },
+        {
+          "file": "scripts/refinement/task-035-definition.test.mjs",
+          "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 no report is claimed implemented, and no route at this revision is a report",
+          "criterion": "AC-R035-02"
+        }
+      ]
+    }
+  }
+}

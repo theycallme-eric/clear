@@ -1,0 +1,75 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-035",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "node-test",
+  "runnerVersion": null,
+  "command": [
+    "node",
+    "--test",
+    "scripts/refinement/task-035-definition.test.mjs"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-035/required-cases.json",
+    "sha256": "25bc46854fe504ea85f92f4c228e85dce6acb83cbcc444b543043d605b9eaa8a"
+  },
+  "targets": [
+    {
+      "path": "scripts/refinement/task-035-definition.test.mjs",
+      "sha256": "39d52bf2be39951d4d46419c96f435c2ce312a2126f7236cb50ad986a78ced71"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the record passes the shared definition-record checker with its derived readings, future targets, current surfaces and non-gallery disposition",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 every claim cites a listed source and every listed source is cited",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the identifiers each claim names occur in the sources that claim cites",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 completed observations, derived readings and future targets stay apart",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the remaining owner decision is exact, names its owner and chooses between options none of which is pre-selected",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 no route, chart, metric set, report frequency or editable duplicate profile is invented",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 the follow-up stays visible in source-to-task traceability and the accepted map still records its non-gallery disposition",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 no report is claimed implemented, and no route at this revision is a report",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}
