@@ -377,15 +377,17 @@ describe('Workout — navigation and progress', () => {
     const user = userEvent.setup()
     await shell()
 
-    // TASK-003 (AC-C08-01): the section names each block by its format alone,
-    // as the block's own badge does; the window is stated on the block's card.
-    const structures = () =>
-      within(screen.getByRole('list', { name: 'Structures in this section' }))
-    expect(structures().getByText('EMOM')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01): each block is named by its format alone on its
+    // own card's badge; the window is stated on the block's card. TASK-027
+    // (C54; R35): the compact navigator no longer repeats those badges.
+    const badges = () =>
+      [...document.querySelectorAll('.clr-movement-group-header__badge')].map((badge) => badge.textContent)
+    expect(screen.queryByRole('list', { name: 'Structures in this section' })).toBeNull()
+    expect(badges()).toContain('EMOM')
     expect(screen.getByText('10 MIN')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    expect(structures().getByText('AMRAP')).toBeInTheDocument()
+    expect(badges()).toContain('AMRAP')
     expect(screen.getByText('8 MIN')).toBeInTheDocument()
   })
 })
@@ -395,16 +397,30 @@ describe('Workout — navigation and progress', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Workout — the active section header', () => {
-  /** The one frame the active section is drawn in. */
+  /**
+   * The compact navigator the active section is headed by (TASK-027): no card
+   * of its own, its heading and status read by assistive technology.
+   */
   function activeHeader(name: string): HTMLElement {
-    const frame = screen.getByRole('heading', { level: 2, name }).closest('.clr-card')
-    if (!(frame instanceof HTMLElement)) throw new Error(`No card frames ${name}`)
+    const frame = screen.getByRole('heading', { level: 2, name }).closest('[data-section-navigation]')
+    if (!(frame instanceof HTMLElement)) throw new Error(`No navigator heads ${name}`)
+    expect(frame.closest('.clr-card')).toBeNull()
     return frame
+  }
+
+  /** The open section's first card: the first card frame after its navigator. */
+  function firstCard(name: string): HTMLElement {
+    const navigator = activeHeader(name)
+    const card = [...document.querySelectorAll<HTMLElement>('.clr-card__body')].find(
+      (frame) => navigator.compareDocumentPosition(frame) & Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    if (card === undefined) throw new Error(`No card follows ${name}`)
+    return card
   }
 
   const jumpToggle = () => screen.getByRole('button', { name: 'All sections' })
 
-  it('consolidates status, section count and structure identity into one header, with progress above the footer navigation', async () => {
+  it('consolidates status and section count into one compact navigator, with progress above the footer navigation', async () => {
     await shell()
 
     const header = within(activeHeader('Primary lift'))
@@ -417,10 +433,10 @@ describe('Workout — the active section header', () => {
         { name: 'Section 2 of 3' },
       ),
     ).toHaveAttribute('aria-valuenow', '1')
-    // TASK-003 (AC-C08-01): the structure identity is the format alone.
-    expect(
-      within(header.getByRole('list', { name: 'Structures in this section' })).getByText('EMOM'),
-    ).toBeInTheDocument()
+    // TASK-027 (C54; R35): the block's own card names its format (TASK-003,
+    // AC-C08-01); the navigator repeats no block identity.
+    expect(header.queryByRole('list', { name: 'Structures in this section' })).toBeNull()
+    expect(header.queryByText('EMOM')).toBeNull()
     expect(header.getByRole('list', { name: 'Sections' })).toBeInTheDocument()
 
     // No second frame restating the position: one count, one bar, one list.
@@ -449,8 +465,9 @@ describe('Workout — the active section header', () => {
 
     await jumpTo(user, 'Conditioning, not started')
 
-    const heading = screen.getByRole('heading', { level: 2, name: 'Conditioning' })
-    expect(heading).toHaveFocus()
+    // TASK-027 (owner decision 2026-11-10, option a): the heading is visually
+    // hidden, so the jump lands on the opened section's first card.
+    expect(firstCard('Conditioning')).toHaveFocus()
     expect(within(activeHeader('Conditioning')).getByText('Section 3 / 3 · Not started'))
       .toBeInTheDocument()
     expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
@@ -472,7 +489,8 @@ describe('Workout — the active section header', () => {
     await jumpTo(user, 'Primary lift, in progress')
 
     expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.getByRole('heading', { level: 2, name: 'Primary lift' })).toHaveFocus()
+    // TASK-027: the same section's first card, as for any jump.
+    expect(firstCard('Primary lift')).toHaveFocus()
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
   })
@@ -483,7 +501,9 @@ describe('Workout — the active section header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Previous' }))
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Warm-up' })).toHaveFocus()
+    // TASK-027: the heading is visually hidden; Previous lands on the
+    // opened section's first card, as a jump does.
+    expect(firstCard('Warm-up')).toHaveFocus()
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
@@ -495,7 +515,9 @@ describe('Workout — the active section header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Conditioning' })).toHaveFocus()
+    await screen.findByRole('heading', { level: 2, name: 'Conditioning' })
+    // TASK-027: Next lands on the opened section's first card, as a jump does.
+    expect(firstCard('Conditioning')).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Conditioning, not started' })).toHaveAttribute(
       'aria-current',
       'step',
@@ -524,6 +546,7 @@ describe('Workout — the active section header', () => {
     // Restoring is not a move the athlete made: the heading is not grabbed,
     // and the section left behind is not marked complete by being skipped.
     expect(screen.getByRole('heading', { level: 2, name: 'Conditioning' })).not.toHaveFocus()
+    expect(firstCard('Conditioning')).not.toHaveFocus()
     expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
   })

@@ -488,9 +488,11 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
       expect(live.map((header) => header.meta)).toEqual(FORMAT_DETAILS.workout)
       live.forEach((header, index) => expectHeader(header, `Workout ${FORMAT_KEYS[index]} @${name}`))
       expectOnePosition(live, `Workout @${name}`)
-      // The live section's structure list says the same format-only words.
-      await expect(page.getByRole('list', { name: 'Structures in this section' }).getByRole('listitem'))
-        .toHaveText([...FORMAT_BADGES.workout] as string[])
+      // TASK-027 (C54; R35) superseded the live section's repeated structure
+      // list: the compact navigator names no block, so the cards' badges read
+      // above are the workout's one format-only reading of each block.
+      await expect(page.getByRole('list', { name: 'Structures in this section' })).toHaveCount(0)
+      await expect(page.locator('main .clr-movement-group-header__badge')).toHaveText([...FORMAT_BADGES.workout] as string[])
       // C10: the live EMOM, AMRAP, For Time and ladder keep the prescribed load Review stated.
       expect(await readLoads(page, 'workout')).toEqual(expectedLoads())
       await loadsInTargetRows(page, 'workout')
