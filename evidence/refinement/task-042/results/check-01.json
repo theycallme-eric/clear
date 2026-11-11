@@ -1,0 +1,115 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-042",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "node-test",
+  "runnerVersion": null,
+  "command": [
+    "node",
+    "--test",
+    "scripts/refinement/task-042-evidence-closure.test.mjs"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-042/required-cases.json",
+    "sha256": "5b6de6b1d0050e72c0bd5945a91538711f6ff376ddf073b5ca44d4c500cfb6fc"
+  },
+  "targets": [
+    {
+      "path": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "sha256": "32822fbf3c480e9ee3c86630dc653504b0afa0e493b37b657dd1d7821ff14974"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-01 the shared checker in final mode accepts every delivery task over the integration base, Foundation 0.14.3 and every staged reference, and refuses the setup-only TASK-039",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-01 every approved journey keeps its entry, expected result and one completion owner whose approved journey check is a current real-route Playwright receipt",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-01 every user-facing criterion maps to one journey and one completion owner, and every approved verification of every criterion has a current passing receipt",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-01 the committed source map is exactly the derivation from the approved handoff, the accepted coverage map, the task manifests and the repository gallery",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-01 the definition records TASK-035, TASK-037 and TASK-038 close by their current receipts and verify at their delivered commits",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-02 visual, geometry and motion evidence binds the code revision and artifact hashes: committed receipts at HEAD over HEAD blobs, the installed runners, and hash-pinned before references",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-02 measured geometry, phase samples, real write/read/reload and error, retry and reduced-motion cases are executed in current receipts; backend-lane receipts are consumed, not re-run",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-03 the gallery and the routes consume the same shared implementations; no route reaches gallery or test code; every receipt and manifest is TASK-039's rehearsed format",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-01 every accepted user-visible refinement records its requirement and criteria, shared owner, actual route, canonical gallery URL and named state; the route-only exception names its state and real-route evidence",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-02 routes and gallery states consume the accepted shared owners and the one semantic variable file; Foundation 0.14.3 is unchanged; no route CSS, renderer or dialog duplicates them",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-03 each accepted visual target is executed on the real route by a current passing receipt",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-04 P01-P05 are each demonstrated by a real shared-component case with a current passing receipt",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-05 all 16 logging contexts and the four skins are mapped to their state, shared visual owner, own fields and writer, with real-route and skin cases; context-owned meanings are kept",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-06 each implementation owner's accepted gallery state draws the route consumer and is held by an executed specimen case",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-07 aggregate closure verifies the accepted coverage matrix and states, real-route parity and delivered receipts; persistence closes by real writes, never a synthetic gallery Save",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-GAL-08 every approved task cites the accepted commit with a stable state or an explicit non-gallery disposition, and its delivered evidence carries the citation or its disposition",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 16
+  },
+  "problems": []
+}
