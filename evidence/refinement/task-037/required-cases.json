@@ -1,0 +1,66 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-037",
+  "description": "Retain a scoped platform language and terminology audit (REQ-037; AC-R037-01, AC-R037-02). Definition-only: no product copy, code, route, gallery state, writer or other task's test is changed. The record is docs/definitions/clear-refinement-20261103/TASK-037.md, checked by TASK-039’s shared definition-record checker (scripts/refinement/verify-definition-record.mjs) with the extra sections Effort and RPE, Selected copy changes, Terminology and voice proposal, Undecided items and Non-gallery disposition. check-01 proves: every claim bullet cites a source and every source is cited; every quoted string or identifier occurs in the verified bytes of a source its claim cites (base: blobs at 03087f7, repo: files, ref:accepted-gallery objects from the out-of-Git store); the inventory (I-items) names every route surface with titles, actions, states and helper messages; every frontend string literal showing RPE at this revision is inventoried by file and the four stored efforts (rpe, perceived_effort, set_effort, mood) keep their meanings; each selected copy change (R09, R23, R40, R43, R50, R70, R71, R72, R112) keeps its verified applied/not-applied status from the string literals of the pinned before/after sources; the proposal is concise, marked a proposal, uses Effort not RPE and is not a complete voice guide; undecided items (U) and three exact owner decisions (COPY-VOICE, EFFORT-NUMERIC-READING, COPY-APPLY; Owner: Eric) are explicit with no option pre-selected; no copy is claimed rewritten, and the accepted coverage map still records REQ-037 as an explicit non-gallery disposition (accepted gallery eded158cfd928d382c9a9409e2c372270312741d) with full traceability. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "node-test",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-037 --check check-01 -- node --test scripts/refinement/task-037-definition.test.mjs",
+      "criteria": [
+        "AC-R037-01",
+        "AC-R037-02"
+      ],
+      "files": [
+        "scripts/refinement/task-037-definition.test.mjs"
+      ],
+      "cases": [
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the record passes the shared definition-record checker with its inventory, effort, selected-change, proposal, undecided and non-gallery sections",
+          "criterion": "AC-R037-01"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every claim cites a listed source and every listed source is cited",
+          "criterion": "AC-R037-01"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every quoted string and identifier occurs in the verified bytes of a source its claim cites",
+          "criterion": "AC-R037-01"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the inventory covers every route surface with its titles, actions, states and helper messages",
+          "criterion": "AC-R037-01"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every visible RPE string at this revision is inventoried and Effort keeps numeric historical and categorical meanings apart",
+          "criterion": "AC-R037-01"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+          "criterion": "AC-R037-01"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 the terminology and voice proposal is concise, sourced, uses Effort not RPE and is not a complete voice guide",
+          "criterion": "AC-R037-02"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 undecided items and owner decisions are explicit and none is pre-selected",
+          "criterion": "AC-R037-02"
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 no product copy is claimed rewritten and the accepted map still records the non-gallery disposition with traceability",
+          "criterion": "AC-R037-02"
+        }
+      ]
+    }
+  }
+}
