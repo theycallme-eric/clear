@@ -109,7 +109,7 @@ describe('AC-051: a circuit movement owns its countdown independently of load en
 
     // Opened: the shared logger's card, the clock above its Rest entry.
     await user.click(within(row()).getByRole('button', { name: 'Rest for hollow body hold' }))
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     expect(card()).toContainElement(region())
     expect(region().compareDocumentPosition(
       within(card()).getByRole('button', { name: 'Rest' }),
@@ -129,7 +129,7 @@ describe('AC-051: a circuit movement owns its countdown independently of load en
     expect(screen.getAllByRole('region', { name: 'hollow body hold countdown' })).toHaveLength(1)
     expect(card()).toContainElement(region())
     advance(5)
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     await user.click(within(row()).getByRole('button', { name: 'Hide load entry for hollow body hold' }))
     expect(timer()).toHaveTextContent('00:20')
     expect(button('Pause')).toBeInTheDocument()

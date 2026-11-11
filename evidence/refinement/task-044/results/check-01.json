@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-044",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-044.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-044/required-cases.json",
+    "sha256": "9c255518d29c547aa9c884abc4e00698f21d7687fea4795ebf857dbbd8c41bdf"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-044.spec.ts",
+      "sha256": "07cd973799a219c87f84f65001381425a49ce20e217519f0e930dcc545178b13"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > JOURNEY-019 superset round phone-390 touch: the block Rest opens Log round N in the modal log over an inert workout beside the block rest, close and Escape keep each movement draft and Performed, Log round saves only Performed movements through the original writer, and the rest ending closes the confirmation",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > JOURNEY-019 superset correction and retry phone-390 keyboard reduced motion: a refused round write is held on this device and retried under its own id; a movement Edit opens Edit set N in the log, close keeps the correction, Cancel and Save correction keep the writer, and Clear set asks with Keep set first",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > JOURNEY-019 circuit round, Undo and movement entry phone-320: Finish round opens Round N recorded in the modal log and Take back this round undoes it; a movement Rest opens its Log set N in the same log with its draft kept through close, saves and corrects through the original writer, and records no round and no second rest",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states clear phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states vapour phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states signal phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "name": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states mono phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

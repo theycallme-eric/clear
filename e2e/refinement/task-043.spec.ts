@@ -622,7 +622,9 @@ test.describe('TASK-043 standard set logging in the shared focused dialog', () =
       await expect(restBars(page)).toHaveCount(1)
       await page.getByRole('button', { name: 'Close log' }).click()
 
-      // ── Not this family: the superset's round stays on its half-sheet ──
+      // ── Not this family: the superset's round is TASK-044's. Since TASK-044
+      // (owner decision 2026-11-10) it opens in the same focused log too; this
+      // case only checks that it is reachable and that nothing is written. ──
       await page.getByRole('button', { name: 'Next section' }).click()
       await expect.poll(() => app.blockResults.length).toBe(2)
       const pair = content(page).locator('.clr-card').filter({
@@ -630,10 +632,9 @@ test.describe('TASK-043 standard set logging in the shared focused dialog', () =
       })
       await pair.getByRole('button', { name: 'Rest', exact: true }).click()
       await expect(page.getByRole('form', { name: 'Log round 1 of bench press and push up' })).toBeVisible()
-      await expect(page.locator('section.clr-set-sheet')).toHaveCount(1)
-      await expect(page.getByRole('button', { name: 'Minimize', exact: true })).toBeVisible()
+      await expectFocusedLog(page, 'Log round 1')
+      await page.getByRole('button', { name: 'Close log', exact: true }).click()
       await expect(openLog(page)).toHaveCount(0)
-      await page.getByRole('button', { name: 'Minimize', exact: true }).click()
       expect(app.mutations).toHaveLength(3)
       app.assertContained()
     })

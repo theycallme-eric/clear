@@ -490,7 +490,8 @@ async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finis
   await expect(navigation).toBeVisible()
   await expect(progress).toBeVisible()
   await page.evaluate(() => document.fonts.ready)
-  if (coveredBySheet) await expect(page.locator('section.clr-set-sheet')).toBeVisible()
+  // TASK-044: the circuit's movement entry is the focused logging dialog (was the half-sheet).
+  if (coveredBySheet) await expect(page.locator('dialog.clr-accepted-log[open]')).toBeVisible()
   await expect.poll(() => navigation.evaluate((nav) =>
     nav.closest('.clr-workout-footer__content[inert]') !== null),
   ).toBe(coveredBySheet)
@@ -545,7 +546,7 @@ async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finis
         const hit = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2)
         return {
           inertAncestor: button.closest('.clr-workout-footer__content[inert]') !== null,
-          sheetOnTop: Boolean(hit?.closest('section.clr-set-sheet')),
+          sheetOnTop: Boolean(hit?.closest('section.clr-set-sheet, dialog.clr-accepted-log')),
         }
       })
       expect(coverage.inertAncestor, 'the covered footer action has its actual inert owner').toBe(true)
@@ -633,11 +634,11 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
       .toHaveAttribute('aria-expanded', 'false')
   }
   await page.getByRole('button', { name: `Rest for ${second}`, exact: true }).click()
-  const sheet = page.locator('[data-set-sheet-slot]')
+  const sheet = page.locator('dialog.clr-accepted-log[open]')
   await expect(page.getByRole('form', { name: /^Log set/ })).toHaveCount(1)
   await expect(sheet.getByRole('form', { name: `Log set 1 of ${second}`, exact: true })).toBeVisible()
   await expect(rows[1].getByRole('form')).toHaveCount(0)
-  await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
+  await sheet.getByRole('button', { name: 'Close log', exact: true }).click()
   await expect(page.getByRole('form', { name: /^Log set/ })).toHaveCount(0)
   await page.getByRole('button', { name: `Hide load entry for ${second}`, exact: true }).click()
   await expectHandsOff(page)
@@ -786,7 +787,7 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     await expect(timer).toBeVisible()
     const exercise = display(world.catalog[1].id)
     await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
-    const sheet = page.locator('[data-set-sheet-slot]')
+    const sheet = page.locator('dialog.clr-accepted-log[open]')
     await expect(sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })).toBeVisible()
     // Circuit rest belongs to the block, independently of the set-rest sheet.
     await expect(timer).toHaveCount(1)
@@ -795,7 +796,7 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     // The approved open sheet covers the fitted pager, including after scrolling its entry.
     await sheet.getByRole('button', { name: 'Log set 1', exact: true }).scrollIntoViewIfNeeded()
     await expectFooterPair(page, 'Next section', { coveredBySheet: true })
-    await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
+    await sheet.getByRole('button', { name: 'Close log', exact: true }).click()
     // Only actual Minimize restores the original real click-trial reachability contract.
     await expectFooterPair(page, 'Next section')
     await page.getByRole('button', { name: `Hide load entry for ${exercise}`, exact: true }).click()
@@ -912,7 +913,7 @@ test('JOURNEY-015: menu abandon failure preserves an explicitly logged set, and 
   // A real explicit submit through the shared sheet creates the observation.
   const exercise = display(world.catalog[0].id)
   await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
-  const sheet = page.locator('[data-set-sheet-slot]')
+  const sheet = page.locator('dialog.clr-accepted-log[open]')
   const form = sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })
   await expect(form).toBeVisible()
   const weight = form.getByRole('spinbutton', { name: 'Weight', exact: true })
@@ -931,7 +932,7 @@ test('JOURNEY-015: menu abandon failure preserves an explicitly logged set, and 
     actual_distance_unit: null, weight: null, weight_unit: 'kg', effort: 'about_right',
   })
   expect(await world.blockResults()).toEqual([])
-  await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
+  await sheet.getByRole('button', { name: 'Close log', exact: true }).click()
   await page.getByRole('button', { name: `Hide load entry for ${exercise}`, exact: true }).click()
 
   let abandonAttempts = 0

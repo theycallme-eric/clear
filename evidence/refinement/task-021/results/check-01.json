@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/circuit-block.test.tsx",
-      "sha256": "0040ff7be9c44aacc649f8723339d3710a59432c1e0411ea3513b4e6c470de53"
+      "sha256": "d5336a9e0de4924f052ffd3402811310c4d032ae7b7be440f2f75d042e65521d"
     }
   ],
   "requiredCases": [

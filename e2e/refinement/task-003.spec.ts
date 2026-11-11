@@ -547,7 +547,8 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
     await expect(form.getByLabel('Weight', { exact: true })).toBeVisible()
     // The prescribed target stays the circuit row's own reading, apart from the entry.
     await expect(card(page, 'workout', 2).locator('[data-movement-load]').first()).toHaveText('24 kg')
-    await page.getByRole('button', { name: 'Minimize' }).tap()
+    // TASK-044: the entry is the focused logging dialog; its X closes it (was Minimize).
+    await page.getByRole('button', { name: 'Close log' }).tap()
     await expect(form).toBeHidden()
     app.assertContained()
   })

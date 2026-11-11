@@ -310,12 +310,15 @@ describe('TASK-003 consistent format badges and truthful prescribed load', () =>
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
     expect(double.loggedSets()[0].performed).toMatchObject({ weight: 22 })
     // TASK-020 (C46): the saved set is confirmed, not replaced by set 2's form.
-    await screen.findByRole('region', { name: 'Set 1 logged' })
+    await screen.findByRole('dialog', { name: 'Set 1 logged' })
     expect(within(screen.getByRole('list', { name: 'Logged sets' })).getByText(/22 kg/)).toBeInTheDocument()
     const swing = () => blockList('workout', 2).querySelector<HTMLElement>('[data-movement-identity]')!
     expect(swing().querySelector('[data-movement-load]')).toHaveTextContent('24 kg')
     expect(swing().querySelector('[data-movement-detail]')!.textContent).not.toContain('22 kg')
 
+    // TASK-044: the entry is the focused log, a modal over the card; it is
+    // closed with its X before the card's own Hide load entry is used.
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     await user.click(screen.getByRole('button', { name: 'Hide load entry for kb swing' }))
     expect(within(swing()).getByText('1 set logged')).toBeInTheDocument()
     expect(swing().querySelector('[data-movement-load]')).toHaveTextContent('24 kg')

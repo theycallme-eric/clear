@@ -153,10 +153,10 @@ export interface ExerciseSetLoggerProps {
    * native modal with the entry's title, the framed "Close log" X and the
    * Balanced backdrop. The standard block's movements have adopted it: the
    * anchor/primary and other lifts, timed and distance movements, extra sets
-   * and saved-set corrections. Off, the half-sheet is drawn, as a superset's
-   * movements and a circuit's optional entry still are (TASK-044). Either
-   * way the fields, draft, writer, Save confirmation and the one rest are this
-   * logger's and unchanged.
+   * and saved-set corrections. TASK-044 adopted it for a superset's
+   * movements (their saved-set corrections) and a circuit's optional movement
+   * entry. Off, the half-sheet is drawn. Either way the fields, draft, writer,
+   * Save confirmation and the one rest are this logger's and unchanged.
    */
   focused?: boolean
 }
@@ -1041,7 +1041,9 @@ function measureField(
 
 /*
  * REQ-016 — a superset's one Log round: the movements' results, entered
- * separately in one half-sheet and handed to the shell together. It lives
+ * separately in one entry and handed to the shell together. Since TASK-044
+ * (REQ-019, C45) the block holds the entry in the shared focused logging
+ * dialog, whose title and X are the round's (`SupersetBlock`). It lives
  * here because this file is the presentation layer's one `logSet` caller.
  *
  * Each movement keeps its own fields, in its own unit and modality, and its

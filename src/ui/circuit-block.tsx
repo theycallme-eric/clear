@@ -23,8 +23,8 @@
  *     that rest ends (REQ-017). The section's forward action saves the block
  *     with or without any of it.
  *   · **Load entry is compact and optional.** Each movement is one read-only
- *     row with a quiet `Rest` entry action, which opens the shared
- *     half-sheet for that movement only and writes through the shell's one
+ *     row with a quiet `Rest` entry action, which opens the shared focused
+ *     log (TASK-044) for that movement only and writes through the shell's one
  *     set path (`ExerciseSetLogger`). It is never the round clock's control.
  *   · **Round times are durations.** Each finished round's elapsed time is
  *     listed; its stored wall-clock start and end are kept but not drawn.
@@ -69,6 +69,13 @@
  *     prescribed, or the last round) stays until it is closed. The X and
  *     Escape close it without changing anything: the rest goes on, back on
  *     the card. Focus returns to the round clock's own control.
+ *
+ * TASK-044 (REQ-019; C45; R82, R100) — the circuit movement entry: a
+ * movement's Rest opens its optional actual entry (`ExerciseSetLogger`) in the
+ * same shared focused logging dialog, `Log set N` with the framed "Close log"
+ * X, instead of the half-sheet. The logger's fields, draft, writer, Save
+ * confirmation and correction are unchanged; the circuit keeps its round
+ * position, round clock, rest and the movement's own countdown on the card.
  */
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
@@ -534,10 +541,12 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           // The circuit movement owns this clock independently of optional
           // load entry. Opening the logger draws it; it never creates another.
           countdown={countdown}
-          // Its rest is the round boundary's, so its entry only opens the sheet.
-          // The row's one tap opens the shared half-sheet straight away
-          // (REQ-017); its Minimize and Cancel leave the movement unlogged.
+          // Its rest is the round boundary's, so its entry only opens the log.
+          // The row's one tap opens the entry straight away (REQ-017); its
+          // Close log X and Cancel leave the movement unlogged.
           openSheetOnMount
+          // TASK-044: the entry is the shared focused logging dialog.
+          focused
         />
       ) : (
         <BlockPanel.Movement

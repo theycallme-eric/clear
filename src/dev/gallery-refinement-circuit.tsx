@@ -72,8 +72,11 @@ function movement(overrides: Partial<Prescription> & Pick<Prescription, 'exercis
   } as Prescription
 }
 
-/** V13's circuit: three rounds, 45 seconds between them, goblet squat first. */
-const CIRCUIT: Block = {
+/**
+ * V13's circuit: three rounds, 45 seconds between them, goblet squat first.
+ * Also the circuit-movement state's (TASK-044).
+ */
+export const CIRCUIT: Block = {
   structure_type: 'circuit',
   rounds: 3,
   timer_type: 'none',
@@ -91,7 +94,7 @@ const CIRCUIT: Block = {
 }
 
 /** The mount's own storage: a map, never the route's `localStorage`. */
-function memoryStorage(): ShellStorage {
+export function memoryStorage(): ShellStorage {
   const values = new Map<string, string>()
   return {
     getItem: (key) => values.get(key) ?? null,

@@ -243,7 +243,7 @@ describe('one combined Log round (AC-058)', () => {
     // TASK-020 (C46): round 1 is confirmed in the sheet, not replaced by round
     // 2's form; the next round, opened deliberately, starts every field and
     // effort fresh.
-    expect(screen.getByRole('region', { name: 'Round 1 logged' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Round 1 logged' })).toBeInTheDocument()
     const next = await openRound(user, 2)
     expect(within(movement(next, 'A1 bench press, set 2').getByRole('group', { name: 'Effort' }))
       .queryByRole('radio', { checked: true })).toBeNull()
@@ -293,7 +293,7 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
 
     // The next round keeps the plank's gap at set 1 rather than sliding into it.
     // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately.
-    expect(screen.getByRole('region', { name: 'Round 1 logged' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Round 1 logged' })).toBeInTheDocument()
     const next = await openRound(user, 2)
     await user.click(movement(next, 'A2 plank, set 2').getByRole('checkbox', { name: 'Performed' }))
     await user.click(submit(next, 2))
@@ -440,7 +440,7 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     const form = await openRound(user, 1)
     await retype(user, movement(form, 'A2 plank, set 1').getByLabelText('Seconds'), '41')
 
-    await user.click(within(form.closest('section')!).getByRole('button', { name: 'Minimize' }))
+    await user.click(within(form.closest('dialog')!).getByRole('button', { name: 'Close log' }))
     expect(screen.queryByRole('form', { name: /^Log round/ })).toBeNull()
 
     const again = await openRound(user, 1)
@@ -486,7 +486,7 @@ describe('movement countdown ownership through partial rounds', () => {
     expect(timer()).toHaveTextContent('00:25')
     advance(5)
     expect(timer()).toHaveTextContent('00:20')
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     const next = await openRound(user, 2)
     expect(timer()).toBe(original)
     expect(screen.getAllByRole('region', { name: 'plank countdown' })).toHaveLength(1)
@@ -519,7 +519,7 @@ describe('a grouped correction returns keyboard focus to an available control', 
     }
 
     await openEdit()
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     expect(edit).toHaveFocus()
     await openEdit()
     await user.click(within(editForm()).getByRole('button', { name: 'Cancel' }))
@@ -581,7 +581,7 @@ describe('shared rest and the global clock (AC-060)', () => {
 
     // A partial round still saves as one round, and starts no second rest.
     // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately.
-    expect(screen.getByRole('region', { name: 'Round 1 logged' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Round 1 logged' })).toBeInTheDocument()
     const next = await openRound(user, 2)
     await retype(user, movement(next, 'A2 plank, set 2').getByLabelText('Seconds'), '25')
     await user.click(submit(next, 2))

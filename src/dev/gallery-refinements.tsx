@@ -119,6 +119,15 @@
  * shared focused logging dialog: the framed Close log X, the round time read
  * back, the circuit's own rest at full width and Take back this round
  * (`gallery-refinement-circuit.tsx`).
+ *
+ * `superset` and `circuit-movement`: the grouped logging moments in the
+ * shared focused logging dialog (TASK-044: C45; R82, R100) — the route's own
+ * `SupersetBlock`, whose Rest opens `Log round 1` with each movement's
+ * Performed, fields and effort beside the block's one rest, and the route's
+ * own `CircuitBlock`, whose movement Rest opens that movement's optional
+ * `Log set 1` entry, each with the framed "Close log" X and Balanced
+ * backdrop, over the shell's own set-logging provider with set observations
+ * answered in memory (`gallery-refinement-group-logging.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -144,6 +153,7 @@ import {
   GalleryTimedMovementSet,
 } from './gallery-refinement-set-logging'
 import { GalleryCircuitRound } from './gallery-refinement-circuit'
+import { GalleryCircuitMovement, GallerySupersetRound } from './gallery-refinement-group-logging'
 
 function GalleryLadderFour() {
   return <GalleryLadderFlow rounds={4} />
@@ -175,6 +185,8 @@ const REFINEMENT_STATES = [
   { id: 'extra-set', title: 'Extra set · set logging', Render: GalleryExtraSet },
   { id: 'set-correction', title: 'Saved-set correction', Render: GallerySetCorrection },
   { id: 'circuit-round', title: 'Circuit round · recorded round and take back', Render: GalleryCircuitRound },
+  { id: 'superset', title: 'Superset round · round logging', Render: GallerySupersetRound },
+  { id: 'circuit-movement', title: 'Circuit movement · movement entry', Render: GalleryCircuitMovement },
 ] as const
 
 export function GalleryRefinements() {
