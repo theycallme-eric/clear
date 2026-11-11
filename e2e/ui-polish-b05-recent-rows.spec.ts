@@ -24,6 +24,10 @@ import { expect, test as scanned } from './fixtures'
  * identity beside the test output. The pixels are compared with the reference
  * by review; the geometry below is what the review is checked against.
  *
+ * TASK-026 (C53, R19) supersedes the chronology's old title+status head: the
+ * History row now puts its title on its own row with the status and date
+ * beneath it, so the chronology case checks that hierarchy instead.
+ *
  * Data is synthetic: an intercepted session for a fictional user, synthetic
  * reads, and no writes, model calls or real account.
  */
@@ -274,24 +278,25 @@ async function recentRowGeometry(row: Locator) {
 /** The chronology row's own composition, recorded so a change to it is visible. */
 async function chronologyRowGeometry(row: Locator) {
   return row.evaluate((element) => {
-    const head = element.querySelector<HTMLElement>('[data-part="head"]')
-    const context = element.querySelector<HTMLElement>('[data-part="context"]')
-    const status = head?.querySelector<HTMLElement>('[data-part="status"]') ?? null
+    const title = element.querySelector<HTMLElement>('[data-part="title"]')
+    const statusDate = element.querySelector<HTMLElement>('[data-part="status-date"]')
+    const status = statusDate?.querySelector<HTMLElement>('[data-part="status"]') ?? null
+    const date = statusDate?.querySelector<HTMLElement>('[data-part="date"]') ?? null
     const box = (node: Element | null) => {
       if (node === null) return null
       const rect = node.getBoundingClientRect()
       return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right }
     }
     return {
-      hasHead: head !== null,
-      hasStatusDate: element.querySelector('[data-part="status-date"]') !== null,
-      headAlignItems: head === null ? null : getComputedStyle(head).alignItems,
-      headJustify: head === null ? null : getComputedStyle(head).justifyContent,
+      layout: element.getAttribute('data-layout'),
+      hasHead: element.querySelector('[data-part="head"]') !== null,
+      hasStatusDate: statusDate !== null,
       status: status?.textContent ?? null,
-      context: context?.textContent ?? null,
-      headBox: box(head),
+      date: date?.textContent ?? null,
+      titleBox: box(title),
       statusBox: box(status),
-      contextBox: box(context),
+      dateBox: box(date),
+      statusDateBox: box(statusDate),
     }
   })
 }
@@ -408,7 +413,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
     }
 
-    test('History chronology keeps its deliberate head/context layout', async ({ page, visit }, testInfo) => {
+    test('History chronology puts the title on its own row with status and date beneath (TASK-026)', async ({ page, visit }, testInfo) => {
       const app = await syntheticApp(page, [...PICTURED, ...STATUSES])
       await visit('/history')
       const link = page.getByRole('link', { name: PICTURED[0].title, exact: true })
@@ -423,14 +428,16 @@ for (const { name: size, viewport } of VIEWPORTS) {
         sessionRows.push(row)
         const geometry = await chronologyRowGeometry(row)
         measured.push(geometry)
-        // The chronology's title+status head and date · focus context remain;
-        // the recent row's status/date line is not imposed on it.
-        expect(geometry.hasHead).toBe(true)
-        expect(geometry.hasStatusDate).toBe(false)
-        expect(geometry.headAlignItems).toBe('baseline')
-        expect(geometry.headJustify).toBe('space-between')
-        expect(geometry.context).toMatch(/^\w{3} \d{1,2} \w{3} \d{4} · /)
-        expect(geometry.contextBox!.top).toBeGreaterThanOrEqual(geometry.headBox!.bottom - 1)
+        // C53 / R19: the title alone, then the status with the date beside it.
+        expect(geometry.layout).toBe('chronology')
+        expect(geometry.hasHead).toBe(false)
+        expect(geometry.hasStatusDate).toBe(true)
+        const status = source.completed_at !== null ? 'completed'
+          : source.started_at !== null ? 'partial' : 'unstarted'
+        expect(geometry.status).toBe(STATUS_LABEL[status])
+        expect(geometry.date).toMatch(/^\w{3} \d{1,2} \w{3} \d{4}$/)
+        expect(geometry.statusDateBox!.top).toBeGreaterThanOrEqual(geometry.titleBox!.bottom - 1)
+        expect(geometry.dateBox!.left).toBeGreaterThan(geometry.statusBox!.right)
       }
       await record(page, sessionRows, testInfo, `history-chronology-${size}`, {
         consumer: 'History chronology (HistoryList layout="chronology")',

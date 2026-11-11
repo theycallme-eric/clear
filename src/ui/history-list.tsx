@@ -16,6 +16,11 @@
  *     difference in hue reads the difference in the text.
  *   · **The status is a word before it is anything else.** `Completed`,
  *     `Partial`, `Not started` — a glyph beside each, never a glyph alone.
+ *
+ * Both session rows share one hierarchy (C53 / R19, TASK-026): the title on
+ * its own row, the status and date together beneath it, then the metrics.
+ * History's chronology keeps the larger title; Home's recent row is a step
+ * smaller and shorter.
  */
 import type { CSSProperties, ElementType, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -34,15 +39,11 @@ import {
 import { ListFrame, ListRow } from './composition'
 import { Heading } from './Heading'
 
-/** The glyph each status carries. Colour is never the only cue. */
+/**
+ * The glyph each status carries, compact beside its word on the status/date
+ * line both session rows share. Colour is never the only cue.
+ */
 const STATUS_GLYPH: Readonly<Record<HistorySessionStatus, ReactNode>> = {
-  completed: <CircleCheck />,
-  partial: <Pause />,
-  unstarted: <CircleX />,
-}
-
-/** Compact metadata glyphs; the chronology keeps its existing icon size. */
-const RECENT_STATUS_GLYPH: Readonly<Record<HistorySessionStatus, ReactNode>> = {
   completed: <CircleCheck size={16} />,
   partial: <Pause size={16} />,
   unstarted: <CircleX size={16} />,
@@ -75,16 +76,6 @@ const TITLE_STYLE: CSSProperties = {
 /** The two duration contexts, each named, so neither is read as the other. */
 export const REQUESTED_DURATION_LABEL = 'Requested'
 export const ACTUAL_DURATION_LABEL = 'Actual'
-
-/** Title left, status right; the status drops below a title that needs the width. */
-const HEAD_STYLE: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  justifyContent: 'space-between',
-  flexWrap: 'wrap',
-  columnGap: 'var(--spacing-200)',
-  rowGap: 'var(--spacing-100)',
-}
 
 /** A long name wraps inside the row, even a single unbroken word. */
 const LONG_TITLE_STYLE: CSSProperties = {
@@ -152,46 +143,50 @@ function SessionItem({
     // A list row is a top-level section of both History and Home's recent
     // panel. `Screen` has already established h2 for this content; deepening
     // here would skip directly from the screen's h1 to h3.
-    // U44: one hierarchy for every row, whatever its status. The title and
-    // its status are the head group; the day and focus say when and what; the
-    // metrics close the row in a fixed order, the requested minutes always and
-    // the actual minutes only when some were recorded.
-    <ListRow as={as ?? 'section'} aria-busy={opening || undefined}>
-      <div data-part="head" style={HEAD_STYLE}>
-        {/* The title carries the link rather than the whole card: an accessible
-            name is the workout, not every fact printed beside it. */}
-        <Heading style={{ ...TITLE_STYLE, ...LONG_TITLE_STYLE }}>
-          {to === undefined ? (
-            entry.title
-          ) : (
-            <Link
-              to={to}
-              onClick={(event) => {
-                if (onOpen === undefined) return
-                event.preventDefault()
-                if (!opening) onOpen(entry)
-              }}
-              aria-disabled={opening || undefined}
-            >
-              {entry.title}
-            </Link>
-          )}
-        </Heading>
-        <span
-          data-part="status"
-          style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)', flexShrink: 0 }}
-        >
+    // U44, C53 / R19 (TASK-026): one hierarchy for every row, whatever its
+    // status. The title has its own row and its full width; what became of it
+    // and when sit together beneath it; the metrics close the row in a fixed
+    // order — the focus, the requested minutes always, the actual minutes
+    // only when some were recorded, and the intensity.
+    <ListRow
+      as={as ?? 'section'}
+      aria-busy={opening || undefined}
+      data-layout="chronology"
+      data-status={entry.status}
+    >
+      {/* The title carries the link rather than the whole card: an accessible
+          name is the workout, not every fact printed beside it. */}
+      <Heading data-part="title" style={{ ...TITLE_STYLE, ...LONG_TITLE_STYLE }}>
+        {to === undefined ? (
+          entry.title
+        ) : (
+          <Link
+            to={to}
+            onClick={(event) => {
+              if (onOpen === undefined) return
+              event.preventDefault()
+              if (!opening) onOpen(entry)
+            }}
+            aria-disabled={opening || undefined}
+          >
+            {entry.title}
+          </Link>
+        )}
+      </Heading>
+      <p data-part="status-date" className="clr-text-data-xs" style={STATUS_DATE_STYLE}>
+        <span data-part="status" style={{ ...STATUS_STYLE, color: 'var(--text-card-header)' }}>
           <span aria-hidden="true" style={{ display: 'flex' }}>
             {STATUS_GLYPH[entry.status]}
           </span>
           {HISTORY_STATUS_LABELS[entry.status]}
         </span>
-      </div>
-      <p data-part="context" className="clr-text-data-xs" style={{ marginTop: 'var(--spacing-100)' }}>
-        {`${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
+        <span data-part="date" className="clr-nowrap">
+          {formatDay(entry.day)}
+        </span>
       </p>
       {/* A count never wraps away from its unit. */}
       <p data-part="metrics" className="clr-text-data-xs" style={{ ...ROW_STYLE, marginTop: 'var(--spacing-100)' }}>
+        <span className="clr-nowrap">{formatFocus(entry.focus)}</span>
         <span className="clr-nowrap">{`${REQUESTED_DURATION_LABEL} ${entry.requestedMins} min`}</span>
         {entry.durationMins !== null && (
           <span className="clr-nowrap">{`${ACTUAL_DURATION_LABEL} ${entry.durationMins} min`}</span>
@@ -218,11 +213,12 @@ const RECENT_LINK_STYLE: CSSProperties = {
 }
 
 /**
- * B05-01.5: the status and date share one line and one baseline. The status
+ * B05-01.5, and since C53 / R19 (TASK-026) History's chronology too: the
+ * status and date share one line, beneath the title. The status
  * leads with a text-less glyph, so baseline alignment would hang the date off
  * the glyph's bottom edge; centring the two same-type items lines up their text.
  */
-const RECENT_STATUS_DATE_STYLE: CSSProperties = {
+const STATUS_DATE_STYLE: CSSProperties = {
   ...ROW_STYLE,
   alignItems: 'center',
   flexWrap: 'nowrap',
@@ -233,7 +229,7 @@ const RECENT_STATUS_DATE_STYLE: CSSProperties = {
 }
 
 /** One compact data line, including narrow phones; title metrics stay separate. */
-const RECENT_STATUS_STYLE: CSSProperties = {
+const STATUS_STYLE: CSSProperties = {
   ...GLYPH_STYLE,
   fontSize: 'inherit',
   lineHeight: 'inherit',
@@ -311,13 +307,13 @@ function RecentSessionItem({
           </Link>
         )}
       </Heading>
-      <p data-part="status-date" className="clr-text-data-xs" style={RECENT_STATUS_DATE_STYLE}>
+      <p data-part="status-date" className="clr-text-data-xs" style={STATUS_DATE_STYLE}>
         <span
           data-part="status"
-          style={{ ...RECENT_STATUS_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
+          style={{ ...STATUS_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
         >
           <span aria-hidden="true" style={{ display: 'flex' }}>
-            {RECENT_STATUS_GLYPH[entry.status]}
+            {STATUS_GLYPH[entry.status]}
           </span>
           {HISTORY_STATUS_LABELS[entry.status]}
         </span>

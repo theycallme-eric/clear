@@ -1,0 +1,52 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-026",
+  "description": "History row hierarchy and intentional filter options (REQ-026; C53, G18; R08, R19; V07, V08; AC-C53-01, AC-R026-01; JOURNEY-026). On the real History route (/history, reached through the existing auth guard) every workout row of the shared HistoryList (src/ui/history-list.tsx) has its title alone on its own full-width row, its status then its stored date together on the row beneath, then its metrics (focus, requested minutes, actual minutes when recorded, intensity). The Show filter (src/state/history.ts HISTORY_FILTERS) offers All entries, Completed and Partial; Rest days and Not started are no longer options, but nothing is deleted: All entries still lists the derived rest runs and every never-started session with its stored Not started status, and the saved detail (/history/:id) reads the record's own day, status and actual minutes. Loading, empty, filtered-empty and error keep their meanings. The accepted gallery state /gallery/refinements?state=screens (reference eded158cfd928d382c9a9409e2c372270312741d) adds a History part drawing the route's own HistoryCollection over stored rows held in memory, reading and writing nothing. check-01 proves it in the browser at 320 and 390 with a contained synthetic session that writes nothing; every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-026 --check check-01 -- npx playwright test e2e/refinement/task-026.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C53-01",
+        "AC-R026-01",
+        "JOURNEY-026"
+      ],
+      "files": [
+        "e2e/refinement/task-026.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-026.spec.ts",
+          "project": "mobile",
+          "name": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 phone-320: each title has its own row with status and date beneath, the filter offers All entries, Completed and Partial, and a row opens its saved detail",
+          "criterion": "AC-C53-01"
+        },
+        {
+          "file": "e2e/refinement/task-026.spec.ts",
+          "project": "mobile",
+          "name": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 phone-390: each title has its own row with status and date beneath, the filter offers All entries, Completed and Partial, and a row opens its saved detail",
+          "criterion": "JOURNEY-026"
+        },
+        {
+          "file": "e2e/refinement/task-026.spec.ts",
+          "project": "mobile",
+          "name": "TASK-026 History row hierarchy and intentional filter options > AC-R026-01 keyboard, reduced motion and reopen phone-320: every row keeps its stored date, status and actuals, a never-started workout stays listed and opens by keyboard, and a reload keeps it all",
+          "criterion": "AC-R026-01"
+        },
+        {
+          "file": "e2e/refinement/task-026.spec.ts",
+          "project": "mobile",
+          "name": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 recovery phone-320: a failed read is said and a retry answers, an empty history and a filter matching nothing keep their own meanings, and a failed detail read retries",
+          "criterion": "JOURNEY-026"
+        },
+        {
+          "file": "e2e/refinement/task-026.spec.ts",
+          "project": "mobile",
+          "name": "TASK-026 History row hierarchy and intentional filter options > gallery screens phone-320: the accepted state draws History’s own card, filter and rows — title alone, status and date beneath — with nothing read or written",
+          "criterion": "AC-C53-01"
+        }
+      ]
+    }
+  }
+}

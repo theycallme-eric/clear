@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-026",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-026.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-026/required-cases.json",
+    "sha256": "9863b5b9ed5a0b83eec1f59cf4c52f084e233260de617f147cf83f38c1b7f4ac"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-026.spec.ts",
+      "sha256": "4ddd2485788e6dea0c8f24103a21f43fe37a2152b0378cba48cd526f782dbd68"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "name": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 phone-320: each title has its own row with status and date beneath, the filter offers All entries, Completed and Partial, and a row opens its saved detail",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "name": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 phone-390: each title has its own row with status and date beneath, the filter offers All entries, Completed and Partial, and a row opens its saved detail",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "name": "TASK-026 History row hierarchy and intentional filter options > AC-R026-01 keyboard, reduced motion and reopen phone-320: every row keeps its stored date, status and actuals, a never-started workout stays listed and opens by keyboard, and a reload keeps it all",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "name": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 recovery phone-320: a failed read is said and a retry answers, an empty history and a filter matching nothing keep their own meanings, and a failed detail read retries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "name": "TASK-026 History row hierarchy and intentional filter options > gallery screens phone-320: the accepted state draws History’s own card, filter and rows — title alone, status and date beneath — with nothing read or written",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

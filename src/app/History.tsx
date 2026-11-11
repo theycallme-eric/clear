@@ -24,11 +24,21 @@
  * record whose stored prescription validates opens directly in Review; every
  * other record follows the fallback into Session Detail. Home's recents use
  * the same resolver, so the two entry points cannot drift.
+ *
+ * **TASK-026 (C53; R08, R19).** Each row's title has its own row with the
+ * status and date beneath it (`WorkoutListItem`), and the filter offers All
+ * entries, Completed and Partial (`HISTORY_FILTERS`). Rest days and Not
+ * started are no longer choices, but nothing is removed from the chronology:
+ * All entries still lists the derived rest runs and every never-started
+ * session with its stored status. The collection card (`HistoryCollection`)
+ * is exported so the accepted gallery state `/gallery/refinements?state=screens`
+ * draws this route's own filter and rows.
  */
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { ArrowLeft, Button, IconButton } from '../design-system/index'
+import type { AppError } from '../state/errors'
 import {
   filterHistory,
   historyEntries,
@@ -36,6 +46,7 @@ import {
   HISTORY_FILTERS,
   type HistoryEntry,
   type HistoryFilter,
+  type HistorySessionEntry,
 } from '../state/history'
 import { GENERATE_PATH } from '../state/generation-form'
 import { useHistoryQuery } from '../state/history-queries'
@@ -55,7 +66,7 @@ import { ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
 import { useOpenHistorySession } from './useOpenHistorySession'
 
-const SCREEN_TITLE = 'History'
+export const HISTORY_TITLE = 'History'
 
 export const HISTORY_LIST_LABEL = 'Workout history'
 export const HISTORY_FILTER_LABEL = 'Show'
@@ -89,7 +100,7 @@ export function History() {
   )
   const visible = useMemo(() => filterHistory(entries, filter), [entries, filter])
 
-  const state = resolveHistoryState(query.state.status, query.state, entries, visible)
+  const state = historyViewState(query.state, entries, visible)
   const filtered = state.status === 'empty' && entries.length > 0
 
   const footerAction =
@@ -112,7 +123,7 @@ export function History() {
   return (
     <>
       <Screen
-        title={SCREEN_TITLE}
+        title={HISTORY_TITLE}
         header={{
           actions: (
             <IconButton
@@ -128,60 +139,106 @@ export function History() {
           )
         }
       >
-        {/* One card for the whole collection, as Home's recents are: the
-            filter, the rows and each of the other three states are its
-            content, so no state brings a second frame and no row is a card. */}
-        <Card heading={HISTORY_LIST_LABEL}>
-          {/* The control belongs to a history that exists. With none, there is
-              nothing to narrow, and an inert dropdown above "No workouts yet"
-              would be the screen offering an action that cannot do anything. */}
-          {entries.length > 0 && (
-            <Select
-              label={HISTORY_FILTER_LABEL}
-              value={filter}
-              options={[...HISTORY_FILTERS]}
-              onChange={(value) => setFilter(historyFilterOf(value))}
-            />
-          )}
-
-          <ViewStateSwitch
-            state={state}
-            loadingLabel={HISTORY_LOADING_LABEL}
-            errorTitle={HISTORY_ERROR_TITLE}
-            empty={
-              // One statement each; the pinned action is the way on.
-              <ListMessage title={filtered ? HISTORY_NO_MATCH_TITLE : HISTORY_EMPTY_TITLE} />
-            }
-          >
-            {(data) => (
-              <HistoryList
-                entries={data}
-                label={HISTORY_LIST_LABEL}
-                linkTo={(entry) => sessionDetailPath(entry.id)}
-                onOpen={(entry) => void session.open(entry)}
-                openingId={session.openingId}
-              />
-            )}
-          </ViewStateSwitch>
-        </Card>
+        <HistoryCollection
+          state={state}
+          hasHistory={entries.length > 0}
+          filter={filter}
+          onFilter={setFilter}
+          linkTo={(entry) => sessionDetailPath(entry.id)}
+          onOpen={(entry) => void session.open(entry)}
+          openingId={session.openingId}
+        />
       </Screen>
     </>
   )
 }
+
+export interface HistoryCollectionProps {
+  /** The four-state answer for the entries the filter shows. */
+  state: ViewState<HistoryEntry[]>
+  /** Whether any history exists. The filter is offered only then. */
+  hasHistory: boolean
+  filter: HistoryFilter
+  onFilter: (filter: HistoryFilter) => void
+  /** Where each session row opens. Omitted, no row is a link. */
+  linkTo?: (entry: HistorySessionEntry) => string
+  onOpen?: (entry: HistorySessionEntry) => void
+  openingId?: string | null
+}
+
+/**
+ * History's one collection card: the filter, the rows and the loading, empty
+ * and error states as its content (see the module comment).
+ */
+export function HistoryCollection({
+  state,
+  hasHistory,
+  filter,
+  onFilter,
+  linkTo,
+  onOpen,
+  openingId = null,
+}: HistoryCollectionProps) {
+  const filtered = state.status === 'empty' && hasHistory
+
+  return (
+    // One card for the whole collection, as Home's recents are: the filter,
+    // the rows and each of the other three states are its content, so no
+    // state brings a second frame and no row is a card.
+    <Card heading={HISTORY_LIST_LABEL}>
+      {/* The control belongs to a history that exists. With none, there is
+          nothing to narrow, and an inert dropdown above "No workouts yet"
+          would be the screen offering an action that cannot do anything. */}
+      {hasHistory && (
+        <Select
+          label={HISTORY_FILTER_LABEL}
+          value={filter}
+          options={[...HISTORY_FILTERS]}
+          onChange={(value) => onFilter(historyFilterOf(value))}
+        />
+      )}
+
+      <ViewStateSwitch
+        state={state}
+        loadingLabel={HISTORY_LOADING_LABEL}
+        errorTitle={HISTORY_ERROR_TITLE}
+        empty={
+          // One statement each; the pinned action is the way on.
+          <ListMessage title={filtered ? HISTORY_NO_MATCH_TITLE : HISTORY_EMPTY_TITLE} />
+        }
+      >
+        {(data) => (
+          <HistoryList
+            entries={data}
+            label={HISTORY_LIST_LABEL}
+            linkTo={linkTo}
+            onOpen={onOpen}
+            openingId={openingId}
+          />
+        )}
+      </ViewStateSwitch>
+    </Card>
+  )
+}
+
+/** What the history read has answered, as far as the collection needs it. */
+export type HistoryReadState =
+  | { readonly status: 'loading' }
+  | { readonly status: 'error'; readonly error: AppError }
+  | { readonly status: 'ready' }
 
 /**
  * The query's three states onto the contract's four. The judgement the query
  * cannot make is which kind of empty this is — it knows the rows, not the
  * filter — so the split is made here, where both are in hand.
  */
-function resolveHistoryState(
-  status: 'loading' | 'error' | 'ready',
-  state: ReturnType<typeof useHistoryQuery>['state'],
+export function historyViewState(
+  read: HistoryReadState,
   entries: readonly HistoryEntry[],
   visible: readonly HistoryEntry[],
 ): ViewState<HistoryEntry[]> {
-  if (status === 'loading') return viewLoading()
-  if (state.status === 'error') return viewError(state.error)
+  if (read.status === 'loading') return viewLoading()
+  if (read.status === 'error') return viewError(read.error)
   if (entries.length === 0 || visible.length === 0) return viewEmpty()
 
   return viewReady([...visible])
