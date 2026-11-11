@@ -930,19 +930,22 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       expect(records[id], id).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
     }
 
-    // A reload that cannot read the saved rows back: still no Undo, no draft
-    // claimed over the saved row, nothing to start or choose.
+    // A reload that cannot read the saved rows back: still no Undo, nothing
+    // to start or choose. TASK-048 (AC-R032-02, superseding "no draft
+    // claimed"): each attempt this device saved shows the draft it saved —
+    // Incomplete through 8 and through 2 — disabled, never a starting point.
     app.lane.performedReadable = false
     await reopen(page, false)
     await page.getByRole('button', { name: 'Previous', exact: true }).tap()
     await expect(page.getByText(LONG_TIMING_LINE, { exact: true })).toBeVisible()
     await settle(page)
-    for (const key of ['long', 'short'] as const) {
+    for (const [key, rung] of [['long', 8], ['short', 2]] as const) {
       const card = cardOf(page, key)
       expect(await lifecycle(card), key).toEqual([])
       await openLog(card)
       await expect(undoOf(card)).toHaveCount(0)
-      expect(await chosen(completionOf(card)), key).toEqual([])
+      expect(await chosen(completionOf(card)), key).toEqual(['Incomplete'])
+      expect(await pressed(roundsOf(card)), key).toEqual(through(rung))
       for (const radio of await completionOf(card).getByRole('radio').all()) await expect(radio).toBeDisabled()
     }
     await checkJourneyA11y(page)

@@ -527,7 +527,12 @@ action). One new flow runs from the shell to a renderer for it: the completion p
 block's `onBlockRecorded` listeners in the same act as the block's row is known to exist, before
 `isBlockRecorded` renders and the forward action moves on, and the ladder closes its durable attempt
 there (`markRecorded`), so a saved attempt is never left open to Undo after a reload. TASK-046/048 adopt
-the rest (`src/state/README.md` lists what each must do).
+the rest (`src/state/README.md` lists what each must do). TASK-048 completes the flow: the listener is
+told how the row is known (`'saved'` for this device's answered save, `'known'` otherwise), a failed
+save is told to `onBlockSaveFailed`, the provider keeps the row it wrote or read (`recordedResult`,
+read back by `ladderDraftFromRow` ahead of the local echo), and a ladder whose own richer save failed
+while its row landed may `reopenBlock` so the retry restates it once. The ladder's effort and notes
+now live in its durable draft too.
 
 REQ-057 adds the one thing that renders *above* the route tree rather than inside it, and the
 reason is that boot is the app becoming ready rather than a screen it navigates to.

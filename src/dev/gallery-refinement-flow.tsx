@@ -29,6 +29,12 @@
  * text at the count's left edge — and Undo returns the same attempt (its
  * clock running on, or paused again, with its checked rounds) until the
  * accepted 07:00 cap would be passed: the route's own Undo, not a copy.
+ * Since TASK-048 (REQ-032) the same route block keeps its whole current draft
+ * — the answer, the rounds, each movement's entry, the effort and the notes —
+ * in that durable attempt, so this memory mount keeps every field through
+ * the log's close and reopen, Finish and Undo exactly as the route does
+ * across a reload; reload, reconnect and save recovery themselves need the
+ * application and are proved on `/workout` (`e2e/refinement/task-048.spec.ts`).
  *
  * Memory only. The ladder's attempt — its clock, checked progress and draft —
  * is stored in an in-memory `ShellStorage` for this mount; the block reports to the shell's own `BlockCompletionProvider`, which
@@ -284,5 +290,49 @@ export function TimedResultLogLadderUndo() {
         </Button>
       )}
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Register specimen: a ladder log whose save failed (TASK-048)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * TASK-048 (REQ-032; JOURNEY-032 "missing/offline/error states remain
+ * explicit"): the ladder's log after the section's save was refused — the
+ * draft kept whole (Incomplete through round 3, the effort and the notes),
+ * the Undo still offered inside the original cap, and the accepted
+ * reference's `Your log didn’t save. Try again.` after the feedback group,
+ * as the route draws it until a save succeeds (across reloads: the failure is
+ * kept on the durable attempt). Memory only; nothing is saved here.
+ */
+export function TimedResultLogLadderSaveFailed() {
+  const [block] = useState(() => galleryLadderProgress(4))
+  const rungs = ladderRungs(block.exercises)
+  const [completedThrough, setCompletedThrough] = useState<number | null>(3)
+  const [effort, setEffort] = useState<'too_hard' | 'about_right' | 'too_easy' | null>('too_hard')
+  const [notes, setNotes] = useState('Grip slipped on round two.')
+  const completed = completedThrough === rungs.length
+  return (
+    <TimedResultLog
+      format="ladder"
+      value={{ completed, effort }}
+      rounds={{
+        rungs,
+        unit: ladderUnit(block.exercises),
+        completedThrough,
+        partialRound: completed ? null : ladderPartialRound(completedThrough, rungs.length),
+        onChange: setCompletedThrough,
+      }}
+      completionAction={{ label: 'Undo finish · Resume ladder', onAction: () => undefined }}
+      onChange={(next) => {
+        if (next.completed === true) setCompletedThrough(rungs.length)
+        if (next.completed === false && completed) setCompletedThrough(null)
+        setEffort(next.effort)
+      }}
+      notes={{ value: notes, onChange: setNotes }}
+      // The route's words for a failed save (`ladder-block.tsx`).
+      failure="Your log didn’t save. Try again."
+    />
   )
 }

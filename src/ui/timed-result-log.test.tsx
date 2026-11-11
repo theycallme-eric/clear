@@ -62,6 +62,7 @@ import {
   readForTimeState,
   WORKOUT_AMRAP_STORAGE_KEY,
   WORKOUT_FOR_TIME_STORAGE_KEY,
+  WORKOUT_LADDER_STORAGE_KEY,
   type ShellStorage,
 } from '../state/workout-persistence'
 import { sessionProgress, type BlockProgress } from '../state/workout-progress'
@@ -1034,14 +1035,14 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // Back to the saved section: no longer offered as a choice — there is no
     // correction writer for a saved result, so nothing on screen can drift
     // from the row. The For Time reads its saved answer from its own record.
-    // The ladder claims no answer at all rather than a draft or starting point
-    // the saved row may contradict: once the server reports its row, the
-    // durable attempt is closed as saved elsewhere (TASK-032; reading the
-    // saved ladder result back is TASK-048).
+    // TASK-048 (AC-R032-02, superseding "claims no answer"): the ladder reads
+    // its saved result back — this device's answered save closes the durable
+    // attempt as saved here, and the row the shell wrote is the authority —
+    // so it shows the Complete it saved, disabled, never a starting point.
     closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByRole('heading', { name: RESULTS_SECTION_TITLE })
-    for (const [scope, shown] of [[forTimeCard(), ['Incomplete']], [ladderCard(), []]] as const) {
+    for (const [scope, shown] of [[forTimeCard(), ['Incomplete']], [ladderCard(), ['Complete']]] as const) {
       const question = completionOf(log(scope))
       expect(chosen(question)).toEqual(shown)
       for (const radio of within(question).getAllByRole('radio')) {
@@ -1128,7 +1129,17 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       expect(blockResultInsert(row)).toMatchObject({ perceived_effort: null, effort: category })
     }
     expect(double.completed()).toEqual([])
-    expect(JSON.stringify(localStorage)).not.toMatch(/too_hard|about_right|too_easy/)
+    // TASK-048 (AC-R032-01, superseding "no category in storage"): the
+    // ladder's effort is part of its durable draft, kept as the category word
+    // in its attempt's draft and nowhere else — never a number, never the
+    // session's mood. The For Time's stays its log's memory.
+    const ladders = JSON.parse(localStorage.getItem(WORKOUT_LADDER_STORAGE_KEY) ?? '{}') as Record<string, { draft: { effort: unknown } | null }>
+    expect(ladders[ladder.blockId]?.draft?.effort).toBe('too_easy')
+    const elsewhere = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)!)
+      .filter((key) => key !== WORKOUT_LADDER_STORAGE_KEY)
+      .map((key) => localStorage.getItem(key))
+    expect(JSON.stringify(elsewhere)).not.toMatch(/too_hard|about_right|too_easy/)
+    expect(localStorage.getItem(WORKOUT_LADDER_STORAGE_KEY)).not.toMatch(/too_hard|about_right|"effort":\d/)
   })
 
   it('AC-R010-02 effort reuses Frown, Meh and Smile with their established words, order, categories, selected tick, focus and keyboard behaviour: no new icon, scale or wording', async () => {
