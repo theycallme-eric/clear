@@ -6,7 +6,8 @@
  */
 import type { Enums } from '../../data/database.types'
 import { exerciseName } from '../../state/prescription'
-import { equipmentName, loadText } from '../../state/review'
+import { prescribedLoad } from '../../state/refinement-load-guidance'
+import { equipmentName } from '../../state/review'
 
 /**
  * The prescribed load to show beside a prescription, in either context. With
@@ -41,15 +42,17 @@ export interface LiveMovementReadings {
  * A live movement's name, compact equipment and prescribed load, through
  * Review's own formatters and the profile's unit. An unread unit states the
  * number without one rather than a guessed unit, as Review does.
+ *
+ * TASK-036 (G24, AC-R036-01): the load is the load-guidance read model's
+ * prescribed target (`prescribedLoad`, over the same `loadText`): one target,
+ * no range and no per-hand rewrite of the stored number.
  */
 export function liveMovementReadings(
   prescription: LiveMovementColumns,
   weightUnit: Enums<'weight_unit'> | null,
 ): LiveMovementReadings {
   const equipment = equipmentName(prescription.equipment_used)
-  const load = prescription.load_type === null
-    ? null
-    : loadText(prescription.load_type, prescription.load_value, weightUnit)
+  const load = prescribedLoad(prescription, weightUnit).text
   return {
     name: exerciseName(prescription.exercise_id),
     equipment,

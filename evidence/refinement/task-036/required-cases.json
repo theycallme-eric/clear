@@ -1,0 +1,62 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-036",
+  "description": "Validate load-guidance source and actual-versus-target contract (REQ-036; AC-R036-01, AC-R036-02, AC-R036-03; G24, R04, R31; #663). Engineering definition with a typed read model (src/state/refinement-load-guidance.ts: prescribedLoad, performedLoad, LOAD_MEANINGS, LOAD_GUIDANCE_SOURCES, LOAD_DEFINITION_DEPENDENCIES) over the existing owners loadText, equipmentName, reviewLoadSuggestions and History's loggedSet/movementActualReadings, adopted by liveMovementReadings, and the contract docs/specs/LOAD_GUIDANCE_CONTRACT.md. check-01 proves: every load meaning and unit comes from the prescription's own columns through loadText with no range and no guessed unit; no per-hand rewrite or gloss of the stored number; prescribed target and performed weight stay apart, each in its own unit; every source owner exists and no synthetic preview range is promoted; TASK-003's AC-R003-04 receipts (check-01, check-02) are current and passing and the Review weight change is removed for the circuit only; the LOAD-RANGE-RULE and LOAD-PER-HAND definition dependencies are recorded with owner Eric; and the accepted gallery state /gallery/refinements?state=cards (reference eded158cfd928d382c9a9409e2c372270312741d) draws every load as the read model's target. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-036 --check check-01 -- npx vitest run src/state/refinement-load-guidance.test.ts --passWithNoTests=false",
+      "criteria": [
+        "AC-R036-01",
+        "AC-R036-02",
+        "AC-R036-03"
+      ],
+      "files": [
+        "src/state/refinement-load-guidance.test.ts"
+      ],
+      "cases": [
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 reads every load meaning and unit from the prescription’s own columns through loadText, and never a range",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 states no per-hand reading: the stored number is shown unchanged beside its implement, never doubled, halved or explained",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 keeps the prescribed target apart from the weight performed, each in its own unit",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 names one existing owner per reading and promotes no synthetic preview range into production code",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 consumes TASK-003’s current passing evidence that the verified circuit has no Review weight change and keeps its optional logger",
+          "criterion": "AC-R036-02"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 removes the Review weight change for the circuit only and does not extrapolate that storage proof to other formats",
+          "criterion": "AC-R036-02"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 records each definition dependency the source cannot establish, with its owner and what continues meanwhile",
+          "criterion": "AC-R036-03"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 continues the prescribed-load presentation on the gallery cards state through the read model, with no range",
+          "criterion": "AC-R036-03"
+        }
+      ]
+    }
+  }
+}
