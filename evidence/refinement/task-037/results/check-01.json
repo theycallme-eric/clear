@@ -1,0 +1,80 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-037",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "node-test",
+  "runnerVersion": null,
+  "command": [
+    "node",
+    "--test",
+    "scripts/refinement/task-037-definition.test.mjs"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-037/required-cases.json",
+    "sha256": "8dc38f8914232d473145cac4cb963dba00fa655553b7331613d3c828dbf8198c"
+  },
+  "targets": [
+    {
+      "path": "scripts/refinement/task-037-definition.test.mjs",
+      "sha256": "b93d6424de3f7b2d44407cea648ccf3ce0eb28f656aa21fcd531261a61250302"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the record passes the shared definition-record checker with its inventory, effort, selected-change, proposal, undecided and non-gallery sections",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every claim cites a listed source and every listed source is cited",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every quoted string and identifier occurs in the verified bytes of a source its claim cites",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the inventory covers every route surface with its titles, actions, states and helper messages",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every visible RPE string at this revision is inventoried and Effort keeps numeric historical and categorical meanings apart",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 the terminology and voice proposal is concise, sourced, uses Effort not RPE and is not a complete voice guide",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 undecided items and owner decisions are explicit and none is pre-selected",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 no product copy is claimed rewritten and the accepted map still records the non-gallery disposition with traceability",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}
