@@ -107,6 +107,20 @@
  * superset round's helper paragraph is removed in the route's own
  * `SupersetRoundSheet`; `?state=superset` is still TASK-044's to add with
  * that consumer, where it will show the same groups.
+ *
+ * TASK-046 (REQ-019, C45; G07; R43, R100): the four timed-result families
+ * now log in the shared focused dialog, through the route's own blocks, so
+ * `?state=emom`, `?state=amrap`, `?state=for_time` and `?state=ladder` show
+ * the actual adoption with no change here: each ended attempt's card holds
+ * one "Log results" action where its log was (the ladder's, secondary before
+ * its attempt ends), and the same log — every field, starting point, entry
+ * and effort above — opens in `LoggingOverlay` titled "Log results", closed
+ * by its framed X or Escape with every entry kept for the reopen. The
+ * dialog's owner is `refinements/timed-result-dialog.tsx`; the register's
+ * `TimedResultDialog` specimens below hold it over memory. Still memory only:
+ * no Save is drawn and nothing is written (the route saves through the
+ * section's forward action). Where the notes above say the route's logs are
+ * inline in their cards, that was true until this task.
  */
 import { useState, type ReactNode } from 'react'
 
@@ -135,6 +149,7 @@ import {
   type EmomResult,
   type MovementEntryLog,
 } from '../ui/refinements/timed-result-log'
+import { TimedResultDialog } from '../ui/refinements/timed-result-dialog'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
 import { AMRAP_BLOCK } from './gallery-refinement-cards-data'
@@ -644,4 +659,26 @@ export function LoggingOverlayWorkoutFeedback() {
       </div>
     </MemoryLoggingOverlay>
   )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-046 — the timed families' entry into the focused dialog (C45)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The EMOM's end log behind its "Log results" action; the note held in memory. */
+export function TimedResultDialogEmom() {
+  const [value, setValue] = useState<EmomResult>({ notes: '' })
+  return <TimedResultDialog format="emom" value={value} onChange={setValue} />
+}
+
+/** The AMRAP's log behind its action: three rounds and an observed zero, in memory. */
+export function TimedResultDialogAmrap() {
+  const [value, setValue] = useState<AmrapResult>({ roundsCompleted: 3, partialRoundReps: 0 })
+  return <TimedResultDialog format="amrap" value={value} onChange={setValue} />
+}
+
+/** A For Time log before an answer, behind the secondary action a log drawn before its attempt ends takes. */
+export function TimedResultDialogForTimeSecondary() {
+  const [value, setValue] = useState<CompletionResult>({ completed: null, effort: null })
+  return <TimedResultDialog format="for_time" openerVariant="secondary" value={value} onChange={setValue} />
 }

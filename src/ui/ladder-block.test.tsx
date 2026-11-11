@@ -56,6 +56,7 @@ import {
   type BlockFixture,
   type ExerciseFixture,
 } from '../test/workout-double'
+import { queryTimedLog, timedLogOpener } from '../test/timed-log-dialog'
 import { BlockSlot } from './block-renderers'
 import { LadderBlock } from './ladder-block'
 
@@ -154,7 +155,17 @@ function movementLines(): string[] {
  * schedule"; what each records is unchanged.
  */
 async function declare(user: ReturnType<typeof userEvent.setup>, label: 'Complete' | 'Incomplete') {
+  openLog()
   await user.click(screen.getByRole('radio', { name: label }))
+}
+
+/**
+ * TASK-046 (C45; R100): the ladder's card offers one "Log results" action and
+ * its result log opens in the shared focused dialog. Opens it (once), so the
+ * log's answers, rounds and effort can be read and operated.
+ */
+function openLog() {
+  queryTimedLog()
 }
 
 /**
@@ -163,6 +174,7 @@ async function declare(user: ReturnType<typeof userEvent.setup>, label: 'Complet
  * by its round and its target.
  */
 function roundsCompleted(): HTMLElement {
+  openLog()
   return screen.getByRole('group', { name: 'Rounds completed' })
 }
 
@@ -222,6 +234,8 @@ describe('the ladder is rendered from the int array, and shown once', () => {
     expect(screen.queryByText(/5 rungs/)).not.toBeInTheDocument()
     // TASK-010 (C29, C30): the shared result log's one title. TASK-012: the
     // movements are named in the summary's lines, not as headings of rows.
+    // TASK-046: that title is the focused log's, opened from the card.
+    openLog()
     expect(
       screen.getAllByRole('heading').map((heading) => heading.textContent),
     ).toEqual(['Log results'])
@@ -300,6 +314,7 @@ describe('the ladder is rendered from the int array, and shown once', () => {
       ['6 × push up', '4 × burpee'], ['8 × push up', '4 × burpee'],
     ])
     expect(screen.queryByText(/between each rung/)).not.toBeInTheDocument()
+    openLog()
     expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual(['Log results'])
   })
 })
@@ -314,6 +329,9 @@ describe('read-only and interactive rungs are different things', () => {
     expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
     // The only radios on the screen are the result log's (TASK-010: C29, C30):
     // the two answers and the three effort faces, none chosen. No rung is a control.
+    // TASK-046: none on the card itself; the log is opened from its action.
+    expect(screen.queryAllByRole('radio')).toEqual([])
+    openLog()
     expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual([
       'Complete',
       'Incomplete',
@@ -565,6 +583,7 @@ describe('a ladder block is one card of the shared frame', () => {
     const rounds = roundsCompleted().querySelector('legend')!
     expect(rounds).toHaveTextContent('Rounds completed')
     expect(rounds).toHaveClass('label')
+    openLog()
     expect(screen.getByRole('group', { name: 'Work completed' }).querySelector('legend')).toHaveClass('label')
   })
 
@@ -575,11 +594,16 @@ describe('a ladder block is one card of the shared frame', () => {
     const saved = within(card).getAllByText('Block saved')
     expect(saved).toHaveLength(1)
 
-    const ending = screen.getByRole('group', { name: 'Work completed' })
-    expect(card).toContainElement(ending)
+    // TASK-046: the ending is asked in the log the card's "Log results"
+    // action opens; that action is in the card, above the saved line.
+    const opener = timedLogOpener(card)!
+    expect(card).toContainElement(opener)
     expect(
-      ending.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      opener.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
+    openLog()
+    const ending = screen.getByRole('group', { name: 'Work completed' })
+    expect(ending.closest('dialog')).not.toBeNull()
   })
 
   it('keeps the rung choice live after the cap is declared, and reports it', async () => {
@@ -856,6 +880,7 @@ describe('a scheduled ladder runs on its own clock, restored from wall-clock tim
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
     for (const row of roundRows()) expect(row).not.toHaveAttribute('aria-current')
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, {})
+    openLog()
     expect(screen.getByRole('radio', { name: 'Incomplete' })).toHaveAttribute('aria-checked', 'true')
 
     // How far is the athlete's to say, and is what records a rung. TASK-013
@@ -988,6 +1013,7 @@ describe('a capped window shows its one cap', () => {
     // R71: the capped window's "Move through the rounds…" paragraph is gone.
     expect(screen.queryByText(/Move through the rounds/)).not.toBeInTheDocument()
     for (const row of rows) expect(row).not.toHaveAttribute('aria-current')
+    openLog()
     expect(screen.getByRole('radio', { name: 'Incomplete' })).toBeInTheDocument()
     expectNoSetEntry()
   })

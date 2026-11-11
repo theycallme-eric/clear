@@ -1,0 +1,73 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-046",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-046.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-046/required-cases.json",
+    "sha256": "f566e58c9be83a3677fc8eafc7f34e9be4e3599e802b41231858c86cad62fcdb"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-046.spec.ts",
+      "sha256": "a7080243dc6b9abe7bcd70044baa1564c054e04ac488a41460c2c5580e06b3e5"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-046.spec.ts",
+      "name": "TASK-046 the four timed-result families in the shared focused dialog > JOURNEY-019 EMOM phone-390 touch: the end of the schedule offers a real Log results action that opens the counter-free end log in the modal dialog, close and Escape keep the note, a refused save keeps it and its retry writes it once to the block’s notes through the section’s forward action",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-046.spec.ts",
+      "name": "TASK-046 the four timed-result families in the shared focused dialog > JOURNEY-019 AMRAP, For Time and ladder phone-320 keyboard reduced motion: each log opens from its card into the modal dialog with its own fields, the clock runs on behind it, Undo finish closes it and resumes the ladder, close and Escape keep every entry, a refused save keeps them and its retry writes each block’s row and movement rows once, and the saved log is no longer offered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-046.spec.ts",
+      "name": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states clear phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-046.spec.ts",
+      "name": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states vapour phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-046.spec.ts",
+      "name": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states signal phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-046.spec.ts",
+      "name": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states mono phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 6
+  },
+  "problems": []
+}

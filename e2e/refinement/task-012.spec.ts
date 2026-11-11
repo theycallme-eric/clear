@@ -441,7 +441,9 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
     await page.keyboard.press('Tab')
     const inPrescription = () => page.evaluate(() => document.activeElement?.closest('[data-ladder-prescription]') !== null)
     expect(await inPrescription()).toBe(false)
-    await expect(accepted.getByRole('radio', { name: 'Complete', exact: true })).toBeFocused()
+    // TASK-046: the result log's place on the card is its "Log results"
+    // action, so that is the next stop after the prescription.
+    await expect(accepted.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })).toBeFocused()
 
     // Keyboard lifecycle on the top slot (TASK-006): the prescription holds.
     await startLadder.focus()
@@ -460,7 +462,10 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
     // Answered: Incomplete with no rung (TASK-010), so how far is asked — and
     // the prescription is unchanged beside it. TASK-013 (C33, C34) moved the
     // question into the result log as its rep-first "Rounds completed" tiles.
-    const howFar = accepted.getByRole('group', { name: 'Rounds completed', exact: true })
+    // TASK-046: in the log its card's "Log results" opens, by keyboard.
+    await accepted.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true }).focus()
+    await page.keyboard.press('Enter')
+    const howFar = page.locator('dialog.clr-accepted-log[open]').getByRole('group', { name: 'Rounds completed', exact: true })
     await expect(howFar.getByRole('button')).toHaveCount(12)
     const after = await readGrid(accepted)
     expect(words(after)).toEqual(words(before))

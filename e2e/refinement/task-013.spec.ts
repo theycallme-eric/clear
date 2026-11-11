@@ -278,12 +278,55 @@ function liveCount(card: Locator): Locator {
   return card.locator('[data-ladder-prescription]').getByRole('status')
 }
 
-function completionOf(card: Locator): Locator {
-  return card.getByRole('group', { name: WORK_COMPLETED, exact: true })
+/**
+ * TASK-046 (C45; R100): each ladder's card holds one "Log results" action
+ * where its log was; the log — the same form — opens in the shared focused
+ * dialog titled "Log results". One log is open at a time, over a workout
+ * that is inert while it is open.
+ */
+function openerOf(card: Locator): Locator {
+  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
 }
 
+/** The open log's form. */
+function logOf(card: Locator): Locator {
+  return card.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+}
+
+/** Opens the card's log by touch (closing any other first) and returns it. */
+async function openLog(card: Locator): Promise<Locator> {
+  if ((await openerOf(card).getAttribute('aria-expanded')) !== 'true') {
+    await closeLog(card.page())
+    await openerOf(card).tap()
+  }
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Opens the card's log by keyboard: the action focused, then Enter. */
+async function openLogByKeyboard(card: Locator): Promise<Locator> {
+  await openerOf(card).focus()
+  await card.page().keyboard.press('Enter')
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Closes the open log with its framed X. */
+async function closeLog(page: Page) {
+  const open = page.locator('dialog.clr-accepted-log[open]')
+  if ((await open.count()) === 0) return
+  await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(open).toHaveCount(0)
+}
+
+/** The open log's completion question. */
+function completionOf(card: Locator): Locator {
+  return logOf(card).getByRole('group', { name: WORK_COMPLETED, exact: true })
+}
+
+/** The open log's rounds completed. */
 function roundsOf(card: Locator): Locator {
-  return card.getByRole('group', { name: ROUNDS_COMPLETED, exact: true })
+  return logOf(card).getByRole('group', { name: ROUNDS_COMPLETED, exact: true })
 }
 
 function resultTile(card: Locator, round: number, key: LadderKey): Locator {
@@ -328,9 +371,9 @@ interface ResultTilesReading {
   }[]
 }
 
-/** One ladder's rep-first result tiles, as the browser lays them out once their transitions land. */
+/** One ladder's rep-first result tiles, as the browser lays them out once their transitions land (TASK-046: in its open log). */
 async function readResultTiles(card: Locator): Promise<ResultTilesReading> {
-  return card.evaluate(async (root, legend) => {
+  return logOf(card).evaluate(async (root, legend) => {
     const group = [...root.querySelectorAll('fieldset')].find((node) => node.querySelector('legend')?.textContent === legend)
     if (group === undefined) throw new Error('No rounds completed in this card')
     await Promise.all(group.getAnimations({ subtree: true })
@@ -370,7 +413,7 @@ async function readResultTiles(card: Locator): Promise<ResultTilesReading> {
       }
     })
     return {
-      log: box(root.querySelector('form.clr-timed-log')!),
+      log: box(root),
       grid: box(grid),
       gridScroll: { scrollWidth: grid.scrollWidth, clientWidth: grid.clientWidth },
       columns: getComputedStyle(grid).gridTemplateColumns.split(' ').filter((track) => track !== '').length,
@@ -525,6 +568,8 @@ const NOTHING_RECORDED = {
 }
 
 async function saveSection(page: Page) {
+  // TASK-046: the open log is closed first; the workout behind it is inert.
+  await closeLog(page)
   await page.getByRole('button', { name: 'Next section', exact: true }).tap()
   await expect(page.getByRole('heading', { name: HANDOFF_COOLDOWN_TITLE, exact: true })).toBeVisible()
 }
@@ -570,6 +615,8 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       expectLiveTiles(await readLiveTiles(short), SHORT_ROUNDS, SHORT_ROUNDS, `short live @${name}`)
       await short.getByRole('button', { name: 'Finish', exact: true }).tap()
       // Imported: every round checked starts Complete, every tile pressed.
+      // TASK-046: read in the log the card's "Log results" opens.
+      await openLog(short)
       await expect.poll(() => chosen(completionOf(short))).toEqual(['Complete'])
       await settle(page)
       expectRepFirstTiles(await readResultTiles(short), 'short', SHORT_ROUNDS, `short finished @${name}`)
@@ -582,11 +629,13 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       // The cap: the twelve-rung ladder runs out with five rounds checked —
       // imported as they were, never every rung. (The browser clock jumps to
       // past the cap, as a phone left on the floor would, and ticks once.)
+      await closeLog(page)
       await page.clock.fastForward(LONG_CAP_SECONDS * 1000)
       await pass(page, 1)
       await expect(long.locator('[data-timed-actions]')).toHaveCount(0)
-      await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
       await expect(long.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }).getByRole('button')).toHaveCount(0)
+      await openLog(long)
+      await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
       await settle(page)
       expectRepFirstTiles(await readResultTiles(long), 'long', 5, `long capped @${name}`)
       await expect(roundsOf(long).getByText('Any partial work belongs to round 6', { exact: true })).toBeVisible()
@@ -632,9 +681,11 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     await expect(liveCount(long)).toHaveAttribute('role', 'status')
     await expect(liveTile(long, 3)).toBeFocused()
 
-    // Finish by keyboard: three rounds imported, Incomplete.
+    // Finish by keyboard: three rounds imported, Incomplete (TASK-046: in
+    // the log the card's "Log results" opens, by keyboard).
     await long.getByRole('button', { name: 'Finish', exact: true }).focus()
     await page.keyboard.press('Enter')
+    await openLogByKeyboard(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
     expect(await pressed(roundsOf(long))).toEqual(through(3))
 
@@ -644,7 +695,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     // so it is the one stop between them.
     await completionOf(long).getByRole('radio', { name: 'Incomplete', exact: true }).focus()
     await page.keyboard.press('Tab')
-    await expect(long.getByRole('button', { name: 'Undo finish · Resume ladder', exact: true })).toBeFocused()
+    await expect(logOf(long).getByRole('button', { name: 'Undo finish · Resume ladder', exact: true })).toBeFocused()
     await page.keyboard.press('Tab')
     await expect(resultTile(long, 1, 'long')).toBeFocused()
     for (let step = 1; step < 7; step += 1) await page.keyboard.press('Tab')
@@ -657,11 +708,15 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
 
     // The short ladder finished with nothing checked: Incomplete, no round
     // stated, nothing recorded — Finish alone never selects every round.
+    // TASK-046: Escape closes the long ladder's log first.
+    await page.keyboard.press('Escape')
+    await expect(logOf(long)).toHaveCount(0)
     await short.getByRole('button', { name: 'Start ladder', exact: true }).focus()
     await page.keyboard.press('Enter')
     await pass(page, 45)
     await short.getByRole('button', { name: 'Finish', exact: true }).focus()
     await page.keyboard.press('Enter')
+    await openLogByKeyboard(short)
     await expect.poll(() => chosen(completionOf(short))).toEqual(['Incomplete'])
     expect(await pressed(roundsOf(short))).toEqual([])
     await expect(roundsOf(short).getByRole('status')).toHaveText('No rounds marked yet')
@@ -677,13 +732,18 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
         expect(timing.iterations, JSON.stringify(timings)).toBeLessThanOrEqual(1)
       }
     }
+    await page.keyboard.press('Escape')
+    await expect(logOf(short)).toHaveCount(0)
+    await openLogByKeyboard(long)
     await settle(page)
     expectRepFirstTiles(await readResultTiles(long), 'long', 5, 'long keyboard @phone-390')
     await noHorizontalOverflow(page)
     await checkJourneyA11y(page)
     await attachCard(page, long, 'long-keyboard-corrected-reduced-phone-390')
 
-    // Saved by keyboard.
+    // Saved by keyboard (TASK-046: Escape closes the log first).
+    await page.keyboard.press('Escape')
+    await expect(logOf(long)).toHaveCount(0)
     const next = page.getByRole('button', { name: 'Next section', exact: true })
     await next.focus()
     await page.keyboard.press('Enter')
@@ -724,6 +784,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     await long.getByRole('button', { name: 'Resume', exact: true }).tap()
     await liveTile(long, 6).tap()
     await long.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await openLog(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
     await resultTile(long, 9, 'long').tap()
     await expect(roundsOf(long).getByRole('status')).toHaveText(`9 of ${LONG_ROUNDS} rounds completed`)
@@ -732,6 +793,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     await settle(page)
     long = cardOf(page, 'long')
     // The edit comes back as the athlete left it — never re-imported over.
+    await openLog(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
     expect(await pressed(roundsOf(long))).toEqual(through(9))
     expect(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('clear.workout-ladders') ?? '{}')).length)).toBe(1)
@@ -763,6 +825,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       await expect(liveCount(card)).toHaveText(`2 of ${rounds} rounds completed`)
       expectLiveTiles(await readLiveTiles(card), rounds, 2, `gallery ladder-${rounds} live`)
       await card.getByRole('button', { name: 'Finish', exact: true }).tap()
+      await openLog(card)
       await expect.poll(() => chosen(completionOf(card))).toEqual(['Incomplete'])
       const reading = await readResultTiles(card)
       expect(reading.tiles.map((tile) => tile.name)).toEqual(through(rounds).map((round) => `Round ${round}: ${round * 2} reps`))
@@ -773,6 +836,8 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       await noHorizontalOverflow(page)
       await checkJourneyA11y(page)
       await test.info().attach(`gallery-ladder-${rounds}-handoff-phone-320.png`, { body: await card.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+      await test.info().attach(`gallery-ladder-${rounds}-handoff-log-phone-320.png`, { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+      await closeLog(page)
       expect(await page.evaluate(() => [localStorage.getItem('clear.workout-ladders'), localStorage.getItem('clear.workout-for-time')])).toEqual([null, null])
     }
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])

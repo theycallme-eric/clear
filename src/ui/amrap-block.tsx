@@ -129,7 +129,8 @@ import { GroupExerciseCoaching } from './exercise-coaching'
 import { coachesAsGroup } from './group-coaching-context'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
-import { TimedResultLog, UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
+import { UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
+import { TimedResultDialog } from './refinements/timed-result-dialog'
 import { WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -287,11 +288,13 @@ export function AmrapBlock({
               After the work and nowhere before the window has closed: the
               result is optional, written on every tap, with nothing to submit
               (C26, C27). Blank is a state of its own rather than a zero, and
-              nothing here clears it back or fills it in (C28).
+              nothing here clears it back or fills it in (C28). TASK-046 (C45;
+              R100): its place on the card holds one "Log results" action, and
+              the same log opens in the shared focused dialog.
             */}
             {view.phase === 'complete' && (
               <>
-                <TimedResultLog
+                <TimedResultDialog
                   format="amrap"
                   value={{
                     roundsCompleted: view.roundsCompleted,

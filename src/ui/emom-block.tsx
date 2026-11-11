@@ -115,7 +115,7 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
-import { TimedResultLog } from './refinements/timed-result-log'
+import { TimedResultDialog } from './refinements/timed-result-dialog'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
 export interface EmomBlockProps extends BlockRendererProps {
@@ -239,9 +239,14 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
             no completion to confirm; an exception goes in the notes. Once the
             block's row is saved there is no correction writer, so the log
             steps aside and the shell's "Block saved" says what happened.
+            TASK-046: in its place on the card, one "Log results" action opens
+            the log in the shared focused dialog.
           */}
           {ended && !saved && (
-            <TimedResultLog format="emom" value={{ notes }} onChange={(next) => setNotes(next.notes)} />
+            // TASK-046 (C45; R43, R100): the end log's real Log action — the
+            // same log, held in the shared focused dialog, its note still this
+            // mount's draft through close, reopen, a failed save and its retry.
+            <TimedResultDialog format="emom" value={{ notes }} onChange={(next) => setNotes(next.notes)} />
           )}
         </>
       )}

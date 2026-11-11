@@ -113,6 +113,7 @@ import {
   timedActualsBlocks,
   timedActualsSnapshot,
 } from '../test/timed-actuals-fixture'
+import { closeTimedLogs, queryTimedLog, timedLogOpener } from '../test/timed-log-dialog'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
 import { createWorkoutDouble, snapshotFixture, type BlockFixture, type WorkoutDoubleOptions } from '../test/workout-double'
 import { ForTimeBlock } from './for-time-block'
@@ -187,23 +188,37 @@ function card(): HTMLElement {
   return found
 }
 
-/** The AMRAP's log: the card's one form, headed "Log results" (not a landmark; see the owner). */
+/**
+ * The AMRAP's log. TASK-046 (C45; R100): the card holds one "Log results"
+ * action where the log was, and the same form — the shared `TimedResultLog`
+ * — opens in the shared focused dialog, whose title "Log results" is the
+ * form's one title. Opening it is the athlete's step; null when the card
+ * offers no log. The form is never drawn inline in the card any more.
+ */
 function queryLog(scope: HTMLElement = card()): HTMLElement | null {
-  const forms = scope.querySelectorAll<HTMLElement>('form.clr-timed-log')
-  expect(forms.length).toBeLessThanOrEqual(1)
-  return forms[0] ?? null
+  if (scope !== document.body) expect(scope.querySelectorAll('form.clr-timed-log')).toHaveLength(0)
+  return queryTimedLog(scope)
 }
 
 function log(scope: HTMLElement = card()): HTMLElement {
   const found = queryLog(scope)
   if (found === null) throw new Error('the AMRAP has no log')
-  expect(within(found).getByRole('heading', { name: 'Log results' })).toHaveClass('clr-timed-log__title')
+  const dialog = found.closest('dialog')!
+  const title = within(dialog).getByRole('heading', { name: 'Log results' })
+  expect(title).toHaveClass('clr-accepted-log__title')
+  expect(found.getAttribute('aria-labelledby')).toBe(title.id)
   return found
 }
 
-/** One count's parts, by its label. */
-function count(label: string, scope: HTMLElement = card()) {
-  const group = within(scope).getByRole('group', { name: label })
+/** The log a lookup reads: `scope` itself when it is (or is inside) the open log, else the log opened from it. */
+function logScope(scope?: HTMLElement): HTMLElement {
+  if (scope === undefined) return log()
+  return scope.closest('form.clr-timed-log') !== null || scope.matches('dialog') ? scope : log(scope)
+}
+
+/** One count's parts, by its label, read in the open log. */
+function count(label: string, scope?: HTMLElement) {
+  const group = within(logScope(scope)).getByRole('group', { name: label })
   const name = label.toLowerCase()
   return {
     group,
@@ -282,15 +297,20 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     await user.click(within(card()).getByRole('button', { name: 'Resume' }))
 
     // Ended early: the work first, then the log — every movement and every one
-    // of its readings before the log's title and both counts.
+    // of its readings before the log's place on the card (TASK-046: its
+    // "Log results" action) and the log's title and both counts.
     advance(65)
     await user.click(within(card()).getByRole('button', { name: 'Finish early' }))
     expect(within(card()).getByText('01:35 on the clock')).toBeInTheDocument()
+    const opener = timedLogOpener(card())!
     const form = log()
-    const title = within(form).getByRole('heading', { name: 'Log results' })
+    const title = within(form.closest('dialog')!).getByRole('heading', { name: 'Log results' })
+    expect(follows(opener, list)).toBe(true)
+    expect(list.contains(opener)).toBe(false)
     expect(follows(form, list)).toBe(true)
     expect(list.contains(form)).toBe(false)
     for (const reading of card().querySelectorAll('[data-movement-identity]')) {
+      expect(follows(opener, reading), 'every prescription before the scoring').toBe(true)
       expect(follows(title, reading), 'every prescription before the scoring').toBe(true)
     }
     for (const label of AMRAP_COUNTS) {
@@ -308,6 +328,7 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     await user.click(within(card()).getByRole('button', { name: 'Start AMRAP' }))
     advance(AMRAP_WINDOW_SECONDS + 5)
     await waitFor(() => expect(within(card()).getByText('Cap reached')).toBeInTheDocument())
+    expect(follows(timedLogOpener(card())!, within(card()).getByRole('list', { name: AMRAP_WORK_LIST }))).toBe(true)
     const capped = log()
     expect(follows(capped, within(card()).getByRole('list', { name: AMRAP_WORK_LIST }))).toBe(true)
   })
@@ -319,25 +340,28 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
 
     const form = log()
     expect(form.tagName).toBe('FORM')
-    // Unnamed inline, so never a duplicate landmark when a section holds two AMRAPs.
+    // TASK-046: never inline any more, so never a duplicate landmark in the
+    // card; in the focused dialog the one form is named by the dialog's title.
     expect(form).not.toHaveAttribute('aria-label')
-    expect(form).not.toHaveAttribute('aria-labelledby')
     expect(within(card()).queryByRole('form')).toBeNull()
     expect(form.dataset.logHierarchy).toBe('simple')
     expect(form.dataset.timedFormat).toBe('amrap')
-    expect(card().querySelectorAll('form')).toHaveLength(1)
+    expect(card().querySelectorAll('form')).toHaveLength(0)
+    expect(form.closest('dialog')!.querySelectorAll('form')).toHaveLength(1)
 
-    // One title, at the level of the card's other group ("Each round:") — the
-    // log is the work's sibling in the outline, not part of it. TASK-015
-    // (C37) adds the accepted per-movement groups after the counts, each
-    // titled by its movement's name (the kettlebell swing's load field here);
-    // those are the only other headings, and no Result / Movements /
+    // One title — TASK-046: the dialog's, "Log results", at the level of the
+    // card's other group ("Each round:"), and none drawn by the form itself.
+    // TASK-015 (C37) adds the accepted per-movement groups after the counts,
+    // each titled by its movement's name (the kettlebell swing's load field
+    // here); those are the only other headings, and no Result / Movements /
     // Feedback title joins them.
-    const headings = within(form).getAllByRole('heading').filter((heading) => !heading.classList.contains('clr-timed-log__group-title'))
+    const dialog = form.closest('dialog')!
+    const headings = within(dialog).getAllByRole('heading').filter((heading) => !heading.classList.contains('clr-timed-log__group-title'))
     expect(headings.map((heading) => heading.textContent)).toEqual(['Log results'])
-    expect(within(form).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results', 'kb swing'])
+    expect(within(dialog).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results', 'kb swing'])
+    expect(within(form).queryByRole('heading', { name: 'Log results' })).toBeNull()
     const title = headings[0]
-    expect(title).toHaveClass('clr-timed-log__title')
+    expect(title).toHaveClass('clr-accepted-log__title')
     const round = within(card()).getByRole('heading', { name: 'Each round:' })
     expect(title.tagName).toBe(round.tagName)
     for (const retired of ['Result', 'Movements', 'Feedback', 'Your score']) {
@@ -433,6 +457,7 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     await startAndFinishEarly(user, 95)
 
     expectNoResetControls(card())
+    expectNoResetControls(log())
     // Blank on arrival: a dash, "not recorded" to assistive technology.
     for (const label of AMRAP_COUNTS) {
       const { value, minus } = count(label)
@@ -465,6 +490,7 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     expect(shown('Reps into the next round')).toBe('0')
     expect(stored(block.blockId)).toMatchObject({ roundsCompleted: 0, partialRoundReps: 0 })
     expectNoResetControls(card())
+    expectNoResetControls(log())
   })
 
   it('AC-R009-02 AMRAP blank and an explicit zero stay apart end to end: stopping records no work, then the stored record, a reload, the saved block result and History all read blank as absent and zero as zero', async () => {
@@ -493,6 +519,7 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     expect(within(card()).getByText('01:35 on the clock')).toBeInTheDocument()
 
     // The save: the section's one forward action writes the block's row.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     expect(await screen.findByRole('heading', { name: COOLDOWN_SECTION_TITLE })).toBeInTheDocument()
     const recorded = second.double.recorded()
@@ -506,6 +533,7 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     expect(row).toMatchObject({ rounds_completed: null, partial_round_reps: 0, elapsed_seconds: 95, completed_under_cap: null })
 
     // Back to the saved section: the values are still the values.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     expect(await screen.findByRole('heading', { name: AMRAP_SECTION_TITLE })).toBeInTheDocument()
     expect(shown('Rounds completed')).toBe('blank')
@@ -546,6 +574,8 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     await startAndFinishEarly(user, 120)
     await tap(user, count('Rounds completed').plus, 2)
 
+    // TASK-046: the log is closed (its X) before the section's forward action.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     const failed = await screen.findByRole('dialog')
     expect(failed).toHaveTextContent('That didn’t save')
@@ -613,11 +643,14 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
     for (const attempt of Object.values(attempts)) {
       const live = attempt.querySelector<HTMLElement>('[data-workout-card="workout"]')!
       const list = within(live).getByRole('list', { name: AMRAP_WORK_LIST })
+      // TASK-046: the log's place is the card's "Log results" action, after the work.
+      expect(follows(timedLogOpener(live)!, list)).toBe(true)
       const form = log(live)
       expect(follows(form, list)).toBe(true)
       expect(form.dataset.logHierarchy).toBe('simple')
       expect(form.querySelectorAll('.clr-quantity')).toHaveLength(2)
       expectNoResetControls(live)
+      expectNoResetControls(form)
     }
     expect(within(attempts.cap).getByText('Cap reached')).toBeInTheDocument()
     expect(AMRAP_COUNTS.map((label) => shown(label, attempts.cap))).toEqual(['blank', 'blank'])
@@ -780,13 +813,16 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       expect(form.dataset.timedFormat).toBe(format)
       expect(form.dataset.logHierarchy).toBe('simple')
       expect(follows(form, within(scope).getByRole('list', { name: list }))).toBe(true)
+      // TASK-046: the log's place on the card, its "Log results" action, after the work.
+      expect(follows(timedLogOpener(scope)!, within(scope).getByRole('list', { name: list }))).toBe(true)
       // One title and no group titles; the question and the effort in two
       // groups. TASK-015 (C37) adds the accepted per-movement groups between
       // them, each titled by its movement's name (the loaded wall ball's load
       // field for the For Time; none for the bodyweight ladder with no rung
       // stated); they are not result groups and carry no Result / Movements /
       // Feedback title.
-      expect(within(form).getAllByRole('heading').filter((heading) => !heading.classList.contains('clr-timed-log__group-title')).map((heading) => heading.textContent)).toEqual(['Log results'])
+      // TASK-046: the one title is the focused dialog's.
+      expect(within(form.closest('dialog')!).getAllByRole('heading').filter((heading) => !heading.classList.contains('clr-timed-log__group-title')).map((heading) => heading.textContent)).toEqual(['Log results'])
       const groups = form.querySelectorAll<HTMLElement>('.clr-timed-log__group:not(.clr-timed-log__group--movement)')
       expect(groups).toHaveLength(2)
       const question = completionOf(form)
@@ -807,6 +843,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       }
       expect(rows[0].children).toHaveLength(2)
       for (const retired of RETIRED_COMPLETION) expect(within(scope).queryByText(retired)).toBeNull()
+      for (const retired of RETIRED_COMPLETION) expect(within(form).queryByText(retired)).toBeNull()
     }
 
     // The accepted recipe: the row never wraps, the two answers share it
@@ -835,6 +872,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     await answer(user, completionOf(log(forTimeCard())), 'Complete')
     expect(storedRace(first.forTime.blockId)).toMatchObject({ workCompleted: true })
     await answer(user, completionOf(log(forTimeCard())), 'Incomplete')
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     expect(recordedOutcome(first.double, first.forTime.blockId).outcome).toEqual({ elapsedSeconds: 90, completedUnderCap: false })
@@ -849,6 +887,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     expect(chosen(completionOf(log(forTimeCard())))).toEqual(['Incomplete'])
     await answer(user, completionOf(log(forTimeCard())), 'Complete')
     expect(storedRace(second.forTime.blockId)).toMatchObject({ workCompleted: true })
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     expect(recordedOutcome(second.double, second.forTime.blockId).outcome).toEqual({ elapsedSeconds: FOR_TIME_CAP_SECONDS, completedUnderCap: true })
@@ -859,6 +898,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     await user.click(within(forTimeCard()).getByRole('button', { name: 'Start For Time' }))
     advance(200)
     expect(queryLog(forTimeCard())).toBeNull()
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     expect(recordedOutcome(third.double, third.forTime.blockId).outcome).toEqual({ elapsedSeconds: 200 })
@@ -893,7 +933,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // tiles, the pressed prefix and its count — in place of the rung radios.
     await finishLadderAfter(user, 200)
     expect(chosen(completionOf(log(ladderCard())))).toEqual(['Incomplete'])
-    const howFar = () => within(ladderCard()).getByRole('group', { name: 'Rounds completed' })
+    const howFar = () => within(log(ladderCard())).getByRole('group', { name: 'Rounds completed' })
     const pressedRounds = () => within(howFar()).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')
     expect(pressedRounds()).toEqual([])
     expect(within(howFar()).getByRole('status')).toHaveTextContent('No rounds marked yet')
@@ -907,6 +947,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // Back to Incomplete: the rung starts over rather than keeping a guess.
     await answer(user, completionOf(log(ladderCard())), 'Incomplete')
     expect(pressedRounds()).toEqual([])
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     expect(recordedOutcome(first.double, first.ladder.blockId).outcome).toEqual({})
@@ -917,6 +958,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     await user.click(within(ladderCard()).getByRole('button', { name: 'Start ladder' }))
     advance(LADDER_CAP + 5)
     await waitFor(() => expect(chosen(completionOf(log(ladderCard())))).toEqual(['Incomplete']))
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     expect(recordedOutcome(second.double, second.ladder.blockId).outcome).toEqual({})
@@ -973,6 +1015,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     expect(chosen(completionOf(log(ladderCard())))).toEqual(['Complete'])
 
     // The save: one forward action writes both rows.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     const forTimeRow = recordedOutcome(second.double, second.forTime.blockId)
@@ -989,6 +1032,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // the saved row may contradict: once the server reports its row, the
     // durable attempt is closed as saved elsewhere (TASK-032; reading the
     // saved ladder result back is TASK-048).
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByRole('heading', { name: RESULTS_SECTION_TITLE })
     for (const [scope, shown] of [[forTimeCard(), ['Incomplete']], [ladderCard(), []]] as const) {
@@ -1036,24 +1080,24 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       // no Clear until something is chosen. Ending the attempt chose nothing.
       expect(within(effort).getAllByRole('radio').map((radio) => radio.textContent)).toEqual([...EFFORT_WORDS])
       expect(chosen(effort)).toEqual([])
-      expect(within(scope).queryByRole('button', { name: /^Clear effort/ })).toBeNull()
+      expect(within(log(scope)).queryByRole('button', { name: /^Clear effort/ })).toBeNull()
       // Three categories, not the session's five-choice feeling.
       expect(within(effort).getAllByRole('radio')).toHaveLength(SET_EFFORT_CHOICES.length)
       expect(within(effort).getAllByRole('radio')).not.toHaveLength(MOOD_SCALE.length)
-      expect(within(scope).queryByRole('group', { name: 'How do you feel?' })).toBeNull()
+      expect(within(log(scope)).queryByRole('group', { name: 'How do you feel?' })).toBeNull()
       // No number anywhere in the effort: no slider, no spin button, no digit
       // in the question. (TASK-015's per-movement amount and load fields are
       // number fields of their own groups, never of the effort's.)
-      expect(within(scope).queryByRole('slider')).toBeNull()
+      expect(within(log(scope)).queryByRole('slider')).toBeNull()
       expect(within(effort).queryByRole('spinbutton')).toBeNull()
-      for (const spin of within(scope).queryAllByRole('spinbutton')) expect(effort).not.toContainElement(spin)
+      for (const spin of within(log(scope)).queryAllByRole('spinbutton')) expect(effort).not.toContainElement(spin)
       expect(effort.textContent).not.toMatch(/\d/)
     }
 
     // Answered, then cleared back to unanswered — and focus stays in the question.
     await answer(user, effortOf(log(forTimeCard())), 'Too hard')
     expect(chosen(effortOf(log(forTimeCard())))).toEqual(['Too hard'])
-    await user.click(within(forTimeCard()).getByRole('button', { name: 'Clear effort for this block' }))
+    await user.click(within(log(forTimeCard())).getByRole('button', { name: 'Clear effort for this block' }))
     expect(chosen(effortOf(log(forTimeCard())))).toEqual([])
     expect(within(effortOf(log(forTimeCard()))).getAllByRole('radio')[0]).toHaveFocus()
     // Each block's effort is its own.
@@ -1068,6 +1112,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // the block's categorical `effort` — the category word itself, beside a
     // numeric effort that stays unasked and null.
     expect(storedRace(forTime.blockId)).not.toHaveProperty('effort')
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: RESULTS_COOLDOWN_TITLE })
     for (const [blockId, category] of [[forTime.blockId, 'about_right'], [ladder.blockId, 'too_easy']] as const) {
@@ -1149,7 +1194,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // The set sheet keeps its own legend and Clear name; only the block's log
     // names its scope (the accepted owner's one adaptation).
     expect(within(form).getByText(EFFORT_LEGEND)).toBeInTheDocument()
-    expect(within(forTimeCard()).getByRole('button', { name: 'Clear effort for this block' })).toHaveClass('clr-btn--quiet')
+    expect(within(log(forTimeCard())).getByRole('button', { name: 'Clear effort for this block' })).toHaveClass('clr-btn--quiet')
   })
 
   it('AC-R010-01 a failed save keeps the completion answer and the effort on screen, and the retry writes the same completion once with no effort', async () => {
@@ -1168,6 +1213,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     await finishLadderAfter(user, 120)
     await answer(user, completionOf(log(ladderCard())), 'Complete')
 
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     const failed = await screen.findByRole('dialog')
     expect(failed).toHaveTextContent('That didn’t save')
@@ -1243,6 +1289,8 @@ describe('TASK-010 completion choices and existing effort faces', () => {
       for (const [attempt, starts] of Object.entries(state.attempts)) {
         const scope = root.querySelector<HTMLElement>(`[data-gallery-race="${attempt}"]`)!
         const live = liveCard(state.list, scope)
+        // TASK-046: the log's place on the card, its "Log results" action, after the work.
+        expect(follows(timedLogOpener(live)!, within(live).getByRole('list', { name: state.list }))).toBe(true)
         const form = log(live)
         expect(follows(form, within(live).getByRole('list', { name: state.list }))).toBe(true)
         expect(chosen(completionOf(form))).toEqual([starts])
@@ -1250,7 +1298,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
         if (state.id === 'ladder') {
           // Nothing tracked: how far is asked, and no rung is claimed.
           // TASK-013 (C33, C34): as the log's rep-first "Rounds completed".
-          const rounds = within(live).getByRole('group', { name: 'Rounds completed' })
+          const rounds = within(form).getByRole('group', { name: 'Rounds completed' })
           expect(within(rounds).getByRole('status')).toHaveTextContent('No rounds marked yet')
           expect(within(rounds).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toEqual([])
         }
@@ -1268,7 +1316,7 @@ describe('TASK-010 completion choices and existing effort faces', () => {
         const finish = root.querySelector<HTMLElement>('[data-gallery-race="ladder-finish"]')!
         await answer(user, completionOf(log(liveCard(state.list, finish))), 'Complete')
         // TASK-013 (C34): the reached reading is the rounds' count.
-        expect(within(within(liveCard(state.list, finish)).getByRole('group', { name: 'Rounds completed' })).getByRole('status'))
+        expect(within(within(log(liveCard(state.list, finish))).getByRole('group', { name: 'Rounds completed' })).getByRole('status'))
           .toHaveTextContent('4 of 4 rounds completed')
       }
     }
@@ -1345,14 +1393,24 @@ const amrapCardOf = () => liveCard(ACTUALS_AMRAP_WORK_LIST)
 const forTimeCardOf = () => liveCard(ACTUALS_FOR_TIME_WORK_LIST)
 const ladderCardOf = () => liveCard(ACTUALS_LADDER_WORK_LIST)
 
+/**
+ * TASK-046: where a block's entries are read — the open log itself, or the
+ * log opened from the block's "Log results" action; the card itself when it
+ * offers no log (so a lookup there finds nothing, as before).
+ */
+function entryScope(scope: HTMLElement): HTMLElement {
+  if (scope.closest('form.clr-timed-log') !== null || scope.matches('dialog')) return scope
+  return queryLog(scope) ?? scope
+}
+
 /** One movement's group in a log, by its `workout_exercises.id`; null when the log draws none for it. */
 function movementGroup(scope: HTMLElement, exerciseId: string): HTMLElement | null {
-  return scope.querySelector<HTMLElement>(`[data-timed-movement="${exerciseId}"]`)
+  return entryScope(scope).querySelector<HTMLElement>(`[data-timed-movement="${exerciseId}"]`)
 }
 
 /** Every movement group a log draws, in order: the movement's name and its fields' visible labels and units. */
 function movementGroups(scope: HTMLElement) {
-  return [...scope.querySelectorAll<HTMLElement>('[data-timed-movement]')].map((group) => ({
+  return [...entryScope(scope).querySelectorAll<HTMLElement>('[data-timed-movement]')].map((group) => ({
     id: group.dataset.timedMovement,
     name: within(group).getByRole('heading').textContent,
     fields: [...group.querySelectorAll<HTMLElement>('label')].map((label) => label.textContent),
@@ -1361,9 +1419,9 @@ function movementGroups(scope: HTMLElement) {
 }
 
 const amountOf = (scope: HTMLElement, name: string) =>
-  within(scope).queryByRole('spinbutton', { name: new RegExp(`^(?:Round \\d+|Completed) · ${name}$`) }) as HTMLInputElement | null
+  within(entryScope(scope)).queryByRole('spinbutton', { name: new RegExp(`^(?:Round \\d+|Completed) · ${name}$`) }) as HTMLInputElement | null
 const weightOf = (scope: HTMLElement, name: string) =>
-  within(scope).queryByRole('spinbutton', { name: `Weight · ${name}` }) as HTMLInputElement | null
+  within(entryScope(scope)).queryByRole('spinbutton', { name: `Weight · ${name}` }) as HTMLInputElement | null
 
 async function type(user: ReturnType<typeof userEvent.setup>, field: HTMLElement | null, text: string) {
   if (field === null) throw new Error('no field to type into')
@@ -1505,6 +1563,7 @@ describe('TASK-015 truthful per-movement partial and actual-load entry', () => {
     // The three-round race in the next section: loads only — no partial round
     // is guessed for a multi-round race with no recorded count, and no rounds
     // count is asked (owner decision).
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE })
     const raceCard = liveCard(ACTUALS_FOR_TIME_WORK_LIST)
@@ -1613,15 +1672,18 @@ describe('TASK-015 truthful per-movement partial and actual-load entry', () => {
     // The first forward action: the AMRAP's row lands and its movement write
     // is refused. The athlete stays, with every entry and the dialog.
     logging.refuseNext('/block_movement_results', 503, 'POST')
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     const failed = await screen.findByRole('dialog')
     expect(failed).toHaveTextContent('That didn’t save')
-    expect(amountOf(amrapLog, 'kettlebell swing')).toHaveValue(7)
-    expect(weightOf(amrapLog, 'kettlebell swing')).toHaveValue(20)
-    expect(amountOf(amrapLog, 'burpee')).toHaveValue(0)
-    expect(amountOf(forTimeLog, 'wall ball')).toHaveValue(28)
-    expect(chosen(effortOf(forTimeLog))).toEqual(['Too hard'])
-    expect(amountOf(amrapLog, 'kettlebell swing')).toBeEnabled()
+    // TASK-046: each log reopened from its card keeps every entry.
+    expect(amountOf(amrapCardOf(), 'kettlebell swing')).toHaveValue(7)
+    expect(weightOf(amrapCardOf(), 'kettlebell swing')).toHaveValue(20)
+    expect(amountOf(amrapCardOf(), 'burpee')).toHaveValue(0)
+    expect(amountOf(forTimeCardOf(), 'wall ball')).toHaveValue(28)
+    expect(chosen(effortOf(log(forTimeCardOf())))).toEqual(['Too hard'])
+    expect(amountOf(amrapCardOf(), 'kettlebell swing')).toBeEnabled()
+    closeTimedLogs()
     expect(logging.blockResults().map((saved) => saved.block_id)).toEqual([amrap.blockId])
     expect(logging.movementResults()).toEqual([])
     expect(within(amrapCardOf()).queryByText('Block saved')).toBeNull()
@@ -1651,6 +1713,7 @@ describe('TASK-015 truthful per-movement partial and actual-load entry', () => {
     for (const saved of rows) expect(saved.perceived_effort).toBeNull()
 
     // Back to the saved section: the fields keep their values and are no longer offered.
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByRole('heading', { name: ACTUALS_SECTION_TITLE })
     expect(amountOf(log(amrapCardOf()), 'kettlebell swing')).toHaveValue(7)
@@ -1705,6 +1768,7 @@ describe('TASK-015 truthful per-movement partial and actual-load entry', () => {
     expect(chosen(completionOf(forTimeLog))).toEqual(['Complete'])
     expect(chosen(effortOf(forTimeLog))).toEqual([])
 
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE })
     // One insert per block — the shipped body, no effort key — and nothing else.
@@ -1728,6 +1792,7 @@ describe('TASK-015 truthful per-movement partial and actual-load entry', () => {
     advance(200)
     await user.click(within(raceCard).getByRole('button', { name: 'Finish' }))
     await type(user, weightOf(log(raceCard), 'thruster'), '35')
+    closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     await screen.findByRole('heading', { name: ACTUALS_COOLDOWN_TITLE })
     expect(logging.movementResults()).toHaveLength(1)

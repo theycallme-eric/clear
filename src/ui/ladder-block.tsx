@@ -153,7 +153,8 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ForTimeClock } from './for-time-block'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { LadderPrescription, type LadderRoundContext, type LadderRoundsProgress } from './refinements/ladder'
-import { TimedResultLog, UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
+import { UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
+import { TimedResultDialog } from './refinements/timed-result-dialog'
 import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
@@ -328,7 +329,11 @@ function useLadderResult(
     timed,
     log:
       rungs.length === 0 ? null : (
-        <TimedResultLog
+        // TASK-046 (C45; R100): one "Log results" action where the log was,
+        // primary once the attempt has ended, opening the same log in the
+        // shared focused dialog; Undo finish closes it as it resumes.
+        <TimedResultDialog
+          openerVariant={ended ? 'primary' : 'secondary'}
           format="ladder"
           value={{ completed, effort }}
           saved={saved}

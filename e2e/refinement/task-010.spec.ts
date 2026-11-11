@@ -250,17 +250,52 @@ function cardOf(scope: Page | Locator, list: string): Locator {
   })
 }
 
-/** The block's log: its card's one form, headed "Log results" (deliberately not a landmark). */
+/**
+ * TASK-046 (C45; R43, R100): a block's card holds one "Log results" action
+ * where its log was; the log — the same form — opens in the shared focused
+ * dialog titled "Log results", over a workout that is inert while it is open.
+ */
+function openerOf(card: Locator): Locator {
+  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+}
+
+/** The open focused log dialog. */
+function dialogOf(scope: Locator): Locator {
+  return scope.page().locator('dialog.clr-accepted-log[open]')
+}
+
+/** The block's log: the open focused dialog's one form, named by its title "Log results". */
 function logOf(card: Locator): Locator {
-  return card.locator('form.clr-timed-log').filter({ has: card.page().getByRole('heading', { name: 'Log results', exact: true }) })
+  return dialogOf(card).locator('form.clr-timed-log')
 }
 
+/** Opens the block's log from its card (unless it is open) and returns it. */
+async function openLog(card: Locator): Promise<Locator> {
+  const opener = openerOf(card)
+  if ((await opener.getAttribute('aria-expanded')) !== 'true') {
+    await closeLog(card.page())
+    await opener.click()
+  }
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Closes the open log with its framed X. */
+async function closeLog(page: Page) {
+  const open = page.locator('dialog.clr-accepted-log[open]')
+  if ((await open.count()) === 0) return
+  await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(open).toHaveCount(0)
+}
+
+/** The log's completion question, in the open log. */
 function completionOf(card: Locator): Locator {
-  return card.getByRole('group', { name: WORK_COMPLETED, exact: true })
+  return logOf(card).getByRole('group', { name: WORK_COMPLETED, exact: true })
 }
 
+/** The log's effort question, in the open log. */
 function effortOf(card: Locator): Locator {
-  return card.getByRole('group', { name: EFFORT_LEGEND, exact: true })
+  return logOf(card).getByRole('group', { name: EFFORT_LEGEND, exact: true })
 }
 
 /** The words of a question's checked answers — none, or one. */
@@ -289,6 +324,8 @@ interface ChoiceGeometry {
 }
 
 interface ResultLogGeometry {
+  /** TASK-046: the log's place on the card, its "Log results" action. */
+  opener: Box
   form: Box
   formContent: { left: number; right: number }
   workBottom: number
@@ -307,7 +344,7 @@ interface ResultLogGeometry {
  */
 async function readResultLog(card: Locator): Promise<ResultLogGeometry> {
   return card.first().evaluate(async (root, legends) => {
-    const settling = root.querySelector('form.clr-timed-log')!.getAnimations({ subtree: true })
+    const settling = document.querySelector('dialog.clr-accepted-log[open] form.clr-timed-log')!.getAnimations({ subtree: true })
       .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
     await Promise.all(settling.map((animation) => animation.finished.catch(() => undefined)))
     const box = (node: Element): Box => {
@@ -322,7 +359,7 @@ async function readResultLog(card: Locator): Promise<ResultLogGeometry> {
       element.remove()
       return color
     }
-    const form = root.querySelector('form.clr-timed-log')!
+    const form = document.querySelector('dialog.clr-accepted-log[open] form.clr-timed-log')!
     const formStyle = getComputedStyle(form)
     const work = [...root.querySelectorAll('[data-movement-identity], [role="list"], ol, ul')].filter((node) => !form.contains(node))
     const question = (legend: string): ChoiceGeometry | null => {
@@ -343,13 +380,14 @@ async function readResultLog(card: Locator): Promise<ResultLogGeometry> {
       }
     }
     return {
+      opener: box(root.querySelector('[data-timed-log-opener]')!),
       form: box(form),
       formContent: {
         left: form.getBoundingClientRect().left + parseFloat(formStyle.paddingLeft),
         right: form.getBoundingClientRect().right - parseFloat(formStyle.paddingRight),
       },
       workBottom: Math.max(...work.map((node) => node.getBoundingClientRect().bottom)),
-      title: box(form.querySelector('.clr-timed-log__title')!),
+      title: box(form.closest('dialog')!.querySelector('.clr-accepted-log__title')!),
       // TASK-015 (C37): the per-movement groups sit between the result and
       // the effort and are not result groups; the two this contract reads
       // are the result group and the effort group.
@@ -368,7 +406,8 @@ const GROUP_GAP = 24
 
 /** C29, C30 and AC-R010-02 read from the browser: after the work, one row of two answers, then the three faces. */
 function expectResultLogContract(geometry: ResultLogGeometry, label: string) {
-  expect(geometry.form.top, `${label}: the log after the work`).toBeGreaterThanOrEqual(geometry.workBottom - TOLERANCE)
+  // TASK-046: on the card the log begins at its "Log results" action.
+  expect(geometry.opener.top, `${label}: the log after the work`).toBeGreaterThanOrEqual(geometry.workBottom - TOLERANCE)
   expect(geometry.groups, `${label}: the result group, then the effort group`).toHaveLength(2)
   expect(geometry.groups[0].top - geometry.title.bottom, `${label}: the title stands apart`).toBeGreaterThanOrEqual(GROUP_GAP - TOLERANCE)
   expect(geometry.groups[1].top - geometry.groups[0].bottom, `${label}: the groups stand apart`).toBeGreaterThanOrEqual(GROUP_GAP - TOLERANCE)
@@ -458,11 +497,14 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     const card = cardOf(page, FOR_TIME_WORK_LIST)
 
     // Ready, running and paused: nothing to judge, so no log.
+    await expect(openerOf(card)).toHaveCount(0)
     await expect(logOf(card)).toHaveCount(0)
     await card.getByRole('button', { name: 'Start For Time', exact: true }).tap()
     await pass(page, 30)
+    await expect(openerOf(card)).toHaveCount(0)
     await expect(logOf(card)).toHaveCount(0)
     await card.getByRole('button', { name: 'Pause', exact: true }).tap()
+    await expect(openerOf(card)).toHaveCount(0)
     await expect(logOf(card)).toHaveCount(0)
     await card.getByRole('button', { name: 'Resume', exact: true }).tap()
     await pass(page, 60)
@@ -470,6 +512,8 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
 
     // Finish under the cap: Complete beside Incomplete, starting at Complete;
     // the three faces unanswered. Nothing is stored until the athlete answers.
+    // TASK-046: the card's "Log results" action opens the log.
+    await openerOf(card).tap()
     await expect(logOf(card)).toBeVisible()
     await settle(page)
     expect(await chosen(completionOf(card))).toEqual(['Complete'])
@@ -486,7 +530,7 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     // Effort: a face, cleared back to unanswered, then another.
     await effortOf(card).getByRole('radio', { name: 'Too hard', exact: true }).tap()
     expect(await chosen(effortOf(card))).toEqual(['Too hard'])
-    await card.getByRole('button', { name: 'Clear effort for this block', exact: true }).tap()
+    await logOf(card).getByRole('button', { name: 'Clear effort for this block', exact: true }).tap()
     expect(await chosen(effortOf(card))).toEqual([])
     await effortOf(card).getByRole('radio', { name: 'About right', exact: true }).tap()
     await settle(page)
@@ -501,19 +545,28 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await page.reload()
     await expect(page.getByRole('list', { name: FOR_TIME_WORK_LIST, exact: true })).toBeVisible()
     await settle(page)
+    await expect(card.locator('xpath=ancestor::*[contains(@class,"clr-stack")][1]').getByRole('timer', { name: 'Block time', exact: true })).toContainText('01:30')
+    await openLog(card)
     expect(await chosen(completionOf(card))).toEqual(['Incomplete'])
     expect(await chosen(effortOf(card))).toEqual([])
-    await expect(card.locator('xpath=ancestor::*[contains(@class,"clr-stack")][1]').getByRole('timer', { name: 'Block time', exact: true })).toContainText('01:30')
     await effortOf(card).getByRole('radio', { name: 'Too easy', exact: true }).tap()
 
     // The forward action saves; the first save is refused. The athlete stays,
-    // with nothing discarded and nothing filled in.
+    // with nothing discarded and nothing filled in. TASK-046: the log is
+    // closed first (the workout behind it is inert); with the failure
+    // dismissed, the reopened log reads the same answers, and the retry is
+    // the same forward action the failure's Try again runs.
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText('That didn’t save')
+    await dialog.getByRole('button', { name: 'Close', exact: true }).tap()
+    await expect(dialog).toHaveCount(0)
+    await openLog(card)
     expect(await chosen(completionOf(card))).toEqual(['Incomplete'])
     expect(await chosen(effortOf(card))).toEqual(['Too easy'])
-    await dialog.getByRole('button', { name: 'Try again', exact: true }).tap()
+    await closeLog(page)
+    await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     await expect(page.getByRole('heading', { name: COOLDOWN_SECTION_TITLE, exact: true })).toBeVisible()
 
     // The For Time's row, both times it was sent: the athlete's Incomplete as
@@ -557,8 +610,14 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await openWorkout(page, visit)
     const card = cardOf(page, LADDER_WORK_LIST)
 
-    // Before the attempt ends the question is there, unanswered.
+    // Before the attempt ends the question is there, unanswered (TASK-046:
+    // in the log the card's "Log results" opens, closed again by Escape).
+    await openerOf(card).focus()
+    await page.keyboard.press('Enter')
+    await expect(logOf(card)).toBeVisible()
     expect(await chosen(completionOf(card))).toEqual([])
+    await page.keyboard.press('Escape')
+    await expect(logOf(card)).toHaveCount(0)
     const start = card.getByRole('button', { name: 'Start ladder', exact: true })
     await start.focus()
     await page.keyboard.press('Enter')
@@ -568,8 +627,12 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     // The cap with nothing tracked: Incomplete, and how far is asked — no rung claimed.
     // TASK-013 (C33, C34): how far is the log's rep-first "Rounds completed",
     // in place of the rung radios: no tile pressed, and no count of zero.
+    await expect(card.getByRole('button', { name: 'Pause', exact: true })).toHaveCount(0)
+    await openerOf(card).focus()
+    await page.keyboard.press('Enter')
+    await expect(logOf(card)).toBeVisible()
     await expect.poll(() => chosen(completionOf(card))).toEqual(['Incomplete'])
-    const howFar = card.getByRole('group', { name: 'Rounds completed', exact: true })
+    const howFar = logOf(card).getByRole('group', { name: 'Rounds completed', exact: true })
     await expect(howFar).toBeVisible()
     await expect(howFar.locator('button[aria-pressed="true"]')).toHaveCount(0)
     await expect(howFar.getByRole('status')).toHaveText('No rounds marked yet')
@@ -610,7 +673,7 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await expect(effortOf(card).getByRole('radio', { name: 'About right', exact: true })).toBeFocused()
     expect(await chosen(effortOf(card))).toEqual(['About right'])
     await page.keyboard.press('Tab')
-    await expect(card.getByRole('button', { name: 'Clear effort for this block', exact: true })).toBeFocused()
+    await expect(logOf(card).getByRole('button', { name: 'Clear effort for this block', exact: true })).toBeFocused()
     await page.keyboard.press('Enter')
     expect(await chosen(effortOf(card))).toEqual([])
     await expect(effortOf(card).getByRole('radio', { name: 'Too hard', exact: true })).toBeFocused()
@@ -633,7 +696,9 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await checkJourneyA11y(page)
 
     // Saved by keyboard: the top rung the athlete declared, nothing from the
-    // clock, and no effort.
+    // clock, and no effort. TASK-046: Escape closes the log first.
+    await page.keyboard.press('Escape')
+    await expect(logOf(card)).toHaveCount(0)
     const next = page.getByRole('button', { name: 'Next section', exact: true })
     await next.focus()
     await page.keyboard.press('Enter')
@@ -669,21 +734,25 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
       for (const [attempt, starts] of state.attempts) {
         const scope = root.locator(`[data-gallery-race="${attempt}"]`)
         const card = cardOf(scope, state.list)
-        await expect(logOf(card)).toBeVisible()
+        // TASK-046: the route's own "Log results" action opens the log.
+        await openLog(card)
         await settle(page)
         expect(await chosen(completionOf(card)), attempt).toEqual([starts])
         expect(await chosen(effortOf(card)), attempt).toEqual([])
         expectResultLogContract(await readResultLog(card), `gallery ${attempt}`)
         if (state.id === 'ladder') {
           // TASK-013 (C33, C34): how far is the log's rep-first "Rounds completed", nothing stated.
-          const rounds = card.getByRole('group', { name: 'Rounds completed', exact: true })
+          const rounds = logOf(card).getByRole('group', { name: 'Rounds completed', exact: true })
           await expect(rounds).toBeVisible()
           await expect(rounds.getByRole('status')).toHaveText('No rounds marked yet')
         }
         await test.info().attach(`gallery-${attempt}-signal-phone-390.png`, { body: await scope.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+        await test.info().attach(`gallery-${attempt}-log-signal-phone-390.png`, { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+        await closeLog(page)
       }
       // Live over memory only.
       const finish = cardOf(root.locator(`[data-gallery-race="${state.attempts[0][0]}"]`), state.list)
+      await openLog(finish)
       const other = state.id === 'for_time' ? 'Incomplete' : 'Complete'
       await completionOf(finish).getByRole('radio', { name: other, exact: true }).tap()
       expect(await chosen(completionOf(finish))).toEqual([other])
@@ -691,6 +760,7 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
       expect(await chosen(effortOf(finish))).toEqual(['About right'])
       await noHorizontalOverflow(page)
       await checkJourneyA11y(page)
+      await closeLog(page)
     }
     expect(await page.evaluate(() => localStorage.getItem('clear.workout-for-time'))).toBeNull()
     expect(await page.evaluate(() => localStorage.getItem('clear.workout-ladders'))).toBeNull()

@@ -357,16 +357,58 @@ function liveCount(card: Locator): Locator {
   return card.locator('[data-ladder-prescription]').getByRole('status')
 }
 
+/**
+ * TASK-046 (C45; R100): each ladder's card holds one "Log results" action
+ * where its log was; the log — the same form, with its quiet Undo — opens in
+ * the shared focused dialog titled "Log results". One log is open at a time,
+ * over a workout that is inert while it is open, and Undo finish closes it
+ * as it resumes the attempt.
+ */
+function openerOf(card: Locator): Locator {
+  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+}
+
+/** The open log's form. */
+function logOf(card: Locator): Locator {
+  return card.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+}
+
+/** Opens the card's log by touch (closing any other first) and returns it. */
+async function openLog(card: Locator): Promise<Locator> {
+  if ((await openerOf(card).getAttribute('aria-expanded')) !== 'true') {
+    await closeLog(card.page())
+    await openerOf(card).tap()
+  }
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Opens the card's log by keyboard: the action focused, then Enter. */
+async function openLogByKeyboard(card: Locator): Promise<Locator> {
+  await openerOf(card).focus()
+  await card.page().keyboard.press('Enter')
+  await expect(logOf(card)).toBeVisible()
+  return logOf(card)
+}
+
+/** Closes the open log with its framed X. */
+async function closeLog(page: Page) {
+  const open = page.locator('dialog.clr-accepted-log[open]')
+  if ((await open.count()) === 0) return
+  await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(open).toHaveCount(0)
+}
+
 function completionOf(card: Locator): Locator {
-  return card.getByRole('group', { name: WORK_COMPLETED, exact: true })
+  return logOf(card).getByRole('group', { name: WORK_COMPLETED, exact: true })
 }
 
 function roundsOf(card: Locator): Locator {
-  return card.getByRole('group', { name: ROUNDS_COMPLETED, exact: true })
+  return logOf(card).getByRole('group', { name: ROUNDS_COMPLETED, exact: true })
 }
 
 function undoOf(card: Locator): Locator {
-  return card.getByRole('button', { name: UNDO_FINISH, exact: true })
+  return logOf(card).getByRole('button', { name: UNDO_FINISH, exact: true })
 }
 
 function resultTile(card: Locator, round: number, key: LadderKey): Locator {
@@ -419,8 +461,9 @@ interface UndoReading {
   focusFrame: string | null
 }
 
+/** TASK-046: read in the card's open log. */
 async function readUndo(card: Locator): Promise<UndoReading> {
-  return card.evaluate(async (root, { undo, rounds }) => {
+  return logOf(card).evaluate(async (root, { undo, rounds }) => {
     const box = (rect: DOMRect | DOMRectReadOnly) =>
       ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })
     const textRects = (node: Node) => {
@@ -550,6 +593,9 @@ async function attachLog(page: Page, card: Locator, name: string) {
     await page.evaluate(() => document.querySelectorAll('.clr-scroll-region__scroller').forEach((scroller) => scroller.scrollTo(0, 0)))
     await settle(page)
     await test.info().attach(`${name}.png`, { body: await card.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    // TASK-046: the log itself is in the open focused dialog.
+    const open = page.locator('dialog.clr-accepted-log[open] [data-logging-frame]')
+    if ((await open.count()) > 0) await test.info().attach(`${name}-log.png`, { body: await open.screenshot({ caret: 'hide' }), contentType: 'image/png' })
   } finally {
     await page.setViewportSize(viewport)
     await settle(page)
@@ -567,6 +613,8 @@ const NOTHING_RECORDED = {
 }
 
 async function saveSection(page: Page) {
+  // TASK-046: the open log is closed first; the workout behind it is inert.
+  await closeLog(page)
   await page.getByRole('button', { name: 'Next section', exact: true }).tap()
   await expect(page.getByRole('heading', { name: HANDOFF_COOLDOWN_TITLE, exact: true })).toBeVisible()
 }
@@ -590,6 +638,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       await liveTile(long, 3).tap()
       await pass(page, 60)
       await long.getByRole('button', { name: 'Finish', exact: true }).tap()
+      await openLog(long)
       await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
       expect(await clockOf(page, 'long')).toEqual({ reading: '02:00', words: 'Finished' })
       await expect(undoOf(long)).toBeVisible()
@@ -603,18 +652,24 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       // Thirty seconds later, Undo: running on from the same start, nothing granted.
       await pass(page, 30)
       await undoOf(long).tap()
+      // TASK-046: Undo closes the log in the same act.
+      await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
       await expect(undoOf(long)).toHaveCount(0)
       expect(await clockOf(page, 'long')).toEqual({ reading: '02:30', words: 'Racing the clock' })
       expect(await lifecycle(long)).toEqual(['Pause', 'Finish'])
       expect(await pressed(long.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }))).toEqual(through(3))
       await expect(liveCount(long)).toHaveText(`3 of ${LONG_ROUNDS} rounds completed`)
+      await openLog(long)
       expect(await chosen(completionOf(long))).toEqual([])
       await expect(roundsOf(long)).toHaveCount(0)
+      await expect(undoOf(long)).toHaveCount(0)
+      await closeLog(page)
       expect(app.posts).toEqual([])
 
       // More rounds, Finish again: a two-digit count, the same alignment.
       await liveTile(long, 10).tap()
       await long.getByRole('button', { name: 'Finish', exact: true }).tap()
+      await openLog(long)
       await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
       await settle(page)
       const longSecond = await readUndo(long)
@@ -622,6 +677,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       await attachReading(`alignment-long-10-of-12-${name}`, longSecond)
 
       // The four-round ladder, every round, paused, then Finish.
+      await closeLog(page)
       await short.getByRole('button', { name: 'Start ladder', exact: true }).tap()
       for (const round of through(SHORT_ROUNDS)) {
         await pass(page, 10)
@@ -630,6 +686,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       await short.getByRole('button', { name: 'Pause', exact: true }).tap()
       await pass(page, 120)
       await short.getByRole('button', { name: 'Finish', exact: true }).tap()
+      await openLog(short)
       await expect.poll(() => chosen(completionOf(short))).toEqual(['Complete'])
       await settle(page)
       expect(await clockOf(page, 'short')).toEqual({ reading: '00:40', words: 'Finished' })
@@ -649,13 +706,16 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       await short.getByRole('button', { name: 'Resume', exact: true }).tap()
       await liveTile(short, 4).tap()
       await short.getByRole('button', { name: 'Finish', exact: true }).tap()
+      await openLog(short)
       await expect.poll(() => chosen(completionOf(short))).toEqual(['Incomplete'])
       expect(await pressed(roundsOf(short))).toEqual(through(3))
       await settle(page)
       expectAlignedQuietUndo(await readUndo(short), 3, SHORT_ROUNDS, `short 3 @${name}`)
       // Both finished attempts still offer their Undo, inside their caps; axe
       // over the whole screen, every rule, no exception.
+      await openLog(long)
       await expect(undoOf(long)).toBeVisible()
+      await openLog(short)
       await expect(undoOf(short)).toBeVisible()
       await noHorizontalOverflow(page)
       await release(page)
@@ -689,6 +749,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await page.keyboard.press('Space')
     await long.getByRole('button', { name: 'Finish', exact: true }).focus()
     await page.keyboard.press('Enter')
+    await openLogByKeyboard(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
 
     // The order: the answer's one stop, the Undo, then the first round.
@@ -717,6 +778,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await attachLog(page, long, 'long-undo-focused-keyboard-reduced-phone-390')
 
     // Enter: the attempt is back at once, no dialog; the focus is on Pause.
+    // TASK-046: the log closes in the same act, so no dialog is left open.
     await page.keyboard.press('Enter')
     await expect(long.getByRole('button', { name: 'Pause', exact: true })).toBeFocused()
     expect(dialogs).toBe(0)
@@ -729,6 +791,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await expect(long.getByRole('button', { name: 'Resume', exact: true })).toBeFocused()
     await long.getByRole('button', { name: 'Finish', exact: true }).focus()
     await page.keyboard.press('Enter')
+    await openLogByKeyboard(long)
     await undoOf(long).focus()
     await page.keyboard.press('Space')
     await expect(long.getByRole('button', { name: 'Resume', exact: true })).toBeFocused()
@@ -749,13 +812,16 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await page.keyboard.press('Enter')
     await long.getByRole('button', { name: 'Finish', exact: true }).focus()
     await page.keyboard.press('Enter')
+    await openLogByKeyboard(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
     await undoOf(long).focus()
     await noHorizontalOverflow(page)
     await release(page)
     await checkJourneyA11y(page)
 
-    // Saved by keyboard.
+    // Saved by keyboard (TASK-046: Escape closes the log first).
+    await page.keyboard.press('Escape')
+    await expect(logOf(long)).toHaveCount(0)
     const next = page.getByRole('button', { name: 'Next section', exact: true })
     await next.focus()
     await page.keyboard.press('Enter')
@@ -783,6 +849,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await pass(page, 10)
     await short.getByRole('button', { name: 'Finish', exact: true }).tap()
     expect(await clockOf(page, 'short')).toEqual({ reading: '14:50', words: 'Finished' })
+    await openLog(short)
     await expect(undoOf(short)).toBeVisible()
     await pass(page, 9)
     await expect(undoOf(short)).toBeVisible()
@@ -794,10 +861,12 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     expect(await pressed(roundsOf(short))).toEqual(through(2))
 
     // The twelve-round ladder: five rounds, Finish at 02:00, the log corrected to six.
+    await closeLog(page)
     await long.getByRole('button', { name: 'Start ladder', exact: true }).tap()
     await pass(page, 120)
     await liveTile(long, 5).tap()
     await long.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await openLog(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
     await resultTile(long, 6, 'long').tap()
     await expect(roundsOf(long).getByRole('status')).toHaveText(`6 of ${LONG_ROUNDS} rounds completed`)
@@ -810,22 +879,27 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await reopen(page)
     long = cardOf(page, 'long')
     short = cardOf(page, 'short')
-    await expect(undoOf(long)).toBeVisible()
+    await openLog(short)
     await expect(undoOf(short)).toHaveCount(0)
+    await openLog(long)
+    await expect(undoOf(long)).toBeVisible()
     expect(await clockOf(page, 'long')).toEqual({ reading: '02:00', words: 'Finished' })
     expect(await pressed(roundsOf(long))).toEqual(through(6))
 
     // The save is refused: nothing stored, nothing discarded, Undo still there.
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     const failed = page.getByRole('dialog')
     await expect(failed).toContainText('That didn’t save')
     expect(app.saves).toEqual([])
     await failed.getByRole('button', { name: 'Close', exact: true }).tap()
+    await openLog(long)
     await expect(undoOf(long)).toBeVisible()
     expect(await chosen(completionOf(long))).toEqual(['Incomplete'])
     expect(await pressed(roundsOf(long))).toEqual(through(6))
     await reopen(page)
     long = cardOf(page, 'long')
+    await openLog(long)
     await expect(undoOf(long)).toBeVisible()
     await settle(page)
     expectAlignedQuietUndo(await readUndo(long), 6, LONG_ROUNDS, 'long after a failed save @phone-390')
@@ -833,6 +907,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     // Undo: running on from the start it was stored with — the time spent
     // finished and closed counts (at least 02:00 + 20 s), none is granted.
     await undoOf(long).tap()
+    await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
     await expect(undoOf(long)).toHaveCount(0)
     const resumed = await attemptOf(page, app.longBlockId)
     expect(resumed.clock).toEqual({ startedAt: finished.clock.startedAt, finishedAt: null })
@@ -840,6 +915,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     expect(await pressed(long.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }))).toEqual(through(6))
     await liveTile(long, 8).tap()
     await long.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await openLog(long)
     await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
 
     // Saved: one row each, the long ladder's once, never the refused attempt.
@@ -863,8 +939,9 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     await settle(page)
     for (const key of ['long', 'short'] as const) {
       const card = cardOf(page, key)
-      await expect(undoOf(card)).toHaveCount(0)
       expect(await lifecycle(card), key).toEqual([])
+      await openLog(card)
+      await expect(undoOf(card)).toHaveCount(0)
       expect(await chosen(completionOf(card)), key).toEqual([])
       for (const radio of await completionOf(card).getByRole('radio').all()) await expect(radio).toBeDisabled()
     }
@@ -889,6 +966,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
         await card.getByRole('button', { name: 'Start ladder', exact: true }).tap()
         await liveTile(card, 2).tap()
         await card.getByRole('button', { name: 'Finish', exact: true }).tap()
+        await openLog(card)
         await expect.poll(() => chosen(completionOf(card))).toEqual(['Incomplete'])
         await settle(page)
         const reading = await readUndo(card)
@@ -899,6 +977,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
         await attachLog(page, card, `gallery-ladder-${rounds}-undo-${name}`)
 
         await undoOf(card).tap()
+        await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
         await expect(undoOf(card)).toHaveCount(0)
         expect(await lifecycle(card)).toEqual(['Pause', 'Finish'])
         expect(await pressed(card.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }))).toEqual(through(2))

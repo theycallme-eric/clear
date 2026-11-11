@@ -502,10 +502,16 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // the optional notes for an exception (left blank here, so the row below
   // still carries no note).
   await expect(page.getByText(/The clock has run every prescribed minute/)).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'Log results', exact: true })).toBeVisible()
-  await expect(page.getByRole('textbox', { name: 'Notes · optional', exact: true })).toBeVisible()
   await expect(first.getByText('6-8-10 reps', { exact: true })).toBeVisible()
   await expectHandsOff(page)
+  // TASK-046 (C45; R43, R100): the card's real Log action opens the end log
+  // in the shared focused dialog titled "Log results"; closed again with its X.
+  await page.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true }).click()
+  const endLog = page.getByRole('dialog', { name: 'Log results', exact: true })
+  await expect(endLog).toBeVisible()
+  await expect(endLog.getByRole('textbox', { name: 'Notes · optional', exact: true })).toBeVisible()
+  await endLog.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(endLog).toHaveCount(0)
 
   // The global session clock is untouched by the EMOM: it kept counting
   // through the background, the refresh and the expiry.

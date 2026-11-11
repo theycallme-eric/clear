@@ -38,6 +38,7 @@ import {
   WORKOUT_AMRAP_STORAGE_KEY,
   type ShellStorage,
 } from '../state/workout-persistence'
+import { queryTimedLog, timedLog, timedLogOpener } from '../test/timed-log-dialog'
 import { fixtureId, snapshotFixture, type BlockFixture } from '../test/workout-double'
 import { AmrapBlock } from './amrap-block'
 
@@ -99,8 +100,18 @@ function renderAmrap(
   )
 }
 
+/**
+ * TASK-046 (C45; R100): once the window has closed, the card offers one "Log
+ * results" action and the result is entered in the shared focused dialog it
+ * opens. Opens it, when the card offers it, so the counts can be read.
+ */
+function openLog() {
+  queryTimedLog()
+}
+
 /** The count a framed selector is showing: `blank`, or its number (TASK-009, C27, C28). */
 function shown(label: string): string {
+  openLog()
   return within(screen.getByRole('group', { name: label }))
     .getByRole('status')
     .dataset.quantityValue ?? ''
@@ -125,6 +136,7 @@ async function finish(user: ReturnType<typeof userEvent.setup>) {
  * explicit zero is one round up and one back down.
  */
 async function recordRounds(user: ReturnType<typeof userEvent.setup>, count: number) {
+  openLog()
   if (count === 0) {
     await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
     await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
@@ -137,6 +149,7 @@ async function recordRounds(user: ReturnType<typeof userEvent.setup>, count: num
 
 /** Records an observed partial round of zero reps (TASK-009, C28: no Partial round toggle). */
 async function recordZeroPartial(user: ReturnType<typeof userEvent.setup>) {
+  openLog()
   await user.click(screen.getByRole('button', { name: 'Increase reps into the next round' }))
   await user.click(screen.getByRole('button', { name: 'Decrease reps into the next round' }))
 }
@@ -144,6 +157,7 @@ async function recordZeroPartial(user: ReturnType<typeof userEvent.setup>) {
 /** Nothing on the card asks for a score or names a round goal. */
 function expectNoScoreEntry() {
   expect(screen.queryByRole('heading', { name: 'Log results' })).not.toBeInTheDocument()
+  expect(timedLogOpener(document.body)).toBeNull()
   expect(screen.queryByRole('group', { name: 'Rounds completed' })).not.toBeInTheDocument()
   expect(screen.queryByRole('group', { name: 'Reps into the next round' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^(increase|decrease) / })).not.toBeInTheDocument()
@@ -271,6 +285,9 @@ describe('the window closing', () => {
     expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
     // TASK-009 (C26, C28): offered as the log's two blank counts, not as a
     // sentence and a Record rounds toggle.
+    // TASK-046: through the card's "Log results" action, into the focused log.
+    expect(timedLogOpener(document.body)).not.toBeNull()
+    timedLog()
     expect(screen.getByRole('heading', { name: 'Log results' })).toBeInTheDocument()
     expect(rounds()).toBe('blank')
     expect(shown('Reps into the next round')).toBe('blank')
@@ -318,7 +335,9 @@ describe('recording rounds afterwards', () => {
     await recordRounds(user, 3)
 
     expect(rounds()).toBe('3')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // TASK-046 (C45; R100) supersedes "no dialog": the counts are entered in
+    // the one shared focused log on the workout, still no other screen.
+    expect(screen.getAllByRole('dialog')).toEqual([screen.getByRole('dialog', { name: 'Log results' })])
   })
 
   it('takes a round back, and never counts below zero', async () => {
@@ -392,6 +411,7 @@ describe('the partial round', () => {
     await start(user)
     await finish(user)
 
+    openLog()
     await user.click(screen.getByRole('button', { name: 'Increase reps into the next round' }))
     await user.click(screen.getByRole('button', { name: 'Increase reps into the next round' }))
     await user.click(screen.getByRole('button', { name: 'Decrease reps into the next round' }))
@@ -686,15 +706,16 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     await recordRounds(user, 1)
     await recordZeroPartial(user)
 
-    const card = screen.getByRole('button', { name: 'Decrease rounds completed' }).closest('.clr-card')
+    // TASK-046 (C45; R100): the card holds the work and its "Log results"
+    // action; the counts are labelled inside the log that action opens, under
+    // that log's one title.
+    const card = screen.getByRole('heading', { name: 'Each round:' }).closest('.clr-card')
     expect(card).not.toBeNull()
-
-    for (const label of ['Log results', 'Each round:']) {
-      const heading = screen.getByRole('heading', { name: label })
-      expect(heading.closest('.clr-card')).toBe(card)
-    }
+    expect(card).toContainElement(timedLogOpener(document.body))
+    const log = screen.getByRole('dialog', { name: 'Log results' })
+    expect(screen.getByRole('heading', { name: 'Log results' }).closest('dialog')).toBe(log)
     for (const name of ['Rounds completed', 'Reps into the next round']) {
-      expect(screen.getByRole('group', { name }).closest('.clr-card')).toBe(card)
+      expect(screen.getByRole('group', { name }).closest('dialog')).toBe(log)
       expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument()
     }
     expect(
@@ -728,6 +749,7 @@ describe('the 0.14.3 card, timer and group grammar', () => {
   it('draws the optional result as framed counts with framed actions, and no text action remains (TASK-009, C27, C28)', async () => {
     const { user, container } = await resumeAt(60_000)
     await finish(user)
+    openLog()
 
     for (const name of ['Rounds completed', 'Reps into the next round']) {
       const frame = screen.getByRole('group', { name })
