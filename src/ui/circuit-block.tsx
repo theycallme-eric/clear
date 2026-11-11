@@ -44,8 +44,34 @@
  * one frame filling the block's width with its digits centred, never put
  * inside another frame. It reads the circuit's own rest, never the session's
  * one rest between sets (C21).
+ *
+ * TASK-021 (REQ-021; C48, G13; R18, R103, R104, R105; V13) — the recorded
+ * round, confirmed in the shared focused logging dialog (`LoggingOverlay`,
+ * accepted gallery reference eded158cfd928d382c9a9409e2c372270312741d,
+ * `?state=circuit-round`; LOGGING-FIELDS "Circuit round / take back"):
+ *
+ *   · **Finish round N opens `Round N recorded`.** The dialog's own header —
+ *     the title and the framed icon-only "Close log" X, aligned to the
+ *     title's visible top however it wraps — then the round's recorded time
+ *     read back from the stored history, the circuit's own rest between
+ *     rounds as the shared whole timer body at the dialog's full content
+ *     width (R103), and Take back this round.
+ *   · **One controller, the same semantics.** The dialog holds no clock and
+ *     no record: its rest is `circuit.ts`'s rest, read from the same stamp,
+ *     moved off the card while the dialog draws it so it is never drawn
+ *     twice; Take back this round is `takeBackRound`, exactly the card's Take
+ *     back a round. Nothing about a ladder or another format's state machine
+ *     is involved, and nothing is written but the circuit's own record.
+ *   · **The rest decides how long it stays.** A round recorded into a rest
+ *     closes when that rest ends — running out, or ended early from the
+ *     card's Start round — and the next round's clock runs as before; it is
+ *     never reopened. A round recorded with no rest after it (none
+ *     prescribed, or the last round) stays until it is closed. The X and
+ *     Escape close it without changing anything: the rest goes on, back on
+ *     the card. Focus returns to the round clock's own control.
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
   Button,
@@ -85,6 +111,7 @@ import { ExerciseSetLogger } from './set-logger'
 import { MovementCountdownView } from './movement-countdown'
 import { liveMovementReadings } from './refinements/movement-readings'
 import { DeadlineTimer } from './refinements/deadline-timer'
+import { LoggingOverlay } from './refinements/logging-overlay'
 
 export interface CircuitBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -117,6 +144,41 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
 
   const resting = shape.size > 0 && view.phase === 'rest'
 
+  // TASK-021: the round just recorded, while its dialog may be showing. Not
+  // persisted — a reload comes back to the card, never to the dialog.
+  const [recorded, setRecorded] = useState<RecordedRound | null>(null)
+  const recordedOpen =
+    recorded !== null &&
+    // Taken back, from the dialog or the card: there is nothing to confirm.
+    view.roundsCompleted >= recorded.round &&
+    // Recorded into a rest: the dialog lasts as long as that rest.
+    (!recorded.rested || resting)
+  const recordedTiming =
+    recorded === null
+      ? undefined
+      : [...(circuit.state.history ?? [])].reverse().find((timing) => timing.round === recorded.round)
+
+  // Focus returns to the round clock's own control once the dialog has
+  // closed, however it closed — the X, Escape, Take back this round or the
+  // rest ending — when it would otherwise be left on the page itself.
+  const roundClockGroup = useRef<HTMLDivElement>(null)
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (wasOpen.current && !recordedOpen) returnFocusToRoundClock(roundClockGroup.current)
+    wasOpen.current = recordedOpen
+  }, [recordedOpen])
+
+  const finish = () => {
+    const next = finishRound(circuit.state, shape, now())
+    if (next === circuit.state) return
+    circuit.advanceTo(next)
+    setRecorded({ round: view.round, rested: next.restStartedAt !== null })
+  }
+  const takeBack = () => {
+    circuit.advanceTo(takeBackRound(circuit.state, shape))
+    setRecorded(null)
+  }
+
   return (
     <BlockPanel
       block={block}
@@ -125,8 +187,10 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
       // from the rest's own deadline (TASK-008: C22, C23, C24, C61): colour
       // from ten seconds left, the breathe with the one soft screen-edge aura
       // in the last five.
+      // While the recorded round's dialog is open it draws this same rest at
+      // its full width (TASK-021), so the card does not draw it a second time.
       timer={
-        resting ? (
+        resting && !recordedOpen ? (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DeadlineTimer reading={formatCountdownReading(view.restRemaining)} deadline={circuitRestDeadline(view)} />
           </div>
@@ -150,14 +214,23 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
             the work below scrolls without taking the clock with it.
           */}
           <RoundRecord
+            groupRef={roundClockGroup}
             view={view}
             roundClock={roundClock}
             onStartRound={() => circuit.advanceTo(startRound(circuit.state, shape, now()))}
-            onFinishRound={() =>
-              circuit.advanceTo(finishRound(circuit.state, shape, now()))
-            }
+            onFinishRound={finish}
             onEndRest={() => circuit.advanceTo(endRest(circuit.state, shape, now()))}
-            onTakeBack={() => circuit.advanceTo(takeBackRound(circuit.state, shape))}
+            onTakeBack={takeBack}
+          />
+
+          <RecordedRoundLog
+            open={recordedOpen}
+            round={recorded?.round ?? view.round}
+            timing={recordedTiming}
+            view={view}
+            resting={resting}
+            onClose={() => setRecorded(null)}
+            onTakeBack={takeBack}
           />
 
           <RoundHistory history={circuit.state.history ?? []} />
@@ -208,6 +281,7 @@ function roundsRecordedText(view: CircuitView): string {
  * controls, kept apart from each movement's own optional logging.
  */
 function RoundRecord({
+  groupRef,
   view,
   roundClock,
   onStartRound,
@@ -215,6 +289,8 @@ function RoundRecord({
   onEndRest,
   onTakeBack,
 }: {
+  /** The group, so focus can come back to its control (TASK-021). */
+  groupRef: RefObject<HTMLDivElement | null>
   view: CircuitView
   /** The running round's elapsed seconds; null when no round clock runs. */
   roundClock: number | null
@@ -225,6 +301,7 @@ function RoundRecord({
 }) {
   return (
     <div
+      ref={groupRef}
       role="group"
       aria-label="Round clock"
       className="clr-stack--tight"
@@ -308,6 +385,100 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
         ))}
       </ol>
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The recorded round (TASK-021)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The round Finish round just recorded, and whether a rest began with it. */
+interface RecordedRound {
+  readonly round: number
+  readonly rested: boolean
+}
+
+/**
+ * The page has lost focus when it is nowhere, on the page itself, or still on
+ * a control inside a dialog that has closed.
+ */
+function returnFocusToRoundClock(group: HTMLElement | null) {
+  if (group === null || !group.isConnected) return
+  const active = group.ownerDocument.activeElement
+  const dialog = active?.closest('dialog') ?? null
+  const stranded =
+    active === null ||
+    active === group.ownerDocument.body ||
+    !active.isConnected ||
+    (dialog !== null && !dialog.open)
+  if (stranded) group.querySelector<HTMLButtonElement>('button')?.focus()
+}
+
+/**
+ * `Round N recorded`: the shared focused logging dialog (R7 reviewed circuit
+ * confirmation, V13; LOGGING-FIELDS "Circuit round / take back"). Its header
+ * is the overlay's — the title and the framed icon-only X (R104, R105). Under
+ * it, the recorded round time read back from the stored history (a round
+ * whose clock never ran says only that it was recorded), the circuit's own
+ * rest at the dialog's full content width (R103), and Take back this round.
+ * Portalled to the document body as the other focused logs are, so nothing on
+ * the card is inherited into it.
+ */
+function RecordedRoundLog({
+  open,
+  round,
+  timing,
+  view,
+  resting,
+  onClose,
+  onTakeBack,
+}: {
+  open: boolean
+  round: number
+  timing: RoundTiming | undefined
+  view: CircuitView
+  resting: boolean
+  onClose: () => void
+  onTakeBack: () => void
+}) {
+  const seconds = timing === undefined ? null : roundDuration(timing)
+  return createPortal(
+    <LoggingOverlay open={open} title={`Round ${round} recorded`} onClose={onClose}>
+      {open ? (
+        <div
+          data-circuit-recorded-round=""
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--logging-section-gap)', minWidth: 0 }}
+        >
+          <BlockPanel.Note role="status">
+            {seconds === null ? (
+              'Round recorded'
+            ) : (
+              <>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-data)' }}>{formatElapsed(seconds)}</span>
+                <span className="a11y-hidden">{spokenElapsed(seconds)}</span> round time recorded
+              </>
+            )}
+          </BlockPanel.Note>
+
+          {resting ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--logging-label-gap)', minWidth: 0 }}>
+              <BlockPanel.Label>Rest after round {round}</BlockPanel.Label>
+              <DeadlineTimer
+                reading={formatCountdownReading(view.restRemaining)}
+                deadline={circuitRestDeadline(view)}
+              />
+            </div>
+          ) : null}
+
+          <div className="clr-timed-actions">
+            <Button variant="secondary" onClick={onTakeBack}>
+              Take back this round
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </LoggingOverlay>,
+    document.body,
   )
 }
 

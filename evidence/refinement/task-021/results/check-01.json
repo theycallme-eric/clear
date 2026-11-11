@@ -1,0 +1,72 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-021",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/circuit-block.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-021/required-cases.json",
+    "sha256": "5507393fd235da8e6917d5c40085251d19ba37c7478899d74553d0ff02e77118"
+  },
+  "targets": [
+    {
+      "path": "src/ui/circuit-block.test.tsx",
+      "sha256": "0040ff7be9c44aacc649f8723339d3710a59432c1e0411ea3513b4e6c470de53"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Finish round N opens Round N recorded: the framed Close log X alone in the header, the round time read back, the circuit rest at the log’s full width and Take back this round",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Take back this round un-records the round, ends its rest, closes the log and resumes the round’s own clock, with focus on Finish round",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 the rest runs on in the log and ends it: at rest end the log closes by itself, records nothing more and the next round’s clock runs; the card’s early Start round ends it too",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Close log and Escape close it without changing anything: the same rest goes on, back on the card, with Start round N and Take back a round",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log reads the round and Take back this round with no timer, and stays until closed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-C48-01 round recording, active round time and the round-time history are kept through the log, and a refresh comes back to the card, never to the log",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-01 one circuit controller: the log’s taps are the circuit’s own Finish round and Take back, written only to the circuit record, with the original scoring",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 39
+  },
+  "problems": []
+}

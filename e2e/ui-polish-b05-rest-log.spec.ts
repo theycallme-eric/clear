@@ -863,6 +863,10 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await page.getByRole('button', { name: 'Next section' }).click()
       await page.getByRole('button', { name: 'Start round 1' }).click()
       await page.getByRole('button', { name: 'Finish round 1' }).click()
+      // TASK-021: the recorded round is confirmed in the shared focused log;
+      // its X returns the circuit's rest to the card.
+      await page.getByRole('dialog', { name: 'Round 1 recorded', exact: true })
+        .getByRole('button', { name: 'Close log', exact: true }).click()
       await expect(page.getByText('Rest between rounds', { exact: true })).toBeVisible()
       await expect(restBars(page)).toHaveCount(0)
       await expect(page.getByRole('button', { name: 'Rest for goblet squat', exact: true })).toBeVisible()

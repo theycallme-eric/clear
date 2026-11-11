@@ -51,6 +51,7 @@ import {
   type WorkoutDouble,
 } from '../test/workout-double'
 import { CircuitBlock } from './circuit-block'
+import { circuitShape, finishRound as finishCircuitRound, takeBackRound } from '../state/circuit'
 
 /** A moment the rest can be measured from, and a clock the test moves. */
 const START = Date.parse('2026-09-24T10:00:00.000Z')
@@ -821,5 +822,318 @@ describe('optional, compact load entry', () => {
       expect(first.queryByText('On this device only')).not.toBeInTheDocument(),
     )
     expect(first.getByText('Saved')).toBeInTheDocument()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-021 (REQ-021; C48, G13; R18, R103, R104, R105; V13) — the recorded
+// round in the shared focused logging dialog, over the one circuit controller.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The recorded round's dialog element, open or not, by its title. */
+function recordedLog(round: number): HTMLDialogElement {
+  const title = screen.getAllByRole('heading', { name: `Round ${round} recorded`, hidden: true })[0]
+  const dialog = title?.closest('dialog')
+  if (dialog == null) throw new Error(`no Round ${round} recorded dialog`)
+  return dialog
+}
+
+function openLogs(): HTMLDialogElement[] {
+  return Array.from(document.querySelectorAll<HTMLDialogElement>('dialog.clr-accepted-log[open]'))
+}
+
+/** Every key the circuit wrote, so a write to anything else would show. */
+function recordingStorage(): ShellStorage & { keys: Set<string> } {
+  const inner = fakeStorage()
+  const keys = new Set<string>()
+  return {
+    keys,
+    getItem: (key) => inner.getItem(key),
+    setItem: (key, value) => {
+      keys.add(key)
+      inner.setItem(key, value)
+    },
+    removeItem: (key) => {
+      keys.add(key)
+      inner.removeItem(key)
+    },
+  }
+}
+
+/** Start round 1, let `seconds` pass on the wall clock, and Finish round 1. */
+async function recordFirstRound(
+  user: ReturnType<typeof userEvent.setup>,
+  seconds: number,
+) {
+  await user.click(startRound1())
+  clock += seconds * 1000
+  await act(() => vi.advanceTimersByTimeAsync(1000))
+  await user.click(finishRound(1))
+}
+
+describe('TASK-021 the recorded round in the shared focused log', () => {
+  it('AC-R021-02 Finish round N opens Round N recorded: the framed Close log X alone in the header, the round time read back, the circuit rest at the log’s full width and Take back this round', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { api, reportOutcome } = completionDouble()
+    const block = circuitBlock()
+    renderCircuit(block, fakeStorage(), api)
+
+    await recordFirstRound(user, 32)
+
+    const dialog = recordedLog(1)
+    expect(dialog).toHaveAttribute('open')
+    expect(dialog).toHaveClass('clr-accepted-log')
+    expect(openLogs()).toEqual([dialog])
+    // Not inside the card: portalled like every focused log.
+    expect(blockCard().contains(dialog)).toBe(false)
+
+    // The overlay's own header: the title, then the framed icon-only X.
+    const head = dialog.querySelector<HTMLElement>('[data-logging-head]')!
+    expect(within(head).getByRole('heading', { name: 'Round 1 recorded' })).toBeInTheDocument()
+    const close = within(head).getByRole('button', { name: 'Close log' })
+    expect(close).toHaveTextContent('')
+    expect(within(dialog).getAllByRole('heading')).toHaveLength(1)
+    expect(within(dialog).queryByText(/^close$/i)).toBeNull()
+    expect(document.activeElement).toBe(close)
+
+    // The recorded round time, read back from the stored history.
+    const status = within(dialog).getByRole('status')
+    expect(status).toHaveTextContent('00:32')
+    expect(status).toHaveTextContent('32 seconds round time recorded')
+
+    // The circuit's own rest, the shared whole timer body, drawn once: in the log.
+    expect(within(dialog).getByText('Rest after round 1')).toBeInTheDocument()
+    const timer = within(dialog).getByRole('timer', { name: 'Time remaining' })
+    expect(timer).toHaveTextContent('01:00')
+    expect(timer.closest('[data-timer-frame]')).toHaveAttribute('data-timer-frame', 'body')
+    expect(screen.getAllByRole('timer', { name: 'Time remaining' })).toEqual([timer])
+
+    // A secondary action (the reference's), never the screen's primary or a critical one.
+    const takeBack = within(dialog).getByRole('button', { name: 'Take back this round' })
+    expect(takeBack).toHaveClass('clr-btn')
+    expect(takeBack).not.toHaveClass('clr-btn--primary', 'clr-btn--critical', 'clr-btn--quiet')
+    expect(takeBack.closest('.clr-timed-actions')).not.toBeNull()
+    // Nothing invented: no movement actuals, no extra rest controls.
+    expect(within(dialog).queryByRole('textbox')).toBeNull()
+    expect(within(dialog).queryByRole('spinbutton')).toBeNull()
+    expect(within(dialog).queryByRole('button', { name: /add|skip/i })).toBeNull()
+
+    // The card counts the round, and the block reports it.
+    expect(roundRecord()).toHaveTextContent('1 of 3 rounds recorded')
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 1 })
+  })
+
+  it('AC-R021-02 Take back this round un-records the round, ends its rest, closes the log and resumes the round’s own clock, with focus on Finish round', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { api, reportOutcome } = completionDouble()
+    const storage = fakeStorage()
+    const block = circuitBlock()
+    renderCircuit(block, storage, api)
+
+    await recordFirstRound(user, 32)
+    const dialog = recordedLog(1)
+    clock += 5_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    expect(within(dialog).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:55')
+
+    await user.click(within(dialog).getByRole('button', { name: 'Take back this round' }))
+
+    expect(dialog).not.toHaveAttribute('open')
+    expect(openLogs()).toEqual([])
+    expect(restTimer()).toBeNull()
+    expect(roundRecord()).toHaveTextContent('No rounds recorded')
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+    // The round it re-opens resumes the clock it was finished on.
+    expect(screen.getByRole('timer', { name: 'Round 1 time' })).toHaveTextContent('00:37')
+    expect(readCircuitState(storage, block.blockId)).toMatchObject({ round: 1, restStartedAt: null, history: [] })
+    expect(screen.queryByRole('list', { name: 'Round times' })).toBeNull()
+    expect(document.activeElement).toBe(finishRound(1))
+  })
+
+  it('AC-R021-02 the rest runs on in the log and ends it: at rest end the log closes by itself, records nothing more and the next round’s clock runs; the card’s early Start round ends it too', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { api, reportOutcome } = completionDouble()
+    const block = circuitBlock({ roundRestSeconds: 30 })
+    renderCircuit(block, fakeStorage(), api)
+
+    await recordFirstRound(user, 32)
+    const dialog = recordedLog(1)
+    clock += 20_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    expect(within(dialog).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:10')
+    expect(dialog).toHaveAttribute('open')
+
+    clock += 10_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+
+    expect(dialog).not.toHaveAttribute('open')
+    expect(restTimer()).toBeNull()
+    expect(roundRecord()).toHaveTextContent('1 of 3 rounds recorded')
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 1 })
+    expect(finishRound(2)).toBeInTheDocument()
+    expect(document.activeElement).toBe(finishRound(2))
+    // Never reopened by time passing.
+    clock += 5 * 60_000
+    await act(() => vi.advanceTimersByTimeAsync(2000))
+    expect(openLogs()).toEqual([])
+
+    // Round 2 is recorded into its rest, then the card's Start round 3 —
+    // the rest's existing early end — ends the rest and the log with it.
+    await user.click(finishRound(2))
+    const second = recordedLog(2)
+    expect(second).toHaveAttribute('open')
+    fireEvent.click(within(blockCard()).getByRole('button', { name: 'Start round 3' }))
+    expect(second).not.toHaveAttribute('open')
+    expect(finishRound(3)).toBeInTheDocument()
+    expect(roundRecord()).toHaveTextContent('2 of 3 rounds recorded')
+  })
+
+  it('AC-R021-02 Close log and Escape close it without changing anything: the same rest goes on, back on the card, with Start round N and Take back a round', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { api, reportOutcome } = completionDouble()
+    const storage = fakeStorage()
+    const block = circuitBlock()
+    renderCircuit(block, storage, api)
+
+    await recordFirstRound(user, 32)
+    const dialog = recordedLog(1)
+    clock += 10_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    const stored = readCircuitState(storage, block.blockId)
+
+    await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+
+    expect(dialog).not.toHaveAttribute('open')
+    expect(readCircuitState(storage, block.blockId)).toEqual(stored)
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(timer).toHaveTextContent('00:50')
+    expect(blockCard().contains(timer)).toBe(false)
+    const startRound2 = within(blockCard()).getByRole('button', { name: 'Start round 2' })
+    expect(document.activeElement).toBe(startRound2)
+    expect(roundRecord()).toHaveTextContent('1 of 3 rounds recorded')
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 1 })
+
+    // Round 2 from the card's early start, recorded, then dismissed by Escape.
+    await user.click(startRound2)
+    clock += 40_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    await user.click(finishRound(2))
+    const second = recordedLog(2)
+    expect(within(second).getByRole('status')).toHaveTextContent('00:40')
+    fireEvent(second, new Event('cancel', { cancelable: true }))
+    expect(second).not.toHaveAttribute('open')
+    expect(roundRecord()).toHaveTextContent('2 of 3 rounds recorded')
+
+    // The card's Take back a round is still the Undo once the log is closed.
+    await user.click(screen.getByRole('button', { name: 'Take back a round' }))
+    expect(roundRecord()).toHaveTextContent('1 of 3 rounds recorded')
+    expect(restTimer()).toBeNull()
+    expect(finishRound(2)).toBeInTheDocument()
+    expect(openLogs()).toEqual([])
+  })
+
+  it('AC-R021-02 with no rest to run — none prescribed, or the last round — the log reads the round and Take back this round with no timer, and stays until closed', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { api, reportOutcome } = completionDouble()
+    const block = circuitBlock({ roundRestSeconds: 0 })
+    renderCircuit(block, fakeStorage(), api)
+
+    await recordFirstRound(user, 45)
+    const dialog = recordedLog(1)
+    expect(within(dialog).getByRole('status')).toHaveTextContent('00:45')
+    expect(within(dialog).queryByRole('timer')).toBeNull()
+    expect(within(dialog).queryByText(/^Rest after/)).toBeNull()
+    expect(within(dialog).getByRole('button', { name: 'Take back this round' })).toBeInTheDocument()
+    // The next round's clock starts at once, behind the log, as before.
+    expect(finishRound(2)).toBeInTheDocument()
+    clock += 2 * 60_000
+    await act(() => vi.advanceTimersByTimeAsync(2000))
+    expect(dialog).toHaveAttribute('open')
+    await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+    expect(dialog).not.toHaveAttribute('open')
+
+    await user.click(finishRound(2))
+    await user.click(within(recordedLog(2)).getByRole('button', { name: 'Close log' }))
+    await user.click(finishRound(3))
+    const last = recordedLog(3)
+    expect(last).toHaveAttribute('open')
+    expect(within(last).queryByRole('timer')).toBeNull()
+    expect(screen.getByText('Every prescribed round is recorded.')).toBeInTheDocument()
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 3 })
+
+    // Taking the last round back from its log reopens round 3 on its clock.
+    await user.click(within(last).getByRole('button', { name: 'Take back this round' }))
+    expect(last).not.toHaveAttribute('open')
+    expect(finishRound(3)).toBeInTheDocument()
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 2 })
+  })
+
+  it('AC-C48-01 round recording, active round time and the round-time history are kept through the log, and a refresh comes back to the card, never to the log', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const storage = fakeStorage()
+    const block = circuitBlock({ roundRestSeconds: 30 })
+    const first = renderCircuit(block, storage, completionDouble().api)
+
+    await recordFirstRound(user, 32)
+    clock += 30_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    // Round 2's clock started when the rest ended, without a tap.
+    clock += 41_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    expect(screen.getByRole('timer', { name: 'Round 2 time' })).toHaveTextContent('00:41')
+    await user.click(finishRound(2))
+    expect(within(recordedLog(2)).getByRole('status')).toHaveTextContent('00:41')
+
+    const history = screen.getByRole('list', { name: 'Round times' })
+    expect(within(history).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Round 100:3232 seconds',
+      'Round 200:4141 seconds',
+    ])
+
+    // Refreshed mid-rest: the card, its rest and its history; no log.
+    first.unmount()
+    clock += 10_000
+    const { api, reportOutcome } = completionDouble()
+    renderCircuit(block, storage, api)
+    expect(openLogs()).toEqual([])
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:20')
+    expect(roundRecord()).toHaveTextContent('2 of 3 rounds recorded')
+    expect(within(screen.getByRole('list', { name: 'Round times' })).getAllByRole('listitem')).toHaveLength(2)
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 2 })
+  })
+
+  it('AC-R021-01 one circuit controller: the log’s taps are the circuit’s own Finish round and Take back, written only to the circuit record, with the original scoring', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { api, reportOutcome } = completionDouble()
+    const storage = recordingStorage()
+    const block = circuitBlock()
+    const shape = circuitShape(block)
+    renderCircuit(block, storage, api)
+
+    await user.click(startRound1())
+    const running = readCircuitState(storage, block.blockId)!
+    clock += 32_000
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    await user.click(finishRound(1))
+    const finished = readCircuitState(storage, block.blockId)!
+    expect(finished).toEqual(finishCircuitRound(running, shape, clock))
+
+    await user.click(within(recordedLog(1)).getByRole('button', { name: 'Take back this round' }))
+    expect(readCircuitState(storage, block.blockId)).toEqual(takeBackRound(finished, shape))
+
+    // Only the circuit's own record: no ladder, timed-format or other state.
+    expect([...storage.keys]).toEqual([WORKOUT_CIRCUIT_STORAGE_KEY])
+    // The original scoring: a taken-back round leaves no count at all.
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+    expect(reportOutcome.mock.calls.map(([, outcome]) => outcome)).toEqual(
+      expect.arrayContaining([{ roundsCompleted: 1 }, {}]),
+    )
   })
 })

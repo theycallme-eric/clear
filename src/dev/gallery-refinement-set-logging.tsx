@@ -244,8 +244,11 @@ function memorySetLogs(seeded: readonly ExerciseSetLogRow[]): SetLogsClient {
   }
 }
 
-/** The gallery's clients, with only the set observations answered in memory. */
-function MemorySetLogClients({ seeded, children }: { seeded: readonly ExerciseSetLogRow[]; children: ReactNode }) {
+/**
+ * The gallery's clients, with only the set observations answered in memory.
+ * Also the circuit-round state's (TASK-021, `gallery-refinement-circuit.tsx`).
+ */
+export function MemorySetLogClients({ seeded, children }: { seeded: readonly ExerciseSetLogRow[]; children: ReactNode }) {
   const outer = useWorkoutClients()
   const [clients] = useState(() => ({ ...outer, setLogs: memorySetLogs(seeded) }))
   return <WorkoutClientsContext value={clients}>{children}</WorkoutClientsContext>
