@@ -1,0 +1,142 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-028",
+  "description": "Released semantic error treatment remains a regression invariant (REQ-028; C55, G23; R22; AC-C55-01, AC-R028-01; JOURNEY-028). PR611's released correction (library pilot c0d5782 / 55843bd, proved by e2e/library-error-role.spec.ts) is retained, not reimplemented, in the one shared owner src/ui/view-state.tsx#ErrorView (unchanged by this task, byte-identical to accepted reference eded158cfd928d382c9a9409e2c372270312741d): the alert root scopes --border-card and --brd to --border-toast-negative so a standalone failure's frame, accent bar and emission share the error role in every skin, and the AlertTriangle glyph paints --icon-toast-negative; inside a card the failure is that card's content. The accepted gallery state /gallery/refinements?state=errors is added over the same owner (src/dev/gallery-refinement-errors.tsx), with no route CSS. check-01 pins the DOM contract, the real route guard's account-load error and its Try again, the gallery state, one owner and no restating stylesheet, and the existing error/retry meaning cases; check-02 proves on the real app (boot account-load failure and /summary's session failure, contained synthetic session, nothing written) and the gallery state in all four skins that the painted roles match, plus loading/error/retry meanings, keyboard, touch, reduced motion and one-shot motion. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-028 --check check-01 -- npx vitest run src/ui/view-state.test.tsx --testNamePattern \"error|retry\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C55-01",
+        "AC-R028-01"
+      ],
+      "files": [
+        "src/ui/view-state.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "reference screen: error > renders the AppError as an alert: plain message, requestId, what failed",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "reference screen: error > the retry action re-runs the failed operation",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "containment: a state never puts a card inside a card > an error without a retry offers no action rather than a dead one",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a standalone error scopes both border hooks to the error role at its root, so its frame, accent bar and emission share one role, and the glyph paints the error icon role",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 an error inside a card is that card’s content: the root keeps the error hooks, the glyph keeps the error icon role and no second frame, bar or emission is drawn",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a real route’s account-load error renders the shared error owner with its role, and Try again re-reads the account into the route",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 the accepted gallery state ?state=errors draws the shared error owner: a network timeout with the error role and its Retry",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-R028-01 error owner retained: PR611’s correction stays in the one shared ErrorView, no second error owner or stylesheet restates the role, and the pilot’s regression proof is in place",
+          "criterion": "AC-R028-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-028 --check check-02 -- npx playwright test e2e/refinement/task-028.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C55-01",
+        "AC-R028-01",
+        "JOURNEY-028"
+      ],
+      "files": [
+        "e2e/refinement/task-028.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin clear phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin vapour phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin signal phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin mono phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin clear phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin vapour phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin signal phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin mono phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 phone-390 meanings: a held read is a busy status and not an alert, its failure is an alert that claims no work, and Retry re-runs only that read",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 phone-320 reduced motion and keyboard: the failure is still, keeps its one error role, copy and Retry, fits the narrow phone, and the keyboard reaches and activates Retry",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "e2e/refinement/task-028.spec.ts",
+          "project": "mobile",
+          "name": "TASK-028 released semantic error treatment > JOURNEY-028 phone-390 motion: a failure glitches once on arrival, never loops, and the gallery state does the same",
+          "criterion": "AC-R028-01"
+        }
+      ]
+    }
+  }
+}
