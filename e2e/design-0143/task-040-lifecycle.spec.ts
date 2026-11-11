@@ -640,18 +640,23 @@ test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifa
   test('Summary — real completed session, favorite failure, retained debrief and save', async ({ page, visit }) => {
     await completed()
     await visit('/summary')
+    // TASK-045: the debrief is in the Workout feedback dialog the Debrief card opens.
+    await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
     await save.take({ screen: 'Summary', route: '/summary', state: 'debrief-unrecorded-or-saved' }, '/summary', 'Nice work', 'Unrecorded debrief has empty notes and no chosen mood.', async () => {
       await expect(page.getByLabel('Notes · optional')).toHaveValue('')
       await expect(page.getByRole('radio', { name: 'Ready', exact: true })).not.toBeChecked()
     }, 'unrecorded')
+    // The screen behind the modal log is inert: close it before the favorite.
+    await page.getByRole('dialog', { name: 'Workout feedback', exact: true }).getByRole('button', { name: 'Close log', exact: true }).click()
     const favoriteFailure = await fault(page, 'rpc/save_favorite', 'POST')
     try {
       await page.getByRole('button', { name: 'Save as favorite', exact: true }).click()
       await save.take({ screen: 'Summary', route: '/summary', state: 'favorite-save-failure-secondary' }, '/summary', 'Nice work', 'Secondary favorite error does not block the debrief form.', async () => {
         await expect(page.getByRole('alert')).toContainText('That workout wasn’t saved as a favorite. Try again.')
-        await expect(page.getByRole('button', { name: 'Save and close', exact: true })).toBeEnabled()
+        await expect(page.getByRole('button', { name: 'Log workout feedback', exact: true })).toBeEnabled()
       })
     } finally { await favoriteFailure.dispose() }
+    await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
     await page.getByRole('radio', { name: 'Ready', exact: true }).click()
     await page.getByLabel('Notes · optional').fill('TASK-040 isolated fixture debrief.')
     const saveFailure = await fault(page, 'workout_sessions', 'PATCH', true)
@@ -674,6 +679,7 @@ test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifa
       async () => { await page.getByRole('button', { name: 'Save and close', exact: true }).click() }, '/', 'Today',
       async () => { await expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeVisible() })
     await visit('/summary')
+    await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
     await save.take({ screen: 'Summary', route: '/summary', state: 'debrief-unrecorded-or-saved' }, '/summary', 'Nice work', 'Reopened debrief reads the actual saved fixture mood and notes.', async () => {
       await expect(page.getByRole('radio', { name: 'Ready', exact: true })).toBeChecked()
       await expect(page.getByLabel('Notes · optional')).toHaveValue('TASK-040 isolated fixture debrief.')

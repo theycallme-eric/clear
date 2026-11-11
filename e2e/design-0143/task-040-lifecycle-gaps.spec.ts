@@ -502,7 +502,8 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
       'Real historical completed session opens a debrief, but no today/yesterday session or rest-day mark forms a current streak.', async () => {
         await expect(page.getByText('No streak yet. Sessions on consecutive days build one.', { exact: true })).toBeVisible()
         await expect(page.getByText(`${TITLE}, done.`, { exact: true })).toBeVisible()
-        await expect(page.getByRole('button', { name: 'Save and close', exact: true })).toBeEnabled()
+        // TASK-045: the debrief's control on the screen is its Workout feedback opener.
+        await expect(page.getByRole('button', { name: 'Log workout feedback', exact: true })).toBeEnabled()
       }, 'empty')
     const streak = await boundary(page, { tail: 'rpc/streak_sessions', method: 'POST', limit: 200 }, 'failure')
     try {
@@ -514,9 +515,17 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
         'Actual independent streak read fails without blocking the real completed-session debrief or its save control.', async () => {
           await expect(page.getByRole('alert')).toContainText('Your streak didn’t load')
           await expect(page.getByText(`${TITLE}, done.`, { exact: true })).toBeVisible()
-          await expect(page.getByLabel('Notes · optional')).toHaveValue('')
-          await expect(page.getByRole('button', { name: 'Save and close', exact: true })).toBeEnabled()
+          // TASK-045: the debrief (notes, Save and close) is in the Workout feedback
+          // dialog; its opener stays usable beside the failed streak.
+          await expect(page.getByRole('button', { name: 'Log workout feedback', exact: true })).toBeEnabled()
         }, 'independent-error')
+      // After the capture: the debrief behind that opener is still empty and savable.
+      await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+      const feedback = page.getByRole('dialog', { name: 'Workout feedback', exact: true })
+      await expect(feedback.getByLabel('Notes · optional')).toHaveValue('')
+      await expect(feedback.getByRole('button', { name: 'Save and close', exact: true })).toBeEnabled()
+      await page.keyboard.press('Escape')
+      await expect(feedback).toHaveCount(0)
     } finally { await streak.dispose() }
     await page.getByRole('button', { name: 'Retry', exact: true }).click()
     await expect(page.getByText('No streak yet. Sessions on consecutive days build one.', { exact: true })).toBeVisible()

@@ -573,8 +573,12 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await expect(page).toHaveURL(/\/summary$/)
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work')
     await expect(page.getByText(`${TITLES.completed}, done.`)).toBeVisible()
+    // TASK-045: the debrief is entered in the Workout feedback dialog its
+    // card opens; Save and close is inside it (no pinned foot on Summary).
+    await reachByKeyboard(page, 'Log workout feedback')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog', { name: 'Workout feedback', exact: true })).toBeVisible()
     await page.getByRole('radio', { name: /Ready/ }).click()
-    await expectPinnedAction(page, 'Save and close')
     await reachByKeyboard(page, 'Save and close')
     await checkA11y()
     await page.screenshot({ path: testInfo.outputPath('vibe-c-summary.png') })

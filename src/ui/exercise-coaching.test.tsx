@@ -129,6 +129,15 @@ async function open() {
   return screen.getByRole('region', { name: PANEL })
 }
 
+/**
+ * TASK-045: the note is entered in the shared focused logging dialog, opened
+ * from the panel's "Add note — <movement>" (or "Edit note — …").
+ */
+async function openNote(panel: HTMLElement) {
+  await userEvent.click(within(panel).getByRole('button', { name: /^(Add|Edit) note — back squat$/ }))
+  return screen.getByRole('dialog', { name: 'Notes — back squat' })
+}
+
 describe('the coaching panel', () => {
   it('draws nothing outside the workout clients', () => {
     const snapshot = snapshotFixture()
@@ -191,7 +200,10 @@ describe('the coaching panel', () => {
     const alert = await within(panel).findByRole('alert')
     expect(alert).toHaveTextContent('Coaching for back squat didn’t load')
     // The note beside it is still usable: a failed read costs the guidance only.
-    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    expect(within(panel).getByRole('button', { name: 'Add note — back squat' })).toBeEnabled()
+    const note = await openNote(panel)
+    expect(within(note).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
 
     fail = false
     await userEvent.click(within(alert).getByRole('button', { name: 'Try again' }))
@@ -201,14 +213,18 @@ describe('the coaching panel', () => {
   it('writes the typed note to the prescription row and says it is saved', async () => {
     const { double, exercise } = mount()
     const panel = await open()
+    const note = await openNote(panel)
 
     await userEvent.type(
-      within(panel).getByRole('textbox', { name: /Notes — back squat/ }),
+      within(note).getByRole('textbox', { name: /Notes — back squat/ }),
       'Left knee felt tight',
     )
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(await within(note).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    // Closed, the panel still says so beside its opener.
+    await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
+    expect(within(panel).getByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([
       { exerciseId: exercise.exerciseId, notes: 'Left knee felt tight' },
     ])
@@ -217,10 +233,11 @@ describe('the coaching panel', () => {
   it('clears the note when the field is emptied', async () => {
     const { double, exercise } = mount()
     const panel = await open()
+    const note = await openNote(panel)
 
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    await within(panel).findByText(NOTE_SAVED_TEXT)
+    await within(note).findByText(NOTE_SAVED_TEXT)
     expect(double.savedNotes()).toEqual([{ exerciseId: exercise.exerciseId, notes: null }])
   })
 
@@ -230,14 +247,21 @@ describe('the coaching panel', () => {
     )
     mount({ exercises: { saveNotes } })
     const panel = await open()
-    const field = within(panel).getByRole('textbox', { name: /Notes — back squat/ })
+    const note = await openNote(panel)
+    const field = within(note).getByRole('textbox', { name: /Notes — back squat/ })
 
     await userEvent.type(field, 'Grip slipped on set 3')
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    expect(await within(panel).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
-    expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
+    expect(await within(note).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    expect(within(note).queryByText(NOTE_SAVED_TEXT)).toBeNull()
     expect(field).toHaveValue('Grip slipped on set 3')
+    // Closed and reopened, the text and the failure are still there.
+    await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
+    expect(within(panel).getByRole('status')).toHaveTextContent('Not saved')
+    const reopened = await openNote(panel)
+    expect(within(reopened).getByRole('textbox', { name: /Notes — back squat/ })).toHaveValue('Grip slipped on set 3')
+    expect(within(reopened).getByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
     expect(saveNotes).toHaveBeenCalledTimes(1)
   })
 })
@@ -306,10 +330,11 @@ describe('optional catalog coaching (U38)', () => {
     const panel = await open()
     await within(panel).findByText(NO_DEFINITION_TEXT)
 
-    await userEvent.type(within(panel).getByRole('textbox', { name: /Notes — back squat/ }), 'Use the safety bars')
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    const note = await openNote(panel)
+    await userEvent.type(within(note).getByRole('textbox', { name: /Notes — back squat/ }), 'Use the safety bars')
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(await within(note).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([
       { exerciseId: exercise.exerciseId, notes: 'Use the safety bars' },
     ])
@@ -329,8 +354,14 @@ describe('the panel is one group, with its labels inside', () => {
     const body = cards()[0].querySelector('.clr-card__body') as HTMLElement
     expect(body).toContainElement(screen.getByRole('button', { name: PANEL }))
     expect(body).toContainElement(panel)
-    expect(body).toContainElement(screen.getByRole('textbox', { name: /Notes — back squat/ }))
-    expect(body).toContainElement(screen.getByRole('button', { name: 'Save note — back squat' }))
+    // TASK-045: the note's opener is in the card; its field is in the focused
+    // logging dialog, never a card inside this one.
+    expect(body).toContainElement(screen.getByRole('button', { name: 'Add note — back squat' }))
+    const note = await openNote(panel)
+    expect(body).not.toContainElement(note)
+    expect(note).toContainElement(screen.getByRole('textbox', { name: /Notes — back squat/ }))
+    expect(note).toContainElement(screen.getByRole('button', { name: 'Save note — back squat' }))
+    expect(nestedCards()).toEqual([])
   })
 
   it('heads each sub-group inside it, under a rule rather than a frame', async () => {
@@ -439,20 +470,23 @@ describe('the panel’s waits and an urgent rest keep one loop between them', ()
     reduceMotion(false)
     mount({ exercises: { saveNotes: () => never() } }, besideRest)
     const panel = await open()
-    const button = within(panel).getByRole('button', { name: 'Save note — back squat' })
+    const note = await openNote(panel)
+    const button = within(note).getByRole('button', { name: 'Save note — back squat' })
     const row = button.closest('[data-loop]') as HTMLElement
     expect(row).toHaveAttribute('data-loop', 'still')
 
     await userEvent.click(button)
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(row).toHaveAttribute('data-loop', 'run')
-    expect(within(panel).getByText('Saving…')).toBeInTheDocument()
+    expect(within(note).getByText('Saving…')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
+    // The urgent rest is raised while the note is in flight (a browser's modal
+    // makes the page inert; the loop arbitration is what is under test).
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest', hidden: true }))
     expect(restTimer()).toHaveAttribute('data-loop', 'run')
     expect(row).toHaveAttribute('data-loop', 'still')
     expect(button).toHaveAttribute('aria-busy', 'true')
-    expect(within(panel).getByText('Saving…')).toBeInTheDocument()
+    expect(within(note).getByText('Saving…')).toBeInTheDocument()
     expect(onlyTheWarningRuns()).toBe(true)
   })
 
@@ -467,7 +501,7 @@ describe('the panel’s waits and an urgent rest keep one loop between them', ()
     const wait = guidanceWait(panel)
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    expect(within(panel).getByRole('button', { name: 'Add note — back squat' })).toBeEnabled()
     expect(within(restBar()).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent(
       '00:05',
     )

@@ -1,0 +1,65 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-045",
+  "description": "Adopt shared logging for notes, feedback and rest days (#671; REQ-019, C45; R82, R100, R115, R116; TASK-AC-AF9A8D51EC8F, TASK-AC-6F80AE2AEA26, TASK-AC-1ADE4EF9CF05; foundation provider for JOURNEY-019). The family's real entry points open in the shared focused LoggingOverlay (src/ui/refinements/logging-overlay.tsx): a native modal over an inert screen, titled with the entry title, closed by its framed icon-only Close log X or Escape, with the Balanced backdrop. Movement note: a movement's Coaching and notes panel on /workout (ExerciseCoaching, GroupExerciseCoaching in src/ui/exercise-coaching.tsx), Add note - <movement> opening Notes - <movement> over the original exercises.saveNotes writer. Workout feedback: /summary's Debrief card (WorkoutFeedback in src/app/Summary.tsx), Log workout feedback opening Workout feedback with the five-value FeelingRow, optional notes and Save and close over saveDebrief. Rest day / reason change: Home's Mark Rest Day / Change reason (RestDayControl in src/app/Home.tsx) opening Log rest day with the native Reason select, Save rest day and Cancel over mark_rest_day with note null. check-01 proves it in the browser on a contained synthetic account: the movement note at 390 touch beside the one running rest (close/Escape draft retention, refused write kept and retried, a grouped section's own note), workout feedback at 390 keyboard and reduced motion (draft kept through Escape, a refused save kept in place, its retry writes mood and notes and leaves for Home), the rest day at 320 touch (X as Cancel, refused mark kept and retried, Change reason at the saved reason), and the accepted gallery states ?state=movement-note, workout-feedback and rest-day (reference eded158cfd928d382c9a9409e2c372270312741d, the route owners over in-memory controllers) in all four skins at 390. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-045 --check check-01 -- npx playwright test e2e/refinement/task-045.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-AF9A8D51EC8F",
+        "TASK-AC-6F80AE2AEA26",
+        "TASK-AC-1ADE4EF9CF05",
+        "JOURNEY-019"
+      ],
+      "files": [
+        "e2e/refinement/task-045.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 movement note phone-390 touch: Add note opens Notes for that movement in the modal log beside the one running rest, close and Escape keep the draft, a refused write keeps the text and its retry stores it through the original writer, and a grouped section keeps its own note",
+          "criterion": "TASK-AC-AF9A8D51EC8F"
+        },
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 workout feedback phone-390 keyboard reduced motion: Log workout feedback opens Workout feedback in the modal log with the feeling and notes, close keeps the draft, a refused save keeps it in place and its retry saves both through the original writer and leaves for Home",
+          "criterion": "TASK-AC-6F80AE2AEA26"
+        },
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 rest day and reason change phone-320 touch: Mark Rest Day opens Log rest day in the modal log with the Reason picker focused, the X cancels, a refused save keeps the choice and its retry marks the day with no note; Change reason reopens at the saved reason",
+          "criterion": "TASK-AC-6F80AE2AEA26"
+        },
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states clear phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-1ADE4EF9CF05"
+        },
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states vapour phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-1ADE4EF9CF05"
+        },
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states signal phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-1ADE4EF9CF05"
+        },
+        {
+          "file": "e2e/refinement/task-045.spec.ts",
+          "project": "mobile",
+          "name": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states mono phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-1ADE4EF9CF05"
+        }
+      ]
+    }
+  }
+}

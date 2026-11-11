@@ -814,9 +814,11 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     const week = page.locator('.clr-card').filter({ has: page.getByRole('heading', { level: 2, name: 'This week', exact: true }) })
     const rest = week.getByRole('region', { name: 'Rest day', exact: true })
     const trigger = rest.getByRole('button', { name: 'Mark Rest Day', exact: true })
-    const picker = rest.getByRole('combobox', { name: 'Reason', exact: true })
-    const saveButton = rest.getByRole('button', { name: 'Save rest day', exact: true })
-    const cancel = rest.getByRole('button', { name: 'Cancel', exact: true })
+    // TASK-045: the reason, Save and Cancel are in the focused logging dialog "Log rest day".
+    const log = page.getByRole('dialog', { name: 'Log rest day', exact: true })
+    const picker = log.getByRole('combobox', { name: 'Reason', exact: true })
+    const saveButton = log.getByRole('button', { name: 'Save rest day', exact: true })
+    const cancel = log.getByRole('button', { name: 'Cancel', exact: true })
     const today = page.getByRole('list', { name: 'This week', exact: true }).getByRole('listitem')
       .filter({ hasText: /\(today\)/ })
 
@@ -839,7 +841,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
 
     // Save and Cancel are aligned, equal, framed cells: two halves of one row
     // when both labels fit, otherwise two full rows — never ragged.
-    const cells = await rest.locator('.clr-action-group--paired').evaluate((group) => {
+    const cells = await log.locator('.clr-action-group--paired').evaluate((group) => {
       const box = group.getBoundingClientRect()
       return { group: { left: box.left, right: box.right, width: box.width },
         cells: [...group.children].map((child) => {

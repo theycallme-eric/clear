@@ -377,7 +377,10 @@ describe('Home', () => {
     expect(trigger.querySelector('svg')).not.toBeNull()
 
     await user.click(trigger)
-    const picker = within(rest).getByRole('combobox', { name: 'Reason' })
+    // TASK-045: the editor is the focused logging dialog "Log rest day".
+    const log = screen.getByRole('dialog', { name: 'Log rest day' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    const picker = within(log).getByRole('combobox', { name: 'Reason' })
     expect(picker).toHaveFocus()
     expect(document.getElementById(trigger.getAttribute('aria-controls')!)).toContainElement(picker)
     // The chosen reason's effect is the helper, wired to the picker.
@@ -386,8 +389,8 @@ describe('Home', () => {
     expect(picker).toHaveAccessibleDescription('Pauses your streak for as long as it lasts.')
 
     // Save and Cancel are equal framed cells in one responsive group.
-    const save = within(rest).getByRole('button', { name: 'Save rest day' })
-    const cancel = within(rest).getByRole('button', { name: 'Cancel' })
+    const save = within(log).getByRole('button', { name: 'Save rest day' })
+    const cancel = within(log).getByRole('button', { name: 'Cancel' })
     expect(save.closest('.clr-action-group')).toHaveClass('clr-action-group--paired')
     // Cancel is framed like Save, not a bare quiet label beside a framed button.
     expect(cancel).not.toHaveClass('clr-btn--quiet')
@@ -639,14 +642,16 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
     expect(mark.closest('.clr-action-group')).not.toBeNull()
     await user.click(mark)
 
-    const save = within(rest).getByRole('button', { name: 'Save rest day' })
-    const cancel = within(rest).getByRole('button', { name: 'Cancel' })
+    // TASK-045: the reason and its actions are in the focused logging dialog.
+    const log = screen.getByRole('dialog', { name: 'Log rest day' })
+    const save = within(log).getByRole('button', { name: 'Save rest day' })
+    const cancel = within(log).getByRole('button', { name: 'Cancel' })
     const group = save.closest('.clr-action-group')
     expect(group).not.toBeNull()
     expect(group).toContainElement(cancel)
     // The reason and its actions are one label/control group.
     expect(group!.parentElement).toHaveClass('clr-stack', 'clr-stack--tight')
-    expect(group!.parentElement).toContainElement(within(rest).getByLabelText('Reason'))
+    expect(group!.parentElement).toContainElement(within(log).getByLabelText('Reason'))
   })
 
   it('U08: each Home empty state is one statement, with no standing explanation', async () => {

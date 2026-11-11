@@ -35,11 +35,18 @@
  * U42: the session title heads the result card at a size of its own, and the
  * favorite control is the only thing that says "favorite", before and after.
  *
+ * TASK-045 (REQ-019, C45): the debrief's fields are entered in the shared
+ * focused logging dialog. The Debrief card holds "Log workout feedback"; the
+ * dialog "Workout feedback" holds the feeling, the notes and Save and close,
+ * which saves and leaves as the pinned CTA did (never disabled, busy while in
+ * flight). See `WorkoutFeedback`.
+ *
  * Motion: the result card boots once with `.clr-boot`; a save that fails
  * re-renders in place and replays no entrance, which is the IA's rule for this
  * screen ("save retries do not replay the entrance").
  */
 import { useMemo, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { Navigate, useNavigate } from 'react-router-dom'
 
 import type { CompletedSession } from '../data/summary'
@@ -71,9 +78,10 @@ import {
 } from '../state/view-state'
 import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { MetricFrame, MetricGrid } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
 import { FeelingRow } from '../ui/feeling-row'
+import { LoggingOverlay } from '../ui/refinements/logging-overlay'
 import { SummaryMetric } from '../ui/refinements/overview'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
@@ -112,11 +120,15 @@ export const STREAK_EMPTY = 'No streak yet. Sessions on consecutive days build o
 export const SUMMARY_WEEK_LABEL = 'This week'
 export const WEEK_EMPTY = 'No sessions this week yet.'
 
-/** Lets the hard-edge footer submit the form that remains in the scroller. */
+/** The debrief form's id (the form is in the Workout feedback dialog since TASK-045). */
 export const SUMMARY_FORM_ID = 'summary-debrief'
 
-/** The debrief card's heading, inside the card with the fields it names. */
+/** The debrief card's heading, inside the card with the opener it holds. */
 export const DEBRIEF_HEADING = 'Debrief'
+
+/** TASK-045: the debrief's opener and its dialog's title (R7 replay). */
+export const LOG_FEEDBACK_LABEL = 'Log workout feedback'
+export const FEEDBACK_TITLE = 'Workout feedback'
 
 export function Summary() {
   const query = useCompletedSessionQuery()
@@ -154,12 +166,79 @@ export function Summary() {
 
 function Debrief({ completed }: { completed: CompletedSession }) {
   const { session, durationMins } = completed
-  const summary = useSummaryClient()
   const cache = useQueryClient()
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  return (
+    // TASK-045: the debrief is entered in the shared focused logging dialog,
+    // so the screen has no pinned foot of its own; the dialog's Save and close
+    // is the one way the debrief saves and leaves, as the footer's was.
+    <Screen title="Summary" heading="Nice work" header={{}}>
+      <div className="clr-stack">
+        {/* Only the screen title sits on the atmosphere: the acknowledgment,
+            each key number and the debrief are each inside a card. */}
+        <div className="clr-stack clr-boot">
+          {/* U42: the session's own title leads, as this card's heading, and
+              FAV-01's control is labelled once — by the control itself. It
+              stays distinct from the readouts: an action, not a statistic. */}
+          <Card>
+            <Heading style={SESSION_TITLE_STYLE}>{session.title}, done.</Heading>
+            <FavoriteToggle sessionId={session.id} compact />
+          </Card>
+          {/* U41: two readouts, one size. The week is its own card under them
+              rather than squeezed into half of one. */}
+          {/* TASK-004 (C15, R107): each readout is its cell's one frame and
+              fills the equal-height row, so Duration ends where Streak does. */}
+          <MetricGrid>
+            <DurationMetric minutes={durationMins} />
+            <StreakStat />
+          </MetricGrid>
+          <SummaryWeek />
+        </div>
+
+        <WorkoutFeedback
+          session={session}
+          onSaved={(saved) => {
+            // The cache holds what the database now holds, so coming back to
+            // this screen shows the stored debrief without a second read.
+            if (user !== null) cache.setData(completedSessionQueryKey(user.id), saved)
+            void navigate(AUTHENTICATED_HOME)
+          }}
+        />
+      </div>
+    </Screen>
+  )
+}
+
+export interface WorkoutFeedbackProps {
+  /** The completed session whose stored mood and notes the form starts from. */
+  session: Pick<CompletedSession['session'], 'id' | 'mood' | 'session_notes'>
+  /** After the session row answered the save: the route caches it and leaves. */
+  onSaved: (saved: CompletedSession) => void
+}
+
+/**
+ * Workout feedback (TASK-045; REQ-019, C45; R82, R100; LOGGING-FIELDS
+ * "Workout feedback"): the debrief's card holds one opener, "Log workout
+ * feedback", and the debrief's form is drawn in the shared focused logging
+ * dialog (`refinements/logging-overlay.tsx`), titled "Workout feedback", as
+ * the R7 replay drew it. The form is the one it was — the existing
+ * five-value `FeelingRow` (the session's mood, never an effort) and the
+ * optional session notes, its submit "Save and close" — over the same
+ * writer (`saveDebrief`, both columns restated, blank notes as null, an
+ * unanswered feeling as null, the 2,000-character refusal before sending)
+ * and the same failure, shown in place inside the dialog with the draft
+ * kept for the retry. The framed "Close log" X and Escape close it without
+ * saving; the draft is still there on reopen, because the form stays
+ * mounted. Exported so the gallery's `workout-feedback` state draws this
+ * consumer over an in-memory summary client.
+ */
+export function WorkoutFeedback({ session, onSaved }: WorkoutFeedbackProps) {
+  const summary = useSummaryClient()
   const onSubmit = useInvalidFocus()
 
+  const [open, setOpen] = useState(false)
   const [mood, setMood] = useState<number | null>(session.mood)
   const [notes, setNotes] = useState(session.session_notes ?? '')
   const [saving, setSaving] = useState(false)
@@ -193,64 +272,29 @@ function Debrief({ completed }: { completed: CompletedSession }) {
         return false
       }
 
-      // The cache holds what the database now holds, so coming back to this
-      // screen shows the stored debrief without a second read.
-      if (user !== null) {
-        cache.setData(completedSessionQueryKey(user.id), saved.value)
-      }
-      void navigate(AUTHENTICATED_HOME)
+      onSaved(saved.value)
+      setOpen(false)
       return true
     })()
   }
 
   return (
-    <Screen
-      title="Summary"
-      heading="Nice work"
-      header={{}}
-      pinnedFoot={
-        <PhoneFooter>
-          <ActionRow>
-            <Button
-              type="submit"
-              form={SUMMARY_FORM_ID}
-              variant="primary"
-              size="lg"
-              loading={saving}
-              icon={<Check size={20} />}
-            >
-              Save and close
-            </Button>
-          </ActionRow>
-        </PhoneFooter>
-      }
-    >
-      <div className="clr-stack">
-        {/* Only the screen title sits on the atmosphere: the acknowledgment,
-            each key number and the debrief are each inside a card. */}
-        <div className="clr-stack clr-boot">
-          {/* U42: the session's own title leads, as this card's heading, and
-              FAV-01's control is labelled once — by the control itself. It
-              stays distinct from the readouts: an action, not a statistic. */}
-          <Card>
-            <Heading style={SESSION_TITLE_STYLE}>{session.title}, done.</Heading>
-            <FavoriteToggle sessionId={session.id} compact />
-          </Card>
-          {/* U41: two readouts, one size. The week is its own card under them
-              rather than squeezed into half of one. */}
-          {/* TASK-004 (C15, R107): each readout is its cell's one frame and
-              fills the equal-height row, so Duration ends where Streak does. */}
-          <MetricGrid>
-            <DurationMetric minutes={durationMins} />
-            <StreakStat />
-          </MetricGrid>
-          <SummaryWeek />
-        </div>
-
-        {/* A form sits inside one card, its labels with it; the primary
-            action stays pinned in the footer and submits it by id. */}
-        <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate>
-          <Card heading={DEBRIEF_HEADING}>
+    <Card heading={DEBRIEF_HEADING}>
+      <div>
+        <Button variant="primary" onClick={() => setOpen(true)}>
+          {LOG_FEEDBACK_LABEL}
+        </Button>
+      </div>
+      {/* Portalled to the document body, as the other focused logs are, so
+          nothing on the card is inherited into the dialog. */}
+      {createPortal(
+        <LoggingOverlay open={open} title={FEEDBACK_TITLE} onClose={() => setOpen(false)}>
+          <form
+            id={SUMMARY_FORM_ID}
+            className="clr-stack"
+            onSubmit={onSubmit(save)}
+            noValidate
+          >
             {error !== null && (
               <div role="alert" className="clr-row">
                 <span
@@ -279,10 +323,22 @@ function Debrief({ completed }: { completed: CompletedSession }) {
                   : undefined
               }
             />
-          </Card>
-        </form>
-      </div>
-    </Screen>
+
+            <div>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={saving}
+                icon={<Check size={20} />}
+              >
+                Save and close
+              </Button>
+            </div>
+          </form>
+        </LoggingOverlay>,
+        document.body,
+      )}
+    </Card>
   )
 }
 

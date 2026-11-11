@@ -130,6 +130,15 @@ function mountSummary(
   return { summary, double, router, queryClient }
 }
 
+/**
+ * TASK-045: the debrief's feeling, notes and Save and close are in the
+ * Workout feedback dialog its card's "Log workout feedback" opens.
+ */
+async function openFeedback(): Promise<HTMLElement> {
+  await userEvent.click(screen.getByRole('button', { name: 'Log workout feedback' }))
+  return screen.getByRole('dialog', { name: 'Workout feedback' })
+}
+
 /** The debrief, once the session has loaded. */
 async function debrief(
   options: Parameters<typeof mountSummary>[0] = {},
@@ -192,6 +201,7 @@ describe('Summary — the debrief', () => {
     expect(screen.getByRole('heading', { level: 2, name: TITLE_HEADING })).toBeInTheDocument()
     expect(screen.getByText('42 min')).toBeInTheDocument()
 
+    await openFeedback()
     const moods = within(screen.getByRole('group', { name: 'How do you feel?' }))
     expect(moods.getAllByRole('radio').map((radio) => radio.getAttribute('aria-checked'))).toEqual(
       ['false', 'false', 'false', 'false', 'false'],
@@ -249,19 +259,28 @@ describe('Summary — the debrief', () => {
   it('keeps the debrief fields in one card, labels inside, and the action pinned', async () => {
     await debrief()
 
+    // TASK-045: the Debrief card holds its heading and the one opener; the
+    // fields, their labels and Save and close are together in the focused
+    // logging dialog it opens — no pinned foot is left on the screen.
+    const card = screen.getByRole('heading', { name: DEBRIEF_HEADING }).closest('.clr-card') as HTMLElement
+    expect(within(card).getByRole('button', { name: 'Log workout feedback' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: DONE })).not.toBeInTheDocument()
+    expect(document.querySelector('.clr-scroll-region__foot button')).toBeNull()
+    const dialog = await openFeedback()
+    expect(card).not.toContainElement(dialog)
     const form = document.getElementById('summary-debrief') as HTMLElement
-    const cards = form.querySelectorAll('.clr-card')
-    expect(cards).toHaveLength(1)
-    const card = within(cards[0] as HTMLElement)
-    expect(card.getByRole('heading', { name: DEBRIEF_HEADING })).toBeInTheDocument()
-    expect(card.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
-    expect(card.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
-    expect(card.getByText(/Notes · optional/)).toBeInTheDocument()
-    expect(card.queryByRole('button', { name: DONE })).not.toBeInTheDocument()
+    expect(dialog).toContainElement(form)
+    expect(form.querySelectorAll('.clr-card')).toHaveLength(0)
+    const fields = within(form)
+    expect(fields.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
+    expect(fields.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
+    expect(fields.getByText(/Notes · optional/)).toBeInTheDocument()
+    expect(fields.getByRole('button', { name: DONE })).toHaveAttribute('type', 'submit')
   })
 
   it('U43: the feeling is one row of five numbers, its words in the accessible names only', async () => {
     await debrief()
+    await openFeedback()
     const group = screen.getByRole('group', { name: 'How do you feel?' })
     const radios = within(group).getAllByRole('radio')
 
@@ -295,6 +314,7 @@ describe('Summary — the debrief', () => {
     const user = userEvent.setup()
     const { summary } = await debrief()
 
+    await openFeedback()
     const first = screen.getByRole('radio', { name: '1, Spent' })
     first.focus()
     await user.keyboard('{ArrowRight}{ArrowRight}')
@@ -317,6 +337,7 @@ describe('Summary — the debrief', () => {
       summary: { latest: async () => ok(completedSession({ mood: 4 })) },
     })
 
+    await openFeedback()
     expect(screen.getByRole('radio', { name: '4, Ready' })).toBeChecked()
     await user.click(screen.getByRole('button', { name: FEELING_CLEAR_LABEL }))
 
@@ -338,6 +359,7 @@ describe('Summary — the debrief', () => {
     const { summary } = await debrief()
 
     // No effort question sits beside it to be confused with it.
+    await openFeedback()
     expect(screen.queryByText(/effort|RPE|exertion/i)).not.toBeInTheDocument()
     await user.click(screen.getByRole('radio', { name: '2, Worn' }))
     await user.click(screen.getByRole('button', { name: DONE }))
@@ -351,9 +373,12 @@ describe('Summary — the debrief', () => {
   it('keeps completion associated with the scrolling form', async () => {
     await debrief()
 
-    const done = screen.getByRole('button', { name: DONE })
-    expect(done).toHaveAttribute('form', 'summary-debrief')
-    expect(done.closest('.clr-scroll-region__foot')).toBeInTheDocument()
+    // TASK-045: Save and close submits the debrief form it sits in, inside the
+    // dialog's own scrolling region, rather than a pinned foot outside it.
+    const dialog = await openFeedback()
+    const done = within(dialog).getByRole('button', { name: DONE })
+    expect(done.closest('form')).toBe(document.getElementById('summary-debrief'))
+    expect(done.closest('[data-logging-scroll]')).toBeInTheDocument()
     expect(document.getElementById('summary-debrief')).toHaveAttribute('novalidate')
   })
 
@@ -361,6 +386,7 @@ describe('Summary — the debrief', () => {
     const user = userEvent.setup()
     const { summary, router } = await debrief()
 
+    await openFeedback()
     await user.click(screen.getByRole('radio', { name: '4, Ready' }))
     await user.type(screen.getByRole('textbox', { name: /Notes/ }), '  Squats moved well.  ')
     await user.click(screen.getByRole('button', { name: DONE }))
@@ -376,6 +402,7 @@ describe('Summary — the debrief', () => {
     const user = userEvent.setup()
     const { summary } = await debrief()
 
+    await openFeedback()
     await user.click(screen.getByRole('button', { name: DONE }))
 
     await waitFor(() =>
@@ -392,6 +419,7 @@ describe('Summary — the debrief', () => {
       },
     })
 
+    await openFeedback()
     expect(screen.getByRole('radio', { name: '2, Worn' })).toBeChecked()
     expect(screen.getByRole('textbox', { name: /Notes/ })).toHaveValue('Heavy day.')
   })
@@ -411,6 +439,7 @@ describe('Summary — the debrief', () => {
     })
     const card = document.querySelector('.clr-boot')
 
+    await openFeedback()
     await user.click(screen.getByRole('radio', { name: '5, Peak' }))
     await user.click(screen.getByRole('button', { name: DONE }))
 
@@ -435,6 +464,7 @@ describe('Summary — the debrief', () => {
       ),
     )
 
+    await openFeedback()
     for (const control of [...screen.getAllByRole('button'), ...screen.getAllByRole('radio')]) {
       expect(control).toBeEnabled()
     }
@@ -631,6 +661,7 @@ describe('Summary — the streak and the week', () => {
     expect(streak.closest('.clr-metric-grid')).toBeInTheDocument()
     expect(within(streak as HTMLElement).getByRole('button', { name: 'Retry' })).toBeEnabled()
 
+    await openFeedback()
     await user.click(screen.getByRole('radio', { name: '3, Flat' }))
     await user.click(screen.getByRole('button', { name: DONE }))
 
@@ -703,6 +734,7 @@ describe('Summary — save as favorite, then Done', () => {
     expect(await screen.findByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
     expect(double.favorites().map((row) => row.original_session_id)).toEqual([SESSION_ID])
 
+    await openFeedback()
     await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
@@ -728,6 +760,7 @@ describe('Summary — save as favorite, then Done', () => {
     expect(screen.getByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
     expect(double.favorites()).toEqual([])
 
+    await openFeedback()
     await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved).toHaveLength(1)
@@ -772,6 +805,7 @@ describe('Summary — undoing a favorite (U22)', () => {
     expect(screen.getByRole('heading', { name: TITLE_HEADING })).toBeInTheDocument()
 
     // Done still saves the session, and Home's favorites tab no longer has it.
+    await openFeedback()
     await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved).toHaveLength(1)
@@ -852,6 +886,7 @@ describe('Summary — undoing a favorite (U22)', () => {
     })
 
     await confirmRemove(user)
+    await openFeedback()
     await user.click(screen.getByRole('button', { name: DONE }))
     await screen.findByRole('heading', { name: HOME_HEADING })
     await user.click(screen.getByRole('tab', { name: 'Favorites' }))
@@ -891,6 +926,7 @@ describe('Summary — undoing a favorite (U22)', () => {
     const button = await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })
     await waitFor(() => expect(button).toBeEnabled())
     await user.click(button)
+    await openFeedback()
     await user.click(screen.getByRole('button', { name: DONE }))
     await screen.findByRole('heading', { name: HOME_HEADING })
     await user.click(screen.getByRole('tab', { name: 'Favorites' }))
