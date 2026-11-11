@@ -519,6 +519,13 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
           // dialog; its opener stays usable beside the failed streak.
           await expect(page.getByRole('button', { name: 'Log workout feedback', exact: true })).toBeEnabled()
         }, 'independent-error')
+      // After the capture: the debrief behind that opener is still empty and savable.
+      await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+      const feedback = page.getByRole('dialog', { name: 'Workout feedback', exact: true })
+      await expect(feedback.getByLabel('Notes · optional')).toHaveValue('')
+      await expect(feedback.getByRole('button', { name: 'Save and close', exact: true })).toBeEnabled()
+      await page.keyboard.press('Escape')
+      await expect(feedback).toHaveCount(0)
     } finally { await streak.dispose() }
     await page.getByRole('button', { name: 'Retry', exact: true }).click()
     await expect(page.getByText('No streak yet. Sessions on consecutive days build one.', { exact: true })).toBeVisible()

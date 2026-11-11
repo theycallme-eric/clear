@@ -5,7 +5,8 @@ exception to the shared daily journal for this body. Only TASK-045 writes this f
 
 ## Status
 
-Implementation complete, awaiting controller verification and commit. Base `e238b38` (after
+Repair round 1 complete (uncommitted on `7634e17`), awaiting controller verification and commit.
+Original attempt: implementation complete. Base `e238b38` (after
 TASK-044 #718): `git fetch origin && git rebase origin/build/clear-refinement-2026-11-04` exited 0
 ("up to date").
 
@@ -179,8 +180,12 @@ value check dropped — it needs the dialog open inside a capture callback), `ta
 frame). Not run. `workout-lifecycle.spec.ts`'s mood-face assertions (`'Spent'` exact, faces) already
 predate U43's numbered feeling row and look stale independently of this task [inferred].
 Not edited: the five deferred B05 half-sheet specs (owner decision 2026-11-11);
-`ui-polish-action-glow`, `ui-polish-home`, `ui-polish-pwa-viewport`, `uat-batch-01` (page-scoped
-locators still resolve inside the portalled dialog).
+`ui-polish-action-glow`, `ui-polish-home`, `uat-batch-01` (page-scoped locators still resolve
+inside the portalled dialog). **Correction (repair round 1):** this note originally listed
+`ui-polish-pwa-viewport` as unaffected too. That was wrong and unverified: it runs locally with
+placeholder env, and at `7634e17` its narrow/short/landscape Home cases failed (15/18 in the
+four-spec sweep, reviewer finding) because it measured Cancel against the main scroller while Cancel
+now lives in the `Log rest day` dialog. Fixed in repair round 1 below.
 
 ## Failures and corrections
 
@@ -192,6 +197,10 @@ locators still resolve inside the portalled dialog).
   on the next animation frame (pre-existing); the spec now waits for the radio's focus first.
 - Spec: reopening by Enter right after Escape did not open — the stale `close` event race in
   `LoggingOverlay`, fixed (see Changes) with a regression test.
+- Review of `7634e17` (verdict `TASK-045-a1-6e1f3b218448`): `e2e/ui-polish-pwa-viewport.spec.ts`
+  regressed 18/18 → 15/18; the sweep note above wrongly called it unaffected. Cause: I assumed
+  page-scoped locators were enough without running the spec, but its `insideOwner` check binds
+  each control to a named scroll owner. Fixed in repair round 1.
 
 ## Verification
 
@@ -222,6 +231,55 @@ All on base `e238b38`. Every Playwright command ran under
   l.571, l.647) are the known pre-existing "one result group" cases owned by TASK-046; not touched.
   The specs using the changed `LoggingOverlay` (016–018 have no spec; 021, 033, 043, 044) all pass.
 
+## Repair round 1 (2026-11-11)
+
+Finding (verdict `reviews/TASK-045-a1-6e1f3b218448.json`, scopeIssues): all three criteria and
+JOURNEY-019 met; one regression in `e2e/ui-polish-pwa-viewport.spec.ts`, case "JOURNEY-002: <case>
+keeps Home controls safe with CSS env insets, touch scroll and viewport resize" (narrow/short/
+landscape failed at `reveal(cancel, reduced, insets, scroller)` → `insideOwner`).
+
+Changes (owner decision 2026-11-10: locators/assertions may follow superseded UI, meaning and case
+names kept, no `required-cases.json` edits):
+- `e2e/ui-polish-pwa-viewport.spec.ts`, Home case: after `Mark Rest Day`, the scroll owner of the
+  rest-day controls is the dialog's own `[data-logging-scroll]` (inside
+  `getByRole('dialog', { name: 'Log rest day' })`, asserted to exist once). Reason's
+  `insideOwner` and Cancel's `reveal` now use it (were: the main Home scroller). The keyboard reveal
+  of `Generate workout` in the reduced viewport moved from while the modal was open (Generate is
+  inert there, so it tested nothing) to just after Escape closes the dialog and focus is back on
+  `Mark Rest Day`, still at the reduced viewport. No assertion removed; safe-area, touch-scroll and
+  keyboard-reveal meanings unchanged; case names unchanged.
+- `e2e/design-0143/task-040-lifecycle-gaps.spec.ts` (optional item): restored the dropped
+  `Notes · optional` empty-value check after the streak-failure capture: open `Log workout
+  feedback`, assert Notes `''` and `Save and close` enabled in the `Workout feedback` dialog,
+  Escape, dialog gone. Needs the backend lane; not run here.
+
+Other non-refinement specs that touch rest day / feedback / notes (`grep -E "Mark Rest Day|Save and
+close|Add note|summary-debrief|Notes ·|Change reason|Rest day saved" e2e`): the only ones that run
+locally with placeholder env are `ui-polish-action-glow`, `ui-polish-home`, `ui-polish-pwa-viewport`
+and `uat-batch-01`. `workout-emom.spec.ts` matches only the EMOM result log's own `Notes · optional`
+(another family, untouched). The rest are `backend.available`-gated or need the disposable backend
+(contained-shell, core-loop, accessibility, optional-feedback, task-040-*, workout-formats,
+workout-lifecycle, history-detail) and were not run.
+
+Verification (every Playwright command under
+`node /Users/eric/Projects/support-tooling/agent-runner-v2/bin/v2.mjs with-lock --`, with
+`SUPABASE_URL=https://synthetic-review.supabase.invalid SUPABASE_ANON_KEY=synthetic-review-placeholder`
+for the intercepted specs):
+- `npx playwright test e2e/ui-polish-pwa-viewport.spec.ts --project=mobile --workers=1`: 6/6 passed.
+- Four-spec sweep `npx playwright test e2e/ui-polish-action-glow.spec.ts e2e/ui-polish-home.spec.ts
+  e2e/ui-polish-pwa-viewport.spec.ts e2e/uat-batch-01.spec.ts --project=mobile --workers=1`:
+  HEAD + repair 18/18 passed; base `e238b38` (clean `git archive` export in a scratch directory,
+  same `node_modules`) 18/18 passed.
+- `node scripts/refinement/run-required-check.mjs --task TASK-045 --check check-01 -- npx playwright test e2e/refinement/task-045.spec.ts --project=mobile`:
+  PASSED, 7 total / 7 executed / 7 passed / 0 skipped; receipt rewritten byte-identical (target
+  spec unchanged in this round).
+- `npx vitest run`: 271 files, 6376 tests passed. `npx tsc --noEmit`: exit 0.
+- `npx eslint e2e/ui-polish-pwa-viewport.spec.ts e2e/design-0143/task-040-lifecycle-gaps.spec.ts`:
+  0 problems.
+- Not run: `task-040-lifecycle-gaps.spec.ts` (backend lane); its restored check is typechecked and
+  linted only. Neither edited spec is a check target in any `required-cases.json`, so no other
+  receipt is affected.
+
 ## Open items
 
 - Copy for TASK-037: "Add note — <movement>", "Edit note — <movement>", "Notes — <movement>" (title),
@@ -244,4 +302,4 @@ All on base `e238b38`. Every Playwright command ran under
 
 ## Next action
 
-Controller verification and commit.
+Controller verification and commit of the repair round.
