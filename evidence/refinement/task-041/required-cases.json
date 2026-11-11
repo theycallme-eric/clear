@@ -1,0 +1,102 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-041",
+  "description": "Verify adopted dialog and form rhythm in actual route consumers (#667; REQ-016, REQ-017, REQ-018; C40, C41, C43, C05, C42, C47, C44, C57, C58, C59; P01-P03; AC-C40-01, AC-C41-01, AC-C43-01, AC-R016-01..03, AC-C05-01, AC-C42-01, AC-C47-01, AC-R017-01..03, AC-C44-01, AC-C57-01, AC-C58-01, AC-C59-01, AC-R018-01..04; completion owner of JOURNEY-016, JOURNEY-017, JOURNEY-018). check-01 drives the actual route consumers over one contained synthetic account (ENTRY-016/017/018: /workout, /summary, Home's rest-day entry and /review) and the accepted gallery states (reference eded158cfd928d382c9a9409e2c372270312741d: anchor, other-lift, timed-movement, distance-movement, extra-set, set-correction, superset, circuit-round, circuit-movement, movement-note, workout-feedback, rest-day, emom, amrap, for_time, ladder, ladder-long, plus urgency). It measures real Chromium geometry at 320x568, 390x844 and 1280x800: the framed icon-only Close log X's visible top on the title's visible top (paint to paint, wrapped titles and Workout feedback included), exactly the Balanced backdrop with a filter-free foreground, direct per-text AA contrast in clear, vapour, signal and mono, an inert screen while rest and block clocks keep counting, drafts and focus kept through X, Escape and reopen; card peer gaps and complete movement groups set the movement gap apart, choice legends at the field gap, the ladder heading gap kept and its count separated, the removed helper paragraph absent with performed/unrecorded writes intact; one stationary frame filling the visible viewport (on-screen keyboard included) for long forms and content height for short ones, the scroller on the inner border with a control painted to it mid-scroll, no scrollbar or sideways overflow, touch, wheel and keyboard reaching the last control, no container outline on open, reopen or a blank tap, and focus brackets painted inside the log. Delivered-revision images and JSON metadata are attached to every case. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-041 --check check-01 -- npx playwright test e2e/refinement/task-041.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C40-01",
+        "AC-C41-01",
+        "AC-C43-01",
+        "AC-R016-01",
+        "AC-R016-02",
+        "AC-R016-03",
+        "AC-C05-01",
+        "AC-C42-01",
+        "AC-C47-01",
+        "AC-R017-01",
+        "AC-R017-02",
+        "AC-R017-03",
+        "AC-C44-01",
+        "AC-C57-01",
+        "AC-C58-01",
+        "AC-C59-01",
+        "AC-R018-01",
+        "AC-R018-02",
+        "AC-R018-03",
+        "AC-R018-04",
+        "JOURNEY-016",
+        "JOURNEY-017",
+        "JOURNEY-018"
+      ],
+      "files": [
+        "e2e/refinement/task-041.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 every /workout logging moment phone-390 touch: anchor, other lift, timed and distance movement, extra set, correction, superset round, circuit round and movement, movement notes, ladder, AMRAP, For Time and EMOM each open the selected dialog with the framed icon-only X on the visible title top, exactly the Balanced backdrop and a sharp stationary frame, over an inert workout whose rest and block clocks keep counting, with drafts and focus kept through X, Escape and reopen",
+          "criterion": "AC-R016-03"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 wrapped titles, Workout feedback on /summary and the rest day on Home phone-320 keyboard reduced motion: a wrapped note title and Workout feedback keep the framed X on the first visible line, every moment opens and closes from the keyboard with visible keyboard focus inside, the rest day keeps its cancel meaning, and nothing is written",
+          "criterion": "AC-R016-02"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-017 rhythm on /review, /workout and the shared logs phone-390: grouped cards keep each movement together and whole movements further apart, the superset round, For Time and AMRAP logs separate complete movement groups by the movement gap only, every choice legend sits at the field gap, the ladder keeps its Rounds completed heading gap and stands its count apart, and the removed helper paragraph is nowhere while performed and unrecorded entries keep their meaning",
+          "criterion": "AC-C05-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-018 long logs on /workout phone-320 touch and wheel reduced motion: the anchor set, superset round and twelve-round ladder scroll only inside one stationary frame that fills the visible viewport, a control is painted down to the inner lower border mid-scroll, touch and wheel reach Save and Notes, no scrollbar or sideways overflow shows, reopen draws no container outline, and a short note stays content-height without scrolling",
+          "criterion": "AC-C44-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-018 keyboard and focus on /workout phone-390 and desktop-1280: opened by keyboard the X and every Tab stop show their focus brackets inside the log while no container is outlined, each stop is scrolled into the frame up to Save, opened by touch nothing is ringed, a shrinking visible viewport (on-screen keyboard) shrinks the frame with Save still reachable, and long and short forms use the available height at both sizes",
+          "criterion": "AC-C58-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > accepted gallery states clear phone-390: all sixteen logging states, ladder-long with its provider specimen and the route’s own twelve-round ladder, and the urgency demonstration open the one selected dialog with the framed icon-only X on the title’s visible top, the Balanced backdrop and the contained frame, with nothing read or written over the network",
+          "criterion": "AC-C41-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin clear /workout phone-390: the superset round opens with the Balanced backdrop in the clear skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+          "criterion": "AC-C43-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin vapour /workout phone-390: the superset round opens with the Balanced backdrop in the vapour skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+          "criterion": "AC-C43-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin signal /workout phone-390: the superset round opens with the Balanced backdrop in the signal skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+          "criterion": "AC-C43-01"
+        },
+        {
+          "file": "e2e/refinement/task-041.spec.ts",
+          "project": "mobile",
+          "name": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin mono /workout phone-390: the superset round opens with the Balanced backdrop in the mono skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+          "criterion": "AC-C43-01"
+        }
+      ]
+    }
+  }
+}

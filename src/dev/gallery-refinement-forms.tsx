@@ -87,6 +87,10 @@
  * geometry on the routes. The selected header and backdrop are TASK-016's.
  * No Save, no writer, nothing leaves memory.
  *
+ * TASK-041: `?state=ladder-long` also draws the route's own twelve-round
+ * `LadderBlock` run into its cap, so its "Log results" opens the long log
+ * through `TimedResultDialog` as the route does (see below).
+ *
  * TASK-016 (C40, C41, C43; R104–R106, R110, R113, R127): the same frame now
  * draws the selected dialog — the A / Balanced backdrop, the dialog's title
  * as the held log's one title (the log's own "Log results" heading is
@@ -153,7 +157,7 @@ import { TimedResultDialog } from '../ui/refinements/timed-result-dialog'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { GalleryCoachingClients } from './gallery-refinement-coaching'
 import { AMRAP_BLOCK } from './gallery-refinement-cards-data'
-import { galleryLadderProgress, type LadderRoundCount } from './gallery-refinement-flow-data'
+import { galleryLadderProgress, LADDER_CAP_SECONDS, timedLadderBlock, type LadderRoundCount } from './gallery-refinement-flow-data'
 import {
   GALLERY_AMRAP_ATTEMPTS,
   GALLERY_EMOM_ATTEMPTS,
@@ -619,8 +623,36 @@ export function GalleryLadderLongResults() {
       <MemoryLoggingOverlay opener="Open long ladder results" title="Ladder · 12 rounds">
         <LongLadderLog />
       </MemoryLoggingOverlay>
+      {/* TASK-041: the route's own consumer of the same long form. */}
+      <GalleryCoachingClients>
+        <GalleryRaceAttempt
+          attempt={GALLERY_LONG_LADDER_ATTEMPT}
+          family="ladder"
+          render={(block, storage) => <LadderBlock block={block} storage={storage} />}
+        />
+      </GalleryCoachingClients>
     </div>
   )
+}
+
+/**
+ * TASK-041 (REQ-018, JOURNEY-018; C44, C57–C59; P01–P03): `ladder-long`
+ * also shows the actual consumer adoption of the long dialog — the route's
+ * own `LadderBlock` over a twelve-round ladder run into its cap, whose
+ * "Log results" opens the same `TimedResultLog` in the shared frame through
+ * `TimedResultDialog`, exactly as `/workout` does. The register specimen
+ * above stays the provider reference (TASK-018/016/033 read it). Memory only:
+ * nothing is saved and no writer is drawn.
+ */
+const GALLERY_LONG_LADDER_ATTEMPT: GalleryRaceAttemptSpec = {
+  id: 'cap',
+  title: 'Twelve rounds · cap reached · the route’s long log',
+  block: timedLadderBlock(12),
+  blockIndex: 82,
+  record: (now) => ({
+    startedAt: new Date(now - (LADDER_CAP_SECONDS + 30) * 1000).toISOString(),
+    finishedAt: null,
+  }),
 }
 
 /** A long form: the twelve-round ladder's log, scrolling inside the frame. */
