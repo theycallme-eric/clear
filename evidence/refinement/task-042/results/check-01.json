@@ -13,12 +13,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-042/required-cases.json",
-    "sha256": "5b6de6b1d0050e72c0bd5945a91538711f6ff376ddf073b5ca44d4c500cfb6fc"
+    "sha256": "0762b030e1226be83f14f5c1d1bcff41e84743785c113f7a220f501a2a72e07b"
   },
   "targets": [
     {
       "path": "scripts/refinement/task-042-evidence-closure.test.mjs",
-      "sha256": "32822fbf3c480e9ee3c86630dc653504b0afa0e493b37b657dd1d7821ff14974"
+      "sha256": "c6296704a8fa750d3a53093ef441218c56f1e999fdb7e73a4af7af95c7c42b28"
     }
   ],
   "requiredCases": [
@@ -49,7 +49,7 @@
     },
     {
       "file": "scripts/refinement/task-042-evidence-closure.test.mjs",
-      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-02 visual, geometry and motion evidence binds the code revision and artifact hashes: committed receipts at HEAD over HEAD blobs, the installed runners, and hash-pinned before references",
+      "name": "TASK-042 aggregate delivered-source evidence closure > AC-R039-02 delivered-revision before/after evidence is retained by hash: every after capture and measurement in the hash-only manifest is in the evidence store at its sha256, its code revision is HEAD or an unchanged ancestor, every frame, alignment, gap, layout and warning-phase criterion has one, and every before reference resolves",
       "status": "passed"
     },
     {

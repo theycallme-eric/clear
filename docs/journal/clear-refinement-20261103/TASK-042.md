@@ -50,7 +50,7 @@ review.
 | Criterion | Case(s) | Evidence consumed |
 | --- | --- | --- |
 | AC-R039-01 | final-mode; journeys; criteria; source map; definition records | Shared checker in final mode over 45 tasks: PASSED (base `03087f7` ancestor, Foundation 0.14.3 unchanged, 3 references verified). All 32 journeys have one completion owner, and the owner's approved journey command equals its manifest command. Those checks are Playwright and their specs visit real routes. All 141 user-facing criteria sit in exactly one journey with that journey's owner. Every approved verification command of all 191 non-TASK-042 obligations maps to a declared check with a current passing receipt. TASK-039's are setup or baseline mode, which final mode runs. |
-| AC-R039-02 | revision/hash binding; evidence kinds | Every other task's manifest and receipt is committed, unchanged at HEAD. Receipt target and manifest sha256 equal the HEAD blobs. Runner versions equal the installed Vitest 4.1.11 and Playwright 1.63.0. Receipt commands equal the approved commands. No binaries are committed. 20 "before" V/P references are hash-verified store objects. Geometry: TASK-041 long logs/rhythm, TASK-007 whole frame, TASK-014 Undo edge. Phase: TASK-008, TASK-033. Real write/read/reload: TASK-047 and TASK-048 backend-lane cases, all passed, none skipped (consumed, not re-run). Error/retry: TASK-019, TASK-047. Reduced motion: TASK-008, TASK-033. |
+| AC-R039-02 | delivered captures; evidence kinds | Repair round 1: the hash-only `delivered-captures.json` lists 186 actual-app after attachments (146 unique objects, about 240 MB, in the evidence store), each with its revision, case, criteria, viewport/skin and V/P before reference or stand-in. The case re-hashes each object from the store. Receipts bind HEAD blobs, the installed runners and the approved commands. No binaries are committed. Geometry: TASK-041 long logs/rhythm, TASK-007 whole frame, TASK-014 Undo edge. Phase: TASK-008, TASK-033. Real write/read/reload: TASK-047 and TASK-048 backend-lane cases, all passed, none skipped (consumed, not re-run). Error/retry: TASK-019, TASK-047. Reduced motion: TASK-008, TASK-033. |
 | AC-R039-03 | shared implementations / format | No route root (`/`, `/onboarding`, `/workout`, `/generate`, `/review`, `/history`, `/history/:id`, `/summary`) reaches `src/dev`, `src/test` or a test file. Each of the 26 states' gallery module and one of its routes reach the same consumer files. Every manifest and receipt is in TASK-039's rehearsed schema. Nothing under `evidence/refinement` is another format except this task's source map, a traceability record. |
 | AC-GAL-01 | refinement records | Every user-facing criterion has a requirement, journey/owner, real route, state(s) in `REFINEMENT_STATES`, `/gallery/refinements?state=…` URL and existing shared owner; `#Symbol` owners are exported. The one user-facing non-gallery requirement, REQ-031, is closed by JOURNEY-031's entry state and TASK-047's real-route cases. |
 | AC-GAL-02 | owners and variables | All 16 accepted declarations in `tokens.css` keep their accepted values, and 3 were added. No shipped source outside `tokens.css` redeclares them. The only dialog renderer new since the base is `LoggingOverlay`, which every logging consumer imports. The timed blocks use `TimedResultDialog` and `DeadlineTimer`. `src/design-system` is byte-unchanged. |
@@ -77,15 +77,11 @@ review.
 
   The records and their approvals are not edited. Re-pinning them, or adding a commit-pinned
   source kind, would be a shared-verifier change. That is an owner decision; see the open items.
-- **Artifact path/hash (AC-R039-02).** The receipts' recorded hashes satisfy "artifact path/hash"
-  for the measured evidence: geometry, alignment, gaps, phase samples and data proofs. Each of
-  these is an executed assertion in a spec whose path and sha256 the receipt records, and that
-  sha256 equals the delivered revision's blob. They do **not** satisfy it for image bytes. The
-  delivered-run screenshots are guard-run attachments only. Under the 2026-11-09 no-binaries
-  decision, no image path or hash is retained anywhere committed. The "before" side is
-  hash-pinned: V01–V15 and the P01–P05 schematics are store objects in `REFERENCE.json`. No case
-  produces a side-by-side before/after artifact. This is recorded as an open owner item, not
-  claimed as met.
+- **Artifact path/hash (AC-R039-02).** Attempt 1 claimed that receipts satisfy "artifact
+  path/hash" for measured evidence but not for image bytes, and left AC-R039-02 as an open item.
+  The reviewer rejected that. It is superseded by repair round 1 (below): the delivered-revision
+  route captures and measurements are now retained by hash in
+  `evidence/refinement/task-042/delivered-captures.json`, with their bytes in the evidence store.
 - **Backend-lane receipts (TASK-047/048).** Consumed as committed. They were not re-run here, and
   credentials are absent in worktrees. Each receipt shows both backend-lane cases passed, 5/5 and
   6/6 executed, none skipped.
@@ -152,9 +148,11 @@ fix needed in this task):
 ## Open owner items and UAT index (links, not copies)
 
 - Raised by this closure:
-  1. AC-R039-02 image hashes. Either accept measured receipts plus transient attachments as the
-     visual artifacts, or require a hash-only manifest of delivered-run images (no bytes), which
-     needs a fresh visual run.
+  1. (Closed in repair round 1: AC-R039-02 image hashes are now retained; see below.)
+     New: the TASK-041 flake. `e2e/refinement/task-041.spec.ts:1304` ("the ladder clock ran on
+     behind its log", allowed 10–11 s) is a known intermittent timing check. It read 12 s in
+     about 2 of 8 runs at `c35c785`. The TASK-041 owner should widen or harden it; this task must
+     not edit that spec.
   2. Definition-record pins. Either accept "verified at delivered commit + current receipt", or add
      a commit-pinned source kind to the shared verifier.
   3. Whether to re-run every Playwright guard at the final head before release (receipt currency
@@ -186,3 +184,133 @@ fix needed in this task):
 ## Next action
 
 The controller commits the candidate and runs the brief's commands.
+
+## Repair round 1 (2026-11-11): stopped, TASK-041 guard failed at the capture revision
+
+The reviewer rejected attempt 1 on AC-R039-02 (`reviews/TASK-042-a1-96232cad0458.json`): no
+delivered-revision capture path, sha256 or commit was retained, and the case passed on proxies.
+The planned repair had five parts:
+
+- re-run the visual guards at HEAD;
+- store the after bytes content-addressed at
+  `<project>/evidence-store/clear-refinement-20261103/task-042/objects/<sha256>`;
+- commit a hash-only `evidence/refinement/task-042/delivered-captures.json`;
+- make the AC-R039-02 case re-hash every object and check the revision, coverage and before
+  references;
+- extend the AC-GAL-02 scan to the 3 app-added variables.
+
+What ran, at HEAD `c35c785` with a clean worktree, each command being an approved guard command,
+unchanged, under `v2.mjs with-lock`, one at a time:
+
+- A scratch reporter added through `PW_TEST_REPORTER` wrote the attachments the specs already make
+  to scratch storage. It does not change the command, the native JSON report or the receipt.
+- TASK-008 check-02 5/5, TASK-033 check-01 8/8, TASK-007 check-02 7/7, TASK-014 check-02 5/5,
+  TASK-002 check-02 7/7, TASK-012 check-02 5/5 and TASK-013 check-02 5/5 all PASSED. Each
+  rewrote its receipt byte-identical (`git status` clean after each).
+- TASK-041 check-01 was REJECTED: 9/10 passed, with one worker. The failing case was "JOURNEY-016
+  every /workout logging moment phone-390 touch…", which reported `the ladder clock ran on behind
+  its log (12s)` at `e2e/refinement/task-041.spec.ts:1304`, where 10–11 is allowed. The receipt
+  was rewritten with verdict `rejected`. This is the same assertion the reviewer saw fail in a
+  parallel run.
+
+Disposition: following the controller's rule ("if a guard rewrites another task's receipt it must
+be byte-identical; if not, stop and report"), I stopped here:
+
+- TASK-041's receipt was restored from Git with `git checkout --` on that one file, and the
+  worktree is clean.
+- The rejected run's captures were discarded, and `test-results/` was deleted.
+- No object was written to the evidence store.
+- The test and required-case changes were drafted outside the worktree and not applied. Without
+  TASK-041 captures, JOURNEY-016/017/018 (alignment, gaps, frame) cannot be covered.
+
+At this point AC-R039-02 remained **unmet** (superseded by the resumed section below).
+
+Needed to continue (owner or controller decision):
+
+- either authorize re-running the TASK-041 guard until it reproduces its committed receipt;
+- or have TASK-041's owner harden the ladder-clock assertion first. The spec is TASK-041's, not
+  this task's.
+
+### Repair round 1, resumed (2026-11-11, controller decision)
+
+The controller judged the TASK-041 failure at l.1304 to be an intermittent timing flake, not a
+regression. At `c35c785` it ran 5/5 under `--repeat-each=5`, and the earlier reviewer ran the
+single-file command 10/10. The controller authorized up to 3 attempts of the exact TASK-041 guard,
+accepting the first that reproduces the committed receipt byte for byte.
+
+TASK-041 check-01 attempts, at `c35c785`, under `with-lock`, with the capture reporter:
+
+| Attempt | Run | Result |
+| --- | --- | --- |
+| Earlier, stopped (above) | REJECTED 9/10 | ladder clock read 12 s; receipt restored from Git |
+| 1 | 22:42:55–22:47:32Z | PASSED 10/10; receipt byte-identical; **accepted** |
+
+The TASK-041 capture set comes only from the accepted attempt. Captures from the rejected run were
+discarded. l.1304 is recorded as a flake for the TASK-041 owner (open item 1).
+
+Changes:
+
+- `evidence/refinement/task-042/delivered-captures.json` (new, hash-only, 339 KB). It
+  lists 186 actual-app attachments from the 8 guard runs: 115 PNG captures and 71 JSON
+  measurements.
+  - Each entry records: task, check, file, case and project; journey and criterion IDs;
+    attachment name and content type; store identity, sha256 and byte size; revision
+    `c35c785`; and viewport, device scale factor 3 and skin with its source.
+  - Each entry also records its before references: the V/P staged in `accepted-gallery`, with id,
+    path and sha256. JOURNEY-002 pairs with V03/V04; 012 and 013 with V11; 017 with V10; 018 with
+    P01–P03; 014 with P04; 008 with P05.
+  - JOURNEY-007, 016 and 033 have no staged V/P image, so each states its stand-in: the
+    accepted gallery states at `eded158`, the integration base `03087f7` as the before code
+    revision and, for 033, the phosphor-echo reference.
+  - Each guard run records its approved command, receipt path and sha256 (byte-identical to the
+    committed receipt) and its totals.
+  - Gallery-case attachments are excluded, because they are not actual-app evidence.
+- Evidence store: 146 objects, about 240 MB, at
+  `<project>/evidence-store/clear-refinement-20261103/task-042/objects/<sha256>`. This is the
+  README's store, at a task-owned subpath. TASK-039's references are untouched.
+- `scripts/refinement/task-042-evidence-closure.test.mjs`:
+  - The first AC-R039-02 case is renamed and rebuilt on `deliveredCaptureProblems()`. It
+    re-hashes every object from the store (size, sha256, PNG signature or JSON).
+  - It requires the revision to be HEAD or an ancestor of HEAD, with no committed, uncommitted
+    or untracked change since, outside `docs/`, `evidence/` and this test. Local changes recorded
+    at capture time must be limited to the same paths.
+  - Each guard run must use its approved command and keep its receipt sha256 unchanged and
+    current. Each capture must be a declared, non-gallery required case carrying its journey's
+    criteria. Each before reference must resolve byte for byte, or the stand-in must be stated.
+  - Every JOURNEY-002/007/008/012/013/014/016/017/018/033 criterion needs at least one capture,
+    and JOURNEY-008 and 033 criteria also need a measurement.
+  - The `contentType` grep proxies are gone. The second AC-R039-02 case now reads the retained
+    phase-sample measurement instead of grepping the spec.
+  - AC-R039-03 admits exactly this manifest besides the source map. AC-GAL-02 scans all 19
+    `tokens.css` variables (16 accepted and 3 app-added: `--logging-viewport-gap`,
+    `--movement-peer-gap`, `--movement-tier-gap`).
+  - Correction: the "other tasks' evidence unchanged" check parsed `git status --porcelain`
+    after the helper's `trim()`, which cut the first line's path. It now uses
+    `git diff --name-only HEAD` plus untracked files. Before the fix, the case wrongly flagged
+    this task's own `required-cases.json`.
+- `evidence/refinement/task-042/required-cases.json`: the AC-R039-02 case identity is renamed and
+  the description updated. There are still 16 cases.
+
+Method: the scratch reporter was added with `PW_TEST_REPORTER`. The approved commands, the native
+JSON report and the receipts were unchanged; the guard forbids reporter flags in the command, not
+an added reporter. The reporter, generator and captures were scratch only, and the captures were
+deleted after the store copy.
+
+Mutation proofs ran in a scratch Runner-layout worktree (`git worktree add --detach`, since
+removed). The store was symlinked, and the manifest was a copy. The unmutated baseline passed.
+Each mutation failed the AC-R039-02 case:
+
+- one capture's sha256 changed in the manifest: "not content-addressed" and "object missing";
+- one object deleted from the scratch store: "object missing from the evidence store";
+- another object's bytes placed under that hash name: "does not hash to …" and a size mismatch.
+
+Verification on this tree (HEAD `c35c785` plus these changes):
+
+- TASK-042 guard: PASSED, 16 total, 16 executed, 16 passed, 0 skipped.
+- `verify-delivery-evidence.mjs --mode final`: PASSED over 45 tasks (all except TASK-039 and
+  TASK-042), and again over 46 tasks (all except TASK-039).
+- `npx eslint` on the changed test file: clean. `npx tsc --noEmit`: exit 0.
+- `npm run lint:ds`: exit 0. `npm run build`: exit 0.
+- `npx vitest run`: 276 files, 6,391 tests passed, exit 0.
+
+AC-R039-02 is now closed by an executed, store-verified case and removed from the open items.

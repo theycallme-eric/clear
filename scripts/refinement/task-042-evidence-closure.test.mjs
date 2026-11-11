@@ -23,6 +23,14 @@
 // journey -> completion owner -> real route -> gallery state -> shared owner ->
 // executed case map. The source-map case below re-derives it from the
 // authorities and requires it to be identical, so it cannot drift silently.
+//
+// evidence/refinement/task-042/delivered-captures.json is the committed hash-only
+// manifest of the delivered-revision actual-app captures and measurement
+// attachments (AC-R039-02). Their bytes are never committed (owner decision
+// 2026-11-09); they live content-addressed in the README's evidence store at
+// <store>/clear-refinement-20261103/task-042/objects/<sha256>, and the AC-R039-02
+// case re-hashes every object, checks the code revision against HEAD and pairs
+// each capture with its staged V/P before reference or a stated stand-in.
 
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -32,7 +40,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { loadBody, projectFromWorktree, readBaseBlobs, verifyReferences } from './lib/references.mjs'
+import { loadBody, projectFromWorktree, readBaseBlobs, resolveObjectStore, verifyReferences } from './lib/references.mjs'
 import { MANIFEST_SCHEMA, RECEIPT_SCHEMA, receiptPathFor, verifyReceipt } from './lib/required-check.mjs'
 import { parseRecord, verifyDefinitionRecord } from './verify-definition-record.mjs'
 
@@ -40,6 +48,8 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const BODY = 'clear-refinement-20261103'
 const EVIDENCE_ROOT = resolve(repo, 'evidence/refinement')
 const MAP_PATH = 'evidence/refinement/task-042/source-map.json'
+const CAPTURES_PATH = 'evidence/refinement/task-042/delivered-captures.json'
+const CAPTURES_SCHEMA = 'clear-refinement-task-042-delivered-captures/v1'
 const SELF = 'TASK-042'
 const SETUP_ONLY = 'TASK-039'
 const DEFINITION_TASKS = ['TASK-035', 'TASK-037', 'TASK-038']
@@ -351,6 +361,25 @@ function deriveSourceMap(inputs) {
 
 // --- source-map derivation (end) --------------------------------------------
 
+// ---------------------------------------------------------------- delivered captures (AC-R039-02)
+
+/**
+ * AC-R039-02's delivered-revision after evidence, by kind: every criterion of
+ * these journeys needs at least one actual-app (route) capture in the hash-only
+ * manifest, and each warning-phase criterion also a measurement attachment.
+ */
+const AFTER_EVIDENCE = [
+  { kind: 'frame geometry', journeys: ['JOURNEY-007', 'JOURNEY-018'] },
+  { kind: 'alignment', journeys: ['JOURNEY-014', 'JOURNEY-016'] },
+  { kind: 'gaps', journeys: ['JOURNEY-017'] },
+  { kind: 'comparable before/after layout', journeys: ['JOURNEY-002', 'JOURNEY-012', 'JOURNEY-013'] },
+  { kind: 'warning motion/phase samples', journeys: ['JOURNEY-008', 'JOURNEY-033'], measurement: true },
+]
+/** Paths a capture run does not exercise: documentation, evidence records and this closure test. */
+const NOT_EXERCISED = ['docs', 'evidence', 'scripts/refinement/task-042-evidence-closure.test.mjs']
+const SKINS = ['clear', 'vapour', 'signal', 'mono']
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+
 // ---------------------------------------------------------------- inputs
 
 let cached = null
@@ -485,6 +514,134 @@ function runFinalChecker(tasks) {
     'scripts/refinement/verify-delivery-evidence.mjs', '--body', BODY, '--mode', 'final', '--tasks', tasks.join(','), '--json',
   ], { cwd: repo, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
   return { status: run.status, report: JSON.parse(run.stdout), stderr: run.stderr }
+}
+
+/**
+ * Every problem with the hash-only delivered-captures manifest: object bytes in
+ * the store, the code revision, the guard runs and receipts the captures came
+ * from, each capture's case and criteria, its before reference, and coverage.
+ */
+function deliveredCaptureProblems() {
+  const { handoff, manifests, gallery } = loadInputs()
+  const map = sourceMap()
+  const problems = []
+  const problem = (text) => problems.push(text)
+  const captured = JSON.parse(readFileSync(resolve(repo, CAPTURES_PATH), 'utf8'))
+  if (captured.schema !== CAPTURES_SCHEMA || captured.task !== SELF || captured.body !== BODY) problem(`${CAPTURES_PATH} is not ${SELF}'s ${CAPTURES_SCHEMA} for ${BODY}`)
+
+  // The bytes live outside Git in the project evidence store (README, owner decision 2026-11-09).
+  const store = resolveObjectStore({ cwd: repo })
+  if (store.problem) return [...problems, store.problem]
+  const objectsDir = join(store.dir, BODY, 'task-042', 'objects')
+
+  // The code revision: HEAD or an ancestor of it, with no change since to anything the captured specs exercise.
+  const { revision, worktreeChangesAtRun, runnerVersion } = captured.run ?? {}
+  const excluded = NOT_EXERCISED.map((path) => `:(exclude)${path}`)
+  if (!/^[0-9a-f]{40}$/.test(revision ?? '')) problem(`run.revision ${revision} is not a full commit id`)
+  else {
+    if (spawnSync('git', ['merge-base', '--is-ancestor', revision, 'HEAD'], { cwd: repo }).status !== 0) problem(`run.revision ${revision} is neither HEAD nor an ancestor of HEAD`)
+    else {
+      const changed = git(['diff', '--name-only', revision, '--', '.', ...excluded]).split('\n').filter(Boolean)
+      if (changed.length) problem(`exercised files changed since the capture revision ${revision}: ${changed.join(', ')}`)
+    }
+  }
+  const untracked = git(['ls-files', '--others', '--exclude-standard', '--', '.', ...excluded]).split('\n').filter(Boolean)
+  if (untracked.length) problem(`untracked exercised files: ${untracked.join(', ')}`)
+  const notExercised = (path) => NOT_EXERCISED.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+  if (!Array.isArray(worktreeChangesAtRun)) problem('run.worktreeChangesAtRun is not recorded')
+  else for (const line of worktreeChangesAtRun) if (!notExercised(line.slice(3))) problem(`the capture run had an exercised local change: ${line}`)
+  const installed = JSON.parse(readFileSync(resolve(repo, 'node_modules/@playwright/test/package.json'), 'utf8')).version
+  if (runnerVersion !== installed) problem(`captures ran on Playwright ${runnerVersion}, not the installed ${installed}`)
+
+  // Each guard run: its approved command, and the receipt it rewrote, unchanged and current since.
+  const runs = new Map()
+  for (const run of captured.checks ?? []) {
+    const declared = manifests.get(run.task)?.checks?.[run.check]
+    if (!declared || declared.runner !== 'playwright') {
+      problem(`${run.task} ${run.check} is not a declared Playwright check`)
+      continue
+    }
+    if (run.command !== declared.command) problem(`${run.task} ${run.check} did not run its approved command`)
+    const receiptPath = relative(repo, receiptPathFor(EVIDENCE_ROOT, run.task, run.check)).split('\\').join('/')
+    if (run.receipt?.path !== receiptPath || run.receipt?.sha256 !== sha256(readFileSync(resolve(repo, receiptPath)))) problem(`${run.task} ${run.check}: the receipt is not the one the capture run wrote`)
+    for (const found of receiptProblems(run.task, run.check)) problem(found)
+    runs.set(`${run.task}/${run.check}`, declared)
+  }
+
+  const journeys = new Map(handoff.journeys.map((journey) => [journey.id, journey]))
+  const criteria = new Map(map.criteria.map((criterion) => [criterion.id, criterion]))
+  const seen = new Set()
+  for (const capture of captured.captures ?? []) {
+    const where = `${capture.task} ${capture.attachment}`
+    const declared = runs.get(`${capture.task}/${capture.check}`)
+    if (!declared) {
+      problem(`${where}: ${capture.check} is not a captured guard run`)
+      continue
+    }
+    const testCase = declared.cases.find((entry) => entry.file === capture.file && entry.name === capture.case && (entry.project ?? null) === capture.project)
+    if (!testCase) problem(`${where}: "${capture.case}" is not a declared required case`)
+    const leaf = capture.case.split(' > ').slice(1).join(' > ')
+    if (/gallery/i.test(leaf)) problem(`${where}: a gallery case is not actual-app evidence`)
+    const journey = /JOURNEY-\d{3}/.exec(leaf)?.[0] ?? (testCase?.criterion?.startsWith('JOURNEY-') ? testCase.criterion : null)
+    const expected = journey ? journeys.get(journey)?.acceptanceCriterionIds : [testCase?.criterion]
+    if (capture.journey !== journey) problem(`${where}: journey ${capture.journey} is not the case's ${journey}`)
+    if (JSON.stringify(capture.criteria) !== JSON.stringify(expected)) problem(`${where}: criteria ${capture.criteria} are not the case's ${expected}`)
+
+    // The object: content-addressed in the store, its bytes hash to the recorded sha256.
+    if (!/^[0-9a-f]{64}$/.test(capture.sha256 ?? '')) problem(`${where}: sha256 ${capture.sha256} is malformed`)
+    if (capture.store !== `store:${BODY}/task-042/objects/${capture.sha256}`) problem(`${where}: store path ${capture.store} is not content-addressed`)
+    if (capture.revision !== revision) problem(`${where}: revision ${capture.revision} is not the run's ${revision}`)
+    const objectPath = join(objectsDir, capture.sha256 ?? '-')
+    if (!existsSync(objectPath)) problem(`${where}: object missing from the evidence store: expected ${objectPath}`)
+    else {
+      const bytes = readFileSync(objectPath)
+      if (sha256(bytes) !== capture.sha256) problem(`${where}: store object ${objectPath} does not hash to ${capture.sha256}`)
+      if (bytes.length !== capture.bytes) problem(`${where}: store object is ${bytes.length} bytes, not ${capture.bytes}`)
+      if (capture.contentType === 'image/png') {
+        if (capture.kind !== 'capture' || !bytes.subarray(0, 8).equals(PNG_SIGNATURE)) problem(`${where}: not a PNG capture`)
+      } else if (capture.contentType === 'application/json') {
+        if (capture.kind !== 'measurement') problem(`${where}: a JSON attachment is a measurement`)
+        try {
+          JSON.parse(bytes.toString('utf8'))
+        } catch {
+          problem(`${where}: the measurement is not JSON`)
+        }
+      } else problem(`${where}: content type ${capture.contentType} is neither a capture nor a measurement`)
+    }
+    const key = `${capture.task}|${capture.case}|${capture.attachment}|${capture.sha256}`
+    if (seen.has(key)) problem(`${where}: listed twice`)
+    seen.add(key)
+    if (!capture.viewport?.name || !(capture.viewport.width > 0)) problem(`${where}: viewport metadata is missing`)
+    if (!SKINS.includes(capture.skin) || !capture.skinSource) problem(`${where}: skin metadata is missing`)
+
+    // The before side: the staged V/P references of the capture's criteria, resolved byte for byte.
+    const wanted = new Map()
+    for (const id of capture.criteria ?? []) for (const path of criteria.get(id)?.visualReferences ?? []) wanted.set(path, /\/references\/([VP]\d{2})-/.exec(path)[1])
+    if (wanted.size === 0) {
+      if (capture.before !== null || !/no staged V\/P image/.test(capture.beforeStandIn ?? '') || !capture.beforeStandIn.includes(ACCEPTED_COMMIT.slice(0, 7))) {
+        problem(`${where}: no staged before image applies, so before is null and the stand-in is stated`)
+      }
+    } else {
+      const listed = (capture.before ?? []).map(({ reference, id, path, sha256: hash }) => [reference, id, path, hash])
+      const resolved = [...wanted].map(([path, id]) => {
+        const file = gallery.get(path)
+        return ['accepted-gallery', id, path, file ? sha256(file.bytes) : null]
+      })
+      if (JSON.stringify(listed) !== JSON.stringify(resolved)) problem(`${where}: before references ${JSON.stringify(listed)} do not resolve to the staged ${JSON.stringify(resolved)}`)
+    }
+  }
+
+  // Coverage: each frame/alignment/gap, layout and warning-phase criterion has an after capture.
+  const listed = captured.captures ?? []
+  for (const { kind, journeys: ids, measurement } of AFTER_EVIDENCE) {
+    for (const id of ids) {
+      for (const criterion of journeys.get(id).acceptanceCriterionIds) {
+        if (!listed.some((capture) => capture.kind === 'capture' && capture.criteria.includes(criterion))) problem(`${kind}: ${criterion} (${id}) has no after capture`)
+        if (measurement && !listed.some((capture) => capture.kind === 'measurement' && capture.criteria.includes(criterion))) problem(`${kind}: ${criterion} (${id}) has no measurement attachment`)
+      }
+    }
+  }
+  return problems
 }
 
 // ---------------------------------------------------------------- cases
@@ -625,17 +782,21 @@ describe('TASK-042 aggregate delivered-source evidence closure', () => {
     assert.equal(record.body, BODY)
   })
 
-  test('AC-R039-02 visual, geometry and motion evidence binds the code revision and artifact hashes: committed receipts at HEAD over HEAD blobs, the installed runners, and hash-pinned before references', () => {
-    const { manifests, gallery, coverage } = loadInputs()
+  test('AC-R039-02 delivered-revision before/after evidence is retained by hash: every after capture and measurement in the hash-only manifest is in the evidence store at its sha256, its code revision is HEAD or an unchanged ancestor, every frame, alignment, gap, layout and warning-phase criterion has one, and every before reference resolves', () => {
+    const { manifests } = loadInputs()
+    assert.deepEqual(deliveredCaptureProblems(), [], `${CAPTURES_PATH} verifies against the evidence store, the code revision, the receipts and the staged before references`)
+    const captured = JSON.parse(readFileSync(resolve(repo, CAPTURES_PATH), 'utf8'))
+    assert.ok(captured.captures.filter((capture) => capture.kind === 'capture').length >= AFTER_EVIDENCE.flatMap(({ journeys }) => journeys).length)
+    assert.ok(captured.captures.some((capture) => capture.before), 'at least one after capture pairs with a staged V/P before image')
+    // Every other receipt binds the delivered revision's blobs, the installed runners and the approved command.
     const installed = {
       vitest: JSON.parse(readFileSync(resolve(repo, 'node_modules/vitest/package.json'), 'utf8')).version,
       playwright: JSON.parse(readFileSync(resolve(repo, 'node_modules/@playwright/test/package.json'), 'utf8')).version,
       'node-test': null,
     }
-    const dirty = git(['status', '--porcelain', '--', 'evidence/refinement']).split('\n').filter(Boolean)
-      .filter((line) => !line.slice(3).startsWith('evidence/refinement/task-042/'))
+    const dirty = [...git(['diff', '--name-only', 'HEAD', '--', 'evidence/refinement']).split('\n'), ...git(['ls-files', '--others', '--exclude-standard', '--', 'evidence/refinement']).split('\n')]
+      .filter((path) => path && !path.startsWith('evidence/refinement/task-042/'))
     assert.deepEqual(dirty, [], 'every other task\'s manifest and receipt is committed unchanged at HEAD')
-    let playwrightChecks = 0
     for (const [task, manifest] of manifests) {
       for (const [checkId, check] of Object.entries(manifest.checks)) {
         const path = relative(repo, receiptPathFor(EVIDENCE_ROOT, task, checkId)).split('\\').join('/')
@@ -648,23 +809,11 @@ describe('TASK-042 aggregate delivered-source evidence closure', () => {
         for (const target of receipt.targets) {
           assert.equal(target.sha256, sha256(execFileSync('git', ['show', `HEAD:${target.path}`], { cwd: repo, maxBuffer: 64 * 1024 * 1024 })), `${task} ${checkId}: ${target.path} hash is the delivered revision's blob`)
         }
-        if (check.runner === 'playwright') playwrightChecks += 1
       }
     }
-    assert.ok(playwrightChecks >= 30)
-    // The visual specs attach their delivered-revision captures and measurements to the guard run.
-    for (const spec of ['e2e/refinement/task-041.spec.ts', 'e2e/refinement/task-008.spec.ts']) {
-      const text = readFileSync(resolve(repo, spec), 'utf8')
-      assert.match(text, /contentType: 'image\/png'/, `${spec} captures images`)
-      assert.match(text, /contentType: 'application\/json'/, `${spec} records its measurements`)
-    }
-    // Owner decision 2026-11-09: no image binaries are committed; before references are hash-pinned objects.
+    // Owner decision 2026-11-09: hashes are committed, image bytes never are.
     const binaries = git(['ls-files', '--', 'evidence/refinement']).split('\n').filter((file) => /\.(png|jpe?g|webp|gif|webm|mp4|zip)$/i.test(file))
     assert.deepEqual(binaries, [])
-    const before = new Set()
-    for (const entry of coverage.requirements) for (const path of entry.repositoryReferences) if (/\/references\/(V\d{2}|P\d{2})-/.test(path)) before.add(path)
-    assert.ok(before.size >= 15)
-    for (const path of before) assert.ok(gallery.get(path), `${path} is a hash-verified accepted reference object`)
   })
 
   test('AC-R039-02 measured geometry, phase samples, real write/read/reload and error, retry and reduced-motion cases are executed in current receipts; backend-lane receipts are consumed, not re-run', () => {
@@ -681,8 +830,9 @@ describe('TASK-042 aggregate delivered-source evidence closure', () => {
         }
       }
     }
-    const phase = readFileSync(resolve(repo, 'e2e/refinement/task-008.spec.ts'), 'utf8')
-    assert.match(phase, /phase-samples/, 'phase samples are recorded')
+    // The phase samples themselves are retained by hash (delivered-captures manifest, verified in the case above).
+    const captured = JSON.parse(readFileSync(resolve(repo, CAPTURES_PATH), 'utf8'))
+    assert.ok(captured.captures.some((capture) => capture.journey === 'JOURNEY-008' && capture.kind === 'measurement' && /^phase-samples/.test(capture.attachment)), 'the warning phase samples are a retained measurement')
   })
 
   test('AC-R039-03 the gallery and the routes consume the same shared implementations; no route reaches gallery or test code; every receipt and manifest is TASK-039\'s rehearsed format', () => {
@@ -709,12 +859,15 @@ describe('TASK-042 aggregate delivered-source evidence closure', () => {
       for (const checkId of Object.keys(manifest.checks)) assert.equal(readReceipt(task, checkId).schema, RECEIPT_SCHEMA, `${task} ${checkId} receipt format`)
     }
     // Fixture receipts are TASK-039's self-test inputs and never count as delivery evidence.
-    // The only other file is this task's source map: a traceability record checked by the
-    // source-map case, not a proof format (every proof it cites is a provider receipt).
+    // The only other files are this task's source map, a traceability record checked by the
+    // source-map case, and its hash-only delivered-captures manifest, verified against the
+    // evidence store by the AC-R039-02 case; neither is a proof format of its own (every proof
+    // either cites is a provider receipt or a store object).
     const files = new Set([...git(['ls-files', '--', 'evidence/refinement']).split('\n'), ...git(['ls-files', '--others', '--exclude-standard', '--', 'evidence/refinement']).split('\n')].filter(Boolean))
     assert.ok(files.has(MAP_PATH))
+    assert.ok(files.has(CAPTURES_PATH))
     for (const file of files) {
-      assert.match(file, /^evidence\/refinement\/(README\.md|clear-refinement-20261103\/(BODY\.json|references\/[a-z-]+\/REFERENCE\.json)|task-\d{3}\/(required-cases\.json|results\/[a-z0-9-]+\.json)|task-042\/source-map\.json)$/, `${file} is one of the provider's formats or this task's source map`)
+      assert.match(file, /^evidence\/refinement\/(README\.md|clear-refinement-20261103\/(BODY\.json|references\/[a-z-]+\/REFERENCE\.json)|task-\d{3}\/(required-cases\.json|results\/[a-z0-9-]+\.json)|task-042\/(source-map|delivered-captures)\.json)$/, `${file} is one of the provider's formats, this task's source map or its delivered-captures manifest`)
     }
   })
 
@@ -767,12 +920,15 @@ describe('TASK-042 aggregate delivered-source evidence closure', () => {
     assert.equal(accepted.size, 16)
     for (const [name, values] of accepted) assert.deepEqual(current.get(name), values, `${name} keeps its accepted value in tokens.css`)
     for (const name of coverage.requirements.flatMap((entry) => entry.semanticVariables)) assert.ok(current.has(name), `${name} is declared in tokens.css`)
-    // No other shipped source redeclares a refinement variable or restates the accepted warning numbers.
+    // The app-added variables (beyond the 16 accepted ones) are held to the same one-file rule below.
+    const added = [...current.keys()].filter((name) => !accepted.has(name))
+    assert.equal(added.length, 3, `tokens.css adds exactly the three known app variables: ${added.join(', ')}`)
+    // No other shipped source redeclares any tokens.css variable, accepted (16) or app-added (3).
     const shipped = git(['ls-files', '--', 'src']).split('\n')
       .filter((file) => /\.(css|tsx?|jsx?)$/.test(file) && !/\.test\.|^src\/test\/|^src\/design-system\/|^src\/dev\//.test(file) && file !== 'src/ui/refinements/tokens.css')
     for (const file of shipped) {
       const text = readFileSync(resolve(repo, file), 'utf8')
-      for (const name of accepted.keys()) assert.doesNotMatch(text, new RegExp(`${name}\\s*:`), `${file} must not redeclare ${name}`)
+      for (const name of current.keys()) assert.doesNotMatch(text, new RegExp(`${name}\\s*:`), `${file} must not redeclare ${name}`)
     }
     // The only new dialog renderer since the integration base is the shared LoggingOverlay.
     const base = record.integrationBase.commit
