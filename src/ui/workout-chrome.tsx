@@ -68,11 +68,13 @@ import type {
 import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
 import { CollapsibleSection } from './collapsible-section'
+import { Heading } from './Heading'
 import { useInterfaceLoop } from './motion'
 import { COUNTDOWN_WARNING_THRESHOLDS, countdownWarningState } from './refinements/countdown-warning'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import './rest-timer-bar.css'
 import './workout-navigation.css'
+import './refinements/presentation.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Global timer
@@ -232,6 +234,13 @@ function StatusGlyph({ status }: { status: SectionStatus }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SectionHeaderProps {
+  /**
+   * TASK-027 (C54; R35, R98): the accepted compact live navigator, opted into
+   * by the consumer — `All sections` with the `N / M` position, over the
+   * status-bearing jump list, and nothing that repeats the active card's
+   * identity. Needs `progress`; without it the full header is drawn.
+   */
+  compact?: boolean
   section: SectionProgress
   /** Position in the session, one-based, for the terse `3 / 6` readout. */
   position: number
@@ -266,6 +275,7 @@ export interface SectionHeaderProps {
  * keyboard focus.
  */
 export function SectionHeader({
+  compact = false,
   section,
   position,
   total,
@@ -282,6 +292,42 @@ export function SectionHeader({
           setJumping(false)
           onSelect(index)
         }
+
+  if (compact && progress !== undefined) {
+    // TASK-027 (C54; R35, R98; accepted reference `SectionHeader compact`):
+    // no section card, no visible title or status line and no repeated
+    // structure badges — the cards below already say what each block is. The
+    // section keeps its level-two heading and its `Section N / M · status`
+    // reading for assistive technology, visually hidden; the trigger shows the
+    // position and keeps its one name, `All sections`; each chip in the jump
+    // list states its section's status in words and a glyph.
+    return (
+      <div className="clr-section-nav" data-section-navigation="">
+        <Heading className="a11y-hidden">{section.title}</Heading>
+        <p className="a11y-hidden">{`Section ${position} / ${total} · ${STATUS_WORDS[section.status]}`}</p>
+        <CollapsibleSection
+          label={
+            <>
+              <span>All sections</span>
+              <span className="clr-section-nav__meta" aria-hidden="true" data-section-position="">
+                {position} / {total}
+              </span>
+            </>
+          }
+          expanded={jumping}
+          onExpandedChange={setJumping}
+        >
+          <SectionJumpList
+            progress={progress}
+            currentIndex={section.index}
+            onSelect={select}
+            inert={!jumping}
+          />
+        </CollapsibleSection>
+        {children}
+      </div>
+    )
+  }
 
   return (
     // `Screen` already establishes level two for its top-level content. This

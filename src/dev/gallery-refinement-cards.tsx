@@ -28,6 +28,10 @@
  *     minutes and target, Next on the first, and Start — with no NOT STARTED
  *     caption — under the shell's own completion path, which saves nothing
  *     here. The other live cards keep the frame's parts below.
+ *   · TASK-027 (C54, R35, R98): between that header and the cards, the
+ *     route's own compact section navigator (`SectionHeader compact`) — All
+ *     sections with the position, over the status-bearing jump list — which
+ *     repeats no card's identity; a jump moves a memory-only position.
  *   · TASK-005 (C16, R29, R36): every live grouped card ends with the actual
  *     `GroupExerciseCoaching` in `WorkoutCard`'s `coaching` slot — one bottom
  *     Coaching and notes disclosure with a labelled section per movement —
@@ -48,7 +52,7 @@ import { prescriptionText, targetText } from '../state/prescription'
 import { reviewBriefing } from '../state/review'
 import type { SessionAcceptance } from '../state/schemas'
 import { ExerciseSwapContext, type ExerciseSwapApi } from '../state/swap-context'
-import { structureDetailText, structureIdentity } from '../state/workout-progress'
+import { structureDetailText, structureIdentity, type SessionProgress } from '../state/workout-progress'
 import { BlockPanel } from '../ui/block-renderers-frame'
 import { GroupExerciseCoaching } from '../ui/exercise-coaching'
 import { coachesAsGroup } from '../ui/group-coaching-context'
@@ -57,7 +61,7 @@ import { MovementGroupHeader, MovementIdentity, MovementList } from '../ui/refin
 import { liveMovementReadings } from '../ui/refinements/movement-readings'
 import { LiveMovement, ReviewMovement, WorkoutCard } from '../ui/refinements/workout-card'
 import { ReviewSection } from '../ui/review-block'
-import { StructureBadge } from '../ui/workout-chrome'
+import { SectionHeader, StructureBadge } from '../ui/workout-chrome'
 import {
   CIRCUIT_BLOCK,
   peerGroupingAcceptance,
@@ -193,6 +197,37 @@ const COMPOSITIONS = {
 } as const
 type Composition = keyof typeof COMPOSITIONS
 
+/**
+ * TASK-027 (C54; R35, R98): the compact live navigator `/workout` draws —
+ * `SectionHeader compact` — over a three-section session whose middle section
+ * is open. A jump moves the memory-only position and nothing else: no session,
+ * no write, no block result.
+ */
+const GALLERY_SECTIONS: SessionProgress = {
+  total: 3,
+  completed: 1,
+  sections: [
+    { sectionId: 'gallery-warmup', title: 'Warm-up', sectionType: 'warmup', index: 0, status: 'complete', blocks: [] },
+    { sectionId: 'gallery-conditioning', title: 'Conditioning', sectionType: 'conditioning', index: 1, status: 'in_progress', blocks: [] },
+    { sectionId: 'gallery-cooldown', title: 'Cooldown', sectionType: 'cooldown', index: 2, status: 'not_started', blocks: [] },
+  ],
+}
+
+export function GallerySectionNavigator() {
+  const [active, setActive] = useState(1)
+  return (
+    <SectionHeader
+      compact
+      section={GALLERY_SECTIONS.sections[active]}
+      position={active + 1}
+      total={GALLERY_SECTIONS.total}
+      progress={GALLERY_SECTIONS}
+      bar={false}
+      onSelect={setActive}
+    />
+  )
+}
+
 /** The stable `cards` state: the same movements in Review and in Workout. */
 export function GalleryMovementCards() {
   const [composition, setComposition] = useState<Composition>('peers')
@@ -213,6 +248,8 @@ export function GalleryMovementCards() {
         <Heading>Workout · the same header, set progress in the action slot</Heading>
         {/* TASK-007 (C20): the route's own one-row workout header. */}
         <GalleryWorkoutHeaders />
+        {/* TASK-027 (C54): the route's own compact navigator, then the cards. */}
+        <GallerySectionNavigator />
         <WorkoutContextCards blocks={blocks} />
       </HeadingSection>
     </div>

@@ -114,7 +114,9 @@ test.describe('REQ-016 all formats, one session (TASK-030)', () => {
       for (const [index, [, label, badge]] of sections.entries()) {
         await expect(page.getByRole('heading', { level: 2, name: label, exact: true })).toBeVisible({ timeout: 30_000 })
         await expect(page.getByText(`Section ${index + 1} / ${sections.length}`, { exact: false }).first()).toBeVisible()
-        await expect(page.getByRole('list', { name: 'Structures in this section' })).toContainText(badge)
+        // TASK-027 (C54; R35): the compact navigator repeats no badge; the section's one block names its format on its card.
+        await expect(page.getByRole('list', { name: 'Structures in this section' })).toHaveCount(0)
+        await expect(page.locator('main .clr-movement-group-header__badge')).toHaveText([badge])
         if (index === 0) await checkA11y()
         if (index < sections.length - 1) {
           await nav.getByRole('button', { name: 'Next section', exact: true }).click()

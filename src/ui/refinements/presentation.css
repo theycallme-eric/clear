@@ -1051,3 +1051,11 @@ html[data-reduce-motion] .clr-deadline-edge {
   border: 0;
   padding: 0;
 }
+
+/* TASK-027 (C54; R35, R98): the compact live section navigator — the accepted
+ * reference's `All sections` trigger with the `N / M` position at its end. */
+.clr-section-nav__meta {
+  margin-inline-start: auto;
+  color: var(--text-secondary);
+  font-size: var(--label-xs-size);
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-027",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/workout-chrome.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-027/required-cases.json",
+    "sha256": "238233110e5dce0f734a945bc2e5b118104b754d054e2e6037b7a00ab907562f"
+  },
+  "targets": [
+    {
+      "path": "src/ui/workout-chrome.test.tsx",
+      "sha256": "97a33cbcf0129105f21ecb3e99327a2c6056744b36c19f5fb61d21e42dcbe930"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the jump list opens by keyboard and touch, jumps and collapses, stays out of the tab order while collapsed, and is read-only while a move is saving",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery state ?state=cards draws the route’s own compact navigator before the live cards, jumping a memory-only position with nothing read or written",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 44,
+    "passed": 44,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 44
+  },
+  "problems": []
+}

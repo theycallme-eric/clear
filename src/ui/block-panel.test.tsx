@@ -233,12 +233,13 @@ describe('TASK-003 consistent format badges and truthful prescribed load', () =>
     // The live superset still states its count as each movement's set progress and prescription.
     expect(within(blockList('workout', 1)).getAllByText('Set 1/3')).toHaveLength(2)
     expect(within(blockList('workout', 1)).getByText('3 × 10 reps')).toBeInTheDocument()
-    // The live section's structure summary uses the same format-only words.
-    const structures = within(screen.getByRole('list', { name: 'Structures in this section' }))
-    expect(structures.getAllByRole('listitem').map((item) => item.textContent)).toEqual(FORMAT_BADGES.workout)
+    // TASK-027 (C54; R35) superseded the live section's repeated structure
+    // list: the compact navigator names no block, so each card's own badge is
+    // the workout's one format-only reading of its block.
+    expect(screen.queryByRole('list', { name: 'Structures in this section' })).toBeNull()
     // No format badge on the workout carries a number, a unit or a count.
-    const allBadges = document.querySelectorAll('.clr-movement-group-header__badge, [aria-label="Structures in this section"] li')
-    expect(allBadges.length).toBe(FORMAT_KEYS.length * 2)
+    const allBadges = document.querySelectorAll('.clr-movement-group-header__badge')
+    expect(allBadges.length).toBe(FORMAT_KEYS.length)
     for (const badge of allBadges) expect(badge.textContent).not.toMatch(/\d|MIN|CAP|ROUND|·/)
   })
 

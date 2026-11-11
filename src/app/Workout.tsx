@@ -197,6 +197,23 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
 // Shell
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Where focus lands after a move: the section's heading, or its first card (a jump). */
+type SectionFocus = 'heading' | 'card'
+
+/**
+ * The opened section's first card: the first card frame drawn after the
+ * navigator, never one inside it or above it (the sync notice).
+ */
+function firstCardAfter(navigator: HTMLElement): HTMLElement | null {
+  const scope = navigator.parentElement
+  if (scope === null) return null
+  for (const card of scope.querySelectorAll<HTMLElement>('.clr-card__body')) {
+    if (navigator.contains(card)) continue
+    if (navigator.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING) return card
+  }
+  return null
+}
+
 interface WorkoutShellProps {
   snapshot: SessionSnapshot
   /** Publishes the session's end so every other screen agrees immediately. */
@@ -240,31 +257,54 @@ function WorkoutShell({
   // heading of the section it opened. A restored section on mount is left to
   // the route's own focus, which the shell does not second-guess. Neither path
   // touches the session clock, which reads `started_at` and nothing else.
+  //
+  // TASK-027 (C54): the compact navigator's section heading is visually
+  // hidden, so a jump from its list lands on the opened section's first card —
+  // something the athlete can see — and only falls back to the heading when
+  // the section draws no card. Previous and Next still land on the heading.
   const header = useRef<HTMLDivElement>(null)
-  const moved = useRef(false)
-  const focusSectionHeader = useCallback(() => {
-    const heading = header.current?.querySelector('h2, h3, h4, h5, h6')
+  const moved = useRef<SectionFocus | null>(null)
+  const focusSection = useCallback((target: SectionFocus) => {
+    const frame = header.current
+    if (frame === null) return
+    if (target === 'card') {
+      const card = firstCardAfter(frame)
+      if (card !== null) {
+        if (!card.hasAttribute('tabindex')) {
+          card.setAttribute('tabindex', '-1')
+          // A card is a focus target for this one move, not a tab stop or a
+          // click target afterwards.
+          card.addEventListener('blur', () => card.removeAttribute('tabindex'), { once: true })
+        }
+        card.focus()
+        return
+      }
+    }
+    const heading = frame.querySelector('h2, h3, h4, h5, h6')
     if (heading instanceof HTMLElement) {
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1')
       heading.focus()
     }
   }, [])
   const { setIndex } = section
-  const goTo = useCallback(
-    (next: number) => {
-      moved.current = next !== index
+  const moveTo = useCallback(
+    (next: number, target: SectionFocus) => {
+      moved.current = next !== index ? target : null
       setIndex(next)
       // Reselecting the open section closes its jump list too, but does not
       // change `index`: restore focus before its selected chip becomes inert.
-      if (next === index) focusSectionHeader()
+      if (next === index) focusSection(target)
     },
-    [index, setIndex, focusSectionHeader],
+    [index, setIndex, focusSection],
   )
+  const goTo = useCallback((next: number) => moveTo(next, 'heading'), [moveTo])
+  const jumpTo = useCallback((next: number) => moveTo(next, 'card'), [moveTo])
   useEffect(() => {
-    if (!moved.current) return
-    moved.current = false
-    focusSectionHeader()
-  }, [index, focusSectionHeader])
+    const target = moved.current
+    if (target === null) return
+    moved.current = null
+    focusSection(target)
+  }, [index, focusSection])
 
   const seconds = useElapsedSeconds(snapshot.session.started_at)
 
@@ -488,18 +528,22 @@ function WorkoutShell({
               {current === undefined ? null : (
                 <>
                   {/*
-                    The one frame for the active section (U35): its name,
-                    position, status and structures, with the session's
-                    progress and the collapsible jump list (U34) inside it.
+                    TASK-027 (C54; R35, R98): the compact live navigator —
+                    `All sections` with the position, over the collapsible,
+                    status-bearing jump list (U34). The section's heading and
+                    status are read by assistive technology; the cards below
+                    carry the identity, so nothing here repeats it. The
+                    session's bar stays above the footer navigation (REQ-018).
                   */}
                   <div ref={header}>
                     <SectionHeader
+                      compact
                       section={current}
                       position={index + 1}
                       total={progress.total}
                       progress={progress}
                       bar={false}
-                      onSelect={advancing || ending ? undefined : goTo}
+                      onSelect={advancing || ending ? undefined : jumpTo}
                     />
                   </div>
                   {/*
