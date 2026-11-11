@@ -39,6 +39,12 @@
  *     (`gallery-refinement-coaching.tsx`). A standard block's movements keep
  *     their own panel on the route. Review draws none: before Start there is
  *     no prescription row for a note.
+ *   · TASK-036 (G24, R04, R31): every load drawn here is the prescribed
+ *     target — Review's `loadText`, and the live cards' `liveMovementReadings`,
+ *     which reads the load-guidance read model's `prescribedLoad`
+ *     (`src/state/refinement-load-guidance.ts`). One stored number in the
+ *     profile's unit beside the implement: no range and no per-hand gloss,
+ *     both open definitions (`docs/specs/LOAD_GUIDANCE_CONTRACT.md`).
  *
  * Same synthetic composition in both contexts (`gallery-refinement-cards-data.ts`):
  * standard, superset and circuit peers; the timed EMOM, AMRAP and For Time

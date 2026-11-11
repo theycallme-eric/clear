@@ -117,3 +117,21 @@ typed source record is `PREPARATION_GUIDE_SOURCES`. Each field reads one owner:
 | --- | --- | --- |
 | TASK-022 (concise Warm-up and Cooldown) | `composedPreparationGuide` (Review), `persistedPreparationGuide` / `preparationGuideReading` (Workout), `PreparationGuide` (`title`, `durationText`, `movements[].name`, `approximateMinutes`) | Done: `src/ui/preparation-guide.tsx` draws these readings on `/review`, `/workout` and the gallery `preparation` state, with no fixed duration, count or sample list. The live guide's separate clock (`preparation-clock.ts`) counts `approximateMinutes` down. |
 | TASK-023 (Regenerate after the workout) | — | Keep the guide's section in Review's section order. Regenerate comes after the Cooldown. |
+
+## Load guidance: prescribed target versus performed weight (TASK-036)
+
+`src/state/refinement-load-guidance.ts` is the load-guidance read model (REQ-036, G24). It is pure and
+writes nothing. The contract is `docs/specs/LOAD_GUIDANCE_CONTRACT.md`, and its typed source record
+is `LOAD_GUIDANCE_SOURCES`.
+
+- `prescribedLoad(columns, weightUnit)` is the prescribed target. It reads only `load_type`,
+  `load_value` and `equipment_used`, through `loadText` and `equipmentName`. A unit is given for an
+  `absolute` load only, and only the profile's. `range` is always `null` (`LOAD-RANGE-RULE`) and
+  `perHand` is never stated (`LOAD-PER-HAND`).
+- `performedLoad(row)` is a logged row's actual `weight` in its own `weight_unit`, or `null` when none
+  was recorded.
+- `LOAD_MEANINGS` gives each `load_guidance` kind's value and unit. `LOAD_DEFINITION_DEPENDENCIES`
+  records the two open definitions (owner Eric).
+
+`liveMovementReadings` (`src/ui/refinements/movement-readings.ts`) reads its load through
+`prescribedLoad`. Review keeps `loadText`, so both contexts read the same words.
