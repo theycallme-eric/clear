@@ -227,10 +227,34 @@ function noteField(scope: HTMLElement, name: string): HTMLTextAreaElement {
   return within(scope).getByRole('textbox', { name: new RegExp(`^Notes — ${name}`) }) as HTMLTextAreaElement
 }
 
-/** The note's own status line, beside its Save button (not the guidance's wait). */
+/**
+ * TASK-045: a movement's note is entered in the shared focused logging
+ * dialog. Its section keeps one opener, "Add note — <movement>" (or "Edit
+ * note — …" once the field holds words), and the dialog, titled "Notes —
+ * <movement>", holds the field and Save note.
+ */
+function noteOpener(scope: HTMLElement, name: string): HTMLElement {
+  return within(scope).getByRole('button', { name: new RegExp(`^(Add|Edit) note — ${name}$`) })
+}
+
+/** Opens one movement's note from its own section; answers its dialog. */
+async function openNote(user: ReturnType<typeof userEvent.setup>, scope: HTMLElement, name: string): Promise<HTMLElement> {
+  await user.click(noteOpener(scope, name))
+  return screen.getByRole('dialog', { name: `Notes — ${name}` })
+}
+
+/** Closes the note's dialog with its X, keeping the draft. */
+async function closeNote(user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) {
+  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+}
+
+/**
+ * The note's own status line (not the guidance's wait): beside Save note in
+ * its open dialog, or beside its opener in its section while closed.
+ */
 function statusText(scope: HTMLElement): string {
-  const save = within(scope).getByRole('button', { name: /^Save note — / })
-  return (within(save.closest<HTMLElement>('.clr-row')!).getByRole('status').textContent ?? '').trim()
+  const action = within(scope).queryByRole('button', { name: /^Save note — / }) ?? within(scope).getByRole('button', { name: /^(Add|Edit) note — / })
+  return (within(action.closest<HTMLElement>('.clr-row')!).getByRole('status').textContent ?? '').trim()
 }
 
 /** Visible words only: the label without its assistive-technology qualifier. */
@@ -270,8 +294,9 @@ function expectOneBottomDisclosure(card: HTMLElement, listName: string, format: 
   expect(sections.map((entry) => within(entry).getAllByRole('heading')[0].textContent)).toEqual([...names])
   for (const name of names) {
     const own = section(region, name)
-    expect(noteField(own, name)).toBeEnabled()
-    expect(within(own).getByRole('button', { name: `Save note — ${name}` })).toBeEnabled()
+    // TASK-045: each section's own note entry is its opener; the field is in its dialog.
+    expect(noteOpener(own, name)).toBeEnabled()
+    expect(within(own).queryByRole('textbox')).toBeNull()
   }
   return { toggle, region }
 }
@@ -346,7 +371,7 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
       const { toggle, region } = disclosure(format, names)
       expect(card.lastElementChild, names.join(', ')).toContainElement(toggle)
       expect(within(card).getAllByRole('button', { name: /^Coaching and notes/ }), names.join(', ')).toHaveLength(1)
-      for (const name of names) expect(noteField(section(region, name), name)).toBeEnabled()
+      for (const name of names) expect(noteOpener(section(region, name), name)).toBeEnabled()
     }
     // The standard block: one disclosure per movement, none grouped.
     expect(within(cards[0]).getByRole('button', { name: 'Coaching and notes — back squat' })).toBeInTheDocument()
@@ -371,25 +396,40 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     const goblet = section(circuit.region, 'goblet squat')
 
     // Independent drafts: typing in one field changes no other.
-    await user.type(noteField(bench, 'dumbbell bench press'), 'Elbows at 45')
-    await user.type(noteField(row, 'chest supported row'), 'Chest stays on the pad')
-    await user.type(noteField(goblet, 'goblet squat'), 'Heels down')
-    expect(noteField(swing, 'kb swing')).toHaveValue('')
+    let dialog = await openNote(user, bench, 'dumbbell bench press')
+    await user.type(noteField(dialog, 'dumbbell bench press'), 'Elbows at 45')
+    await closeNote(user, dialog)
+    dialog = await openNote(user, row, 'chest supported row')
+    await user.type(noteField(dialog, 'chest supported row'), 'Chest stays on the pad')
+    await closeNote(user, dialog)
+    dialog = await openNote(user, goblet, 'goblet squat')
+    await user.type(noteField(dialog, 'goblet squat'), 'Heels down')
+    await closeNote(user, dialog)
+    dialog = await openNote(user, swing, 'kb swing')
+    expect(noteField(dialog, 'kb swing')).toHaveValue('')
+    await closeNote(user, dialog)
 
     // One save writes one row, with that movement's own words, and says so only there.
-    await user.click(within(bench).getByRole('button', { name: 'Save note — dumbbell bench press' }))
-    expect(await within(bench).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    dialog = await openNote(user, bench, 'dumbbell bench press')
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — dumbbell bench press' }))
+    expect(await within(dialog).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    await closeNote(user, dialog)
     expect(notes.writes).toEqual([{ exerciseId: idOf(prescribed, 'dumbbell bench press'), notes: 'Elbows at 45', stored: true }])
     expect(statusText(row)).toBe('')
-    expect(noteField(row, 'chest supported row')).toHaveValue('Chest stays on the pad')
+    dialog = await openNote(user, row, 'chest supported row')
+    expect(noteField(dialog, 'chest supported row')).toHaveValue('Chest stays on the pad')
+    await closeNote(user, dialog)
 
     // A failed save is the movement's own: its text stays, its field is marked,
     // and nothing else in the card or the other block changes.
-    await user.click(within(goblet).getByRole('button', { name: 'Save note — goblet squat' }))
-    expect(await within(goblet).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    dialog = await openNote(user, goblet, 'goblet squat')
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — goblet squat' }))
+    expect(await within(dialog).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    expect(statusText(dialog)).toContain('Not saved')
+    expect(noteField(dialog, 'goblet squat')).toHaveValue('Heels down')
+    expect(noteField(dialog, 'goblet squat')).toHaveAttribute('aria-invalid', 'true')
+    await closeNote(user, dialog)
     expect(statusText(goblet)).toContain('Not saved')
-    expect(noteField(goblet, 'goblet squat')).toHaveValue('Heels down')
-    expect(noteField(goblet, 'goblet squat')).toHaveAttribute('aria-invalid', 'true')
     expect(within(bench).getByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     for (const other of [row, swing]) {
       expect(within(other).queryByText(NOTE_FAILED_TEXT)).toBeNull()
@@ -397,9 +437,11 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     }
 
     // Its retry writes its row and clears only its own error.
-    await user.click(within(goblet).getByRole('button', { name: 'Save note — goblet squat' }))
-    expect(await within(goblet).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
-    expect(within(goblet).queryByText(NOTE_FAILED_TEXT)).toBeNull()
+    dialog = await openNote(user, goblet, 'goblet squat')
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — goblet squat' }))
+    expect(await within(dialog).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(within(dialog).queryByText(NOTE_FAILED_TEXT)).toBeNull()
+    await closeNote(user, dialog)
 
     // Every write named one movement's row with that movement's own text: no
     // group value, and the unsaved partner was never written.
@@ -410,8 +452,9 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
       { exerciseId: goblet_, notes: 'Heels down', stored: true },
     ])
     expect(notes.writes.some((write) => write.exerciseId === idOf(prescribed, 'chest supported row'))).toBe(false)
-    expect(noteField(row, 'chest supported row')).toHaveValue('Chest stays on the pad')
     expect(statusText(row)).toBe('')
+    dialog = await openNote(user, row, 'chest supported row')
+    expect(noteField(dialog, 'chest supported row')).toHaveValue('Chest stays on the pad')
   })
 
   it('AC-R005-01 keeps the note of a movement the library has no entry for, and saves it', async () => {
@@ -423,11 +466,12 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     const row = section(superset.region, 'chest supported row')
 
     expect(await within(row).findByText(NO_DEFINITION_TEXT)).toBeInTheDocument()
-    const field = noteField(row, 'chest supported row')
+    const dialog = await openNote(user, row, 'chest supported row')
+    const field = noteField(dialog, 'chest supported row')
     expect(field).toBeEnabled()
     await user.type(field, 'Use the incline bench')
-    await user.click(within(row).getByRole('button', { name: 'Save note — chest supported row' }))
-    expect(await within(row).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — chest supported row' }))
+    expect(await within(dialog).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(notes.writes).toEqual([{ exerciseId: idOf(prescribed, 'chest supported row'), notes: 'Use the incline bench', stored: true }])
   })
 
@@ -449,13 +493,22 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     })
     const running = stored(peerGroupingSnapshot(acceptance, { userId: FIXTURE_USER_ID, startedAt: new Date(Date.now() - 60_000).toISOString() }))
     const { notes } = await openWorkout(running, COACHING_GUIDANCE)
+    const user = userEvent.setup()
     const circuit = disclosure(GROUPED_FORMATS.circuit, GROUPED_MOVEMENTS.circuit)
 
-    expect(noteField(section(circuit.region, 'kb swing'), 'kb swing')).toHaveValue('Grip chalked')
+    // The stored note: its opener says Edit, and its dialog holds the words.
+    expect(noteOpener(section(circuit.region, 'kb swing'), 'kb swing')).toHaveTextContent(/^Edit note/)
+    let dialog = await openNote(user, section(circuit.region, 'kb swing'), 'kb swing')
+    expect(noteField(dialog, 'kb swing')).toHaveValue('Grip chalked')
+    await closeNote(user, dialog)
     for (const name of ['mountain climber', 'goblet squat']) {
       const own = section(circuit.region, name)
       // Blank is blank: no stored words borrowed from a partner, no status claimed.
-      expect(noteField(own, name)).toHaveValue('')
+      expect(noteOpener(own, name)).toHaveTextContent(/^Add note/)
+      dialog = await openNote(user, own, name)
+      expect(noteField(dialog, name)).toHaveValue('')
+      expect(statusText(dialog)).toBe('')
+      await closeNote(user, dialog)
       expect(statusText(own)).toBe('')
       expect(within(own).queryByText(NOTE_SAVED_TEXT)).toBeNull()
     }
@@ -486,7 +539,7 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     // Loading: busy in its own section only, the note beside it usable.
     const wait = within(bench).getByRole('status', { busy: true })
     expect(wait).toHaveTextContent('Reading coaching for dumbbell bench press')
-    expect(noteField(bench, 'dumbbell bench press')).toBeEnabled()
+    expect(noteOpener(bench, 'dumbbell bench press')).toBeEnabled()
     // No entry: the library's own answer, repeated per movement, unchanged.
     expect(await within(row).findByText(NO_DEFINITION_TEXT)).toBeInTheDocument()
     expect(await within(swing).findByText(NO_DEFINITION_TEXT)).toBeInTheDocument()
@@ -505,11 +558,11 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     expect(within(goblet).queryByText(NO_DEFINITION_TEXT)).toBeNull()
     expect(within(bench).queryByText(NO_DEFINITION_TEXT)).toBeNull()
     expect(within(swing).queryByRole('status', { busy: true })).toBeNull()
-    // Blank user notes are their own state too: every note field is present
+    // Blank user notes are their own state too: every note entry is present
     // and empty, whatever its movement's guidance said, with no status claimed.
     for (const [scope, name] of [[bench, 'dumbbell bench press'], [row, 'chest supported row'], [swing, 'kb swing'], [climber, 'mountain climber'], [goblet, 'goblet squat']] as const) {
-      expect(noteField(scope, name)).toHaveValue('')
-      expect(noteField(scope, name)).toBeEnabled()
+      expect(noteOpener(scope, name)).toHaveTextContent(/^Add note/)
+      expect(noteOpener(scope, name)).toBeEnabled()
       expect(statusText(scope)).toBe('')
     }
 
@@ -531,33 +584,44 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     for (const list of Object.values(COACHING_LISTS.review)) expect(screen.getByRole('list', { name: list })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Coaching and notes/ })).toBeNull()
     expect(screen.queryByRole('textbox', { name: /^Notes — / })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^(Add|Edit) note — / })).toBeNull()
 
     await startWorkout(router)
     const superset = disclosure(GROUPED_FORMATS.superset, GROUPED_MOVEMENTS.superset)
     await user.click(superset.toggle)
     const bench = section(superset.region, 'dumbbell bench press')
     const row = section(superset.region, 'chest supported row')
-    await user.type(noteField(bench, 'dumbbell bench press'), 'Pause at the bottom')
-    await user.type(noteField(row, 'chest supported row'), 'Squeeze at the top')
+    let dialog = await openNote(user, bench, 'dumbbell bench press')
+    await user.type(noteField(dialog, 'dumbbell bench press'), 'Pause at the bottom')
+    await closeNote(user, dialog)
+    dialog = await openNote(user, row, 'chest supported row')
+    await user.type(noteField(dialog, 'chest supported row'), 'Squeeze at the top')
+    await closeNote(user, dialog)
 
     // Close and reopen: nothing is unmounted, so both drafts are still there.
     await user.click(superset.toggle)
     expect(superset.toggle).toHaveAttribute('aria-expanded', 'false')
     expect(superset.region).toHaveAttribute('data-expanded', 'false')
     await user.click(superset.toggle)
-    expect(noteField(bench, 'dumbbell bench press')).toHaveValue('Pause at the bottom')
-    expect(noteField(row, 'chest supported row')).toHaveValue('Squeeze at the top')
+    dialog = await openNote(user, row, 'chest supported row')
+    expect(noteField(dialog, 'chest supported row')).toHaveValue('Squeeze at the top')
+    await closeNote(user, dialog)
+    dialog = await openNote(user, bench, 'dumbbell bench press')
+    expect(noteField(dialog, 'dumbbell bench press')).toHaveValue('Pause at the bottom')
 
     // Edit one movement's note and save it: one write, to that started row.
-    await user.click(within(bench).getByRole('button', { name: 'Save note — dumbbell bench press' }))
-    expect(await within(bench).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — dumbbell bench press' }))
+    expect(await within(dialog).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(notes.writes).toEqual([{ exerciseId: idOf(prescribed, 'dumbbell bench press'), notes: 'Pause at the bottom', stored: true }])
     // An edit after a save is not saved yet, and says nothing until it is.
-    await user.type(noteField(bench, 'dumbbell bench press'), '.')
+    await user.type(noteField(dialog, 'dumbbell bench press'), '.')
+    expect(within(dialog).queryByText(NOTE_SAVED_TEXT)).toBeNull()
+    await closeNote(user, dialog)
     expect(within(bench).queryByText(NOTE_SAVED_TEXT)).toBeNull()
     // The partner's draft is untouched and unsaved.
-    expect(noteField(row, 'chest supported row')).toHaveValue('Squeeze at the top')
     expect(statusText(row)).toBe('')
+    dialog = await openNote(user, row, 'chest supported row')
+    expect(noteField(dialog, 'chest supported row')).toHaveValue('Squeeze at the top')
     // No performed work is recorded by any of it.
     expect(double.loggedSets()).toEqual([])
     expect(double.recorded()).toEqual([])
@@ -571,19 +635,23 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     await user.click(circuit.toggle)
     const swing = section(circuit.region, 'kb swing')
 
-    await user.type(noteField(swing, 'kb swing'), 'Bell felt heavy in round two')
-    await user.click(within(swing).getByRole('button', { name: 'Save note — kb swing' }))
-    expect(await within(swing).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    let dialog = await openNote(user, swing, 'kb swing')
+    await user.type(noteField(dialog, 'kb swing'), 'Bell felt heavy in round two')
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — kb swing' }))
+    expect(await within(dialog).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
 
     // Closed and reopened, the failure and the typed words are still its own.
+    await closeNote(user, dialog)
+    expect(statusText(swing)).toContain('Not saved')
     await user.click(circuit.toggle)
     await user.click(circuit.toggle)
-    expect(noteField(swing, 'kb swing')).toHaveValue('Bell felt heavy in round two')
-    expect(within(swing).getByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    dialog = await openNote(user, swing, 'kb swing')
+    expect(noteField(dialog, 'kb swing')).toHaveValue('Bell felt heavy in round two')
+    expect(within(dialog).getByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
 
-    await user.click(within(swing).getByRole('button', { name: 'Save note — kb swing' }))
-    expect(await within(swing).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
-    expect(noteField(swing, 'kb swing')).toHaveValue('Bell felt heavy in round two')
+    await user.click(within(dialog).getByRole('button', { name: 'Save note — kb swing' }))
+    expect(await within(dialog).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(noteField(dialog, 'kb swing')).toHaveValue('Bell felt heavy in round two')
     const id = idOf(prescribed, 'kb swing')
     expect(notes.writes).toEqual([
       { exerciseId: id, notes: 'Bell felt heavy in round two', stored: false },
@@ -627,9 +695,12 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     expect(await within(section(circuit, 'kb swing')).findByText('Hinge at the hips, not the knees')).toBeInTheDocument()
     expect(await within(section(circuit, 'mountain climber')).findByText(NO_DEFINITION_TEXT)).toBeInTheDocument()
     expect(await within(section(circuit, 'plank')).findByText(NO_CUES_TEXT)).toBeInTheDocument()
-    await user.type(noteField(section(circuit, 'plank'), 'plank'), 'Hips level')
-    await user.click(within(section(circuit, 'plank')).getByRole('button', { name: 'Save note — plank' }))
-    expect(await within(section(circuit, 'plank')).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    const plank = await openNote(user, section(circuit, 'plank'), 'plank')
+    await user.type(noteField(plank, 'plank'), 'Hips level')
+    await user.click(within(plank).getByRole('button', { name: 'Save note — plank' }))
+    expect(await within(plank).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    await closeNote(user, plank)
+    expect(within(section(circuit, 'plank')).getByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(statusText(section(circuit, 'kb swing'))).toBe('')
 
     // The timed composition: EMOM, AMRAP and For Time each end with one.

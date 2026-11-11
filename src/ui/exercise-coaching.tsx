@@ -37,6 +37,19 @@
  * in every section, repeated per movement where the library says the same
  * thing twice: no hide or replacement rule was selected (R73, G21).
  *
+ * Movement note (TASK-045; REQ-019, C45; R82, R100; LOGGING-FIELDS "Movement
+ * note"): the note is entered in the shared focused logging dialog
+ * (`refinements/logging-overlay.tsx`), as the R7 replay drew it. The panel —
+ * standalone or a grouped section — keeps one opener, "Add note — <movement>"
+ * (or "Edit note — …" once the field holds words), and the note's status
+ * beside it while the dialog is closed. The dialog, titled "Notes —
+ * <movement>", holds the same field, Save note and status; the framed "Close
+ * log" X and Escape close it without saving and keep the draft, its status
+ * and any failure for the reopen. The writer, the null-for-blank rule, the
+ * failure wording and the one busy loop are unchanged, and a note is still
+ * never performed work. Save keeps the dialog open on its answer: "Note
+ * saved", or the failure with the text still in the field for the retry.
+ *
  * Review draws no panel: nothing is persisted before Start, so there is no
  * prescription row yet for a note to be written to (Review.tsx).
  *
@@ -49,6 +62,7 @@
  * low rest timer; both stay marked busy while they are stilled.
  */
 import { use, useId, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { AlertTriangle, Button, CircleCheck, Input } from '../design-system/index'
 import type { AppError } from '../state/errors'
@@ -66,6 +80,7 @@ import { CollapsibleSection } from './collapsible-section'
 import { GroupCoachingContext } from './group-coaching-context'
 import { HeadingSection } from './Heading'
 import { useInterfaceLoop } from './motion'
+import { LoggingOverlay } from './refinements/logging-overlay'
 import { ErrorView, LoadingView } from './view-state'
 
 export const NO_CUES_TEXT = 'No coaching cues are written for this movement.'
@@ -77,6 +92,9 @@ export const CATALOG_SOURCE_TEXT = 'From the exercise library'
 export const NOTE_SAVED_TEXT = 'Note saved'
 export const NOTE_FAILED_TEXT =
   'Your note didn’t save. It is still in the field — try again.'
+/** TASK-045: the note's opener, before and after the field holds words (R7 replay). */
+export const NOTE_ADD_LABEL = 'Add note'
+export const NOTE_EDIT_LABEL = 'Edit note'
 
 /** The grouped disclosure's visible label: the accepted words, unchanged (R36). */
 export const GROUP_COACHING_LABEL = 'Coaching and notes'
@@ -311,6 +329,13 @@ function ExerciseNotesField({
     () => notes.stored(exercise.prescription.exercise_notes) ?? '',
   )
   const [status, setStatus] = useState<NoteStatus>({ kind: 'idle' })
+  // TASK-045: the note is entered in the shared focused logging dialog. Its
+  // open state is this movement's own; closing never unmounts the field, so
+  // the draft, its status and any error are still there on reopen.
+  const [open, setOpen] = useState(false)
+  // Drawn from the first open on, and kept: a workout of many movements
+  // carries no closed dialog for a note nobody opened.
+  const [asked, setAsked] = useState(false)
   const loop = useInterfaceLoop('busy', status.kind === 'saving')
 
   const save = async () => {
@@ -323,37 +348,60 @@ function ExerciseNotesField({
   }
 
   return (
-    // The field's label is above it and inside the group, so the note needs no
-    // heading of its own.
-    <div className="clr-stack clr-stack--tight">
-      <Input
-        label={`Notes — ${name}`}
-        multiline
-        rows={3}
-        value={text}
-        onChange={(value: string) => {
-          setText(value)
-          // An edit after a save is not saved yet; the line must not say so.
-          if (status.kind === 'saved') setStatus({ kind: 'idle' })
-        }}
-        invalid={status.kind === 'failed'}
-        errorText={status.kind === 'failed' ? NOTE_FAILED_TEXT : undefined}
-      />
-      <div
-        className="clr-row"
-        style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}
-        {...loop}
-      >
+    // The opener names its movement; the status stays beside it while the
+    // dialog is closed, so a save or a failure is still said once it is.
+    <div className="clr-stack clr-stack--tight" data-movement-note="">
+      <div className="clr-row" style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}>
         <Button
           variant="secondary"
-          aria-label={`Save note — ${name}`}
-          loading={status.kind === 'saving'}
-          onClick={() => void save()}
+          onClick={() => {
+            setAsked(true)
+            setOpen(true)
+          }}
         >
-          Save note
+          {text.trim() === '' ? NOTE_ADD_LABEL : NOTE_EDIT_LABEL} — {name}
         </Button>
-        <NoteStatusLine status={status} />
+        {open ? null : <NoteStatusLine status={status} />}
       </div>
+      {/* Portalled to the document body, as the other focused logs are, so
+          nothing on the card is inherited into the dialog. */}
+      {asked ? createPortal(
+        <LoggingOverlay open={open} title={`Notes — ${name}`} onClose={() => setOpen(false)}>
+          {/* The field's label is above it and inside the dialog, so the note
+              needs no heading of its own beyond the dialog's title. */}
+          <div className="clr-stack clr-stack--tight" data-movement-note-entry={exercise.exerciseId}>
+            <Input
+              label={`Notes — ${name}`}
+              multiline
+              rows={3}
+              value={text}
+              onChange={(value: string) => {
+                setText(value)
+                // An edit after a save is not saved yet; the line must not say so.
+                if (status.kind === 'saved') setStatus({ kind: 'idle' })
+              }}
+              invalid={status.kind === 'failed'}
+              errorText={status.kind === 'failed' ? NOTE_FAILED_TEXT : undefined}
+            />
+            <div
+              className="clr-row"
+              style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}
+              {...loop}
+            >
+              <Button
+                variant="secondary"
+                aria-label={`Save note — ${name}`}
+                loading={status.kind === 'saving'}
+                onClick={() => void save()}
+              >
+                Save note
+              </Button>
+              {open ? <NoteStatusLine status={status} /> : null}
+            </div>
+          </div>
+        </LoggingOverlay>,
+        document.body,
+      ) : null}
     </div>
   )
 }

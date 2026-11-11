@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/group-exercise-coaching.test.tsx",
-      "sha256": "12c13e7061b21f807d58105b6993d529d8f3980ea4f6877eec2f6329563f6712"
+      "sha256": "d2c55a54277c2d05b700934d9bff3470150cb0c514b7b8c68ebcbe9e40fe8a22"
     }
   ],
   "requiredCases": [

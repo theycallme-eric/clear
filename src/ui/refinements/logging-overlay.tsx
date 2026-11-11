@@ -208,7 +208,10 @@ export function LoggingOverlay({ open, title, onClose, children }: LoggingOverla
       className="clr-dialog clr-accepted-log"
       aria-labelledby={titleId}
       onClose={(event) => {
-        if (event.target === event.currentTarget && open) onClose()
+        // TASK-045: the native `close` event is queued, so the one from a
+        // close the consumer already made can arrive after a quick reopen;
+        // a dialog that is open again has not been closed.
+        if (event.target === event.currentTarget && open && !event.currentTarget.open) onClose()
       }}
       onCancel={(event) => {
         if (event.target !== event.currentTarget) return

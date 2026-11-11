@@ -475,8 +475,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Summary ────────────────────────────────────────────────────────────
     await expectScreen('Summary', routeOf('Summary'), 'Nice work')
     await expect(page.getByText(`${workout.title}, done.`)).toBeVisible()
+    // TASK-045: the debrief is entered in the Workout feedback dialog its
+    // card opens; Save and close is inside it (no pinned foot on Summary).
+    await reachByKeyboard(page, 'Log workout feedback')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog', { name: 'Workout feedback', exact: true })).toBeVisible()
     await page.getByRole('radio', { name: /Ready/ }).click()
-    await expectPinnedAction(page, 'Save and close')
     await reachByKeyboard(page, 'Save and close')
     await page.screenshot({ path: testInfo.outputPath('vibe-c-summary.png') })
     await page.getByRole('button', { name: 'Save and close', exact: true }).click()

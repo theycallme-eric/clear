@@ -906,6 +906,8 @@ backendTest('responsive: original route families and seven renderers across widt
   // Finish is the existing last-section action, not a control on Standard or EMOM.
   await page.getByRole('button', { name: /^Ladder, / }).click()
   await finish.click()
+  // TASK-045: the debrief is in the Workout feedback dialog the Debrief card opens.
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
   const save = page.getByRole('button', { name: 'Save and close', exact: true })
   await evidence.shot('Summary', '/summary', 'debrief-unrecorded-or-saved', '/summary', 'Nice work', async () => {
     await expect(save).toBeEnabled()
@@ -1560,6 +1562,8 @@ backendTest('summary: metric cards, debrief card, public moods, save busy, error
     }, { skins: true })
   } finally { await latest.dispose() }
   await page.getByRole('button', { name: 'Retry', exact: true }).click()
+  // TASK-045: the debrief is in the Workout feedback dialog the Debrief card opens.
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
   await expect(save).toBeEnabled()
 
   const moods = page.getByRole('radiogroup')
@@ -1567,25 +1571,29 @@ backendTest('summary: metric cards, debrief card, public moods, save busy, error
     await expect(notes).toHaveValue('')
     await expect(moods.getByRole('radio', { checked: true })).toHaveCount(0)
     const probe = await expectContained(page, 'Summary')
+    // TASK-045: the mood and notes share the Workout feedback dialog's one
+    // frame, with Save and close inside its form; no pinned foot remains.
     const layout = await page.evaluate(() => {
       const card = (text: string) => Array.from(document.querySelectorAll('main h2, main h3, main legend, main label'))
         .find((el) => el.textContent?.trim() === text)?.closest('.clr-card') ?? null
+      const framed = (text: string) => Array.from(document.querySelectorAll('dialog[open] legend, dialog[open] label'))
+        .find((el) => el.textContent?.trim() === text)?.closest('[data-logging-frame]') ?? null
       const duration = card('Duration')
       const streak = card('Streak')
-      const legend = card('How do you feel?')
-      const field = card('Notes · optional')
+      const legend = framed('How do you feel?')
+      const field = framed('Notes · optional')
       const button = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Save and close')
       return {
         durationOwnCard: duration !== null, streakOwnCard: streak !== null && streak !== duration,
         durationSmall: duration ? duration.getBoundingClientRect().width < document.querySelector('main')!.getBoundingClientRect().width : false,
         debriefOneCard: legend !== null && legend === field,
         debriefSeparateFromMetrics: legend !== duration && legend !== streak,
-        pinned: !!button && button.closest('.clr-scroll-region__foot') !== null && button.closest('.clr-scroll-region__scroller') === null,
+        pinned: !!button && button.closest('form#summary-debrief') !== null && button.closest('[data-logging-frame]') === legend,
       }
     })
     expect(layout).toEqual({ durationOwnCard: true, streakOwnCard: true, durationSmall: true,
       debriefOneCard: true, debriefSeparateFromMetrics: true, pinned: true })
-    evidence.note('containment', 'Summary: Duration and Streak are each their own small card; the mood choice and notes share one debrief card with their labels inside; Save and close is pinned in the footer outside the scroller.', { ...layout, ...probe })
+    evidence.note('containment', 'Summary: Duration and Streak are each their own small card; the mood choice and notes share the Workout feedback dialog frame with their labels inside; Save and close is in that dialog\'s form (TASK-045).', { ...layout, ...probe })
   }, { variant: 'unrecorded', skins: true, short: save })
 
   // The public faces, by geometry: the vendored mouth, one path, no plus.
@@ -1625,15 +1633,18 @@ backendTest('summary: metric cards, debrief card, public moods, save busy, error
     await expect.poll(() => peak.evaluate((el) => Number(getComputedStyle(el.querySelector('svg')!).opacity))).toBe(1)
   }, { variant: 'peak-selected', skins: true })
 
+  // The screen behind the modal log is inert: close it (the draft stays) before the favorite.
+  await page.getByRole('dialog', { name: 'Workout feedback', exact: true }).getByRole('button', { name: 'Close log', exact: true }).click()
   const favorite = await boundary(page, { tail: 'rpc/save_favorite', method: 'POST' }, 'failure')
   try {
     await page.getByRole('button', { name: 'Save as favorite', exact: true }).click()
     await evidence.shot('Summary', '/summary', 'favorite-save-failure-secondary', at, 'Nice work', async () => {
       await expect(page.getByRole('alert')).toContainText('That workout wasn’t saved as a favorite. Try again.')
-      await expect(save).toBeEnabled()
-      await expect(peak).toHaveAttribute('aria-checked', 'true')
+      await expect(page.getByRole('button', { name: 'Log workout feedback', exact: true })).toBeEnabled()
     })
   } finally { await favorite.dispose() }
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+  await expect(peak).toHaveAttribute('aria-checked', 'true')
 
   const patch = await boundary(page, { tail: 'workout_sessions', method: 'PATCH' }, 'held-failure')
   try {

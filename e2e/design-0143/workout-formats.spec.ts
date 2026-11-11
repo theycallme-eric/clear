@@ -126,6 +126,8 @@ test.describe('REQ-016 all formats, one session (TASK-030)', () => {
 
       await heading(page, 'Nice work')
       await expect(page.getByText(`${TITLE}, done.`)).toBeVisible()
+      // TASK-045: Save and close is in the Workout feedback dialog.
+      await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
       await page.getByRole('button', { name: 'Save and close', exact: true }).click()
       await heading(page, 'Today')
 

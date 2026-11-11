@@ -703,7 +703,8 @@ const ENLARGED_TEXT = `.clr-screen {
 function actionGroupGeometry(page: Page, name: string) {
   return page.getByRole('button', { name, exact: true }).evaluate((button) => {
     const group = button.closest('.clr-action-group')!
-    const body = group.closest('.clr-card__body')!
+    // TASK-045: the rest-day editor's actions sit in the focused logging dialog's body.
+    const body = group.closest('.clr-card__body, .clr-accepted-log__body')!
     const style = getComputedStyle(body)
     const inner = body.getBoundingClientRect().width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
     const box = group.getBoundingClientRect()
@@ -1052,7 +1053,8 @@ async function feelingRow(page: Page) {
   return page.getByRole('group', { name: 'How do you feel?' }).evaluate((group) => {
     const strip = group.querySelector('[role="radiogroup"]') as HTMLElement
     const radios = Array.from(group.querySelectorAll<HTMLElement>('[role="radio"]'))
-    const card = group.closest('.clr-card') as HTMLElement
+    // TASK-045: the feeling row is in the Workout feedback dialog's frame.
+    const card = group.closest('.clr-card, [data-logging-frame]') as HTMLElement
     const cardBox = card.getBoundingClientRect()
     return {
       boxes: radios.map((radio) => {
@@ -1096,6 +1098,8 @@ backendTest('JOURNEY-020: Summary feeling is one 1–5 row at 390x844, keyboard-
   await visit('/summary')
   await reached(page, '/summary', 'Nice work')
   await settled(page)
+  // TASK-045: the feeling is in the Workout feedback dialog the Debrief card opens.
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
 
   // Five options, each named with the scale's existing word for screen readers.
   const group = page.getByRole('group', { name: 'How do you feel?' })
@@ -1143,6 +1147,7 @@ backendTest('JOURNEY-020: Summary feeling is one 1–5 row at 390x844, keyboard-
   // And the debrief opens on it again.
   await visit('/summary')
   await reached(page, '/summary', 'Nice work')
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
   await expect(group.getByRole('radio', { name: '4, Ready', exact: true })).toBeChecked()
 
   // No answer is a valid saved state: clear it and save.
@@ -1155,6 +1160,7 @@ backendTest('JOURNEY-020: Summary feeling is one 1–5 row at 390x844, keyboard-
   await expect(moodCard(page)).toContainText('Not recorded', { timeout: 30_000 })
   await visit('/summary')
   await reached(page, '/summary', 'Nice work')
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
   await expect(group.getByRole('radio')).toHaveCount(5)
   expect((await feelingRow(page)).checked).toEqual(['false', 'false', 'false', 'false', 'false'])
 })

@@ -271,6 +271,9 @@ test.describe('REQ-016 no-feedback journey (TASK-030, JOURNEY-028)', () => {
     await heading(page, 'Nice work')
     await expect(page.getByText(`${TITLES[0]}, done.`)).toBeVisible()
     // Feeling is offered, not required: nothing is chosen.
+    // TASK-045: the debrief is in the Workout feedback dialog its card opens.
+    await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+    await expect(page.getByRole('radio')).toHaveCount(5)
     await expect(page.getByRole('radio', { checked: true })).toHaveCount(0)
     await checkA11y()
 
@@ -283,6 +286,8 @@ test.describe('REQ-016 no-feedback journey (TASK-030, JOURNEY-028)', () => {
     await page.reload()
     await heading(page, 'Nice work')
     await expect(page.getByText(`${TITLES[0]}, done.`)).toBeVisible()
+    await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+    await expect(page.getByRole('radio')).toHaveCount(5)
     await expect(page.getByRole('radio', { checked: true })).toHaveCount(0)
     await page.getByRole('button', { name: 'Save and close', exact: true }).click()
     await heading(page, 'Today')
@@ -362,6 +367,8 @@ test.describe('REQ-016 no-feedback journey (TASK-030, JOURNEY-028)', () => {
 
     await heading(page, 'Nice work')
     await expect(page.getByText(`${TITLES[1]}, done.`)).toBeVisible()
+    // TASK-045: Save and close is in the Workout feedback dialog.
+    await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
     await page.getByRole('button', { name: 'Save and close', exact: true }).click()
     await heading(page, 'Today')
 

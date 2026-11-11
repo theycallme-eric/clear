@@ -128,6 +128,14 @@
  * `Log set 1` entry, each with the framed "Close log" X and Balanced
  * backdrop, over the shell's own set-logging provider with set observations
  * answered in memory (`gallery-refinement-group-logging.tsx`).
+ *
+ * `movement-note`, `workout-feedback` and `rest-day`: the note, debrief and
+ * rest-day moments in the shared focused logging dialog (TASK-045: C45; R82,
+ * R100) — the route's own Coaching and notes panel (`ExerciseCoaching`,
+ * `GroupExerciseCoaching`), Summary's `WorkoutFeedback` and Home's
+ * `RestDayControl`, each opening its entry in the native modal with its
+ * title and framed "Close log" X, over in-memory controllers through their
+ * own client seams (`gallery-refinement-notes-logging.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -154,6 +162,7 @@ import {
 } from './gallery-refinement-set-logging'
 import { GalleryCircuitRound } from './gallery-refinement-circuit'
 import { GalleryCircuitMovement, GallerySupersetRound } from './gallery-refinement-group-logging'
+import { GalleryMovementNote, GalleryRestDay, GalleryWorkoutFeedback } from './gallery-refinement-notes-logging'
 
 function GalleryLadderFour() {
   return <GalleryLadderFlow rounds={4} />
@@ -187,6 +196,9 @@ const REFINEMENT_STATES = [
   { id: 'circuit-round', title: 'Circuit round · recorded round and take back', Render: GalleryCircuitRound },
   { id: 'superset', title: 'Superset round · round logging', Render: GallerySupersetRound },
   { id: 'circuit-movement', title: 'Circuit movement · movement entry', Render: GalleryCircuitMovement },
+  { id: 'movement-note', title: 'Movement note · note entry', Render: GalleryMovementNote },
+  { id: 'workout-feedback', title: 'Workout feedback · debrief entry', Render: GalleryWorkoutFeedback },
+  { id: 'rest-day', title: 'Rest day / reason change · rest-day entry', Render: GalleryRestDay },
 ] as const
 
 export function GalleryRefinements() {

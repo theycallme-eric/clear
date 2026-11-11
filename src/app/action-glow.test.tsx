@@ -113,7 +113,8 @@ describe('Generate glow on actionable controls (REQ-005)', () => {
     const { rest, mark } = await controls()
 
     await user.click(mark)
-    await user.click(within(rest).getByRole('button', { name: 'Save rest day' }))
+    // TASK-045: Save rest day is in the focused logging dialog "Log rest day".
+    await user.click(within(screen.getByRole('dialog', { name: 'Log rest day' })).getByRole('button', { name: 'Save rest day' }))
 
     const change = await within(rest).findByRole('button', { name: 'Change reason' })
     expect(glowOf(change)).toHaveClass('clr-action-glow')
@@ -153,7 +154,8 @@ describe('Generate glow on actionable controls (REQ-005)', () => {
     expect(mark).toHaveFocus()
     expect(mark).toBeEnabled()
     await user.keyboard('{Enter}')
-    await waitFor(() => expect(within(rest).getByLabelText('Reason')).toHaveFocus())
+    // TASK-045: the picker is in the focused logging dialog "Log rest day".
+    await waitFor(() => expect(within(screen.getByRole('dialog', { name: 'Log rest day' })).getByLabelText('Reason')).toHaveFocus())
     await user.keyboard('{Escape}')
     await waitFor(() => expect(within(rest).getByRole('button', { name: 'Mark Rest Day' })).toHaveFocus())
 

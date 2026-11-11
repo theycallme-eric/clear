@@ -662,8 +662,12 @@ describe('Workout — the focus mode', () => {
     expect(router.state.location.pathname).toBe('/summary')
     expect(screen.queryByRole('heading', { name: HOME_HEADING })).not.toBeInTheDocument()
     // The debrief's surface, whole: mood, notes, the streak and the favorite.
-    expect(screen.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
-    expect(screen.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
+    // TASK-045: mood and notes are in the Workout feedback dialog its card opens.
+    await user.click(screen.getByRole('button', { name: 'Log workout feedback' }))
+    const feedback = screen.getByRole('dialog', { name: 'Workout feedback' })
+    expect(within(feedback).getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
+    expect(within(feedback).getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
+    await user.click(within(feedback).getByRole('button', { name: 'Close log' }))
     expect(await screen.findByText('4 days')).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeInTheDocument()
     // Asked after the completion, so it cannot be an answer cached before it.
@@ -689,6 +693,8 @@ describe('Workout — the focus mode', () => {
 
     await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+    // TASK-045: Save and close is in the Workout feedback dialog.
+    await user.click(await screen.findByRole('button', { name: 'Log workout feedback' }))
     await user.click(await screen.findByRole('button', { name: 'Save and close' }))
 
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
@@ -1293,7 +1299,8 @@ describe('Workout — coaching and notes', () => {
     expect(await within(panel).findByText(NO_CUES_TEXT)).toBeInTheDocument()
     expect(within(panel).getByText(NO_REGRESSION_TEXT)).toBeInTheDocument()
     expect(within(panel).queryAllByRole('listitem')).toEqual([])
-    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    // TASK-045: the note's entry is its opener; the field is in its dialog.
+    expect(within(panel).getByRole('button', { name: 'Add note — back squat' })).toBeEnabled()
   })
 
   it('says a movement with no cues and no regression has none', async () => {
@@ -1342,18 +1349,24 @@ describe('Workout — coaching and notes', () => {
 
     await user.click(screen.getByRole('button', { name: PANEL }))
     const panel = screen.getByRole('region', { name: PANEL })
+    // TASK-045: the note is entered in its focused logging dialog.
+    await user.click(within(panel).getByRole('button', { name: 'Add note — back squat' }))
+    const note = screen.getByRole('dialog', { name: 'Notes — back squat' })
     await user.type(
-      within(panel).getByRole('textbox', { name: /Notes — back squat/ }),
+      within(note).getByRole('textbox', { name: /Notes — back squat/ }),
       'Left knee felt tight',
     )
-    await user.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await user.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(await within(note).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([{ exerciseId, notes: 'Left knee felt tight' }])
+    await user.click(within(note).getByRole('button', { name: 'Close log' }))
 
     // The card is remounted on the way back; the note it shows is the stored one.
     await user.click(screen.getByRole('button', { name: /^Conditioning/ }))
     await user.click(screen.getByRole('button', { name: /^Primary lift/ }))
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    await user.click(screen.getByRole('button', { name: 'Edit note — back squat' }))
     expect(screen.getByRole('textbox', { name: /Notes — back squat/ })).toHaveValue(
       'Left knee felt tight',
     )
@@ -1369,12 +1382,15 @@ describe('Workout — coaching and notes', () => {
 
     await user.click(screen.getByRole('button', { name: PANEL }))
     const panel = screen.getByRole('region', { name: PANEL })
-    const field = within(panel).getByRole('textbox', { name: /Notes — back squat/ })
+    // TASK-045: the note is entered in its focused logging dialog.
+    await user.click(within(panel).getByRole('button', { name: 'Add note — back squat' }))
+    const note = screen.getByRole('dialog', { name: 'Notes — back squat' })
+    const field = within(note).getByRole('textbox', { name: /Notes — back squat/ })
     await user.type(field, 'Grip slipped')
-    await user.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await user.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    expect(await within(panel).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
-    expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
+    expect(await within(note).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    expect(within(note).queryByText(NOTE_SAVED_TEXT)).toBeNull()
     expect(field).toHaveValue('Grip slipped')
   })
 })

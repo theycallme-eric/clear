@@ -105,8 +105,10 @@ describe('Home actions and copy (REQ-003)', () => {
     // The existing disclosure, reason and write are unchanged.
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await user.click(trigger)
-    await user.selectOptions(within(rest).getByLabelText('Reason'), 'sick')
-    await user.click(within(rest).getByRole('button', { name: 'Save rest day' }))
+    // TASK-045: the reason and its save are in the focused logging dialog "Log rest day".
+    const log = screen.getByRole('dialog', { name: 'Log rest day' })
+    await user.selectOptions(within(log).getByLabelText('Reason'), 'sick')
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
 
     await waitFor(() =>
       expect(restDays.markCalls).toEqual([{ day: suggestionDay(), reason: 'sick', note: null }]),

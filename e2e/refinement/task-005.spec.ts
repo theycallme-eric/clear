@@ -363,6 +363,34 @@ function saveOf(scope: Locator, name: string): Locator {
   return scope.getByRole('button', { name: `Save note — ${name}`, exact: true })
 }
 
+/**
+ * TASK-045: a movement's note is entered in the shared focused logging
+ * dialog. Its section keeps one opener, "Add note — <movement>" (or "Edit
+ * note — …" once the field holds words); the dialog "Notes — <movement>"
+ * holds the field, Save note and, while open, the note's status.
+ */
+function openerOf(scope: Locator, name: string): Locator {
+  return scope.getByRole('button', { name: new RegExp(`^(Add|Edit) note — ${name}$`) })
+}
+
+function noteDialog(scope: Locator, name: string): Locator {
+  return scope.page().getByRole('dialog', { name: `Notes — ${name}`, exact: true })
+}
+
+/** Opens one movement's note by touch from its own section; answers its dialog. */
+async function openNote(scope: Locator, name: string): Promise<Locator> {
+  await openerOf(scope, name).tap()
+  const dialog = noteDialog(scope, name)
+  await expect(dialog).toBeVisible()
+  return dialog
+}
+
+/** Closes the note's dialog by touch with its X; the draft stays. */
+async function closeNote(dialog: Locator) {
+  await dialog.getByRole('button', { name: 'Close log', exact: true }).tap()
+  await expect(dialog).toBeHidden()
+}
+
 type Box = { top: number; bottom: number; left: number; right: number; height: number }
 
 interface DisclosureGeometry {
@@ -454,6 +482,7 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       }
       await expect(page.locator('main').getByRole('button', { name: /^Coaching and notes/ })).toHaveCount(0)
       await expect(page.locator('main').getByRole('textbox', { name: /^Notes — / })).toHaveCount(0)
+      await expect(page.locator('main').getByRole('button', { name: /^(Add|Edit) note — / })).toHaveCount(0)
       await noHorizontalOverflow(page)
       await attachCapture(page, `review-${name}`)
 
@@ -487,24 +516,35 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       // Sections stack inside the disclosure, one after the other.
       expect(open.sections[1].top).toBeGreaterThanOrEqual(open.sections[0].bottom - TOLERANCE)
 
-      await noteOf(bench, 'dumbbell bench press').fill('Pause at the bottom')
-      await noteOf(row, 'chest supported row').fill('Chest stays on the pad')
-      await saveOf(bench, 'dumbbell bench press').tap()
+      let dialog = await openNote(row, 'chest supported row')
+      await noteOf(dialog, 'chest supported row').fill('Chest stays on the pad')
+      await closeNote(dialog)
+      dialog = await openNote(bench, 'dumbbell bench press')
+      await noteOf(dialog, 'dumbbell bench press').fill('Pause at the bottom')
+      await saveOf(dialog, 'dumbbell bench press').tap()
+      await expect(dialog.getByText('Note saved')).toBeVisible()
+      await closeNote(dialog)
       await expect(bench.getByText('Note saved')).toBeVisible()
       expect(app.notes()).toEqual([{ slug: 'dumbbell-bench-press', notes: 'Pause at the bottom', stored: true }])
       await expect(row.getByText('Note saved')).toHaveCount(0)
-      await expect(noteOf(row, 'chest supported row')).toHaveValue('Chest stays on the pad')
+      dialog = await openNote(row, 'chest supported row')
+      await expect(noteOf(dialog, 'chest supported row')).toHaveValue('Chest stays on the pad')
+      await closeNote(dialog)
 
       // The circuit: a refused save is its own movement's, and its retry stores it.
       await toggleOf(page, 'circuit').tap()
       const circuitRegion = regionOf(page, 'circuit')
       const goblet = sectionOf(circuitRegion, 'goblet squat')
       const swing = sectionOf(circuitRegion, 'kb swing')
-      await noteOf(goblet, 'goblet squat').fill('Heels down')
-      await saveOf(goblet, 'goblet squat').tap()
-      await expect(goblet.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
-      await expect(noteOf(goblet, 'goblet squat')).toHaveValue('Heels down')
-      await expect(noteOf(goblet, 'goblet squat')).toHaveAttribute('aria-invalid', 'true')
+      dialog = await openNote(goblet, 'goblet squat')
+      await noteOf(dialog, 'goblet squat').fill('Heels down')
+      await saveOf(dialog, 'goblet squat').tap()
+      await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
+      await expect(noteOf(dialog, 'goblet squat')).toHaveValue('Heels down')
+      await expect(noteOf(dialog, 'goblet squat')).toHaveAttribute('aria-invalid', 'true')
+      await checkA11y()
+      await closeNote(dialog)
+      await expect(goblet.getByText('Not saved')).toBeVisible()
       await expect(swing.getByText('Not saved')).toHaveCount(0)
       await expect(bench.getByText('Note saved')).toBeVisible()
       await checkA11y()
@@ -512,9 +552,12 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       await attachCard(page, page.locator('[data-workout-card="workout"]').filter({ has: supersetRegion }), `superset-open-${name}`)
       await attachCard(page, page.locator('[data-workout-card="workout"]').filter({ has: circuitRegion }), `circuit-failed-save-${name}`)
 
-      await saveOf(goblet, 'goblet squat').tap()
+      dialog = await openNote(goblet, 'goblet squat')
+      await saveOf(dialog, 'goblet squat').tap()
+      await expect(dialog.getByText('Note saved')).toBeVisible()
+      await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toHaveCount(0)
+      await closeNote(dialog)
       await expect(goblet.getByText('Note saved')).toBeVisible()
-      await expect(goblet.getByText('Your note didn’t save. It is still in the field — try again.')).toHaveCount(0)
       expect(app.notes()).toEqual([
         { slug: 'dumbbell-bench-press', notes: 'Pause at the bottom', stored: true },
         { slug: 'goblet-squat', notes: 'Heels down', stored: false },
@@ -525,8 +568,12 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       await toggleOf(page, 'superset').tap()
       await expect(toggleOf(page, 'superset')).toHaveAttribute('aria-expanded', 'false')
       await toggleOf(page, 'superset').tap()
-      await expect(noteOf(bench, 'dumbbell bench press')).toHaveValue('Pause at the bottom')
-      await expect(noteOf(row, 'chest supported row')).toHaveValue('Chest stays on the pad')
+      dialog = await openNote(bench, 'dumbbell bench press')
+      await expect(noteOf(dialog, 'dumbbell bench press')).toHaveValue('Pause at the bottom')
+      await closeNote(dialog)
+      dialog = await openNote(row, 'chest supported row')
+      await expect(noteOf(dialog, 'chest supported row')).toHaveValue('Chest stays on the pad')
+      await closeNote(dialog)
       await attachCapture(page, `workout-open-${name}`)
       app.assertContained()
     })
@@ -554,7 +601,7 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
 
     // Loading: busy in its own section, its note usable beside it.
     await expect(bench.getByRole('status').filter({ hasText: 'Reading coaching for dumbbell bench press' })).toHaveAttribute('aria-busy', 'true')
-    await expect(noteOf(bench, 'dumbbell bench press')).toBeEnabled()
+    await expect(openerOf(bench, 'dumbbell bench press')).toBeEnabled()
     // No entry, repeated per movement as the library says it — not hidden or replaced.
     await expect(row.getByText(NO_ENTRY)).toBeVisible()
     await expect(swing.getByText(NO_ENTRY)).toBeVisible()
@@ -569,8 +616,8 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
     await expect(page.getByRole('alert')).toHaveCount(1)
     // A blank note is its own state: present, empty, usable, claiming nothing.
     for (const [scope, movement] of [[bench, 'dumbbell bench press'], [row, 'chest supported row'], [swing, 'kb swing'], [climber, 'mountain climber'], [goblet, 'goblet squat']] as const) {
-      await expect(noteOf(scope, movement)).toHaveValue('')
-      await expect(noteOf(scope, movement)).toBeEnabled()
+      await expect(openerOf(scope, movement)).toHaveText(new RegExp(`^Add note — ${movement}$`, 'i'))
+      await expect(openerOf(scope, movement)).toBeEnabled()
       await expect(scope.getByText(/^(Note saved|Not saved|Saving…)$/)).toHaveCount(0)
     }
     await checkA11y()
@@ -613,37 +660,66 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
     expect(geometry.regionHeight).toBeGreaterThan(0)
     expectBottomDisclosure(geometry, circuit, 'circuit keyboard')
 
-    // Tab from the disclosure into the first movement's note, type, and save from the keyboard.
+    // Tab from the disclosure to the first movement's note opener, open it,
+    // type, and save from the keyboard (TASK-045: the note's dialog).
     const region = regionOf(page, 'circuit')
     const swing = sectionOf(region, 'kb swing')
-    const field = noteOf(swing, 'kb swing')
-    for (let step = 0; step < 12 && !(await field.evaluate((node) => node === document.activeElement)); step += 1) {
+    const opener = openerOf(swing, 'kb swing')
+    for (let step = 0; step < 12 && !(await opener.evaluate((node) => node === document.activeElement)); step += 1) {
+      await page.keyboard.press('Tab')
+    }
+    await expect(opener).toBeFocused()
+    await page.keyboard.press('Enter')
+    let dialog = noteDialog(swing, 'kb swing')
+    await expect(dialog).toBeVisible()
+    const field = noteOf(dialog, 'kb swing')
+    for (let step = 0; step < 4 && !(await field.evaluate((node) => node === document.activeElement)); step += 1) {
       await page.keyboard.press('Tab')
     }
     await expect(field).toBeFocused()
     await page.keyboard.type('Bell felt heavy in round two')
     await page.keyboard.press('Tab')
-    await expect(saveOf(swing, 'kb swing')).toBeFocused()
+    await expect(saveOf(dialog, 'kb swing')).toBeFocused()
     await page.keyboard.press('Enter')
-    await expect(swing.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
+    await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
     await expect(field).toHaveValue('Bell felt heavy in round two')
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(openerOf(swing, 'kb swing')).toBeFocused()
 
     // Another movement's draft, then close and reopen from the keyboard.
     const climber = sectionOf(region, 'mountain climber')
-    await noteOf(climber, 'mountain climber').focus()
+    await openerOf(climber, 'mountain climber').focus()
+    await page.keyboard.press('Enter')
+    const climberDialog = noteDialog(climber, 'mountain climber')
+    await expect(climberDialog).toBeVisible()
+    await noteOf(climberDialog, 'mountain climber').focus()
     await page.keyboard.type('Knees to chest')
+    await page.keyboard.press('Escape')
+    await expect(climberDialog).toBeHidden()
     await toggle.focus()
     await page.keyboard.press('Space')
     await expect(toggle).toHaveAttribute('aria-expanded', 'false')
     await page.keyboard.press('Enter')
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await expect(swing.getByText('Not saved')).toBeVisible()
+    await openerOf(climber, 'mountain climber').focus()
+    await page.keyboard.press('Enter')
+    await expect(noteOf(climberDialog, 'mountain climber')).toHaveValue('Knees to chest')
+    await page.keyboard.press('Escape')
+    await expect(climberDialog).toBeHidden()
+    await openerOf(swing, 'kb swing').focus()
+    await page.keyboard.press('Enter')
+    dialog = noteDialog(swing, 'kb swing')
     await expect(field).toHaveValue('Bell felt heavy in round two')
-    await expect(noteOf(climber, 'mountain climber')).toHaveValue('Knees to chest')
-    await expect(swing.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
+    await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
 
     // Its retry stores it; the partner's draft stays unsaved.
-    await saveOf(swing, 'kb swing').focus()
+    await saveOf(dialog, 'kb swing').focus()
     await page.keyboard.press('Enter')
+    await expect(dialog.getByText('Note saved')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
     await expect(swing.getByText('Note saved')).toBeVisible()
     await expect(climber.getByText(/^(Note saved|Not saved)$/)).toHaveCount(0)
     expect(app.notes()).toEqual([

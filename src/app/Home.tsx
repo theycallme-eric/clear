@@ -59,6 +59,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react'
+import { createPortal } from 'react-dom'
 import {
   useHref,
   useLinkClickHandler,
@@ -150,6 +151,7 @@ import {
 import { HeadingSection } from '../ui/Heading'
 import { HistoryList } from '../ui/history-list'
 import { useArrivalStagger } from '../ui/motion'
+import { LoggingOverlay } from '../ui/refinements/logging-overlay'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
@@ -215,6 +217,9 @@ export const RECENT_EMPTY_TITLE = 'No workouts yet'
  * action names itself. The chosen reason's effect is the picker's helper.
  */
 export const REST_DAY_SAVED = 'Rest day saved.'
+
+/** TASK-045: the rest-day dialog's title, for marking and changing alike (R7 replay, V14). */
+export const REST_DAY_LOG_TITLE = 'Log rest day'
 
 export function Home() {
   const history = useHistoryQuery()
@@ -417,13 +422,24 @@ function TrainingWeek({
 /**
  * HOME-02's one marking affordance, on Home and nowhere else.
  *
- * U25: a disclosure, not a form standing open. The trigger says whether it is
- * open; opening moves focus to the native picker (the phone's own wheel or
- * sheet), and Save, Cancel or Escape hand focus back to the trigger, so a
- * keyboard or screen-reader user never loses their place. Cancel and Escape
- * discard the choice — the saved reason stays the strip's.
+ * U25: closed until asked for, not a form standing open. The trigger says
+ * whether it is open; opening moves focus to the native picker (the phone's
+ * own wheel or sheet), and Save, Cancel or Escape hand focus back to the
+ * trigger, so a keyboard or screen-reader user never loses their place.
+ * Cancel and Escape discard the choice — the saved reason stays the strip's.
+ *
+ * TASK-045 (REQ-019, C45; R82, R100; LOGGING-FIELDS "Rest day / reason
+ * change"): the reason is chosen in the shared focused logging dialog
+ * (`refinements/logging-overlay.tsx`), titled "Log rest day" as the R7
+ * replay drew it, for marking a day and for changing its reason. It holds the
+ * existing native Reason select with its effect helper, Save rest day and
+ * Cancel, and the failure in place for the retry. The framed "Close log" X is
+ * Cancel: it discards the choice (the existing meaning — there is no draft to
+ * keep, and the next open starts from the saved reason). While a save is in
+ * flight nothing closes it. The writer still sends note null; no Notes field
+ * and no new reason. Exported for the gallery's `rest-day` state.
  */
-function RestDayControl({
+export function RestDayControl({
   today: current,
   read,
 }: {
@@ -513,32 +529,39 @@ function RestDayControl({
           )}
 
           {saved && <p role="status" style={{ margin: 0 }}>{REST_DAY_SAVED}</p>}
-          {failure && (
-            <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
-              The rest day wasn’t saved. Try again.
-            </p>
-          )}
 
-          {/* REQ-005: the trigger carries Generate's glow; the card does not. */}
-          {!editing ? (
-            <ActionGroup>
-              <ActionGlow>
-                <Button
-                  variant="secondary"
-                  icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
-                  aria-expanded={false}
-                  aria-controls={editorId}
-                  buttonRef={trigger}
-                  onClick={begin}
-                >
-                  {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
-                </Button>
-              </ActionGlow>
-            </ActionGroup>
-          ) : (
+          {/* REQ-005: the trigger carries Generate's glow; the card does not.
+              It stays in place while the dialog is open — the workout-style
+              opener the log hands focus back to. */}
+          <ActionGroup>
+            <ActionGlow>
+              <Button
+                variant="secondary"
+                icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
+                aria-expanded={editing}
+                aria-controls={editorId}
+                buttonRef={trigger}
+                onClick={begin}
+              >
+                {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
+              </Button>
+            </ActionGlow>
+          </ActionGroup>
+        </div>
+      </Card>
+      {/* Portalled to the document body, as the other focused logs are, so
+          nothing on the card is inherited into the dialog. */}
+      {createPortal(
+        <LoggingOverlay open={editing} title={REST_DAY_LOG_TITLE} onClose={cancel}>
+          {editing ? (
             // Escape is Cancel from anywhere in the editor; the native picker
             // keeps its own Escape while its list is open.
             <div id={editorId} className="clr-stack clr-stack--tight" onKeyDown={onEditorKey}>
+              {failure && (
+                <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+                  The rest day wasn’t saved. Try again.
+                </p>
+              )}
               <Select
                 label="Reason"
                 value={reason}
@@ -560,9 +583,10 @@ function RestDayControl({
                 </Button>
               </ActionGroup>
             </div>
-          )}
-        </div>
-      </Card>
+          ) : null}
+        </LoggingOverlay>,
+        document.body,
+      )}
     </HeadingSection>
   )
 }
