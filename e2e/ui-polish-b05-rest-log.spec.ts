@@ -382,7 +382,11 @@ function sourceIdentity() {
 }
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-const sheet = (page: Page) => page.locator('section.clr-set-sheet')
+/**
+ * The open entry: a superset round's or circuit entry's half-sheet, or — since
+ * TASK-043 (C45) — a standard block's set in the shared focused logging dialog.
+ */
+const sheet = (page: Page) => page.locator('section.clr-set-sheet, dialog.clr-accepted-log[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
 /** Complete both collapse measurements before the next card action.
@@ -392,7 +396,8 @@ const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact:
  * Wait for both actual boundaries, without a sleep or a second click.
  */
 async function collapseSheet(page: Page) {
-  await page.getByRole('button', { name: 'Minimize' }).click()
+  // TASK-043: the half-sheet's Minimize, or the focused log's framed X.
+  await page.getByRole('button', { name: /^(Minimize|Close log)$/ }).click()
   await expect(sheet(page)).toHaveCount(0)
   await expect.poll(() => page.locator('main#main > .clr-scroll-region').evaluate((region) => {
     const foot = region.querySelector(':scope > .clr-scroll-region__foot')
@@ -452,10 +457,11 @@ async function captureSheet(page: Page, testInfo: TestInfo, id: string) {
   await testInfo.attach(file, { path: testInfo.outputPath(file), contentType: 'image/png' })
   const geometry = await frame.evaluate((element) => {
     const box = element.getBoundingClientRect()
-    const head = element.querySelector('.clr-set-sheet__head')!.getBoundingClientRect()
+    // TASK-043: a standard set's entry is the focused log, its header the dialog's.
+    const head = element.querySelector('.clr-set-sheet__head, [data-logging-head]')!.getBoundingClientRect()
     // TASK-020 (C46): after a Save the sheet holds its confirmation, not a form.
     const firstLabel = (element.querySelector('form label, form [role="group"]')
-      ?? element.querySelector('.clr-set-sheet__frame > [role="status"]'))!.getBoundingClientRect()
+      ?? element.querySelector('.clr-set-sheet__frame > [role="status"], .clr-set-log > [role="status"]'))!.getBoundingClientRect()
     const rest = element.querySelector('[aria-label="Rest"]')?.getBoundingClientRect() ?? null
     return {
       width: box.width, height: box.height,

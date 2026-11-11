@@ -103,6 +103,15 @@
  * Required equipment group, Review and Workout cards and Setup equipment
  * step over one composition naming every kind: each equipment a readable
  * label, never a glyph alone (`gallery-refinement-scenes.tsx`).
+ *
+ * `anchor`, `other-lift`, `timed-movement`, `distance-movement`, `extra-set`
+ * and `set-correction`: the standard block's set-logging moments in the
+ * shared focused logging dialog (TASK-043: C45; R82, R100) — the route's own
+ * `StandardBlock` and its `ExerciseSetLogger`, whose Rest opens the entry in
+ * the native modal with its title, framed "Close log" X and Balanced
+ * backdrop, beside the session's one rest, over the shell's own set-logging
+ * provider with set observations answered in memory
+ * (`gallery-refinement-set-logging.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -119,6 +128,14 @@ import {
 } from './gallery-refinement-forms'
 import { GalleryEquipmentAssets, GalleryOverviewSummary, GalleryPreparation, GalleryScreens } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
+import {
+  GalleryAnchorSet,
+  GalleryDistanceMovementSet,
+  GalleryExtraSet,
+  GalleryOtherLiftSet,
+  GallerySetCorrection,
+  GalleryTimedMovementSet,
+} from './gallery-refinement-set-logging'
 
 function GalleryLadderFour() {
   return <GalleryLadderFlow rounds={4} />
@@ -143,6 +160,12 @@ const REFINEMENT_STATES = [
   { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields · Setup · pinned title, step and progress · History · title row, status and date, and filter options', Render: GalleryScreens },
   { id: 'errors', title: 'Released error semantics', Render: GalleryErrors },
   { id: 'assets', title: 'Equipment icon inventory · readable equipment labels in Review, Workout and Setup', Render: GalleryEquipmentAssets },
+  { id: 'anchor', title: 'Anchor / primary lift · set logging', Render: GalleryAnchorSet },
+  { id: 'other-lift', title: 'Other lift · set logging', Render: GalleryOtherLiftSet },
+  { id: 'timed-movement', title: 'Timed movement · set logging', Render: GalleryTimedMovementSet },
+  { id: 'distance-movement', title: 'Distance movement · set logging', Render: GalleryDistanceMovementSet },
+  { id: 'extra-set', title: 'Extra set · set logging', Render: GalleryExtraSet },
+  { id: 'set-correction', title: 'Saved-set correction', Render: GallerySetCorrection },
 ] as const
 
 export function GalleryRefinements() {

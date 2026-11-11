@@ -505,7 +505,8 @@ test.describe('TASK-007 whole timer frames and independent functional clocks', (
       await attach(page, `log-rest-${name}`)
 
       // Minimised, the same rest in the footer: the same whole frame.
-      await tap(page.getByRole('button', { name: 'Minimize' }))
+      // TASK-043: the log's framed X ("Close log") is its collapse (was Minimize).
+      await tap(page.getByRole('button', { name: 'Close log' }))
       await expect(page.getByRole('form', { name: /^Log set 1 of plank$/i })).toHaveCount(0)
       await settle(page)
       frames = await readFrames(page)
@@ -568,14 +569,15 @@ test.describe('TASK-007 whole timer frames and independent functional clocks', (
     expect(await readingOf(sessionClock(page))).toBe('02:16')
 
     // Minimised and reopened: the same rest, never a fresh one.
-    await tap(page.getByRole('button', { name: 'Minimize' }))
+    // TASK-043: the log's framed X ("Close log") is its collapse (was Minimize).
+    await tap(page.getByRole('button', { name: 'Close log' }))
     expect(await readingOf(restTimer(page))).toBe('00:14')
     await pass(page, 4)
     expect(await readingOf(restTimer(page))).toBe('00:10')
     await tap(holdCard(page).getByRole('button', { name: 'Rest', exact: true }))
     await expect(page.getByRole('form', { name: /^Log set 1 of plank$/i })).toBeVisible()
     expect(await readingOf(restTimer(page))).toBe('00:10')
-    await tap(page.getByRole('button', { name: 'Minimize' }))
+    await tap(page.getByRole('button', { name: 'Close log' }))
 
     // Pausing the hold banks its time; the rest and the session run on.
     await tap(holdRegion(page).getByRole('button', { name: 'Pause' }))
@@ -624,10 +626,11 @@ test.describe('TASK-007 whole timer frames and independent functional clocks', (
     expect(await readingOf(countdown(page))).toBe('00:25')
 
     // Rest by keyboard opens the log; Minimize by keyboard closes it.
+    // TASK-043: the log's framed X ("Close log") is its collapse (was Minimize).
     await press(page, holdCard(page).getByRole('button', { name: 'Rest', exact: true }))
     await expect(page.getByRole('form', { name: /^Log set 1 of plank$/i })).toBeVisible()
     expect(await readingOf(restTimer(page))).toBe('00:20')
-    await press(page, page.getByRole('button', { name: 'Minimize' }))
+    await press(page, page.getByRole('button', { name: 'Close log' }))
     await expect(page.getByRole('form', { name: /^Log set 1 of plank$/i })).toHaveCount(0)
 
     // Reduced motion: whatever a timer frame animates is the app's hard cut.

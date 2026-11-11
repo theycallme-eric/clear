@@ -1501,8 +1501,9 @@ describe('Workout — the session’s one rest', () => {
     await logSet('plank', 1)
     await logSet('dead bug', 1)
 
-    // TASK-020 (C46): the saved set is confirmed, with no rest to wait for.
-    await screen.findByRole('region', { name: 'Set 1 logged' })
+    // TASK-020 (C46): the saved set is confirmed, with no rest to wait for —
+    // since TASK-043 in the standard block's focused logging dialog.
+    await screen.findByRole('dialog', { name: 'Set 1 logged' })
     expect(restBars()).toEqual([])
     expect(screen.queryByText(/Rest: 0|00:00/)).not.toBeInTheDocument()
   })
@@ -1571,7 +1572,8 @@ describe('Workout — the session’s one rest', () => {
     // Skipping ends the rest and records nothing: the set is still the set.
     // TASK-020 (C46): the rest's end collapses set 1's confirmation and opens
     // no next form.
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Set 1 logged' })).toBeNull())
+    // TASK-043: the confirmation is the focused logging dialog's.
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Set 1 logged' })).toBeNull())
     expect(screen.queryByRole('form', { name: /^Log set \d+ of back squat$/ })).toBeNull()
     expect(screen.getByText('Set 1 · 8 reps')).toBeInTheDocument()
   })

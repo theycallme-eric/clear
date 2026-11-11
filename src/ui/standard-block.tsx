@@ -22,6 +22,12 @@
  * shell owns loading and error for the session, and a block with no active
  * prescriptions left is a real, drawable case rather than an empty view —
  * everything in it was swapped out, and it says so.
+ *
+ * TASK-043 (REQ-019, C45): each movement's entry — the anchor/primary and
+ * other lifts, timed and distance movements, extra sets and saved-set
+ * corrections — is drawn in the shared focused logging dialog
+ * (`refinements/logging-overlay.tsx`), with the logger's own fields, draft,
+ * writer, Save confirmation and the session's one rest.
  */
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
@@ -36,7 +42,7 @@ export function StandardBlock({ block }: BlockRendererProps) {
         <BlockPanel.MovementList label="Movements in this block">
           {block.exercises.map((exercise) => (
             <BlockPanel.MovementItem key={exercise.exerciseId}>
-              <ExerciseSetLogger exercise={exercise} />
+              <ExerciseSetLogger exercise={exercise} focused />
             </BlockPanel.MovementItem>
           ))}
         </BlockPanel.MovementList>

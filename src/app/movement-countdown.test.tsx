@@ -251,7 +251,8 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
     expect(countdown()).toHaveTextContent('00:25')
 
     advance(5)
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    // TASK-043: the standard block's log is the focused dialog; its X collapses it.
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     expect(sheetForm()).toBeNull()
     expect(movementCard()).toContainElement(countdownRegion())
     advance(5)
@@ -273,7 +274,7 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
       ),
     )
     // TASK-020 (C46): set 1 is confirmed beside the rest; no set-2 form opens.
-    await screen.findByRole('region', { name: 'Set 1 logged' })
+    await screen.findByRole('dialog', { name: 'Set 1 logged' })
 
     // The rest is the sheet's clock; the countdown is the card's, re-armed.
     expect(within(screen.getByRole('region', { name: 'Rest' })).getByRole('timer', {

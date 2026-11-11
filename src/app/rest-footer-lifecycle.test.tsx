@@ -24,6 +24,14 @@
  * rest (`FooterRest` → `RestTimerBar`) already draws nothing once the
  * countdown has ended or been skipped. These tests pin that behaviour; none of
  * them was written to fail first.
+ *
+ * TASK-043 (REQ-019; C45; R100): a standard block's entry is now the shared
+ * focused logging dialog rather than the half-sheet. The presentation
+ * expectations follow it — the open entry is a modal dialog named by its
+ * title, and it is collapsed by its framed "Close log" X where the sheet had
+ * Minimize — while the rest lifecycle pinned here is unchanged: the open
+ * dialog draws the one rest, the footer draws that same countdown once the
+ * log is closed, and nothing but an explicit Log set records a result.
  */
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -130,8 +138,8 @@ async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
   // TASK-020 (C46): the saved set's confirmation, not set 2's form.
-  await screen.findByRole('region', { name: 'Set 1 logged' })
-  await user.click(screen.getByRole('button', { name: 'Minimize' }))
+  await screen.findByRole('dialog', { name: 'Set 1 logged' })
+  await user.click(screen.getByRole('button', { name: 'Close log' }))
   expect(sheet()).toBeNull()
 }
 
@@ -175,13 +183,15 @@ describe('Rest footer — a shared countdown that survives minimise and reopen (
         name: 'Log set 1',
       }),
     )
-    // Drawn once, inside the open sheet.
+    // Drawn once, inside the open log (TASK-043: the focused dialog).
     expect(restBars()).toHaveLength(1)
+    expect(within(screen.getByRole('dialog', { name: 'Set 1 logged' })).getByRole('region', { name: 'Rest' }))
+      .toBe(restBars()[0])
     expect(restTimer()).toHaveTextContent('01:30')
 
     advance(20)
     returnToForeground()
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
 
     // The same rest, still running, now the footer's.
     expect(restBars()).toHaveLength(1)
@@ -287,14 +297,14 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     expect(double.loggedSets()).toHaveLength(1)
 
     // TASK-020 (C46): set 1 is confirmed, and no set-2 form is opened.
-    expect(screen.getByRole('region', { name: 'Set 1 logged' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Set 1 logged' })).toBeInTheDocument()
     expect(sheet()).toBeNull()
 
     // Expiry collapses the confirmation and records no set 2.
     advance(90)
     returnToForeground()
     expectNoFinishedRest()
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Set 1 logged' })).toBeNull())
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Set 1 logged' })).toBeNull())
     expect(sheet()).toBeNull()
     expect(double.loggedSets()).toHaveLength(1)
 

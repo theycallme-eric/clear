@@ -596,12 +596,26 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     let frame = await probe(page)
     expect(timerNamed(frame, 'Countdown')).toMatchObject({ digits: '00:02', urgent: true })
     expect(timerNamed(frame, 'Time remaining')).toMatchObject({ digits: '00:05', urgent: true })
-    expectOneSoftEdge(frame, 'body', 'open log')
+    // TASK-043: the open log is itself a native dialog now (the standard
+    // block's focused logging dialog), so the one edge is drawn in its top
+    // layer — above the open log — rather than on the body under it.
+    expectOneSoftEdge(frame, 'dialog:open:Log set 1', 'open log')
     expectOnePhase(frame, 'open log')
     expect(await edgeIsTopmost(page), 'the edge paints above the open log').toEqual([true, true, true, true, true, true])
     expect(await storageSnapshot(page)).toEqual(before)
     await attach(page, 'log-open-edge-phone-390')
     const bodyEdge = frame.edges[0].breathes[0].name
+
+    // Minimised in the final seconds: the rest moves to the footer, the edge stays one.
+    // TASK-043: the log's framed X ("Close log", was Minimize) closes it here,
+    // before the menu: the workout behind the modal log is inert.
+    await tap(page.getByRole('button', { name: 'Close log' }))
+    await expect(log).toHaveCount(0)
+    await expect(page.getByRole('region', { name: 'Rest' })).toHaveCount(1)
+    await expect(edge(page)).toHaveCount(1)
+    frame = await probe(page)
+    expectOneSoftEdge(frame, 'body', 'minimised')
+    expectOnePhase(frame, 'minimised')
 
     // A native dialog opens over everything: the one edge moves into its top layer.
     await tap(page.getByRole('button', { name: 'Actions' }))
@@ -636,15 +650,6 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     expect(timerNamed(frame, 'Time remaining')).toMatchObject({ digits: '00:03', urgent: true })
     expectOneSoftEdge(frame, 'body', 'rest alone')
     expectOnePhase(frame, 'rest alone')
-
-    // Minimised in the final seconds: the rest moves to the footer, the edge stays one.
-    await tap(page.getByRole('button', { name: 'Minimize' }))
-    await expect(log).toHaveCount(0)
-    await expect(page.getByRole('region', { name: 'Rest' })).toHaveCount(1)
-    await expect(edge(page)).toHaveCount(1)
-    frame = await probe(page)
-    expectOneSoftEdge(frame, 'body', 'minimised')
-    expectOnePhase(frame, 'minimised')
 
     // The rest runs out: nothing urgent is left behind, and nothing was written.
     await pass(page, 4)

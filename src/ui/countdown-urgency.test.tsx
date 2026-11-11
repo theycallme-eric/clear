@@ -395,8 +395,13 @@ describe('TASK-008 recovered smooth synchronized countdown warning', () => {
     expect(warningOf(holdTimer())).toEqual(BREATHE)
     expect(warningOf(restTimer())).toEqual(BREATHE)
     // One aura, decorative and pointer-transparent, over the whole viewport and above the log.
+    // TASK-043: the open log is itself a native dialog now (the standard
+    // block's focused logging dialog), in the top layer, so the one aura is
+    // drawn inside it — above the log — rather than on the body under it.
+    const log = screen.getByRole('form', { name: /^Log set 1 of plank$/i }).closest('dialog')!
+    expect(log.open).toBe(true)
     const edge = theEdge()
-    expect(edge.parentElement).toBe(document.body)
+    expect(edge.parentElement).toBe(log)
     expect(edge).toHaveAttribute('aria-hidden', 'true')
     expect(getComputedStyle(edge).position).toBe('fixed')
     expect(getComputedStyle(edge).pointerEvents).toBe('none')
@@ -404,6 +409,14 @@ describe('TASK-008 recovered smooth synchronized countdown warning', () => {
     expect(Number(getComputedStyle(edge).zIndex)).toBeGreaterThan(sheetLayer)
     expect(edge.querySelector('*')).toBeNull()
     expect(setItem).not.toHaveBeenCalled()
+
+    // TASK-043: the workout behind the modal log is inert, so the log is
+    // closed (its X) before the menu is used; the one aura comes back to the
+    // body with the rest, now the footer's, and the hold, both still urgent.
+    await user.click(within(log).getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(theEdge().parentElement).toBe(document.body))
+    expect(edges()).toHaveLength(1)
+    expect(warningOf(restTimer())).toEqual(BREATHE)
 
     // A native dialog opens over everything (the top layer): the one aura moves into it.
     await user.click(screen.getByRole('button', { name: 'Actions' }))
