@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/timed-workout-flow.test.tsx",
-      "sha256": "662dd7246f69f91804d4bb341ab2cfe767e596c5fcd8c66c736512268eecdbff"
+      "sha256": "ca6f399c0e540404f287bb8df56022b2164eabb88ddad7fc8f3633d96a4f8a30"
     }
   ],
   "requiredCases": [

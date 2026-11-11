@@ -440,7 +440,12 @@ test.describe('TASK-046 the four timed-result families in the shared focused dia
     await expect(opener).toHaveAttribute('aria-expanded', 'true')
     const notes = form.getByRole('textbox', { name: EMOM_NOTES_LABEL, exact: true })
     await expect(notes).toHaveValue('')
-    await expect(form.locator('output, .clr-quantity, input[type="number"], [role="radiogroup"]')).toHaveCount(0)
+    // TASK-047 (REQ-031; R84) supersedes "no number field and no radiogroup":
+    // the end log also takes each loaded movement's actual load and the
+    // existing effort faces. Still no counter and no completion question.
+    await expect(form.locator('output, .clr-quantity')).toHaveCount(0)
+    for (const field of await form.locator('input[type="number"]').all()) await expect(field).toHaveAccessibleName(/^Weight · /)
+    expect(await form.locator('[role="radiogroup"]').evaluateAll((groups) => groups.every((group) => group.closest('.clr-set-effort') !== null))).toBe(true)
     await expect(form.getByText(/minutes? completed/i)).toHaveCount(0)
     await notes.tap()
     await notes.fill(EXCEPTION_NOTE)

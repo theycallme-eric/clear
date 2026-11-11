@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/timed-result-log.test.tsx",
-      "sha256": "be2b1d16da4872ad8a3e24d97e1b0be72b0af41471ab529323f00fd56665389a"
+      "sha256": "ea9c00f7d63af059ac8848ecbdd2e1f8812df6fddbce4f60ce2a616f6afdf625"
     }
   ],
   "requiredCases": [

@@ -1,0 +1,71 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-047",
+  "check": "check-01",
+  "verdict": "rejected",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-047.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-047/required-cases.json",
+    "sha256": "04c758bb1578a1792ea35f26876ab0b7454ea243089a8554b6fd69d20e0f7bf4"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-047.spec.ts",
+      "sha256": "05bd3e90f33850d7b903bcc5f2bcbaf9f76fa7d4458b4c0908c2cf89110fa6ab"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane touch phone-390 Signal: the four timed families’ partials, loads, categorical effort and notes save through the real writers with block, round and movement identity; a refused movement write keeps every entry and the athlete on the section; the retry writes each row once; Summary is reached and History reads back the actual entries, not the plan, before and after a reload",
+      "project": "mobile",
+      "status": "failed"
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane keyboard phone-320 reduced motion: a block write and a movement write whose answers are lost are restated on the retry with the values corrected since, never duplicated; an entered zero is kept and a blank movement and an unreported count stay unrecorded; History reads back the corrected entries before and after a reload",
+      "project": "mobile",
+      "status": "failed"
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 synthetic lane touch phone-390 Signal: the same refused-write journey over a contained PostgREST double — every entry kept, one write per row on the retry, the rows’ round and movement identity, History read back before and after a reload (not backend proof)",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 synthetic lane keyboard phone-320 reduced motion: the same lost-answer journey over a contained PostgREST double — restated on the retry with the corrected values, zero kept, blanks unrecorded, History read back (not backend proof)",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "name": "TASK-047 visible timed-result persistence and History readback > AC-R031-01 gallery emom, amrap, for_time and ladder phone-390: each state’s route-owned log draws the accepted closing feedback group — the effort faces and the notes — and the EMOM its loaded movement’s actual load, live over memory only with nothing stored and no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 3,
+    "failed": 2,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": [
+    "runner exited with code 1",
+    "required case was failed: e2e/refinement/task-047.spec.ts > TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane touch phone-390 Signal: the four timed families’ partials, loads, categorical effort and notes save through the real writers with block, round and movement identity; a refused movement write keeps every entry and the athlete on the section; the retry writes each row once; Summary is reached and History reads back the actual entries, not the plan, before and after a reload [mobile]",
+    "required case was failed: e2e/refinement/task-047.spec.ts > TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane keyboard phone-320 reduced motion: a block write and a movement write whose answers are lost are restated on the retry with the values corrected since, never duplicated; an entered zero is kept and a blank movement and an unreported count stay unrecorded; History reads back the corrected entries before and after a reload [mobile]"
+  ]
+}

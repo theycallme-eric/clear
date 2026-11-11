@@ -63,7 +63,7 @@ import { useMemo, useState, type CSSProperties } from 'react'
 
 import { partialRoundFor } from '../data/refinement-logging-rules'
 import { AlertTriangle, Check } from '../design-system/index'
-import { useBlockCompletion, type TimedResultReport } from '../state/block-completion'
+import { useBlockCompletion, type BlockOutcome, type TimedResultReport } from '../state/block-completion'
 import {
   answerForTime,
   clampForTimeState,
@@ -159,12 +159,17 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
     () => ({ family: 'for_time', effort, movements, weightUnit }),
     [effort, movements, weightUnit],
   )
+  // TASK-047 (REQ-031): the log's optional notes, a draft of this mount as
+  // the effort is, reported once the race has ended as the block's existing
+  // `notes` through the shell's one completion path.
+  const [notes, setNotes] = useState('')
+  const reported: BlockOutcome = ended && notes.trim() !== '' ? { ...outcome, notes } : outcome
 
   return (
     <BlockPanel
       block={block}
       timer={shape.size === 0 ? null : <ForTimeClock view={view} />}
-      completion={{ outcome, timed }}
+      completion={{ outcome: reported, timed }}
     >
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />
@@ -222,6 +227,8 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
                 values: movements,
                 onChange: (exerciseId, entry) => clock.moveTo(setForTimeMovement(clock.state, exerciseId, entry)),
               }}
+              // TASK-047: the block's notes, after the effort.
+              notes={{ value: notes, onChange: setNotes }}
             />
           )}
         </>

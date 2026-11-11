@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "e2e/refinement/task-046.spec.ts",
-      "sha256": "a7080243dc6b9abe7bcd70044baa1564c054e04ac488a41460c2c5580e06b3e5"
+      "sha256": "24b8718b6b0d5dc3cf2278f2aaa75f29894ffa761002d492d0415110967b3dd6"
     }
   ],
   "requiredCases": [

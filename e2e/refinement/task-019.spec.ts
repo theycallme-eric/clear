@@ -1235,7 +1235,12 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     log = await expectFocusedLog(page, LOG_RESULTS)
     chromes.emom = log.chrome
     const emomNotes = log.dialog.getByRole('textbox', { name: 'Notes · optional', exact: true })
-    await expect(log.dialog.locator('input[type="number"], [role="radiogroup"]')).toHaveCount(0)
+    // TASK-047 (REQ-031; R84) supersedes "no number field and no radiogroup":
+    // the EMOM's end log also takes each loaded movement's actual load and the
+    // existing effort faces. Still no counter and no completion question.
+    for (const field of await log.dialog.locator('input[type="number"]').all()) await expect(field).toHaveAccessibleName(/^Weight · /)
+    expect(await log.dialog.locator('[role="radiogroup"]').evaluateAll((groups) => groups.every((group) => group.closest('.clr-set-effort') !== null))).toBe(true)
+    await expect(log.dialog.locator('output, .clr-quantity')).toHaveCount(0)
     await emomNotes.fill('Swings unbroken')
     await closeByX(page, emomOpener, 'tap')
     await emomOpener.tap()

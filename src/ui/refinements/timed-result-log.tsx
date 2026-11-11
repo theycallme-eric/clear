@@ -78,13 +78,26 @@
  * gap a labelled field keeps; the ladder's count stands at the count gap after
  * its tiles. Presentation only: no field, answer or saved value changes.
  *
+ * TASK-047 (REQ-031; AC-R031-01; G07; R43, R80, R84, R116) completes the
+ * accepted field set of the four families (LOGGING-FIELDS.md; the validated
+ * contract's "proposed still" fields, `docs/specs/LOGGING_FIELD_CONTRACT.md`
+ * §2): one closing feedback group holding the existing three-face effort and
+ * the existing optional notes, as the accepted log draws them — the AMRAP now
+ * takes both (R80), the For Time and the ladder add their notes beside the
+ * effort they had, and the EMOM adds the effort beside its notes and the
+ * actual load of each loaded movement (R84: "optional effort, applicable
+ * movement weights and notes"; no partial round, so never an amount). Each
+ * consumer owns the draft and reports it through the shell's one completion
+ * path: the notes as the block's existing `block_results.notes`, the effort as
+ * its categorical `block_results.effort`, the loads as `block_movement_results`
+ * rows. Once the row is saved the notes, like the movement fields, keep their
+ * value and are no longer offered (no correction writer for a saved row).
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
- * group joins this form under the same title and group recipe — the EMOM's
- * applicable weights, notes for the other families and the categorical
- * effort's wider adoption (TASK-046, TASK-047), and the focused dialog, Save
- * and the four families' adoption into it (TASK-016–018, TASK-046, TASK-041).
- * None of those is drawn here.
+ * group joins this form under the same title and group recipe, and the
+ * focused dialog and the four families' adoption into it (TASK-016–018,
+ * TASK-046, TASK-041) hold it.
  */
 import type { ReactNode } from 'react'
 
@@ -125,6 +138,29 @@ export interface AmrapResultLog {
   movements?: MovementEntryLog | null
   /** TASK-015: once the block's result is saved, the movement fields keep their values and are no longer offered. */
   saved?: boolean
+  /** TASK-047 (R80): the block's optional categorical effort, in the closing feedback group. Omitted or null, none. */
+  effort?: TimedEffortField | null
+  /** TASK-047: the block's optional notes, in the closing feedback group. Omitted or null, none. */
+  notes?: TimedNotesField | null
+}
+
+/**
+ * TASK-047 (AC-R031-01): the block's optional categorical effort as its
+ * consumer keeps it — one of the existing three categories, `null` when
+ * unanswered — and the consumer's writer. Never a number.
+ */
+export interface TimedEffortField {
+  readonly value: SetEffort | null
+  readonly onChange: (next: SetEffort | null) => void
+}
+
+/**
+ * TASK-047 (AC-R031-01): the block's optional notes as typed (`''` when
+ * nothing is written) and the consumer's writer. A blank note is not recorded.
+ */
+export interface TimedNotesField {
+  readonly value: string
+  readonly onChange: (next: string) => void
 }
 
 /**
@@ -205,6 +241,8 @@ export interface CompletionResultLog {
   completionAction?: CompletionAction | null
   /** TASK-015: the per-movement entries, between the result and the effort. Omitted or null, none. */
   movements?: MovementEntryLog | null
+  /** TASK-047: the block's optional notes, after the effort in the closing feedback group. Omitted or null, none. */
+  notes?: TimedNotesField | null
 }
 
 /**
@@ -231,6 +269,14 @@ export interface EmomResultLog {
   value: EmomResult
   /** The consumer's writer, called with the whole next result on every edit. */
   onChange: (next: EmomResult) => void
+  /**
+   * TASK-047 (R84): the actual load of each loaded movement. An EMOM has no
+   * partial round (the schedule is assumed), so its `partialRound` is null and
+   * no amount is asked. Omitted or null, none.
+   */
+  movements?: MovementEntryLog | null
+  /** TASK-047 (R84): the block's optional categorical effort, before the notes. Omitted or null, none. */
+  effort?: TimedEffortField | null
 }
 
 export type TimedResultLogProps = AmrapResultLog | CompletionResultLog | EmomResultLog
@@ -412,21 +458,65 @@ export function TimedResultLog(props: TimedResultLogProps) {
  * row and no confirmation: completion of the schedule as specified is the
  * default (C31, R84), and an exception is the athlete's words, not a number.
  */
-function EmomGroups({ value, onChange }: EmomResultLog) {
+function EmomGroups({ value, onChange, movements = null, effort = null }: EmomResultLog) {
   return (
-    <ResultGroup>
-      <Input
-        label={TIMED_NOTES_LABEL}
-        multiline
-        rows={2}
-        value={value.notes}
-        onChange={(notes: string) => onChange({ notes })}
-      />
-    </ResultGroup>
+    <>
+      {/* TASK-047 (R84): each loaded movement's actual load; no partial round, so no amount. */}
+      {movements !== null && <MovementGroups format="emom" movements={movements} saved={false} />}
+      <ResultGroup>
+        {/* TASK-047 (R84): the optional effort, before the notes, as the accepted log draws them. */}
+        {effort !== null && <TimedEffort effort={effort} />}
+        <Input
+          label={TIMED_NOTES_LABEL}
+          multiline
+          rows={2}
+          value={value.notes}
+          onChange={(notes: string) => onChange({ notes })}
+        />
+      </ResultGroup>
+    </>
   )
 }
 
-function AmrapGroups({ value, onChange, movements = null, saved = false }: AmrapResultLog) {
+/**
+ * TASK-047 (C30, R80, R84): the existing three-face effort of a block — the
+ * same `SetEffortChoice`, legend and compact Clear the For Time and ladder
+ * logs use (TASK-010), so every family asks it the same way.
+ */
+function TimedEffort({ effort }: { effort: TimedEffortField }) {
+  return (
+    <SetEffortChoice
+      scopeLabel={EFFORT_SCOPE}
+      legend={TIMED_EFFORT_LEGEND}
+      value={effort.value}
+      onChange={(next) => effort.onChange(next)}
+    />
+  )
+}
+
+/**
+ * TASK-047: the block's optional notes — the public multiline field the EMOM
+ * already draws, with the same label. Once the row is saved it keeps its
+ * value and is no longer offered, as the movement fields are; a saved block
+ * whose draft holds no note (it was left blank, or the draft did not survive
+ * a reload) draws no empty field claiming nothing was written — History
+ * reads the saved note.
+ */
+function TimedNotes({ notes, saved }: { notes: TimedNotesField; saved: boolean }) {
+  if (saved && notes.value.trim() === '') return null
+  return (
+    <Input
+      label={TIMED_NOTES_LABEL}
+      multiline
+      rows={2}
+      value={notes.value}
+      disabled={saved}
+      onChange={(next: string) => notes.onChange(next)}
+    />
+  )
+}
+
+function AmrapGroups({ value, onChange, movements = null, saved = false, effort = null, notes = null }: AmrapResultLog) {
   return (
     <>
       <ResultGroup>
@@ -443,6 +533,13 @@ function AmrapGroups({ value, onChange, movements = null, saved = false }: Amrap
       </ResultGroup>
       {/* TASK-015 (C37): each movement's next-round amount and load, after the counts; neither derived from the other. */}
       {movements !== null && <MovementGroups format="amrap" movements={movements} saved={saved} />}
+      {/* TASK-047 (R80): the closing feedback group — the effort, then the notes. */}
+      {(effort !== null || notes !== null) && (
+        <ResultGroup>
+          {effort !== null && <TimedEffort effort={effort} />}
+          {notes !== null && <TimedNotes notes={notes} saved={saved} />}
+        </ResultGroup>
+      )}
     </>
   )
 }
@@ -486,6 +583,7 @@ function CompletionGroups({
   rounds = null,
   completionAction = null,
   movements = null,
+  notes = null,
 }: CompletionResultLog) {
   return (
     <>
@@ -527,6 +625,8 @@ function CompletionGroups({
           value={value.effort}
           onChange={(effort) => onChange({ ...value, effort })}
         />
+        {/* TASK-047: the block's notes after its effort, in the same closing group. */}
+        {notes !== null && <TimedNotes notes={notes} saved={saved} />}
       </ResultGroup>
     </>
   )

@@ -370,8 +370,14 @@ describe('TASK-009 AMRAP prescription and concise scoring controls', () => {
 
     // One group holds both counts, rounds first; each label precedes its frame.
     // (TASK-015's per-movement groups follow it and are not result groups.)
+    // TASK-047 (REQ-031; R80) adds the closing feedback group — the effort
+    // faces and the notes — after them, so the counts' group is the first of
+    // two and the only one holding a count.
     const groups = form.querySelectorAll<HTMLElement>('.clr-timed-log__group:not(.clr-timed-log__group--movement)')
-    expect(groups).toHaveLength(1)
+    expect(groups).toHaveLength(2)
+    expect(groups[1].querySelector('[data-quantity-field]')).toBeNull()
+    expect(within(groups[1]).getByRole('group', { name: 'Effort · optional' })).toBeInTheDocument()
+    expect(within(groups[1]).getByRole('textbox', { name: 'Notes · optional' })).toBeInTheDocument()
     const fields = [...groups[0].querySelectorAll<HTMLElement>('[data-quantity-field]')]
     expect(fields.map((field) => field.querySelector('.label')?.textContent)).toEqual([...AMRAP_COUNTS])
     for (const field of fields) {

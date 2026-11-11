@@ -311,6 +311,9 @@ function useLadderResult(
   ended: boolean,
 ): { outcome: BlockOutcome; timed: TimedResultReport; log: ReactNode } {
   const [effort, setEffort] = useState<SetEffort | null>(null)
+  // TASK-047 (REQ-031): the log's optional notes, a draft of this mount as
+  // the effort is, reported as the block's existing `notes` once typed.
+  const [notes, setNotes] = useState('')
   const saved = recorded || !view.editable
   const draft = view.draft
   const completed = draft?.completed ?? (ended && view.editable ? false : null)
@@ -324,8 +327,14 @@ function useLadderResult(
     [effort, movements, rungCount, weightUnit],
   )
 
+  const outcome = view.outcome
+  const reported = useMemo<BlockOutcome>(
+    () => (notes.trim() !== '' ? { ...outcome, notes } : outcome),
+    [notes, outcome],
+  )
+
   return {
-    outcome: view.outcome,
+    outcome: reported,
     timed,
     log:
       rungs.length === 0 ? null : (
@@ -371,6 +380,8 @@ function useLadderResult(
             }
             if (next.effort !== effort) setEffort(next.effort)
           }}
+          // TASK-047: the block's notes, after the effort.
+          notes={{ value: notes, onChange: setNotes }}
         />
       ),
   }

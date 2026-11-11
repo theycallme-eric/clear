@@ -70,7 +70,7 @@
  * with its label inside, the settled time is the shared bare readout, and the
  * result is the shared log under its own rule (TASK-009).
  */
-import { use, useMemo } from 'react'
+import { use, useMemo, useState } from 'react'
 
 import { partialRoundFor } from '../data/refinement-logging-rules'
 import { Check } from '../design-system/index'
@@ -132,6 +132,7 @@ import { liveMovementReadings } from './refinements/movement-readings'
 import { UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
 import { TimedResultDialog } from './refinements/timed-result-dialog'
 import { WorkoutCard } from './refinements/workout-card'
+import type { SetEffort } from './set-effort'
 import { useSectionLabel } from './section-label-context'
 import { TimedWorkoutActions } from './timed-workout-flow'
 import type { BlockRendererProps } from './block-renderers'
@@ -181,9 +182,17 @@ export function AmrapBlock({
   const weightUnit = useShellWeightUnit() ?? UNSCOPED_WEIGHT_UNIT
   const movements = amrap.state.movements ?? NO_ENTRIES
   const partialRound = view.phase === 'complete' ? partialRoundFor({ family: 'amrap', outcome }) : null
+  // TASK-047 (REQ-031; R80): the log's optional effort and notes, drafts of
+  // this mount as the For Time's effort is, reported only once the window has
+  // closed: the effort as the block's categorical `effort` (never a number),
+  // the notes as its existing `notes`, both through the shell's one path.
+  const [effort, setEffort] = useState<SetEffort | null>(null)
+  const [notes, setNotes] = useState('')
+  const closed = view.phase === 'complete'
+  const reported: BlockOutcome = closed && notes.trim() !== '' ? { ...outcome, notes } : outcome
   const timed = useMemo<TimedResultReport>(
-    () => ({ family: 'amrap', effort: null, movements, weightUnit }),
-    [movements, weightUnit],
+    () => ({ family: 'amrap', effort: closed ? effort : null, movements, weightUnit }),
+    [closed, effort, movements, weightUnit],
   )
 
   return (
@@ -316,6 +325,9 @@ export function AmrapBlock({
                     values: movements,
                     onChange: (exerciseId, entry) => amrap.update(setAmrapMovement(amrap.state, exerciseId, entry)),
                   }}
+                  // TASK-047 (R80): the closing feedback group.
+                  effort={{ value: effort, onChange: setEffort }}
+                  notes={{ value: notes, onChange: setNotes }}
                 />
                 {conditioningHistory === undefined ? (
                   <AmrapComparison block={block} outcome={outcome} />
@@ -334,7 +346,7 @@ export function AmrapBlock({
           AMRAP nobody started measured nothing — no rounds, no time — and says
           so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
         */}
-        <BlockCompletionControl blockId={block.blockId} outcome={outcome} timed={timed} />
+        <BlockCompletionControl blockId={block.blockId} outcome={reported} timed={timed} />
       </WorkoutCard>
     </div>
   )

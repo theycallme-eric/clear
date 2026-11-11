@@ -76,7 +76,8 @@
  */
 import { useMemo, useState } from 'react'
 
-import { useBlockCompletion, type BlockOutcome } from '../state/block-completion'
+import type { MovementActualDraft } from '../data/refinement-logging-rules'
+import { useBlockCompletion, type BlockOutcome, type TimedResultReport } from '../state/block-completion'
 import {
   clampEmomState,
   emomShape,
@@ -115,7 +116,9 @@ import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { DeadlineTimer } from './refinements/deadline-timer'
 import { liveMovementReadings } from './refinements/movement-readings'
+import { UNSCOPED_WEIGHT_UNIT } from './refinements/timed-result-log'
 import { TimedResultDialog } from './refinements/timed-result-dialog'
+import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
 
 export interface EmomBlockProps extends BlockRendererProps {
@@ -155,7 +158,26 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
   const { isBlockRecorded } = useBlockCompletion()
   const saved = isBlockRecorded(block.blockId)
   const ended = shape.size > 0 && view.phase === 'finished'
-  const completion = useMemo(() => ({ outcome: endLogOutcome(ended ? notes : '') }), [ended, notes])
+  // TASK-047 (REQ-031; R84): the end log's optional effort and each loaded
+  // movement's actual load, drafts of this mount as the note is. Reported to
+  // the shell beside the outcome only once the schedule has ended, and saved
+  // through its one completion path as the block's categorical `effort` and
+  // load-only `block_movement_results` rows (an EMOM has no partial round).
+  const [effort, setEffort] = useState<SetEffort | null>(null)
+  const [loads, setLoads] = useState<Readonly<Record<string, MovementActualDraft>>>(NO_LOADS)
+  const weightUnit = useShellWeightUnit() ?? UNSCOPED_WEIGHT_UNIT
+  const completion = useMemo(
+    () => ({
+      outcome: endLogOutcome(ended ? notes : ''),
+      timed: {
+        family: 'emom',
+        effort: ended ? effort : null,
+        movements: ended ? loads : NO_LOADS,
+        weightUnit,
+      } satisfies TimedResultReport,
+    }),
+    [effort, ended, loads, notes, weightUnit],
+  )
 
   return (
     // No measured outcome: the clock is the schedule, and a scheduled minute
@@ -246,13 +268,29 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
             // TASK-046 (C45; R43, R100): the end log's real Log action — the
             // same log, held in the shared focused dialog, its note still this
             // mount's draft through close, reopen, a failed save and its retry.
-            <TimedResultDialog format="emom" value={{ notes }} onChange={(next) => setNotes(next.notes)} />
+            <TimedResultDialog
+              format="emom"
+              value={{ notes }}
+              onChange={(next) => setNotes(next.notes)}
+              // TASK-047 (R84): the optional effort, and each loaded movement's actual load.
+              effort={{ value: effort, onChange: setEffort }}
+              movements={{
+                exercises: block.exercises,
+                partialRound: null,
+                weightUnit,
+                values: loads,
+                onChange: (exerciseId, entry) => setLoads((current) => ({ ...current, [exerciseId]: entry })),
+              }}
+            />
           )}
         </>
       )}
     </BlockPanel>
   )
 }
+
+/** No load typed yet: one frozen object, so a report with nothing new is the same report. */
+const NO_LOADS: Readonly<Record<string, MovementActualDraft>> = Object.freeze({})
 
 /**
  * TASK-011 (C31, AC-R011-02): what the end log reports — the athlete's note,
