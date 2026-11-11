@@ -208,3 +208,50 @@ Accepted gallery reference `eded158cfd928d382c9a9409e2c372270312741d`,
 ## Next action
 
 Controller verification and review. No owner decision is needed to merge this task.
+
+## Repair round 2: Setup scan after redirect
+
+- **Reviewer finding (rejected a1, patch ff8985ef609d).** The four `AC-R029-01 Setup equipment
+  skin <skin> phone-320` cases intermittently failed axe `region` on the "Skip to content" link.
+  This happened in about 11% of vapour, signal and mono runs, and in none of the clear runs. One
+  check-02 guard re-run was REJECTED at 12/13.
+- **Cause (from the failing trace).** `visit('/')` waits for the first named `h1`. That `h1` is
+  the boot check's own `CLEAR` heading, rendered at `/` above the router. `visit` then starts its
+  scan. While axe was running, the boot handed off to the routed app and the onboarding guard
+  redirected to `/onboarding`. A trace snapshot taken mid-scan shows no `main` element, so at that
+  moment the skip link's `#main` target was gone. The previous journal entry recorded this as a
+  one-off flake watch; it is this same race.
+
+  This is not a product finding. The boot screen and the settled Setup screen both render
+  `<main id="main">`, and the gap exists only during the hand-off swap. The non-clear skins only
+  shift that timing.
+- **Change (spec-local; `e2e/fixtures.ts` and product code unchanged; no scan removed and no rule
+  disabled).**
+  - `syntheticApp` takes a `holdBoot` option and returns `releaseBoot()`. With `holdBoot` set, the
+    boot check's profile read is held until the case releases it.
+  - The new `enterSetup` helper runs the Setup entry in order:
+    1. `visit('/')`. Its automatic scan now reads the boot check while it is still checking.
+    2. It asserts that the URL is still `/` and the `h1` is exactly `CLEAR`.
+    3. It releases the boot.
+    4. It waits for the `/onboarding` URL, the `Set up CLEAR` `h1`, the Setup step heading,
+       `settle` and `settledSkin`.
+    5. It runs the full `checkA11y` on the settled Setup screen.
+
+    The cases' later assertions and their final scans are unchanged.
+  - All five Setup cases use `enterSetup`: the original clear `AC-R029-01 Setup equipment phone-320`
+    case, which had the same latent race, and the four skin cases. Test names are unchanged, so
+    `required-cases.json` is unchanged.
+- **Stability proof (under the host lock):**
+  - `npx playwright test e2e/refinement/task-029.spec.ts --project=mobile --grep "Setup equipment skin" --repeat-each=20`:
+    80 passed and 0 failed (4 skins × 20).
+  - `--grep "Setup equipment" --repeat-each=20`: 120 passed and 0 failed. This covers the original
+    clear Setup case, the four skin cases and the gallery case, × 20.
+- **Verification (repair-2 tree):**
+  - `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-02 -- npx playwright test e2e/refinement/task-029.spec.ts --project=mobile`:
+    PASSED, with 13 total, 13 executed, 13 passed and 0 skipped. The receipt was refreshed.
+  - check-01 was not re-run. Its manifest and target are unchanged, and the verifier reports its
+    receipt current.
+  - `npx eslint e2e/refinement/task-029.spec.ts`: 0 errors.
+  - `npx vitest run src/test/e2e-harness.test.ts` (no direct `page.goto`): 42 passed.
+  - `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks <the 32 listed, TASK-001…TASK-035>`:
+    PASSED.

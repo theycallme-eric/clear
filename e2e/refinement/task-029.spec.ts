@@ -152,6 +152,12 @@ interface AppOptions {
   reducedMotion?: boolean
   /** The pinned skin; clear unless a case reads another. */
   skin?: Skin
+  /**
+   * Hold the boot check's profile read until `releaseBoot()`, so the boot
+   * screen stays put while `visit` scans it and the hand-off to the routed
+   * screen (and the onboarding guard's redirect) never happens mid-scan.
+   */
+  holdBoot?: boolean
 }
 
 /** The reads the boot check and the guards make, answered here. */
@@ -169,6 +175,10 @@ async function syntheticApp(page: Page, acceptance: SessionAcceptance | null, op
   const writes: string[] = []
   const unexpected: string[] = []
   let started = false
+  let releaseBoot = () => {}
+  const bootHeld = options.holdBoot === true
+    ? new Promise<void>((done) => { releaseBoot = done })
+    : Promise.resolve()
   const guard = await installDeterministicCapture(page, { skin: options.skin ?? 'clear', reducedMotion: options.reducedMotion ?? true })
 
   const handler = async (route: Route) => {
@@ -184,6 +194,7 @@ async function syntheticApp(page: Page, acceptance: SessionAcceptance | null, op
     }
     if (request.method() === 'GET') {
       if (name === 'profiles') {
+        await bootHeld
         return reply([options.setup === true ? notOnboardedProfile({ id: OWNER }) : onboardedProfile({ id: OWNER, goal_preset: 'balanced' })])
       }
       if (name === 'locations') {
@@ -235,6 +246,7 @@ async function syntheticApp(page: Page, acceptance: SessionAcceptance | null, op
 
   return {
     writes: () => [...writes],
+    releaseBoot: () => releaseBoot(),
     assertContained(expectedWrites: readonly string[] = []) {
       expect(unexpected, 'Every API request has an explicit synthetic disposition').toEqual([])
       expect(writes, 'Only Start’s session calls are attempted; no set is logged and Setup commits nothing').toEqual(expectedWrites)
@@ -271,6 +283,29 @@ async function settledSkin(page: Page, skin: Skin) {
     ])
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
   })
+}
+
+/**
+ * Setup's entry, read only once it has settled. `visit('/')` scans the boot
+ * check while its profile read is held, so the scan never races the boot
+ * hand-off and the onboarding guard's redirect (a scan that straddled them
+ * found the skip link's `#main` momentarily gone). Released, the guard sends
+ * the athlete to `/onboarding`; the Setup step heading, its transitions and
+ * the skin settle before the full scan of the settled Setup screen.
+ */
+async function enterSetup(page: Page, visit: (path: string) => Promise<void>,
+  checkA11y: () => Promise<void>, app: { releaseBoot: () => void }, skin: Skin) {
+  await visit('/')
+  // What was scanned is the boot check itself, still checking at '/'.
+  await expect(page).toHaveURL((url) => url.pathname === '/')
+  await expect(page.getByRole('heading', { level: 1, name: 'CLEAR', exact: true })).toBeVisible()
+  app.releaseBoot()
+  await expect(page).toHaveURL((url) => url.pathname === '/onboarding')
+  await expect(page.getByRole('heading', { level: 1, name: 'Set up CLEAR' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 2, name: SETUP_STEP })).toBeVisible()
+  await settle(page)
+  await settledSkin(page, skin)
+  await checkA11y()
 }
 
 /** WCAG contrast between two sRGB colours. */
@@ -559,11 +594,8 @@ test.describe('TASK-029 equipment asset inventory and readable fallback', () => 
   test('AC-R029-01 Setup equipment phone-320: the sixteen Setup choices are named in words, none is a medicine ball, and touch and keyboard answer them', async ({ page, visit, checkA11y }) => {
     test.setTimeout(120_000)
     await page.setViewportSize({ width: 320, height: 568 })
-    const app = await syntheticApp(page, null, { setup: true })
-    await visit('/')
-    await expect(page).toHaveURL((url) => url.pathname === '/onboarding')
-    await expect(page.getByRole('heading', { level: 2, name: SETUP_STEP })).toBeVisible()
-    await settle(page)
+    const app = await syntheticApp(page, null, { setup: true, holdBoot: true })
+    await enterSetup(page, visit, checkA11y, app, 'clear')
     const main = page.locator('main')
     await main.getByRole('radio', { name: /^Home gym/ }).tap()
     const group = main.getByRole('group', { name: 'Equipment' })
@@ -627,12 +659,8 @@ test.describe('TASK-029 equipment asset inventory and readable fallback', () => 
     test(`AC-R029-01 Setup equipment skin ${skin} phone-320: the sixteen Setup choices are visible words in the ${skin} skin and none is a medicine ball`, async ({ page, visit, checkA11y }) => {
       test.setTimeout(120_000)
       await page.setViewportSize({ width: 320, height: 568 })
-      const app = await syntheticApp(page, null, { setup: true, skin })
-      await visit('/')
-      await expect(page).toHaveURL((url) => url.pathname === '/onboarding')
-      await expect(page.getByRole('heading', { level: 2, name: SETUP_STEP })).toBeVisible()
-      await settle(page)
-      await settledSkin(page, skin)
+      const app = await syntheticApp(page, null, { setup: true, holdBoot: true, skin })
+      await enterSetup(page, visit, checkA11y, app, skin)
       const main = page.locator('main')
       await main.getByRole('radio', { name: /^Home gym/ }).tap()
       const group = main.getByRole('group', { name: 'Equipment' })
