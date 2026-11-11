@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-029/required-cases.json",
-    "sha256": "c95da1d5109e524625e32ebd86f3da79aea2bc5981ea9eb218032afd581c4b8c"
+    "sha256": "7224ea194ac5b46fbe4afeb4944d541ce772ccb57a988a825b7bcf53a72cbff3"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-029.spec.ts",
-      "sha256": "d9e1036980eda6b0961cf4df6ed2d86e2f67fca0e7bc5d96e163f19ca782a807"
+      "sha256": "abe15690a5481c9d8accfea46a59982fba8359869b262fcf5048ca102cb7cd99"
     }
   ],
   "requiredCases": [
@@ -44,6 +44,54 @@
     },
     {
       "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin clear phone-320: every equipment kind reads as a label beside its name in Review and Workout in the clear skin, with each label's contrast passing and Required equipment in words",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin clear phone-320: the sixteen Setup choices are visible words in the clear skin and none is a medicine ball",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin vapour phone-320: every equipment kind reads as a label beside its name in Review and Workout in the vapour skin, with each label's contrast passing and Required equipment in words",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin vapour phone-320: the sixteen Setup choices are visible words in the vapour skin and none is a medicine ball",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin signal phone-320: every equipment kind reads as a label beside its name in Review and Workout in the signal skin, with each label's contrast passing and Required equipment in words",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin signal phone-320: the sixteen Setup choices are visible words in the signal skin and none is a medicine ball",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin mono phone-320: every equipment kind reads as a label beside its name in Review and Workout in the mono skin, with each label's contrast passing and Required equipment in words",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin mono phone-320: the sixteen Setup choices are visible words in the mono skin and none is a medicine ball",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
       "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery phone-320: a failed Start and its keyboard retry keep every equipment label and Required equipment as they were, record no work, and Start stays reachable",
       "project": "mobile",
       "status": "passed"
@@ -56,12 +104,12 @@
     }
   ],
   "totals": {
-    "total": 5,
-    "passed": 5,
+    "total": 13,
+    "passed": 13,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 5
+    "executed": 13
   },
   "problems": []
 }

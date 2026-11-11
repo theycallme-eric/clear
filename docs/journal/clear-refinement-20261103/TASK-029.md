@@ -151,6 +151,60 @@ Accepted gallery reference `eded158cfd928d382c9a9409e2c372270312741d`,
 - Follow-up, explicit and unscheduled: artwork batch (Kettlebell, Medicine ball, Barbell), the
   Bodyweight decision, adoption beside the label, and Medicine ball catalog coverage.
 
+## Repair round 1: four-skin coverage
+
+- **Reviewer finding (rejected a1, patch 28223c5d04ef).** JOURNEY-029's action is "Read
+  movement/equipment context in each skin", but check-02 pinned `skin: 'clear'` only. The label
+  colour (`--text-secondary` on `.clr-movement-identity__equipment`) resolves per skin.
+- **Change (test-only, no product code).** `e2e/refinement/task-029.spec.ts` gains the
+  `SKINS = clear, vapour, signal, mono` set and `settledSkin`, following TASK-028's pattern.
+  `syntheticApp` takes a `skin` option, which defaults to clear so the existing five cases are
+  unchanged. There are eight new cases at phone-320:
+  - `JOURNEY-029 skin <skin> phone-320` (×4) runs Review → Start → Workout in that skin. It covers
+    Required equipment in words, every label's geometry and readability (`expectEveryLabel`), the
+    full-page axe scan on both routes, an explicit per-label contrast measurement, no overflow and
+    contained writes.
+  - `AC-R029-01 Setup equipment skin <skin> phone-320` (×4) covers `/onboarding` equipment in that
+    skin: 16 visible worded choices at 12px or more, no medicine ball, and the axe scan.
+- **Finding while adding contrast proof.** axe's `color-contrast` rule does not decide these labels
+  in any skin, clear included. Labels clipped out of the scroll region are "inapplicable", and on
+  screen axe returns "incomplete" ("background color could not be determined due to a pseudo
+  element", from the card's decorative pseudo element). The page-level `checkA11y` passing was
+  therefore never a contrast proof for the labels. `expectLabelContrast` now measures contrast
+  directly:
+  - it centres each label and asserts that the label is topmost at its centre;
+  - it asserts that the label paints the skin's own `--text-secondary`;
+  - it captures the ground beneath the label box with the label's paint made transparent
+    (transition disabled, then restored and re-checked);
+  - it composites the computed colour, including alpha, over every ground pixel and requires the
+    weakest pixel to reach WCAG AA 4.5:1.
+
+  A first attempt failed the restore check because the label's colour transition was mid-fade. It
+  was corrected by disabling the transition during the capture.
+- **Measured minimums (weakest pixel, phone-320, Review / Workout):**
+
+  | Skin | Review | Workout |
+  | --- | --- | --- |
+  | clear | 6.16 | 6.08 |
+  | vapour | 6.39 | 6.28 |
+  | signal | 5.53 | 5.40 |
+  | mono | 6.93 | 6.93 |
+
+  All 17 labels pass in every skin. No skin is a product finding.
+- `evidence/refinement/task-029/required-cases.json` declares 13 check-02 cases: the 5 existing
+  cases plus these 8.
+- **Verification (repair tree):**
+  - `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-02 -- npx playwright test e2e/refinement/task-029.spec.ts --project=mobile`:
+    PASSED, 13 total, 13 executed and passed, 0 skipped.
+  - `npx eslint e2e/refinement/task-029.spec.ts`: 0 errors, 0 warnings.
+  - `npm test`: 269 files, 6356 tests passed.
+  - The first delivery-evidence verifier run was REJECTED: "TASK-029 check-01: stale receipt:
+    required-case manifest changed after the run". The receipt binds the whole manifest, so
+    check-01 was re-run with an unchanged target. Result: PASSED, 19 executed and passed (8
+    required), 0 skipped.
+  - `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks TASK-001,…,TASK-035`
+    (the 32 listed): PASSED. TASK-029 has current passing receipts.
+
 ## Next action
 
 Controller verification and review. No owner decision is needed to merge this task.

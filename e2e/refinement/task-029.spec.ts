@@ -37,6 +37,12 @@ import { expect, test as scanned } from '../fixtures'
  * ball. Recovery: a failed Start keeps every label; keyboard, touch and
  * reduced motion reach it all.
  *
+ * "In each skin": the label's colour (`--text-secondary`) is resolved per skin,
+ * so the Review → Workout reading, axe (colour contrast included) and Setup's
+ * worded choices are proven in every skin — clear, vapour, signal and mono —
+ * with every equipment label's paint measured at AA contrast against its
+ * captured ground (axe leaves these labels undecided; see expectLabelContrast).
+ *
  * Synthetic and contained: intercepted sessions for fictional users and
  * synthetic reads. The only writes the journey attempts are Start's session
  * calls, answered here and never forwarded; no set is logged, Setup commits
@@ -129,6 +135,9 @@ const LISTS: Record<Context, Record<(typeof STRUCTURES)[number], string>> = {
   workout: { standard: 'Movements in this block', superset: 'Movements in this superset', circuit: 'Movements in this circuit' },
 }
 const REQUIRED_EQUIPMENT = 'Required equipment'
+/** Every shipped skin: the label colour is resolved per skin. */
+const SKINS = ['clear', 'vapour', 'signal', 'mono'] as const
+type Skin = (typeof SKINS)[number]
 const SETUP_STEP = 'What’s your gym setup?'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -141,6 +150,8 @@ interface AppOptions {
   /** A signed-in athlete who has not set up yet: the guard sends them to Setup. */
   setup?: boolean
   reducedMotion?: boolean
+  /** The pinned skin; clear unless a case reads another. */
+  skin?: Skin
 }
 
 /** The reads the boot check and the guards make, answered here. */
@@ -158,7 +169,7 @@ async function syntheticApp(page: Page, acceptance: SessionAcceptance | null, op
   const writes: string[] = []
   const unexpected: string[] = []
   let started = false
-  const guard = await installDeterministicCapture(page, { skin: 'clear', reducedMotion: options.reducedMotion ?? true })
+  const guard = await installDeterministicCapture(page, { skin: options.skin ?? 'clear', reducedMotion: options.reducedMotion ?? true })
 
   const handler = async (route: Route) => {
     const request = route.request()
@@ -246,6 +257,130 @@ async function settle(page: Page) {
       .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
       .every((animation) => animation.playState !== 'running')
   })
+}
+
+/** The applied skin is the requested one and its colour transitions have finished. */
+async function settledSkin(page: Page, skin: Skin) {
+  await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
+  await page.evaluate(async () => {
+    await Promise.race([
+      Promise.all(document.getAnimations()
+        .filter((animation) => animation instanceof CSSTransition)
+        .map((animation) => animation.finished.catch(() => undefined))),
+      new Promise((done) => setTimeout(done, 1_000)),
+    ])
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+  })
+}
+
+/** WCAG contrast between two sRGB colours. */
+function contrast(a: readonly number[], b: readonly number[]) {
+  const luminance = (rgb: readonly number[]) => {
+    const [r, g, b] = rgb.map((channel) => {
+      const c = channel / 255
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+/** WCAG 1.4.3 AA for text below the large-text size. */
+const TEXT_CONTRAST = 4.5
+
+/**
+ * JOURNEY-029 "in each skin": every movement's equipment label paints the
+ * skin's own `--text-secondary` and reads at AA text contrast against what is
+ * actually painted behind it.
+ *
+ * axe's colour-contrast rule cannot decide these labels: text clipped out of
+ * the scroll region is "not on screen", and on screen the card's decorative
+ * pseudo element leaves the ground undetermined ("incomplete"). So each label
+ * is brought to the middle of the view, its own paint is made transparent for
+ * one capture of the ground beneath its box, and its computed colour,
+ * composited over every captured pixel, is measured; the weakest pixel decides.
+ */
+async function expectLabelContrast(page: Page, skin: Skin, label: string) {
+  const labels = page.locator('[data-movement-context]')
+  const count = await labels.count()
+  expect(count, `${label}: labels to read`).toBeGreaterThan(0)
+  const readings: Array<{ text: string; colour: string; expected: string; minimum: number; median: number }> = []
+  for (let index = 0; index < count; index += 1) {
+    const node = labels.nth(index)
+    const { text, colour, expected, clip, topmost } = await node.evaluate((element) => {
+      element.scrollIntoView({ block: 'center', inline: 'nearest' })
+      const probe = document.createElement('span')
+      probe.style.color = 'var(--text-secondary)'
+      element.parentElement!.append(probe)
+      const resolved = getComputedStyle(probe).color
+      probe.remove()
+      const rect = element.getBoundingClientRect()
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+      return {
+        text: element.textContent ?? '',
+        colour: getComputedStyle(element).color,
+        expected: resolved,
+        clip: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+        topmost: hit !== null && element.contains(hit),
+      }
+    })
+    const at = `${label}: ${text}`
+    expect(colour, `${at} paints the ${skin} skin's --text-secondary`).toBe(expected)
+    expect(topmost, `${at} is not covered where it is read`).toBe(true)
+    // Without a transition, so neither the capture nor the restore is mid-fade.
+    await node.evaluate((element) => {
+      const style = (element as HTMLElement).style
+      style.setProperty('transition', 'none', 'important')
+      style.setProperty('color', 'transparent', 'important')
+      void getComputedStyle(element).color
+    })
+    const ground = await page.screenshot({ clip, caret: 'hide', animations: 'disabled', scale: 'css' })
+    await node.evaluate((element) => {
+      const style = (element as HTMLElement).style
+      style.removeProperty('color')
+      void getComputedStyle(element).color
+      style.removeProperty('transition')
+    })
+    expect(await node.evaluate((element) => getComputedStyle(element).color), `${at} paint restored`).toBe(colour)
+    const pixels = await page.evaluate(async ({ png, paint }) => {
+      const image = new Image()
+      image.src = `data:image/png;base64,${png}`
+      await image.decode()
+      const canvas = document.createElement('canvas')
+      canvas.width = image.naturalWidth
+      canvas.height = image.naturalHeight
+      const context = canvas.getContext('2d', { willReadFrequently: true })!
+      context.drawImage(image, 0, 0)
+      const data = context.getImageData(0, 0, canvas.width, canvas.height).data
+      // The label's paint (any CSS colour form, alpha included) over each ground pixel.
+      const swatch = document.createElement('canvas')
+      swatch.width = swatch.height = 1
+      const blend = swatch.getContext('2d', { willReadFrequently: true })!
+      const seen = new Map<string, [number[], number[]]>()
+      for (let offset = 0; offset < data.length; offset += 4) {
+        const ground = [data[offset], data[offset + 1], data[offset + 2]]
+        const key = ground.join(',')
+        if (seen.has(key)) continue
+        blend.fillStyle = `rgb(${key})`
+        blend.fillRect(0, 0, 1, 1)
+        blend.fillStyle = paint
+        blend.fillRect(0, 0, 1, 1)
+        seen.set(key, [ground, [...blend.getImageData(0, 0, 1, 1).data.slice(0, 3)]])
+      }
+      return [...seen.values()]
+    }, { png: ground.toString('base64'), paint: colour })
+    const ratios = pixels.map(([back, fore]) => contrast(fore, back)).sort((a, b) => a - b)
+    expect(ratios.length, `${at}: ground captured`).toBeGreaterThan(0)
+    readings.push({ text, colour, expected, minimum: ratios[0], median: ratios[Math.floor(ratios.length / 2)] })
+  }
+  await test.info().attach(`equipment-contrast-${label.replace(/\W+/g, '-')}.json`, {
+    body: JSON.stringify({ skin, threshold: TEXT_CONTRAST, readings }, null, 2),
+    contentType: 'application/json',
+  })
+  for (const { text, minimum } of readings) {
+    expect(minimum, `${label}: ${text} reads at AA contrast in ${skin}`).toBeGreaterThanOrEqual(TEXT_CONTRAST)
+  }
 }
 
 async function noHorizontalOverflow(page: Page) {
@@ -463,6 +598,60 @@ test.describe('TASK-029 equipment asset inventory and readable fallback', () => 
     await checkA11y()
     app.assertContained()
   })
+
+  for (const skin of SKINS) {
+    test(`JOURNEY-029 skin ${skin} phone-320: every equipment kind reads as a label beside its name in Review and Workout in the ${skin} skin, with each label's contrast passing and Required equipment in words`, async ({ page, visit, checkA11y }) => {
+      test.setTimeout(120_000)
+      await page.setViewportSize({ width: 320, height: 568 })
+      const app = await syntheticApp(page, assetAcceptance(), { skin })
+      await openReview(page, visit, assetAcceptance())
+      await settledSkin(page, skin)
+
+      await expectRequiredEquipment(page, `Review ${skin}`)
+      await expectEveryLabel(page, 'review', `Review ${skin}`)
+      await expectLabelContrast(page, skin, `Review ${skin}`)
+      await noHorizontalOverflow(page)
+      await attachCapture(page, `review-${skin}-phone-320`)
+      await checkA11y()
+
+      await startWorkout(page)
+      await settledSkin(page, skin)
+      await expectEveryLabel(page, 'workout', `Workout ${skin}`)
+      await expectLabelContrast(page, skin, `Workout ${skin}`)
+      await noHorizontalOverflow(page)
+      await attachCapture(page, `workout-${skin}-phone-320`)
+      await checkA11y()
+      app.assertContained(['persist_session', 'start_session'])
+    })
+
+    test(`AC-R029-01 Setup equipment skin ${skin} phone-320: the sixteen Setup choices are visible words in the ${skin} skin and none is a medicine ball`, async ({ page, visit, checkA11y }) => {
+      test.setTimeout(120_000)
+      await page.setViewportSize({ width: 320, height: 568 })
+      const app = await syntheticApp(page, null, { setup: true, skin })
+      await visit('/')
+      await expect(page).toHaveURL((url) => url.pathname === '/onboarding')
+      await expect(page.getByRole('heading', { level: 2, name: SETUP_STEP })).toBeVisible()
+      await settle(page)
+      await settledSkin(page, skin)
+      const main = page.locator('main')
+      await main.getByRole('radio', { name: /^Home gym/ }).tap()
+      const group = main.getByRole('group', { name: 'Equipment' })
+      await expect(group.getByRole('checkbox')).toHaveCount(EQUIPMENT.length)
+      for (const { label } of EQUIPMENT) {
+        await expect(group.getByRole('checkbox', { name: label, exact: true })).toHaveCount(1)
+        const text = group.getByText(label, { exact: true })
+        await text.scrollIntoViewIfNeeded()
+        await expect(text, `${label} is a visible word in ${skin}`).toBeVisible()
+        const font = await text.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))
+        expect(font, `${label} readable in ${skin}`).toBeGreaterThanOrEqual(12)
+      }
+      await expect(group).not.toContainText(/medicine/i)
+      await noHorizontalOverflow(page)
+      await attachCapture(page, `setup-equipment-${skin}-phone-320`)
+      await checkA11y()
+      app.assertContained()
+    })
+  }
 
   test('JOURNEY-029 recovery phone-320: a failed Start and its keyboard retry keep every equipment label and Required equipment as they were, record no work, and Start stays reachable', async ({ page, visit }) => {
     test.setTimeout(120_000)
