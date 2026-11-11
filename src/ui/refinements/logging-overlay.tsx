@@ -186,6 +186,34 @@ function useFocusKeptInside(ref: { current: HTMLDialogElement | null }, open: bo
   }, [ref, open, titleId])
 }
 
+/**
+ * TASK-041 (REQ-018, JOURNEY-018; C58, P02 — "retain modal focus and
+ * intentional keyboard focus on controls"): keyboard focus stays visible on
+ * the log's controls. The app runs Foundation's `FocusBrackets`, which draws
+ * its one bracket layer from the page body, and in brackets mode a focused
+ * button drops its own outline. A modal dialog is in the top layer, above
+ * everything in the body, so the brackets were drawn underneath the open log
+ * and Tab moved through its controls with nothing visible on them (found on
+ * the routes, Chromium). While the log is open it hosts that same layer —
+ * moved, never copied, still decorative and pointer-transparent — and hands it
+ * back to the body when it closes or goes away, as the deadline aura does
+ * (TASK-008). A layer Foundation has already removed is left removed.
+ */
+function useFocusBracketsInside(ref: { current: HTMLDialogElement | null }, open: boolean) {
+  useEffect(() => {
+    const dialog = ref.current
+    if (!open || !dialog) return
+    const layer = dialog.ownerDocument.querySelector<HTMLElement>('.clr-focus-brackets')
+    if (layer === null || layer.parentElement === dialog) return
+    const home = layer.parentElement
+    dialog.append(layer)
+    return () => {
+      if (layer.parentElement !== dialog) return
+      ;(home?.isConnected ? home : dialog.ownerDocument.body).append(layer)
+    }
+  }, [ref, open])
+}
+
 export function LoggingOverlay({ open, title, onClose, children }: LoggingOverlayProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
@@ -210,6 +238,7 @@ export function LoggingOverlay({ open, title, onClose, children }: LoggingOverla
   }, [open])
   useVisibleViewport(ref, open)
   useFocusKeptInside(ref, open, titleId)
+  useFocusBracketsInside(ref, open)
 
   const frame = (
     <div className="clr-bleed clr-bleed--block clr-accepted-log__emission">
