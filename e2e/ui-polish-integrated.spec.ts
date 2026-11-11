@@ -605,11 +605,14 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
       const form = (verb: 'Log' | 'Edit', set: number, movement = 'back squat') =>
         page.getByRole('form', { name: `${verb} set ${set} of ${movement}` })
-      const minimize = page.getByRole('button', { name: 'Minimize', exact: true })
+      // TASK-043 (C45): a standard block's entry is the shared focused
+      // logging dialog; its framed X, "Close log", is the one collapse (was
+      // Minimize), and the card's Rest carries the open state.
+      const minimize = page.getByRole('button', { name: 'Close log', exact: true })
       await expect(form('Log', 1)).toBeVisible()
       await expect(page.getByRole('heading', { name: 'Log set 1', exact: true })).toBeVisible()
       await expect(minimize).toHaveCount(1)
-      await expect(minimize).toHaveAttribute('aria-expanded', 'true')
+      await expect(squat.getByRole('button', { name: 'Rest', exact: true })).toHaveAttribute('aria-expanded', 'true')
       await reach(minimize)
       const reps = form('Log', 1).getByLabel('Reps', { exact: true })
       const weight = form('Log', 1).getByLabel('Weight', { exact: true })
@@ -686,7 +689,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       // TASK-020 (C46): the rest's end collapses set 1's confirmation; no
       // set-2 form opens by itself. The card's Rest opens it deliberately and
       // starts its prescribed rest, skipped here so set 2 saves with none.
-      await expect(page.getByRole('region', { name: 'Set 1 logged', exact: true })).toHaveCount(0)
+      await expect(page.getByRole('dialog', { name: 'Set 1 logged', exact: true })).toHaveCount(0)
       await expect(form('Log', 2)).toHaveCount(0)
       await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
       await expect(form('Log', 2)).toBeVisible()
@@ -758,6 +761,9 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
 
       // Clearing a saved observation is distinct from clearing its effort.
       // Keep is safe; confirming removes just the intended observation.
+      // TASK-043: the log stays open on the next entry after Save correction,
+      // and the workout behind the modal log is inert: close it first.
+      await tap(minimize)
       await tap(editOne)
       await tap(form('Edit', 1).getByRole('button', { name: 'Clear set 1', exact: true }))
       const clearDialog = page.getByRole('dialog', { name: 'Clear set 1 of back squat?', exact: true })

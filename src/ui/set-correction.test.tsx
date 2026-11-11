@@ -148,8 +148,9 @@ describe('AC-046: Edit reopens the selected actual result', () => {
 
     await user.click(within(card('back squat')).getByRole('button', { name: 'Edit set 1' }))
 
-    // The sheet is titled for this set and named for this movement.
-    expect(screen.getByRole('region', { name: 'Edit set 1' })).toBeInTheDocument()
+    // The sheet is titled for this set and named for this movement — since
+    // TASK-043, the standard block's focused logging dialog.
+    expect(screen.getByRole('dialog', { name: 'Edit set 1' })).toBeInTheDocument()
     const edit = sheetForm('Edit', 1, 'back squat')
     expect(edit.getByLabelText('Weight')).toHaveValue(135)
     expect(edit.getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')

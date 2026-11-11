@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-043",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-043.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-043/required-cases.json",
+    "sha256": "40a8c4f8025d921757ee09b2c30e6a203d9533d1bb2c4ea3882d405a2ffb89da"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-043.spec.ts",
+      "sha256": "9893d533e65d46c6799bb5bb78925dc524c74c0c0d54eb37923f14dd87eb14f5"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 anchor and extra set phone-390 touch: Rest opens the modal log with its X over an inert workout, close and Escape keep the draft, Log set saves through the original writer beside the one rest, and the extra set is logged as set 3",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 saved-set correction and retry phone-390 keyboard reduced motion: a refused write is held on this device and retried under its own id; Edit opens Edit set N in the log, Cancel and Save correction keep the writer, and Clear set asks with Keep set first",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 other lift, timed and distance movement phone-320: each opens the focused log with its own fields and saves through the original writer, while a superset round stays on its half-sheet (TASK-044)",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states clear phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states vapour phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states signal phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states mono phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

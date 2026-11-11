@@ -29,6 +29,18 @@
  * set's form. The logger decides when it ends (`set-save-confirmation.ts`):
  * the rest ending collapses it, Minimize ends it early, and only a deliberate
  * Rest opens the next entry.
+ *
+ * TASK-043 (REQ-019; C45; R82, R100): held by the shared focused logging
+ * dialog (`refinements/logging-overlay.tsx`) — the anchor/primary and other
+ * lifts, timed and distance movements, extra sets and saved-set corrections
+ * of a standard block — the same sheet draws only its body. The dialog's
+ * header is the entry's one title (`setSheetTitle`) and its framed X, named
+ * "Close log", is the entry's one collapse; the frame, backdrop, inner scroll
+ * and modal focus are the dialog's. The context, the running rest, the
+ * confirmation and the form are unchanged, and so is everything the logger
+ * owns: the draft, the writer, Save, errors, correction and clear. A
+ * superset's round and a circuit's entries stay on the half-sheet until their
+ * own family adopts the dialog (TASK-044).
  */
 import {
   use,
@@ -50,9 +62,10 @@ import { useInvalidFocus } from './formFocus'
 import { Heading, HeadingLevelProvider } from './Heading'
 import {
   SetLoggingSheetHostContext,
-  useSetLoggingSheetOpen,
+  useSetLoggingSheetLayerOpen,
   type SetLoggingSheetHostApi,
 } from './set-logging-sheet-context'
+import { useLoggingOverlayTitle } from './refinements/logging-overlay-context'
 import { RestTimerBar } from './workout-chrome'
 import './set-logging-sheet.css'
 
@@ -62,18 +75,23 @@ import './set-logging-sheet.css'
 
 /** Mounted once by the workout shell: at most one movement's sheet is open. */
 export function SetLoggingSheetHost({ children }: { children: ReactNode }) {
-  const [openKey, setOpenKey] = useState<string | null>(null)
+  const [opened, setOpened] = useState<{ key: string; focused: boolean } | null>(null)
   const [container, setContainer] = useState<HTMLElement | null>(null)
 
-  const open = useCallback((key: string) => setOpenKey(key), [])
+  const open = useCallback(
+    (key: string, focused = false) => setOpened({ key, focused }),
+    [],
+  )
   const close = useCallback(
-    (key: string) => setOpenKey((current) => (current === key ? null : current)),
+    (key: string) => setOpened((current) => (current?.key === key ? null : current)),
     [],
   )
 
+  const openKey = opened?.key ?? null
+  const openFocused = opened?.focused ?? false
   const api = useMemo<SetLoggingSheetHostApi>(
-    () => ({ openKey, open, close, container, attach: setContainer }),
-    [openKey, open, close, container],
+    () => ({ openKey, openFocused, open, close, container, attach: setContainer }),
+    [openKey, openFocused, open, close, container],
   )
 
   return <SetLoggingSheetHostContext value={api}>{children}</SetLoggingSheetHostContext>
@@ -100,7 +118,9 @@ export function SetLoggingSheetSlot() {
  * it was. The panel scrolls through the public region (GLOBAL-03).
  */
 export function SetLoggingSheetOverlay() {
-  const open = useSetLoggingSheetOpen()
+  // TASK-043: an entry drawn in the focused logging dialog brings the native
+  // modal's own backdrop; this layer stays closed and draws no second dim.
+  const open = useSetLoggingSheetLayerOpen()
   return (
     <div className="clr-set-sheet-layer" data-open={open ? '' : undefined}>
       {open ? <div aria-hidden="true" className="clr-set-sheet-layer__backdrop" /> : null}
@@ -178,6 +198,40 @@ function capitalised(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+/**
+ * The entry's one title: `Log set N`, `Edit set N` — `Log round N` — or, once
+ * saved, `Set N logged`. The half-sheet draws it in its own head; the focused
+ * logging dialog draws it as the dialog's title (TASK-043).
+ */
+export function setSheetTitle({
+  mode,
+  entryName,
+  confirmation,
+}: {
+  mode: SetSheetMode
+  entryName: string
+  confirmation?: SetSheetConfirmation
+}): string {
+  return confirmation === undefined
+    ? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`
+    : `${capitalised(confirmation.entryName)} logged`
+}
+
+/**
+ * Focuses the holding dialog's title, so the reader lands on `Set N logged`
+ * when Save replaces the form — but only when focus has nowhere else to be:
+ * the dialog's own opening focus on its X is left alone. The title is made a
+ * programmatic focus target only (never in the Tab order).
+ */
+function focusDialogTitle(titleId: string) {
+  const active = document.activeElement
+  if (active !== null && active !== document.body && active.isConnected) return
+  const title = document.getElementById(titleId)
+  if (title === null) return
+  if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1')
+  title.focus({ preventScroll: true })
+}
+
 const STRUCTURE_BLEED_STYLE = { '--bleed': 'var(--border-frame-structure)' } as CSSProperties
 
 const CONTEXT_STYLE: CSSProperties = {
@@ -215,12 +269,73 @@ export function SetLoggingSheet({
   // the title is already in view, and its region has not been sized yet:
   // scrolling to it there would leave the sheet opened part-way down.
   const hosted = use(SetLoggingSheetHostContext) !== null
+  // TASK-043: held by the focused logging dialog, whose title is this entry's.
+  const dialogTitleId = useLoggingOverlayTitle()
   // A Save replaces the form, and its focused action, with the confirmation:
   // the title takes focus again so the reader lands on `Set N logged`.
   const confirmed = confirmation !== undefined
   useEffect(() => {
-    document.getElementById(titleId)?.focus({ preventScroll: hosted })
-  }, [titleId, hosted, confirmed])
+    if (dialogTitleId !== null) focusDialogTitle(dialogTitleId)
+    else document.getElementById(titleId)?.focus({ preventScroll: hosted })
+  }, [titleId, hosted, confirmed, dialogTitleId])
+
+  const contextLine =
+    context === undefined || context === null ? null : <p style={CONTEXT_STYLE}>{context}</p>
+  const restCard = rest === undefined ? <RestTimerBar /> : rest
+  const saved =
+    confirmation === undefined ? null : (
+      <div role="status" className="clr-stack clr-stack--tight clr-set-sheet__saved">
+        {confirmation.reading}
+      </div>
+    )
+  const entryForm =
+    confirmation !== undefined ? null : (
+      <form
+        aria-label={formLabel}
+        onSubmit={submitWith(onSubmit)}
+        className="clr-stack clr-stack--tight"
+      >
+        {measures}
+        {effort}
+        {mode === 'edit' && onClear !== undefined ? (
+          <ActionGroup>
+            <Button type="button" variant="quiet" size="sm" aria-label={`Clear set ${setNumber}`} onClick={onClear}>
+              Clear set
+            </Button>
+          </ActionGroup>
+        ) : null}
+        {mode === 'edit' ? (
+          <ActionGroup className="clr-action-group--paired">
+            <Button type="button" variant="secondary" size="lg" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
+              Save correction
+            </Button>
+          </ActionGroup>
+        ) : null}
+        {mode === 'edit' ? null : (
+          <ActionGroup>
+            <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
+              Log {entryName}
+            </Button>
+          </ActionGroup>
+        )}
+      </form>
+    )
+
+  if (dialogTitleId !== null) {
+    // The dialog draws the frame, the title and the framed X; this is the
+    // body under them, in the same order the half-sheet draws it.
+    return (
+      <div className="clr-set-log" data-mode={mode}>
+        {contextLine}
+        {restCard}
+        {saved}
+        {entryForm}
+      </div>
+    )
+  }
 
   return (
     // Portalled out of the block's card, the sheet is not inside it: React
@@ -245,9 +360,7 @@ export function SetLoggingSheet({
           <div className="clr-row clr-set-sheet__head">
             <HeadingLevelProvider level={2}>
               <Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {confirmation === undefined
-                  ? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`
-                  : `${capitalised(confirmation.entryName)} logged`}
+                {setSheetTitle({ mode, entryName, confirmation })}
               </Heading>
             </HeadingLevelProvider>
             <IconButton
@@ -259,50 +372,13 @@ export function SetLoggingSheet({
             />
           </div>
 
-          {context === undefined || context === null ? null : <p style={CONTEXT_STYLE}>{context}</p>}
+          {contextLine}
 
-          {rest === undefined ? <RestTimerBar /> : rest}
+          {restCard}
 
-          {confirmation === undefined ? null : (
-            <div role="status" className="clr-stack clr-stack--tight clr-set-sheet__saved">
-              {confirmation.reading}
-            </div>
-          )}
+          {saved}
 
-          {confirmation !== undefined ? null : (
-          <form
-            aria-label={formLabel}
-            onSubmit={submitWith(onSubmit)}
-            className="clr-stack clr-stack--tight"
-          >
-            {measures}
-            {effort}
-            {mode === 'edit' && onClear !== undefined ? (
-              <ActionGroup>
-                <Button type="button" variant="quiet" size="sm" aria-label={`Clear set ${setNumber}`} onClick={onClear}>
-                  Clear set
-                </Button>
-              </ActionGroup>
-            ) : null}
-            {mode === 'edit' ? (
-              <ActionGroup className="clr-action-group--paired">
-                <Button type="button" variant="secondary" size="lg" onClick={onCancel}>
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
-                  Save correction
-                </Button>
-              </ActionGroup>
-            ) : null}
-            {mode === 'edit' ? null : (
-              <ActionGroup>
-                <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
-                  Log {entryName}
-                </Button>
-              </ActionGroup>
-            )}
-          </form>
-          )}
+          {entryForm}
         </div>
       </div>
     </section>

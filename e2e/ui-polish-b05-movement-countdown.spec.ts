@@ -479,7 +479,11 @@ function sourceIdentity() {
 }
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-const sheet = (page: Page) => page.locator('section.clr-set-sheet')
+/**
+ * The open entry: a superset round's or circuit entry's half-sheet, or — since
+ * TASK-043 (C45) — a standard block's set in the shared focused logging dialog.
+ */
+const sheet = (page: Page) => page.locator('section.clr-set-sheet, dialog.clr-accepted-log[open]')
 
 /** The one movement card, by its heading, on the main screen. */
 function card(page: Page, heading: string): Locator {
@@ -505,7 +509,8 @@ async function advance(page: Page, ms: number) {
 }
 
 async function collapseSheet(page: Page) {
-  await page.getByRole('button', { name: 'Minimize' }).click()
+  // TASK-043: the half-sheet's Minimize, or the focused log's framed X.
+  await page.getByRole('button', { name: /^(Minimize|Close log)$/ }).click()
   await expect(sheet(page)).toHaveCount(0)
 }
 

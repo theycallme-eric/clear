@@ -25,7 +25,7 @@
     },
     {
       "path": "src/ui/timer-frame-layout.test.tsx",
-      "sha256": "3d8404860585fbfce29172f419de7c10842cd134d8e14cb52c0475f3d74a11d9"
+      "sha256": "00270f64f6a60f01d9b99568fd49de196bbd200bfecaff3304e04465dbb7f623"
     }
   ],
   "requiredCases": [

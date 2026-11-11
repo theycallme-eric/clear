@@ -269,6 +269,12 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
 const sheet = (page: Page) => page.locator('section.clr-set-sheet')
+/**
+ * TASK-043: a standard block's set entry — the back squat here — is the shared
+ * focused logging dialog, not the half-sheet; the superset's round stays on
+ * the half-sheet (TASK-044). The open log, while it is open.
+ */
+const logDialog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
 /** The one movement card, by its heading, on the main screen. */
@@ -308,11 +314,11 @@ async function expectRestFrom(page: Page, previous: Reading | number, advanced =
   return { seconds: current, at: Date.now() }
 }
 
-/** The sheet, then the whole phone screen, attached to the case. */
-async function attachSheet(page: Page, name: string) {
-  await expect(sheet(page)).toBeVisible()
+/** The sheet (or, since TASK-043, the set's log), then the whole phone screen, attached to the case. */
+async function attachSheet(page: Page, name: string, surface: Locator = sheet(page)) {
+  await expect(surface).toBeVisible()
   await test.info().attach(`${name}-sheet.png`, {
-    body: await sheet(page).screenshot({ animations: 'disabled', caret: 'hide' }), contentType: 'image/png',
+    body: await surface.screenshot({ animations: 'disabled', caret: 'hide' }), contentType: 'image/png',
   })
   await attachScreen(page, name)
 }
@@ -323,12 +329,16 @@ async function attachScreen(page: Page, name: string) {
   })
 }
 
-/** The saved-entry confirmation: title, read-back and no form, beside the one rest. */
-async function expectConfirmation(page: Page, title: string) {
-  await expect(sheet(page)).toHaveCount(1)
-  await expect(sheet(page).getByRole('heading', { name: title, exact: true })).toBeVisible()
-  await expect(sheet(page).getByRole('form')).toHaveCount(0)
-  const status = sheet(page).locator('.clr-set-sheet__frame > [role="status"]')
+/**
+ * The saved-entry confirmation: title, read-back and no form, beside the one
+ * rest. TASK-043: a set's confirmation is read from its focused logging
+ * dialog; a superset round's from the half-sheet.
+ */
+async function expectConfirmation(page: Page, title: string, surface: Locator = logDialog(page)) {
+  await expect(surface).toHaveCount(1)
+  await expect(surface.getByRole('heading', { name: title, exact: true })).toBeVisible()
+  await expect(surface.getByRole('form')).toHaveCount(0)
+  const status = surface.locator('.clr-set-sheet__frame > [role="status"], .clr-set-log > [role="status"]')
   await expect(status).toBeVisible()
   return status
 }
@@ -378,28 +388,28 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
         values: { weight: 100, weight_unit: 'kg', actual_reps: 5, effort: 'about_right' },
       })
       // The rest is the sheet's same timer card, before the confirmation.
-      await expect(sheet(page).getByRole('region', { name: 'Rest', exact: true })).toBeVisible()
-      expect(await sheet(page).evaluate((section) => {
+      await expect(logDialog(page).getByRole('region', { name: 'Rest', exact: true })).toBeVisible()
+      expect(await logDialog(page).evaluate((section) => {
         const restCard = section.querySelector('[aria-label="Rest"]')!
-        const saved = section.querySelector('.clr-set-sheet__frame > [role="status"]')!
+        const saved = section.querySelector('.clr-set-log > [role="status"]')!
         return Boolean(restCard.compareDocumentPosition(saved) & Node.DOCUMENT_POSITION_FOLLOWING)
       })).toBe(true)
       remaining = await expectRestFrom(page, remaining)
       await noHorizontalOverflow(page)
       await checkA11y()
-      await attachSheet(page, `confirmation-set-1-${size}`)
+      await attachSheet(page, `confirmation-set-1-${size}`, logDialog(page))
 
       // ── The rest runs on beside it, then its end collapses and resets ────
       await page.clock.fastForward(10_000)
       remaining = await expectRestFrom(page, remaining, 10)
       await expectConfirmation(page, 'Set 1 logged')
       await page.clock.fastForward((remaining.seconds + 2) * 1000)
-      await expect(sheet(page)).toHaveCount(0)
+      await expect(logDialog(page)).toHaveCount(0)
       await expect(restBars(page)).toHaveCount(0)
       await expect(rest).toBeFocused()
       await expect(rest).toHaveAttribute('aria-expanded', 'false')
       await page.clock.fastForward(60_000)
-      await expect(sheet(page)).toHaveCount(0)
+      await expect(logDialog(page)).toHaveCount(0)
       expect(app.attempts).toHaveLength(1)
       await checkA11y()
       await attachScreen(page, `collapsed-at-rest-end-${size}`)
@@ -416,8 +426,9 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
       await expect.poll(() => app.mutations.length).toBe(2)
 
       // ── Early collapse: the rest ending never reopens it ─────────────────
-      await page.getByRole('button', { name: 'Minimize', exact: true }).click()
-      await expect(sheet(page)).toHaveCount(0)
+      // TASK-043: the log's framed X ("Close log") is its collapse (was Minimize).
+      await page.getByRole('button', { name: 'Close log', exact: true }).click()
+      await expect(logDialog(page)).toHaveCount(0)
       await expect(rest).toBeFocused()
       // R17: collapsed, the same rest is the footer's shared timer card.
       remaining = await expectRestFrom(page, remaining, 3)
@@ -425,7 +436,7 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
       await page.clock.fastForward((remaining.seconds + 2) * 1000)
       await expect(restBars(page)).toHaveCount(0)
       await page.clock.fastForward(30_000)
-      await expect(sheet(page)).toHaveCount(0)
+      await expect(logDialog(page)).toHaveCount(0)
       expect(app.attempts).toHaveLength(2)
 
       // ── The superset round: per-movement actuals, one rest ───────────────
@@ -450,7 +461,7 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
       await plank.getByRole('radio', { name: 'About right' }).check()
       await page.clock.fastForward(4000)
       await round.getByRole('button', { name: 'Log round 1', exact: true }).click()
-      const roundStatus = await expectConfirmation(page, 'Round 1 logged')
+      const roundStatus = await expectConfirmation(page, 'Round 1 logged', sheet(page))
       await expect(roundStatus).toContainText('A1 bench press · Set 1 · 7 reps · 135 lb')
       await expect(roundStatus).toContainText('A2 plank · Set 1 · 28 sec')
       await expect(roundStatus.getByRole('img', { name: 'Effort: too easy' })).toBeVisible()
@@ -505,7 +516,7 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
 
     // A refused write: held on this device, never said to be saved.
     const status = await expectConfirmation(page, 'Set 1 logged')
-    await expect(sheet(page).getByRole('heading', { name: 'Set 1 logged', exact: true })).toBeFocused()
+    await expect(logDialog(page).getByRole('heading', { name: 'Set 1 logged', exact: true })).toBeFocused()
     await expect(status).toContainText('Set 1 · 6 reps')
     await expect(status).toContainText('On this device only')
     await expect(status).not.toContainText('Saved')
@@ -517,7 +528,7 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
     remaining = await expectRestFrom(page, remaining)
 
     // Add 30s is the rest's own, and the confirmation stays beside it.
-    const sheetRest = sheet(page).getByRole('region', { name: 'Rest', exact: true })
+    const sheetRest = logDialog(page).getByRole('region', { name: 'Rest', exact: true })
     await sheetRest.getByRole('button', { name: 'Add 30s' }).focus()
     await page.keyboard.press('Enter')
     // The same period, 30 s longer: not restarted from the prescription.
@@ -527,16 +538,16 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
 
     // Its final-seconds warning records nothing and ends nothing.
     await page.clock.fastForward((remaining.seconds - 6) * 1000)
-    await expect(sheet(page).getByText('Final 10 seconds', { exact: true })).toBeVisible()
+    await expect(logDialog(page).getByText('Final 10 seconds', { exact: true })).toBeVisible()
     await expectConfirmation(page, 'Set 1 logged')
     expect(app.attempts).toHaveLength(2)
     await checkA11y()
-    await attachSheet(page, 'confirmation-final-seconds-reduced-motion-phone-390')
+    await attachSheet(page, 'confirmation-final-seconds-reduced-motion-phone-390', logDialog(page))
 
     // Skip rest ends the rest, and with it the confirmation; focus returns.
     await sheetRest.getByRole('button', { name: 'Skip rest' }).focus()
     await page.keyboard.press('Enter')
-    await expect(sheet(page)).toHaveCount(0)
+    await expect(logDialog(page)).toHaveCount(0)
     await expect(restBars(page)).toHaveCount(0)
     await expect(rest).toBeFocused()
     expect(app.attempts).toHaveLength(2)
@@ -559,9 +570,10 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
     expect(app.mutations[1]).toMatchObject({ set_number: 2, values: { actual_reps: 4 } })
     await page.clock.fastForward(120_000)
     await expectConfirmation(page, 'Set 2 logged')
-    await page.getByRole('button', { name: 'Minimize', exact: true }).focus()
+    // TASK-043: the log's framed X ("Close log") is its collapse (was Minimize).
+    await page.getByRole('button', { name: 'Close log', exact: true }).focus()
     await page.keyboard.press('Enter')
-    await expect(sheet(page)).toHaveCount(0)
+    await expect(logDialog(page)).toHaveCount(0)
     await expect(rest).toBeFocused()
     expect(app.attempts).toHaveLength(3)
     app.assertContained()

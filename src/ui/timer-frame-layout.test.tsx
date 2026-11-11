@@ -193,7 +193,8 @@ describe('TASK-007 whole timer frames and independent functional clocks', () => 
     const lift = screen.getAllByRole('button', { name: 'Rest' })[0]
     await user.click(lift)
     const log = await screen.findByRole('form', { name: /^Log set 1 of back squat$/i })
-    const sheet = log.closest<HTMLElement>('.clr-set-sheet')!
+    // TASK-043: the open log is the standard block's focused logging dialog.
+    const sheet = log.closest<HTMLElement>('dialog.clr-accepted-log')!
     const [rest] = rests()
     expect(sheet).toContainElement(rest)
 
@@ -317,7 +318,8 @@ describe('TASK-007 whole timer frames and independent functional clocks', () => 
     expect(reading(countdown())).toBe('00:19')
 
     // Minimised: the same rest, now the footer's, at the same reading.
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    // TASK-043: the log's framed X ("Close log") is its collapse (was Minimize).
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     expect(screen.queryByRole('form', { name: /^Log set 1 of plank$/i })).toBeNull()
     expect(rests()).toHaveLength(1)
     const inFooter = within(rests()[0]).getByRole('timer', { name: 'Time remaining' })

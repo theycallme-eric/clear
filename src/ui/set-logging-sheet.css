@@ -133,3 +133,20 @@
   gap: var(--spacing-200);
   align-items: end;
 }
+
+/* TASK-043 (REQ-019; C45; R82, R100): the same entry held by the shared
+   focused logging dialog (`.clr-accepted-log`). The dialog draws the frame,
+   the title, the framed X, the backdrop and the inner scroll; this is only
+   the body under its header — the context, the running rest, the
+   confirmation and the form — set apart by the accepted logging section gap,
+   as the accepted reference sets its rest apart from its fields. */
+.clr-set-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--logging-section-gap);
+  min-width: 0;
+}
+
+.clr-set-log > p {
+  margin: 0;
+}

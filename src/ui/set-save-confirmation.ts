@@ -123,9 +123,15 @@ export function useSaveConfirmation({
 /**
  * Whether the reader was in the sheet (or nowhere) when the rest ended, so an
  * automatic collapse returns focus to the entry action only then — never
- * pulling it away from somewhere else the athlete went.
+ * pulling it away from somewhere else the athlete went. Since TASK-043 the
+ * entry may be held by the focused logging dialog (`.clr-accepted-log`), whose
+ * X and title are part of it too.
  */
 export function focusIsInSetSheet(): boolean {
   const focused = document.activeElement
-  return focused === null || focused === document.body || focused.closest('.clr-set-sheet') !== null
+  return (
+    focused === null ||
+    focused === document.body ||
+    focused.closest('.clr-set-sheet, .clr-accepted-log') !== null
+  )
 }

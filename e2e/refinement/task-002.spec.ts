@@ -552,7 +552,8 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
       // Workout's contextual action by touch: Rest opens this set's entry. Nothing is logged.
       await contextList(page, 'workout', 'standard').getByRole('button', { name: 'Rest', exact: true }).first().tap()
       await expect(page.getByRole('form', { name: 'Log set 1 of back squat' })).toBeVisible()
-      await page.getByRole('button', { name: 'Minimize' }).tap()
+      // TASK-043: the standard block's entry is the focused logging dialog; its X closes it (was Minimize).
+      await page.getByRole('button', { name: 'Close log' }).tap()
       await expect(page.getByRole('form', { name: 'Log set 1 of back squat' })).toBeHidden()
       app.assertContained()
     })
