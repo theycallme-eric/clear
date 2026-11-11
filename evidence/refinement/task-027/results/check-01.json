@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/workout-chrome.test.tsx",
-      "sha256": "97a33cbcf0129105f21ecb3e99327a2c6056744b36c19f5fb61d21e42dcbe930"
+      "sha256": "57270cb00dcfd45cd0e393efe9430da078f6fc4212c0c25e467706b2281f4805"
     }
   ],
   "requiredCases": [

@@ -84,6 +84,26 @@ function actionsInRow(): HTMLButtonElement[] {
   return Array.from(pairedRow().querySelectorAll('button'))
 }
 
+/**
+ * TASK-027 (C54; owner decision 2026-11-10): the section heading is visually
+ * hidden in the compact navigator, so a move lands on the opened section's
+ * first card — the first card frame after its navigator — which the athlete
+ * can see. Waits for the section's (hidden) heading first.
+ */
+async function openedSectionCard(name: string): Promise<HTMLElement> {
+  const heading = await screen.findByRole('heading', { level: 2, name })
+  const navigator = heading.closest('[data-section-navigation]')
+  if (!(navigator instanceof HTMLElement)) throw new Error(`No navigator heads ${name}`)
+  const card = [...document.querySelectorAll<HTMLElement>('.clr-card__body')].find(
+    (frame) => !navigator.contains(frame)
+      && Boolean(navigator.compareDocumentPosition(frame) & Node.DOCUMENT_POSITION_FOLLOWING),
+  )
+  if (card === undefined) throw new Error(`No card follows ${name}`)
+  // Visible: not the hidden heading, nor anything else visually hidden.
+  expect(card.closest('.a11y-hidden')).toBeNull()
+  return card
+}
+
 async function jumpTo(user: ReturnType<typeof userEvent.setup>, name: string) {
   await user.click(screen.getByRole('button', { name: 'All sections' }))
   await user.click(screen.getByRole('button', { name }))
@@ -189,7 +209,7 @@ describe('AC-065: readable, aligned, reachable, and the same flow', () => {
 
     await user.click(within(pairedRow()).getByRole('button', { name: 'Previous' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Warm-up' })).toHaveFocus()
+    expect(await openedSectionCard('Warm-up')).toHaveFocus()
     expect(within(pairedRow()).getByRole('button', { name: 'Previous' })).toBeDisabled()
     expect(within(footerNav()).getByRole('progressbar', { name: 'Section 1 of 3' })).toBeInTheDocument()
     expect(double.recorded()).toEqual([])
@@ -201,7 +221,7 @@ describe('AC-065: readable, aligned, reachable, and the same flow', () => {
 
     await user.click(within(pairedRow()).getByRole('button', { name: 'Next section' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Conditioning' })).toHaveFocus()
+    expect(await openedSectionCard('Conditioning')).toHaveFocus()
     expect(double.recorded().length).toBeGreaterThan(0)
     expect(within(footerNav()).getByRole('progressbar', { name: 'Section 3 of 3' })).toBeInTheDocument()
   })

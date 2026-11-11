@@ -501,7 +501,9 @@ describe('Workout — the active section header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Previous' }))
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Warm-up' })).toHaveFocus()
+    // TASK-027: the heading is visually hidden; Previous lands on the
+    // opened section's first card, as a jump does.
+    expect(firstCard('Warm-up')).toHaveFocus()
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
@@ -513,7 +515,9 @@ describe('Workout — the active section header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Conditioning' })).toHaveFocus()
+    await screen.findByRole('heading', { level: 2, name: 'Conditioning' })
+    // TASK-027: Next lands on the opened section's first card, as a jump does.
+    expect(firstCard('Conditioning')).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Conditioning, not started' })).toHaveAttribute(
       'aria-current',
       'step',

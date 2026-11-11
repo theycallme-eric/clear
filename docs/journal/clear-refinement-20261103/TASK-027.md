@@ -201,7 +201,69 @@ Not protected (no task's required case; updated in scope):
   (run under the lock, then removed), so they are not caused by this change. Not TASK-027 scope;
   reported for the controller.
 
+## Repair round 1 (2026-11-11, reviewer verdict on `0301257`)
+
+The reviewer accepted AC-C54-01, AC-R027-01 and JOURNEY-027 and raised one scope issue, routed to
+repair: Previous/Next still focused the section h2 that this task made visually hidden, so a sighted
+keyboard user saw no focus after them. The controller also asked for a flaky clock check to be made
+robust. Both earlier statements in this note that "Previous/Next keep focusing the heading" and
+that `workout-footer-nav.test.tsx` was unchanged are superseded by this section (earlier text kept
+as the record of the first pass).
+
+Changes:
+
+- `src/app/Workout.tsx` — every move (Previous, Next, a list jump, reselecting the open section)
+  now lands on the opened section's first card frame (`firstCardAfter`), falling back to the
+  heading only when the section draws no card. The `'heading' | 'card'` target type and the separate
+  `jumpTo` were removed; `goTo` is used for the footer and the list alike. Restore on mount still
+  grabs no focus.
+- Earlier heading-focus assertions updated under the owner decision of 2026-11-10 ("Yes, go ahead").
+  No case renamed; no `required-cases.json` edited; none of these files is any task's guard target
+  (checked every `evidence/refinement/*/required-cases.json`):
+  - `src/app/workout-footer-nav.test.tsx` — new helper `openedSectionCard(name)` (waits for the
+    section's h2, finds the first card after its navigator, asserts it is not inside anything
+    `.a11y-hidden`); "keeps Previous disabled…" and "saves the open section before Next…" now
+    assert that card has focus instead of the h2.
+  - `src/app/Workout.test.tsx` — "moves focus to the section Previous opens…" and "…Next opens…"
+    assert `firstCard('Warm-up')` / `firstCard('Conditioning')` focus instead of the h2.
+  - `e2e/ui-polish-integrated.spec.ts` — new helper `expectOpenedSectionFocused(page, section,
+    movement)`: the section's h2 still exists, the first card after the navigator is focused and
+    visible and contains the section's movement. Used at the three former heading checks
+    (Accessory / hollow body hold, Primary lift / back squat, Conditioning / hollow body hold).
+- `e2e/refinement/task-027.spec.ts` (own) — the keyboard/reduced-motion/reload case now ends with
+  Previous from the keyboard after the reload: the Press card is focused with `:focus-visible`
+  true, the navigator reads `All sections2 / 4`, the logged set and every status are unchanged,
+  nothing written. Case name unchanged.
+- `src/ui/workout-chrome.test.tsx` (own) — the real-route AC-R027-01 case compared rendered
+  session-clock text that ticks every 500 ms. It now pins the wall clock with
+  `vi.useFakeTimers({ toFake: ['Date'] })` + `vi.setSystemTime` (real timers keep driving React,
+  the double and user events; `afterEach(vi.useRealTimers)` in the describe). It asserts `12:30`
+  at entry and after both jumps (not reset), then moves the system time 5 s and waits for `12:35`
+  (it runs on from the same stored start; a reset would read `00:05`). Stronger than before.
+
+Verification (worktree on `0301257` + these changes):
+
+- `npx eslint` on all six changed source/spec files — exit 0. `npx tsc --noEmit` — exit 0.
+- `npx vitest run src/app/workout-footer-nav.test.tsx src/app/Workout.test.tsx` — 86/86 passed.
+- `npx vitest run src/ui/workout-chrome.test.tsx` three times — 44/44 each.
+- TASK-027 check-01 guard — PASSED, 44/44, 4 required cases passed; receipt rewritten.
+- TASK-027 check-02 guard under the V2 host lock — PASSED, 4/4; receipt rewritten. (First attempt
+  hit a lock timeout — environment wait, retried.)
+- `npm test` — 269 files, 6360 tests passed. `npm run build` — exit 0. `npm run lint:ds` — exit 0.
+- Sweep without the guard, under the lock, of the refinement specs that use Previous/Next or jumps
+  (task-007, 009, 010, 011, 013, 014, 015, 020): 29 passed, 3 failed — the same three
+  `task-009.spec.ts` "one result group" failures recorded above as failing on unmodified `0060324`.
+- `e2e/ui-polish-integrated.spec.ts` under the lock: all 5 cases fail at entry, before the edited
+  lines (the app stays on the boot `CLEAR` h1 — lines 573/844 — and the superset case's session
+  timer has no digits at line 890). This is the pre-existing "ui-polish-integrated failures" item in
+  the running summary; the three edited assertions (now lines 786, 828, 959) are therefore not
+  executed. The same behaviour is proven by the vitest cases above and by task-027 check-02.
+
+Left unproven: the ui-polish-integrated edits are unexecuted (pre-existing entry failure); Next by
+keyboard is proven in jsdom only (in the contained browser spec Next would save, which the spec
+forbids); the earlier unexecuted backend-lane/b05 edits are unchanged.
+
 ## Next action
 
-Controller verification and commit. Owner/UAT items above (draft reset on jump, Previous/Next
-focus, collapsed status, scroll after jump) and the TASK-009 base failures go to the controller.
+Controller verification and commit. Owner/UAT items above (draft reset on jump, collapsed status,
+scroll after jump; Previous/Next focus resolved in repair round 1) and the TASK-009 base failures go to the controller.

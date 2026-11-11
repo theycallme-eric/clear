@@ -490,6 +490,18 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
     expect((await readNavigator(page)).visible).toBe('All sections3 / 4')
     await expect(firstCard(page)).not.toBeFocused()
     expect(await chipNames(page)).toEqual(STATUSES_AT_ENTRY)
+
+    // Previous from the keyboard lands where a jump does: the opened section's
+    // first card, with its focus drawn — never the visually hidden heading.
+    const previous = page.getByRole('navigation', { name: 'Workout sections' })
+      .getByRole('button', { name: 'Previous', exact: true })
+    await previous.focus()
+    await page.keyboard.press('Enter')
+    await expect(firstCard(page)).toBeFocused()
+    expect(await firstCard(page).evaluate((node) => node.matches(':focus-visible'))).toBe(true)
+    expect((await readNavigator(page)).visible).toBe('All sections2 / 4')
+    expect(await loggedSets(page)).toBe(1)
+    expect(await chipNames(page), 'Previous marks nothing complete').toEqual(STATUSES_AT_ENTRY)
     app.assertContained()
   })
 

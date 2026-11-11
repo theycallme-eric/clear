@@ -832,6 +832,9 @@ function mountWorkoutRoute(): { double: WorkoutDouble } {
 }
 
 describe('TASK-027 compact live navigator preserves section access', () => {
+  // The real-route case pins wall-clock time (Date only); always restore it.
+  afterEach(() => vi.useRealTimers())
+
   it('AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen', () => {
     const progress = mixedProgress()
     renderWithProviders(
@@ -915,6 +918,12 @@ describe('TASK-027 compact live navigator preserves section access', () => {
 
   it('AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were', { timeout: 30_000 }, async () => {
     const user = userEvent.setup()
+    // Pin the wall clock (Date only: real timers keep driving React, the
+    // double and the user events), so the session clock's reading is
+    // deterministic instead of racing its 500 ms tick. The session started
+    // 12:30 before this instant.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-04T09:00:00.000Z'))
     const { double } = mountWorkoutRoute()
     await screen.findByRole('heading', { level: 1, name: 'Workout' })
     await screen.findByRole('navigation', { name: 'Workout sections' })
@@ -926,8 +935,9 @@ describe('TASK-027 compact live navigator preserves section access', () => {
     expect(navigatorFrame().closest('.clr-card')).toBeNull()
     const loggedBefore = within(firstCardAfterNavigator()).getByRole('list', { name: 'Logged sets' })
     expect(within(loggedBefore).getAllByRole('listitem')).toHaveLength(1)
-    const sessionTime = () => screen.getByRole('timer', { name: 'Session time' }).textContent
-    const clockBefore = sessionTime()
+    const sessionTime = () => screen.getByRole('timer', { name: 'Session time' })
+    // The clock reads the session's stored start, not the moment of mounting.
+    expect(sessionTime()).toHaveTextContent('12:30')
 
     // Jump away by keyboard: the Conditioning AMRAP's own card takes focus.
     const toggle = screen.getByRole('button', { name: 'All sections' })
@@ -964,7 +974,11 @@ describe('TASK-027 compact live navigator preserves section access', () => {
       'Conditioning, not started',
     ])
     expect(screen.getByRole('progressbar', { name: 'Section 2 of 3' })).toHaveAttribute('aria-valuenow', '1')
-    expect(sessionTime()).toBe(clockBefore)
+    // The clock was not reset by either jump: at the same instant it reads the same 12:30…
+    expect(sessionTime()).toHaveTextContent('12:30')
+    // …and it runs on from that same start: five seconds later, 12:35 (a reset would read 00:05).
+    vi.setSystemTime(Date.now() + 5_000)
+    await waitFor(() => expect(sessionTime()).toHaveTextContent('12:35'))
   })
 
   it('AC-C54-01 the accepted gallery state ?state=cards draws the route’s own compact navigator before the live cards, jumping a memory-only position with nothing read or written', async () => {

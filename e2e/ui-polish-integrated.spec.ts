@@ -527,6 +527,22 @@ async function timerSeconds(timer: Locator) {
   return digits[0].split(':').reduce((seconds, value) => seconds * 60 + Number(value), 0)
 }
 
+/**
+ * TASK-027 (C54; owner decision 2026-11-10): the compact navigator's section
+ * heading is visually hidden, so Previous and Next land on the newly active
+ * section's first card (the first card frame after its navigator), which a
+ * sighted athlete can see. The section's heading still names it.
+ */
+async function expectOpenedSectionFocused(page: Page, section: string, movement: RegExp) {
+  await expect(page.getByRole('heading', { level: 2, name: section, exact: true })).toHaveCount(1)
+  const card = page.locator(
+    'xpath=//*[@data-section-navigation]/following::*[contains(concat(" ", normalize-space(@class), " "), " clr-card__body ")][1]',
+  )
+  await expect(card).toBeFocused()
+  await expect(card).toBeVisible()
+  await expect(card).toContainText(movement)
+}
+
 test.use({ timezoneId: 'UTC' })
 
 test.beforeEach(({ browserName }, testInfo) => {
@@ -767,7 +783,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
 
       // Paired navigation forward to the timed movement and its own clock.
       await tap(next)
-      await expect(page.getByRole('heading', { level: 2, name: 'Accessory' })).toBeFocused()
+      await expectOpenedSectionFocused(page, 'Accessory', /hollow body hold/i)
       await expect(nav.getByRole('progressbar', { name: 'Section 2 of 2' })).toBeVisible()
       // The last section's right-hand action is the existing finish, not pressed.
       await unclipped(nav.getByRole('button', { name: 'Finish workout', exact: true }), viewport)
@@ -809,7 +825,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
 
       // And back: Previous returns to the first section.
       await tap(previous)
-      await expect(page.getByRole('heading', { level: 2, name: 'Primary lift' })).toBeFocused()
+      await expectOpenedSectionFocused(page, 'Primary lift', /back squat/i)
       await expect(nav.getByRole('progressbar', { name: 'Section 1 of 2' })).toBeVisible()
       expect(await timerSeconds(sessionTime)).toBeGreaterThanOrEqual(sessionAtEntry + SQUAT_REST + 40)
       await expect(page).toHaveURL((url) => url.pathname === '/workout')
@@ -940,7 +956,7 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     expect(api.mutations).toHaveLength(2)
 
     await tap(next)
-    await expect(page.getByRole('heading', { level: 2, name: 'Conditioning', exact: true })).toBeFocused()
+    await expectOpenedSectionFocused(page, 'Conditioning', /hollow body hold/i)
     await expect(nav.getByRole('progressbar', { name: 'Section 2 of 3' })).toBeVisible()
     const roundClock = page.getByRole('group', { name: 'Round clock', exact: true })
     await expect(roundClock.getByRole('status')).toHaveText('No rounds recorded')
