@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-038",
+  "description": "Retain coaching and empty-state content inventory (REQ-038; AC-R038-01, AC-R038-02). Definition-only: no copy change, hide or replacement rule, route, gallery state, CSS, token, writer or migration. The record is docs/definitions/clear-refinement-20261103/TASK-038.md, checked by TASK-039’s shared definition-record checker (scripts/refinement/verify-definition-record.mjs) with the extra sections State inventory, Fixture and catalog identity, Catalog content findings, Notes availability and Gallery disposition. check-01 proves: every claim bullet cites a source and every source is cited; every identifier and quoted string a claim names occurs in the verified bytes of a source it cites (no invented string); every state word the Coaching and notes owner (src/ui/exercise-coaching.tsx) exports or draws is inventoried, with missing entry, blank cues/regression, blank user note, loading and failure apart; fixture/catalog identity is recomputed from the gallery cards/states fixtures, the shared test fixture and the seeded 140-row catalog (FK, read policy, no inserting migration) and recorded before the catalog findings, whose regression count is recomputed from the seed; the note field sits outside every guidance condition in the owner and TASK-005’s note case is a current passing receipt; one exact owner decision G21-COACHING-EMPTY-RULE (Owner: Eric) with H1-H4, Q1-Q2, W1-W2 and none pre-selected, and every empty answer is still drawn; R73/G21/G11/REQ-038/both criteria/TASK-038/#665 and both evidence ids stay in Traceability, and the accepted coverage map still lists REQ-038 with state cards and its shared owners (accepted gallery eded158cfd928d382c9a9409e2c372270312741d) while the cards state draws the actual GroupExerciseCoaching. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "node-test",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-038 --check check-01 -- node --test scripts/refinement/task-038-definition.test.mjs",
+      "criteria": [
+        "AC-R038-01",
+        "AC-R038-02"
+      ],
+      "files": [
+        "scripts/refinement/task-038-definition.test.mjs"
+      ],
+      "cases": [
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the record passes the shared definition-record checker with its inventory, identity, catalog findings, notes and gallery sections",
+          "criterion": "AC-R038-01"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every claim cites a listed source and every listed source is cited",
+          "criterion": "AC-R038-01"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every identifier and quoted string a claim names occurs in a source that claim cites",
+          "criterion": "AC-R038-01"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the inventory holds every guidance and note state the owner draws, in the owner’s words, with missing content, blank notes, loading and failure apart",
+          "criterion": "AC-R038-01"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+          "criterion": "AC-R038-01"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt",
+          "criterion": "AC-R038-02"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the hide/replacement/content rule is one exact owner decision with no option pre-selected, and nothing is hidden or reworded",
+          "criterion": "AC-R038-02"
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the follow-up stays in source-to-task traceability, and the accepted cards state draws the actual owner without claiming the inventory",
+          "criterion": "AC-R038-02"
+        }
+      ]
+    }
+  }
+}
