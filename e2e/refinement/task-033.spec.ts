@@ -723,12 +723,24 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     const before = await storageSnapshot(page)
     frame = await compose(page)
     expectOneGlass(frame, 'open log', 'running')
-    expectOneEdge(frame, 'body', 'open log')
+    // TASK-043: the open log is itself a native dialog now (the standard
+    // block's focused logging dialog), so the one edge is drawn in its top
+    // layer — above the open log — rather than on the body under it.
+    expectOneEdge(frame, 'dialog:open', 'open log')
     expect(frame.urgentTimers.map((timer) => timer.label).sort()).toEqual(['Countdown', 'Time remaining'])
     expect(await edgeIsTopmost(page), 'the edge paints above the open log').toEqual([true, true, true, true, true, true])
     const overLog = await glassOver(page, log)
     expectGlassOver(overLog, 'open log')
     await attach(page, 'route-log-composed-phone-390')
+
+    // TASK-043: the log's framed X closes it before the menu (the workout
+    // behind the modal log is inert); the one edge returns to the body, in phase.
+    await tap(page.getByRole('button', { name: 'Close log' }))
+    await expect(log).toHaveCount(0)
+    await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('body')
+    frame = await compose(page)
+    expectOneGlass(frame, 'log closed', 'running')
+    expectOneEdge(frame, 'body', 'log closed')
 
     // A native dialog over everything: the edge follows it into the top layer and the glass stays in front.
     await tap(page.getByRole('button', { name: 'Actions' }))
@@ -774,7 +786,12 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     frame = await compose(page)
     expectOneGlass(frame, 'dialog closed', 'running')
     expectOneEdge(frame, 'body', 'dialog closed')
+    // TASK-043: the draft is read by reopening the log with the plank's Rest,
+    // then the log is closed again before the deadlines run out.
+    await tap(holdCard.getByRole('button', { name: 'Rest', exact: true }))
     await expect(draftField).toHaveValue('42')
+    await tap(page.getByRole('button', { name: 'Close log' }))
+    await expect(log).toHaveCount(0)
 
     // Cleanup: the deadlines run out; nothing urgent is left, the glass is still one.
     await pass(page, 5)
@@ -796,7 +813,11 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     await dialogA11y(page)
     await tap(dialog.getByRole('button', { name: 'Keep going' }))
     await expect(dialog).toBeHidden()
+    // TASK-043: reopened with the plank's Rest to read the kept draft.
+    await tap(holdCard.getByRole('button', { name: 'Rest', exact: true }))
     await expect(draftField).toHaveValue('42')
+    await tap(page.getByRole('button', { name: 'Close log' }))
+    await expect(log).toHaveCount(0)
     app.assertContained()
   })
 

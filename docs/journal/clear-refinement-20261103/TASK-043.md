@@ -5,8 +5,9 @@ exception to the shared daily journal for this body. Only TASK-043 writes this f
 
 ## Status
 
-Candidate complete, awaiting controller verification and commit. See "Verification" for exactly what
-was run and "Open items" for what is not proven.
+Repair round 1 complete (on candidate `b369673`), awaiting controller verification and commit. See
+"Repair round 1" at the end for what changed after the review, and "Verification" / "Open items" for
+the first pass.
 
 ## History of this attempt
 
@@ -178,6 +179,75 @@ All on the rebased tree (base `0060324`). Every Playwright guard ran under
   closes at once without its own exit fade.
 - UAT: after Save correction the log stays open on the next entry (existing behaviour, now modal).
 - Superset movement corrections and the circuit's optional entry stay on the half-sheet (TASK-044).
+
+## Repair round 1 (2026-11-11)
+
+Review `reviews/TASK-043-a1-fafe579f17d5.json` rejected the candidate: a required TASK-033 check-01
+case regressed and was not swept. Fixed under the same owner decision (2026-11-10): locators and
+assertions updated with their meaning kept, case names kept, no `required-cases.json` edited, each
+affected owner's exact guard re-run.
+
+### Earlier tasks' checks changed in this round, line by line
+
+- **TASK-033 check-01, `e2e/refinement/task-033.spec.ts`, case "JOURNEY-033 touch phone-390 /workout:
+  one front glass over the open log and a native dialog…" (l.694, name unchanged):**
+  - ~l.729: open-log edge host `body` → `dialog:open` (the open log is a native dialog now, so the
+    one edge is drawn in its top layer, above the log). The glass, urgent-timer, topmost-paint and
+    glass-over-log assertions are unchanged.
+  - ~l.736–743 (added): `Close log` before Actions (the workout behind the modal log is inert), then
+    the log is gone, the edge returns to `body` (polled) and `expectOneGlass` + `expectOneEdge(body)`
+    hold, in phase.
+  - ~l.788–794: after "Keep going", the draft `42` is read by reopening the log with the plank's
+    Rest, then the log is closed with `Close log` before the deadlines run out (and before the second
+    Actions/Abandon).
+  - ~l.814–820: after the second "Keep going", the same reopen with Rest → draft `42` → `Close log`.
+  - Everything else in the case (dialog edge host, effects off/on, storage unchanged, a11y,
+    containment) is unchanged.
+- **TASK-008 check-02, `e2e/refinement/task-008.spec.ts` touch case:** `bodyEdge` is now captured
+  after the "minimised" probe (~l.620), i.e. the body edge just before Abandon, so "a new element,
+  pinned to the same epoch" again compares the Abandon dialog's edge with the body edge (round 0
+  captured it inside the log dialog).
+- **TASK-020 check-01, `src/ui/set-logging-sheet.test.tsx`:** the case renamed in the first pass to
+  "titles the dialog Log set N with its framed Close log X, then…" lost the word "collapse" and so
+  dropped out of TASK-020's guard pattern `rest|save|collapse` (17 → 16). Renamed to "titles the
+  dialog Log set N with its framed Close log X as the top collapse control, then context, fields and
+  one full-width action" (meaning unchanged); the guard executes 17 again.
+- **Correction to "No case renamed" above:** that line is true for the TASK-020 describe and for other
+  tasks' specs. In TASK-043's own migration of `set-logging-sheet.test.tsx` (brief-owned) six cases
+  were renamed to describe the dialog instead of the half-sheet (pinned foot, title/collapse,
+  collapse/reopen, frame, accent bar, Edit set N). Of those, only the title/collapse case had changed
+  TASK-020 guard membership; it is fixed above. No `required-cases.json` names any of them.
+
+### Guards re-run in this round (exact manifest commands)
+
+- `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-033 --check check-01 -- npx playwright test e2e/refinement/task-033.spec.ts --project=mobile`:
+  PASSED, 8 total / 8 executed / 8 passed / 0 skipped. Receipt
+  `evidence/refinement/task-033/results/check-01.json` refreshed.
+- `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-008 --check check-02 -- npx playwright test e2e/refinement/task-008.spec.ts --project=mobile`:
+  PASSED, 5/5/5/0. Receipt refreshed.
+- `node scripts/refinement/run-required-check.mjs --task TASK-020 --check check-01 -- npx vitest run src/ui/set-logging-sheet.test.tsx --testNamePattern "rest|save|collapse" --passWithNoTests=false`:
+  PASSED, 36 total, 17 executed, 17 passed, 19 skipped. Receipt refreshed (16 → 17 executed).
+
+### Full sweep
+
+`node …/v2.mjs with-lock -- npx playwright test e2e/refinement/ --project=mobile --workers=1`
+(every `e2e/refinement/task-*.spec.ts`, 144 tests): 140 passed, 4 failed, 18.4 min. Per spec:
+task-001 9/9, task-002 7/7, task-003 5/5, task-004 5/5, task-005 5/5, task-006 7/7, task-007 7/7,
+task-008 5/5, task-009 0/3 (the three "one result group" cases at l.472, l.571, l.647 — known
+pre-existing, also failing on base `0060324` per the review), task-010 3/3, task-011 3/3, task-012
+5/5, task-013 5/5, task-014 5/5, task-015 3/3, task-020 3/3, task-022 4/4, task-023 5/5, task-024
+6/6, task-025 5/5, task-026 5/5, task-028 11/11, task-029 13/13, task-033 7/8, task-043 7/7.
+
+- task-033 l.902 ("JOURNEY-033 reduced motion phone-320…", gallery `ladder-long`) failed once in the
+  sweep at "long log header: the glass is painted over this foreground" (0 changed pixels). It passed
+  in the TASK-033 guard run, 4/4 with `--repeat-each=4` alone, and the whole spec passed 16/16 with
+  `--repeat-each=2 --workers=1`. TASK-043 does not touch `ladder-long`, `TimedResultLog`,
+  `LoggingOverlay` or the glass; treated as an intermittent paint-reading flake [inferred], not
+  reproduced on base in this round.
+- `npx vitest run`: 269 files, 6356 tests passed.
+- `npx eslint` on the three edited files: 0 errors, 0 warnings.
+- `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks <all 34 task dirs except TASK-039>`:
+  PASSED, every receipt current.
 
 ## Next action
 

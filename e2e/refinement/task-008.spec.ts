@@ -604,7 +604,6 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     expect(await edgeIsTopmost(page), 'the edge paints above the open log').toEqual([true, true, true, true, true, true])
     expect(await storageSnapshot(page)).toEqual(before)
     await attach(page, 'log-open-edge-phone-390')
-    const bodyEdge = frame.edges[0].breathes[0].name
 
     // Minimised in the final seconds: the rest moves to the footer, the edge stays one.
     // TASK-043: the log's framed X ("Close log", was Minimize) closes it here,
@@ -616,6 +615,9 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     frame = await probe(page)
     expectOneSoftEdge(frame, 'body', 'minimised')
     expectOnePhase(frame, 'minimised')
+    // TASK-043: the body edge is read here, just before the dialog opens (the
+    // open-log edge above is inside the log's own dialog).
+    const bodyEdge = frame.edges[0].breathes[0].name
 
     // A native dialog opens over everything: the one edge moves into its top layer.
     await tap(page.getByRole('button', { name: 'Actions' }))

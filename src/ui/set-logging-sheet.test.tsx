@@ -263,7 +263,7 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     showModal.mockRestore()
   })
 
-  it('titles the dialog Log set N with its framed Close log X, then context, fields and one full-width action', async () => {
+  it('titles the dialog Log set N with its framed Close log X as the top collapse control, then context, fields and one full-width action', async () => {
     const user = userEvent.setup()
     mount()
     const sheet = within(await openSheet(user))
