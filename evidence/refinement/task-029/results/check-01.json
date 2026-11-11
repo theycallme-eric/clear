@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-029",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/movement-identity.test.tsx",
+    "--testNamePattern",
+    "equipment",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-029/required-cases.json",
+    "sha256": "7224ea194ac5b46fbe4afeb4944d541ce772ccb57a988a825b7bcf53a72cbff3"
+  },
+  "targets": [
+    {
+      "path": "src/ui/movement-identity.test.tsx",
+      "sha256": "87052120ba7ffc633625454a5245148260a2160f49035eeb75258422990792f8"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 preserves the verified equipment inventory: the 75 shipped icons unchanged, Dumbbell and WeightPlate the only equipment glyphs, and Setup’s 16 equipment ids",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 keeps the equipment wanted list in step with the inventory: every Setup id’s glyph status and next step, the medicine ball as a review label",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 preserves the approved round effort faces: only Frown, Meh, Smile and SmilePlus are round, and Effort still reuses Frown, Meh and Smile",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 reads the Wall ball’s medicine ball as composed equipment without inventing a medicine-ball setup id",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment offers exactly the 16 Setup equipment choices, each named in words, and no medicine ball",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-02 JOURNEY-029 reads every equipment kind as a readable label beside its name in Review and Workout, glyph or none, and Review’s Required equipment in words",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery: a failed Start keeps Review’s equipment labels and Required equipment as they were and records no work",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-029 equipment asset inventory and readable fallback > renders the accepted gallery state assets: the shared equipment inventory, then the routes’ own Review, Workout and Setup equipment as readable labels",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 19
+  },
+  "problems": []
+}

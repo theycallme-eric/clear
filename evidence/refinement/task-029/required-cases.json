@@ -1,0 +1,157 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-029",
+  "description": "Equipment asset inventory and readable fallback (REQ-029; C56; R122, R132; AC-C56-01, AC-R029-01, AC-R029-02; JOURNEY-029). The verified inventory is stated in source by src/ui/refinements/equipment-assets.ts and recorded in docs/design/library/refinements-2026-11-04/authority/EQUIPMENT-ICON-WANTED-LIST.md: the 75 shipped icons of src/design-system/assets/icons.tsx unchanged (pinned to the accepted reference eded158cfd928d382c9a9409e2c372270312741d), Dumbbell and WeightPlate the only equipment glyphs, the approved round Frown/Meh/Smile/SmilePlus exception with Effort still reusing Frown, Meh and Smile, Setup's 16 equipment ids unchanged and no medicine-ball setup id. On the real /review and /workout routes (existing Review hand-off and auth guard) one composition naming every Setup id and the Wall ball's medicine ball shows each equipment as the readable label beside its movement name, never a glyph alone, and Review's Required equipment names each kind in words; Setup (/onboarding, through the onboarding guard) names its sixteen choices in words. A failed Start keeps every label. JOURNEY-029 is read in each skin (clear, vapour, signal, mono): on /review and /workout every equipment label paints the skin's own --text-secondary and measures at WCAG AA text contrast (4.5:1) against its captured ground, with the axe scan run per skin, and Setup's sixteen worded choices are read and scanned per skin. The accepted gallery state /gallery/refinements?state=assets draws the shared inventory and the routes' own Review, Workout and Setup equipment. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-01 -- npx vitest run src/ui/movement-identity.test.tsx --testNamePattern equipment --passWithNoTests=false",
+      "criteria": [
+        "AC-C56-01",
+        "AC-R029-01",
+        "AC-R029-02",
+        "JOURNEY-029"
+      ],
+      "files": [
+        "src/ui/movement-identity.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 preserves the verified equipment inventory: the 75 shipped icons unchanged, Dumbbell and WeightPlate the only equipment glyphs, and Setup’s 16 equipment ids",
+          "criterion": "AC-C56-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 keeps the equipment wanted list in step with the inventory: every Setup id’s glyph status and next step, the medicine ball as a review label",
+          "criterion": "AC-C56-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 preserves the approved round effort faces: only Frown, Meh, Smile and SmilePlus are round, and Effort still reuses Frown, Meh and Smile",
+          "criterion": "AC-R029-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 reads the Wall ball’s medicine ball as composed equipment without inventing a medicine-ball setup id",
+          "criterion": "AC-R029-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment offers exactly the 16 Setup equipment choices, each named in words, and no medicine ball",
+          "criterion": "AC-R029-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-02 JOURNEY-029 reads every equipment kind as a readable label beside its name in Review and Workout, glyph or none, and Review’s Required equipment in words",
+          "criterion": "AC-R029-02"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery: a failed Start keeps Review’s equipment labels and Required equipment as they were and records no work",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > renders the accepted gallery state assets: the shared equipment inventory, then the routes’ own Review, Workout and Setup equipment as readable labels",
+          "criterion": "AC-C56-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-02 -- npx playwright test e2e/refinement/task-029.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C56-01",
+        "AC-R029-01",
+        "AC-R029-02",
+        "JOURNEY-029"
+      ],
+      "files": [
+        "e2e/refinement/task-029.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 phone-320: every equipment kind reads as a label beside its name in Review and Workout, glyph or none, and Review’s Required equipment names each in words",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 phone-390: every equipment kind reads as a label beside its name in Review and Workout, glyph or none, and Review’s Required equipment names each in words",
+          "criterion": "AC-R029-02"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment phone-320: the sixteen Setup choices are named in words, none is a medicine ball, and touch and keyboard answer them",
+          "criterion": "AC-R029-01"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin clear phone-320: every equipment kind reads as a label beside its name in Review and Workout in the clear skin, with each label's contrast passing and Required equipment in words",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin clear phone-320: the sixteen Setup choices are visible words in the clear skin and none is a medicine ball",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin vapour phone-320: every equipment kind reads as a label beside its name in Review and Workout in the vapour skin, with each label's contrast passing and Required equipment in words",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin vapour phone-320: the sixteen Setup choices are visible words in the vapour skin and none is a medicine ball",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin signal phone-320: every equipment kind reads as a label beside its name in Review and Workout in the signal skin, with each label's contrast passing and Required equipment in words",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin signal phone-320: the sixteen Setup choices are visible words in the signal skin and none is a medicine ball",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin mono phone-320: every equipment kind reads as a label beside its name in Review and Workout in the mono skin, with each label's contrast passing and Required equipment in words",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin mono phone-320: the sixteen Setup choices are visible words in the mono skin and none is a medicine ball",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery phone-320: a failed Start and its keyboard retry keep every equipment label and Required equipment as they were, record no work, and Start stays reachable",
+          "criterion": "JOURNEY-029"
+        },
+        {
+          "file": "e2e/refinement/task-029.spec.ts",
+          "project": "mobile",
+          "name": "TASK-029 equipment asset inventory and readable fallback > gallery assets phone-320: the accepted state draws the shared inventory, then the routes’ own Review, Workout and Setup equipment as readable labels, with nothing read or written",
+          "criterion": "AC-C56-01"
+        }
+      ]
+    }
+  }
+}

@@ -96,6 +96,13 @@
  * one shared `ErrorView` every application error screen renders, its frame,
  * accent bar, emission and glyph on the one error role in every skin, with
  * its Retry; a regression reference, unchanged (`gallery-refinement-errors.tsx`).
+ *
+ * `assets`: the verified equipment asset inventory and its readable fallback
+ * (TASK-029: C56; R122, R132) — the shared inventory's shipped Dumbbell and
+ * WeightPlate and every Setup id's glyph status, then the routes' own
+ * Required equipment group, Review and Workout cards and Setup equipment
+ * step over one composition naming every kind: each equipment a readable
+ * label, never a glyph alone (`gallery-refinement-scenes.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -110,7 +117,7 @@ import {
   GalleryLadderLongResults,
   GalleryLadderResults,
 } from './gallery-refinement-forms'
-import { GalleryOverviewSummary, GalleryPreparation, GalleryScreens } from './gallery-refinement-scenes'
+import { GalleryEquipmentAssets, GalleryOverviewSummary, GalleryPreparation, GalleryScreens } from './gallery-refinement-scenes'
 import { GalleryTimerFrames } from './gallery-refinement-timers'
 
 function GalleryLadderFour() {
@@ -135,6 +142,7 @@ const REFINEMENT_STATES = [
   { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
   { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields · Setup · pinned title, step and progress · History · title row, status and date, and filter options', Render: GalleryScreens },
   { id: 'errors', title: 'Released error semantics', Render: GalleryErrors },
+  { id: 'assets', title: 'Equipment icon inventory · readable equipment labels in Review, Workout and Setup', Render: GalleryEquipmentAssets },
 ] as const
 
 export function GalleryRefinements() {
