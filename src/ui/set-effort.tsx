@@ -60,6 +60,12 @@ export type SetEffortChoiceProps = {
   readonly onChange: (next: SetEffort | null) => void
   /** The question's legend; the sheet's established `Effort` unless the caller's context names it. */
   readonly legend?: string
+  /**
+   * TASK-048: a saved answer keeps its face and is no longer offered — the
+   * choices take the shared disabled role and no Clear is drawn. Offered
+   * unless set.
+   */
+  readonly disabled?: boolean
 } & (
   /** The set being entered or corrected — it names the Clear control. */
   | { readonly setNumber: number; readonly scopeLabel?: never }
@@ -67,7 +73,7 @@ export type SetEffortChoiceProps = {
   | { readonly scopeLabel: string; readonly setNumber?: never }
 )
 
-export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange }: SetEffortChoiceProps) {
+export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange, disabled = false }: SetEffortChoiceProps) {
   const rowRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -83,6 +89,7 @@ export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEG
               <span className="a11y-hidden">{label}</span>
             </>
           ),
+          ...(disabled ? { disabled: true } : {}),
         }))}
         value={value ?? undefined}
         onChange={(next) => {
@@ -90,7 +97,7 @@ export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEG
           if (chosen !== undefined && isSetEffort(chosen)) onChange(chosen)
         }}
       />
-      {value !== null && (
+      {value !== null && !disabled && (
         <div className="clr-set-effort__clear">
           <Button
             type="button"

@@ -1,0 +1,59 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-048",
+  "description": "Visible ladder recovery and accidental-Finish restoration (REQ-032; AC-R032-01, AC-R032-02, AC-R032-03; JOURNEY-032, completion owner) on the real route /workout over two true timed ladders (src/test/ladder-recovery-fixture.ts). The existing owners are used, not recreated: TASK-032's durable attempt (usePersistedLadder, clear.workout-ladders) now holds the whole current draft — the answer, the rounds, the per-movement entries, and the categorical effort and notes — and the shell's one completion path (BlockCompletionProvider) says how a block's row is known (this device's answered save or otherwise), keeps the saved row for read-back, tells a failed save, and lets a ladder whose own richer save failed reopen its block for the retry. Two backend-lane cases run on the authorized disposable test lane (PRE-001: a namespaced throwaway user, the session persisted by persist_session and started by start_session, the app's own writers against the hosted project, faults injected in the browser only, rows read back with the service role filtered to that user's ids, the user deleted in finally); a missing backend fails these cases and is never a skipped proof. Two synthetic-lane twins run the same journey bodies over a contained PostgREST double (not backend proof). One synthetic case drives the browser's fake clock through pre/post-expiry, a paused ladder closed for hours, a running ladder closed past its cap, a real tab close and reopen and a dropped connection. One gallery case checks the accepted states (eded158cfd928d382c9a9409e2c372270312741d: ?state=ladder-4, ladder-12) draw the route's own LadderBlock keeping the whole draft over memory only. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-048 --check check-01 -- npx playwright test e2e/refinement/task-048.spec.ts --project=mobile",
+      "criteria": [
+        "AC-R032-01",
+        "AC-R032-02",
+        "AC-R032-03",
+        "JOURNEY-032"
+      ],
+      "files": [
+        "e2e/refinement/task-048.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-048.spec.ts",
+          "project": "mobile",
+          "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 backend lane touch phone-390: a running and a paused ladder’s ordered progress, whole draft and accidental Finish recover across reloads; Undo resumes from the original start inside the original cap with nothing granted; a refused save keeps the draft and Undo and says so across a reload; the retry writes each row once, Undo is gone, and the saved row is read back after a reload",
+          "criterion": "AC-R032-03"
+        },
+        {
+          "file": "e2e/refinement/task-048.spec.ts",
+          "project": "mobile",
+          "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 backend lane keyboard phone-320 reduced motion: a save whose block row landed while its movement write was refused is not hidden behind Block saved after a reload — the draft, Undo and failure are kept and the retry restates the row once; a just-saved ladder shows its saved result while a later block’s save fails; both are read back from their rows after a reload",
+          "criterion": "AC-R032-03"
+        },
+        {
+          "file": "e2e/refinement/task-048.spec.ts",
+          "project": "mobile",
+          "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 synthetic lane touch phone-390: the same running, paused, accidental-Finish, refused-save and readback journey over a contained PostgREST double (not backend proof)",
+          "criterion": "AC-R032-01"
+        },
+        {
+          "file": "e2e/refinement/task-048.spec.ts",
+          "project": "mobile",
+          "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 synthetic lane keyboard phone-320 reduced motion: the same partly refused save, reload, restatement and later-block failure journey over a contained PostgREST double (not backend proof)",
+          "criterion": "AC-R032-03"
+        },
+        {
+          "file": "e2e/refinement/task-048.spec.ts",
+          "project": "mobile",
+          "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > AC-R032-02 deterministic clocks phone-390: Undo is offered until undoing would resume at the original cap and withdrawn at it; a paused ladder closed for hours comes back paused and frozen; a running ladder closed past its cap comes back capped with its progress carried and no Resume or Undo; a real tab close and reopen and a dropped then regained connection keep every draft; the retry saves each row once",
+          "criterion": "AC-R032-02"
+        },
+        {
+          "file": "e2e/refinement/task-048.spec.ts",
+          "project": "mobile",
+          "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > AC-R032-01 gallery ladder-4 and ladder-12 phone-390: the route’s own LadderBlock keeps the whole draft — rounds, effort and notes — through close and reopen of its log, Finish and Undo, over memory only with nothing stored and no network",
+          "criterion": "AC-R032-01"
+        }
+      ]
+    }
+  }
+}

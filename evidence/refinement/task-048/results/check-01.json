@@ -1,0 +1,77 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-048",
+  "check": "check-01",
+  "verdict": "rejected",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-048.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-048/required-cases.json",
+    "sha256": "37d2d8aea9c42d70335692538cf1c29a2d3d4cf522491c63b430df49994d2f1b"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-048.spec.ts",
+      "sha256": "d9b8049bc0516e8de1a4f1707e97ddd84a930d4468de5a2397e9f00f9ba8770d"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 backend lane touch phone-390: a running and a paused ladder’s ordered progress, whole draft and accidental Finish recover across reloads; Undo resumes from the original start inside the original cap with nothing granted; a refused save keeps the draft and Undo and says so across a reload; the retry writes each row once, Undo is gone, and the saved row is read back after a reload",
+      "project": "mobile",
+      "status": "failed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 backend lane keyboard phone-320 reduced motion: a save whose block row landed while its movement write was refused is not hidden behind Block saved after a reload — the draft, Undo and failure are kept and the retry restates the row once; a just-saved ladder shows its saved result while a later block’s save fails; both are read back from their rows after a reload",
+      "project": "mobile",
+      "status": "failed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 synthetic lane touch phone-390: the same running, paused, accidental-Finish, refused-save and readback journey over a contained PostgREST double (not backend proof)",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 synthetic lane keyboard phone-320 reduced motion: the same partly refused save, reload, restatement and later-block failure journey over a contained PostgREST double (not backend proof)",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > AC-R032-02 deterministic clocks phone-390: Undo is offered until undoing would resume at the original cap and withdrawn at it; a paused ladder closed for hours comes back paused and frozen; a running ladder closed past its cap comes back capped with its progress carried and no Resume or Undo; a real tab close and reopen and a dropped then regained connection keep every draft; the retry saves each row once",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "name": "TASK-048 visible ladder recovery and accidental-Finish restoration > AC-R032-01 gallery ladder-4 and ladder-12 phone-390: the route’s own LadderBlock keeps the whole draft — rounds, effort and notes — through close and reopen of its log, Finish and Undo, over memory only with nothing stored and no network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 6,
+    "passed": 4,
+    "failed": 2,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 6
+  },
+  "problems": [
+    "runner exited with code 1",
+    "required case was failed: e2e/refinement/task-048.spec.ts > TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 backend lane touch phone-390: a running and a paused ladder’s ordered progress, whole draft and accidental Finish recover across reloads; Undo resumes from the original start inside the original cap with nothing granted; a refused save keeps the draft and Undo and says so across a reload; the retry writes each row once, Undo is gone, and the saved row is read back after a reload [mobile]",
+    "required case was failed: e2e/refinement/task-048.spec.ts > TASK-048 visible ladder recovery and accidental-Finish restoration > JOURNEY-032 backend lane keyboard phone-320 reduced motion: a save whose block row landed while its movement write was refused is not hidden behind Block saved after a reload — the draft, Undo and failure are kept and the retry restates the row once; a just-saved ladder shows its saved result while a later block’s save fails; both are read back from their rows after a reload [mobile]"
+  ]
+}

@@ -76,6 +76,29 @@
  * reload never finds a saved attempt open. Neither Finish nor Undo completes
  * or leaves the workout: that stays the shell's forward action.
  *
+ * **Visible recovery and save authority** (TASK-048; REQ-032, AC-R032-01,
+ * AC-R032-02, AC-R032-03; JOURNEY-032). The whole current draft is the
+ * durable attempt's — the answer, the rounds, each movement's entry, and now
+ * the optional effort and notes too (TASK-032's `LadderDraft` holds them for
+ * this; LOGGING-FIELDS: "Effort/Notes and reversible Finish draft"), so a
+ * reload, a closed tab or a dropped connection brings every field back, and
+ * an Undo keeps them. The shell says how the block's row is known
+ * (`onBlockRecorded`): this device's own answered save closes the attempt as
+ * saved here (`saveSucceeded`), so a just-saved ladder keeps showing what it
+ * saved — even while a later block's save fails — and a row known otherwise
+ * closes it as saved elsewhere (`markRecorded`). A saved ladder shows its
+ * saved row read back (`recordedResult`, `ladderDraftFromRow`) ahead of its
+ * local echo: the saved or corrected result is the authority, and with no
+ * row known here only the draft this device saved, never a starting point.
+ * A failed save is noted on the attempt (`saveFailed`): the draft, progress
+ * and Undo stay for the retry, and the log says so with the accepted
+ * reference's words until a save succeeds, across reloads. When the row is
+ * known to exist but this attempt's own richer save failed (its block row
+ * landed and a movement write did not, or the answer was lost), the block is
+ * reopened (`reopenBlock`) so the retry restates the row and writes each
+ * movement row once, rather than leaving the draft unsaved behind "Block
+ * saved".
+ *
  * A scheduled ladder (`scheduled_starts`) keeps its start stamp, answer and
  * round in the same durable record, with no cap (TASK-032's
  * `ladderRaceCapSeconds` gives a schedule none, and none is invented here):
@@ -121,9 +144,16 @@
  * reached" (DATA_MODEL §`block_results`). The screen never says it that way:
  * a rung is identified to the user by its target, per the quickfix spec.
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react'
 
-import { useBlockCompletion, type BlockOutcome, type TimedResultReport } from '../state/block-completion'
+import { movementEntryBlank } from '../data/refinement-logging-rules'
+import {
+  useBlockCompletion,
+  type BlockOutcome,
+  type BlockRecordedSource,
+  type RecordedBlockResult,
+  type TimedResultReport,
+} from '../state/block-completion'
 import { forTimeTicking, type ForTimePhase } from '../state/for-time'
 import {
   explicitLadderTiming,
@@ -136,10 +166,12 @@ import {
 } from '../state/ladder'
 import {
   ladderAttemptView,
+  ladderDraftFromRow,
   ladderPartialRound,
   ladderRaceCapSeconds,
   type LadderAttempt,
   type LadderAttemptView,
+  type LadderDraft,
 } from '../state/ladder-recovery'
 import { scheduleIntervalDeadline } from '../state/countdown-urgency'
 import type { LadderTiming } from '../state/schemas'
@@ -174,6 +206,23 @@ const UNSCOPED_SESSION = 'unscoped-session'
  */
 const UNDO_FINISH_LABEL = 'Undo finish · Resume ladder'
 
+/**
+ * TASK-048 (JOURNEY-032 "missing/offline/error states remain explicit"): the
+ * accepted reference's words for a log whose save failed
+ * (`TimedResultLog`, eded158c…), kept until a save succeeds.
+ */
+const SAVE_FAILED_TEXT = 'Your log didn’t save. Try again.'
+
+/**
+ * TASK-048: whether the draft carries anything only the richer save writes —
+ * a category, or a typed amount or load (TASK-015's `reportedTimedEntries`
+ * over the ladder's report).
+ */
+function richerDraft(draft: LadderDraft | null): boolean {
+  if (draft === null) return false
+  return draft.effort !== null || Object.values(draft.movements).some((entry) => !movementEntryBlank(entry))
+}
+
 /** One ladder attempt, as every ladder renderer reads and moves it. */
 interface LadderAttemptHandle {
   /** TASK-032's durable attempt: the clock, ordered progress and the result draft. */
@@ -183,6 +232,8 @@ interface LadderAttemptHandle {
   readonly rungs: readonly LadderRung[]
   /** The server's word that the block's row exists (`isBlockRecorded`). */
   readonly recorded: boolean
+  /** TASK-048: the saved row, as the shell last wrote or read it; null when none is known here. */
+  readonly row: RecordedBlockResult | null
   /** TASK-014: undo the athlete's Finish, keeping the focus with the attempt. */
   readonly undoFinish: () => void
   /** TASK-014: the race's lead control (Pause or Resume once the attempt is back). */
@@ -219,8 +270,11 @@ function useLadderAttempt(
   storage: ShellStorage | null | undefined,
   now: () => number,
 ): LadderAttemptHandle {
-  const { isBlockRecorded, sessionId, onBlockRecorded } = useBlockCompletion()
+  const { isBlockRecorded, sessionId, onBlockRecorded, onBlockSaveFailed, recordedResult, reopenBlock } = useBlockCompletion()
   const recorded = isBlockRecorded(block.blockId)
+  // TASK-048: only a row that is this block's own is read back.
+  const known = recorded ? (recordedResult?.(block.blockId) ?? null) : null
+  const row = known !== null && known.row.block_id === block.blockId ? known : null
   const rungs = ladderRungs(block.exercises)
   const ladder = usePersistedLadder({
     sessionId: sessionId ?? UNSCOPED_SESSION,
@@ -231,13 +285,44 @@ function useLadderAttempt(
     storage,
     now,
   })
-  const { markRecorded, undoFinish: undo } = ladder
+  const { markRecorded, saveSucceeded, saveFailed, undoFinish: undo } = ladder
+
+  // The attempt the listeners below act on: the one whose draft was last
+  // reported to the shell (it reports on every render).
+  const current = useRef(ladder.attempt)
+  useEffect(() => {
+    current.current = ladder.attempt
+  })
 
   // TASK-014 (AC-R014-03): a successful save ends Undo. The shell says the
   // row exists in the same act as its insert is answered, before the forward
   // action moves on and this renderer unmounts, so the durable record is
-  // closed — not left open to an Undo after a reload.
-  useEffect(() => onBlockRecorded?.(block.blockId, markRecorded), [block.blockId, markRecorded, onBlockRecorded])
+  // closed — not left open to an Undo after a reload. TASK-048 (AC-R032-02):
+  // this device's own answered save closes it as saved here, so the screen
+  // keeps what it saved; a row known otherwise closes it as saved elsewhere —
+  // unless this attempt's own richer save failed while its row landed, when
+  // the block is reopened for the retry (AC-R032-03).
+  useEffect(
+    () =>
+      onBlockRecorded?.(block.blockId, (source: BlockRecordedSource) => {
+        const attempt = current.current
+        if (source === 'saved') {
+          saveSucceeded(attempt.identity.attemptId)
+          return
+        }
+        if (attempt.save.status === 'failed' && reopenBlock !== undefined && richerDraft(attempt.draft)) {
+          reopenBlock(block.blockId)
+          return
+        }
+        markRecorded()
+      }),
+    [block.blockId, markRecorded, onBlockRecorded, reopenBlock, saveSucceeded],
+  )
+  // TASK-048 (AC-R032-03): a failed save is kept on the attempt with its draft.
+  useEffect(
+    () => onBlockSaveFailed?.(block.blockId, () => saveFailed(current.current.identity.attemptId)),
+    [block.blockId, onBlockSaveFailed, saveFailed],
+  )
 
   const view = ladderAttemptView(ladder.attempt, { rungCount: rungs.length, now: now(), recorded })
   useElapsedSeconds(forTimeTicking(ladder.attempt.clock) ?? undoExpiry(ladder.attempt, view), now)
@@ -257,7 +342,7 @@ function useLadderAttempt(
     undo()
   }, [undo])
 
-  return { ladder, view, rungs, recorded, undoFinish, leadRef }
+  return { ladder, view, rungs, recorded, row, undoFinish, leadRef }
 }
 
 /**
@@ -290,10 +375,13 @@ function liveProgress({ ladder, view, rungs }: LadderAttemptHandle): LadderRound
  * is saved, the saved row is the answer; a renderer that no longer holds the
  * draft (the server reports a row this device did not see saved) claims no
  * answer rather than a starting point the row may contradict (TASK-032's
- * `saved-elsewhere`). Reading the saved result back is TASK-048's.
+ * `saved-elsewhere`). TASK-048: the saved row is read back when the shell
+ * knows it (`ladderDraftFromRow`), and a ladder this device saved keeps the
+ * draft it saved when no row is known here.
  *
- * Effort stays this renderer's memory (unstored), reported to the shell as the
- * block's categorical effort (TASK-015) and never a number.
+ * Effort and notes are the durable draft's (TASK-048, AC-R032-01), reported
+ * to the shell as the block's categorical effort (TASK-015, never a number)
+ * and its existing notes (TASK-047).
  *
  * TASK-015 (C37; AC-C37-01, AC-R015-01): the per-movement partial and load
  * entries are the durable draft's `movements` (TASK-032's owner, built for
@@ -307,15 +395,18 @@ function liveProgress({ ladder, view, rungs }: LadderAttemptHandle): LadderRound
  */
 function useLadderResult(
   block: BlockRendererProps['block'],
-  { ladder, view, rungs, recorded, undoFinish }: LadderAttemptHandle,
+  { ladder, view, rungs, recorded, row, undoFinish }: LadderAttemptHandle,
   ended: boolean,
 ): { outcome: BlockOutcome; timed: TimedResultReport; log: ReactNode } {
-  const [effort, setEffort] = useState<SetEffort | null>(null)
-  // TASK-047 (REQ-031): the log's optional notes, a draft of this mount as
-  // the effort is, reported as the block's existing `notes` once typed.
-  const [notes, setNotes] = useState('')
   const saved = recorded || !view.editable
-  const draft = view.draft
+  // TASK-048 (AC-R032-02): a saved ladder shows its saved row read back, the
+  // authority ahead of the draft this device saved; with no row known here,
+  // that draft (saved here) or nothing (saved elsewhere).
+  const draft = saved && row !== null ? ladderDraftFromRow(row, rungs.length) : view.draft
+  // TASK-048 (AC-R032-01): the effort and notes are the durable draft's too
+  // (TASK-047's notes, TASK-010's effort), reported as before once given.
+  const effort: SetEffort | null = draft?.effort ?? null
+  const notes = draft?.notes ?? ''
   const completed = draft?.completed ?? (ended && view.editable ? false : null)
   const completedThrough = completed === true ? rungs.length : (draft?.highestRung ?? null)
   const weightUnit = useShellWeightUnit() ?? UNSCOPED_WEIGHT_UNIT
@@ -378,10 +469,12 @@ function useLadderResult(
               // never keeping the top one Complete recorded.
               ladder.editDraft(next.completed ? { completed: true } : { completed: false, highestRung: null })
             }
-            if (next.effort !== effort) setEffort(next.effort)
+            if (next.effort !== effort) ladder.editDraft({ effort: next.effort })
           }}
           // TASK-047: the block's notes, after the effort.
-          notes={{ value: notes, onChange: setNotes }}
+          notes={{ value: notes, onChange: (value) => ladder.editDraft({ notes: value }) }}
+          // TASK-048: a failed save stays explicit until a save succeeds.
+          failure={view.saveFailed && !saved ? SAVE_FAILED_TEXT : null}
         />
       ),
   }

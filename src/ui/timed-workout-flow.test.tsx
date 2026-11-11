@@ -1807,15 +1807,18 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
     await user.click(resultTile('long', 8))
     await user.click(within(ladderLog('long')).getByRole('radio', { name: 'Too hard' }))
 
-    // Close and reopen again: the edited log comes back, not re-imported over;
-    // the effort was this screen's alone, so it comes back unanswered.
+    // Close and reopen again: the edited log comes back, not re-imported over.
+    // TASK-048 (AC-R032-01, superseding "the effort was this screen's alone"):
+    // the effort is part of the durable draft, so it comes back as answered,
+    // kept as the category word in the ladder's own record and nowhere else.
     second.view.unmount()
     clock += 30_000
     const third = await openLadders()
     expect(answerOf('long')).toEqual(['Incomplete'])
     expect(resultPressed('long')).toEqual(through(8))
-    expect(within(ladderLog('long')).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)).toEqual(['Incomplete'])
-    expect(JSON.stringify(localStorage)).not.toMatch(/too_hard|about_right|too_easy/)
+    expect(within(ladderLog('long')).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)).toEqual(['Incomplete', 'Too hard'])
+    expect(stored(WORKOUT_LADDER_STORAGE_KEY)[third.long.blockId]).toMatchObject({ draft: { effort: 'too_hard' } })
+    expect(JSON.stringify(stored(WORKOUT_FOR_TIME_STORAGE_KEY))).not.toMatch(/too_hard|about_right|too_easy/)
     // One durable record per ladder; the For Time record is never written for one.
     expect(Object.keys(stored(WORKOUT_LADDER_STORAGE_KEY)).sort()).toEqual([third.long.blockId, third.short.blockId].sort())
     expect(stored(WORKOUT_FOR_TIME_STORAGE_KEY)).toEqual({})
@@ -1827,14 +1830,17 @@ describe('TASK-013 rep-first ordered live ladder progress and result handoff', (
     expect(ladderRow(third.double, third.long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 8 })
     expect(ladderRow(third.double, third.short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 2 })
 
-    // Back to the saved section: the saved row is the answer, so no draft is
-    // claimed over it and nothing is offered as a choice; no clock action.
+    // Back to the saved section: the saved row is the answer, and nothing is
+    // offered as a choice; no clock action. TASK-048 (AC-R032-02, superseding
+    // "claims no answer"): the saved result is read back — Incomplete through
+    // 8 and through 2, disabled — rather than nothing.
     closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByText(LONG_TIMING_LINE)
-    for (const key of ['long', 'short'] as const) {
-      expect(answerOf(key)).toEqual([])
-      expect(roundsGroup(key)).toBeNull()
+    for (const [key, rung] of [['long', 8], ['short', 2]] as const) {
+      expect(answerOf(key)).toEqual(['Incomplete'])
+      expect(resultPressed(key)).toEqual(through(rung))
+      for (const tile of resultTiles(key)) expect(tile).toBeDisabled()
       for (const radio of within(answerGroup(key)).getAllByRole('radio')) expect(radio).toBeDisabled()
       expect(liveToggles(key)).toEqual([])
       expect(within(ladderCardOf(key)).queryByRole('button', { name: /^(Start ladder|Pause|Resume|Finish)$/ })).toBeNull()
@@ -2303,8 +2309,10 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
       expect(attemptRecord(blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
     }
 
-    // Reopened where the saved row cannot be read back: still no Undo, no
-    // draft claimed over the saved row, nothing to choose or start.
+    // Reopened where the saved row cannot be read back: still no Undo,
+    // nothing to choose or start. TASK-048 (AC-R032-02, superseding "no
+    // draft claimed"): each attempt this device saved shows the draft it
+    // saved, disabled — the long Incomplete through 8 — never a starting point.
     third.view.unmount()
     clock += 60_000
     await reopenAtCooldown({
@@ -2314,9 +2322,10 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     closeTimedLogs()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
     await screen.findByText(LONG_TIMING_LINE)
-    for (const key of ['long', 'short'] as const) {
+    expect(resultPressed('long')).toEqual(through(8))
+    for (const [key, shown] of [['long', ['Incomplete']], ['short', []]] as const) {
       expect(undoOf(key)).toBeNull()
-      expect(answerOf(key)).toEqual([])
+      expect(answerOf(key)).toEqual(shown)
       for (const radio of within(answerGroup(key)).getAllByRole('radio')) expect(radio).toBeDisabled()
       expect(lifecycleControls(key)).toEqual([])
       expect(liveToggles(key)).toEqual([])

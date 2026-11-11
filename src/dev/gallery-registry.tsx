@@ -100,6 +100,7 @@ import {
   TimedActionsReady,
   TimedActionsRunning,
   TimedResultLogLadderUndo,
+  TimedResultLogLadderSaveFailed,
 } from './gallery-refinement-flow'
 import {
   DeadlineTimerBody,
@@ -2335,6 +2336,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       { state: 'For Time · saved', note: 'The saved answer, no longer offered as a choice: the chips’ shared disabled role.', Render: TimedResultLogForTimeSaved },
       { state: 'EMOM · schedule ended', note: 'No counter and no completion question: only the optional notes, blank.', Render: TimedResultLogEmomBlank },
       { state: 'EMOM · an exception noted', note: 'The exception in the athlete’s own words; nothing counts a minute.', Render: TimedResultLogEmomNoted },
+      { state: 'Ladder · save failed, draft kept', note: 'TASK-048: the section’s save was refused — the whole draft and the Undo are kept, and the accepted “Your log didn’t save. Try again.” follows the feedback group until a save succeeds, across reloads.', Render: TimedResultLogLadderSaveFailed },
     ],
   },
   {

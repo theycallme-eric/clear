@@ -57,7 +57,7 @@
  */
 import { Constants, type Enums } from '../data/database.types'
 import type { MovementActualDraft } from '../data/refinement-logging-contract'
-import type { BlockOutcome } from './block-completion'
+import type { BlockOutcome, RecordedBlockResult } from './block-completion'
 import {
   clampForTimeState,
   finishForTime,
@@ -639,5 +639,40 @@ export function ladderAttemptView(attempt: LadderAttempt, { rungCount, now, reco
     outcome: ladderDraftOutcome(draft, rungCount),
     undo: ladderUndoAvailability(attempt, now, recorded),
     saveFailed: attempt.save.status === 'failed',
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-048 — the saved row, read back
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * TASK-048 (REQ-032, AC-R032-02): the ladder's result as its saved row says
+ * it — what a saved ladder shows, ahead of any local draft, because the saved
+ * (or corrected) row is the authority. The inverse of `ladderDraftOutcome`:
+ * the top rung is Complete, a lower rung (zero included) Incomplete through
+ * it, and no rung no answer — never a starting point the row does not hold.
+ * The categorical effort and the notes are the row's own columns; each
+ * movement's entry is its row's amount and load as recorded (a movement with
+ * no row has none, and a recorded zero stays a zero). Nothing is read from
+ * the plan.
+ */
+export function ladderDraftFromRow(recorded: RecordedBlockResult, rungCount: number): LadderDraft {
+  const rung = recorded.row.highest_rung ?? null
+  const stated = rung === null || rungCount === 0 ? null : Math.min(rung, rungCount)
+  const movements: Record<string, MovementActualDraft> = {}
+  for (const [exerciseId, row] of Object.entries(recorded.movements)) {
+    const amount = row.actual_reps ?? row.actual_duration_seconds ?? row.actual_distance
+    movements[exerciseId] = {
+      amount: amount === null ? '' : String(amount),
+      weight: row.weight === null ? '' : String(row.weight),
+    }
+  }
+  return {
+    completed: stated === null ? null : stated === rungCount,
+    highestRung: stated,
+    effort: recorded.row.effort ?? null,
+    notes: recorded.row.notes ?? '',
+    movements,
   }
 }

@@ -243,6 +243,14 @@ export interface CompletionResultLog {
   movements?: MovementEntryLog | null
   /** TASK-047: the block's optional notes, after the effort in the closing feedback group. Omitted or null, none. */
   notes?: TimedNotesField | null
+  /**
+   * TASK-048 (JOURNEY-032: "missing/offline/error states remain explicit"):
+   * the consumer's words for a save of this log that failed and has not yet
+   * succeeded — the accepted reference's `Your log didn’t save. Try again.`
+   * — drawn after the closing feedback group as the reference draws it.
+   * Omitted or null, none.
+   */
+  failure?: string | null
 }
 
 /**
@@ -584,6 +592,7 @@ function CompletionGroups({
   completionAction = null,
   movements = null,
   notes = null,
+  failure = null,
 }: CompletionResultLog) {
   return (
     <>
@@ -623,11 +632,15 @@ function CompletionGroups({
           scopeLabel={EFFORT_SCOPE}
           legend={TIMED_EFFORT_LEGEND}
           value={value.effort}
+          // TASK-048: a saved effort keeps its face and is no longer offered.
+          disabled={saved}
           onChange={(effort) => onChange({ ...value, effort })}
         />
         {/* TASK-047: the block's notes after its effort, in the same closing group. */}
         {notes !== null && <TimedNotes notes={notes} saved={saved} />}
       </ResultGroup>
+      {/* TASK-048: the failed save, after the feedback group (accepted reference). */}
+      {failure !== null && <p role="alert">{failure}</p>}
     </>
   )
 }

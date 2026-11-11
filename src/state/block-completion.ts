@@ -26,6 +26,7 @@ import { createContext, use } from 'react'
 import type { Enums, TablesInsert, TablesUpdate } from '../data/database.types.ts'
 import type { MovementActualDraft, TimedFamily } from '../data/refinement-logging-rules'
 import type { Result } from './errors'
+import type { BlockMovementResultRow, BlockResultRow } from './schemas'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary
@@ -263,8 +264,57 @@ export interface BlockCompletionApi {
    * act, so leaving the section in the same render cannot leave a saved
    * attempt open to Undo after a reload. Returns the unsubscribe. The shell's
    * provider always supplies it; a bare test seam may omit it.
+   *
+   * TASK-048 (AC-R032-02): the listener is told how the row is known
+   * (`BlockRecordedSource`): `saved` when this device's own save of the
+   * block's latest report was answered (the row now holds what it sent),
+   * `known` when the row was already there (a bare insert's 23505, which
+   * leaves the row as it was) or the performed read found it. A listener
+   * that takes no argument is told the same moment, as before.
    */
-  onBlockRecorded?(blockId: string, listener: () => void): () => void
+  onBlockRecorded?(blockId: string, listener: (source: BlockRecordedSource) => void): () => void
+  /**
+   * TASK-048 (AC-R032-03; JOURNEY-032 "Failed save retains the draft"):
+   * calls `listener` once each time the forward action's save of this block
+   * fails (the error the forward action receives, not a row already there).
+   * A renderer keeping a durable record notes the failure on it, so the
+   * draft is kept for the retry and the failure stays explicit after a
+   * reload. Returns the unsubscribe. A bare test seam may omit it.
+   */
+  onBlockSaveFailed?(blockId: string, listener: () => void): () => void
+  /**
+   * TASK-048 (AC-R032-02): the block's row as the shell last wrote or read it
+   * this session — this device's answered save, or the performed read — or
+   * null when no row is known here (none, or a row known only by a 23505).
+   * The saved (or corrected) row is the authority a renderer reads a saved
+   * result back from, ahead of its own local echo. A bare seam may omit it.
+   */
+  recordedResult?(blockId: string): RecordedBlockResult | null
+  /**
+   * TASK-048 (AC-R032-03): the renderer of a block the shell reports as
+   * `known` holds a draft whose own richer save failed and was never
+   * confirmed — the block row landed and a later write of the same save did
+   * not (a refused movement write), or its answer was lost. Called from the
+   * `onBlockRecorded` listener, in the same act, it makes the block
+   * outstanding again instead of recorded, so the section's forward action
+   * saves it once more through the richer path, which restates the row
+   * (23505 → correction) and writes each movement row once. A bare seam may
+   * omit it.
+   */
+  reopenBlock?(blockId: string): void
+}
+
+/** TASK-048: how the shell learned a block's row exists (`onBlockRecorded`). */
+export type BlockRecordedSource = 'saved' | 'known'
+
+/**
+ * TASK-048: a block's saved row and its movements' rows by
+ * `workout_exercises.id`, as the shell last wrote or read them. A movement
+ * with no row is absent: nothing was recorded for it.
+ */
+export interface RecordedBlockResult {
+  readonly row: BlockResultRow
+  readonly movements: Readonly<Record<string, BlockMovementResultRow>>
 }
 
 export const BlockCompletionContext = createContext<BlockCompletionApi | null>(null)
