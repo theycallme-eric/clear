@@ -592,7 +592,8 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
     // ── An optional movement actual, through the circuit's own entry ──
     await page.clock.resume()
     await card.getByRole('button', { name: 'Rest for goblet squat', exact: true }).tap()
-    const sheet = page.locator('section.clr-set-sheet')
+    // TASK-044: the circuit's movement entry is the focused logging dialog (was the half-sheet).
+    const sheet = page.locator('dialog.clr-accepted-log[open]')
     const form = sheet.getByRole('form', { name: 'Log set 1 of goblet squat', exact: true })
     await form.getByLabel('Weight').fill('16')
     await form.getByLabel('Reps').fill('8')
@@ -602,7 +603,7 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
       operation: 'insert', exercise_id: EXERCISE_ID.get('goblet-squat'), set_number: 1,
       values: { weight: 16, actual_reps: 8 },
     })
-    await sheet.getByRole('button', { name: 'Minimize', exact: true }).tap()
+    await sheet.getByRole('button', { name: 'Close log', exact: true }).tap()
     await card.getByRole('button', { name: 'Hide load entry for goblet squat', exact: true }).tap()
     await expect(card.getByText('1 set logged', { exact: true })).toBeVisible()
     // Logging an actual records no round.

@@ -169,12 +169,13 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     await user.click(button('Rest for push up'))
 
     const form = await screen.findByRole('form', { name: 'Log set 1 of push up' })
-    expect(form.closest('.clr-set-sheet')).not.toBeNull()
-    // The sheet is the shell's, in its pinned slot — not drawn inside the row.
+    // TASK-044: the entry is the shared focused logging dialog, a native
+    // modal portalled to the document — not drawn inside the row.
+    expect(form.closest('dialog.clr-accepted-log')).not.toBeNull()
     expect(rows()[1]!.contains(form)).toBe(false)
     expect(screen.getAllByRole('form', { name: /^Log set/ })).toHaveLength(1)
 
-    await user.click(within(form.closest('section')!).getByRole('button', { name: 'Minimize' }))
+    await user.click(within(form.closest('dialog')!).getByRole('button', { name: 'Close log' }))
     expect(screen.queryByRole('form', { name: /^Log set/ })).toBeNull()
     expect(double.loggedSets()).toEqual([])
   })

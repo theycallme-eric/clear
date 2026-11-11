@@ -742,7 +742,7 @@ describe('optional, compact load entry', () => {
     })
     // TASK-020 (C46): the saved set is confirmed, not replaced by set 2's form.
     expect(
-      await screen.findByRole('region', { name: 'Set 1 logged' }),
+      await screen.findByRole('dialog', { name: 'Set 1 logged' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('form', { name: /^Log set \d+ of back squat$/ })).toBeNull()
 
@@ -752,7 +752,9 @@ describe('optional, compact load entry', () => {
     expect(restTimer()).not.toBeInTheDocument()
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
 
-    // Closed again, the row still says a set is behind it.
+    // Closed again, the row still says a set is behind it. TASK-044: the
+    // entry is the focused log, a modal over the card, closed with its X first.
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     await user.click(screen.getByRole('button', { name: 'Hide load entry for back squat' }))
     expect(within(movementRows()[0]!).getByText('1 set logged')).toBeInTheDocument()
   })
@@ -769,17 +771,23 @@ describe('optional, compact load entry', () => {
 
     // TASK-020 (C46): set 1 is confirmed while it is in flight; set 2 is
     // opened deliberately from the movement's Rest.
-    await screen.findByRole('region', { name: 'Set 1 logged' })
+    await screen.findByRole('dialog', { name: 'Set 1 logged' })
     const busy = formFor('back squat', 2).getByRole('button')
     await waitFor(() => expect(busy).toBeDisabled())
     expect(busy).toHaveAttribute('aria-busy', 'true')
 
-    // The other movement and the round stay the athlete's to press.
+    // The other movement and the round stay the athlete's to press. TASK-044:
+    // each entry is the focused log, a modal, so one is closed with its X
+    // before the card behind it is used.
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     await user.click(screen.getByRole('button', { name: 'Rest for romanian deadlift' }))
     expect(formFor('romanian deadlift').getByRole('button', { name: 'Log set 1' })).toBeEnabled()
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
     expect(startRound1()).toBeEnabled()
 
-    await user.click(busy)
+    const stillBusy = formFor('back squat', 2).getByRole('button')
+    expect(stillBusy).toBeDisabled()
+    await user.click(stillBusy)
     expect(attempts).toHaveLength(1)
 
     await act(async () => {

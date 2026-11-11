@@ -254,8 +254,11 @@ export function MemorySetLogClients({ seeded, children }: { seeded: readonly Exe
   return <WorkoutClientsContext value={clients}>{children}</WorkoutClientsContext>
 }
 
-/** The footer's rest, unless the open entry draws it (as `Workout.tsx` does). */
-function GalleryFooterRest() {
+/**
+ * The footer's rest, unless the open entry draws it (as `Workout.tsx` does).
+ * Also the superset state's (TASK-044, `gallery-refinement-group-logging.tsx`).
+ */
+export function GalleryFooterRest() {
   return useSetLoggingSheetOpen() ? null : <RestTimerBar />
 }
 

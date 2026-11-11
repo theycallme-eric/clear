@@ -845,6 +845,9 @@ for (const { name: size, viewport } of VIEWPORTS) {
       // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately,
       // on the rest already running.
       await expect(page.getByRole('heading', { name: 'Round 1 logged', exact: true })).toBeVisible()
+      // TASK-044: the round is the focused log, a modal over the card; it is
+      // closed with its X before the block's Rest is used.
+      await collapseSheet(page)
       await pair.getByRole('button', { name: 'Rest', exact: true }).click()
       await expectRestFrom(page, roundRest, 4)
       const round2 = page.getByRole('form', { name: 'Log round 2 of bench press and plank' })

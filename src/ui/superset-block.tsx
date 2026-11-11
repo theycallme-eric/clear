@@ -32,6 +32,14 @@
  *     saved round is confirmed beside the same rest until that rest ends,
  *     which collapses the sheet; Minimize ends it early, and only the block's
  *     Rest opens round N + 1.
+ *   · **The round is logged in the shared focused dialog** (TASK-044: REQ-019,
+ *     C45; R82, R100). The block's Rest opens `Log round N` in
+ *     `refinements/logging-overlay.tsx` — a native modal over the inert
+ *     workout, titled by the entry, closed by its framed "Close log" X or
+ *     Escape exactly as Minimize closed the half-sheet — and each movement's
+ *     saved-set Edit opens its correction there too. The round's fields,
+ *     Performed identity, draft, writer, confirmation and the one rest are
+ *     unchanged and still the block's and the logger's.
  *
  * Everything else is deliberately `StandardBlock`'s: `ExerciseSetLogger` reads
  * the structured prescription and corrects each saved set through the shell's one path,
@@ -42,7 +50,7 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '../design-system/index'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
@@ -56,6 +64,8 @@ import {
   supersetRound,
   type RoundDraft,
 } from './set-logger'
+import { LoggingOverlay } from './refinements/logging-overlay'
+import { setSheetTitle } from './set-logging-sheet'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
 import { focusIsInSetSheet, useSaveConfirmation } from './set-save-confirmation'
 
@@ -105,7 +115,8 @@ function SupersetRound({ block }: BlockRendererProps) {
   const movements = block.exercises
   const rest = supersetRestText(block.roundRestSeconds, movements.length)
   const { loggedSets } = useSetLogging()
-  const sheet = useSetLoggingSheetPlacement(`round:${block.blockId}`)
+  // TASK-044: the round is entered in the shared focused logging dialog.
+  const sheet = useSetLoggingSheetPlacement(`round:${block.blockId}`, { focused: true })
   const logButton = useRef<HTMLButtonElement>(null)
   // The round being entered, kept here so a collapsed sheet loses nothing.
   const [entry, setEntry] = useState<RoundDraft | null>(null)
@@ -122,9 +133,22 @@ function SupersetRound({ block }: BlockRendererProps) {
     onRestEnd: () => {
       const inSheet = focusIsInSetSheet()
       sheet.setOpen(false)
-      if (inSheet) logButton.current?.focus()
+      if (inSheet) returnFocus()
     },
   })
+
+  // TASK-044: while the modal log is open the workout behind it is inert, so
+  // Rest cannot take focus back until the commit that closes the dialog.
+  const pendingFocus = useRef(false)
+  useEffect(() => {
+    if (sheet.open || !pendingFocus.current) return
+    pendingFocus.current = false
+    logButton.current?.focus()
+  }, [sheet.open])
+  const returnFocus = () => {
+    if (sheet.open) pendingFocus.current = true
+    else logButton.current?.focus()
+  }
 
   // The block's Rest action (REQ-012): open the round sheet and, when no rest
   // is running, start the block's one rest. Log round N only saves.
@@ -144,7 +168,7 @@ function SupersetRound({ block }: BlockRendererProps) {
     // An early collapse ends the confirmation; the rest ending reopens nothing.
     saved.reset()
     sheet.setOpen(false)
-    logButton.current?.focus()
+    returnFocus()
   }
 
   return (
@@ -175,6 +199,8 @@ function SupersetRound({ block }: BlockRendererProps) {
               // REQ-016: entered together, by the block's one action.
               logging={{ round }}
               onReturnToRound={() => logButton.current?.focus()}
+              // TASK-044: a saved set's correction opens in the focused log.
+              focused
             />
           </BlockPanel.MovementItem>
         ))}
@@ -194,18 +220,37 @@ function SupersetRound({ block }: BlockRendererProps) {
       </ActionGroup>
 
       {sheet.place(
-        <SupersetRoundSheet
-          movements={movements.map((exercise) => ({
-            exercise,
-            ordinal: supersetOrdinal(exercise.position),
-          }))}
-          round={round}
-          held={entry}
-          onHeld={setEntry}
-          confirmed={saved.confirmed}
-          onSaved={saved.confirm}
-          onCollapse={collapse}
-        />,
+        // TASK-044: the shared focused logging dialog. Its title is the
+        // round's one title — `Log round N`, then `Round N logged` — and its
+        // X and Escape collapse exactly as Minimize did. The form is drawn
+        // only while open; the round's draft is held here, in `entry`.
+        <LoggingOverlay
+          open={sheet.open}
+          title={setSheetTitle({
+            mode: 'new',
+            entryName: `round ${round}`,
+            confirmation:
+              saved.confirmed === null
+                ? undefined
+                : { entryName: `round ${saved.confirmed}`, reading: null },
+          })}
+          onClose={collapse}
+        >
+          {sheet.open ? (
+            <SupersetRoundSheet
+              movements={movements.map((exercise) => ({
+                exercise,
+                ordinal: supersetOrdinal(exercise.position),
+              }))}
+              round={round}
+              held={entry}
+              onHeld={setEntry}
+              confirmed={saved.confirmed}
+              onSaved={saved.confirm}
+              onCollapse={collapse}
+            />
+          ) : null}
+        </LoggingOverlay>,
       )}
     </>
   )

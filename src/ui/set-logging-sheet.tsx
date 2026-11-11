@@ -38,9 +38,9 @@
  * "Close log", is the entry's one collapse; the frame, backdrop, inner scroll
  * and modal focus are the dialog's. The context, the running rest, the
  * confirmation and the form are unchanged, and so is everything the logger
- * owns: the draft, the writer, Save, errors, correction and clear. A
- * superset's round and a circuit's entries stay on the half-sheet until their
- * own family adopts the dialog (TASK-044).
+ * owns: the draft, the writer, Save, errors, correction and clear. TASK-044
+ * moved a superset's round (and its movements' corrections) and a circuit's
+ * optional movement entry into the same dialog, body only, unchanged.
  */
 import {
   use,

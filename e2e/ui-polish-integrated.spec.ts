@@ -954,9 +954,10 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     expect(api.mutations).toHaveLength(2)
     // TASK-020 (C46): round 1 is confirmed beside the same rest, not replaced
     // by round 2's form.
-    await expect(page.getByRole('region', { name: 'Round 1 logged', exact: true })).toBeVisible()
+    // TASK-044: the round is held by the focused logging dialog; its X closes it (was Minimize).
+    await expect(page.getByRole('dialog', { name: 'Round 1 logged', exact: true })).toBeVisible()
     await expect(page.getByRole('form', { name: 'Log round 2 of bench press and plank', exact: true })).toHaveCount(0)
-    await tap(page.getByRole('button', { name: 'Minimize', exact: true }))
+    await tap(page.getByRole('button', { name: 'Close log', exact: true }))
     await tap(sharedRest.getByRole('button', { name: 'Skip rest', exact: true }))
     await expect(sharedRest).toHaveCount(0)
     expect(api.mutations).toHaveLength(2)
@@ -984,7 +985,8 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     await page.clock.fastForward(2000)
     expect(await timerSeconds(movementClock)).toBeLessThanOrEqual(116)
     expect(api.mutations).toHaveLength(2)
-    await tap(page.getByRole('button', { name: 'Minimize', exact: true }))
+    // TASK-044: the circuit's movement entry is the focused log; its X closes it.
+    await tap(page.getByRole('button', { name: 'Close log', exact: true }))
     await tap(page.getByRole('button', { name: 'Hide load entry for hollow body hold', exact: true }))
     await expect(optionalForm).toHaveCount(0)
     await expect(countdown).toHaveCount(1)
