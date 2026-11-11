@@ -75,6 +75,19 @@
  * equipment step scrolling below — the same shared Screen classes, no route
  * CSS. The draft is in memory (Home gym chosen); nothing is read or written.
  *
+ * TASK-026 (C53, G18; R08, R19) adopts the History part as a deliberate
+ * consolidation. The reference drew a `History` card with a `Filter` select
+ * (All workouts / Completed / Incomplete) over two hand-made
+ * `.clr-accepted-history-row` paragraphs. Here `HistoryScene` draws
+ * `/history`'s own `HistoryCollection` — the `Workout history` card, its
+ * `Show` filter offering All entries, Completed and Partial (no Rest days, no
+ * Not started), and the shared `HistoryList` rows: each title on its own row,
+ * its status and date beneath, then the metrics — over stored rows held in
+ * memory and read by the route's own `historyEntries`, so All entries keeps
+ * the derived rest runs and the never-started workout with its status. The
+ * filter state is in memory; the titles open nothing here, and nothing is
+ * read or written. `.clr-accepted-history-row` is not adopted.
+ *
  * The reference file's other scenes (cards, equipment inventory) belong to
  * other tasks; the cards scene is `gallery-refinement-cards.tsx`
  * (TASK-001/002/003).
@@ -90,6 +103,7 @@ import {
   GenerateIntent,
 } from '../app/Generate'
 import { ONBOARDING_TITLE, SetupProgress, SetupStepView } from '../app/Onboarding'
+import { HISTORY_TITLE, HistoryCollection, historyViewState } from '../app/History'
 import { RegenerateConfirmDialog, ReviewOverview, ReviewRegenerateAction } from '../app/Review'
 import { SessionOverview } from '../app/SessionDetail'
 import { DurationMetric, StreakMetric } from '../app/Summary'
@@ -110,6 +124,7 @@ import {
   type GenerationContext,
   type GenerationDraft,
 } from '../state/generation-form'
+import { filterHistory, historyEntries, type HistoryFilter } from '../state/history'
 import { EMPTY_DRAFT, onboardingReducer, STEP_TITLES } from '../state/onboarding'
 import { composedPreparationGuide, type PreparationSectionType } from '../state/preparation-guide'
 import { reviewBriefing } from '../state/review'
@@ -122,7 +137,9 @@ import { EquipmentSummary } from '../ui/refinements/overview'
 import { ReviewContextCards } from './gallery-refinement-cards'
 import {
   overviewAcceptance,
+  overviewId,
   savedOverviewRecord,
+  savedSessionRow,
   SUMMARY_PAIR,
   type OverviewComposition,
 } from './gallery-refinement-overview-data'
@@ -448,6 +465,69 @@ export function SetupScene() {
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-026: History's row hierarchy and filter options (`?state=screens`)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The instant the gallery's chronology is read at, so its rest runs are fixed. */
+const GALLERY_HISTORY_NOW = new Date('2026-10-31T12:00:00.000Z')
+
+/** A stored session on `date`, ended as `outcome` says. Synthetic and in memory. */
+function galleryHistoryRow(
+  n: number,
+  date: string,
+  title: string,
+  focus: 'lower_body' | 'upper_body' | 'full_body',
+  outcome: 'completed' | 'partial' | 'unstarted',
+  actualMins: number | null,
+) {
+  const row = savedSessionRow({ sessionId: overviewId(900 + n), date, completedAt: `${date}T18:00:00.000Z`, actualDurationMins: actualMins })
+  return {
+    ...row,
+    title,
+    session_focus: focus,
+    requested_duration_mins: 45,
+    effective_intensity: 7,
+    started_at: outcome === 'unstarted' ? null : row.started_at,
+    completed_at: outcome === 'completed' ? row.completed_at : null,
+    abandoned_at: outcome === 'partial' ? `${date}T17:30:00.000Z` : null,
+  }
+}
+
+/** Every outcome the list holds, with rest days between them. */
+const GALLERY_HISTORY_ROWS = [
+  galleryHistoryRow(1, '2026-10-27', 'Balanced lower body', 'lower_body', 'completed', 49),
+  galleryHistoryRow(2, '2026-10-25', 'Balanced upper body', 'upper_body', 'completed', 47),
+  galleryHistoryRow(3, '2026-10-23', 'Full-body conditioning with a longer stored session name', 'full_body', 'partial', 18),
+  galleryHistoryRow(4, '2026-10-22', 'Upper-body strength', 'upper_body', 'unstarted', null),
+]
+
+/**
+ * `/history`'s collection as the route draws it (TASK-026): the route's own
+ * card, filter and rows over stored rows held in memory.
+ */
+export function HistoryScene() {
+  const [filter, setFilter] = useState<HistoryFilter>('all')
+  const entries = historyEntries(GALLERY_HISTORY_ROWS, { now: GALLERY_HISTORY_NOW, timeZone: 'UTC' })
+  const visible = filterHistory(entries, filter)
+  return (
+    <div className="clr-stack" data-gallery-history="">
+      <AppHeader>
+        <Heading className="clr-screen__title">{HISTORY_TITLE}</Heading>
+      </AppHeader>
+      <HistoryCollection
+        state={historyViewState({ status: 'ready' }, entries, visible)}
+        hasHistory={entries.length > 0}
+        filter={filter}
+        onFilter={setFilter}
+        // The titles draw as the route's links; here they open nothing.
+        linkTo={(entry) => `/history/${entry.id}`}
+        onOpen={() => {}}
+      />
+    </div>
+  )
+}
+
 export function GalleryScreens() {
   const [context, setContext] = useState<GenerateSceneContext>('returning')
   return (
@@ -463,6 +543,7 @@ export function GalleryScreens() {
       />
       <GenerateScene key={context} context={context} />
       <SetupScene />
+      <HistoryScene />
     </div>
   )
 }

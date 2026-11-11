@@ -86,6 +86,11 @@
  * (`gallery-refinement-scenes.tsx`). Since TASK-025 (C52; R24) it also draws
  * Setup's equipment step as `/onboarding` pins it: the title, the route's own
  * `SetupProgress` and one divider above its scrolling `SetupStepView`.
+ * Since TASK-026 (C53; R08, R19) it also draws History's collection as
+ * `/history` draws it: the route's own `HistoryCollection` with each title on
+ * its own row and its status and date beneath, and the Show filter offering
+ * All entries, Completed and Partial while All entries keeps the rest runs and
+ * the never-started workout, over stored rows in memory.
  *
  * `errors`: the released semantic error treatment (TASK-028: C55; R22) — the
  * one shared `ErrorView` every application error screen renders, its frame,
@@ -128,7 +133,7 @@ const REFINEMENT_STATES = [
   { id: 'ladder-long', title: 'Long ladder results · final scrolling', Render: GalleryLadderLongResults },
   { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
   { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
-  { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields · Setup · pinned title, step and progress', Render: GalleryScreens },
+  { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields · Setup · pinned title, step and progress · History · title row, status and date, and filter options', Render: GalleryScreens },
   { id: 'errors', title: 'Released error semantics', Render: GalleryErrors },
 ] as const
 

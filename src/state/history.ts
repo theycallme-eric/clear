@@ -250,34 +250,54 @@ function resolveTimeZone(): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * What the list is narrowed to. `rest` is a filter value rather than a toggle
- * because a rest day is an entry in the same chronology, not an overlay on it:
- * "show me the days I rested" is the same question as "show me the ones I
- * finished", asked of the other kind.
+ * What the list is narrowed to (R08, C53; TASK-026). The filter offers the
+ * workout outcomes a person narrows to on purpose — everything, the workouts
+ * they finished and the ones they stopped part way — and nothing else.
+ *
+ * Two choices are deliberately not offered, and neither removal touches a
+ * record or what it means:
+ *
+ *   * **Rest days.** A rest-only view says nothing useful on its own; a rest
+ *     run is context *between* workouts, so it stays in All entries, derived
+ *     exactly as before.
+ *   * **Not started.** A session that was never begun records no performed
+ *     work, so it is not an outcome worth narrowing to. It stays stored, keeps
+ *     its `unstarted` status and its `Not started` word, and is listed under
+ *     All entries with its own detail.
+ *
+ * The options are the useful ones, not every status the list can hold
+ * (R08: "do not treat all enum/storage statuses as user-facing filter
+ * requirements").
  */
-export type HistoryFilter = 'all' | HistorySessionStatus | 'rest'
+export type HistoryFilter = 'all' | 'completed' | 'partial'
 
 export const HISTORY_FILTERS: readonly { readonly value: HistoryFilter; readonly label: string }[] =
   [
     { value: 'all', label: 'All entries' },
     { value: 'completed', label: HISTORY_STATUS_LABELS.completed },
     { value: 'partial', label: HISTORY_STATUS_LABELS.partial },
-    { value: 'unstarted', label: HISTORY_STATUS_LABELS.unstarted },
-    { value: 'rest', label: 'Rest days' },
   ]
 
-/** The filter a stored or typed value names, or `all` for anything else. */
+/**
+ * The filter a stored or typed value names, or `all` for anything else —
+ * including the retired `unstarted` and `rest` values, which now read as the
+ * whole chronology rather than as a narrowing nobody can choose.
+ */
 export function historyFilterOf(value: string): HistoryFilter {
   const known = HISTORY_FILTERS.find((filter) => filter.value === value)
   return known?.value ?? 'all'
 }
 
+/**
+ * The entries a filter shows. `all` is every entry the rows describe, rest
+ * runs and never-started sessions included; a status keeps only the sessions
+ * that resolved to it. Nothing is dropped from the entries themselves.
+ */
 export function filterHistory(
   entries: readonly HistoryEntry[],
   filter: HistoryFilter,
 ): HistoryEntry[] {
   if (filter === 'all') return [...entries]
-  if (filter === 'rest') return entries.filter((entry) => entry.kind === 'rest')
 
   return entries.filter((entry) => entry.kind === 'session' && entry.status === filter)
 }

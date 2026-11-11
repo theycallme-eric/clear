@@ -1,8 +1,10 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import { HISTORY_PAGE_SIZE, type HistoryClient } from '../data/history'
+import { GalleryRefinements } from '../dev/gallery-refinements'
 import { createError, err, ok, ErrorCode } from '../state/errors'
 import type { WorkoutSessionRow } from '../state/schemas'
 import { makeSessionRow } from '../test/factories'
@@ -194,7 +196,7 @@ describe('History route', () => {
     renderHistory({}, sessionRows(2))
 
     await historyList()
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'partial')
     const statement = await screen.findByText(HISTORY_NO_MATCH_TITLE)
     expect(statement.parentElement!.children).toHaveLength(1)
     expect(screen.queryByRole('button', { name: HISTORY_EMPTY_ACTION })).not.toBeInTheDocument()
@@ -211,7 +213,7 @@ describe('History route', () => {
     expect(kept).toContainEqual(expect.stringMatching(/^Intensity \d+\/10$/))
   })
 
-  it('U44: every row groups title and status, then context, then metrics, whatever its status', async () => {
+  it('U44, AC-C53-01: every row has its title on its own row, its status and date beneath, then its metrics, whatever its status', async () => {
     const LONG =
       'Posterior-chain strength with unilateral accessories and a loaded-carry finisher'
     const day = '2026-09-24'
@@ -257,9 +259,9 @@ describe('History route', () => {
       within(list).getByRole('heading', { level: 2, name: title }).closest('li') as HTMLElement
 
     const expectations = [
-      { title: LONG, status: 'Completed', metrics: ['Requested 45 min', 'Actual 38 min', 'Intensity 6/10'] },
-      { title: 'Partial upper', status: 'Partial', metrics: ['Requested 30 min', 'Intensity 7/10'] },
-      { title: 'Never begun', status: 'Not started', metrics: ['Requested 20 min', 'Intensity 7/10'] },
+      { title: LONG, status: 'Completed', metrics: ['Lower body', 'Requested 45 min', 'Actual 38 min', 'Intensity 6/10'] },
+      { title: 'Partial upper', status: 'Partial', metrics: ['Upper body', 'Requested 30 min', 'Intensity 7/10'] },
+      { title: 'Never begun', status: 'Not started', metrics: ['Lower body', 'Requested 20 min', 'Intensity 7/10'] },
     ]
 
     for (const { title, status, metrics } of expectations) {
@@ -267,23 +269,31 @@ describe('History route', () => {
       const parts = [...row.querySelectorAll('[data-part]')].map((node) =>
         node.getAttribute('data-part'),
       )
-      // The same order in every row: head (title + status), context, metrics.
-      expect(parts).toEqual(['head', 'status', 'context', 'metrics'])
+      // The same order in every row: the title alone, then status and date
+      // together beneath it, then the metrics.
+      expect(parts).toEqual(['title', 'status-date', 'status', 'date', 'metrics'])
 
-      const head = row.querySelector('[data-part="head"]') as HTMLElement
-      expect(within(head).getByRole('heading', { name: title })).toBeInTheDocument()
-      expect(head.querySelector('[data-part="status"]')).toHaveTextContent(status)
+      const heading = row.querySelector('[data-part="title"]') as HTMLElement
+      expect(heading).toBe(within(row).getByRole('heading', { name: title }))
+      // Nothing shares the title's row: the status is not inside the heading's line.
+      expect(heading.querySelector('[data-part="status"]')).toBeNull()
+      expect(heading.parentElement).toBe(row)
+
+      const statusDate = row.querySelector('[data-part="status-date"]') as HTMLElement
+      expect(statusDate.querySelector('[data-part="status"]')).toHaveTextContent(status)
       // The status is a word with its glyph, never the glyph alone.
-      expect(head.querySelector('[data-part="status"] svg')).not.toBeNull()
+      expect(statusDate.querySelector('[data-part="status"] svg')).not.toBeNull()
+      // The stored training day, beside the status.
+      expect(statusDate.querySelector('[data-part="date"]')).toHaveTextContent(/^Thu 24 Sep 2026$/)
+      expect(row).toHaveAttribute('data-status', expect.stringMatching(/^(completed|partial|unstarted)$/))
 
-      expect(row.querySelector('[data-part="context"]')).toHaveTextContent(/^Thu 24 Sep 2026 · /)
       const shown = [...row.querySelectorAll('[data-part="metrics"] .clr-nowrap')].map(
         (node) => node.textContent,
       )
       expect(shown).toEqual(metrics)
     }
 
-    // A long name wraps inside its row rather than pushing the status away.
+    // A long name wraps inside its own row.
     const longTitle = within(rowOf(LONG)).getByRole('heading', { name: LONG })
     expect(longTitle.style.overflowWrap).toBe('anywhere')
     expect(longTitle.style.minWidth).toBe('0px')
@@ -305,7 +315,7 @@ describe('History route', () => {
     renderHistory({}, sessionRows(2))
 
     await historyList()
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'partial')
 
     expect(await screen.findByText(HISTORY_NO_MATCH_TITLE)).toBeInTheDocument()
     expect(screen.queryByText(HISTORY_EMPTY_TITLE)).not.toBeInTheDocument()
@@ -316,7 +326,6 @@ describe('History route', () => {
   })
 
   it('renders rest days as their own entries, distinct from sessions', async () => {
-    const user = userEvent.setup()
     renderHistory({}, sessionRows(2))
 
     const list = await historyList()
@@ -327,11 +336,90 @@ describe('History route', () => {
     expect(
       within(list).getAllByRole('heading', { level: 2, name: 'Rest' }).length,
     ).toBeGreaterThan(0)
+  })
 
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'rest')
-    const restOnly = await historyList()
-    expect(within(restOnly).queryByRole('heading', { name: /^Session/ })).toBeNull()
-    expect(within(restOnly).getAllByText('Rest').length).toBeGreaterThan(0)
+  it('AC-C53-01 the filter offers All entries, Completed and Partial, and All entries still lists rest runs and never-started workouts', async () => {
+    const user = userEvent.setup()
+    const day = (n: number) => `2026-09-${String(n).padStart(2, '0')}`
+    const rows = [
+      makeSessionRow({
+        id: 'b0000021-0000-4000-8000-000000000000', date: day(24), title: 'Finished lower',
+        created_at: `${day(24)}T15:00:00.000Z`, completed_at: `${day(24)}T15:40:00.000Z`,
+      }),
+      makeSessionRow({
+        id: 'b0000022-0000-4000-8000-000000000000', date: day(21), title: 'Stopped upper',
+        created_at: `${day(21)}T16:00:00.000Z`, started_at: `${day(21)}T16:05:00.000Z`,
+        completed_at: null, abandoned_at: `${day(21)}T16:15:00.000Z`, actual_duration_mins: 9,
+      }),
+      makeSessionRow({
+        id: 'b0000023-0000-4000-8000-000000000000', date: day(19), title: 'Never begun',
+        created_at: `${day(19)}T17:00:00.000Z`, started_at: null, completed_at: null,
+        actual_duration_mins: null,
+      }),
+    ]
+    renderHistory({}, rows)
+
+    const list = await historyList()
+    const filter = screen.getByLabelText(HISTORY_FILTER_LABEL)
+    const offered = [...(filter as HTMLSelectElement).options].map((option) => [option.value, option.textContent])
+    expect(offered).toEqual([['all', 'All entries'], ['completed', 'Completed'], ['partial', 'Partial']])
+    expect(within(filter).queryByRole('option', { name: 'Rest days' })).toBeNull()
+    expect(within(filter).queryByRole('option', { name: 'Not started' })).toBeNull()
+
+    // All entries keeps every record: both rest runs and the never-started
+    // workout, which keeps its stored status.
+    const heading = (title: string) => within(list).getByRole('heading', { level: 2, name: title })
+    expect(heading('Finished lower')).toBeInTheDocument()
+    expect(heading('Stopped upper')).toBeInTheDocument()
+    const unstarted = heading('Never begun').closest('li') as HTMLElement
+    expect(unstarted).toHaveAttribute('data-status', 'unstarted')
+    expect(unstarted.querySelector('[data-part="status"]')).toHaveTextContent('Not started')
+    // The gaps between the three workouts (and any since the newest) are rest runs.
+    expect(within(list).getAllByRole('heading', { level: 2, name: 'Rest' }).length).toBeGreaterThanOrEqual(2)
+    const everything = within(list).getAllByRole('listitem').length
+
+    // Partial narrows to the stopped workout, with its recorded actual minutes.
+    await user.selectOptions(filter, 'partial')
+    const partial = await historyList()
+    expect(within(partial).getAllByRole('listitem')).toHaveLength(1)
+    expect(within(partial).getByRole('heading', { name: 'Stopped upper' })).toBeInTheDocument()
+    expect(within(partial).getByText('Actual 9 min')).toBeInTheDocument()
+
+    // Back to All entries: nothing was dropped by narrowing.
+    await user.selectOptions(filter, 'all')
+    expect(within(await historyList()).getAllByRole('listitem')).toHaveLength(everything)
+  })
+
+  it('AC-C53-01 the accepted gallery state ?state=screens draws History’s own card, filter and rows over stored rows in memory', { timeout: 30_000 }, async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=screens']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const part = document.querySelector<HTMLElement>('[data-gallery-history]')!
+    expect(part).not.toBeNull()
+    const scene = within(part)
+    expect(scene.getByRole('heading', { name: 'History' })).toBeInTheDocument()
+    expect(scene.getByRole('heading', { name: HISTORY_LIST_LABEL })).toBeInTheDocument()
+
+    const filter = scene.getByLabelText(HISTORY_FILTER_LABEL) as HTMLSelectElement
+    expect([...filter.options].map((option) => option.textContent)).toEqual(['All entries', 'Completed', 'Partial'])
+
+    const list = scene.getByRole('list', { name: HISTORY_LIST_LABEL })
+    const statuses = [...list.querySelectorAll('[data-layout="chronology"]')].map((row) =>
+      row.getAttribute('data-status'))
+    expect(statuses).toEqual(['completed', 'completed', 'partial', 'unstarted'])
+    expect(within(list).getAllByRole('heading', { name: 'Rest' }).length).toBeGreaterThan(0)
+    for (const row of list.querySelectorAll('[data-layout="chronology"]')) {
+      expect([...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part')))
+        .toEqual(['title', 'status-date', 'status', 'date', 'metrics'])
+    }
+
+    await user.selectOptions(filter, 'partial')
+    expect(within(scene.getByRole('list', { name: HISTORY_LIST_LABEL })).getAllByRole('listitem')).toHaveLength(1)
+    await user.selectOptions(filter, 'all')
+    expect(scene.getByRole('list', { name: HISTORY_LIST_LABEL }).querySelectorAll('[data-status="unstarted"]')).toHaveLength(1)
   })
 
   it('is bounded to a page and load-more widens the window, not the filter', async () => {
@@ -389,7 +477,7 @@ describe('History route', () => {
     expectOneCard()
 
     // Filtered to nothing: the same card, still holding the filter.
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'partial')
     expect(historyCard()).toContainElement(await screen.findByText(HISTORY_NO_MATCH_TITLE))
     expect(historyCard()).toContainElement(screen.getByLabelText(HISTORY_FILTER_LABEL))
     expectOneCard()

@@ -413,9 +413,10 @@ test.describe('history-detail — History list to Review or Session Detail on th
 
     const filter = page.getByLabel(HISTORY_FILTER)
 
-    await filter.selectOption({ label: 'Rest days' })
-    await expect(restRow).toHaveCount(1)
-    await expect(list.getByRole('link')).toHaveCount(0)
+    // TASK-026 (C53, R08): the filter offers the useful outcomes only. Rest
+    // days and Not started are not choices; both kinds of record stay in
+    // All entries above.
+    await expect(filter.locator('option')).toHaveText(['All entries', 'Completed', 'Partial'])
 
     await filter.selectOption({ label: 'Completed' })
     await expect(completedRow).toBeVisible()
@@ -439,8 +440,9 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('History')
 
     // A never-started record is history, but it is not a workout that can be
-    // restarted. Its durable information view remains Session Detail.
-    await page.getByLabel(HISTORY_FILTER).selectOption({ label: 'Not started' })
+    // restarted. Its durable information view remains Session Detail. It is
+    // reached from All entries, which still lists it.
+    await expect(page.getByLabel(HISTORY_FILTER)).toHaveValue('all')
     const unstartedAfterBack = page
       .getByRole('list', { name: HISTORY_LIST })
       .getByRole('link', { name: TITLES.unstarted })

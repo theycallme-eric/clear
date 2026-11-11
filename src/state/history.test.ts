@@ -193,24 +193,33 @@ describe('filterHistory', () => {
     session('2026-09-19', { started_at: null, completed_at: null }),
   ])
 
-  it('offers every status the list can hold, plus rest days', () => {
-    expect(HISTORY_FILTERS.map((filter) => filter.value)).toEqual([
-      'all',
-      'completed',
-      'partial',
-      'unstarted',
-      'rest',
+  it('AC-C53-01 offers All entries, Completed and Partial — never Rest days or Not started', () => {
+    expect(HISTORY_FILTERS.map((filter) => filter.value)).toEqual(['all', 'completed', 'partial'])
+    expect(HISTORY_FILTERS.map((filter) => filter.label)).toEqual([
+      'All entries',
+      'Completed',
+      'Partial',
     ])
   })
 
-  it('keeps everything under all', () => {
-    expect(filterHistory(entries, 'all')).toEqual(entries)
+  it('AC-C53-01 keeps every entry under all: rest runs and never-started sessions stay listed', () => {
+    const all = filterHistory(entries, 'all')
+
+    expect(all).toEqual(entries)
+    expect(kinds(all)).toEqual([
+      'session:2026-09-23',
+      'rest:2026-09-22..2026-09-22',
+      'session:2026-09-21',
+      'rest:2026-09-20..2026-09-20',
+      'session:2026-09-19',
+    ])
+    // The never-started session keeps its stored lifecycle meaning.
+    expect(all.at(-1)).toMatchObject({ kind: 'session', status: 'unstarted' })
   })
 
   it.each([
     ['completed', '2026-09-23'],
     ['partial', '2026-09-21'],
-    ['unstarted', '2026-09-19'],
   ] as const)('narrows to %s sessions', (filter, day) => {
     const filtered = filterHistory(entries, filter)
 
@@ -218,11 +227,12 @@ describe('filterHistory', () => {
     expect(filtered[0]).toMatchObject({ kind: 'session', day, status: filter })
   })
 
-  it('narrows to rest days', () => {
-    const filtered = filterHistory(entries, 'rest')
+  it('AC-R026-01 narrowing never changes the entries it was given', () => {
+    const before = structuredClone(entries)
+    filterHistory(entries, 'completed')
+    filterHistory(entries, 'partial')
 
-    expect(filtered).toHaveLength(2)
-    expect(filtered.every((entry) => entry.kind === 'rest')).toBe(true)
+    expect(entries).toEqual(before)
   })
 
   it('can produce nothing without that meaning the history is empty', () => {
@@ -235,6 +245,11 @@ describe('filterHistory', () => {
   it('reads an unknown filter value as all', () => {
     expect(historyFilterOf('completed')).toBe('completed')
     expect(historyFilterOf('whatever-was-stored')).toBe('all')
+  })
+
+  it('AC-C53-01 reads the retired Not started and Rest days values as all', () => {
+    expect(historyFilterOf('unstarted')).toBe('all')
+    expect(historyFilterOf('rest')).toBe('all')
   })
 })
 

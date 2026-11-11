@@ -343,15 +343,19 @@ describe('Recent workout rows (REQ-004)', () => {
     expect(status(unstarted).style.color).not.toBe(status(done).style.color)
   })
 
-  it('leaves History\'s own chronology row unchanged', async () => {
+  it('keeps History\'s own chronology row: its full title, with status and date beneath it (TASK-026, C53)', async () => {
     renderApp(
       ['/history'],
       signedIn({ workout: createWorkoutDouble({ session: null, historyRows: history() }).clients }),
     )
 
+    // The chronology keeps the full stored title (the recent row's trim is
+    // Home's alone) and, since C53 / R19, the same title-then-status/date order.
     const link = await screen.findByRole('link', { name: 'Upper-body strength session' })
     const row = link.closest('li')!
-    expect(row.querySelector('[data-part="head"]')).not.toBeNull()
-    expect(row.querySelector('[data-part="status-date"]')).toBeNull()
+    expect(row).toHaveAttribute('data-layout', 'chronology')
+    expect(row.querySelector('[data-part="head"]')).toBeNull()
+    expect([...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part')))
+      .toEqual(['title', 'status-date', 'status', 'date', 'metrics'])
   })
 })
