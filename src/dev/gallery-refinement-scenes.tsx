@@ -134,7 +134,7 @@ import { Heading } from '../ui/Heading'
 import { MetricGrid } from '../ui/composition'
 import { LivePreparation, PreparationGuide, PreparationTimer } from '../ui/preparation-guide'
 import { EquipmentSummary } from '../ui/refinements/overview'
-import { ReviewContextCards } from './gallery-refinement-cards'
+import { ReviewContextCards, WorkoutContextCards } from './gallery-refinement-cards'
 import {
   overviewAcceptance,
   overviewId,
@@ -144,6 +144,15 @@ import {
   type OverviewComposition,
 } from './gallery-refinement-overview-data'
 import { persistedPreparationSection, PREPARATION_SECTIONS } from './gallery-refinement-preparation-data'
+import { Dumbbell, WeightPlate } from '../design-system/index'
+import {
+  EQUIPMENT_ASSETS,
+  SHIPPED_EQUIPMENT_ICONS,
+  WANTED_REVIEW_LABELS,
+  type ShippedEquipmentGlyph,
+} from '../ui/refinements/equipment-assets'
+import { peerGroupingAcceptance } from './gallery-refinement-cards-data'
+import { ASSET_BLOCKS } from './gallery-refinement-assets-data'
 
 /** The gallery shows a known unit; the route reads the profile's. */
 const GALLERY_UNIT = 'kg' as const
@@ -544,6 +553,121 @@ export function GalleryScreens() {
       <GenerateScene key={context} context={context} />
       <SetupScene />
       <HistoryScene />
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-029: the equipment asset inventory and readable fallback (`?state=assets`)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * TASK-029 (C56; R122, R132) adopts the reference's `GalleryEquipmentInventory`
+ * scene as a deliberate consolidation. The reference drew the shipped Dumbbell
+ * and WeightPlate, Setup's equipment list with an inline `dumbbells` test for
+ * its status, and a medicine-ball note. Here the inventory is the shared
+ * owner's (`src/ui/refinements/equipment-assets.ts`, the record of
+ * `EQUIPMENT-ICON-WANTED-LIST.md`), and the readable fallback is shown where
+ * the routes draw it rather than described:
+ *
+ *   · Review — `/review`'s Required equipment group (`EquipmentSummary`, the
+ *     one shipped category glyph beside its label) and its actual
+ *     `ReviewSection` cards, every movement's equipment the readable label
+ *     beside its name, glyph or none;
+ *   · Workout — `/workout`'s live cards over the same composition;
+ *   · Setup — `/onboarding`'s own equipment step (`SetupStepView`), each of
+ *     the sixteen ids a labelled choice.
+ *
+ * One synthetic composition names every Setup id and the Wall ball review's
+ * medicine ball (`gallery-refinement-assets-data.ts`). Nothing is read or
+ * written, and no glyph is drawn that the shipped family does not have.
+ */
+const SHIPPED_GLYPHS: Readonly<Record<ShippedEquipmentGlyph, typeof Dumbbell>> = { Dumbbell, WeightPlate }
+
+type AssetContext = 'review' | 'workout'
+
+/** The verified inventory: the shipped equipment glyphs, then every Setup id's status. */
+export function EquipmentAssetInventory() {
+  return (
+    <Card heading="Equipment icon inventory">
+      <div className="clr-stack" data-equipment-inventory="">
+        <p>Equipment names remain readable beside movement names. New glyphs are a wanted list; none are invented here.</p>
+        <ul aria-label="Shipped equipment glyphs">
+          {SHIPPED_EQUIPMENT_ICONS.map(({ glyph, meaning }) => {
+            const Glyph = SHIPPED_GLYPHS[glyph]
+            return (
+              <li key={glyph} data-shipped-glyph={glyph}>
+                <Glyph size={16} /> {glyph} · shipped · {meaning}
+              </li>
+            )
+          })}
+        </ul>
+        <ul aria-label="Setup equipment glyph status">
+          {EQUIPMENT_ASSETS.map((asset) => (
+            <li key={asset.id} data-equipment-asset={asset.id} data-equipment-status={asset.status}>
+              {asset.label} · {asset.glyph === null ? 'glyph wanted · readable label' : `${asset.glyph} shipped`}
+            </li>
+          ))}
+        </ul>
+        {WANTED_REVIEW_LABELS.map((wanted) => (
+          <p key={wanted.equipment} data-equipment-wanted={wanted.equipment}>
+            {wanted.label} is also wanted from the Wall ball review. It is not a current Setup equipment ID;
+            catalog coverage is resolved separately.
+          </p>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+/** Review's Required equipment group for the composition, as its Overview draws it. */
+function AssetEquipmentSummary() {
+  const equipment = reviewBriefing(peerGroupingAcceptance({ blocks: ASSET_BLOCKS }), GALLERY_UNIT).equipment
+  return (
+    <Card heading="Overview">
+      <EquipmentSummary equipment={equipment} />
+    </Card>
+  )
+}
+
+/** `/onboarding`'s equipment step, every Setup id a labelled choice; in memory. */
+function AssetSetupEquipment() {
+  const [draft, dispatch] = useReducer(onboardingReducer, EMPTY_DRAFT, (empty) =>
+    onboardingReducer(empty, { type: 'tier', value: 'home' }))
+  return (
+    <Card heading={STEP_TITLES.location}>
+      <div className="clr-stack" data-gallery-setup-equipment="">
+        <SetupStepView step="location" draft={draft} dispatch={dispatch} />
+      </div>
+    </Card>
+  )
+}
+
+export function GalleryEquipmentAssets() {
+  const [context, setContext] = useState<AssetContext>('review')
+  return (
+    <div className="clr-stack" data-gallery-assets={context}>
+      <EquipmentAssetInventory />
+      <ChoiceGroup
+        legend="Equipment context"
+        value={context}
+        options={[
+          { value: 'review', label: 'Review' },
+          { value: 'workout', label: 'Workout' },
+        ]}
+        onChange={(value) => setContext(value === 'workout' ? 'workout' : 'review')}
+      />
+      <div className="clr-stack" data-gallery-context={context}>
+        {context === 'review' ? (
+          <>
+            <AssetEquipmentSummary />
+            <ReviewContextCards blocks={ASSET_BLOCKS} />
+          </>
+        ) : (
+          <WorkoutContextCards blocks={ASSET_BLOCKS} />
+        )}
+      </div>
+      <AssetSetupEquipment />
     </div>
   )
 }

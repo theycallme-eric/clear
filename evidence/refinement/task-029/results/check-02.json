@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-029",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-029.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-029/required-cases.json",
+    "sha256": "c95da1d5109e524625e32ebd86f3da79aea2bc5981ea9eb218032afd581c4b8c"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-029.spec.ts",
+      "sha256": "d9e1036980eda6b0961cf4df6ed2d86e2f67fca0e7bc5d96e163f19ca782a807"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 phone-320: every equipment kind reads as a label beside its name in Review and Workout, glyph or none, and Review’s Required equipment names each in words",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 phone-390: every equipment kind reads as a label beside its name in Review and Workout, glyph or none, and Review’s Required equipment names each in words",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment phone-320: the sixteen Setup choices are named in words, none is a medicine ball, and touch and keyboard answer them",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery phone-320: a failed Start and its keyboard retry keep every equipment label and Required equipment as they were, record no work, and Start stays reachable",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-029.spec.ts",
+      "name": "TASK-029 equipment asset inventory and readable fallback > gallery assets phone-320: the accepted state draws the shared inventory, then the routes’ own Review, Workout and Setup equipment as readable labels, with nothing read or written",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}
