@@ -76,7 +76,7 @@
  * TASK-041 closes the geometry and the full JOURNEY-016/017/018 acceptance on
  * the routes — this file does not claim any route has adopted it.
  */
-import { useId, useLayoutEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, type ReactNode } from 'react'
 
 import { IconButton, X } from '../../design-system/index'
 import { CardContainmentContext } from '../card-context'
@@ -151,6 +151,41 @@ function returnFocus(dialog: HTMLDialogElement, opener: HTMLElement | null) {
   if (stranded) opener.focus()
 }
 
+/**
+ * TASK-019 (REQ-019, JOURNEY-019; a cross-family seam): while the log is
+ * open, focus is never left stranded on the inert page. When the focused
+ * control inside it goes away under the reader — a Save made unavailable
+ * while its write is in flight, then a refusal answered in place — the
+ * browser drops focus to the page body, where a keyboard reader can do
+ * nothing in a modal. Focus then moves to the dialog's own title, a
+ * programmatic target only (never in the Tab order), so the reader hears
+ * which log they are in and Tab reaches its controls. This is the recovery
+ * the set families already made on Save (TASK-043); it now holds for every
+ * moment. Focus the reader moved deliberately, a window losing focus, and a
+ * log that is closing are left alone.
+ */
+function useFocusKeptInside(ref: { current: HTMLDialogElement | null }, open: boolean, titleId: string) {
+  useEffect(() => {
+    const dialog = ref.current
+    if (!open || !dialog) return
+    const onFocusOut = (event: FocusEvent) => {
+      if (event.relatedTarget !== null) return
+      queueMicrotask(() => {
+        const document = dialog.ownerDocument
+        const active = document.activeElement
+        if (!dialog.isConnected || !dialog.open) return
+        if (active !== null && active !== document.body) return
+        const title = document.getElementById(titleId)
+        if (title === null || !dialog.contains(title)) return
+        if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1')
+        title.focus({ preventScroll: true })
+      })
+    }
+    dialog.addEventListener('focusout', onFocusOut)
+    return () => dialog.removeEventListener('focusout', onFocusOut)
+  }, [ref, open, titleId])
+}
+
 export function LoggingOverlay({ open, title, onClose, children }: LoggingOverlayProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
@@ -174,6 +209,7 @@ export function LoggingOverlay({ open, title, onClose, children }: LoggingOverla
     }
   }, [open])
   useVisibleViewport(ref, open)
+  useFocusKeptInside(ref, open, titleId)
 
   const frame = (
     <div className="clr-bleed clr-bleed--block clr-accepted-log__emission">
