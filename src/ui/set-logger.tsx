@@ -281,8 +281,13 @@ export function ExerciseSetLogger({
     sheet.setOpen(true)
   }
 
-  const returnFocusNow = (rowRemoved = false) => {
-    if (logsSelf) logButton.current?.focus()
+  // TASK-019 (cross-family seam): closing a saved-set correction with the
+  // log's X or Escape returns focus to the Edit that opened it, as the shared
+  // focused dialog does for every other moment (and as a superset movement's
+  // correction already did). Any other return keeps the entry's own action.
+  const returnFocusNow = (rowRemoved = false, toEdit = false) => {
+    if (toEdit && !rowRemoved && editButton.current?.isConnected) editButton.current.focus()
+    else if (logsSelf) logButton.current?.focus()
     else if (!rowRemoved && editButton.current?.isConnected) editButton.current.focus()
     else onReturnToRound?.()
   }
@@ -290,21 +295,21 @@ export function ExerciseSetLogger({
   // TASK-043: while the focused logging dialog is open the workout behind it
   // is inert, so the entry action cannot take focus until the native dialog
   // has closed. The return waits for the commit that closes it.
-  const pendingFocus = useRef<{ rowRemoved: boolean } | null>(null)
+  const pendingFocus = useRef<{ rowRemoved: boolean; toEdit: boolean } | null>(null)
   const latestReturn = useRef(returnFocusNow)
   useEffect(() => {
     latestReturn.current = returnFocusNow
   })
   useEffect(() => {
     if (sheet.open || pendingFocus.current === null) return
-    const { rowRemoved } = pendingFocus.current
+    const { rowRemoved, toEdit } = pendingFocus.current
     pendingFocus.current = null
-    latestReturn.current(rowRemoved)
+    latestReturn.current(rowRemoved, toEdit)
   }, [sheet.open])
 
-  const returnFocus = (rowRemoved = false) => {
-    if (focused && sheet.open) pendingFocus.current = { rowRemoved }
-    else returnFocusNow(rowRemoved)
+  const returnFocus = (rowRemoved = false, toEdit = false) => {
+    if (focused && sheet.open) pendingFocus.current = { rowRemoved, toEdit }
+    else returnFocusNow(rowRemoved, toEdit)
   }
 
   const collapse = () => {
@@ -312,7 +317,7 @@ export function ExerciseSetLogger({
     // reopen anything, and the next Rest opens the next entry (R07).
     saved.reset()
     sheet.setOpen(false)
-    returnFocus()
+    returnFocus(false, edit !== null)
   }
 
   // The entry itself: the new set, or the correction of a saved one.

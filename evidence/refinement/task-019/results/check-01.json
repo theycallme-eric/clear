@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-019",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-019.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-019/required-cases.json",
+    "sha256": "51b778082e83fbe51fc6d37720fb60e3f4ae9e701af37c2620f7ba43751e3be0"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-019.spec.ts",
+      "sha256": "463534d84a5d4ab53be90ba36e1a60b858c6d1dead44556e1bfdf29b75dbd274"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "name": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 set, group and note moments on one /workout phone-390 touch: anchor, other lift, timed and distance movement, extra set, saved-set correction, superset round, circuit round, circuit movement and movement note open the same focused log, keep their own fields and drafts through close and reopen, write only through their original writers and never draw a second rest",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "name": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 errors and retry by keyboard phone-320 reduced motion: a refused set, superset round, circuit movement, note and circuit block write each keep their entry and retry it once under the same identity, every moment opens and closes from the keyboard with focus back on its own control, and nothing animates beyond a hard cut",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "name": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 the four timed-result families and their clocks on /workout phone-390 touch: EMOM, AMRAP, For Time and ladder open Log results in the same focused log beside no second rest, the block clock keeps running behind an open note or log and stays paused while paused, Undo finish closes the log, close and reopen keep every entry, and a refused save keeps them for the one forward-action writer",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "name": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 workout feedback on /summary and rest day on Home phone-320 touch and keyboard reduced motion: each opens the same focused log from its real entry, keeps its own fields, its draft or its existing cancel meaning through close and reopen, keeps the entry through a refused write and saves it once through its original writer on retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "name": "TASK-019 every logging moment in the shared focused interaction > accepted gallery states clear phone-390: all sixteen logging states open the route’s own moment in the one shared focused log with identical chrome, and the X returns focus to the control that opened it, with nothing read or written over the network",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}
