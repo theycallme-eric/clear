@@ -338,6 +338,8 @@ interface LogGeometry {
   groups: Box[]
   /** TASK-015 (C37): the per-movement groups, which follow the counts' group. */
   movementGroups: Box[]
+  /** TASK-047 (REQ-031; R80): the closing feedback group — effort, then notes — after them. */
+  feedbackGroups: Box[]
   counts: CountGeometry[]
 }
 
@@ -376,8 +378,13 @@ async function readLog(scope: Locator): Promise<LogGeometry> {
       title: box(dialog.querySelector('.clr-accepted-log__title')!),
       // TASK-015 (C37) added per-movement groups after the counts; the result
       // group is the one that is not a movement's (TASK-046 owns this repair).
-      groups: [...form.querySelectorAll('.clr-timed-log__group:not(.clr-timed-log__group--movement)')].map(box),
+      // TASK-047 (REQ-031; R80) adds the closing feedback group (effort and
+      // notes, no count); the result group is the one holding the counts.
+      groups: [...form.querySelectorAll('.clr-timed-log__group:not(.clr-timed-log__group--movement)')]
+        .filter((group) => group.querySelector('[data-quantity-field]') !== null).map(box),
       movementGroups: [...form.querySelectorAll('.clr-timed-log__group--movement')].map(box),
+      feedbackGroups: [...form.querySelectorAll('.clr-timed-log__group:not(.clr-timed-log__group--movement)')]
+        .filter((group) => group.querySelector('[data-quantity-field]') === null).map(box),
       counts: [...form.querySelectorAll('[data-quantity-field]')].map((field) => {
         const label = field.querySelector('.label')!
         const frame = field.querySelector('.clr-quantity')!
@@ -430,6 +437,11 @@ function expectLogContract(geometry: LogGeometry, label: string) {
   // C25/C26 order: any per-movement groups (TASK-015) come after the counts' group.
   for (const movement of geometry.movementGroups) {
     expect(movement.top, `${label}: a movement group after the counts`).toBeGreaterThanOrEqual(geometry.groups[0].bottom - TOLERANCE)
+  }
+  // TASK-047 (R80): one closing feedback group, after the counts and every movement group.
+  expect(geometry.feedbackGroups, `${label}: one feedback group`).toHaveLength(1)
+  for (const before of [geometry.groups[0], ...geometry.movementGroups]) {
+    expect(geometry.feedbackGroups[0].top, `${label}: the feedback group closes the log`).toBeGreaterThanOrEqual(before.bottom - TOLERANCE)
   }
   expect(geometry.counts.map((count) => count.label), `${label}: rounds, then the partial round`).toEqual([...AMRAP_COUNTS])
   const [group] = geometry.groups

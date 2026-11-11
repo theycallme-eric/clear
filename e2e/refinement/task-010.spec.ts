@@ -598,7 +598,11 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
     await visit(`/history/${app.sessionId}`)
     await expect(historyReading(page, 'Cap')).toHaveText('CapIncomplete')
     await expect(historyReading(page, 'Elapsed')).toHaveText('Elapsed01:30')
-    await expect(page.getByText('Effort', { exact: true })).toHaveCount(0)
+    // TASK-047 (REQ-031, AC-R031-02) supersedes "no Effort reading": History
+    // now reads the saved category back through the existing face — never as
+    // a number on the 1–10 scale.
+    await expect(page.getByRole('img', { name: 'Effort: too easy', exact: true })).toHaveCount(1)
+    await expect(page.getByText(/\d+ of 10/)).toHaveCount(0)
     await test.info().attach('history-for-time-incomplete-signal-phone-390.png', { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     app.assertContained()
   })
@@ -710,7 +714,10 @@ test.describe('TASK-010 completion choices and existing effort faces', () => {
 
     await visit(`/history/${app.sessionId}`)
     await expect(historyReading(page, 'Highest rung')).toHaveText(`Highest rung${LADDER_ROUNDS}`)
-    await expect(page.getByText('Effort', { exact: true })).toHaveCount(0)
+    // TASK-047 (REQ-031, AC-R031-02) supersedes "no Effort reading": the saved
+    // category reads back through the existing face, never as a number.
+    await expect(page.getByRole('img', { name: 'Effort: too hard', exact: true })).toHaveCount(1)
+    await expect(page.getByText(/\d+ of 10/)).toHaveCount(0)
     app.assertContained()
   })
 

@@ -673,3 +673,29 @@ examples (distinct from the plan's targets and loads).
   `BlockCompletionProvider` → `saveTimedResult`, as §2 and §7 state. Rules the shipped graph runs
   live in `src/data/refinement-logging-rules.ts`, re-exported unchanged by the contract module.
 - Decisions recorded in §6; the register and the seed in §7.
+
+## 14. TASK-047 adoption and visible proof (amendment)
+
+- Entry (AC-R031-01; LOGGING-FIELDS; G07; R80, R84): the "proposed still" fields of §2 now have
+  entry in `TimedResultLog`. Every family closes with one feedback group: the existing three-face
+  effort (`SetEffortChoice`, legend `Effort · optional`) and the existing optional notes
+  (`Notes · optional`). The AMRAP takes both (R80). The For Time and ladder add notes beside their
+  effort. The EMOM adds the effort and each loaded movement's actual load (`Weight used`; no amount,
+  because `partialRoundFor` gives an EMOM no round; R84).
+- Drafts: the notes, the AMRAP's and EMOM's effort and the EMOM's loads are each consumer's memory,
+  as the EMOM note and the For Time/ladder effort already were. They are kept through close and
+  reopen, a refused save and its retry, and lost on reload before a save. Durable drafts for these
+  are not added.
+- Save: unchanged path. The consumer reports the notes in its outcome (`block_results.notes`) and
+  the effort and loads in its `TimedResultReport` (`block_results.effort`, load-only
+  `block_movement_results` rows for the EMOM). A report with an effort or a typed entry saves
+  through `saveTimedResult`; a notes-only report takes the bare insert, as the EMOM note always did.
+- Readback: History `/history/:id` draws `BlockDetailView.effort` through `SetEffortReading` beside
+  the block's outcome, and each `movementActuals` entry under its movement as
+  `Actual Round N · amount · load` (`Rung N` for a ladder; a load alone without a round).
+- Proof: `e2e/refinement/task-047.spec.ts` (check-01). Two cases run on the authorized disposable
+  backend lane (PRE-001) and fail when it is absent. Two run the same journeys on a contained
+  synthetic lane. One covers the four gallery states.
+- Not changed: the typed matrix in `src/data/refinement-logging-contract.ts` still lists these
+  fields under `proposed` for the timed moments, as TASK-015 left its own landed fields there.
+  Reconciling it is housekeeping for the owner of that matrix.

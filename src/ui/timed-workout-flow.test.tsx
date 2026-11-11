@@ -779,14 +779,18 @@ function expectNoRetiredCaption(scope?: HTMLElement) {
 
 /** Every control or reading of a minutes tally or a completion question (C31). */
 function expectNoTally(log: HTMLElement) {
-  expect(log.querySelectorAll('output, .clr-quantity, [data-quantity-field], input[type="number"]')).toHaveLength(0)
-  expect(within(log).queryByRole('spinbutton')).toBeNull()
+  expect(log.querySelectorAll('output, .clr-quantity, [data-quantity-field]')).toHaveLength(0)
+  // TASK-047 (REQ-031; R84: "optional effort, applicable movement weights and
+  // notes") supersedes "no number field, no radiogroup, no button and no
+  // effort": the only number fields are loaded movements' actual loads, the
+  // only radiogroup is the existing effort faces and the only button their
+  // compact Clear. Still no counter, completion question or confirmation.
+  for (const field of within(log).queryAllByRole('spinbutton')) expect(field).toHaveAccessibleName(/^Weight · /)
   expect(within(log).queryByRole('slider')).toBeNull()
-  expect(within(log).queryByRole('radiogroup')).toBeNull()
+  for (const group of within(log).queryAllByRole('radiogroup')) expect(group.closest('.clr-set-effort')).not.toBeNull()
   expect(within(log).queryByRole('checkbox')).toBeNull()
-  expect(within(log).queryByRole('button')).toBeNull()
+  for (const button of within(log).queryAllByRole('button')) expect(button).toHaveAccessibleName('Clear effort for this block')
   expect(within(log).queryByText(/minutes?|completed|complete|tally|count|confirm/i)).toBeNull()
-  expect(log.querySelector('.clr-set-effort')).toBeNull()
 }
 
 /** The EMOM's stored grid, as the raw string the route wrote. */
@@ -973,13 +977,20 @@ describe('TASK-011 EMOM schedule and end logging without a completion counter', 
     expect(emomCard().lastElementChild).toBe(coaching)
 
     // One title, one group, one field: the optional notes. No counter, no
-    // completion question, no confirmation step, no effort here. TASK-046:
-    // the one title is the focused dialog's, and the form draws none.
-    expect(within(log.closest('dialog')!).getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Log results'])
-    expect(within(log).queryAllByRole('heading')).toEqual([])
-    const groups = log.querySelectorAll('.clr-timed-log__group')
+    // completion question, no confirmation step. TASK-046: the one title is
+    // the focused dialog's, and the form draws none.
+    // TASK-047 (REQ-031; R84) supersedes "one group, one field, no effort
+    // here": each loaded movement's actual load is its own titled movement
+    // group (a load only — an EMOM has no partial round), and the one result
+    // group holds the existing effort faces before the notes.
+    const titles = within(log.closest('dialog')!).getAllByRole('heading')
+    expect(titles.filter((heading) => !heading.classList.contains('clr-timed-log__group-title')).map((heading) => heading.textContent)).toEqual(['Log results'])
+    expect(within(log).queryAllByRole('heading').map((heading) => heading.textContent)).toEqual(['kb swing'])
+    expect(within(log).getAllByRole('spinbutton').map((field) => field.getAttribute('aria-label'))).toEqual(['Weight · kb swing'])
+    const groups = log.querySelectorAll<HTMLElement>('.clr-timed-log__group:not(.clr-timed-log__group--movement)')
     expect(groups).toHaveLength(1)
-    const fields = log.querySelectorAll('input, textarea, select, output')
+    expect(within(groups[0]).getByRole('group', { name: 'Effort · optional' })).toBeInTheDocument()
+    const fields = groups[0].querySelectorAll('textarea, select, output, input:not([type="radio"])')
     expect(fields).toHaveLength(1)
     expect(fields[0]).toBe(notesField())
     expect(notesField().tagName).toBe('TEXTAREA')

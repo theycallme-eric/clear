@@ -776,7 +776,18 @@ describe('execution is hands-off (REQ-014)', () => {
     // TASK-046: none on the card; the notes are in the log its action opens.
     expectHandsOff()
     timedLog()
-    expectHandsOff(['Notes · optional'])
+    // TASK-047 (REQ-031; R84: "optional effort, applicable movement weights
+    // and notes") supersedes "the notes are the end log's one field": the end
+    // log also offers the existing three-face effort and each loaded
+    // movement's actual load. Still no set form, no count, no Minute done and
+    // no RPE or exertion prompt — the only number fields are loads.
+    expect(entryFields().map((field) => (field as HTMLTextAreaElement).labels?.[0]?.textContent ?? '')).toEqual(['Notes · optional'])
+    for (const field of screen.queryAllByRole('spinbutton')) expect(field).toHaveAccessibleName(/^Weight · /)
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /log set|minute done/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/RPE|exertion/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Effort · optional' })).toBeInTheDocument()
+    expect(screen.queryByText(/No sets logged/)).not.toBeInTheDocument()
   })
 
   it('draws no entry form for a block that prescribes no clock either', () => {

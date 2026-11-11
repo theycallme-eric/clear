@@ -735,7 +735,10 @@ function roundRows(): HTMLElement[] {
 function expectNoSetEntry() {
   expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
   expect(screen.queryByRole('slider')).not.toBeInTheDocument()
-  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  // TASK-047 (REQ-031): the ladder's open log also holds the block's optional
+  // notes (LOGGING-FIELDS: Effort/Notes); that is the block's note, not a set
+  // entry, so it is the only text field allowed.
+  expect(screen.queryAllByRole('textbox').filter((field) => (field as HTMLTextAreaElement).labels?.[0]?.textContent !== 'Notes · optional')).toEqual([])
   expect(screen.queryByText(/\bRPE\b|exertion/i)).not.toBeInTheDocument()
 }
 

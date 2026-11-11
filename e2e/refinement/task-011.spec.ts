@@ -322,12 +322,19 @@ async function expectNoRetiredCaption(scope: Page | Locator) {
 /** C31: no tally, no completion question, no confirmation, no effort in the log. */
 async function expectNoTally(scope: Page | Locator) {
   const log = logOf(scope)
-  await expect(log.locator('output, .clr-quantity, [data-quantity-field], input[type="number"]')).toHaveCount(0)
-  for (const role of ['spinbutton', 'slider', 'radiogroup', 'checkbox', 'button'] as const) {
-    await expect(log.getByRole(role)).toHaveCount(0)
-  }
+  await expect(log.locator('output, .clr-quantity, [data-quantity-field]')).toHaveCount(0)
+  // TASK-047 (REQ-031; R84: "optional effort, applicable movement weights and
+  // notes") supersedes "no number field, no radiogroup, no button, no effort":
+  // the only number fields are loaded movements' actual loads, the only
+  // radiogroup the existing effort faces, the only button their compact
+  // Clear, and the only text field still the notes. Still no counter, no
+  // completion question and no confirmation.
+  for (const field of await log.getByRole('spinbutton').all()) await expect(field).toHaveAccessibleName(/^Weight · /)
+  for (const role of ['slider', 'checkbox'] as const) await expect(log.getByRole(role)).toHaveCount(0)
+  expect(await log.getByRole('radiogroup').evaluateAll((groups) => groups.every((group) => group.closest('.clr-set-effort') !== null))).toBe(true)
+  for (const button of await log.getByRole('button').all()) await expect(button).toHaveAccessibleName('Clear effort for this block')
   await expect(log.getByText(/minutes?|completed|complete|tally|count|confirm/i)).toHaveCount(0)
-  await expect(log.locator('input, textarea, select')).toHaveCount(1)
+  await expect(log.locator('textarea, select, input:not([type="number"]):not([type="radio"])')).toHaveCount(1)
 }
 
 /** The EMOM's stored grid, read from the browser. */

@@ -1010,6 +1010,41 @@ function SessionSectionCardCollapsed() {
   )
 }
 
+/**
+ * TASK-047 (REQ-031): a saved timed block read back — its categorical effort
+ * through the existing face, and each movement's recorded actual under the
+ * movement (a recorded zero kept; an unrecorded movement draws none).
+ */
+function SessionSectionCardTimedActuals() {
+  return (
+    <SessionSectionCard
+      section={{
+        ...SAMPLE_DETAIL_SECTION,
+        id: 'gallery-detail-section-timed',
+        title: 'Timed results',
+        type: 'conditioning',
+        blocks: [{
+          ...SAMPLE_DETAIL_BLOCK,
+          id: 'gallery-detail-block-timed',
+          identity: { label: 'AMRAP', format: 'AMRAP', detail: '5 MIN', repScheme: null, glyph: 'Stopwatch' },
+          outcome: [{ label: 'Rounds', value: '2' }],
+          perceivedEffort: null,
+          effort: 'about_right',
+          notes: 'Grip went in round 3.',
+          movementActuals: [
+            { key: 'gallery-actual-1', exerciseId: 'gallery-detail-goblet', name: 'Goblet squat', round: 3, roundLabel: 'Round 3', amount: '5 reps', weight: '18 kg' },
+            { key: 'gallery-actual-2', exerciseId: 'gallery-detail-burpee', name: 'Burpee', round: 3, roundLabel: 'Round 3', amount: '0 reps', weight: null },
+          ],
+          exercises: [
+            { ...SAMPLE_DETAIL_BLOCK.exercises[0], id: 'gallery-detail-goblet', name: 'Goblet squat', prescription: '1 × 10 reps · 16 kg', status: 'not_started', statusLabel: 'Not logged', sets: [] },
+            { ...SAMPLE_DETAIL_BLOCK.exercises[0], id: 'gallery-detail-burpee', name: 'Burpee', prescription: '1 × 12 reps', status: 'not_started', statusLabel: 'Not logged', sets: [] },
+          ],
+        }],
+      }}
+    />
+  )
+}
+
 function MoodReadingRecorded() {
   return <MoodReading step={MOOD_SCALE[3]} />
 }
@@ -2557,6 +2592,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'expanded', Render: SessionSectionCardExpanded },
       { state: 'collapsed', Render: SessionSectionCardCollapsed },
+      { state: 'timed actuals and effort', note: 'TASK-047: the saved category through the existing face; each movement’s recorded actual under it, a recorded zero kept.', Render: SessionSectionCardTimedActuals },
     ],
   },
   {
