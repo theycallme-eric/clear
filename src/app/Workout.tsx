@@ -84,6 +84,8 @@ import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
 import { FittedScrollRegion } from '../ui/fitted-scroll-region'
 import { PhoneFooter } from '../ui/composition'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { SetLoggingSheetHost, SetLoggingSheetOverlay } from '../ui/set-logging-sheet'
 import { useSetLoggingSheetOpen } from '../ui/set-logging-sheet-context'
@@ -206,6 +208,7 @@ function WorkoutShell({
   onSessionEnded,
   storage,
 }: WorkoutShellProps) {
+  const presentation = useWorkoutExperiencePresentation()
   const { sessions } = useWorkoutClients()
   const { user } = useAuth()
   const cache = useQueryClient()
@@ -238,7 +241,7 @@ function WorkoutShell({
   const header = useRef<HTMLDivElement>(null)
   const moved = useRef(false)
   const focusSectionHeader = useCallback(() => {
-    const heading = header.current?.querySelector('h2, h3, h4, h5, h6')
+    const heading = header.current?.querySelector('h2, h3, h4, h5, h6') ?? header.current?.parentElement?.querySelector('[data-movement-group-header] h2, [data-movement-group-header] h3')
     if (heading instanceof HTMLElement) {
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1')
       heading.focus()
@@ -483,6 +486,7 @@ function WorkoutShell({
                   */}
                   <div ref={header}>
                     <SectionHeader
+                      compact={presentation !== null}
                       section={current}
                       position={index + 1}
                       total={progress.total}
@@ -492,9 +496,11 @@ function WorkoutShell({
                     />
                   </div>
                   <SectionLabelContext value={current.title}>
+                    {presentation && (current.sectionType === 'warmup' || current.sectionType === 'cooldown') ? <PreparationGuide guide={presentation.guides[current.sectionType]} withTimer /> : <>
                     {current.blocks.map((block) => (
                       <BlockSlot key={block.blockId} block={block} />
                     ))}
+                    </>}
                   </SectionLabelContext>
                 </>
               )}

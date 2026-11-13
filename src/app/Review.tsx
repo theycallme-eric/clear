@@ -44,7 +44,7 @@
  * already in `SCREEN_ATMOSPHERE`, so `RootLayout` resolves it from the pathname
  * the day the journey that owns this screen routes it.
  */
-import { useId, useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -55,7 +55,7 @@ import {
   Info,
   Play,
   RefreshCw,
-  Rest,
+  Log,
   Target,
 } from '../design-system/index'
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
@@ -89,7 +89,11 @@ import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queri
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import { EquipmentSummary } from '../ui/equipment-summary'
+import { MovementGroupHeader, MovementList } from '../ui/movement-presentation'
 import { ReviewExerciseRow } from '../ui/review-exercise-row'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
   LoadSuggestionDialog,
@@ -134,6 +138,7 @@ export function Review({
   onStarted,
   progression = null,
 }: ReviewProps) {
+  const presentation = useWorkoutExperiencePresentation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { sessions } = useWorkoutClients()
@@ -328,7 +333,8 @@ export function Review({
           />
         ) : null}
 
-        {briefing.sections.map((section) => (
+        {presentation && <PreparationGuide guide={presentation.guides.warmup} />}
+        {briefing.sections.filter(section => !presentation || !['warmup','cooldown'].includes(section.type)).map((section) => (
           <ReviewSectionCard
             key={section.key}
             section={section}
@@ -337,6 +343,8 @@ export function Review({
             onExplain={setExplaining}
           />
         ))}
+
+        {presentation && <PreparationGuide guide={presentation.guides.cooldown} />}
 
         {/* REQ-006: the way out of this composition, once it has been read.
             Discarding is confirmed and irreversible, so it is a framed button
@@ -417,19 +425,6 @@ const FACT_GLYPHS: Readonly<Record<string, ReactNode>> = {
   [DURATION_LABEL]: <Clock size={16} />,
 }
 
-const LABEL_STYLE: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-100)',
-}
-
-const VALUE_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h6-size)',
-  color: 'var(--text-card-header)',
-  margin: 0,
-}
-
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
 /**
@@ -449,7 +444,7 @@ function factRank(label: string): number {
 /**
  * Facts whose glyph and value already say what they are (`45 min`, `Lower
  * body`); their term stays for assistive technology. Intensity, goal and the
- * movement count keep a visible term: `7 of 10`, `Not set` and `5` are not
+ * movement count keep a visible term: `7`, `Not set` and `5` are not
  * readable without one.
  */
 const SELF_DESCRIBING_FACTS: ReadonlySet<string> = new Set([DURATION_LABEL, ANCHOR_LABEL])
@@ -492,10 +487,10 @@ function BriefingOverview({
             {fact.value}
           </SummaryFact>
         ))}
-        <SummaryFact term={MOVEMENTS_LABEL}>{movementCount}</SummaryFact>
+        <SummaryFact glyph={<Log size={16} />} term={MOVEMENTS_LABEL}>{movementCount}</SummaryFact>
       </SummaryFacts>
 
-      <RequiredEquipment equipment={equipment} />
+      <EquipmentSummary equipment={equipment} />
 
       {/* A clamp that moved the session says so in words and with a glyph. */}
       {adjustment !== null && (
@@ -513,94 +508,27 @@ export const EQUIPMENT_LABEL = 'Required equipment'
 /** An all-bodyweight workout, said rather than shown as an empty list. */
 export const NO_EQUIPMENT_LABEL = 'None — bodyweight only'
 
-const EQUIPMENT_LIST_STYLE: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 'var(--spacing-100) var(--spacing-300)',
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-}
-
-/**
- * What to have to hand before Start (REQ-006), in the overview so it is read
- * before the first section. Names only: no glyph per kind of equipment yet,
- * and no prose — this is a list of things, not an introduction to them.
- */
-function RequiredEquipment({ equipment }: { equipment: readonly string[] }) {
-  const labelId = useId()
-  return (
-    <div className="clr-stack--tight" style={STACK_STYLE}>
-      {/* A label and a value rather than paragraphs: the overview carries no
-          prose (REQ-010), and this is a reading, not a sentence. */}
-      <span id={labelId} className="clr-text-data-xs clr-text-data-xs--upper" style={LABEL_STYLE}>
-        {EQUIPMENT_LABEL}
-      </span>
-      {equipment.length === 0 ? (
-        <span style={VALUE_STYLE}>{NO_EQUIPMENT_LABEL}</span>
-      ) : (
-        <ul aria-labelledby={labelId} style={EQUIPMENT_LIST_STYLE}>
-          {equipment.map((name) => (
-            <li key={name} style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
-              {name}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // A section
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * One section of the briefing, disclosed and open.
- *
- * Open by default because this is a screen the user reads before agreeing to
- * it — a briefing that hid its own contents behind five taps would be asking
- * them to start a workout they have not seen. `CollapsibleSection` keeps
- * collapsed content in the accessibility tree either way, so closing one is
- * visual economy on a long session rather than removal.
+ * R37: static section headers and always-visible work, using the same compact
+ * group header as live blocks. Optional tempo detail keeps its own disclosure.
  */
-const SECTION_META_STYLE: CSSProperties = {
-  marginInlineStart: 'auto',
-  color: 'var(--text-secondary)',
-}
-
-function ReviewSectionCard({
-  section,
-  ...suggestion
-}: { section: ReviewSectionView } & SuggestionProps) {
-  return (
-    <Card>
-      <CollapsibleSection
-        // A plain label rather than a `Heading`: the trigger *is* a button, and
-        // a heading nested inside one is read as part of the control's name
-        // instead of as an outline entry. The trigger already speaks the card
-        // heading's label face, so the title inherits it and the count sits
-        // where a card's `meta` does: the same row, at its far end.
-        label={
-          <>
-            <span>{section.title}</span>
-            <span style={SECTION_META_STYLE}>
-              {section.movementCount}{' '}
-              {section.movementCount === 1 ? 'movement' : 'movements'}
-            </span>
-          </>
-        }
-        defaultExpanded
-      >
-        <div className="clr-stack--tight" style={STACK_STYLE}>
-          {section.blocks.map((block) => (
-            <ReviewBlockRows key={block.key} block={block} {...suggestion} />
-          ))}
-          {section.cadence.length > 0 && <CadenceDetail cadence={section.cadence} />}
-        </div>
-      </CollapsibleSection>
-    </Card>
-  )
+function ReviewSectionCard({ section, ...suggestion }: { section: ReviewSectionView } & SuggestionProps) {
+  const presentation = useWorkoutExperiencePresentation()
+  return <div className="clr-stack" data-review-section="">
+    {section.blocks.map((block, index) => {
+      const badged = block.grouped || block.identity.detail !== null || block.identity.repScheme !== null
+      return <Card key={block.key}><div className="clr-movement-group">
+        <MovementGroupHeader title={section.title} badge={badged ? <StructureBadge identity={block.identity} formatOnly={presentation?.timedWorkflows !== undefined} /> : null} />
+        {presentation?.timedWorkflows && <p className="clr-text-data-xs clr-timed-meta">{[block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')}</p>}
+        <ReviewBlockRows block={block} {...suggestion} />
+        {index === section.blocks.length - 1 && section.cadence.length > 0 && <CadenceDetail cadence={section.cadence} />}
+      </div></Card>
+    })}
+  </div>
 }
 
 /** The optional tempo detail's trigger, and the region it names. */
@@ -620,7 +548,7 @@ function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
       <ul style={{ ...STACK_STYLE, listStyle: 'none', margin: 0, padding: 0 }}>
         {cadence.map((entry) => (
           <li key={entry.key} className="clr-row" style={{ gap: 'var(--spacing-200)' }}>
-            <span style={{ textTransform: 'capitalize' }}>{entry.name}</span>
+            <span style={{ textTransform: 'uppercase' }}>{entry.name}</span>
             <span className="clr-text-data-xs">{entry.tempo}</span>
           </li>
         ))}
@@ -630,41 +558,16 @@ function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
 }
 
 /**
- * A group is framed down its leading edge in the structure colour, and is
- * named by its badge — the colour is never the only cue.
+ * The card supplies the frame; the group is named by its badge and its
+ * movements share the same peer-row presentation as live and saved views.
  */
-const GROUP_STYLE: CSSProperties = {
-  ...STACK_STYLE,
-  borderInlineStart: 'var(--border-width) solid var(--border-frame-structure)',
-  paddingInlineStart: 'var(--spacing-300)',
-}
-
-const ORDERED_LIST_STYLE: CSSProperties = {
-  ...STACK_STYLE,
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-}
-
 /** A rule between two movements of a group. The last one has nothing below it. */
-const MEMBER_RULE_STYLE: CSSProperties = {
-  borderBlockEnd: 'var(--border-width) solid var(--border-region-rule)',
-  paddingBlockEnd: 'var(--spacing-200)',
-}
-
 /**
  * The group's shared rest, in the interaction blue the timer it starts will
  * wear, and with the rest glyph so the colour is never the only cue.
  */
-const ROUND_REST_STYLE: CSSProperties = {
-  color: 'var(--text-card-header)',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-100)',
-}
-
 /**
- * One block. A superset, circuit or timed structure is one group: framed,
+ * One block. A superset, circuit or timed structure is one group inside its card:
  * named by its badge (which carries the structure glyph and the round count or
  * clock once), and its movements numbered `01`, `02` in the order they are
  * performed. A superset or circuit is performed as rounds — each movement
@@ -690,7 +593,7 @@ function ReviewBlockRows({
     <ReviewExerciseRow
       key={exercise.key}
       ordinal={ordinal}
-      inRounds={inRounds}
+      inRounds={inRounds || ['EMOM', 'AMRAP', 'FOR TIME'].includes(block.identity.label)}
       exercise={exercise}
       suggestion={suggestions.get(exercise.key) ?? null}
       override={overrides.get(exercise.key) ?? null}
@@ -699,10 +602,8 @@ function ReviewBlockRows({
   )
 
   if (!block.grouped) {
-    const badged = block.identity.detail !== null || block.identity.repScheme !== null
     return (
-      <div className="clr-stack--tight" style={STACK_STYLE}>
-        {badged && <StructureBadge identity={block.identity} />}
+      <div className="clr-movement-group">
         {block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>}
         {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
         {block.exercises.map((exercise) => row(exercise, null))}
@@ -717,33 +618,29 @@ function ReviewBlockRows({
     .filter(Boolean)
     .join(', ')
 
-  const last = block.exercises.length - 1
 
   return (
-    <div className="clr-stack--tight" style={GROUP_STYLE}>
-      <StructureBadge identity={block.identity} />
+    <div className="clr-movement-group">
       {inRounds ? (
-        <p className="clr-text-data-xs">{block.roundSequence}</p>
+        <p className="clr-text-data-xs clr-text-data-xs--upper">{block.roundSequence} — no rest between movements</p>
       ) : (
         block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>
       )}
       {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
-      <ol aria-label={name} className="clr-stack--tight" style={ORDERED_LIST_STYLE}>
+      <MovementList label={name}>
         {block.exercises.map((exercise, index) => (
-          <li key={exercise.key} style={index === last ? undefined : MEMBER_RULE_STYLE}>
+          <li key={exercise.key}>
             {row(exercise, sequenceOrdinal(index))}
           </li>
         ))}
-      </ol>
+      </MovementList>
       {inRounds && block.roundRest !== null && (
-        <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
-          <Rest size={16} />
-          {block.roundRest}
-        </p>
+        <p style={{ margin: 0 }}>{block.roundRest}</p>
       )}
     </div>
   )
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Discarding

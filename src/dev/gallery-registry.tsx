@@ -15,6 +15,14 @@
  * state that produces it.
  */
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { EquipmentSummary } from '../ui/equipment-summary'
+import { MovementGroupHeader, MovementIdentity, MovementList } from '../ui/movement-presentation'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { CountdownBar, StructureBadge } from '../ui/workout-chrome'
+import { TrainingProgressReport } from '../ui/training-progress-report'
+import { WorkoutExperiencePresentationProvider, type WorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
+import { EMPTY_DRAFT } from '../state/onboarding'
+
 
 import {
   ArrowLeft,
@@ -119,6 +127,7 @@ import {
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
+import { GalleryQuantity, GalleryTimedLog, GalleryTimedFlow, GalleryLadderCompletion, GalleryLoggingOverlay, GalleryLadderPrescription, GalleryCountdownUrgency } from './gallery-timed-fixtures'
 
 import { GalleryLoggingMoment } from './gallery-refinement-forms'
 import { GalleryLadderFlow, GalleryUrgency } from './gallery-refinement-flow'
@@ -841,6 +850,7 @@ const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
       id: 'gallery-detail-exercise',
       name: 'Back squat',
       prescription: '3 × 8',
+      equipment: 'Barbell',
       status: 'completed',
       statusLabel: 'Done',
       lineage: 'prescribed',
@@ -2035,7 +2045,67 @@ function AppearancePickerChosenSkin() {
 // The register
 // ─────────────────────────────────────────────────────────────────────────────
 
+const PROPOSED_EXPERIENCE: WorkoutExperiencePresentation = {
+  focusAction: 'text',
+  guides: {warmup:{title:'Warm-up',minutes:4,movements:['Arm circles','Scapular push-ups']},cooldown:{title:'Cooldown',minutes:3,movements:['Chest stretch']}},
+  suggestedLoads:{}, equipmentSetupDraft:EMPTY_DRAFT, showTrainingReport:true,
+  report:[{movement:'Bicep curl',equipment:'Dumbbell',previous:'20 lb · 12 / 12 / 12',latest:'25 lb · 10 / 10 / 10',next:'25 lb · 3 × 8–12',evidence:'Synthetic comparison example'}],
+}
+
+function SharedMovementExample() {
+  return <MovementIdentity name="Dumbbell thruster with a deliberately long movement name" ordinal="01" prescription="8 reps · 20–25 lb per hand" equipment="Dumbbell" counter="Set 1/3" />
+}
+function SharedMovementGroupExample() {
+  return <MovementList label="Movements in one round"><li><MovementIdentity name="Dumbbell thruster" ordinal="01" prescription="8 reps" equipment="Dumbbell" /></li><li><MovementIdentity name="Mountain climber" ordinal="02" prescription="12 reps" equipment="Bodyweight" /></li></MovementList>
+}
+function SharedCountdownExample() {
+  const [remaining,setRemaining] = useState(75)
+  return <CountdownBar label="Rest after round 1" remainingSeconds={remaining} totalSeconds={90} onExtend={() => setRemaining(value => value+30)} onSkip={() => setRemaining(0)} />
+}
+
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  { component: 'QuantitySelector', requirement: 'R5 / R79, R83', module: 'src/ui/quantity-selector.tsx', summary: 'Proposed single framed quantity input. Blank differs from an explicit zero; shared by timed-work results. Roomier proportions and framed actions are selected; compact remains a retained specimen.', specimens: [
+    { state: 'unanswered, roomier', Render: () => <GalleryQuantity /> },
+    { state: 'recorded zero', Render: () => <GalleryQuantity initial={0} /> },
+    { state: 'compact retained reference', Render: () => <GalleryQuantity initial={5} wide={false} /> },
+  ] },
+  { component: 'TimedResultLog', requirement: 'R4 / R43, R54–R69', module: 'src/ui/timed-result-log.tsx', summary: 'Proposed shared end log: format-specific result plus optional categorical effort, actual weights and notes. This safe specimen saves in memory; runtime adoption/persistence follows reviewed requirements.', specimens: [
+    { state: 'simple hierarchy, existing effort faces', Render: () => <GalleryTimedLog /> },
+    { state: 'grouped hierarchy alternative', Render: () => <GalleryTimedLog hierarchy="grouped" /> },
+  ] },
+  { component: 'LadderCompletion', requirement: 'R5 / R77, R88', module: 'src/ui/ladder-rungs.tsx', summary: 'End-log ordered completion tiles. Round position and rep target are distinct; selected prefix uses frame weight and an explicit completion count. Uses public Chip frames and wraps responsively, preserving the legacy live/radio rail separately.', specimens: [
+    { state: 'round first, eight wrapping tiles', Render: () => <GalleryLadderCompletion /> },
+    { state: 'rep target first alternative', Render: () => <GalleryLadderCompletion emphasis="reps" /> },
+  ] },
+  { component: 'LoggingOverlay', requirement: 'R6 / R91, R100', module: 'src/ui/logging-overlay.tsx', summary: 'Shared proposed focused log surface: public native Dialog focus, backdrop and close behavior, with dialog versus rising-sheet appearance. Existing log forms retain their fields, drafts, rest clocks and writers.', specimens: [
+    { state: 'balanced dialog backdrop', Render: () => <GalleryLoggingOverlay variant="dialog" /> },
+    { state: 'long ladder log, contained inner scroll', Render: () => <GalleryLoggingOverlay variant="dialog" long /> },
+    { state: 'darker dialog backdrop', Render: () => <GalleryLoggingOverlay variant="dialog" backdrop="dark" /> },
+    { state: 'softer dialog backdrop', Render: () => <GalleryLoggingOverlay variant="dialog" backdrop="soft" /> },
+    { state: 'rising sheet appearance', Render: () => <GalleryLoggingOverlay variant="sheet" /> },
+  ] },
+  { component: 'CountdownUrgency', requirement: 'R7 / R126', module: 'src/ui/countdown-urgency.tsx', summary: 'Recovered October 26 warning: color at 10, soft edge vignette at 5, independent 1.5s smooth opacity pulse, static .5 under reduced motion; elapsed-only clocks remain neutral.', specimens: [{ state: 'manual deadline milestones and elapsed-only clock', Render: GalleryCountdownUrgency }] },
+  { component: 'LadderPrescription', requirement: 'R6 / R94–R95', module: 'src/ui/ladder-rungs.tsx', summary: 'Compact prescription and ordered live progress, including each movement target and fixed companions. Same owner is used in the workout comparison.', specimens: [
+    { state: '12 rounds, loaded ladder and bodyweight companion', Render: () => <GalleryLadderPrescription /> },
+    { state: 'live ordered check-off, 12 rounds', Render: () => <GalleryLadderPrescription live /> },
+  ] },
+  { component: 'TimedWorkoutFlow', requirement: 'R4 / R38–R69', module: 'src/ui/timed-workout-flow.tsx', summary: 'Isolated timed-work proposal consuming shared clock arithmetic and existing format contracts. App BlockSlot uses the same owner when the comparison presentation is enabled; prior renderer behavior remains separately reviewable.', specimens: [
+    { state: 'AMRAP Start, Pause/Resume, Finish and local results', Render: () => <GalleryTimedFlow presentation={PROPOSED_EXPERIENCE} /> },
+  ] },
+  { component: 'MovementGroupHeader', requirement: 'R30 / R37', module: 'src/ui/movement-presentation.tsx', summary: 'One static group-header owner used by actual Review and live BlockPanel: title left, compact structure badge right, no Review disclosure.', specimens: [
+    { state: 'superset and rounds', Render: () => <Card><MovementGroupHeader title="Accessory" badge={<StructureBadge identity={{label:'SUPERSET', detail:'3 ROUNDS',repScheme:null,glyph:'Superset'}} />} /></Card> },
+    { state: 'long section without structure badge', Render: () => <Card><MovementGroupHeader title="Primary strength work with a longer section name" /></Card> },
+  ]},
+  { component: 'EquipmentSummary', requirement: 'R27 / R34', module: 'src/ui/equipment-summary.tsx', summary: 'Read-only equipment group composed from existing tokens and a shared equipment glyph; no new per-equipment icon vocabulary. R3 visual first pass.', specimens: [
+    { state: 'multiple equipment names', Render: () => <Card><EquipmentSummary equipment={['Barbell','Dumbbell','Resistance bands']} /></Card> },
+    { state: 'bodyweight only', Render: () => <Card><EquipmentSummary equipment={[]} /></Card> },
+  ]},
+
+  {component:'MovementIdentity',requirement:'B05-04 / R28',module:'src/ui/movement-presentation.tsx',summary:'One shared name, prescription, equipment and trailing-action hierarchy. Review, live blocks and saved rows use this implementation; counters/actions retain their own meaning.',specimens:[{state:'long name and counter',Render:SharedMovementExample},{state:'Review with real Swap interaction',Render:ReviewMovementStandalone}]},
+  {component:'MovementList',requirement:'B05-04 / R28',module:'src/ui/movement-presentation.tsx',summary:'Ordered peer rows with horizontal separators only between movements; no inner rail or final divider.',specimens:[{state:'one round, two movements',Render:SharedMovementGroupExample},{state:'one movement, no separator',Render:() => <MovementList label="Remaining movement"><li><MovementIdentity name="Mountain climber" prescription="12 reps" equipment="Bodyweight" /></li></MovementList>}]},
+  {component:'PreparationGuide',requirement:'V4 proposal / R01',module:'src/ui/preparation-guide.tsx',summary:'Proposed actual guide component; synthetic movement names and independent optional clock. Data contract remains a design proposal.',specimens:[{state:'optional independent timer',Render:() => <PreparationGuide guide={PROPOSED_EXPERIENCE.guides.warmup} withTimer />},{state:'cooldown without timer',Render:() => <PreparationGuide guide={PROPOSED_EXPERIENCE.guides.cooldown} />}]},
+  {component:'CountdownBar',requirement:'V4 proposal / R15',module:'src/ui/workout-chrome.tsx',summary:'Shared countdown presentation; real rest/preparation owners keep separate clocks. This example supplies controlled readings and working actions.',specimens:[{state:'controlled rest readout',Render:SharedCountdownExample},{state:'rest elapsed',Render:() => <CountdownBar label="Rest complete" remainingSeconds={0} totalSeconds={90} />}]},
+  {component:'TrainingProgressReport',requirement:'V4 proposal / F18',module:'src/ui/training-progress-report.tsx',summary:'Proposed report using synthetic presentation inputs. No adaptation calculation or account data is claimed.',specimens:[{state:'synthetic recorded versus next',Render:() => <WorkoutExperiencePresentationProvider value={PROPOSED_EXPERIENCE}><TrainingProgressReport /></WorkoutExperiencePresentationProvider>},{state:'two synthetic movement records',Render:() => <WorkoutExperiencePresentationProvider value={{...PROPOSED_EXPERIENCE,report:[...PROPOSED_EXPERIENCE.report,{movement:'Dumbbell thruster with a longer name',equipment:'Dumbbell',previous:'20 lb · 8 / 8',latest:'20 lb · 10 / 10',next:'20 lb · 2 × 8–12',evidence:'Synthetic layout example'}]}}><TrainingProgressReport /></WorkoutExperiencePresentationProvider>}]},
   {
     component: 'WorkoutEntryComparison',
     title: 'History and Favorites',
@@ -2520,7 +2590,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'REQ-008',
     module: 'src/ui/composition.tsx',
     summary:
-      'The compact workout-facts row: every glyph-led reading on one line, with public horizontal containment and keyboard reachability.',
+      'Compact workout facts: each glyph-led reading stays whole and wraps into additional visible rows. No carousel or hidden facts.',
     specimens: [
       { state: 'pictured facts', Render: () => summaryFactsExample(false) },
       { state: 'widest real facts', Render: () => summaryFactsExample(true) },

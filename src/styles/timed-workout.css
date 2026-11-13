@@ -1,0 +1,69 @@
+/* App-owned proposed timed-work presentation; uses existing geometry and roles. */
+.clr-timed-flow, .clr-timed-log, .clr-timed-field { display:flex; flex-direction:column; gap:var(--spacing-400); min-width:0; }
+.clr-timed-field { gap:var(--spacing-200); }
+.clr-timed-log { padding-block-start:var(--spacing-400); border-block-start:var(--border-width) solid var(--border-region-rule); }
+.clr-timed-log > .label { margin:0; }
+.clr-timed-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(0,1fr)); gap:var(--spacing-300); }
+.clr-timed-actions > .clr-bleed, .clr-timed-actions button { width:100%; min-width:0; }
+.clr-timed-actions button { justify-content:center; }
+.clr-timed-meta { margin:0; color:var(--text-secondary); }
+.clr-timed-meta, .clr-timed-log { font-family:var(--font-data); }
+.clr-quantity { display:grid; grid-template-columns:var(--control-height) minmax(0,1fr) var(--control-height); align-items:center; padding:var(--spacing-100); }
+.clr-quantity input { width:100%; min-width:0; appearance:textfield; border:0; background:transparent; color:var(--text-timer); font:var(--font-weight-bold) var(--heading-h3-size)/1 var(--font-data); text-align:center; padding:var(--spacing-100); }
+.clr-quantity input::-webkit-inner-spin-button, .clr-quantity input::-webkit-outer-spin-button { appearance:none; margin:0; }
+.clr-quantity input:focus-visible { outline:var(--border-width) solid var(--border-field-focus); outline-offset:var(--spacing-100); }
+.clr-timed-flow .clr-movement-group-header { flex-direction:column; align-items:flex-start; }
+.clr-timed-rung { display:flex; flex-direction:column; gap:var(--spacing-200); }
+.clr-timed-rung .label, .clr-timed-rung p { margin:0; }
+.clr-timed-saved { display:flex; align-items:center; flex-wrap:wrap; gap:var(--spacing-200); color:var(--text-selection); }
+.clr-timed-saved p { margin:0; }
+.clr-timed-clock { display:flex; flex-direction:column; min-width:0; }
+.clr-timed-clock [role=timer] { flex-wrap:wrap; justify-content:center; }
+.clr-timed-clock .clr-card { min-height:var(--control-height); }
+.clr-timed-dialog { max-height:90dvh; overflow:auto; }
+[data-counter-style=wide] .clr-quantity { grid-template-columns:var(--control-height) minmax(0,1fr) var(--control-height); padding:var(--spacing-300); }
+[data-counter-style=wide] .clr-quantity input { font-size:var(--heading-h2-size); }
+.clr-v4-experience .clr-movement-group-header { flex-direction:column; align-items:flex-start; }
+.clr-v4-experience .clr-workout-section-nav__meta { font-size:var(--label-xs-size); }
+.clr-v4-experience .clr-workout-section-nav { padding:0; }
+
+/* R5: one clear form title, smaller field labels, optional ruled groups. */
+.clr-timed-log { gap: var(--spacing-600); }
+.clr-timed-log__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--heading-h2-size);
+  line-height: var(--heading-h2-line-height);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--text-card-header);
+}
+.clr-timed-log__group { display: flex; flex-direction: column; min-width: 0; gap: var(--spacing-400); }
+.clr-timed-log__group:empty { display: none; }
+.clr-timed-log__group-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--heading-h4-size);
+  line-height: var(--heading-h4-line-height);
+  color: var(--text-card-header);
+  text-transform: uppercase;
+}
+[data-log-hierarchy=grouped] > .clr-timed-log__group {
+  border-block-start: var(--border-width) solid var(--border-region-rule);
+  padding-block-start: var(--spacing-400);
+}
+.clr-timed-completion [role=radiogroup] { flex-wrap: nowrap !important; }
+.clr-timed-completion [role=radiogroup] > .clr-bleed { flex: 1 1 0; min-width: 0; }
+.clr-timed-completion [role=radio] { width: 100%; justify-content: center; padding-inline: var(--spacing-100) !important; }
+
+[data-log-hierarchy=grouped] > .clr-timed-log__group > .clr-timed-log__group-title {
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data);
+  color: var(--text-secondary);
+}
+
+/* Existing small quiet action; only placement/alignment change. */
+.clr-timed-undo { display: flex; justify-content: flex-start; }
+.clr-timed-undo button { text-align: start; justify-content: flex-start; }

@@ -78,6 +78,8 @@ import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { FavoriteToggle } from './FavoriteToggle'
 import { AUTHENTICATED_HOME } from './guards'
+import { LoggingOverlay } from '../ui/logging-overlay'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { Screen } from './Screen'
 
 // FAV-01's control now lives beside the screens that share it; its words are
@@ -152,6 +154,8 @@ export function Summary() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Debrief({ completed }: { completed: CompletedSession }) {
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
+  const [logOpen, setLogOpen] = useState(false)
   const { session, durationMins } = completed
   const summary = useSummaryClient()
   const cache = useQueryClient()
@@ -202,12 +206,43 @@ function Debrief({ completed }: { completed: CompletedSession }) {
     })()
   }
 
+  const fields = <>
+            {error !== null && (
+              <div role="alert" className="clr-row">
+                <span
+                  aria-hidden="true"
+                  style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
+                >
+                  <AlertCircle />
+                </span>
+                <span>{error.message}</span>
+              </div>
+            )}
+
+            <FeelingRow value={mood} onChange={setMood} />
+
+            <Input
+              label="Notes · optional"
+              name="session_notes"
+              multiline
+              rows={4}
+              value={notes}
+              onChange={setNotes}
+              placeholder="Overhead felt heavy today. Lateral raises easy."
+              errorText={
+                tooLong
+                  ? `Notes are kept to ${NOTES_MAX_LENGTH} characters.`
+                  : undefined
+              }
+            />
+          </>
+
   return (
     <Screen
       title="Summary"
       heading="Nice work"
       header={{}}
-      pinnedFoot={
+      pinnedFoot={proposal ? undefined :
         <PhoneFooter>
           <ActionRow>
             <Button
@@ -252,38 +287,17 @@ function Debrief({ completed }: { completed: CompletedSession }) {
 
         {/* A form sits inside one card, its labels with it; the primary
             action stays pinned in the footer and submits it by id. */}
-        <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate>
-          <Card heading={DEBRIEF_HEADING}>
-            {error !== null && (
-              <div role="alert" className="clr-row">
-                <span
-                  aria-hidden="true"
-                  style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
-                >
-                  <AlertCircle />
-                </span>
-                <span>{error.message}</span>
-              </div>
-            )}
-
-            <FeelingRow value={mood} onChange={setMood} />
-
-            <Input
-              label="Notes · optional"
-              name="session_notes"
-              multiline
-              rows={4}
-              value={notes}
-              onChange={setNotes}
-              placeholder="Overhead felt heavy today. Lateral raises easy."
-              errorText={
-                tooLong
-                  ? `Notes are kept to ${NOTES_MAX_LENGTH} characters.`
-                  : undefined
-              }
-            />
-          </Card>
-        </form>
+        {proposal ? <Card heading={DEBRIEF_HEADING}>
+          <Button variant="primary" onClick={() => setLogOpen(true)}>Log workout feedback</Button>
+          <LoggingOverlay open={logOpen} title="Workout feedback" onClose={() => setLogOpen(false)}>
+            <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate className="clr-stack">
+              {fields}
+              <Button type="submit" variant="primary" loading={saving}>Save and close</Button>
+            </form>
+          </LoggingOverlay>
+        </Card> : <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate>
+          <Card heading={DEBRIEF_HEADING}>{fields}</Card>
+        </form>}
       </div>
     </Screen>
   )

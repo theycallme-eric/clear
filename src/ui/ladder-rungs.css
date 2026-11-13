@@ -108,3 +108,45 @@
   letter-spacing: var(--tracking-data);
   color: var(--text-card-label);
 }
+
+/* The result-log variant follows Home's numbered element-frame vocabulary,
+   with ordered completion and wrapping instead of the legacy live rail. */
+.clr-ladder-completion {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.clr-ladder-completion > legend { padding: 0; margin-block-end: var(--spacing-200); }
+.clr-ladder-completion__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--control-height) + var(--spacing-500)), 1fr));
+  gap: var(--spacing-200);
+}
+.clr-ladder-completion__tiles > .clr-bleed { min-width: 0; }
+.clr-ladder-completion__tile { position: relative; }
+.clr-ladder-completion__tile > svg {
+  position: absolute;
+  inset-block-start: var(--spacing-100);
+  inset-inline-end: var(--spacing-100);
+}
+.clr-ladder-completion__content { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-100); }
+.clr-ladder-completion__round, .clr-ladder-completion__target {
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+}
+.clr-ladder-completion__number { font-size: var(--heading-h3-size); line-height: var(--heading-h3-line-height); }
+
+/* R6: all three internal lines stay level; selection uses frame weight and
+   an explicit completion reading instead of ticks. */
+.clr-ladder-completion__tile > svg { display: none; }
+.clr-ladder-completion__tile[aria-pressed=true] { --bw: var(--focus-ring-width); }
+.clr-ladder-completion__round { white-space: nowrap; }
+.clr-ladder-completion__status { margin: var(--spacing-200) 0 0; font-size: var(--label-xs-size); color: var(--text-secondary); }
+.clr-ladder-prescription { display:flex; flex-direction:column; gap:var(--spacing-300); }
+.clr-ladder-prescription__summary { display:flex; flex-direction:column; gap:var(--spacing-200); }
+.clr-ladder-prescription__summary p { margin:0; font-size:var(--label-xs-size); font-family:var(--font-data); }
+.clr-ladder-prescription__summary strong { text-transform:uppercase; }
+.clr-ladder-prescription__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(calc(var(--control-height) * 2),1fr)); gap:var(--spacing-200); margin:0; padding:0; list-style:none; }
+.clr-ladder-prescription__grid li { display:flex; flex-direction:column; gap:var(--spacing-100); padding:var(--spacing-200); font-family:var(--font-data); font-size:var(--label-xs-size); min-width:0; }
+.clr-ladder-prescription__grid li > span { overflow-wrap:anywhere; }

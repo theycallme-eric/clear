@@ -52,9 +52,9 @@ import {
   Plus,
   Stop,
   TextAction,
-  TimerDisplay,
   X,
 } from '../design-system/index'
+import { CountdownDisplay } from './timer-display'
 import {
   amrapOutcome,
   amrapShape,
@@ -93,7 +93,6 @@ import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
 import { MetricFrame } from './composition'
 import { ConditioningScoreLine } from './conditioning-score'
-import { useInterfaceLoop } from './motion'
 import { Heading, HeadingSection } from './Heading'
 import { StructureBadge } from './workout-chrome'
 import type { BlockRendererProps } from './block-renderers'
@@ -136,7 +135,6 @@ export function AmrapBlock({
     view.phase === 'running' &&
     view.capSeconds !== null &&
     view.remainingSeconds <= 10
-  const loop = useInterfaceLoop('urgent', urgent)
   const roundsLabelId = useId()
   const outcome = shape.size === 0 ? {} : amrapOutcome(view)
 
@@ -145,14 +143,13 @@ export function AmrapBlock({
       className="clr-stack"
       style={{ display: 'flex', flexDirection: 'column' }}
       data-urgent={urgent ? 'true' : undefined}
-      {...(urgent ? loop : {})}
     >
       {/*
         The shipped timer card, beside the block's card and never within it. Only
         a window that is open and has a deadline has anything to count down.
       */}
       {shape.size > 0 && view.phase === 'running' && view.capSeconds !== null && (
-        <TimerDisplay seconds={view.remainingSeconds} size="lg" />
+        <CountdownDisplay seconds={view.remainingSeconds} size="lg" />
       )}
       <Card>
         <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>

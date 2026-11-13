@@ -53,7 +53,8 @@
  * real, drawable case rather than an empty view — everything in it was swapped
  * out, and it says so.
  */
-import { Button, Play, TimerDisplay } from '../design-system/index'
+import { Button, Play } from '../design-system/index'
+import { CountdownDisplay } from './timer-display'
 import {
   clampEmomState,
   emomShape,
@@ -79,7 +80,6 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
-import { useInterfaceLoop } from './motion'
 
 export interface EmomBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -195,15 +195,13 @@ const MINUTE_LOW_SECONDS = 10
 function MinuteCountdown({ view }: { view: EmomView }) {
   const low = view.secondsRemaining <= MINUTE_LOW_SECONDS
   const running = view.phase === 'work' || view.phase === 'rest'
-  const loop = useInterfaceLoop('urgent', low && running)
 
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column' }}
       data-urgent={low ? 'true' : 'false'}
-      {...loop}
     >
-      <TimerDisplay seconds={view.secondsRemaining} lowThreshold={MINUTE_LOW_SECONDS} />
+      <CountdownDisplay running={running} seconds={view.secondsRemaining} lowThreshold={MINUTE_LOW_SECONDS} />
     </div>
   )
 }

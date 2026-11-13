@@ -41,6 +41,8 @@ import { ForTimeBlock } from './for-time-block'
 import { LadderBlock } from './ladder-block'
 import { StandardBlock } from './standard-block'
 import { SupersetBlock } from './superset-block'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
+import { TimedWorkoutFlow } from './timed-workout-flow'
 
 export interface BlockRendererProps {
   readonly block: BlockProgress
@@ -105,5 +107,12 @@ export function blockRendererFor(block: BlockProgress): BlockRenderer {
  * shape even when the value behind it is a module constant.
  */
 export function BlockSlot({ block }: BlockRendererProps) {
-  return createElement(blockRendererFor(block), { block })
+  const presentation = useWorkoutExperiencePresentation()
+  const renderer = blockRendererFor(block)
+  if (presentation?.timedWorkflows && explicitLadderTiming(block)?.mode !== 'scheduled_starts') {
+    const format = renderer === LadderBlock ? 'ladder' : renderer === EmomBlock ? 'emom'
+      : renderer === AmrapBlock ? 'amrap' : renderer === ForTimeBlock ? 'for_time' : null
+    if (format !== null) return <TimedWorkoutFlow block={block} format={format} />
+  }
+  return createElement(renderer, { block })
 }

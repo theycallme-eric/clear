@@ -46,6 +46,8 @@ import {
   type SetLoggingSheetHostApi,
 } from './set-logging-sheet-context'
 import { RestTimerBar } from './workout-chrome'
+import { LoggingOverlay } from './logging-overlay'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import './set-logging-sheet.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -93,6 +95,8 @@ export function SetLoggingSheetSlot() {
  */
 export function SetLoggingSheetOverlay() {
   const open = useSetLoggingSheetOpen()
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
+  if (proposal) return <SetLoggingSheetSlot />
   return (
     <div className="clr-set-sheet-layer" data-open={open ? '' : undefined}>
       {open ? <div aria-hidden="true" className="clr-set-sheet-layer__backdrop" /> : null}
@@ -111,6 +115,7 @@ export type SetSheetMode = 'new' | 'edit'
 
 export interface SetLoggingSheetProps {
   mode: SetSheetMode
+  confirmation?: string
   setNumber: number
   /**
    * What the entry is called in the title and on its action, where it is not
@@ -160,6 +165,7 @@ const CONTEXT_STYLE: CSSProperties = {
 
 export function SetLoggingSheet({
   mode,
+  confirmation,
   setNumber,
   entryName = `set ${setNumber}`,
   formLabel,
@@ -174,6 +180,7 @@ export function SetLoggingSheet({
   onClear,
   onCollapse,
 }: SetLoggingSheetProps) {
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
   const titleId = useId()
   const bodyId = useId()
   const submitWith = useInvalidFocus()
@@ -187,46 +194,11 @@ export function SetLoggingSheet({
     document.getElementById(titleId)?.focus({ preventScroll: hosted })
   }, [titleId, hosted])
 
-  return (
-    // Portalled out of the block's card, the sheet is not inside it: React
-    // context would otherwise carry that card's containment along, and the
-    // rest's timer card would lose its own frame. It is still not on the
-    // background (REQ-004), so nothing in it echoes.
-    <CardContainmentContext.Provider value={false}>
-    <EchoExcluded>
-    <section aria-labelledby={titleId} className="clr-set-sheet" data-mode={mode}>
-      <div className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
-        {/*
-          B05-07.3: the frame carries the shipped accent bar in every mode.
-          Overlays otherwise carry none; this app-owned sheet is the owner's
-          scoped exception (ledger EXC-06). The sheet is still not a card, so
-          the rest's timer card inside it is not a nested one.
-        */}
-        <span className="clr-card__bar clr-set-sheet__bar" aria-hidden="true" />
-        <div
-          id={bodyId}
-          className="clr-chamfer clr-chamfer--md clr-chamfer--structure clr-set-sheet__frame"
-        >
-          <div className="clr-row clr-set-sheet__head">
-            <HeadingLevelProvider level={2}>
-              <Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {mode === 'edit' ? 'Edit' : 'Log'} {entryName}
-              </Heading>
-            </HeadingLevelProvider>
-            <IconButton
-              label="Minimize"
-              icon={<ChevronDown />}
-              aria-expanded
-              aria-controls={bodyId}
-              onClick={onCollapse}
-            />
-          </div>
-
-          <p style={CONTEXT_STYLE}>{context}</p>
+  const body = <>          {confirmation === undefined && context ? <p style={CONTEXT_STYLE}>{context}</p> : null}
 
           {rest === undefined ? <RestTimerBar /> : rest}
 
-          <form
+          {confirmation === undefined && <form
             aria-label={formLabel}
             onSubmit={submitWith(onSubmit)}
             className="clr-stack clr-stack--tight"
@@ -257,11 +229,30 @@ export function SetLoggingSheet({
                 </Button>
               </ActionGroup>
             )}
-          </form>
+          </form>}</>
+  if (proposal) return <LoggingOverlay open title={confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`} onClose={onCollapse}>
+    <div className="clr-stack clr-stack--tight">{body}</div>
+  </LoggingOverlay>
+  return (
+    // Portalled out of the block's card, the sheet is not inside it, and it is
+    // not on the background (REQ-004), so nothing in it echoes.
+    <CardContainmentContext.Provider value={false}>
+      <EchoExcluded>
+      <section aria-labelledby={titleId} className="clr-set-sheet" data-mode={mode}>
+        <div className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
+          <span className="clr-card__bar clr-set-sheet__bar" aria-hidden="true" />
+          <div id={bodyId} className="clr-chamfer clr-chamfer--md clr-chamfer--structure clr-set-sheet__frame">
+            <div className="clr-row clr-set-sheet__head">
+              <HeadingLevelProvider level={2}><Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
+                {confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`}
+              </Heading></HeadingLevelProvider>
+              <IconButton label="Minimize" icon={<ChevronDown />} aria-expanded aria-controls={bodyId} onClick={onCollapse} />
+            </div>
+            {body}
+          </div>
         </div>
-      </div>
-    </section>
-    </EchoExcluded>
+      </section>
+      </EchoExcluded>
     </CardContainmentContext.Provider>
   )
 }
@@ -269,4 +260,10 @@ export function SetLoggingSheet({
 /** Weight / Unit / Reps — or Seconds, or only the measure — on one row. */
 export function SetMeasurementRow({ children }: { children: ReactNode }) {
   return <div className="clr-set-sheet__measures">{children}</div>
+}
+
+
+/** Same sheet/frame and actual rest; no next-entry form after a saved set. */
+export function SetLoggingConfirmation({label,onCollapse}:{label:string;onCollapse:()=>void}){
+ return <SetLoggingSheet mode="new" setNumber={0} confirmation={label} formLabel={label} context={null} measures={null} onSubmit={()=>false} onCollapse={onCollapse}/>
 }

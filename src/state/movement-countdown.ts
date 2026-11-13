@@ -17,6 +17,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { COUNTDOWN_COLOR_SECONDS } from './countdown-urgency'
 import { targetForSet, type PrescribedColumns } from './prescription'
 
 /** Timed targets keep the same fixed/range/sequence meaning in every renderer. */
@@ -30,7 +31,7 @@ export function movementCountdownSeconds(prescription: PrescribedColumns, setNum
 }
 
 /** The final stretch, where the countdown crosses into the timer's low state. */
-export const COUNTDOWN_LOW_SECONDS = 5
+export const COUNTDOWN_LOW_SECONDS = COUNTDOWN_COLOR_SECONDS
 
 /** Fast enough that the displayed second is never visibly stale (EXE-01). */
 const TICK_MS = 250

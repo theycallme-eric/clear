@@ -49,6 +49,8 @@ import {
 } from '../state/view-state'
 import { Card } from '../ui/card'
 import { HistoryList } from '../ui/history-list'
+import { TrainingProgressReport } from '../ui/training-progress-report'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { ActionRow, ListMessage, PhoneFooter } from '../ui/composition'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
@@ -74,6 +76,7 @@ export const HISTORY_BACK_LABEL = 'Home'
 export const HISTORY_LOAD_MORE_LABEL = 'Load older workouts'
 
 export function History() {
+  const presentation = useWorkoutExperiencePresentation()
   const navigate = useNavigate()
   const query = useHistoryQuery()
   const session = useOpenHistorySession()
@@ -131,6 +134,7 @@ export function History() {
         {/* One card for the whole collection, as Home's recents are: the
             filter, the rows and each of the other three states are its
             content, so no state brings a second frame and no row is a card. */}
+        <TrainingProgressReport />
         <Card heading={HISTORY_LIST_LABEL}>
           {/* The control belongs to a history that exists. With none, there is
               nothing to narrow, and an inert dropdown above "No workouts yet"
@@ -139,7 +143,7 @@ export function History() {
             <Select
               label={HISTORY_FILTER_LABEL}
               value={filter}
-              options={[...HISTORY_FILTERS]}
+              options={HISTORY_FILTERS.filter(option => !presentation || !['rest','unstarted'].includes(option.value))}
               onChange={(value) => setFilter(historyFilterOf(value))}
             />
           )}

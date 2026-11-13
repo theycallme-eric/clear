@@ -68,6 +68,7 @@ import {
   IconButton,
   Input,
   IntensitySlider,
+  TextAction,
 } from '../design-system/index'
 import {
   clampedIntensity,
@@ -125,6 +126,7 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { AppDialog } from '../ui/app-dialog'
 import { Card } from '../ui/card'
 import { ActionGroup, ActionRow, PhoneFooter } from '../ui/composition'
@@ -410,6 +412,7 @@ function GenerateForm({
   // U20: Home's next-workout entry also carries the last request's minutes and
   // place, which history cannot re-derive; Goal, Focus and intensity stay the
   // resolver's, so the handoff sends what a direct visit with those would.
+  const presentation = useWorkoutExperiencePresentation()
   const [searchParams, setSearchParams] = useSearchParams()
   const untouched = (): Composition => ({
     draft: initialDraft(
@@ -596,56 +599,14 @@ function GenerateForm({
         {/* Goal and Focus at the top, said alike (B05-02.6/02.7). The Goal is
             the profile's standing one, as context (U26); it is changed in
             Settings, never asked per workout (REQ-001). */}
-        <div className="clr-stack clr-stack--tight">
-          <p style={{ margin: 0 }}>
-            Goal: <strong>{standingGoal?.label}</strong>
-          </p>
-          {focused && (
-            <p style={{ margin: 0 }}>
-              Focus:{' '}
-              <strong>
-                {ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label}
-              </strong>
-              {override !== null && ` — ${OVERRIDE_SCOPE}`}
-            </p>
-          )}
-        </div>
-
-        {/* Recovery — the secondary, one-workout mode — and the way off the
-            Focus: one action group beneath them (B05-02.7). This semantic
-            pair keeps one control row; label words may wrap inside their
-            cells, with Recovery's tick and both behaviours intact. With no
-            Focus to change, Recovery stands alone.
-            The standing Goal is untouched by Recovery, and Power's refusal is
-            said in text (§2.3). */}
-        <div className="clr-stack clr-stack--tight">
-          {focused ? (
-            <ActionGroup className="clr-action-group--paired-labels">
-              <Chip selected={draft.recovery} onClick={toggleRecovery}>
-                {RECOVERY_LABEL}
-              </Chip>
-              <Button
-                variant="quiet"
-                aria-expanded={expanded}
-                aria-controls={expanded ? focusChoices : undefined}
-                onClick={toggleChanging}
-              >
-                {CHANGE_FOCUS_LABEL}
-              </Button>
-            </ActionGroup>
-          ) : (
-            <div className="clr-row" style={CHIP_ROW}>
-              <Chip selected={draft.recovery} onClick={toggleRecovery}>
-                {RECOVERY_LABEL}
-              </Chip>
-            </div>
-          )}
-          {draft.recovery && (
-            <p style={{ margin: 0 }}>
-              {RECOVERY_NOTE} {POWER_REFUSAL}
-            </p>
-          )}
-        </div>
+        {presentation ? <div className="clr-v4-program-summary">
+          <div className="clr-stack clr-stack--tight"><span className="clr-text-data-xs clr-text-data-xs--upper">Goal</span><strong className="clr-v4-program-value">{standingGoal?.label}</strong></div>
+          {focused ? <div className="clr-stack clr-stack--tight"><span className="clr-text-data-xs clr-text-data-xs--upper">Focus</span><TextAction className="clr-v4-focus-value" aria-label={CHANGE_FOCUS_LABEL} aria-expanded={expanded} aria-controls={expanded ? focusChoices : undefined} onClick={toggleChanging}>{ANCHORS.find(anchor => anchor.value === resolved.focus)?.label}</TextAction>{override !== null && <span className="clr-text-data-xs">{OVERRIDE_SCOPE}</span>}</div> : null}
+        </div> : <>
+          <div className="clr-stack clr-stack--tight"><p style={{margin:0}}>Goal: <strong>{standingGoal?.label}</strong></p>{focused && <p style={{margin:0}}>Focus: <strong>{ANCHORS.find(anchor => anchor.value === resolved.focus)?.label}</strong>{override !== null && ` — ${OVERRIDE_SCOPE}`}</p>}</div>
+          {focused && <div className="clr-stack clr-stack--tight"><ActionGroup className="clr-action-group--paired-labels"><Chip selected={draft.recovery} onClick={toggleRecovery}>{RECOVERY_LABEL}</Chip><Button variant="quiet" aria-expanded={expanded} aria-controls={expanded ? focusChoices : undefined} onClick={toggleChanging}>{CHANGE_FOCUS_LABEL}</Button></ActionGroup></div>}
+        </>}
+        {draft.recovery && <p style={{margin:0}}>{RECOVERY_NOTE} {POWER_REFUSAL}</p>}
 
         {/* Focus — recommended from history when history can, asked for when it
             cannot, and never drawn before the read has answered */}
@@ -684,6 +645,11 @@ function GenerateForm({
                 ))}
               </div>
             )}
+            {presentation && <div className="clr-row" style={CHIP_ROW}>
+              <Chip selected={draft.recovery} onClick={toggleRecovery}>
+                {RECOVERY_LABEL}
+              </Chip>
+            </div>}
           </div>
           )
         ) : (
@@ -724,6 +690,13 @@ function GenerateForm({
                   </Chip>
                 ))}
               </div>
+              {/* No history: keep the released manual Anchor flow, with
+                  Recovery grouped inside those choices rather than above. */}
+              <div className="clr-row" style={CHIP_ROW}>
+                <Chip selected={draft.recovery} onClick={toggleRecovery}>
+                  {RECOVERY_LABEL}
+                </Chip>
+              </div>
             </FormField>
           </>
         )}
@@ -750,10 +723,10 @@ function GenerateForm({
             value={intensity}
             disabled={resolved.goal === null}
             valueText={`${intensity} of ${range.max}`}
-            aria-describedby={intensityNoted ? intensityHint : undefined}
+            aria-describedby={intensityNoted && !presentation ? intensityHint : undefined}
             onChange={chooseIntensity}
           />
-          {intensityNoted && (
+          {intensityNoted && !presentation && (
             <p id={intensityHint}>{intensityNote(resolved.goal, intensity)}</p>
           )}
         </div>
@@ -765,7 +738,7 @@ function GenerateForm({
             value: location.id,
             label: location.name,
           }))}
-          helperText={PLACE_HELPER}
+          helperText={presentation ? undefined : PLACE_HELPER}
           errorText={refusal?.fields.location_id}
           onChange={(value) => setDraft(withLocation(draft, value))}
         />
@@ -787,7 +760,7 @@ function GenerateForm({
             rows={3}
             value={draft.notes}
             placeholder={NOTES_PLACEHOLDER}
-            helperText={NOTES_HELPER}
+            helperText={presentation ? undefined : NOTES_HELPER}
             errorText={refusal?.fields.notes}
             maxLength={NOTES_MAX_LENGTH}
             onChange={(value) => setDraft(withNotes(draft, value))}

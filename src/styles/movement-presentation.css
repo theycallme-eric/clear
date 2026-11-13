@@ -1,0 +1,21 @@
+/* Shared B05-04 presentation. Data, controls and state belong to consumers. */
+.clr-movement-identity { display:flex; flex-direction:column; gap:var(--spacing-200); min-width:0; }
+.clr-movement-identity__top { display:flex; align-items:baseline; gap:var(--spacing-300); min-width:0; }
+.clr-movement-identity__name { flex:1 1 0; min-width:0; margin:0; font-family:var(--font-display); font-size:var(--heading-h5-size); line-height:var(--heading-h5-line-height); font-weight:var(--font-weight-bold); text-transform:uppercase; color:var(--ink); overflow-wrap:anywhere; }
+.clr-movement-identity__ordinal { color:var(--text-secondary); font-weight:var(--font-weight-medium); }
+.clr-movement-identity__counter { flex:none; color:var(--text-secondary); }
+.clr-movement-identity__action { flex:0 1 auto; max-width:45%; margin-block:calc((var(--heading-h5-line-height) - var(--control-height)) / 2); }
+.clr-movement-identity__prescription { display:flex; flex-wrap:wrap; gap:var(--spacing-100) var(--spacing-300); font-family:var(--font-data); font-size:var(--label-md-size); line-height:var(--label-md-line-height); letter-spacing:var(--tracking-data); color:var(--text-paragraph); }
+.clr-movement-identity__equipment { text-transform:capitalize; }
+.clr-movement-list { display:flex; flex-direction:column; gap:var(--spacing-400); list-style:none; margin:0; padding:0; min-width:0; }
+.clr-movement-list > li:not(:last-child) { padding-block-end:var(--spacing-400); border-block-end:var(--border-width) solid var(--border-region-rule); }
+
+.clr-movement-group-header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:var(--spacing-200) var(--spacing-300); min-width:0; }
+.clr-movement-group-header__title { margin:0; min-width:0; }
+.clr-movement-group-header__badge { display:flex; max-width:100%; min-width:0; }
+.clr-movement-identity__ordinal { margin-inline-end:var(--spacing-100); }
+.clr-workout-section-nav { padding-inline:var(--spacing-200); }
+.clr-workout-section-nav__meta { margin-inline-start:auto; color:var(--text-secondary); }
+
+/* Review and live blocks inherit one vertical rhythm around the shared rows. */
+.clr-movement-group { display:flex; flex-direction:column; gap:var(--spacing-400); min-width:0; }

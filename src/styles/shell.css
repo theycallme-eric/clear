@@ -321,21 +321,12 @@ body,
   overflow-wrap: anywhere;
 }
 
-/* The compact workout-facts row (B05-03): every reading stays whole on one
-   aligned line. The public OverflowRail owns containment and reachability
-   under width pressure; result and score metric grids keep their own layout. */
-.clr-summary-facts-rail:has(:focus-visible) {
-  /* The focused track is wider than its viewport. Keep the system's focus
-     ring on the visible app-owned boundary while that track is scrolled. */
-  outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-}
-
+/* Shared compact workout facts: whole readings wrap, with no carousel. */
 .clr-summary-facts {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   flex: none;
-  width: max-content;
+  width: auto;
   align-items: center;
   gap: var(--spacing-300);
   margin: 0;

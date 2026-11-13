@@ -210,9 +210,9 @@ export const ANCHOR_LABEL = 'Anchor'
 export const GOAL_LABEL = 'Goal'
 export const DURATION_LABEL = 'Duration'
 
-/** The intensity scale is 1–10, and the header says which end it is on. */
+/** Compact Overview reading; intensity always uses the established ten-point scale. */
 export function briefingIntensity(effectiveIntensity: number): string {
-  return `${effectiveIntensity} of 10`
+  return String(effectiveIntensity)
 }
 
 /**
@@ -280,7 +280,7 @@ export function roundRestText(seconds: number | null): string | null {
  * between two different counts would be a number the workout does not hold.
  * Timed structures are counted by their clock, not by rounds.
  */
-export function groupRounds(block: WorkoutBlock): number | null {
+export function groupRounds(block: Pick<WorkoutBlock, 'structure_type' | 'rounds'> & { readonly exercises: readonly { readonly sets: number | null }[] }): number | null {
   if (block.structure_type !== 'superset' && block.structure_type !== 'circuit') return null
   if (block.rounds !== null) return block.rounds
   if (block.structure_type !== 'superset') return null
@@ -488,4 +488,9 @@ function reviewExercise(
     rest: restText(exercise.rest_seconds),
     tempo: blankToNull(exercise.tempo),
   }
+}
+
+/** A Bodyweight prescription and Bodyweight equipment need only one reading. */
+export function distinctLoadText(load: string | null, equipment: string): string | null {
+  return load !== null && load.toLowerCase() === equipment.toLowerCase() ? null : load
 }

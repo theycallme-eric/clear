@@ -217,7 +217,7 @@ function logRoundButton(round: number): HTMLElement {
 
 /** Every movement's heading, in the order the document lays them out. */
 function movementHeadings(): string[] {
-  return screen
+  return within(movementList())
     .getAllByRole('heading')
     .map((heading) => heading.textContent ?? '')
 }
@@ -244,10 +244,9 @@ describe('a superset keeps its movements in the order the rows prescribe', () =>
   it('states the alternation in words, not only with the connector', () => {
     mount()
 
-    // Colour is never the only cue: the rule down the pair's left edge says
-    // "one unit" visually, and this says it in the text.
+    // Consecutive execution remains explicit after removing the inner rail.
     expect(
-      screen.getByText('Alternate A1 → A2 — no rest between movements'),
+      screen.getByText('One round: A1 → A2 — no rest between movements'),
     ).toBeInTheDocument()
   })
 
@@ -393,7 +392,7 @@ describe('every set persists its unit and its exercise and block attribution', (
       },
     })
 
-    expect(screen.getByText('3 × 8–10 reps')).toBeInTheDocument()
+    expect(screen.getByText('8–10 reps')).toBeInTheDocument()
     expect(screen.getByText('5 rungs · 15-12-9-6-3 reps')).toBeInTheDocument()
   })
 })
@@ -488,21 +487,18 @@ describe('the superset draws with the shared block frame', () => {
     const inside = within(cards()[0])
     expect(inside.getByText('2 movements')).toBeInTheDocument()
     expect(
-      inside.getByText('Alternate A1 → A2 — no rest between movements'),
+      inside.getByText('One round: A1 → A2 — no rest between movements'),
     ).toBeInTheDocument()
     expect(inside.getByText('Rest 90s after both movements')).toBeInTheDocument()
     // REQ-013: the section's forward action completes the block.
     expect(inside.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 
-  it('links the pair with one rule drawn from tokens, not one per row', () => {
+  it('uses the shared peer list without an inner vertical rail', () => {
     mount()
 
-    const connector = movementList().parentElement as HTMLElement
-    expect(connector.style.borderLeft).toBe(
-      'var(--border-width) solid var(--border-frame-structure)',
-    )
-    expect(connector.style.paddingLeft).toBe('var(--spacing-200)')
+    expect(movementList()).toHaveClass('clr-movement-list')
+    expect(movementList().parentElement!.style.borderLeft).toBe('')
     for (const row of movementRows()) expect(row.style.borderLeft).toBe('')
   })
 

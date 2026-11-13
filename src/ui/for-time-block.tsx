@@ -58,7 +58,7 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
-import { useInterfaceLoop } from './motion'
+import { useCountdownUrgency } from './countdown-urgency'
 
 export interface ForTimeBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -156,17 +156,18 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
  * moving.
  */
 function ForTimeClock({ view }: { view: ForTimeView }) {
-  const low = view.urgent || view.phase === 'capped'
-  const loop = useInterfaceLoop('urgent', view.urgent)
+  const urgency = useCountdownUrgency(view.phase === 'running' ? view.remainingSeconds : null, view.phase === 'running')
+  const low = urgency.low || view.phase === 'capped'
+  const loop = urgency.loop
 
   return (
     // The pulse runs on the wrapper so bar and body dim together.
     <div
-      className={view.urgent ? 'clr-pulse-micro' : undefined}
-      data-urgent={view.urgent ? 'true' : 'false'}
+      className={urgency.urgent ? 'clr-pulse-micro' : undefined}
+      data-urgent={urgency.urgent ? 'true' : 'false'}
       {...loop}
     >
-      <Card role={low ? 'timer-low' : 'timer'}>
+      {urgency.edge}<Card role={low ? 'timer-low' : 'timer'}>
         <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
           {/*
             The outcome in words, and the one thing here that changes without

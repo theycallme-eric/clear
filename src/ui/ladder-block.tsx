@@ -53,7 +53,8 @@
  */
 import { useState, type ReactNode } from 'react'
 
-import { Button, ChoiceGroup, Play, TimerDisplay } from '../design-system/index'
+import { Button, ChoiceGroup, Play } from '../design-system/index'
+import { CountdownDisplay } from './timer-display'
 import type { BlockOutcome } from '../state/block-completion'
 import { clampForTimeState, startForTime, FOR_TIME_START } from '../state/for-time'
 import {
@@ -74,7 +75,6 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { LadderRungs } from './ladder-rungs'
-import { useInterfaceLoop } from './motion'
 
 /**
  * How the block ended, as the user says it.
@@ -586,15 +586,13 @@ const SCHEDULE_WORDS: Readonly<Record<ScheduleView['phase'], string>> = {
 function IntervalCountdown({ view }: { view: ScheduleView }) {
   const low = view.secondsRemaining <= INTERVAL_LOW_SECONDS
   const running = view.phase === 'running'
-  const loop = useInterfaceLoop('urgent', low && running)
 
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column' }}
       data-urgent={low && running ? 'true' : 'false'}
-      {...loop}
     >
-      <TimerDisplay seconds={view.secondsRemaining} lowThreshold={INTERVAL_LOW_SECONDS} />
+      <CountdownDisplay running={running} seconds={view.secondsRemaining} lowThreshold={INTERVAL_LOW_SECONDS} />
     </div>
   )
 }

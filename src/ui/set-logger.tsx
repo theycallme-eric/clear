@@ -62,11 +62,13 @@ import {
   prescriptionText,
   restText,
   targetForSet,
+  targetText,
 } from '../state/prescription'
 import { incrementFor } from '../state/progression'
 import { movementCountdownSeconds } from '../state/movement-countdown'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
-import { equipmentName } from '../state/review'
+import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import {
   prefillFrom,
   useSetLogging,
@@ -83,7 +85,7 @@ import { ExerciseCoaching } from './exercise-coaching'
 import { MovementCountdown } from './movement-countdown'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
-import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
+import { SetLoggingConfirmation, SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
 
 type WeightUnit = Enums<'weight_unit'>
@@ -155,7 +157,10 @@ export function ExerciseSetLogger({
   const { logSet, loggedSets, isSaving, weightUnit, correctSet, clearSet } = useSetLogging()
   const correctable = onCorrectSet !== undefined || correctSet !== undefined
   const restTimer = useRestTimer()
+  const presentation = useWorkoutExperiencePresentation()
+  const [savedEntry,setSavedEntry] = useState<number|null>(null)
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
+  const setSheetOpen=sheet.setOpen
   const logButton = useRef<HTMLButtonElement>(null)
   const editButton = useRef<HTMLButtonElement>(null)
   const returnAfterClear = useRef(false)
@@ -178,6 +183,9 @@ export function ExerciseSetLogger({
   const name = exerciseName(prescription.exercise_id)
   const title = ordinal === undefined ? name : `${ordinal} ${name}`
   const equipment = equipmentName(prescription.equipment_used)
+  const guidance = presentation?.suggestedLoads[prescription.exercise_id]
+  const load = distinctLoadText(guidance === undefined ? (prescription.load_type === null ? null : loadText(prescription.load_type, prescription.load_value, weightUnit)) : guidance, equipment)
+
   const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
   const restOnEntry = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
@@ -214,6 +222,7 @@ export function ExerciseSetLogger({
       ? null
       : { set: correctedSet, draft: correction }
   const mode = edit === null ? 'new' : 'edit'
+  useEffect(()=>{if(savedEntry===null||restTimer.remainingSeconds>0)return;const id=setTimeout(()=>{setSavedEntry(null);if(mode==='new')setSheetOpen(false)},0);return()=>clearTimeout(id)},[savedEntry,restTimer.remainingSeconds,setSheetOpen,mode])
   const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
   const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
@@ -247,8 +256,9 @@ export function ExerciseSetLogger({
     <BlockPanel.Movement
       title={title}
       counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
-      detail={prescriptionText(prescription)}
-      context={`Equipment · ${equipment}`}
+      detail={statesRest || prescription.target_kind === 'sequence' ? prescriptionText(prescription) : targetText(prescription)}
+      load={load}
+      context={equipment}
     >
       {/*
         Tempo stays in the prescription's structured columns; it is not
@@ -304,7 +314,7 @@ export function ExerciseSetLogger({
       ) : null}
 
       {(logsSelf || edit !== null) && sheet.place(
-        <SetSheetForm
+        savedEntry !== null && edit === null ? <SetLoggingConfirmation label={`Set ${savedEntry} logged`} onCollapse={collapse}/> : <SetSheetForm
           key={mode}
           mode={mode}
           setNumber={sheetSetNumber}
@@ -339,6 +349,7 @@ export function ExerciseSetLogger({
             }
             // The save only: a running rest carries on, and none is started.
             logSet(exercise.exerciseId, performed)
+            if(presentation)setSavedEntry(setNumber)
           }}
           onCancel={() => {
             setCorrection(null)
@@ -979,6 +990,7 @@ export interface SupersetRoundSheetProps {
   /** The entry so far, or `null` before anything was entered. */
   held: RoundDraft | null
   onHeld: (draft: RoundDraft) => void
+  onLogged?:()=>void
   onCollapse: () => void
 }
 
@@ -987,6 +999,7 @@ export function SupersetRoundSheet({
   round,
   held,
   onHeld: setHeld,
+  onLogged,
   onCollapse,
 }: SupersetRoundSheetProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
@@ -1046,6 +1059,7 @@ export function SupersetRoundSheet({
     for (const { part, reading } of chosen) {
       if (reading.performed !== null) logSet(part.exercise.exerciseId, reading.performed)
     }
+    onLogged?.()
     return true
   }
 
@@ -1055,7 +1069,7 @@ export function SupersetRoundSheet({
       setNumber={round}
       entryName={`round ${round}`}
       formLabel={`Log round ${round} of ${parts.map((part) => part.name).join(' and ')}`}
-      context="Tick each movement you performed. A blank field is saved as not recorded."
+      context=""
       measures={readings.map(({ part, entry, reading }) => {
         // Entering a result identifies this movement. Clearing a suggestion or
         // the last entered result does not identify a performance with no
@@ -1086,7 +1100,7 @@ export function SupersetRoundSheet({
             key={part.exercise.exerciseId}
             role="group"
             aria-label={`${part.ordinal} ${part.name}, set ${round}`}
-            className="clr-stack clr-stack--tight"
+            className="clr-stack clr-stack--tight clr-round-movement"
           >
             <p style={ROUND_MOVEMENT_STYLE}>
               {[`${part.ordinal} ${part.name}`, prescriptionText(prescription)].join(' · ')}

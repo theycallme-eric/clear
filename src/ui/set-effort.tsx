@@ -12,7 +12,9 @@
  * — unanswered, never the middle face, never zero, never a guess — and once
  * something is chosen a compact Clear puts it back to `null`.
  *
- * This is one set's effort and nothing else. The session's five-choice feeling
+ * The same three-face presentation is reused by the proposed section log with
+ * an explicit scope label; its persistence remains owned by that log. The
+ * session's five-choice feeling
  * (`feeling-row.tsx`) is a different question, stored in a different column,
  * and neither is ever read as the other.
  */

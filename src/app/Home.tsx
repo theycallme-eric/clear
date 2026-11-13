@@ -154,6 +154,8 @@ import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { ResumableSession } from './ResumableSession'
+import { LoggingOverlay } from '../ui/logging-overlay'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { Screen } from './Screen'
 import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 import { useOpenHistorySession } from './useOpenHistorySession'
@@ -444,6 +446,7 @@ function RestDayControl({
   const [reason, setReason] = useState<RestDayReason>('rest')
   const [failure, setFailure] = useState(false)
   const [saved, setSaved] = useState(false)
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
   const editorId = useId()
   const trigger = useRef<HTMLButtonElement>(null)
   const picker = useRef<HTMLSelectElement>(null)
@@ -499,6 +502,31 @@ function RestDayControl({
     cancel()
   }
 
+  const editor = (
+            <div id={editorId} className="clr-stack clr-stack--tight" onKeyDown={onEditorKey}>
+              <Select
+                label="Reason"
+                value={reason}
+                selectRef={picker}
+                options={REST_DAY_REASONS.map((value) => ({
+                  value,
+                  label: REST_DAY_REASON_LABELS[value],
+                }))}
+                helperText={REST_DAY_REASON_EFFECTS[reason]}
+                onChange={(value) => setReason(value as RestDayReason)}
+              />
+              {/* Equal framed cells, so Save and Cancel share edges and height. */}
+              <ActionGroup className="clr-action-group--paired">
+                <Button variant="primary" loading={write.marking} onClick={() => void save()}>
+                  Save rest day
+                </Button>
+                <Button variant="secondary" disabled={write.marking} onClick={cancel}>
+                  Cancel
+                </Button>
+              </ActionGroup>
+            </div>
+  )
+
   return (
     // Inside the week's card this is a ruled sub-group, one level under it.
     <HeadingSection aria-label={REST_DAY_LABEL}>
@@ -538,28 +566,7 @@ function RestDayControl({
           ) : (
             // Escape is Cancel from anywhere in the editor; the native picker
             // keeps its own Escape while its list is open.
-            <div id={editorId} className="clr-stack clr-stack--tight" onKeyDown={onEditorKey}>
-              <Select
-                label="Reason"
-                value={reason}
-                selectRef={picker}
-                options={REST_DAY_REASONS.map((value) => ({
-                  value,
-                  label: REST_DAY_REASON_LABELS[value],
-                }))}
-                helperText={REST_DAY_REASON_EFFECTS[reason]}
-                onChange={(value) => setReason(value as RestDayReason)}
-              />
-              {/* Equal framed cells, so Save and Cancel share edges and height. */}
-              <ActionGroup className="clr-action-group--paired">
-                <Button variant="primary" loading={write.marking} onClick={() => void save()}>
-                  Save rest day
-                </Button>
-                <Button variant="secondary" disabled={write.marking} onClick={cancel}>
-                  Cancel
-                </Button>
-              </ActionGroup>
-            </div>
+            proposal ? <LoggingOverlay open title="Log rest day" onClose={cancel} closeDisabled={write.marking}>{editor}</LoggingOverlay> : editor
           )}
         </div>
       </Card>

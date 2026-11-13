@@ -51,9 +51,11 @@ import {
 } from '../state/session-restart'
 import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { ActionRow, MetricFrame, MetricGrid, PhoneFooter, SummaryFacts, SummaryFact } from '../ui/composition'
 import { HeadingSection } from '../ui/Heading'
 import { MoodReading } from '../ui/mood'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { SessionProvenance, SessionSectionCard } from '../ui/session-detail'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { FavoriteToggle } from './FavoriteToggle'
@@ -215,13 +217,14 @@ function SessionDetailBody({
 }: {
   view: SessionDetailView
 }) {
+  const presentation = useWorkoutExperiencePresentation()
   const facts: readonly (readonly [string, string])[] = [
     ['Date', view.day],
     ['Focus', view.focus],
     ['Status', view.stateLabel],
     // A session nobody timed has no duration, and no term for one.
     ...(view.duration === null ? [] : [['Duration', view.duration] as const]),
-    ['Intensity', `${view.intensity}/10`],
+    ['Intensity', String(view.intensity)],
   ]
 
   return (
@@ -229,14 +232,14 @@ function SessionDetailBody({
       <Card heading={SESSION_DETAIL_OVERVIEW_LABEL}>
         {/* Inside the card `MetricFrame` is a bare readout, so the card is the
             only frame around the facts. */}
-        <MetricGrid as="dl" aria-label={SESSION_DETAIL_FACTS_LABEL} style={{ margin: 0 }}>
+        {presentation ? <SummaryFacts aria-label={SESSION_DETAIL_FACTS_LABEL}>{facts.map(([label,value]) => <SummaryFact key={label} term={label}>{value}</SummaryFact>)}</SummaryFacts> : <MetricGrid as="dl" aria-label={SESSION_DETAIL_FACTS_LABEL} style={{ margin: 0 }}>
           {facts.map(([label, value]) => (
             <MetricFrame key={label}>
               <dt style={LABEL_STYLE}>{label}</dt>
               <dd style={VALUE_STYLE}>{value}</dd>
             </MetricFrame>
           ))}
-        </MetricGrid>
+        </MetricGrid>}
         <SessionProvenance provenance={view.provenance} />
 
         {/* The debrief's two answers are ruled sub-groups one level down,
@@ -259,7 +262,7 @@ function SessionDetailBody({
 
       <section aria-label={SESSION_DETAIL_SECTIONS_LABEL} className="clr-stack">
         {view.sections.map((section) => (
-          <SessionSectionCard key={section.id} section={section} />
+          presentation && (section.type === 'warmup' || section.type === 'cooldown') ? <PreparationGuide key={section.id} guide={presentation.guides[section.type]} /> : <SessionSectionCard key={section.id} section={section} />
         ))}
       </section>
     </div>

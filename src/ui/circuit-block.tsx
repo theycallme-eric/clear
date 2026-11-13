@@ -43,6 +43,8 @@
  * slot — `TimerDisplay` is already a card, and is never put inside another.
  */
 import { useState } from 'react'
+import { LoggingOverlay } from './logging-overlay'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
 import {
   Button,
@@ -50,8 +52,8 @@ import {
   Play,
   Rest,
   TextAction,
-  TimerDisplay,
 } from '../design-system/index'
+import { CountdownDisplay } from './timer-display'
 import {
   circuitShape,
   circuitView,
@@ -67,7 +69,7 @@ import {
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
-import { equipmentName } from '../state/review'
+import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -80,7 +82,6 @@ import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSetLogger } from './set-logger'
 import { MovementCountdownView } from './movement-countdown'
-import { useInterfaceLoop } from './motion'
 import { TimerFrame } from './workout-chrome'
 
 export interface CircuitBlockProps extends BlockRendererProps {
@@ -114,7 +115,6 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
 
   const resting = shape.size > 0 && view.phase === 'rest'
   const urgent = resting && view.restRemaining <= 10
-  const loop = useInterfaceLoop('urgent', urgent)
 
   return (
     <BlockPanel
@@ -126,9 +126,8 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
           <div
             style={{ display: 'flex', flexDirection: 'column' }}
             data-urgent={urgent ? 'true' : 'false'}
-            {...loop}
-          >
-            <TimerDisplay seconds={view.restRemaining} />
+                >
+            <CountdownDisplay seconds={view.restRemaining} />
           </div>
         ) : null
       }
@@ -223,6 +222,8 @@ function RoundRecord({
   onEndRest: () => void
   onTakeBack: () => void
 }) {
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
+  const [recorded, setRecorded] = useState<{round:number; seconds:number|null}|null>(null)
   return (
     <div
       role="group"
@@ -250,7 +251,7 @@ function RoundRecord({
       {view.phase === 'work' && roundClock !== null && (
         <>
           <RoundElapsed round={view.round} seconds={roundClock} />
-          <Button variant="secondary" size="lg" icon={<Check />} onClick={onFinishRound}>
+          <Button variant="secondary" size="lg" icon={<Check />} onClick={() => { if (proposal) setRecorded({round:view.round,seconds:roundClock}); onFinishRound() }}>
             Finish round {view.round}
           </Button>
         </>
@@ -260,6 +261,11 @@ function RoundRecord({
         <BlockPanel.Note>Every prescribed round is recorded.</BlockPanel.Note>
       )}
 
+      {proposal && <LoggingOverlay open={recorded !== null} title={`Round ${recorded?.round ?? ''} recorded`} onClose={() => setRecorded(null)}>
+        <p role="status">{recorded?.seconds === null ? 'Round recorded' : `${formatElapsed(recorded?.seconds ?? 0)} round time recorded`}</p>
+        {view.phase === 'rest' && <div aria-label="Rest between rounds"><CountdownDisplay seconds={view.restRemaining} /></div>}
+        <Button variant="secondary" onClick={() => { onTakeBack(); setRecorded(null) }}>Take back this round</Button>
+      </LoggingOverlay>}
       {view.roundsCompleted > 0 && (
         <TextAction onClick={onTakeBack}>Take back a round</TextAction>
       )}
@@ -325,10 +331,15 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
  * how many sets are already logged, so a closed row never hides a record.
  */
 function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
-  const { loggedSets } = useSetLogging()
+  const { loggedSets, weightUnit } = useSetLogging()
+  const presentation = useWorkoutExperiencePresentation()
   const [open, setOpen] = useState(false)
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
+  const equipment = equipmentName(prescription.equipment_used)
+  const guidance = presentation?.suggestedLoads[prescription.exercise_id]
+  const load = distinctLoadText(guidance === undefined ? (prescription.load_type === null ? null : loadText(prescription.load_type, prescription.load_value, weightUnit)) : guidance, equipment)
+
   const sets = loggedSets(exercise.exerciseId)
   const logged = sets.length
   const taken = new Set(sets.map((set) => set.setNumber))
@@ -368,8 +379,9 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
         <BlockPanel.Movement
           title={`${exercise.position}. ${name}`}
           detail={targetText(prescription)}
+          load={load}
           // The same equipment tier the open logger shows (B05-04).
-          context={`Equipment · ${equipmentName(prescription.equipment_used)}`}
+          context={equipment}
         >
           {prescription.tempo === null ? null : (
             <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>

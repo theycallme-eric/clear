@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from 'react'
 
-import { EmptyState, OverflowRail } from '../design-system/index'
+import { EmptyState } from '../design-system/index'
 
 import { useInsideCard } from './card-context'
 import { ForegroundEchoFrame } from './foreground-echo'
@@ -138,28 +138,11 @@ export function MetricFrame(props: CompositionProps) {
   )
 }
 
-/**
- * The compact workout-facts object: one aligned row of glyph-led readings, the
- * terse sibling of `MetricGrid` for a summary read at a glance (B05-03). It is
- * not a restyled metric grid — results and scores keep their readouts. A
- * description list by default. The public rail keeps every reading reachable
- * on the same line when they exceed the available width. Its named information
- * group is one keyboard entry; horizontal keys scroll the containing viewport.
+/** Compact workout facts: keep each reading whole and wrap onto more rows.
+ * All values remain visible; result/score metric grids keep their own roles.
  */
 export function SummaryFacts(props: CompositionProps) {
-  return (
-    <OverflowRail
-      className="clr-summary-facts-rail"
-      trackProps={{
-        tabIndex: 0,
-        role: 'group',
-        'aria-label': props['aria-label'] ?? 'Workout facts',
-        'aria-labelledby': props['aria-labelledby'],
-      }}
-    >
-      {composition('dl', 'clr-summary-facts', props)}
-    </OverflowRail>
-  )
+  return composition('dl', 'clr-summary-facts', props)
 }
 
 /**

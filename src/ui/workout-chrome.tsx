@@ -34,7 +34,7 @@
  *     which is why Abandon belongs to the header's menu (`WorkoutMenu`,
  *     REQ-019) and Next to the footer.
  */
-import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { use, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import {
   Check,
@@ -67,6 +67,8 @@ import type {
 import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
 import { useInsideCard } from './card-context'
+import { useCountdownUrgency } from './countdown-urgency'
+import { LoggingSurfaceContext } from './logging-surface-context'
 import { CollapsibleSection } from './collapsible-section'
 import { useInterfaceLoop, type InterfaceLoop } from './motion'
 import './rest-timer-bar.css'
@@ -99,6 +101,8 @@ export function GlobalTimer({ seconds }: GlobalTimerProps) {
 }
 
 export interface TimerFrameProps {
+  /** Fill the available timer width without a narrow nested readout. */
+  fullWidth?: boolean
   /** The timer's accessible name, said once — "Session time", "Countdown". */
   label: string
   /** The digits, `mm:ss`. Decorative. */
@@ -137,7 +141,9 @@ export function TimerFrame({
   caption,
   low = false,
   pulse,
+  fullWidth: requestedWidth = false,
 }: TimerFrameProps) {
+  const fullWidth = requestedWidth || use(LoggingSurfaceContext)
   const insideCard = useInsideCard()
   const role = low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'
 
@@ -152,10 +158,13 @@ export function TimerFrame({
       }
       style={{
         display: 'inline-flex',
-        alignItems: 'baseline',
+        alignItems: 'center',
         justifyContent: 'center',
         gap: 'var(--spacing-200)',
         padding: 'var(--spacing-100) var(--spacing-300)',
+        minHeight: 'var(--control-height)',
+        flex: fullWidth ? '1 1 0' : undefined,
+        minWidth: fullWidth ? 0 : undefined,
       }}
     >
       {caption === undefined ? null : (
@@ -174,13 +183,13 @@ export function TimerFrame({
   return (
     <span
       className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
-      style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
+      style={{ ...(low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE), display: fullWidth ? 'flex' : undefined, width: fullWidth ? '100%' : undefined }}
       {...pulse}
     >
       {insideCard ? (
         readout
       ) : (
-        <span className="clr-card">
+        <span className="clr-card" style={fullWidth ? { display: 'flex', width: '100%' } : undefined}>
           <span className="clr-card__bar" aria-hidden="true" />
           {readout}
         </span>
@@ -214,6 +223,7 @@ function TimerDigits({
         display: 'inline-flex',
         fontFamily: 'var(--font-data)',
         fontSize: size,
+        lineHeight: 1,
         fontWeight: 'var(--font-weight-bold)',
         letterSpacing: 'var(--tracking-data)',
         color: low ? 'var(--text-timer-low)' : 'var(--text-timer)',
@@ -332,6 +342,8 @@ function SectionChip({
   onSelect,
 }: {
   section: SectionProgress
+  /** Compact design-library candidate; actual navigation state is unchanged. */
+  compact?: boolean
   current: boolean
   onSelect?: (index: number) => void
 }) {
@@ -370,9 +382,9 @@ function StatusGlyph({ status }: { status: SectionStatus }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SectionHeaderProps {
-  /** Accepted compact navigation; consumers opt in explicitly. */
-  compact?: boolean
   section: SectionProgress
+  /** Compact design-library candidate; actual navigation state is unchanged. */
+  compact?: boolean
   /** Position in the session, one-based, for the terse `3 / 6` readout. */
   position: number
   total: number
@@ -425,8 +437,8 @@ export function SectionHeader({
         }
 
   if (compact && progress !== undefined) return (
-    <div className="clr-accepted-section-nav" data-section-navigation="">
-      <CollapsibleSection label={<><span>All sections</span><span className="clr-accepted-section-nav__meta">{position} / {total}</span></>} expanded={jumping} onExpandedChange={setJumping}>
+    <div className="clr-workout-section-nav" data-section-navigation="">
+      <CollapsibleSection label={<><span>All sections</span><span className="clr-workout-section-nav__meta">{position} / {total}</span></>} expanded={jumping} onExpandedChange={setJumping}>
         <SectionJumpList progress={progress} currentIndex={section.index} onSelect={select} inert={!jumping} />
       </CollapsibleSection>
       {children}
@@ -481,6 +493,7 @@ export function SectionHeader({
 
 export interface StructureBadgeProps {
   identity: StructureIdentity
+  formatOnly?: boolean
 }
 
 /**
@@ -496,8 +509,9 @@ export interface StructureBadgeProps {
  * unused group width (B05-04). The wrapper is sized to its frame instead, in
  * every parent, and capped at the parent so a long label wraps inside it.
  */
-export function StructureBadge({ identity }: StructureBadgeProps) {
-  const detail = [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
+export function StructureBadge({ identity, formatOnly = false }: StructureBadgeProps) {
+  const detail = formatOnly ? '' : [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
+  const label = formatOnly && identity.glyph === 'Ladder' ? 'LADDER' : identity.label
 
   return (
     <span className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
@@ -512,7 +526,7 @@ export function StructureBadge({ identity }: StructureBadgeProps) {
         }}
       >
         <StructureGlyphIcon glyph={identity.glyph} />
-        {detail === '' ? identity.label : `${identity.label} · ${detail}`}
+        {detail === '' ? label : `${label} · ${detail}`}
       </span>
     </span>
   )
@@ -708,25 +722,25 @@ const REST_URGENT_SECONDS = 10
  * the word, the digits and the colour all unchanged.
  */
 export function RestTimerBar() {
-  const { rest, remainingSeconds, extend, skip } = useRestTimer()
+ const {rest,remainingSeconds,extend,skip}=useRestTimer()
+ if(rest===null || remainingSeconds<=0)return null
+ return <CountdownBar regionLabel="Rest" label={`Rest after ${rest.label}`} remainingSeconds={remainingSeconds} totalSeconds={rest.totalSeconds} urgent={remainingSeconds<=REST_URGENT_SECONDS} onExtend={()=>extend()} onSkip={skip}/>
+}
 
-  const running = rest !== null && remainingSeconds > 0
-  const urgent = running && remainingSeconds <= REST_URGENT_SECONDS
-  const loop = useInterfaceLoop('urgent', urgent)
-
-  if (!running) return null
-
-  const fraction = rest.totalSeconds > 0 ? remainingSeconds / rest.totalSeconds : 0
-
+/** Same presentation for real set rest and an independent preparation clock. */
+export function CountdownBar({regionLabel,label,remainingSeconds,totalSeconds,urgent=false,running=true,actions,onExtend,onSkip}:{regionLabel?:string;label:string;remainingSeconds:number;totalSeconds:number;urgent?:boolean;running?:boolean;actions?:ReactNode;onExtend?:()=>void;onSkip?:()=>void}) {
+ const urgency=useCountdownUrgency(remainingSeconds,running && remainingSeconds>0)
+ const loop=urgency.loop
+ const fraction=totalSeconds>0?Math.min(1,Math.max(0,remainingSeconds/totalSeconds)):0
   return (
     // The pulse runs on the wrapper so bar and body dim together.
     <section
-      aria-label="Rest"
-      className={urgent ? 'clr-rest-bar clr-pulse-micro' : 'clr-rest-bar'}
-      data-urgent={urgent ? 'true' : 'false'}
+      aria-label={regionLabel ?? `${label} timer`}
+      className={urgency.urgent ? 'clr-rest-bar clr-pulse-micro' : 'clr-rest-bar'}
+      data-urgent={urgency.urgent ? 'true' : 'false'}
       {...loop}
     >
-      <Card role={urgent ? 'timer-low' : 'timer'}>
+      {urgency.edge}<Card role={urgency.low ? 'timer-low' : 'timer'}>
         <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <p
             style={{
@@ -739,14 +753,14 @@ export function RestTimerBar() {
             <span aria-hidden="true" style={{ display: 'flex' }}>
               <Rest />
             </span>
-            Rest after {rest.label}
+            {label}
           </p>
           {/* Labelled once and not live: the milestone below is what speaks. */}
           <div role="timer" aria-label="Time remaining" style={{ display: 'inline-flex' }}>
             <TimerDigits
               text={formatElapsed(remainingSeconds)}
               size="var(--label-xl-size)"
-              low={urgent}
+              low={urgency.low}
             />
             <span className="a11y-hidden">{spokenRest(remainingSeconds)}</span>
           </div>
@@ -769,12 +783,14 @@ export function RestTimerBar() {
         </div>
 
         <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
+          {actions ?? <>
+          <Button variant="secondary" icon={<Plus />} onClick={onExtend}>
             Add {REST_EXTENSION_SECONDS}s
           </Button>
-          <Button variant="quiet" icon={<X />} onClick={skip}>
+          <Button variant="quiet" icon={<X />} onClick={onSkip}>
             Skip rest
           </Button>
+          </>}
         </div>
       </Card>
     </section>

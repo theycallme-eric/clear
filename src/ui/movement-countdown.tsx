@@ -32,18 +32,16 @@
  * and closes — holds `useMovementCountdown` itself and draws
  * `MovementCountdownView` in whichever card is showing.
  */
-import { createPortal } from 'react-dom'
 
 import { Button, Pause, Play, RefreshCw } from '../design-system/index'
 import {
-  COUNTDOWN_LOW_SECONDS,
   useMovementCountdown,
   type MovementCountdownApi,
 } from '../state/movement-countdown'
 import { spokenRest } from '../state/rest'
 import { formatElapsed } from '../state/workout-clock'
 import { ActionGroup } from './composition'
-import { useInterfaceLoop } from './motion'
+import { useCountdownUrgency } from './countdown-urgency'
 import { TimerFrame } from './workout-chrome'
 import './movement-countdown.css'
 
@@ -76,9 +74,7 @@ export interface MovementCountdownViewProps {
 export function MovementCountdownView({ clock, movement }: MovementCountdownViewProps) {
   const { status, remainingSeconds, start, pause, reset } = clock
 
-  const low = status !== 'ready' && remainingSeconds <= COUNTDOWN_LOW_SECONDS
-  const urgent = status === 'running' && low
-  const loop = useInterfaceLoop('urgent', urgent)
+  const { low, urgent, loop, edge } = useCountdownUrgency(status === 'ready' ? null : remainingSeconds, status === 'running')
 
   return (
     <section
@@ -88,7 +84,7 @@ export function MovementCountdownView({ clock, movement }: MovementCountdownView
     >
       <div className="clr-movement-countdown__timer">
         <TimerFrame
-          label="Countdown"
+          label="Countdown" fullWidth
           text={formatElapsed(remainingSeconds)}
           spoken={spokenRest(remainingSeconds)}
           size="var(--heading-h1-size)"
@@ -134,19 +130,10 @@ export function MovementCountdownView({ clock, movement }: MovementCountdownView
         aria-live="polite"
         style={{ ...STATUS_STYLE, color: low ? 'var(--text-timer-low)' : 'var(--text-card-label)' }}
       >
-        {urgent ? `Final ${COUNTDOWN_LOW_SECONDS} seconds` : status === 'finished' ? 'Countdown done' : ''}
+        {urgent ? `Final 5 seconds` : status === 'finished' ? 'Countdown done' : ''}
       </p>
 
-      {urgent &&
-        createPortal(
-          <div
-            aria-hidden="true"
-            className="clr-countdown-edge clr-pulse-micro"
-            data-countdown-edge=""
-            {...loop}
-          />,
-          document.body,
-        )}
+      {edge}
     </section>
   )
 }

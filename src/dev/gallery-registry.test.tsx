@@ -148,6 +148,10 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // a specimen would be framing an invented read and an invented row.
   ExerciseCoaching:
     'EXE-05 — cues, regression and note for one live prescription; nothing to show outside the shell',
+  GroupExerciseCoaching: 'R29 — same live Guidance and notes owners, grouped under one disclosure; verified in real Superset/Circuit comparison fixtures, pending a safe gallery session fixture',
+  SetLoggingConfirmation: 'V4 proposal — actual rest-provider confirmation, exercised in the workout comparison; no session-free standalone meaning',
+  WorkoutExperiencePresentationProvider: 'V4 proposal — fixture-controlled presentation context, no independent visual surface',
+
 }
 
 /** Components exported from a module, in source order. */

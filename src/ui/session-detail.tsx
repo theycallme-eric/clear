@@ -32,6 +32,7 @@ import type {
 import { Card } from './card'
 import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
+import { MovementIdentity, MovementList } from './movement-presentation'
 import { StructureBadge } from './workout-chrome'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -43,14 +44,6 @@ const VALUE_STYLE: CSSProperties = {
   fontSize: 'var(--label-sm-size)',
   letterSpacing: 'var(--tracking-data)',
   color: 'var(--text-card-body)',
-}
-
-const MOVEMENT_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h6-size)',
-  color: 'var(--text-card-header)',
-  margin: 0,
-  textTransform: 'capitalize',
 }
 
 const GLYPH_ROW_STYLE: CSSProperties = {
@@ -203,7 +196,7 @@ export function LoggedSetTable({ sets, label }: LoggedSetTableProps) {
           <HeaderCell>Set</HeaderCell>
           <HeaderCell>Weight</HeaderCell>
           <HeaderCell>Reps</HeaderCell>
-          <HeaderCell>RPE</HeaderCell>
+          <HeaderCell>Effort</HeaderCell>
           {showsDuration && <HeaderCell>Time</HeaderCell>}
           {showsDistance && <HeaderCell>Distance</HeaderCell>}
         </tr>
@@ -299,9 +292,9 @@ export function SessionSectionCard({
               {block.notes !== null && (
                 <p style={{ ...VALUE_STYLE, margin: 0 }}>{block.notes}</p>
               )}
-              {block.exercises.map((exercise) => (
-                <LoggedExercise key={exercise.id} exercise={exercise} />
-              ))}
+              <MovementList label={`Movements in ${block.identity.label}`}>
+                {block.exercises.map(exercise => <li key={exercise.id}><LoggedExercise exercise={exercise} /></li>)}
+              </MovementList>
             </div>
           ))}
         </div>
@@ -328,9 +321,8 @@ const STATUS_GLYPH: Record<ExerciseDetailView['status'], ReactNode> = {
 function LoggedExercise({ exercise }: { exercise: ExerciseDetailView }) {
   return (
     <div style={STACK_STYLE}>
+      <MovementIdentity name={exercise.name} prescription={exercise.prescription} equipment={exercise.equipment} />
       <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
-        <p style={MOVEMENT_STYLE}>{exercise.name}</p>
-        <span className="clr-text-data-xs">{exercise.prescription}</span>
         <span style={GLYPH_ROW_STYLE}>
           {STATUS_GLYPH[exercise.status]}
           {exercise.statusLabel}

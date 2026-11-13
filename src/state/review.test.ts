@@ -95,15 +95,15 @@ describe('the sample the criterion is stated against', () => {
 })
 
 describe('the header IA.md §4 asks for', () => {
-  it('states the intensity on the scale it was chosen on', () => {
-    expect(factValue(briefingOf({ effective_intensity: 8 }), INTENSITY_LABEL)).toBe('8 of 10')
-    expect(briefingIntensity(1)).toBe('1 of 10')
+  it('states intensity compactly on the established ten-point scale', () => {
+    expect(factValue(briefingOf({ effective_intensity: 8 }), INTENSITY_LABEL)).toBe('8')
+    expect(briefingIntensity(1)).toBe('1')
   })
 
   it('states the effective intensity, not the one that was asked for', () => {
     const clamped = briefingOf({ requested_intensity: 9, effective_intensity: 4 })
 
-    expect(factValue(clamped, INTENSITY_LABEL)).toBe('4 of 10')
+    expect(factValue(clamped, INTENSITY_LABEL)).toBe('4')
     expect(allText(clamped)).not.toContain('9 of 10')
   })
 
