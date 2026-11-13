@@ -186,3 +186,13 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
     </BlockCompletionContext>
   )
 }
+
+const PREVIEW_COMPLETION = { reportOutcome: () => {}, isBlockRecorded: () => false }
+
+/**
+ * The gallery's stand-in: it records nothing and reports no block as recorded.
+ * It lives here so this file stays the only place that provides the context.
+ */
+export function PreviewBlockCompletion({ children }: { children: ReactNode }) {
+  return <BlockCompletionContext value={PREVIEW_COMPLETION}>{children}</BlockCompletionContext>
+}

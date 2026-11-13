@@ -6,8 +6,8 @@
 .clr-logging-overlay .clr-ladder-completion__status, .clr-ladder-prescription .clr-ladder-completion__status { margin-block-start:var(--spacing-400); }
 .clr-round-movement + .clr-round-movement { margin-block-start:var(--spacing-300); }
 .clr-metric-grid > .clr-bleed { display:flex; }
-.clr-metric-grid > .clr-bleed > .clr-card { display:flex; align-items:stretch; width:100%; flex:1 1 auto; height:100%; }
-.clr-metric-grid > .clr-bleed > .clr-card > .clr-card__body { flex:1 1 0; min-width:0; }
+.clr-metric-grid > .clr-bleed > .clr-card, .clr-metric-grid > .clr-echo > .clr-bleed > .clr-card { display:flex; align-items:stretch; width:100%; flex:1 1 auto; height:100%; }
+.clr-metric-grid > .clr-bleed > .clr-card > .clr-card__body, .clr-metric-grid > .clr-echo > .clr-bleed > .clr-card > .clr-card__body { flex:1 1 0; min-width:0; }
 .clr-movement-identity__equipment-inline { display:inline; margin-inline-start:var(--spacing-200); color:var(--text-secondary); font-family:var(--font-data); font-weight:var(--font-weight-medium); font-size:var(--label-xs-size); line-height:var(--label-xs-line-height); text-transform:none; }
 /* Dialog backdrop comparisons: native modal behavior and sharp foreground stay owned. */
 .clr-logging-overlay[data-backdrop]::backdrop { background:radial-gradient(ellipse at center,transparent 35%,color-mix(in srgb,var(--base) 85%,transparent) 100%),color-mix(in srgb,var(--base) 55%,transparent); backdrop-filter:blur(var(--spacing-100)); }

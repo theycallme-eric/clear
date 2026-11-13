@@ -49,15 +49,27 @@ async function shell(prescription: Partial<WorkoutExerciseRow> = {}) {
   return double
 }
 
+/**
+ * The movement's own heading. Grouped work also names each movement inside the
+ * block's one "Coaching and notes" disclosure (R29); that heading belongs to
+ * the coaching panel, not to the movement row or its logger, so it is excluded.
+ */
+function movementHeading(): HTMLElement {
+  const headings = screen.getAllByRole('heading', { name: /hollow body hold$/ })
+    .filter((heading) => heading.closest('.clr-collapsible__region') === null)
+  expect(headings).toHaveLength(1)
+  return headings[0]
+}
+
 function row() {
-  const found = screen.getByRole('heading', { name: /hollow body hold$/ }).closest('li')
+  const found = movementHeading().closest('li')
   if (found === null) throw new Error('no owning circuit movement row')
   return found
 }
 
 /** The movement card showing for the row: its own, or the opened logger's. */
 function card() {
-  const found = screen.getByRole('heading', { name: /hollow body hold$/ }).closest('section')
+  const found = movementHeading().closest('section')
   if (found === null) throw new Error('no circuit movement card')
   return found
 }

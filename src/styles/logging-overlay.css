@@ -1,12 +1,14 @@
 /* R6 shared logging comparison. Geometry only; public Dialog owns focus,
    backdrop, closure and reduced motion; forms/writers retain their state. */
 .clr-logging-overlay { width: min(calc(100% - var(--spacing-600)), 32rem); overflow: visible; }
-.clr-logging-overlay > .clr-bleed { display: block; width: 100%; }
+/* The open box is capped to the screen it sits in; its frame shrinks to fit and
+   only the content scrolls. [open] keeps the native closed state hidden. */
+.clr-logging-overlay[open] { display: flex; flex-direction: column; max-height: 100%; padding-block: var(--spacing-500); box-sizing: border-box; }
+.clr-logging-overlay > .clr-bleed { display: flex; flex-direction: column; min-height: 0; width: 100%; }
 .clr-logging-overlay > .clr-bleed > .clr-chamfer {
   width: 100%; min-width: 0 !important; max-width: none !important;
   padding: var(--spacing-400) !important;
   display: flex; flex-direction: column;
-  max-height: calc(100dvh - var(--spacing-800));
   overflow: hidden;
 }
 /* Let the public Dialog's typography wrapper shrink inside the fixed frame. */
@@ -22,6 +24,8 @@
   width: min(calc(100% - var(--spacing-400)), 44rem);
   margin-block: auto var(--spacing-200);
 }
+/* The sheet keeps the same total clearance: its bottom margin plus this top. */
+.clr-logging-overlay[data-overlay=sheet][open] { padding-block: calc(var(--spacing-800) - var(--spacing-200)) 0; }
 .clr-logging-overlay[data-overlay=sheet][open]:not(.clr-dialog--closing) > .clr-bleed {
   animation: clr-shift-in-up var(--dur-mode) var(--step-4) both;
 }

@@ -42,7 +42,7 @@
  * movements are rows of its list, and the rest countdown goes to its `timer`
  * slot — `TimerDisplay` is already a card, and is never put inside another.
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { LoggingOverlay } from './logging-overlay'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
@@ -166,7 +166,12 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
           <BlockPanel.MovementList label="Movements in this circuit">
             {block.exercises.map((exercise) => (
               <BlockPanel.MovementItem key={exercise.exerciseId}>
-                <CircuitMovement exercise={exercise} />
+                <CircuitMovement
+                  exercise={exercise}
+                  // The round's rest is the circuit's one rest: its entry dialog
+                  // shows it running, as every other logging dialog shows its rest.
+                  roundRest={resting ? <div aria-label="Rest between rounds"><CountdownDisplay seconds={view.restRemaining} /></div> : undefined}
+                />
               </BlockPanel.MovementItem>
             ))}
           </BlockPanel.MovementList>
@@ -330,7 +335,7 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
  * coaching; closed, the movement still offers its coaching on demand and says
  * how many sets are already logged, so a closed row never hides a record.
  */
-function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
+function CircuitMovement({ exercise, roundRest }: { exercise: ExerciseProgress; roundRest?: ReactNode }) {
   const { loggedSets, weightUnit } = useSetLogging()
   const presentation = useWorkoutExperiencePresentation()
   const [open, setOpen] = useState(false)
@@ -370,6 +375,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           // The circuit movement owns this clock independently of optional
           // load entry. Opening the logger draws it; it never creates another.
           countdown={countdown}
+          sheetRest={roundRest}
           // Its rest is the round boundary's, so its entry only opens the sheet.
           // The row's one tap opens the shared half-sheet straight away
           // (REQ-017); its Minimize and Cancel leave the movement unlogged.

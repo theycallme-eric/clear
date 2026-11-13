@@ -46,6 +46,10 @@ const COUNTDOWN_CSS = readFileSync(
   resolve(import.meta.dirname, '../ui/movement-countdown.css'),
   'utf-8',
 )
+const URGENCY_CSS = readFileSync(
+  resolve(import.meta.dirname, '../ui/countdown-urgency.css'),
+  'utf-8',
+)
 const MOTION_CSS = readFileSync(
   resolve(import.meta.dirname, '../design-system/css/motion.css'),
   'utf-8',
@@ -357,9 +361,27 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     await shell()
 
     fireEvent.click(control('Start'))
-    advance(24)
-    expect(countdown()).toHaveTextContent('00:06')
+    advance(19)
+    expect(countdown()).toHaveTextContent('00:11')
     expect(countdown()).toHaveClass('clr-chamfer--timer')
+    expect(edgeCue()).toBeNull()
+
+    // The low colour takes the final ten seconds; pulse, edge and the spoken
+    // milestone wait for the final five.
+    advance(1)
+    expect(countdown()).toHaveTextContent('00:10')
+    expect(countdown()).toHaveClass('clr-chamfer--timer-low')
+    expect((countdown().parentElement as HTMLElement).style.getPropertyValue('--bleed')).toBe(
+      'var(--border-timer-low)',
+    )
+    expect(countdown().parentElement).not.toHaveClass('clr-pulse-micro')
+    expect(edgeCue()).toBeNull()
+    expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('')
+
+    advance(4)
+    expect(countdown()).toHaveTextContent('00:06')
+    expect(countdown()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown().parentElement).not.toHaveClass('clr-pulse-micro')
     expect(edgeCue()).toBeNull()
     expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('')
 
@@ -372,9 +394,13 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     expect(bleed).toHaveAttribute('data-loop', 'run')
     expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('Final 5 seconds')
 
+    // One edge cue, animated by its own accepted vignette rather than the
+    // micro pulse, so the two never stack.
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
     const edge = edgeCue() as HTMLElement
     expect(edge).not.toBeNull()
-    expect(edge).toHaveClass('clr-countdown-edge', 'clr-pulse-micro')
+    expect(edge).toHaveClass('clr-countdown-edge')
+    expect(edge).not.toHaveClass('clr-pulse-micro')
     expect(edge).toHaveAttribute('aria-hidden', 'true')
     expect(edge).toHaveAttribute('data-loop', 'run')
     // On the viewport, not inside the card.
@@ -404,11 +430,22 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('Final 5 seconds')
   })
 
-  it('animates only with the shipped pulse, which reduced motion stills — no new flashing', () => {
+  it('animates only with the accepted slow vignette, which reduced motion and a still loop stop — no flashing', () => {
+    // The countdown's own styles add no motion; the edge's is the shared one.
     expect(COUNTDOWN_CSS).not.toMatch(/@keyframes|animation|transition|opacity/)
-    expect(COUNTDOWN_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*position:\s*fixed/)
-    expect(COUNTDOWN_CSS).toMatch(/var\(--border-timer-low\)/)
-    // The vendor's reduced-motion block stills the one pulse the cue uses.
+    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*position:\s*fixed/)
+    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*pointer-events:\s*none/)
+    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*var\(--urgency-a400\)/)
+    // One keyframe, a soft opacity swing on a 1.5s cycle: well under three
+    // flashes a second, never a hard flash.
+    expect(URGENCY_CSS.match(/@keyframes/g)).toHaveLength(1)
+    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*animation:\s*cue-edge 1\.5s ease-in-out infinite/)
+    expect(URGENCY_CSS).toMatch(/@keyframes cue-edge\s*\{\s*0%, 100% \{ opacity: \.2; \}\s*50% \{ opacity: \.8; \}\s*\}/)
+    // A still loop and reduced motion both stop it, leaving the edge drawn.
+    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\[data-loop='still'\]\s*\{\s*animation: none;/)
+    const reducedEdge = URGENCY_CSS.slice(URGENCY_CSS.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reducedEdge).toMatch(/\.clr-countdown-edge\s*\{\s*animation: none !important;/)
+    // The vendor's reduced-motion block still stills the frame's micro pulse.
     const reduced = MOTION_CSS.slice(MOTION_CSS.indexOf('@media (prefers-reduced-motion: reduce)'))
     expect(reduced).toContain('.clr-pulse-micro')
   })

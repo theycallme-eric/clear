@@ -7,6 +7,9 @@
  * One block per criterion, AC-019 … AC-024, over the same two-route harness
  * `Review.test.tsx` uses, so Start is asserted by arriving at `/workout`.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
@@ -83,6 +86,38 @@ function precedes(a: Node, b: Node): boolean {
   return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
 }
 
+/**
+ * Round 7: each briefing section is a static, always-visible stack of block
+ * cards (no disclosure), each headed by the shared movement group header.
+ */
+function reviewSections(): HTMLElement[] {
+  const sections = [...screen.getByRole('main').querySelectorAll<HTMLElement>('[data-review-section]')]
+  expect(sections.length).toBeGreaterThan(0)
+  for (const section of sections) {
+    expect(within(section).getAllByRole('heading', { level: 2 }).length).toBeGreaterThan(0)
+  }
+  return sections
+}
+
+/** The shared movement stylesheet: rules and type faces are tokens there. */
+const MOVEMENT_CSS = readFileSync(
+  resolve(import.meta.dirname, '../styles/movement-presentation.css'),
+  'utf8',
+)
+function cssRule(selector: string): string {
+  const start = MOVEMENT_CSS.indexOf(`${selector} {`)
+  expect(start).toBeGreaterThanOrEqual(0)
+  return MOVEMENT_CSS.slice(start, MOVEMENT_CSS.indexOf('}', start))
+}
+
+/** A grouped block's card, its group header (title + structure badge) first. */
+function groupCard(list: HTMLElement) {
+  const card = list.closest<HTMLElement>('.clr-card')!
+  const header = card.querySelector<HTMLElement>('[data-movement-group-header]')!
+  const badge = header.querySelector<HTMLElement>('.clr-movement-group-header__badge')!
+  return { card, header, badge, group: list.parentElement! }
+}
+
 /** A workout of one section holding the given blocks. */
 function withBlocks(blocks: ReturnType<typeof makeWorkoutBlock>[]): SessionAcceptance {
   return makeSessionAcceptance({
@@ -127,7 +162,8 @@ describe('AC-019: required equipment near the top, before Start, without prose',
       .getByRole('heading', { level: 2, name: OVERVIEW_LABEL })
       .closest<HTMLElement>('.clr-card')!
     expect(overview).toContainElement(list)
-    const firstSection = screen.getAllByRole('button', { expanded: true })[0]
+    const [firstSection] = reviewSections()
+    expect(overview).not.toContainElement(firstSection)
     expect(precedes(list, firstSection)).toBe(true)
     expect(precedes(list, screen.getByRole('button', { name: START_LABEL }))).toBe(true)
   })
@@ -193,8 +229,11 @@ describe('AC-021: Regenerate sits at the end of the scrolling content', () => {
 
     const buttons = within(region).getAllByRole('button')
     expect(buttons.at(-1)).toBe(regenerate)
-    for (const section of screen.getAllByRole('button', { expanded: true })) {
+    const sections = reviewSections()
+    expect(sections).toHaveLength(SPECTRUM.sections.length)
+    for (const section of sections) {
       expect(precedes(section, regenerate)).toBe(true)
+      expect(section).not.toContainElement(regenerate)
     }
   })
 
@@ -216,12 +255,16 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
     renderReview()
     await ready()
 
+    // Round 7: the badge sits in the card's group header, at the end of the
+    // section-title row; the sequence leads the group and says it is unrested.
     const list = screen.getByRole('list', { name: 'superset, 4 rounds' })
-    const group = list.parentElement!
-    const [badge, sequence] = [...group.children]
-    expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
+    const { header, badge, group } = groupCard(list)
+    expect(within(header).getByRole('heading', { level: 2 })).toHaveTextContent('Primary lift')
+    expect(badge).toHaveTextContent(/^SUPERSET · 4 ROUNDS$/)
     expect(badge.querySelector('svg')).not.toBeNull()
-    expect(sequence).toHaveTextContent(/^One round: 01 → 02$/)
+    const sequence = group.firstElementChild!
+    expect(sequence).toHaveTextContent(/^One round: 01 → 02 — no rest between movements$/)
+    expect(precedes(header, sequence)).toBe(true)
     expect(precedes(sequence, list)).toBe(true)
 
     const members = within(list).getAllByRole('listitem')
@@ -250,10 +293,12 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
     await ready()
 
     const list = screen.getByRole('list', { name: 'circuit, 5 rounds' })
-    const group = list.parentElement!
-    expect(group.children[0]).toHaveTextContent('CIRCUIT · 5 ROUNDS')
-    expect(group.children[0].querySelector('svg')).not.toBeNull()
-    expect(within(group).getByText('One round: 01 → 02 → 03')).toBeInTheDocument()
+    const { badge, group } = groupCard(list)
+    expect(badge).toHaveTextContent(/^CIRCUIT · 5 ROUNDS$/)
+    expect(badge.querySelector('svg')).not.toBeNull()
+    expect(
+      within(group).getByText('One round: 01 → 02 → 03 — no rest between movements'),
+    ).toBe(group.firstElementChild)
     expect(within(list).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
       expect.stringMatching(/^01 kb swing/),
       expect.stringMatching(/^02 push up/),
@@ -308,7 +353,9 @@ describe('AC-023: grouped movements read as consecutive within each round', () =
     await ready()
 
     const list = screen.getByRole('list', { name: 'superset' })
-    expect(within(list.parentElement!).getByText('One round: 01 → 02')).toBeInTheDocument()
+    expect(
+      within(list.parentElement!).getByText('One round: 01 → 02 — no rest between movements'),
+    ).toBeInTheDocument()
     expect(list.textContent).toContain('4 × 8 reps')
     expect(list.textContent).toContain('3 × 10 reps')
   })
@@ -319,27 +366,38 @@ describe('AC-024: no trailing divider, the rest beside its group, no repeat desc
     renderReview(withBlocks([THREE_STATION_CIRCUIT]))
     await ready()
 
-    const items = within(screen.getByRole('list', { name: 'circuit, 5 rounds' })).getAllByRole(
-      'listitem',
-    )
-    for (const item of items.slice(0, -1)) {
-      expect(item.style.borderBlockEnd).toContain('var(--border-region-rule)')
+    // Round 7: the rule is the shared movement list's, from the stylesheet —
+    // a region-rule token below every item but the last — not per-row inline.
+    const list = screen.getByRole('list', { name: 'circuit, 5 rounds' })
+    expect(list.tagName).toBe('OL')
+    expect(list).toHaveClass('clr-movement-list')
+    const items = within(list).getAllByRole('listitem')
+    expect(items).toHaveLength(3)
+    for (const item of items) {
+      expect(item.parentElement).toBe(list)
+      expect(item.style.borderBlockEnd).toBe('')
+      expect(item.style.borderBottom).toBe('')
     }
-    const last = items.at(-1)!
-    expect(last.style.borderBlockEnd).toBe('')
-    expect(last.style.borderBottom).toBe('')
+    const rule = cssRule('.clr-movement-list > li:not(:last-child)')
+    expect(rule).toContain('border-block-end:var(--border-width) solid var(--border-region-rule)')
+    expect(MOVEMENT_CSS).not.toMatch(/\.clr-movement-list > li(:last-child)?\s*\{[^}]*border/)
   })
 
+  // Round 7 states the round rest as a plain reading closing its group; the
+  // earlier blue ink and rest glyph are not part of the approved presentation.
   it('keeps the blue rest reading, with its glyph, inside the group it follows', async () => {
     renderReview()
     await ready()
 
     const list = screen.getByRole('list', { name: 'superset, 4 rounds' })
-    const group = list.parentElement!
+    const { card, group } = groupCard(list)
     const rest = within(group).getByText('Rest 90s between rounds')
+    expect(rest.tagName).toBe('P')
     expect(rest.style.color).toBe('var(--text-card-header)')
     expect(rest.querySelector('svg')).not.toBeNull()
+    expect(list).not.toContainElement(rest)
     expect(group.lastElementChild).toBe(rest)
+    expect(card.textContent?.match(/Rest 90s/g)).toHaveLength(1)
     expect(precedes(list, rest)).toBe(true)
     expect(group.textContent?.match(/between rounds/g)).toHaveLength(1)
   })
@@ -451,7 +509,7 @@ describe('REQ-008: the compact workout-facts row under the workout title', () =>
     const row = factsRow()
     const equipment = screen.getByRole('list', { name: EQUIPMENT_LABEL })
     expect(precedes(row, equipment)).toBe(true)
-    expect(precedes(equipment, screen.getAllByRole('button', { expanded: true })[0])).toBe(true)
+    expect(precedes(equipment, reviewSections()[0])).toBe(true)
   })
 
   it('never renders the excluded bodyweight sentence, and leaves equipment as it was', async () => {
@@ -496,14 +554,23 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     renderReview(block === undefined ? ACCEPTANCE : withBlocks([block]))
     await ready()
 
+    // Round 7: the shared `MovementIdentity` — name row (name, then the Swap
+    // slot), prescription row, equipment line — with its faces from the
+    // shared stylesheet's tokens rather than inline styles.
+    expect(cssRule('.clr-movement-identity__name')).toContain('font-family:var(--font-display)')
+    expect(cssRule('.clr-movement-identity__prescription')).toContain('font-size:var(--label-md-size)')
     for (const item of within(screen.getByRole('list', { name })).getAllByRole('listitem')) {
-      const [row, prescription, equipment] = [...item.firstElementChild!.children] as HTMLElement[]
+      const identity = item.querySelector<HTMLElement>('.clr-movement-identity')!
+      const [row, prescription, equipment] = [...identity.children] as HTMLElement[]
+      expect(row).toHaveAttribute('data-movement-name-row')
       const [title, swapSlot] = [...row.children] as HTMLElement[]
       expect(title.textContent).toMatch(/^\d\d [a-z ]+$/)
-      expect(title.style.fontFamily).toBe('var(--font-display)')
+      expect(title).toHaveClass('clr-movement-identity__name')
+      expect(swapSlot).toHaveClass('clr-movement-identity__action')
       expect(within(swapSlot).getByRole('button', { name: /^Swap / })).toBeInTheDocument()
-      expect(prescription.tagName).toBe('P')
-      expect(prescription.style.fontSize).toBe('var(--label-md-size)')
+      expect(prescription).toHaveClass('clr-movement-identity__prescription')
+      expect(prescription).toHaveAttribute('data-movement-detail')
+      expect(equipment.tagName).toBe('P')
       expect(equipment).toHaveClass('clr-text-data-xs', 'clr-text-data-xs--quiet')
     }
   })
@@ -549,7 +616,9 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     await ready()
     const list = screen.getByRole('list', { name: 'circuit, 2 rounds' })
     const first = within(list).getAllByRole('listitem')[0]
-    const [nameRow, prescription, equipment] = [...first.firstElementChild!.children]
+    const identity = first.querySelector<HTMLElement>('.clr-movement-identity')!
+    const [nameRow, prescription, equipment] = [...identity.children]
+    expect(nameRow).toHaveAttribute('data-movement-name-row')
     await user.click(within(first).getByRole('button', { name: 'Swap mountain climber' }))
     await user.click(await screen.findByRole('button', { name: /Synthetic replacement\s*BODYWEIGHT/ }))
 
@@ -567,7 +636,7 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     expect(within(first).queryByRole('button', { name: /Undo swap/ })).not.toBeInTheDocument()
   })
 
-  it('leaves a standard movement’s own rest and load where they were', async () => {
+  it('leaves a standard movement’s own rest where it was, and says bodyweight once', async () => {
     renderReview(
       withBlocks([
         makeWorkoutBlock({
@@ -577,9 +646,17 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     )
     await ready()
 
+    // Round 7 (`distinctLoadText`): a `Bodyweight` load that only repeats the
+    // `bodyweight` equipment is said once, by the equipment line, everywhere —
+    // not only inside a group. The standard row keeps its own rest.
     const main = screen.getByRole('main')
     expect(within(main).getByText('Rest 45s')).toBeInTheDocument()
-    expect(within(main).getByText('Bodyweight')).toBeInTheDocument()
-    expect(within(main).getByRole('button', { name: 'Swap air squat' })).toBeInTheDocument()
+    const identity = within(main)
+      .getByRole('button', { name: 'Swap air squat' })
+      .closest<HTMLElement>('.clr-movement-identity')!
+    const row = identity.parentElement!
+    expect(within(identity).getByText('bodyweight')).toHaveClass('clr-movement-identity__equipment')
+    expect(row.textContent?.match(/bodyweight/gi)).toHaveLength(1)
+    expect(precedes(identity, within(row).getByText('Rest 45s'))).toBe(true)
   })
 })

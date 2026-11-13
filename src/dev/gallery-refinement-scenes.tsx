@@ -1,55 +1,59 @@
 import { useState } from 'react'
-import { ArrowLeft, Button, ChoiceGroup, IconButton, Input, Dumbbell, WeightPlate, Clock, Target, Gauge } from '../design-system/index'
-import { SummaryFact } from '../ui/composition'
+import { ArrowLeft, Button, ChoiceGroup, IconButton, Input, Dumbbell, WeightPlate, Clock, Target, Gauge, Log } from '../design-system/index'
+import { MetricFrame, MetricGrid, SummaryFact, SummaryFacts } from '../ui/composition'
 import { Card } from '../ui/card'
-import { DeadlineTimer } from '../ui/refinements/deadline-timer'
-import { RefinementWorkoutCard, RefinementWorkoutHeader, RefinementPreparation } from '../ui/refinements/workout-card'
-import { LoggingOverlay } from '../ui/refinements/logging-overlay'
+import { EquipmentSummary } from '../ui/equipment-summary'
+import { LoggingOverlay } from '../ui/logging-overlay'
+import { PreparationGuide } from '../ui/preparation-guide'
 import { EQUIPMENT, ONBOARDING_STEPS } from '../state/onboarding'
+import { Select } from '../ui/select'
+import { LiveFlow } from './gallery-refinement-flow'
 import { SectionHeader } from '../ui/workout-chrome'
 import type { SessionProgress } from '../state/workout-progress'
-import { Select } from '../ui/select'
+import { galleryPresentation } from './gallery-refinement-runtime'
 
-export function GalleryMovementCards({ initialReview = false }: { initialReview?: boolean } = {}) {
-  const [review,setReview]=useState(initialReview)
-  const [active,setActive]=useState(1)
-  const progress: SessionProgress = {total:3,completed:1,sections:[
-    {sectionId:'gallery-warmup',title:'Warm-up',sectionType:'warmup',index:0,status:'complete',blocks:[]},
-    {sectionId:'gallery-conditioning',title:'Conditioning',sectionType:'conditioning',index:1,status:'in_progress',blocks:[]},
-    {sectionId:'gallery-cooldown',title:'Cooldown',sectionType:'cooldown',index:2,status:'not_started',blocks:[]},
-  ]}
-  return <div className="clr-accepted-example">
-    <ChoiceGroup legend="Context" value={review?'review':'workout'} options={[{value:'review',label:'Review'},{value:'workout',label:'Workout'}]} onChange={value=>setReview(value==='review')} />
-    <RefinementWorkoutHeader />
-    {!review && <SectionHeader compact section={progress.sections[active]} position={active+1} total={3} progress={progress} bar={false} onSelect={setActive} />}
-    {(['EMOM','AMRAP','FOR TIME'] as const).map(format=><RefinementWorkoutCard key={format} format={format} review={review}
-      movements={format==='FOR TIME'?[{name:'Wall ball',prescription:'40 reps',equipment:'Medicine ball',load:'9 lb'}]:[{name:'KB swing',prescription:format==='EMOM'?'Min 1 · 12 reps':'12 reps',equipment:'Kettlebell',load:'24 lb'},{name:'Burpee',prescription:'10 reps',equipment:'Bodyweight'}]}
-      actions={<Button variant="primary">{review?'Start workout':`Start ${format}`}</Button>} />)}
+/** The real timed cards before Start: shared group header, format badge and movement rows. */
+export function GalleryMovementCards() {
+  return <div className="clr-stack">
+    <LiveFlow kind="emom" />
+    <LiveFlow kind="amrap" />
+    <LiveFlow kind="for_time" />
   </div>
 }
+
+/**
+ * Composed from the Round 7 primitives Review's overview and Summary's readouts
+ * use; both screens need the account, so they cannot mount here.
+ */
 export function GalleryOverviewSummary() {
-  const [saved,setSaved]=useState(false)
-  const [bodyweight,setBodyweight]=useState(false)
-  return <div className="clr-accepted-example">
-    <ChoiceGroup legend="Overview context" value={saved?'saved':'planned'} options={[{value:'planned',label:'Planned workout'},{value:'saved',label:'Saved workout'}]} onChange={value=>setSaved(value==='saved')} />
-    <ChoiceGroup legend="Equipment context" value={bodyweight?'bodyweight':'loaded'} options={[{value:'loaded',label:'Loaded'},{value:'bodyweight',label:'Bodyweight only'}]} onChange={value=>setBodyweight(value==='bodyweight')} />
-    <Card heading={saved?'Saved workout':'Workout overview'}><dl className="clr-accepted-facts">
-      <SummaryFact glyph={<Clock />} term="Duration">{saved?'42 min':'45 min'}</SummaryFact>
-      <SummaryFact glyph={<Target />} term="Focus">Upper body</SummaryFact>
-      <SummaryFact glyph={<Gauge />} term="Intensity">7</SummaryFact>
-    </dl><p className="label">Required equipment</p><p>{bodyweight?'BODYWEIGHT ONLY':'BARBELL · BENCH · DUMBBELLS'}</p></Card>
-    <Card heading="Upper-body strength, done."><Button variant="secondary">Save as favorite</Button></Card>
-    <div className="clr-accepted-metrics"><Card heading="Duration"><p>42 min</p></Card><Card heading="Streak"><p>2 days</p><p>Through yesterday</p></Card></div>
+  return <div className="clr-stack">
+    <Card heading="Overview">
+      <SummaryFacts aria-label="Workout facts">
+        <SummaryFact glyph={<Clock size={16} />} term="Duration">50 min</SummaryFact>
+        <SummaryFact glyph={<Target size={16} />} term="Focus">Upper body</SummaryFact>
+        <SummaryFact glyph={<Gauge size={16} />} term="Intensity">7</SummaryFact>
+        <SummaryFact glyph={<Log size={16} />} term="Movements">9</SummaryFact>
+      </SummaryFacts>
+      <EquipmentSummary equipment={['barbell', 'dumbbell', 'bench', 'kettlebell']} />
+    </Card>
+    <MetricGrid>
+      <Card heading="Duration" padding="sm"><MetricFrame><p data-metric-value="">42 min</p></MetricFrame></Card>
+      <Card heading="Streak" padding="sm"><MetricFrame><p data-metric-value="">2 days</p></MetricFrame></Card>
+    </MetricGrid>
   </div>
 }
+
+const GUIDES = galleryPresentation(async () => {}).guides
+
+/** The real preparation guides around the real For Time card, in Review order. */
 export function GalleryPreparationReview() {
-  return <div className="clr-accepted-example"><RefinementPreparation movements={['Arm circles','Scapular push-up','Bodyweight squat']} />
-    <DeadlineTimer seconds={300} label="Warm-up" />
-    <RefinementWorkoutCard format="FOR TIME" review movements={[{name:'Wall ball',prescription:'40 reps',equipment:'Medicine ball',load:'9 lb'}]} />
-    <RefinementPreparation title="Cooldown" minutes={3} movements={['Chest stretch','Lat stretch']} />
-    <Button variant="secondary">Regenerate</Button>
+  return <div className="clr-stack">
+    <PreparationGuide guide={GUIDES.warmup} withTimer />
+    <LiveFlow kind="for_time" />
+    <PreparationGuide guide={GUIDES.cooldown} />
   </div>
 }
+
 export function GalleryGenerateSetupHistory() {
   const [focus,setFocus]=useState('Upper body')
   const [minutes,setMinutes]=useState('45')
@@ -74,4 +78,17 @@ export function GalleryEquipmentInventory() {
     <ul>{EQUIPMENT.map(option=><li key={option.value}>{option.label} · {option.value==='dumbbells'?'Dumbbell available':'equipment glyph wanted / text fallback'}</li>)}</ul>
     <p>Medicine ball is also wanted from the Wall ball review. It is not a current Setup equipment ID; resolve catalog coverage separately.</p>
   </div></Card>
+}
+
+const SECTIONS: SessionProgress = { total: 3, completed: 1, sections: [
+  { sectionId: 'gallery-warmup', title: 'Warm-up', sectionType: 'warmup', index: 0, status: 'complete', blocks: [] },
+  { sectionId: 'gallery-conditioning', title: 'Conditioning', sectionType: 'conditioning', index: 1, status: 'in_progress', blocks: [] },
+  { sectionId: 'gallery-cooldown', title: 'Cooldown', sectionType: 'cooldown', index: 2, status: 'not_started', blocks: [] },
+] }
+
+/** The real section header, compact with its jump navigator or full with its progress bar. */
+export function GallerySectionHeader({ compact = true }: { compact?: boolean }) {
+  const [active, setActive] = useState(1)
+  return <SectionHeader compact={compact} section={SECTIONS.sections[active]} position={active + 1} total={3} progress={SECTIONS}
+    bar={!compact} onSelect={setActive} />
 }

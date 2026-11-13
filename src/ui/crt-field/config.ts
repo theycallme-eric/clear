@@ -88,7 +88,7 @@ export const CRT_FIELD_CONFIG: CrtFieldConfig = Object.freeze({
     opacity: 0.3,
   }),
   perimeter: Object.freeze({
-    blurPx: 1.6,
+    blurPx: 1.2,
     widthFraction: 0.14,
   }),
 })

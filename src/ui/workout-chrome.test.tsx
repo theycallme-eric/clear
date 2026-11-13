@@ -548,10 +548,20 @@ describe('RestTimerBar', () => {
     await user.click(screen.getByRole('button', { name: 'Raise rest' }))
     expect(restBar()).toHaveAttribute('data-urgent', 'false')
 
+    // The last ten seconds: low colour role and the spoken milestone, beside
+    // the digits; the urgent pulse is held for the final five.
     clock.advance(82)
     returnToForeground()
-    expect(restBar()).toHaveAttribute('data-urgent', 'true')
+    expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(restBar()).toHaveAttribute('data-urgent', 'false')
     expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
+
+    clock.advance(4)
+    returnToForeground()
+    expect(restBar()).toHaveAttribute('data-urgent', 'true')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:04')
+    expect(screen.getByText('4 seconds left')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
   })
 
@@ -592,7 +602,7 @@ describe('RestTimerBar', () => {
 
   it('goes low as the shipped low state: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
     reduceMotion(false)
-    await restWith(8)
+    const { clock } = await restWith(8)
 
     // One role change moves bar, body and emission together.
     expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
@@ -604,7 +614,14 @@ describe('RestTimerBar', () => {
     expect(restDigits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
     expect(restDigits().querySelectorAll('.clr-tumble')).toHaveLength(4)
 
-    // The pulse is on the whole card and is the view's running loop.
+    // Low alone does not pulse or claim the loop.
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+
+    // In the final five seconds the pulse is on the whole card and is the
+    // view's running loop.
+    clock.advance(4)
+    returnToForeground()
     expect(restBar()).toHaveClass('clr-pulse-micro')
     expect(restBar()).toHaveAttribute('data-loop', 'run')
 
@@ -678,16 +695,26 @@ describe('RestTimerBar', () => {
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(restBar()).toHaveAttribute('data-loop', 'still')
 
+    // Low but not yet urgent: still no claim, so the wait keeps its loop.
     clock.advance(52)
     returnToForeground()
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('data-loop', 'run')
 
-    // Low: the pulse carries more state, so it runs and the wait is stilled —
+    clock.advance(4)
+    returnToForeground()
+
+    // Final five: the pulse carries more state, so it runs and the wait is stilled —
     // still on screen, still busy, still saying what it is waiting for.
     expect(restBar()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    // One urgent claim runs: the card's pulse and its one screen-edge cue,
+    // which carries the same claim's loop state.
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBar(), edges[0]])
 
     await user.click(screen.getByRole('button', { name: 'Skip rest' }))
     expect(wait).toHaveAttribute('data-loop', 'run')
@@ -696,7 +723,7 @@ describe('RestTimerBar', () => {
 
   it('is still under reduced motion and loses nothing it was saying', async () => {
     reduceMotion(true)
-    await restWith(8)
+    await restWith(4)
 
     expect(restBar()).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
@@ -705,8 +732,8 @@ describe('RestTimerBar', () => {
     expect(restBar()).toHaveAttribute('data-urgent', 'true')
     expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
     expect(restDigits().style.color).toBe('var(--text-timer-low)')
-    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:08')
-    expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:04')
+    expect(screen.getByText('4 seconds left')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
     expect(screen.getByText('Rest after Back Squat')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add 30s' })).toBeEnabled()

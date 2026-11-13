@@ -48,6 +48,7 @@ import type { ExerciseDefinitionRow } from '../state/schemas'
 import { WorkoutClientsContext } from '../state/workout-queries'
 import type { ExerciseProgress } from '../state/workout-progress'
 import { Card } from './card'
+import { ActionGroup } from './composition'
 import { CollapsibleSection } from './collapsible-section'
 import { HeadingSection } from './Heading'
 import { useInterfaceLoop } from './motion'
@@ -253,7 +254,9 @@ function ExerciseNotesField({
     // heading of its own.
     <div className="clr-stack clr-stack--tight">
       <Input
-        label={`Notes — ${name}`}
+        // In the dialog the title is the generic one every dialog carries, so
+        // the movement is named here, where a long name has room to wrap.
+        label={proposal ? name : `Notes — ${name}`}
         multiline
         rows={3}
         value={text}
@@ -265,27 +268,44 @@ function ExerciseNotesField({
         invalid={status.kind === 'failed'}
         errorText={status.kind === 'failed' ? NOTE_FAILED_TEXT : undefined}
       />
-      <div
-        className="clr-row"
-        style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}
-        {...loop}
-      >
-        <Button
-          variant="secondary"
-          aria-label={`Save note — ${name}`}
-          loading={status.kind === 'saving'}
-          onClick={() => void save()}
+      {proposal ? (
+        <div className="clr-stack clr-stack--tight" {...loop}>
+          <ActionGroup>
+            <Button
+              variant="primary"
+              size="lg"
+              aria-label={`Save note — ${name}`}
+              loading={status.kind === 'saving'}
+              onClick={() => void save()}
+            >
+              Save note
+            </Button>
+          </ActionGroup>
+          <NoteStatusLine status={status} />
+        </div>
+      ) : (
+        <div
+          className="clr-row"
+          style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}
+          {...loop}
         >
-          Save note
-        </Button>
-        <NoteStatusLine status={status} />
-      </div>
+          <Button
+            variant="secondary"
+            aria-label={`Save note — ${name}`}
+            loading={status.kind === 'saving'}
+            onClick={() => void save()}
+          >
+            Save note
+          </Button>
+          <NoteStatusLine status={status} />
+        </div>
+      )}
     </div>
   )
   return proposal ? <>
     <Button variant="secondary" onClick={() => setOpen(true)}>{text.trim() ? 'Edit note' : 'Add note'} — {name}</Button>
     {!open && <NoteStatusLine status={status} />}
-    <LoggingOverlay open={open} title={`Notes — ${name}`} onClose={() => setOpen(false)}>{content}</LoggingOverlay>
+    <LoggingOverlay open={open} title="Movement note" onClose={() => setOpen(false)}>{content}</LoggingOverlay>
   </> : content
 }
 

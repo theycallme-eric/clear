@@ -22,7 +22,8 @@ import { SET_EFFORT_CHOICES } from './set-effort'
 import { useCountdownUrgency } from './countdown-urgency'
 import '../styles/timed-workout.css'
 
-export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; format: TimedFormat }) {
+/** `now` defaults to the wall clock; the gallery passes its own to show capped and final-second states. */
+export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: BlockProgress; format: TimedFormat; now?: () => number }) {
   const presentation = useWorkoutExperiencePresentation()
   const options = presentation?.timedWorkflows
   const weightUnit = use(SetLoggingContext)?.weightUnit ?? null
@@ -37,7 +38,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
   const timing = explicitLadderTiming(block)
   const cap = timing?.mode === 'capped_window' ? timing.cap_seconds : block.timerSeconds
   const adjustedStart = attempt.startedAt === null ? null : new Date(attempt.startedAt + attempt.pausedMs).toISOString()
-  const elapsed = useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? Date.now())
+  const elapsed = useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? now())
   const view = timedAttemptView(attempt, (attempt.startedAt ?? 0) + attempt.pausedMs + elapsed * 1000, cap)
   const ended = view.phase === 'finished' || view.phase === 'capped'
   const sheet = Boolean(presentation?.loggingOverlay) || options?.logPresentation === 'sheet'
@@ -55,7 +56,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
       }
       setLogOpen(true)
     }
-    setAttempt(current => moveTimedAttempt(current, next, Date.now()))
+    setAttempt(current => moveTimedAttempt(current, next, now()))
   }
   const trackRung = (highestRung: number) => {
     setTrackedRung(highestRung)

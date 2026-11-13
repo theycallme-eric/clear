@@ -56,6 +56,7 @@ import {
   Play,
   RefreshCw,
   Log,
+  Rest,
   Target,
 } from '../design-system/index'
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
@@ -566,6 +567,13 @@ function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
  * The group's shared rest, in the interaction blue the timer it starts will
  * wear, and with the rest glyph so the colour is never the only cue.
  */
+const ROUND_REST_STYLE: CSSProperties = {
+  color: 'var(--text-card-header)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--spacing-100)',
+}
+
 /**
  * One block. A superset, circuit or timed structure is one group inside its card:
  * named by its badge (which carries the structure glyph and the round count or
@@ -635,7 +643,10 @@ function ReviewBlockRows({
         ))}
       </MovementList>
       {inRounds && block.roundRest !== null && (
-        <p style={{ margin: 0 }}>{block.roundRest}</p>
+        <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
+          <Rest size={16} />
+          {block.roundRest}
+        </p>
       )}
     </div>
   )

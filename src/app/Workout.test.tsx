@@ -1608,10 +1608,23 @@ describe('Workout — the session’s one rest', () => {
 
     const [bar] = restBars()
     expect(restTimer()).toHaveTextContent('00:09')
+    // Low colour and the milestone for the final ten; no pulse or loop yet.
+    expect(restBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(bar).toHaveAttribute('data-urgent', 'false')
+    expect(bar).not.toHaveClass('clr-pulse-micro')
+    expect(bar).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
+    expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
+
+    // The final five: urgent, pulsing, the running loop, and one edge cue.
+    advance(5)
+    returnToForeground()
+    expect(restTimer()).toHaveTextContent('00:04')
     expect(bar).toHaveAttribute('data-urgent', 'true')
     expect(bar).toHaveClass('clr-pulse-micro')
     expect(bar).toHaveAttribute('data-loop', 'run')
     expect(restBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
     // The milestone is the one thing that speaks; the timers stay labelled
     // and not live.
     expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
@@ -1641,7 +1654,7 @@ describe('Workout — the session’s one rest', () => {
         exercises: { definition: () => new Promise(() => {}) },
       })
       await logSet('back squat', 1)
-      advance(82)
+      advance(86)
       returnToForeground()
 
       await user.click(screen.getByRole('button', { name: COACHING_PANEL }))
@@ -1652,10 +1665,14 @@ describe('Workout — the session’s one rest', () => {
       if (!wait) throw new Error('no coaching wait')
       expect(wait).toHaveAttribute('aria-busy', 'true')
 
-      // The low rest outranks the wait; the wait is stilled, not removed.
+      // The urgent rest (final five) outranks the wait; the wait is stilled,
+      // not removed. The one running claim is the rest's pulse and its edge cue.
+      expect(restTimer()).toHaveTextContent('00:04')
       expect(restBars()[0]).toHaveAttribute('data-loop', 'run')
       expect(wait).toHaveAttribute('data-loop', 'still')
-      expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+      const edges = document.querySelectorAll('[data-countdown-edge]')
+      expect(edges).toHaveLength(1)
+      expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBars()[0], edges[0]])
 
       // The visible wait must regain the loop; a closed dialog owns no hidden claim.
       if (ending === 'skip') {
@@ -1691,22 +1708,31 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
     await logRound(1)
-    advance(52)
+    advance(56)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
 
-    const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
-    expect(lowOwners).toHaveLength(2)
-    expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
-    for (const owner of lowOwners) {
-      expect(
-        owner.matches('.clr-pulse-micro') || owner.querySelector('.clr-pulse-micro') !== null,
-      ).toBe(true)
-      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
+    // Both deadlines are in their final five seconds: both marked urgent.
+    const urgentOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
+    expect(urgentOwners).toHaveLength(2)
+    for (const owner of urgentOwners) {
+      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:04')
     }
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    // Each pulses through its own loop claim, and only one of them runs.
+    const pulses = urgentOwners.map(
+      (owner) => (owner.matches('.clr-pulse-micro[data-loop]') ? owner : owner.querySelector('.clr-pulse-micro[data-loop]')) as HTMLElement,
+    )
+    expect(pulses.every((pulse) => pulse !== null)).toBe(true)
+    expect(pulses.map((pulse) => pulse.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
+    // The several countdowns share one edge cue, carrying the winner's loop.
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    const winner = pulses.find((pulse) => pulse.getAttribute('data-loop') === 'run')
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([winner, edges[0]].sort(
+      (a, b) => (a!.compareDocumentPosition(b!) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
+    ))
     expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
-    expect(restTimer()).toHaveTextContent('00:08')
+    expect(restTimer()).toHaveTextContent('00:04')
   })
 
   it('coordinates a low Circuit round rest with the low session rest across navigation', async () => {
@@ -1733,22 +1759,31 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
     await logRound(1)
-    advance(52)
+    advance(56)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
 
-    const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
-    expect(lowOwners).toHaveLength(2)
-    expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
-    for (const owner of lowOwners) {
-      expect(
-        owner.matches('.clr-pulse-micro') || owner.querySelector('.clr-pulse-micro') !== null,
-      ).toBe(true)
-      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
+    // Both deadlines are in their final five seconds: both marked urgent.
+    const urgentOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
+    expect(urgentOwners).toHaveLength(2)
+    for (const owner of urgentOwners) {
+      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:04')
     }
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    // Each pulses through its own loop claim, and only one of them runs.
+    const pulses = urgentOwners.map(
+      (owner) => (owner.matches('.clr-pulse-micro[data-loop]') ? owner : owner.querySelector('.clr-pulse-micro[data-loop]')) as HTMLElement,
+    )
+    expect(pulses.every((pulse) => pulse !== null)).toBe(true)
+    expect(pulses.map((pulse) => pulse.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
+    // The several countdowns share one edge cue, carrying the winner's loop.
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    const winner = pulses.find((pulse) => pulse.getAttribute('data-loop') === 'run')
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([winner, edges[0]].sort(
+      (a, b) => (a!.compareDocumentPosition(b!) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
+    ))
     expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
-    expect(restTimer()).toHaveTextContent('00:08')
+    expect(restTimer()).toHaveTextContent('00:04')
   })
 
   it('groups coaching inside its own card, with every label inside the group', async () => {

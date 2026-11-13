@@ -251,6 +251,12 @@ describe('while the clock runs', () => {
     // `prefers-reduced-motion`, so the words have to carry it too.
     expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
     expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    // The pulse is held for the final five seconds.
+    expect(raceClock()).not.toHaveClass('clr-pulse-micro')
+
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
+    expect(screen.getByText('Cap in 00:04 — finish now')).toBeInTheDocument()
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(raceClock()).toHaveClass('clr-pulse-micro')
   })
 })
@@ -575,8 +581,16 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
     expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
 
-    // The pulse is on the whole timer card and is the view's running loop.
+    // Low alone carries no pulse and claims no loop.
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+
+    // In the final five seconds the pulse is on the whole timer card and is
+    // the view's running loop.
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
     expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(raceClock()).toHaveClass('clr-pulse-micro')
     expect(raceClock()).toHaveAttribute('data-urgent', 'true')
     expect(raceClock()).toHaveAttribute('data-loop', 'run')
 
@@ -657,15 +671,23 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(raceClock()).toHaveAttribute('data-loop', 'still')
 
+    // Low but not yet urgent: still no claim, so the wait keeps its loop.
     await wallClockReaches(START + (CAP_SECONDS - 8) * 1000)
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('data-loop', 'run')
 
-    // Low: the pulse carries more state, so it runs and the wait is stilled —
-    // still on screen, still busy, still saying what it is waiting for.
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
+
+    // Final five: the pulse carries more state, so it runs and the wait is
+    // stilled — still on screen, still busy, still saying what it is waiting for.
     expect(raceClock()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for the next movement')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    // One claim runs: the clock's pulse and its single screen-edge cue.
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([raceClock(), edges[0]])
 
     // The cap arrives: nothing is running out, and the wait has its loop back.
     await wallClockReaches(START + CAP_SECONDS * 1000)
@@ -682,7 +704,7 @@ describe('the clock takes the shipped low state and nothing more', () => {
     renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
 
     await user.click(screen.getByRole('button', { name: 'Start For Time' }))
-    await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
 
     expect(raceClock()).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
@@ -691,9 +713,9 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(raceClock()).toHaveAttribute('data-urgent', 'true')
     expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(readout()).toHaveTextContent('07:53')
+    expect(readout()).toHaveTextContent('07:56')
     expect(screen.getByText('Racing the clock')).toBeInTheDocument()
-    expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
+    expect(screen.getByText('Cap in 00:04 — finish now')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled()
 
     // The shipped rule that makes a reduced pulse static.

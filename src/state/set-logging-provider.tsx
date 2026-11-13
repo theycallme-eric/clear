@@ -538,3 +538,45 @@ function storedSets(
     })),
   )
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The gallery's stand-in
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PREVIEW_SYNC = { unsyncedCount: 0, sustainedFailure: false, syncing: false } as const
+
+function previewSet(performed: PerformedSet, id: string): LoggedSet {
+  return { id, setNumber: performed.setNumber, reps: performed.reps ?? null, durationSeconds: performed.durationSeconds ?? null,
+    distance: performed.distance ?? null, distanceUnit: performed.distance === undefined ? null : 'm',
+    weight: performed.weight ?? null, weightUnit: performed.weightUnit ?? 'lb', isWarmup: performed.isWarmup ?? false,
+    effort: performed.effort ?? null, status: 'logged' }
+}
+
+/**
+ * The gallery's set logging: sets live in this component's state and nothing is
+ * queued, persisted or sent. It lives here so this file stays the only place
+ * that provides the renderers' seam.
+ */
+export function PreviewSetLogging({ seed = {}, children }: {
+  seed?: Readonly<Record<string, readonly LoggedSet[]>>
+  children: ReactNode
+}) {
+  const [sets, setSets] = useState(() => new Map(Object.entries(seed)))
+  const api = useMemo<SetLoggingApi>(() => {
+    const edit = (exerciseId: string, change: (list: readonly LoggedSet[]) => readonly LoggedSet[]) =>
+      setSets(current => new Map(current).set(exerciseId, change(current.get(exerciseId) ?? [])))
+    return {
+      weightUnit: 'lb',
+      logSet: (exerciseId, performed) => edit(exerciseId, list =>
+        [...list, previewSet(performed, `${exerciseId}-logged-${list.length + 1}`)].sort((a, b) => a.setNumber - b.setNumber)),
+      loggedSets: exerciseId => sets.get(exerciseId) ?? [],
+      correctSet: (exerciseId, setId, next) => edit(exerciseId, list => list.map(set => set.id === setId
+        ? { ...previewSet(next, setId), setNumber: set.setNumber, isWarmup: set.isWarmup } : set)),
+      clearSet: (exerciseId, setId) => edit(exerciseId, list => list.filter(set => set.id !== setId)),
+      isSaving: () => false,
+      sync: PREVIEW_SYNC,
+      retrySync() {},
+    }
+  }, [sets])
+  return <SetLoggingContext value={api}>{children}</SetLoggingContext>
+}

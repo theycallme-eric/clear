@@ -614,10 +614,17 @@ describe('the 0.14.3 card, timer and group grammar', () => {
 
     // The package's stepped pulse on the timer's own emission — and that is the
     // only loop on the block.
+    // Its only wrapper is the shared countdown's own, directly inside the
+    // block, which in the low (not yet final-five) state adds no pulse and
+    // claims no loop.
     const bleed = low.closest('.clr-bleed')
     expect(bleed).toHaveClass('clr-pulse-micro')
-    expect(bleed?.parentElement).toBe(container.firstElementChild)
+    const countdownWrapper = bleed?.parentElement as HTMLElement
+    expect(countdownWrapper).toHaveAttribute('data-loop', 'still')
+    expect(countdownWrapper).not.toHaveClass('clr-pulse-micro')
+    expect(countdownWrapper.parentElement).toBe(container.firstElementChild)
     expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
 
     // Urgent, and still nothing to enter.
     expectNoScoreEntry()

@@ -113,11 +113,25 @@ function RaiseLowRest() {
   )
 }
 
+/** A rest already inside its final five seconds: the urgent pulse's window. */
+function RaiseUrgentRest() {
+  const rest = useRestTimer()
+  return (
+    <button
+      type="button"
+      onClick={() => rest.start({ exerciseId: 'ex-1', label: 'Back Squat', seconds: 4 })}
+    >
+      Raise urgent rest
+    </button>
+  )
+}
+
 /** The panel beside the shell's rest bar, and a control that raises a low rest. */
 function besideRest(panel: ReactNode): ReactNode {
   return (
     <RestTimerProvider now={() => 1_000_000}>
       <RaiseLowRest />
+      <RaiseUrgentRest />
       {panel}
       <RestTimerBar />
     </RestTimerProvider>
@@ -405,14 +419,23 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     const wait = guidanceWait(panel)
     expect(wait).toHaveAttribute('data-loop', 'run')
 
+    // Low (final ten) alone takes no loop: the wait keeps running.
     await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('data-loop', 'run')
 
+    // Urgent (final five): the rest's pulse takes the one loop.
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
     expect(restBar()).toHaveClass('clr-pulse-micro')
     expect(restBar()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    // One claim runs: the card's pulse and its single screen-edge cue.
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBar(), edges[0]])
 
     // The rest ends and the wait, which never stopped being one, moves again.
     await userEvent.click(screen.getByRole('button', { name: 'Skip rest' }))
@@ -435,11 +458,17 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(row).toHaveAttribute('data-loop', 'run')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
     expect(restBar()).toHaveAttribute('data-loop', 'run')
     expect(row).toHaveAttribute('data-loop', 'still')
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBar(), edges[0]])
   })
 
   it('is static under reduced motion and still says everything', async () => {

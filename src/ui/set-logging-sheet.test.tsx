@@ -138,7 +138,8 @@ describe('AC-025: the card’s top row', () => {
   it('holds the secondary section label left and the compact structure badge right', () => {
     mount()
 
-    const row = document.querySelector('[data-block-top-row]')
+    // Round 7: the top row is the shared movement-group header.
+    const row = document.querySelector('[data-movement-group-header]')
     expect(row).not.toBeNull()
     const [label, badge] = Array.from(row!.children)
     expect(label).toHaveTextContent('Primary lift')
@@ -168,8 +169,10 @@ describe('AC-026: heading, counter, prescription and equipment', () => {
     const order = [
       heading,
       main().getByText('3 × 8 reps'),
-      main().getByText('Equipment · barbell'),
+      // Round 7: equipment is the bare name in the identity's quiet context line.
+      main().getByText('barbell', { selector: '[data-movement-context]' }),
     ]
+    expect(main().queryByText(/Equipment ·/)).toBeNull()
     for (let index = 1; index < order.length; index += 1) {
       expect(order[index - 1].compareDocumentPosition(order[index]))
         .toBe(Node.DOCUMENT_POSITION_FOLLOWING)

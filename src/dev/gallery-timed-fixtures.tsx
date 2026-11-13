@@ -3,7 +3,7 @@ import { CountdownBar, GlobalTimer } from '../ui/workout-chrome'
 import { Button } from '../design-system/index'
 import { LoggingOverlay } from '../ui/logging-overlay'
 import { useState } from 'react'
-import { BlockCompletionContext } from '../state/block-completion'
+import { PreviewBlockCompletion } from '../state/block-completion-provider'
 import type { BlockProgress } from '../state/workout-progress'
 import { Card } from '../ui/card'
 import { LadderCompletion, LadderPrescription } from '../ui/ladder-rungs'
@@ -45,11 +45,11 @@ export function GalleryTimedFlow({ presentation }: { presentation: WorkoutExperi
   return <WorkoutExperiencePresentationProvider value={{ ...presentation, timedWorkflows: {
     logPresentation: 'inline', counterStyle: 'wide', saveResult: async () => {},
   } }}>
-    <BlockCompletionContext value={{ reportOutcome: () => {}, isBlockRecorded: () => false }}>
+    <PreviewBlockCompletion>
       <TimedWorkoutFlow block={{ ...SAMPLE, exercises: SAMPLE.exercises.map(exercise => ({ ...exercise,
         prescription: { ...exercise.prescription, exercise_id: 'burpee', equipment_used: 'bodyweight', load_type: 'bodyweight', load_value: null },
       })) }} format="amrap" />
-    </BlockCompletionContext>
+    </PreviewBlockCompletion>
   </WorkoutExperiencePresentationProvider>
 }
 

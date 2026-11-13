@@ -5,8 +5,8 @@
  * Mounted through the real route tree on a synthetic session from the workout
  * double: no personal data, no backend. What it holds the screen to:
  *
- *   · compact numbered rows, each with its own accessible logging action and a
- *     concise coaching disclosure; opening logging opens the shared half-sheet,
+ *   · compact numbered rows, each with its own accessible logging action, and
+ *     one grouped coaching disclosure below them (Round 7); opening logging opens the shared half-sheet,
  *     and none of it is needed to record a round (AC-061);
  *   · an initial Start round 1, then Finish round, with the round's elapsed
  *     clock; the shared rest after a finished round, and the next round's clock
@@ -132,7 +132,7 @@ const roundTimer = (round: number) => screen.getByRole('timer', { name: `Round $
 const restTimer = () => screen.queryByRole('timer', { name: 'Time remaining' })
 
 describe('AC-061 — compact numbered rows, optional sheet-based logging', () => {
-  it('keeps one compact numbered row per movement, each with logging and a coaching disclosure', async () => {
+  it('keeps one compact numbered row per movement, each with logging, and one grouped coaching disclosure', async () => {
     await shell()
 
     expect(rows().map((row) => within(row).getByRole('heading').textContent)).toEqual([
@@ -147,14 +147,26 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
         'aria-expanded',
         'false',
       )
-      expect(inside.getByRole('button', { name: `Coaching and notes — ${name}` })).toHaveAttribute(
-        'aria-expanded',
-        'false',
-      )
+      // Round 7 (R29): grouped work keeps no per-row coaching disclosure.
+      expect(inside.queryByRole('button', { name: /coaching/i })).toBeNull()
       // Compact: no entry fields and no set form until logging is asked for.
       expect(inside.queryByRole('spinbutton')).toBeNull()
       expect(inside.queryByRole('form')).toBeNull()
     })
+
+    // One grouped Coaching and notes disclosure, outside the rows and closed,
+    // with a labelled section for every movement once it is opened.
+    const list = screen.getByRole('list', { name: 'Movements in this circuit' })
+    const coaching = screen.getAllByRole('button', { name: /^Coaching and notes/ })
+    expect(coaching).toHaveLength(1)
+    expect(coaching[0]).toHaveAccessibleName('Coaching and notes')
+    expect(coaching[0]).toHaveAttribute('aria-expanded', 'false')
+    expect(list.contains(coaching[0]!)).toBe(false)
+    await userEvent.setup().click(coaching[0]!)
+    expect(coaching[0]).toHaveAttribute('aria-expanded', 'true')
+    for (const name of NAMES) {
+      expect(screen.getByRole('heading', { name })).toBeInTheDocument()
+    }
   })
 
   it('opens the shared half-sheet in one tap where logging is opened, outside the row', async () => {

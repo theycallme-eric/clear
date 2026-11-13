@@ -127,14 +127,11 @@ import {
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
+import { GalleryUrgency, LiveFlow } from './gallery-refinement-flow'
+import { GallerySectionHeader } from './gallery-refinement-scenes'
+import { CountdownDisplay } from '../ui/timer-display'
 import { GalleryQuantity, GalleryTimedLog, GalleryTimedFlow, GalleryLadderCompletion, GalleryLoggingOverlay, GalleryLadderPrescription, GalleryCountdownUrgency } from './gallery-timed-fixtures'
 
-import { GalleryLoggingMoment } from './gallery-refinement-forms'
-import { GalleryLadderFlow, GalleryUrgency } from './gallery-refinement-flow'
-import { GalleryMovementCards, GalleryPreparationReview } from './gallery-refinement-scenes'
-import { QuantitySelector } from '../ui/refinements/quantity'
-import { DeadlineTimer } from '../ui/refinements/deadline-timer'
-import { RefinementWorkoutHeader, RefinementPreparation } from '../ui/refinements/workout-card'
 
 /** One reviewable state of one part. */
 export interface GallerySpecimen {
@@ -2084,13 +2081,16 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     { state: 'softer dialog backdrop', Render: () => <GalleryLoggingOverlay variant="dialog" backdrop="soft" /> },
     { state: 'rising sheet appearance', Render: () => <GalleryLoggingOverlay variant="sheet" /> },
   ] },
-  { component: 'CountdownUrgency', requirement: 'R7 / R126', module: 'src/ui/countdown-urgency.tsx', summary: 'Recovered October 26 warning: color at 10, soft edge vignette at 5, independent 1.5s smooth opacity pulse, static .5 under reduced motion; elapsed-only clocks remain neutral.', specimens: [{ state: 'manual deadline milestones and elapsed-only clock', Render: GalleryCountdownUrgency }] },
+  { component: 'CountdownUrgency', requirement: 'R7 / R126', module: 'src/ui/countdown-urgency.tsx', summary: 'Recovered October 26 warning: color at 10, soft edge vignette at 5, independent 1.5s smooth opacity pulse, static .5 under reduced motion; elapsed-only clocks remain neutral.', specimens: [{ state: 'manual deadline milestones and elapsed-only clock', Render: GalleryCountdownUrgency }, { state: 'live Round 7 timed flow at 10 and 5 seconds, cap and elapsed', Render: GalleryUrgency }] },
+  { component: 'CountdownDisplay', requirement: 'R7 / R126', module: 'src/ui/timer-display.tsx', summary: 'Round 7 countdown: the shared timer display with the low colour from 10 seconds and the urgent pulse and edge from 5.', specimens: [{ state: 'running, 42 seconds left', Render: () => <CountdownDisplay seconds={42} /> }, { state: 'running, final 4 seconds', Render: () => <CountdownDisplay seconds={4} /> }, { state: 'paused at 4 seconds', Render: () => <CountdownDisplay seconds={4} running={false} /> }] },
   { component: 'LadderPrescription', requirement: 'R6 / R94–R95', module: 'src/ui/ladder-rungs.tsx', summary: 'Compact prescription and ordered live progress, including each movement target and fixed companions. Same owner is used in the workout comparison.', specimens: [
     { state: '12 rounds, loaded ladder and bodyweight companion', Render: () => <GalleryLadderPrescription /> },
     { state: 'live ordered check-off, 12 rounds', Render: () => <GalleryLadderPrescription live /> },
   ] },
   { component: 'TimedWorkoutFlow', requirement: 'R4 / R38–R69', module: 'src/ui/timed-workout-flow.tsx', summary: 'Isolated timed-work proposal consuming shared clock arithmetic and existing format contracts. App BlockSlot uses the same owner when the comparison presentation is enabled; prior renderer behavior remains separately reviewable.', specimens: [
     { state: 'AMRAP Start, Pause/Resume, Finish and local results', Render: () => <GalleryTimedFlow presentation={PROPOSED_EXPERIENCE} /> },
+    { state: 'Round 7 For Time card before Start', Render: () => <LiveFlow kind="for_time" /> },
+    { state: 'Round 7 live ladder before Start', Render: () => <LiveFlow kind="ladder" /> },
   ] },
   { component: 'MovementGroupHeader', requirement: 'R30 / R37', module: 'src/ui/movement-presentation.tsx', summary: 'One static group-header owner used by actual Review and live BlockPanel: title left, compact structure badge right, no Review disclosure.', specimens: [
     { state: 'superset and rounds', Render: () => <Card><MovementGroupHeader title="Accessory" badge={<StructureBadge identity={{label:'SUPERSET', detail:'3 ROUNDS',repScheme:null,glyph:'Superset'}} />} /></Card> },
@@ -2905,17 +2905,5 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       },
     ],
   },
-  {component: 'MovementIdentity', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/movement.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: GalleryMovementCards},{state: 'accepted alternate context', Render: ()=> <GalleryMovementCards initialReview />}]},
-  {component: 'MovementList', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/movement.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: GalleryMovementCards},{state: 'accepted alternate context', Render: ()=> <GalleryMovementCards initialReview />}]},
-  {component: 'MovementGroupHeader', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/movement.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: GalleryMovementCards},{state: 'accepted alternate context', Render: ()=> <GalleryMovementCards initialReview />}]},
-  {component: 'LadderCompletion', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/ladder.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: ()=> <GalleryLoggingMoment context="ladder" />},{state: 'accepted alternate context', Render: ()=> <GalleryLoggingMoment context="ladder" rounds={12} />}]},
-  {component: 'LadderPrescription', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/ladder.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: ()=> <GalleryLadderFlow rounds={4} />},{state: 'accepted alternate context', Render: ()=> <GalleryLadderFlow rounds={12} />}]},
-  {component: 'LoggingOverlay', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/logging-overlay.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: ()=> <GalleryLoggingMoment context="anchor" />},{state: 'accepted alternate context', Render: ()=> <GalleryLoggingMoment context="superset" />}]},
-  {component: 'TimedResultLog', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/timed-result-log.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: ()=> <GalleryLoggingMoment context="for_time" />},{state: 'accepted alternate context', Render: ()=> <GalleryLoggingMoment context="amrap" />}]},
-  {component: 'DeadlineTimer', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/deadline-timer.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: GalleryUrgency},{state: 'accepted alternate context', Render: ()=> <DeadlineTimer seconds={5} elapsedOnly label="Session time" />}]},
-  {component: 'QuantitySelector', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/quantity.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: ()=> <QuantitySelector label="Rounds completed" value={null} onChange={()=>{}} />},{state: 'accepted alternate context', Render: ()=> <QuantitySelector label="Rounds completed" value={0} onChange={()=>{}} />}]},
-  {component: 'RefinementWorkoutCard', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/workout-card.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: GalleryMovementCards},{state: 'accepted alternate context', Render: ()=> <GalleryMovementCards initialReview />}]},
-  {component: 'RefinementWorkoutHeader', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/workout-card.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: RefinementWorkoutHeader},{state: 'accepted alternate context', Render: ()=> <RefinementWorkoutHeader title="Long workout title" />}]},
-  {component: 'RefinementPreparation', requirement: 'clear-visual-refinement-2026-11-03 / revision 6', module: 'src/ui/refinements/workout-card.tsx', summary: 'Accepted shared presentation; gallery-only controllers, application adoption tracked separately.', specimens: [{state: 'accepted primary state', Render: GalleryPreparationReview},{state: 'accepted alternate context', Render: ()=> <RefinementPreparation title="Cooldown" minutes={3} movements={["Chest stretch","Lat stretch"]} />}]},
-  {component:'SectionHeader',requirement:'clear-visual-refinement-2026-11-03 / revision 6 / REQ-027',module:'src/ui/workout-chrome.tsx',summary:'Accepted compact section jump/navigation, opt-in only; actual route adoption remains pending.',specimens:[{state:'compact navigator',Render:()=> <GalleryMovementCards />},{state:'Review context without live navigator',Render:()=> <GalleryMovementCards initialReview />}]},
+  {component:'SectionHeader',requirement:'clear-visual-refinement-2026-11-03 / revision 6 / REQ-027',module:'src/ui/workout-chrome.tsx',summary:'Accepted compact section jump/navigation, opt-in only; actual route adoption remains pending.',specimens:[{state:'compact navigator',Render:()=> <GallerySectionHeader />},{state:'full header with progress bar',Render:()=> <GallerySectionHeader compact={false} />}]},
 ]

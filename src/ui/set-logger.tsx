@@ -114,6 +114,12 @@ export interface ExerciseSetLoggerProps {
    */
   countdown?: ReactNode
   /**
+   * The running rest the entry sheet shows at its top, where the containing
+   * block owns that rest (a circuit's rest between rounds). Omitted, the sheet
+   * shows the shell's running rest, as everywhere else.
+   */
+  sheetRest?: ReactNode
+  /**
    * The rest this movement's Rest action starts (EXE-05, REQ-012), in
    * seconds. Omitted, it is the rest the movement states — its own
    * `rest_seconds` when `statesRest`, none otherwise — so the rest the card
@@ -148,6 +154,7 @@ export function ExerciseSetLogger({
   ordinal,
   statesRest = true,
   countdown,
+  sheetRest,
   restSeconds,
   logging = 'self',
   onReturnToRound,
@@ -317,6 +324,7 @@ export function ExerciseSetLogger({
         savedEntry !== null && edit === null ? <SetLoggingConfirmation label={`Set ${savedEntry} logged`} onCollapse={collapse}/> : <SetSheetForm
           key={mode}
           mode={mode}
+          rest={sheetRest}
           setNumber={sheetSetNumber}
           exerciseName={name}
           context={[title, prescriptionText(prescription), equipment].join(' · ')}
@@ -653,6 +661,8 @@ interface SetSheetFormProps {
   /** Edit mode, where the shell can clear a saved set: arms the confirmation. */
   onClear?: () => void
   onCollapse: () => void
+  /** The containing block's running rest, shown in place of the shell's. */
+  rest?: ReactNode
 }
 
 /**
@@ -682,6 +692,7 @@ function SetSheetForm({
   onCancel,
   onClear,
   onCollapse,
+  rest,
 }: SetSheetFormProps) {
   const entry = readEntry({ mode, setNumber, draft, referenceUnit, weightUnit, modality, showLoad })
 
@@ -699,6 +710,7 @@ function SetSheetForm({
       setNumber={setNumber}
       formLabel={`${mode === 'edit' ? 'Edit' : 'Log'} set ${setNumber} of ${name}`}
       context={context}
+      rest={rest}
       measures={
         <SetMeasureFields
           entry={entry}

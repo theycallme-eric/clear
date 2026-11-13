@@ -32,6 +32,21 @@
   width: 100%;
 }
 
+/* A stacked action (a failed view's retry): the wrapper is the stack's item,
+   and the button still fills it as it did without the effect. */
+.clr-stack > .clr-echo:has(> .clr-bleed > .clr-btn) {
+  display: flex;
+}
+
+.clr-stack > .clr-echo > .clr-bleed:has(> .clr-btn) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clr-stack > .clr-echo > .clr-bleed > .clr-btn {
+  width: 100%;
+}
+
 /* The main action keeps its place: on top when stacked, right in a row. */
 .clr-actions > .clr-echo:has(> .clr-bleed > :is(.clr-btn--primary, .clr-btn--critical)) {
   order: -1;
