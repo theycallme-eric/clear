@@ -544,7 +544,7 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
     // then the ladder timing column (REQ-018, TASK-039), the per-set effort and
     // ordered observation mutations (TASK-007, TASK-011 of the UI polish), and
     // the richer timed actuals (TASK-031: MIG-A block effort, MIG-B movement
-    // results; carried by A3 task 2) —
+    // results) —
     // each is named here so a migration nobody accounted for still fails.
     const inspected = migrations.indexOf('20260927000018_generation_goal_scope.sql')
     expect(inspected).toBeGreaterThan(-1)

@@ -270,12 +270,15 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
     const recorded = double.loggedSets().length
 
-    // Round 7: the next set opens from the card once that rest is over, and its
-    // Rest starts the next prescribed countdown.
-    await user.click(within(done).getByRole('button', { name: 'Skip rest' }))
+    // AC-037: logging is independent of rest. Closing the confirmation and
+    // tapping the card opens set 2 during the same rest, which keeps running.
+    await closeLog(user)
     await waitFor(() => expect(done).not.toBeInTheDocument())
+    advance(10)
+    returnToForeground()
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
-    expect(restTimer()).toHaveTextContent('01:30')
+    // The same rest, ten seconds on: opening set 2 neither restarts nor stops it.
+    expect(restTimer()).toHaveTextContent('01:20')
 
     const form = within(screen.getByRole('form', { name: 'Log set 2 of back squat' }))
     await user.clear(form.getByLabelText(/^Reps/))
@@ -286,14 +289,14 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
     // Hidden, the rest runs on — read off the wall clock, not paused.
     advance(25)
     returnToForeground()
-    expect(restTimer()).toHaveTextContent('01:05')
+    expect(restTimer()).toHaveTextContent('00:55')
 
     advance(15)
     returnToForeground()
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     const reopened = within(screen.getByRole('form', { name: 'Log set 2 of back squat' }))
     expect(reopened.getByLabelText(/^Reps/)).toHaveValue(6)
-    expect(restTimer()).toHaveTextContent('00:50')
+    expect(restTimer()).toHaveTextContent('00:40')
     // Collapse and reopen record nothing.
     expect(double.loggedSets()).toHaveLength(recorded)
   })
