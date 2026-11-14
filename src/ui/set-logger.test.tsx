@@ -70,7 +70,7 @@ function mount(options: MountOptions = {}) {
   const workout = createWorkoutDouble({ session: snapshot })
   const exercise: ExerciseProgress = sessionProgress(snapshot).sections[0].blocks[0].exercises[0]
 
-  const logSet = vi.fn<(exerciseId: string, performed: PerformedSet) => void>()
+  const logSet = vi.fn<(exerciseId: string, performed: PerformedSet) => boolean>(() => true)
   const api: SetLoggingApi = {
     weightUnit: options.weightUnit === undefined ? 'kg' : options.weightUnit,
     logSet,

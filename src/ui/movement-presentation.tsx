@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { Heading } from './Heading'
@@ -19,13 +19,21 @@ export function MovementIdentity({
 }) {
   const inlineEquipment = useWorkoutExperiencePresentation()?.equipmentPlacement === 'name'
   const Name = heading ? Heading : 'p'
+  const nameId = useId()
+  const equipmentId = useId()
+  const inline = inlineEquipment && equipment != null
+  // Equipment drawn inline after the name is context, not the name: a heading
+  // is still named by its movement alone, and the equipment describes it.
+  const naming = heading && inline ? { 'aria-labelledby': nameId, 'aria-describedby': equipmentId } : {}
   return (
     <div className="clr-movement-identity">
       <div className="clr-movement-identity__top" data-movement-name-row="">
-        <Name className="clr-movement-identity__name">
-          {ordinal == null ? null : <span className="clr-movement-identity__ordinal clr-text-data-xs">{ordinal} </span>}
-          {name}
-          {inlineEquipment && equipment != null ? <span className="clr-movement-identity__equipment-inline" data-movement-context="">{equipment}</span> : null}
+        <Name className="clr-movement-identity__name" {...naming}>
+          <span id={nameId}>
+            {ordinal == null ? null : <span className="clr-movement-identity__ordinal clr-text-data-xs">{ordinal} </span>}
+            {name}
+          </span>
+          {inline ? <span id={equipmentId} className="clr-movement-identity__equipment-inline" data-movement-context="">{equipment}</span> : null}
         </Name>
         {counter == null ? null : <span className="clr-movement-identity__counter clr-text-data-xs">{counter}</span>}
         {action == null ? null : <div className="clr-movement-identity__action">{action}</div>}

@@ -47,6 +47,11 @@ import { HeadingLevelProvider } from './Heading'
 import { RestTimerBar } from './workout-chrome'
 
 const PANEL = 'Coaching and notes — back squat'
+/** Decision 5: the note is entered in the note dialog, opened by "Add note". */
+const ADD_NOTE = 'Add note — back squat'
+const NOTE_DIALOG = 'Movement note'
+/** In the dialog the field is labelled by the movement's name. */
+const NOTE_FIELD = 'back squat'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -143,6 +148,12 @@ async function open() {
   return screen.getByRole('region', { name: PANEL })
 }
 
+/** Opens the panel's note dialog from "Add note"; the field and Save are in it. */
+async function openNote(panel: HTMLElement): Promise<HTMLElement> {
+  await userEvent.click(within(panel).getByRole('button', { name: ADD_NOTE }))
+  return screen.findByRole('dialog', { name: NOTE_DIALOG })
+}
+
 describe('the coaching panel', () => {
   it('draws nothing outside the workout clients', () => {
     const snapshot = snapshotFixture()
@@ -205,7 +216,10 @@ describe('the coaching panel', () => {
     const alert = await within(panel).findByRole('alert')
     expect(alert).toHaveTextContent('Coaching for back squat didn’t load')
     // The note beside it is still usable: a failed read costs the guidance only.
-    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    const note = await openNote(panel)
+    expect(within(note).getByRole('textbox', { name: NOTE_FIELD })).toBeEnabled()
+    await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: NOTE_DIALOG })).toBeNull())
 
     fail = false
     await userEvent.click(within(alert).getByRole('button', { name: 'Try again' }))
@@ -215,12 +229,13 @@ describe('the coaching panel', () => {
   it('writes the typed note to the prescription row and says it is saved', async () => {
     const { double, exercise } = mount()
     const panel = await open()
+    const note = await openNote(panel)
 
     await userEvent.type(
-      within(panel).getByRole('textbox', { name: /Notes — back squat/ }),
+      within(note).getByRole('textbox', { name: NOTE_FIELD }),
       'Left knee felt tight',
     )
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
     expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([
@@ -231,8 +246,9 @@ describe('the coaching panel', () => {
   it('clears the note when the field is emptied', async () => {
     const { double, exercise } = mount()
     const panel = await open()
+    const note = await openNote(panel)
 
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
     await within(panel).findByText(NOTE_SAVED_TEXT)
     expect(double.savedNotes()).toEqual([{ exerciseId: exercise.exerciseId, notes: null }])
@@ -244,10 +260,11 @@ describe('the coaching panel', () => {
     )
     mount({ exercises: { saveNotes } })
     const panel = await open()
-    const field = within(panel).getByRole('textbox', { name: /Notes — back squat/ })
+    const note = await openNote(panel)
+    const field = within(note).getByRole('textbox', { name: NOTE_FIELD })
 
     await userEvent.type(field, 'Grip slipped on set 3')
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
     expect(await within(panel).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
     expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
@@ -319,9 +336,10 @@ describe('optional catalog coaching (U38)', () => {
     const { double, exercise } = mount({ definitions: {} })
     const panel = await open()
     await within(panel).findByText(NO_DEFINITION_TEXT)
+    const note = await openNote(panel)
 
-    await userEvent.type(within(panel).getByRole('textbox', { name: /Notes — back squat/ }), 'Use the safety bars')
-    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await userEvent.type(within(note).getByRole('textbox', { name: NOTE_FIELD }), 'Use the safety bars')
+    await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
     expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([
@@ -343,8 +361,14 @@ describe('the panel is one group, with its labels inside', () => {
     const body = cards()[0].querySelector('.clr-card__body') as HTMLElement
     expect(body).toContainElement(screen.getByRole('button', { name: PANEL }))
     expect(body).toContainElement(panel)
-    expect(body).toContainElement(screen.getByRole('textbox', { name: /Notes — back squat/ }))
-    expect(body).toContainElement(screen.getByRole('button', { name: 'Save note — back squat' }))
+    expect(body).toContainElement(screen.getByRole('button', { name: ADD_NOTE }))
+    // The note dialog belongs to the panel, and opening it adds no card.
+    const note = await openNote(panel)
+    expect(body).toContainElement(note)
+    expect(cards()).toHaveLength(1)
+    expect(nestedCards()).toEqual([])
+    expect(body).toContainElement(within(note).getByRole('textbox', { name: NOTE_FIELD }))
+    expect(body).toContainElement(within(note).getByRole('button', { name: 'Save note — back squat' }))
   })
 
   it('heads each sub-group inside it, under a rule rather than a frame', async () => {
@@ -448,7 +472,8 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     reduceMotion(false)
     mount({ exercises: { saveNotes: () => never() } }, besideRest)
     const panel = await open()
-    const button = within(panel).getByRole('button', { name: 'Save note — back squat' })
+    const note = await openNote(panel)
+    const button = within(note).getByRole('button', { name: 'Save note — back squat' })
     const row = button.closest('[data-loop]') as HTMLElement
     expect(row).toHaveAttribute('data-loop', 'still')
 
@@ -468,7 +493,10 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
     const edges = document.querySelectorAll('[data-countdown-edge]')
     expect(edges).toHaveLength(1)
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBar(), edges[0]])
+    // With the note dialog open the one edge cue is drawn in it (the top
+    // layer), so it comes before the rest bar in document order.
+    expect(note).toContainElement(edges[0] as HTMLElement)
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([edges[0], restBar()])
   })
 
   it('is static under reduced motion and still says everything', async () => {
@@ -482,7 +510,9 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     const wait = guidanceWait(panel)
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    const note = await openNote(panel)
+    expect(within(note).getByRole('textbox', { name: NOTE_FIELD })).toBeEnabled()
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
     expect(within(restBar()).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent(
       '00:08',
     )

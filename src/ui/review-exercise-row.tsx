@@ -41,7 +41,7 @@ export function ReviewExerciseRow({
   onExplain: () => void
 }) {
   const presentation = useWorkoutExperiencePresentation()
-  const guidance = presentation?.suggestedLoads[exercise.exerciseId]
+  const guidance = presentation?.suggestedLoads?.[exercise.exerciseId]
   const load = distinctLoadText(guidance === undefined ? exercise.load : guidance, exercise.equipment)
   const rest = inRounds ? null : exercise.rest
   return (

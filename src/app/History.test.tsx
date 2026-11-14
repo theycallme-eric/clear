@@ -211,7 +211,7 @@ describe('History route', () => {
     expect(kept).toContainEqual(expect.stringMatching(/^Intensity \d+\/10$/))
   })
 
-  it('U44: every row groups title and status, then context, then metrics, whatever its status', async () => {
+  it('U44: every row puts its title, then status with the context, then metrics, whatever its status', async () => {
     const LONG =
       'Posterior-chain strength with unilateral accessories and a loaded-carry finisher'
     const day = '2026-09-24'
@@ -256,10 +256,12 @@ describe('History route', () => {
     const rowOf = (title: string) =>
       within(list).getByRole('heading', { level: 2, name: title }).closest('li') as HTMLElement
 
+    // Round 7 (decision 7): the status leads the context line, and the focus
+    // opens the metrics in place of following the day.
     const expectations = [
-      { title: LONG, status: 'Completed', metrics: ['Requested 45 min', 'Actual 38 min', 'Intensity 6/10'] },
-      { title: 'Partial upper', status: 'Partial', metrics: ['Requested 30 min', 'Intensity 7/10'] },
-      { title: 'Never begun', status: 'Not started', metrics: ['Requested 20 min', 'Intensity 7/10'] },
+      { title: LONG, status: 'Completed', metrics: ['Lower body', 'Requested 45 min', 'Actual 38 min', 'Intensity 6/10'] },
+      { title: 'Partial upper', status: 'Partial', metrics: ['Upper body', 'Requested 30 min', 'Intensity 7/10'] },
+      { title: 'Never begun', status: 'Not started', metrics: ['Lower body', 'Requested 20 min', 'Intensity 7/10'] },
     ]
 
     for (const { title, status, metrics } of expectations) {
@@ -267,16 +269,17 @@ describe('History route', () => {
       const parts = [...row.querySelectorAll('[data-part]')].map((node) =>
         node.getAttribute('data-part'),
       )
-      // The same order in every row: head (title + status), context, metrics.
-      expect(parts).toEqual(['head', 'status', 'context', 'metrics'])
+      // The same order in every row: head (title), context (status + day), metrics.
+      expect(parts).toEqual(['head', 'context', 'status', 'metrics'])
 
       const head = row.querySelector('[data-part="head"]') as HTMLElement
       expect(within(head).getByRole('heading', { name: title })).toBeInTheDocument()
-      expect(head.querySelector('[data-part="status"]')).toHaveTextContent(status)
+      const context = row.querySelector('[data-part="context"]') as HTMLElement
+      expect(context.querySelector('[data-part="status"]')).toHaveTextContent(status)
       // The status is a word with its glyph, never the glyph alone.
-      expect(head.querySelector('[data-part="status"] svg')).not.toBeNull()
+      expect(context.querySelector('[data-part="status"] svg')).not.toBeNull()
 
-      expect(row.querySelector('[data-part="context"]')).toHaveTextContent(/^Thu 24 Sep 2026 · /)
+      expect(context).toHaveTextContent(new RegExp(`^${status}\\s*Thu 24 Sep 2026$`))
       const shown = [...row.querySelectorAll('[data-part="metrics"] .clr-nowrap')].map(
         (node) => node.textContent,
       )

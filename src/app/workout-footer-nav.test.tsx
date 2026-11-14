@@ -84,8 +84,13 @@ function actionsInRow(): HTMLButtonElement[] {
   return Array.from(pairedRow().querySelectorAll('button'))
 }
 
+/** Round 7's compact "All sections N / M" bar; its name carries the position. */
+function jumpToggle(): HTMLElement {
+  return screen.getByRole('button', { name: /^All sections/ })
+}
+
 async function jumpTo(user: ReturnType<typeof userEvent.setup>, name: string) {
-  await user.click(screen.getByRole('button', { name: 'All sections' }))
+  await user.click(jumpToggle())
   await user.click(screen.getByRole('button', { name }))
 }
 
@@ -108,7 +113,7 @@ describe('AC-064: progress sits immediately above one compact paired row', () =>
 
     // One bar on the screen: the header keeps its jump list, not a second bar.
     expect(screen.getAllByRole('progressbar', { name: /^Section / })).toHaveLength(1)
-    expect(screen.getByRole('button', { name: 'All sections' })).toBeInTheDocument()
+    expect(jumpToggle()).toBeInTheDocument()
   })
 
   it('pairs Previous on the left with Next section on the right in one row', async () => {

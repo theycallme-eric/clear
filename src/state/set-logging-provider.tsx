@@ -426,14 +426,14 @@ export function SetLoggingProvider({
       weightUnit,
       logSet(exerciseId, performed) {
         const exercise = exercises.find((candidate) => candidate.exerciseId === exerciseId)
-        if (exercise === undefined) return
+        if (exercise === undefined) return false
 
         // `exercise_set_logs_set_number_unique` would refuse this, and a write
         // that is certain to fail is worse than no write: it would put an
         // error in front of a user whose set is already recorded. A set still
         // in the queue counts — it is recorded, just not yet stored.
         if (setsFor(exerciseId).some((set) => set.setNumber === performed.setNumber)) {
-          return
+          return true
         }
 
         if (weightUnit === null) {
@@ -442,7 +442,7 @@ export function SetLoggingProvider({
               details: { field: 'weight_unit', reason: 'profile-unread' },
             }),
           )
-          return
+          return false
         }
 
         // The UI choice is an override, not another measurement. Resolve it
@@ -452,7 +452,7 @@ export function SetLoggingProvider({
           onFailure(createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
             details: { field: 'weight_unit' },
           }))
-          return
+          return false
         }
 
         const entry: SetLogEntry = {
@@ -470,6 +470,7 @@ export function SetLoggingProvider({
           enqueued(current, queuedSetLog(entry, sessionId, new Date(now()).toISOString())),
         )
         void flush()
+        return true
       },
       loggedSets: setsFor,
       ...(corrections ? { correctSet, clearSet } : {}),
@@ -567,8 +568,11 @@ export function PreviewSetLogging({ seed = {}, children }: {
       setSets(current => new Map(current).set(exerciseId, change(current.get(exerciseId) ?? [])))
     return {
       weightUnit: 'lb',
-      logSet: (exerciseId, performed) => edit(exerciseId, list =>
-        [...list, previewSet(performed, `${exerciseId}-logged-${list.length + 1}`)].sort((a, b) => a.setNumber - b.setNumber)),
+      logSet: (exerciseId, performed) => {
+        edit(exerciseId, list =>
+          [...list, previewSet(performed, `${exerciseId}-logged-${list.length + 1}`)].sort((a, b) => a.setNumber - b.setNumber))
+        return true
+      },
       loggedSets: exerciseId => sets.get(exerciseId) ?? [],
       correctSet: (exerciseId, setId, next) => edit(exerciseId, list => list.map(set => set.id === setId
         ? { ...previewSet(next, setId), setNumber: set.setNumber, isWarmup: set.isWarmup } : set)),

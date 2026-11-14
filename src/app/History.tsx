@@ -50,7 +50,6 @@ import {
 import { Card } from '../ui/card'
 import { HistoryList } from '../ui/history-list'
 import { TrainingProgressReport } from '../ui/training-progress-report'
-import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { ActionRow, ListMessage, PhoneFooter } from '../ui/composition'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
@@ -76,7 +75,6 @@ export const HISTORY_BACK_LABEL = 'Home'
 export const HISTORY_LOAD_MORE_LABEL = 'Load older workouts'
 
 export function History() {
-  const presentation = useWorkoutExperiencePresentation()
   const navigate = useNavigate()
   const query = useHistoryQuery()
   const session = useOpenHistorySession()
@@ -143,7 +141,7 @@ export function History() {
             <Select
               label={HISTORY_FILTER_LABEL}
               value={filter}
-              options={HISTORY_FILTERS.filter(option => !presentation || !['rest','unstarted'].includes(option.value))}
+              options={[...HISTORY_FILTERS]}
               onChange={(value) => setFilter(historyFilterOf(value))}
             />
           )}

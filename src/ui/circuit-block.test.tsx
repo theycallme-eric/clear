@@ -166,6 +166,18 @@ function formFor(name: string, setNumber = 1) {
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
 }
 
+/**
+ * Round 7 (decision 1): a logged set's dialog confirms it and, with no rest
+ * running, closes itself; the movement's Rest then opens its next set.
+ */
+async function nextSet(name: string, setNumber: number): Promise<HTMLElement> {
+  await waitFor(() =>
+    expect(screen.queryByRole('dialog', { name: `Set ${setNumber - 1} logged` })).toBeNull(),
+  )
+  formFor(name, setNumber)
+  return screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` })
+}
+
 /** The live line that says how many rounds the athlete has recorded. */
 function roundRecord(): HTMLElement {
   return within(blockCard()).getByText(/rounds? recorded$/)
@@ -733,9 +745,7 @@ describe('optional, compact load entry', () => {
       exerciseId: block.exercises[0]!.exerciseId,
       blockId: block.blockId,
     })
-    expect(
-      await screen.findByRole('form', { name: 'Log set 2 of back squat' }),
-    ).toBeInTheDocument()
+    expect(await nextSet('back squat', 2)).toBeInTheDocument()
 
     // A set is not a round: nothing was recorded for it, and no rest raised.
     expect(roundRecord()).toHaveTextContent('No rounds recorded')
@@ -758,7 +768,7 @@ describe('optional, compact load entry', () => {
 
     await logSet(user, 'back squat', 1)
 
-    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+    await nextSet('back squat', 2)
     const busy = formFor('back squat', 2).getByRole('button')
     await waitFor(() => expect(busy).toBeDisabled())
     expect(busy).toHaveAttribute('aria-busy', 'true')

@@ -334,8 +334,8 @@ export function Review({
           />
         ) : null}
 
-        {presentation && <PreparationGuide guide={presentation.guides.warmup} />}
-        {briefing.sections.filter(section => !presentation || !['warmup','cooldown'].includes(section.type)).map((section) => (
+        {presentation?.guides && <PreparationGuide guide={presentation.guides.warmup} />}
+        {briefing.sections.filter(section => !presentation?.guides || !['warmup','cooldown'].includes(section.type)).map((section) => (
           <ReviewSectionCard
             key={section.key}
             section={section}
@@ -345,7 +345,7 @@ export function Review({
           />
         ))}
 
-        {presentation && <PreparationGuide guide={presentation.guides.cooldown} />}
+        {presentation?.guides && <PreparationGuide guide={presentation.guides.cooldown} />}
 
         {/* REQ-006: the way out of this composition, once it has been read.
             Discarding is confirmed and irreversible, so it is a framed button

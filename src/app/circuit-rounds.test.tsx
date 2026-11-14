@@ -131,15 +131,23 @@ const button = (name: string) => screen.getByRole('button', { name })
 const roundTimer = (round: number) => screen.getByRole('timer', { name: `Round ${round} time` })
 const restTimer = () => screen.queryByRole('timer', { name: 'Time remaining' })
 
+/** Round 7 (decision 1): logging is a dialog, closed with its Close log. */
+async function closeLog(user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) {
+  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+  await waitFor(() => expect(dialog).not.toBeVisible())
+}
+
 describe('AC-061 — compact numbered rows, optional sheet-based logging', () => {
   it('keeps one compact numbered row per movement, each with logging, and one grouped coaching disclosure', async () => {
     await shell()
 
-    expect(rows().map((row) => within(row).getByRole('heading').textContent)).toEqual([
-      '1. kettlebell swing',
-      '2. push up',
-      '3. goblet squat',
-    ])
+    // Round 7 draws the equipment inline after the name as the heading's
+    // description, so each heading is named by its movement alone.
+    const headings = rows().map((row) => within(row).getByRole('heading'))
+    expect(headings).toHaveLength(3)
+    expect(headings[0]).toHaveAccessibleName('1. kettlebell swing')
+    expect(headings[1]).toHaveAccessibleName('2. push up')
+    expect(headings[2]).toHaveAccessibleName('3. goblet squat')
     rows().forEach((row, index) => {
       const name = NAMES[index]!
       const inside = within(row)
@@ -176,12 +184,15 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     await user.click(button('Rest for push up'))
 
     const form = await screen.findByRole('form', { name: 'Log set 1 of push up' })
-    expect(form.closest('.clr-set-sheet')).not.toBeNull()
-    // The sheet is the shell's, in its pinned slot — not drawn inside the row.
+    // Round 7 (decision 1): the entry is the logging dialog, not a sheet.
+    const dialog = screen.getByRole('dialog', { name: 'Log set 1' })
+    expect(dialog).toContainElement(form)
+    // The dialog is the shell's, in its slot — not drawn inside the row.
+    expect(form.closest('[data-set-sheet-slot]')).not.toBeNull()
     expect(rows()[1]!.contains(form)).toBe(false)
     expect(screen.getAllByRole('form', { name: /^Log set/ })).toHaveLength(1)
 
-    await user.click(within(form.closest('section')!).getByRole('button', { name: 'Minimize' }))
+    await closeLog(user, dialog)
     expect(screen.queryByRole('form', { name: /^Log set/ })).toBeNull()
     expect(double.loggedSets()).toEqual([])
   })
@@ -209,6 +220,9 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     await user.click(button('Start round 1'))
     for (const round of [1, 2, 3]) {
       await user.click(button(`Finish round ${round}`))
+      // Round 7 (decision 1): Finish round confirms the round in a logging
+      // dialog; closing it returns to the card.
+      await closeLog(user, screen.getByRole('dialog', { name: `Round ${round} recorded` }))
       if (round < 3) await user.click(button(`Start round ${round + 1}`))
     }
 
@@ -245,6 +259,12 @@ describe('AC-062 — Start, Finish, elapsed round clock, shared rest and the nex
     await user.click(button('Start round 1'))
     advance(40)
     await user.click(button('Finish round 1'))
+
+    // Round 7 (decision 1): Finish round confirms the round in a logging
+    // dialog that shows the shared rest; closing it returns to the card.
+    const recorded = screen.getByRole('dialog', { name: 'Round 1 recorded' })
+    expect(within(recorded).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:30')
+    await closeLog(user, recorded)
 
     // The shared rest, and no round clock running through it.
     expect(restTimer()).toHaveTextContent('00:30')

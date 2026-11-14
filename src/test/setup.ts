@@ -42,6 +42,16 @@ if (typeof HTMLDialogElement.prototype.showModal !== 'function') {
   }
 }
 
+// jsdom 29 has no HTMLDialogElement.requestClose, which the Round 7 logging
+// dialog's Close calls. The browser fires a cancelable `cancel` event and
+// closes the dialog unless it was cancelled; this does the same.
+if (typeof (HTMLDialogElement.prototype as { requestClose?: unknown }).requestClose !== 'function') {
+  ;(HTMLDialogElement.prototype as HTMLDialogElement & { requestClose: () => void }).requestClose =
+    function requestClose(this: HTMLDialogElement) {
+      if (this.dispatchEvent(new Event('cancel', { cancelable: true }))) this.close()
+    }
+}
+
 if (typeof window.matchMedia !== 'function') {
   window.matchMedia = (query: string): MediaQueryList =>
     ({

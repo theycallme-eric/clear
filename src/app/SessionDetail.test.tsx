@@ -366,7 +366,8 @@ describe('Session Detail containment', () => {
     ])
     expect(within(facts).getByText('Completed', { selector: 'dd' })).toBeInTheDocument()
     expect(within(facts).getByText('47 min', { selector: 'dd' })).toBeInTheDocument()
-    expect(facts.querySelectorAll('.clr-metric-frame')).toHaveLength(5)
+    // Round 7 lays the readouts out as compact summary facts.
+    expect(facts.querySelectorAll('.clr-summary-fact')).toHaveLength(5)
     expect(facts.querySelector('.clr-chamfer')).toBeNull()
 
     expect(within(card).getByText(/As performed · read at .*2026/)).toBeInTheDocument()

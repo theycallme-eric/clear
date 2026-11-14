@@ -109,7 +109,7 @@ export function blockRendererFor(block: BlockProgress): BlockRenderer {
 export function BlockSlot({ block }: BlockRendererProps) {
   const presentation = useWorkoutExperiencePresentation()
   const renderer = blockRendererFor(block)
-  if (presentation?.timedWorkflows && explicitLadderTiming(block)?.mode !== 'scheduled_starts') {
+  if (presentation?.timedWorkflows?.saveResult && explicitLadderTiming(block)?.mode !== 'scheduled_starts') {
     const format = renderer === LadderBlock ? 'ladder' : renderer === EmomBlock ? 'emom'
       : renderer === AmrapBlock ? 'amrap' : renderer === ForTimeBlock ? 'for_time' : null
     if (format !== null) return <TimedWorkoutFlow block={block} format={format} />

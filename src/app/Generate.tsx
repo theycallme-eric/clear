@@ -723,10 +723,10 @@ function GenerateForm({
             value={intensity}
             disabled={resolved.goal === null}
             valueText={`${intensity} of ${range.max}`}
-            aria-describedby={intensityNoted && !presentation ? intensityHint : undefined}
+            aria-describedby={intensityNoted ? intensityHint : undefined}
             onChange={chooseIntensity}
           />
-          {intensityNoted && !presentation && (
+          {intensityNoted && (
             <p id={intensityHint}>{intensityNote(resolved.goal, intensity)}</p>
           )}
         </div>

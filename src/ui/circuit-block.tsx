@@ -342,7 +342,7 @@ function CircuitMovement({ exercise, roundRest }: { exercise: ExerciseProgress; 
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
   const equipment = equipmentName(prescription.equipment_used)
-  const guidance = presentation?.suggestedLoads[prescription.exercise_id]
+  const guidance = presentation?.suggestedLoads?.[prescription.exercise_id]
   const load = distinctLoadText(guidance === undefined ? (prescription.load_type === null ? null : loadText(prescription.load_type, prescription.load_value, weightUnit)) : guidance, equipment)
 
   const sets = loggedSets(exercise.exerciseId)

@@ -157,7 +157,6 @@ interface GuidanceViewProps {
 
 /** The guidance in its four states; the empty ones are answers, not gaps. */
 function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
-  const proposal = useWorkoutExperiencePresentation()?.timedWorkflows !== undefined
   switch (state.status) {
     case 'loading':
       return <LoadingView label={`Reading coaching for ${name}`} />
@@ -171,7 +170,7 @@ function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
         />
       )
     case 'ready':
-      if (state.data === null) return proposal ? null : <p style={{ margin: 0 }}>{NO_DEFINITION_TEXT}</p>
+      if (state.data === null) return <p style={{ margin: 0 }}>{NO_DEFINITION_TEXT}</p>
       return <Definition definition={state.data} />
   }
 }
@@ -184,10 +183,10 @@ function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
  * an answer rather than drawn as an empty bullet or box.
  */
 function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
-  const proposal = useWorkoutExperiencePresentation()?.timedWorkflows !== undefined
+  // A3: the empty answers stay under the Round 7 look (CLEAR's four-states
+  // rule; Eric accepted keeping them, 2026-11-13).
   const cues = definition.coaching_cues.filter((cue) => cue.trim() !== '')
   const regression = definition.regression?.trim() ? definition.regression : null
-  if (proposal && cues.length === 0 && regression === null) return null
 
   return (
     <>
@@ -195,7 +194,7 @@ function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
         {CATALOG_SOURCE_TEXT}
       </p>
 
-      {(!proposal || cues.length > 0) && <Card heading="Cues">
+      <Card heading="Cues">
         {cues.length === 0 ? (
           <p style={{ margin: 0 }}>{NO_CUES_TEXT}</p>
         ) : (
@@ -205,11 +204,11 @@ function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
             ))}
           </ul>
         )}
-      </Card>}
+      </Card>
 
-      {(!proposal || regression !== null) && <Card heading="Regression">
+      <Card heading="Regression">
         <p style={{ margin: 0 }}>{regression ?? NO_REGRESSION_TEXT}</p>
-      </Card>}
+      </Card>
     </>
   )
 }

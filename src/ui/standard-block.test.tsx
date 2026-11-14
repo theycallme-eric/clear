@@ -171,10 +171,11 @@ describe('a standard block is one card of the shared frame', () => {
     const list = screen.getByRole('list', { name: 'Movements in this block' })
     const rows = Array.from(list.children) as HTMLElement[]
     expect(rows).toHaveLength(2)
-    expect(rows.map((row) => within(row).getByRole('heading').textContent)).toEqual([
-      'back squat',
-      'romanian deadlift',
-    ])
+    // Round 7 draws the equipment inline after the name as the heading's
+    // description, so each heading is named by its movement alone.
+    const headings = rows.map((row) => within(row).getByRole('heading'))
+    expect(headings[0]).toHaveAccessibleName('back squat')
+    expect(headings[1]).toHaveAccessibleName('romanian deadlift')
     for (const row of rows) {
       // Each movement has its own explicit Log set; the fields are in the sheet.
       expect(within(row).getAllByRole('button', { name: 'Rest' })).toHaveLength(1)

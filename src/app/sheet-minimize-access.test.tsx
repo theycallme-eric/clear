@@ -24,6 +24,11 @@
  * controls are drawn whatever the rest is doing. These tests pin that. The one
  * gap found: reopening a minimised correction through its own saved row's Edit
  * started over from the stored result; `set-logger.tsx` now hands it back.
+ *
+ * Round 7 (owner decision 1, 2026-11-13): the sheet is drawn as the centred
+ * logging dialog, and its one dismiss control is the dialog's Close rather
+ * than a Minimize chevron. A saved set's dialog shows the running rest; the
+ * card's Rest and Edit are still the way back into logging once it is closed.
  */
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -101,11 +106,16 @@ function openSheet(): HTMLElement | null {
   return screen.queryByRole('form', { name: /^(Log|Edit) set \d+ of back squat$/ })
 }
 
-/** The sheet's whole frame: title, chevron, context, rest and form. */
-function sheetSection(): HTMLElement {
-  const section = screen.getByRole('heading', { name: /^(Log|Edit) set \d+$/ }).closest('section')
-  if (section === null) throw new Error('no sheet')
-  return section
+/** The logging dialog's whole frame: title, Close, context, rest and form. */
+function sheetDialog(): HTMLElement {
+  return screen.getByRole('dialog', { name: /^(Log|Edit) set \d+$|^Set \d+ logged$/ })
+}
+
+/** The dialog's one Close: the dialog leaves, and the card is back. */
+async function closeLog(user: ReturnType<typeof userEvent.setup>) {
+  const dialog = sheetDialog()
+  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+  await waitFor(() => expect(dialog).not.toBeInTheDocument())
 }
 
 function restTimer(): HTMLElement {
@@ -114,13 +124,14 @@ function restTimer(): HTMLElement {
   })
 }
 
-/** Opens the sheet from the card, logs set 1, and minimises the sheet. */
+/** Opens the sheet from the card, logs set 1, and closes the dialog. */
 async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
-  await screen.findByRole('form', { name: 'Log set 2 of back squat' })
-  await user.click(screen.getByRole('button', { name: 'Minimize' }))
+  // Round 7: the saved set's dialog shows the running rest.
+  await screen.findByRole('dialog', { name: 'Set 1 logged' })
+  await closeLog(user)
   expect(openSheet()).toBeNull()
 }
 
@@ -134,12 +145,12 @@ async function expectCardReopensLogging(user: ReturnType<typeof userEvent.setup>
 
   await user.click(card.getByRole('button', { name: 'Rest' }))
   expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Minimize' }))
+  await closeLog(user)
   expect(openSheet()).toBeNull()
 
   await user.click(within(movementCard()).getByRole('button', { name: 'Edit set 1' }))
   expect(screen.getByRole('form', { name: 'Edit set 1 of back squat' })).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Minimize' }))
+  await closeLog(user)
   expect(openSheet()).toBeNull()
 }
 
@@ -149,22 +160,23 @@ describe('Set-logging sheet — the top chevron is the only minimise control (AC
     await shell()
     fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
 
-    const sheet = sheetSection()
-    const minimise = screen.getAllByRole('button', { name: /minimi[sz]e/i })
+    // Round 7 (decision 1): the one dismiss control is the dialog's Close.
+    const sheet = sheetDialog()
+    const minimise = screen.getAllByRole('button', { name: /close log|minimi[sz]e/i })
     expect(minimise).toHaveLength(1)
-    // The chevron sits in the head with the title, above the form.
+    expect(minimise[0]).toHaveAccessibleName('Close log')
+    // The Close sits in the head with the title, above the form.
     const head = within(sheet).getByRole('heading', { name: 'Log set 1' }).parentElement
     expect(head).not.toBeNull()
     expect(head).toContainElement(minimise[0])
-    expect(minimise[0]).toHaveAttribute('aria-expanded', 'true')
-    // Nothing in the form or below it is a second way to minimise.
+    // Nothing in the form or below it is a second way to close.
     const form = screen.getByRole('form', { name: 'Log set 1 of back squat' })
-    expect(within(form).queryByRole('button', { name: /minimi[sz]e|hide|collapse/i })).toBeNull()
+    expect(within(form).queryByRole('button', { name: /close|minimi[sz]e|hide|collapse/i })).toBeNull()
     expect(within(form).getAllByRole('button').map((b) => b.textContent)).toContain('Log set 1')
 
     await user.click(minimise[0])
-    expect(openSheet()).toBeNull()
-    expect(screen.queryAllByRole('button', { name: /minimi[sz]e/i })).toEqual([])
+    await waitFor(() => expect(openSheet()).toBeNull())
+    expect(screen.queryAllByRole('button', { name: /close log|minimi[sz]e/i })).toEqual([])
   })
 
   it('keeps Cancel / Save correction in edit mode, with the same single chevron', async () => {
@@ -176,8 +188,8 @@ describe('Set-logging sheet — the top chevron is the only minimise control (AC
     const form = within(screen.getByRole('form', { name: 'Edit set 1 of back squat' }))
     expect(form.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
     expect(form.getByRole('button', { name: 'Save correction' })).toBeInTheDocument()
-    expect(form.queryByRole('button', { name: /minimi[sz]e/i })).toBeNull()
-    expect(screen.getAllByRole('button', { name: /minimi[sz]e/i })).toHaveLength(1)
+    expect(form.queryByRole('button', { name: /close|minimi[sz]e/i })).toBeNull()
+    expect(screen.getAllByRole('button', { name: /close log|minimi[sz]e/i })).toHaveLength(1)
   })
 })
 
@@ -224,7 +236,7 @@ describe('Logging access is independent of rest (AC-037)', () => {
     // REQ-012: Rest opens the sheet and starts the prescribed rest, logging nothing.
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(restTimer()).toHaveTextContent('01:30')
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeLog(user)
     expect(screen.getAllByRole('region', { name: 'Rest' })).toHaveLength(1)
 
     advance(10)
@@ -251,15 +263,24 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
         name: 'Log set 1',
       }),
     )
-    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
-    const recorded = double.loggedSets().length
+    // Round 7: the saved set's dialog shows the running rest.
+    const done = await screen.findByRole('dialog', { name: 'Set 1 logged' })
     // Log set saved; it did not restart the rest.
+    expect(restTimer()).toHaveTextContent('01:30')
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+    const recorded = double.loggedSets().length
+
+    // Round 7: the next set opens from the card once that rest is over, and its
+    // Rest starts the next prescribed countdown.
+    await user.click(within(done).getByRole('button', { name: 'Skip rest' }))
+    await waitFor(() => expect(done).not.toBeInTheDocument())
+    await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(restTimer()).toHaveTextContent('01:30')
 
     const form = within(screen.getByRole('form', { name: 'Log set 2 of back squat' }))
     await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '6')
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeLog(user)
     expect(openSheet()).toBeNull()
 
     // Hidden, the rest runs on — read off the wall clock, not paused.
@@ -286,7 +307,7 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
     const form = within(screen.getByRole('form', { name: 'Edit set 1 of back squat' }))
     await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '5')
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeLog(user)
     expect(openSheet()).toBeNull()
 
     await user.click(within(movementCard()).getByRole('button', { name: 'Edit set 1' }))
@@ -317,12 +338,12 @@ describe('Saving and correcting never start absent or expired rest (B05 AC-037/0
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     expect(double.loggedSets()).toEqual([])
     await user.click(entry.getByRole('button', { name: 'Log set 1' }))
-    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+    // Round 7: with no rest to show, the saved set's dialog closes by itself.
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /set \d+/i })).toBeNull())
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
     const stored = double.loggedSets()[0]
     expect(stored).toMatchObject({ weightUnit: 'lb', performed: { setNumber: 1, weight: 135, reps: 5, effort: 'too_hard' } })
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
 
     const openEdit = () => user.click(within(movementCard()).getByRole('button', { name: 'Edit set 1' }))
     await openEdit()

@@ -112,10 +112,11 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
     completionAction={canUndoFinish ? <div className="clr-timed-undo"><Button type="button" variant="quiet" size="sm" onClick={undoFinish}>Undo finish · resume ladder</Button></div> : undefined}
     initial={receipt?.result} value={resultDraft ?? (format === 'ladder' ? ladderDraft() : undefined)} onDraftChange={setResultDraft} onSave={async result => {
-      if (!options) throw new Error('No result adapter configured')
+      const saveResult = options?.saveResult
+      if (!saveResult) throw new Error('No result adapter configured')
       const next: TimedResultReceipt = { blockId: block.blockId, format, result, weightUnit,
         elapsedSeconds: view.elapsed, capReached: view.phase === 'capped' }
-      await options.saveResult(next)
+      await saveResult(next)
       setReceipt(next); setEditing(false); setLogOpen(false); setUndoAttempt(null)
     }} />
 

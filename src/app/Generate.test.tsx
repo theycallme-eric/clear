@@ -200,23 +200,25 @@ describe('the screen’s composition (Form Screen template)', () => {
     expect(card.querySelector('.clr-chamfer--urgency')).toBeNull()
   })
 
-  it('puts Goal and Focus first, then Recovery and Change focus in one group (B05-02.6/02.7)', () => {
-    renderGenerate({ history: lowerBodyDue(7) })
+  it('puts Goal and Focus first, said alike, with the Focus value as Change focus (B05-02.6/02.7)', async () => {
+    const { user } = renderGenerate({ history: lowerBodyDue(7) })
 
-    const goal = screen.getByText(/^Goal:/)
-    const focus = screen.getByText(/^Focus:/)
-    expect(focus).toHaveTextContent('Focus: Lower body')
+    const goal = summaryItem('Goal')
+    const focus = summaryItem('Focus')
+    expect(focus).toHaveTextContent(/^Focus\s*Lower body$/)
     // Said alike, in one block, at the top of the card.
     expect(focus.parentElement).toBe(goal.parentElement)
     expect(focus.tagName).toBe(goal.tagName)
-    expect(formCard().querySelector('.clr-stack > .clr-stack')).toBe(goal.parentElement)
+    expect(summaryLabel('Focus').className).toBe(summaryLabel('Goal').className)
+    expect(formCard()).toContainElement(goal.parentElement)
+    expect(goal.parentElement!.previousElementSibling).toBeNull()
 
-    const pair = recovery().closest('.clr-action-group')!
-    expect(pair).toHaveClass('clr-action-group--paired-labels')
-    expect(pair.children).toHaveLength(2)
-    expect(pair.children[0]).toContainElement(recovery())
-    expect(pair.children[1]).toContainElement(changeFocus())
-    expect(goal.parentElement!.nextElementSibling).toBe(pair.parentElement)
+    // Round 7 (decision 4): the Focus value is the Change focus action, and
+    // Recovery is one of the choices it opens rather than a paired action.
+    expect(focus).toContainElement(changeFocus())
+    expect(screen.queryByRole('button', { name: RECOVERY_LABEL })).not.toBeInTheDocument()
+    await user.click(changeFocus())
+    expect(formCard()).toContainElement(recovery())
   })
 
   it('keeps Recovery a lone action when there is no Focus to change', () => {
@@ -596,7 +598,7 @@ describe('REQ-005 — a manual Focus before the first completed workout, or on s
     expect(unstarted.completed_at).toBeNull()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
-    expect(screen.getByText(/^Focus:/)).toBeInTheDocument()
+    expect(focusLine()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })).toBeInTheDocument()
     expect(screen.queryByText(/^No .+ in the sessions you’ve logged\.$/)).not.toBeInTheDocument()
     expect(cta()).toBeEnabled()
@@ -683,7 +685,8 @@ describe('REQ-006 — a history read that fails or is still in flight', () => {
     failing = false
     await user.click(retry())
 
-    expect(await screen.findByText(/^Focus:/)).toHaveTextContent(/^Focus: Lower body$/)
+    expect(await screen.findByText('Focus', { selector: SUMMARY_LABEL })).toBeInTheDocument()
+    expect(focusLine()).toHaveTextContent(/^Focus\s*Lower body$/)
     expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
     expect(calls.count).toBe(reads + 1)
     expect(screen.getByText('Lower body')).toBeInTheDocument()
@@ -710,7 +713,7 @@ describe('REQ-006 — a history read that fails or is still in flight', () => {
     expect(calls.count).toBe(reads + 1)
     // History now recommends Lower body, so the kept choice is an override of it.
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByText(/^Focus:/)).toHaveTextContent(`Power — ${OVERRIDE_SCOPE}`)
+    expect(focusLine()).toHaveTextContent(new RegExp(`^Focus\\s*Power\\s*${OVERRIDE_SCOPE}$`))
     expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
 
     await user.click(cta())
@@ -1324,9 +1327,19 @@ function renderDraft({
   return { ...rendered, generation, userData, url, user: userEvent.setup() }
 }
 
+/**
+ * Round 7 states the Goal and the Focus as one summary (decision 4): each item
+ * is a small label and then its value. The Focus value is the Change focus
+ * action itself, and an override's this-workout-only marker follows it.
+ */
+const SUMMARY_LABEL = '.clr-v4-program-summary span'
+const summaryLabel = (label: 'Goal' | 'Focus') =>
+  screen.getByText(label, { selector: SUMMARY_LABEL })
+const summaryItem = (label: 'Goal' | 'Focus') => summaryLabel(label).parentElement!
+
 const changeFocus = () => screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })
 const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
-const focusLine = () => screen.getByText(/^Focus:/)
+const focusLine = () => summaryItem('Focus')
 
 /** The other three this week and Power 16 days back: Power is stalest. */
 function powerDue(): WorkoutSessionRow[] {
@@ -1435,6 +1448,8 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('sends active_recovery with the requested intensity unchanged and says it is composed at 1–3', async () => {
     const { user, generation, url } = renderDraft()
 
+    // Round 7 offers Recovery among the choices Change focus opens.
+    await user.click(changeFocus())
     await user.click(recovery())
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
@@ -1457,6 +1472,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('keeps Power visible and disabled, with the refusal in text', async () => {
     const { user } = renderDraft()
 
+    await user.click(changeFocus())
     await user.click(recovery())
 
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
@@ -1468,6 +1484,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
 
     expect(focusLine()).toHaveTextContent('Power')
 
+    await user.click(changeFocus())
     await user.click(recovery())
 
     expect(cta()).toBeDisabled()
@@ -1487,6 +1504,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('keeps Recovery when Loading is cancelled, and restores it from that URL', async () => {
     const first = renderDraft()
 
+    await first.user.click(changeFocus())
     await first.user.click(recovery())
     await first.user.click(cta())
     await first.user.click(screen.getByRole('button', { name: 'Cancel' }))
@@ -1509,6 +1527,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('returns to the standing Goal when Recovery is switched off', async () => {
     const { user, generation, url } = renderDraft()
 
+    await user.click(changeFocus())
     await user.click(recovery())
     await user.click(recovery())
 
@@ -1524,6 +1543,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('opens a fresh visit on the standing Goal, and never wrote the profile', async () => {
     const first = renderDraft()
 
+    await first.user.click(changeFocus())
     await first.user.click(recovery())
     await first.user.click(cta())
     expect(first.generation.calls[0]).toMatchObject({ goal: 'active_recovery' })
@@ -1534,6 +1554,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
     const { user, generation } = renderDraft()
 
     expect(screen.getByText('Strength')).toBeInTheDocument()
+    await user.click(changeFocus())
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
 
     await user.click(cta())
@@ -1552,6 +1573,8 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
 
   /** A Recovery session on an overridden Focus, at an intensity of the athlete's own. */
   async function composeRecoveryOverride(user: ReturnType<typeof userEvent.setup>) {
+    // Round 7 offers Recovery among the choices Change focus opens.
+    await user.click(changeFocus())
     await user.click(recovery())
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
     fireEvent.change(slider(), { target: { value: '2' } })
@@ -1722,13 +1745,13 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('U26 — the goal, plainly, and first-workout guidance only when needed', () => {
-  const goalLine = () => screen.getByText(/^Goal:/)
+  const goalLine = () => summaryItem('Goal')
 
   it.each(STANDING_GOALS)('states a standing %s goal as its label alone', (goal) => {
     renderGenerate({ goal })
 
     const option = GENERATION_GOALS.find((candidate) => candidate.value === goal)!
-    expect(goalLine()).toHaveTextContent(new RegExp(`^Goal: ${option.label}$`))
+    expect(goalLine()).toHaveTextContent(new RegExp(`^Goal\\s*${option.label}$`))
     expect(screen.getByRole('main')).not.toHaveTextContent(option.description!)
   })
 
@@ -1747,7 +1770,7 @@ describe('U26 — the goal, plainly, and first-workout guidance only when needed
   it('guides a first request under another goal the same way', () => {
     renderGenerate({ goal: 'conditioning', history: [] })
 
-    expect(goalLine()).toHaveTextContent('Goal: Conditioning')
+    expect(goalLine()).toHaveTextContent(/^Goal\s*Conditioning$/)
     expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
   })
 
@@ -1776,9 +1799,8 @@ describe('U26 — the goal, plainly, and first-workout guidance only when needed
 describe('U28 — minutes spelled out, short helper copy that keeps each field clear', () => {
   const minutes = () => screen.getByLabelText(new RegExp(DURATION_LABEL, 'i'))
 
-  function expectHelpers() {
-    expect(screen.getByText(PLACE_HELPER)).toBeInTheDocument()
-    expect(screen.getByText(NOTES_HELPER)).toBeInTheDocument()
+  /** The unit stays beside the time; Round 7 drops the Place and Notes helpers (decision 4). */
+  function expectUnit() {
     expect(screen.getByText(DURATION_UNIT)).toBeInTheDocument()
   }
 
@@ -1801,17 +1823,17 @@ describe('U28 — minutes spelled out, short helper copy that keeps each field c
     expect(NOTES_HELPER).toMatch(/Settings/)
   })
 
-  it('shows the helpers on an empty time and empty notes, with no error before submit', async () => {
+  it('shows the unit on an empty time and empty notes, with no error before submit', async () => {
     const { user } = renderGenerate()
 
     await user.clear(minutes())
     expect(minutes()).toHaveValue(null)
     expect(screen.getByLabelText(/notes/i)).toHaveValue('')
-    expectHelpers()
+    expectUnit()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('says the time error on the field, with the unit and helpers still there', async () => {
+  it('says the time error on the field, with the unit still there', async () => {
     const { user, generation } = renderGenerate()
 
     await user.click(chipIn('Anchor', 'Upper body'))
@@ -1821,7 +1843,7 @@ describe('U28 — minutes spelled out, short helper copy that keeps each field c
     expect(generation.calls).toEqual([])
     expect(minutes()).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByText(/whole number of minutes/i)).toBeInTheDocument()
-    expectHelpers()
+    expectUnit()
   })
 
   it('sends a valid time as the minutes typed', async () => {
@@ -1830,13 +1852,13 @@ describe('U28 — minutes spelled out, short helper copy that keeps each field c
     await user.click(chipIn('Anchor', 'Upper body'))
     await user.clear(minutes())
     await user.type(minutes(), '30')
-    expectHelpers()
+    expectUnit()
     await user.click(cta())
 
     expect(generation.calls[0]).toMatchObject({ requested_duration_mins: 30 })
   })
 
-  it('keeps the notes helper with a note at the length limit, and sends it whole', async () => {
+  it('takes a note at the length limit, and sends it whole', async () => {
     const { user, generation } = renderGenerate()
     const note = 'Tight hamstrings. '.repeat(200).slice(0, NOTES_MAX_LENGTH)
 
@@ -1844,7 +1866,7 @@ describe('U28 — minutes spelled out, short helper copy that keeps each field c
     fireEvent.change(screen.getByLabelText(/notes/i), { target: { value: note } })
 
     expect(screen.getByLabelText(/notes/i)).toHaveValue(note)
-    expectHelpers()
+    expectUnit()
     await user.click(cta())
 
     expect(generation.calls[0]?.notes).toHaveLength(NOTES_MAX_LENGTH)
@@ -1855,11 +1877,12 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
   it('says it is lighter, and sends the recovery goal, requested intensity and focus unchanged', async () => {
     const { user, generation } = renderDraft()
 
+    await user.click(changeFocus())
     await user.click(recovery())
 
     expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
     expect(RECOVERY_NOTE).toMatch(/lighter/i)
-    expect(screen.getByText(/^Goal:/)).toHaveTextContent('Goal: Strength')
+    expect(summaryItem('Goal')).toHaveTextContent(/^Goal\s*Strength$/)
     expect(screen.getByText('Recovery works at 1 to 3, so 7 is composed as 3.')).toBeVisible()
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
     expect(screen.getByText(new RegExp(POWER_REFUSAL))).toBeVisible()
@@ -1886,6 +1909,7 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
   it('drops the note when Recovery is switched off', async () => {
     const { user } = renderDraft()
 
+    await user.click(changeFocus())
     await user.click(recovery())
     await user.click(recovery())
 

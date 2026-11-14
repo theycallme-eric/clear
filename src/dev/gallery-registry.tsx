@@ -20,7 +20,8 @@ import { MovementGroupHeader, MovementIdentity, MovementList } from '../ui/movem
 import { PreparationGuide } from '../ui/preparation-guide'
 import { CountdownBar, StructureBadge } from '../ui/workout-chrome'
 import { TrainingProgressReport } from '../ui/training-progress-report'
-import { WorkoutExperiencePresentationProvider, type WorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
+import { WorkoutExperiencePresentationProvider } from '../ui/workout-experience-presentation'
+import type { GallerySamplePresentation } from './gallery-refinement-runtime'
 import { EMPTY_DRAFT } from '../state/onboarding'
 
 
@@ -2042,7 +2043,7 @@ function AppearancePickerChosenSkin() {
 // The register
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PROPOSED_EXPERIENCE: WorkoutExperiencePresentation = {
+const PROPOSED_EXPERIENCE: GallerySamplePresentation = {
   focusAction: 'text',
   guides: {warmup:{title:'Warm-up',minutes:4,movements:['Arm circles','Scapular push-ups']},cooldown:{title:'Cooldown',minutes:3,movements:['Chest stretch']}},
   suggestedLoads:{}, equipmentSetupDraft:EMPTY_DRAFT, showTrainingReport:true,

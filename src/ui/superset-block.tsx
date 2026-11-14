@@ -115,6 +115,9 @@ function SupersetRound({ block }: BlockRendererProps) {
   // The block's Rest action (REQ-012): open the round sheet and, when no rest
   // is running, start the block's one rest. Log round N only saves.
   const openRound = () => {
+    // AC-037: reopening during the rest goes to the next round's entry, as the
+    // rest ending would, with the rest still running inside the dialog (A3).
+    if (savedRound !== null) { setSavedRound(null); setEntry(null) }
     const seconds = prescribedRestSeconds(block.roundRestSeconds)
     const closing = movements[movements.length - 1]
     const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0

@@ -147,13 +147,59 @@ async function shell(options: WorkoutDoubleOptions = {}): Promise<Mounted> {
 }
 
 /**
+ * Round 7's compact section bar: the "All sections N / M" disclosure that
+ * replaced the section card. Its name carries the position after the words.
+ */
+function jumpToggle(): HTMLElement {
+  return screen.getByRole('button', { name: /^All sections/ })
+}
+
+/** The compact bar the disclosure and the jump list live in. */
+function sectionNavigation(): HTMLElement {
+  const bar = jumpToggle().closest('[data-section-navigation]')
+  if (!(bar instanceof HTMLElement)) throw new Error('no section navigation')
+  return bar
+}
+
+/**
+ * The open section's name now heads each of its blocks (Round 7): the group
+ * header of the one block a section in these fixtures has.
+ */
+function blockHeader(section: string): HTMLElement {
+  const [header, ...others] = screen
+    .getAllByRole('heading', { level: 2, name: section })
+    .map((heading) => heading.closest('[data-movement-group-header]'))
+    .filter((found): found is HTMLElement => found instanceof HTMLElement)
+  if (header === undefined || others.length > 0) throw new Error(`not one block headed ${section}`)
+  return header
+}
+
+/**
  * Jumps the way an athlete does: the full list is collapsed (and inert) until
  * its disclosure is opened, and it collapses again once a section is chosen.
  */
 async function jumpTo(user: ReturnType<typeof userEvent.setup>, name: string) {
-  const toggle = screen.getByRole('button', { name: 'All sections' })
+  const toggle = jumpToggle()
   if (toggle.getAttribute('aria-expanded') !== 'true') await user.click(toggle)
   await user.click(screen.getByRole('button', { name }))
+}
+
+/** The open Round 7 logging dialog (set logging, the note) closed with its X. */
+async function closeLog(user: ReturnType<typeof userEvent.setup>) {
+  const [dialog, ...others] = openDialogs().filter((open) => open.classList.contains('clr-logging-overlay'))
+  if (dialog === undefined || others.length > 0) throw new Error('not one open logging dialog')
+  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+  await waitFor(() => expect(dialog.open).toBe(false))
+}
+
+/** Round 7: the movement note is entered in its own dialog, opened from the panel. */
+async function openNote(
+  user: ReturnType<typeof userEvent.setup>,
+  scope: Pick<typeof screen, 'getByRole'>,
+  name: string,
+) {
+  await user.click(scope.getByRole('button', { name: new RegExp(`^(Add|Edit) note — ${name}$`) }))
+  return within(screen.getByRole('dialog', { name: 'Movement note' }))
 }
 
 interface Completing extends Mounted {
@@ -305,7 +351,12 @@ describe('Workout — navigation and progress', () => {
     await shell()
 
     expect(screen.getByRole('heading', { name: 'Primary lift' })).toBeInTheDocument()
-    expect(screen.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    // Round 7: the position is the section bar's, the status the jump list's.
+    expect(jumpToggle()).toHaveTextContent('2 / 3')
+    expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toHaveAttribute(
+      'aria-current',
+      'step',
+    )
   })
 
   it('reflects each section’s status, derived from the rows', async () => {
@@ -368,19 +419,25 @@ describe('Workout — navigation and progress', () => {
     await jumpTo(user, 'Conditioning, not started')
 
     expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
-    expect(screen.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
+    // Round 7: the position is the section bar's, the status the jump list's.
+    expect(jumpToggle()).toHaveTextContent('3 / 3')
+    expect(screen.getByRole('button', { name: 'Conditioning, not started' })).toHaveAttribute(
+      'aria-current',
+      'step',
+    )
   })
 
   it('states the structure identity of the section’s blocks', async () => {
     const user = userEvent.setup()
     await shell()
 
-    const structures = () =>
-      within(screen.getByRole('list', { name: 'Structures in this section' }))
-    expect(structures().getByText('EMOM · 10 MIN')).toBeInTheDocument()
+    // Round 7: each block's group header carries its format-only badge; the
+    // section card's badge list and the badge's detail (`· 10 MIN`) are gone.
+    const structure = (section: string) => within(blockHeader(section))
+    expect(structure('Primary lift').getByText('EMOM')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    expect(structures().getByText('AMRAP · 8 MIN')).toBeInTheDocument()
+    expect(structure('Conditioning').getByText('AMRAP')).toBeInTheDocument()
   })
 })
 
@@ -389,20 +446,18 @@ describe('Workout — navigation and progress', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Workout — the active section header', () => {
-  /** The one frame the active section is drawn in. */
-  function activeHeader(name: string): HTMLElement {
-    const frame = screen.getByRole('heading', { level: 2, name }).closest('.clr-card')
-    if (!(frame instanceof HTMLElement)) throw new Error(`No card frames ${name}`)
-    return frame
-  }
-
-  const jumpToggle = () => screen.getByRole('button', { name: 'All sections' })
-
   it('consolidates status, section count and structure identity into one header, with progress above the footer navigation', async () => {
     await shell()
 
-    const header = within(activeHeader('Primary lift'))
-    expect(header.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    // Round 7: the header is the compact "All sections N / M" bar. It states
+    // the count; the jump list inside it carries each section's status; the
+    // block's group header carries the section name and its structure.
+    const header = within(sectionNavigation())
+    expect(jumpToggle()).toHaveTextContent('2 / 3')
+    expect(header.getByRole('button', { name: 'Primary lift, in progress' })).toHaveAttribute(
+      'aria-current',
+      'step',
+    )
     // REQ-018: the bar sits immediately above the paired footer actions.
     expect(header.queryByRole('progressbar')).not.toBeInTheDocument()
     expect(
@@ -411,16 +466,12 @@ describe('Workout — the active section header', () => {
         { name: 'Section 2 of 3' },
       ),
     ).toHaveAttribute('aria-valuenow', '1')
-    expect(
-      within(header.getByRole('list', { name: 'Structures in this section' })).getByText(
-        'EMOM · 10 MIN',
-      ),
-    ).toBeInTheDocument()
+    expect(within(blockHeader('Primary lift')).getByText('EMOM')).toBeInTheDocument()
     expect(header.getByRole('list', { name: 'Sections' })).toBeInTheDocument()
 
     // No second frame restating the position: one count, one bar, one list.
     expect(screen.queryByRole('heading', { name: 'Sections' })).not.toBeInTheDocument()
-    expect(screen.getAllByText(/Section 2 \/ 3/)).toHaveLength(1)
+    expect(screen.getAllByText(/^2 \/ 3$/)).toHaveLength(1)
     expect(screen.getAllByRole('progressbar', { name: /^Section / })).toHaveLength(1)
     expect(screen.getAllByRole('list', { name: 'Sections' })).toHaveLength(1)
   })
@@ -430,7 +481,8 @@ describe('Workout — the active section header', () => {
 
     expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
     expect(screen.getByRole('progressbar', { name: 'Section 2 of 3' })).toBeInTheDocument()
-    expect(screen.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    // Round 7: the collapsed bar still states the position.
+    expect(jumpToggle()).toHaveTextContent('2 / 3')
     expect(screen.getByRole('list', { name: 'Sections' })).toHaveAttribute('inert')
   })
 
@@ -446,8 +498,11 @@ describe('Workout — the active section header', () => {
 
     const heading = screen.getByRole('heading', { level: 2, name: 'Conditioning' })
     expect(heading).toHaveFocus()
-    expect(within(activeHeader('Conditioning')).getByText('Section 3 / 3 · Not started'))
-      .toBeInTheDocument()
+    // Round 7: the bar states the new position, the jump list the new current.
+    expect(jumpToggle()).toHaveTextContent('3 / 3')
+    expect(
+      within(sectionNavigation()).getByRole('button', { name: 'Conditioning, not started' }),
+    ).toHaveAttribute('aria-current', 'step')
     expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
 
     // The section passed over is still unfinished, and nothing was written.
@@ -510,8 +565,13 @@ describe('Workout — the active section header', () => {
 
     await shell()
 
-    const header = within(activeHeader('Conditioning'))
-    expect(header.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
+    // Round 7: the restored section heads its block; the bar states its
+    // position and the jump list marks it current.
+    expect(blockHeader('Conditioning')).toBeInTheDocument()
+    expect(jumpToggle()).toHaveTextContent('3 / 3')
+    expect(
+      within(sectionNavigation()).getByRole('button', { name: 'Conditioning, not started' }),
+    ).toHaveAttribute('aria-current', 'step')
     expect(screen.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
       'aria-valuenow',
       '1',
@@ -634,8 +694,11 @@ describe('Workout — the focus mode', () => {
     expect(router.state.location.pathname).toBe('/summary')
     expect(screen.queryByRole('heading', { name: HOME_HEADING })).not.toBeInTheDocument()
     // The debrief's surface, whole: mood, notes, the streak and the favorite.
-    expect(screen.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
-    expect(screen.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
+    // Round 7: mood and notes are in the dialog "Log workout feedback" opens.
+    await user.click(screen.getByRole('button', { name: 'Log workout feedback' }))
+    const feedback = within(screen.getByRole('dialog', { name: 'Workout feedback' }))
+    expect(feedback.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
+    expect(feedback.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
     expect(await screen.findByText('4 days')).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeInTheDocument()
     // Asked after the completion, so it cannot be an answer cached before it.
@@ -661,7 +724,13 @@ describe('Workout — the focus mode', () => {
 
     await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
-    await user.click(await screen.findByRole('button', { name: 'Save and close' }))
+    // Round 7: Done is the feedback dialog's, opened by "Log workout feedback".
+    await user.click(await screen.findByRole('button', { name: 'Log workout feedback' }))
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Workout feedback' })).getByRole('button', {
+        name: 'Save and close',
+      }),
+    )
 
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
@@ -1222,10 +1291,18 @@ describe('Workout — coaching and notes', () => {
     expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
     expect(within(panel).getByRole('heading', { name: 'back squat' })).toBeInTheDocument()
     expect(within(panel).getByRole('heading', { name: 'barbell row' })).toBeInTheDocument()
-    const squat = within(panel).getByLabelText('Notes — back squat')
-    const row = within(panel).getByLabelText('Notes — barbell row')
+    // Round 7: each movement's note is entered in its own note dialog, opened
+    // from the panel and labelled by that movement.
+    const squat = (await openNote(user, within(panel), 'back squat')).getByRole('textbox', {
+      name: 'back squat',
+    })
     await user.type(squat, 'Keep my stance')
+    await closeLog(user)
+    const row = (await openNote(user, within(panel), 'barbell row')).getByRole('textbox', {
+      name: 'barbell row',
+    })
     await user.type(row, 'Keep my back stable')
+    await closeLog(user)
     await user.click(toggle)
     expect(panel).toHaveAttribute('data-expanded', 'false')
     await user.click(toggle)
@@ -1247,7 +1324,9 @@ describe('Workout — coaching and notes', () => {
     expect(await within(panel).findByText(NO_CUES_TEXT)).toBeInTheDocument()
     expect(within(panel).getByText(NO_REGRESSION_TEXT)).toBeInTheDocument()
     expect(within(panel).queryAllByRole('listitem')).toEqual([])
-    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
+    // Round 7: the note field is the note dialog's, labelled by the movement.
+    const note = await openNote(user, within(panel), 'back squat')
+    expect(note.getByRole('textbox', { name: 'back squat' })).toBeEnabled()
   })
 
   it('says a movement with no cues and no regression has none', async () => {
@@ -1296,19 +1375,20 @@ describe('Workout — coaching and notes', () => {
 
     await user.click(screen.getByRole('button', { name: PANEL }))
     const panel = screen.getByRole('region', { name: PANEL })
-    await user.type(
-      within(panel).getByRole('textbox', { name: /Notes — back squat/ }),
-      'Left knee felt tight',
-    )
-    await user.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    // Round 7: the note is entered in the note dialog the panel opens.
+    const note = await openNote(user, within(panel), 'back squat')
+    await user.type(note.getByRole('textbox', { name: 'back squat' }), 'Left knee felt tight')
+    await user.click(note.getByRole('button', { name: 'Save note — back squat' }))
 
     expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([{ exerciseId, notes: 'Left knee felt tight' }])
+    await closeLog(user)
 
     // The card is remounted on the way back; the note it shows is the stored one.
     await user.click(screen.getByRole('button', { name: /^Conditioning/ }))
     await user.click(screen.getByRole('button', { name: /^Primary lift/ }))
-    expect(screen.getByRole('textbox', { name: /Notes — back squat/ })).toHaveValue(
+    const reopened = await openNote(user, screen, 'back squat')
+    expect(reopened.getByRole('textbox', { name: 'back squat' })).toHaveValue(
       'Left knee felt tight',
     )
   })
@@ -1323,9 +1403,11 @@ describe('Workout — coaching and notes', () => {
 
     await user.click(screen.getByRole('button', { name: PANEL }))
     const panel = screen.getByRole('region', { name: PANEL })
-    const field = within(panel).getByRole('textbox', { name: /Notes — back squat/ })
+    // Round 7: the note is entered in the note dialog the panel opens.
+    const note = await openNote(user, within(panel), 'back squat')
+    const field = note.getByRole('textbox', { name: 'back squat' })
     await user.type(field, 'Grip slipped')
-    await user.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+    await user.click(note.getByRole('button', { name: 'Save note — back squat' }))
 
     expect(await within(panel).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
     expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
@@ -1452,10 +1534,15 @@ describe('Workout — the session’s one rest', () => {
   it('starts none, and draws no bar, for a prescription with no rest', async () => {
     await restShell()
 
+    // Round 7: with no rest to run, the set dialog closes once the set is
+    // logged; the next Rest opens the next set, and starts no rest either.
     await logSet('plank', 1)
+    await waitFor(() => expect(openDialogs()).toEqual([]))
     await logSet('dead bug', 1)
+    await waitFor(() => expect(openDialogs()).toEqual([]))
 
-    await screen.findByRole('form', { name: 'Log set 2 of dead bug' })
+    logForm('dead bug', 2)
+    expect(screen.getByRole('form', { name: 'Log set 2 of dead bug' })).toBeInTheDocument()
     expect(restBars()).toEqual([])
     expect(screen.queryByText(/Rest: 0|00:00/)).not.toBeInTheDocument()
   })
@@ -1472,6 +1559,7 @@ describe('Workout — the session’s one rest', () => {
   })
 
   it('keeps a running rest through another Rest and Log, rather than restarting or queueing one', async () => {
+    const user = userEvent.setup()
     await restShell()
 
     await logSet('back squat', 1)
@@ -1480,6 +1568,8 @@ describe('Workout — the session’s one rest', () => {
     expect(restTimer()).toHaveTextContent('00:50')
 
     // REQ-012: Rest with a rest running reopens it; saving never restarts it.
+    // Round 7: the set dialog is modal, so it is closed before the next Rest.
+    await closeLog(user)
     await logRound(1)
 
     expect(restBars()).toHaveLength(1)
@@ -1487,10 +1577,12 @@ describe('Workout — the session’s one rest', () => {
     expect(screen.queryByText('Rest after round 1')).not.toBeInTheDocument()
     expect(restTimer()).toHaveTextContent('00:50')
 
-    // Run out, the next Rest starts the full prescribed rest again.
+    // Run out, the next Rest starts the full prescribed rest again. Round 7:
+    // the logged-round dialog closes with the rest it was showing.
     advance(50)
     returnToForeground()
     expect(restBars()).toEqual([])
+    await waitFor(() => expect(openDialogs()).toEqual([]))
     await logSet('back squat', 2)
     expect(restBars()).toHaveLength(1)
     expect(restTimer()).toHaveTextContent('01:30')
@@ -1512,7 +1604,7 @@ describe('Workout — the session’s one rest', () => {
 
   it('extends and skips the rest from the bar', async () => {
     const user = userEvent.setup()
-    await restShell()
+    const { double } = await restShell()
 
     await logSet('back squat', 1)
     advance(60)
@@ -1522,6 +1614,10 @@ describe('Workout — the session’s one rest', () => {
     await user.click(screen.getByRole('button', { name: 'Skip rest' }))
     expect(restBars()).toEqual([])
     // Skipping ends the rest and records nothing: the set is still the set.
+    // Round 7: the logged-set dialog closes with the rest; Rest opens set 2.
+    await waitFor(() => expect(openDialogs()).toEqual([]))
+    expect(double.loggedSets()).toHaveLength(1)
+    logForm('back squat', 2)
     expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
   })
 

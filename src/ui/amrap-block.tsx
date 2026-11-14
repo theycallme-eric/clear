@@ -95,6 +95,9 @@ import { MetricFrame } from './composition'
 import { ConditioningScoreLine } from './conditioning-score'
 import { Heading, HeadingSection } from './Heading'
 import { StructureBadge } from './workout-chrome'
+import { MovementGroupHeader } from './movement-presentation'
+import { useSectionLabel } from './section-label-context'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import type { BlockRendererProps } from './block-renderers'
 
 export interface AmrapBlockProps extends BlockRendererProps {
@@ -116,6 +119,8 @@ export function AmrapBlock({
   conditioningHistory,
 }: AmrapBlockProps) {
   const shape = amrapShape(block)
+  const presentation = useWorkoutExperiencePresentation()
+  const sectionLabel = useSectionLabel()
 
   // Restored once, repaired against the block as it is *now*: a cap shortened
   // since the last render cannot leave a logged time longer than the window.
@@ -153,12 +158,24 @@ export function AmrapBlock({
       )}
       <Card>
         <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-            <StructureBadge identity={block.identity} />
-            <span style={labelStyle}>
-              {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-            </span>
-          </div>
+          {/*
+            A3: under the Round 7 look this card carries the same group header
+            as every other block (BlockPanel's), so the section keeps its
+            heading until the timed tasks move AMRAP onto TimedWorkoutFlow.
+          */}
+          {presentation !== null ? (
+            <MovementGroupHeader
+              title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`}
+              badge={<StructureBadge identity={block.identity} formatOnly={presentation.timedWorkflows !== undefined} />}
+            />
+          ) : (
+            <div className="clr-row" style={{ justifyContent: 'space-between' }}>
+              <StructureBadge identity={block.identity} />
+              <span style={labelStyle}>
+                {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+              </span>
+            </div>
+          )}
 
           {shape.size === 0 ? (
             <p style={{ margin: 0 }}>

@@ -6,6 +6,10 @@
  * What is pinned here is the observation itself — three faces with hidden
  * words and exposed selection, a Clear that returns to unanswered, and null
  * that stays null — and that it is not the session's five-choice feeling.
+ *
+ * Round 7 (owner decision 1, 2026-11-13): the sheet is the centred logging
+ * dialog. A saved set's dialog shows its running rest; once that rest is over
+ * the card's Rest opens the next set.
  */
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -87,10 +91,19 @@ async function openSheet(user: ReturnType<typeof userEvent.setup>) {
   await user.click(main().getByRole('button', { name: 'Rest' }))
 }
 
+/**
+ * Logs the set and moves on to the next one. Round 7: the saved set's dialog
+ * shows its running rest; once the rest is over — skipped here — the dialog
+ * closes and the card's Rest opens the next set's entry.
+ */
 async function logSet(user: ReturnType<typeof userEvent.setup>, setNumber: number, effort?: string) {
   if (effort !== undefined) await user.click(form(setNumber).getByRole('radio', { name: effort }))
   await user.click(form(setNumber).getByRole('button', { name: `Log set ${setNumber}` }))
-  await waitFor(() => expect(screen.getByRole('region', { name: `Log set ${setNumber + 1}` })).toBeInTheDocument())
+  const done = await screen.findByRole('dialog', { name: `Set ${setNumber} logged` })
+  await user.click(within(done).getByRole('button', { name: 'Skip rest' }))
+  await waitFor(() => expect(done).not.toBeInTheDocument())
+  await openSheet(user)
+  await waitFor(() => expect(screen.getByRole('dialog', { name: `Log set ${setNumber + 1}` })).toBeInTheDocument())
 }
 
 const checked = (scope: ReturnType<typeof form>) =>
@@ -130,9 +143,22 @@ describe('AC-039: one optional three-choice effort with the set’s entry', () =
     expect(screen.queryByRole('slider')).toBeNull()
     expect(screen.queryByLabelText(/RPE/i)).toBeNull()
 
-    await logSet(user, 1, 'About right')
-    // Logging moves straight to the next set: no dialog asks afterwards.
-    expect(screen.queryByRole('dialog')).toBeNull()
+    // No step after the set: Round 7's only dialog after Log set is the saved
+    // set's own, showing its rest, and it asks nothing.
+    await user.click(form(1).getByRole('radio', { name: 'About right' }))
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    const done = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    expect(screen.getAllByRole('dialog')).toEqual([done])
+    for (const role of ['form', 'radiogroup', 'spinbutton', 'slider', 'textbox'] as const) {
+      expect(within(done).queryByRole(role)).toBeNull()
+    }
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+
+    // The next set's entry is the only dialog that follows.
+    await user.click(within(done).getByRole('button', { name: 'Skip rest' }))
+    await waitFor(() => expect(done).not.toBeInTheDocument())
+    await openSheet(user)
+    expect(screen.getAllByRole('dialog')).toEqual([screen.getByRole('dialog', { name: 'Log set 2' })])
     expect(screen.queryByRole('alertdialog')).toBeNull()
   })
 

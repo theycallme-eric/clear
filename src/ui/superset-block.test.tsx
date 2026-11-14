@@ -216,10 +216,28 @@ function logRoundButton(round: number): HTMLElement {
 }
 
 /** Every movement's heading, in the order the document lays them out. */
-function movementHeadings(): string[] {
-  return within(movementList())
-    .getAllByRole('heading')
-    .map((heading) => heading.textContent ?? '')
+function movementHeadings(): HTMLElement[] {
+  return within(movementList()).getAllByRole('heading')
+}
+
+/**
+ * Round 7 draws the equipment inline after the name as the heading's
+ * description, so each heading is named by its movement alone.
+ */
+function expectNamed(headings: readonly HTMLElement[], names: readonly string[]) {
+  expect(headings).toHaveLength(names.length)
+  headings.forEach((heading, index) => expect(heading).toHaveAccessibleName(names[index]))
+}
+
+/**
+ * Round 7 (decision 1): a logged round's dialog confirms it and, with no rest
+ * running, closes itself; the block's Rest then opens the next round.
+ */
+async function nextRound(round: number): Promise<HTMLElement> {
+  const rest = screen.getByRole('button', { name: 'Rest' })
+  await waitFor(() => expect(rest).toHaveAttribute('aria-expanded', 'false'))
+  fireEvent.click(rest)
+  return screen.findByRole('form', { name: new RegExp(`^Log round ${round} of `) })
 }
 
 /**
@@ -238,7 +256,7 @@ describe('a superset keeps its movements in the order the rows prescribe', () =>
   it('labels them A1 and A2 by order_index, not by the order they arrived in', () => {
     mount()
 
-    expect(movementHeadings()).toEqual(['A1 romanian deadlift', 'A2 back squat'])
+    expectNamed(movementHeadings(), ['A1 romanian deadlift', 'A2 back squat'])
   })
 
   it('states the alternation in words, not only with the connector', () => {
@@ -430,7 +448,7 @@ describe('a superset whose movements were swapped out', () => {
       },
     })
 
-    expect(movementHeadings()).toEqual(['A1 romanian deadlift'])
+    expectNamed(movementHeadings(), ['A1 romanian deadlift'])
     // One movement is not an alternation, so the pairing line is not drawn —
     // but the block's rest is still the block's.
     expect(screen.queryByText(/Alternate/)).not.toBeInTheDocument()
@@ -475,7 +493,7 @@ describe('the superset draws with the shared block frame', () => {
       // A superset tracks no live position: neither row is marked current.
       expect(row).not.toHaveAttribute('aria-current')
     }
-    expect(rows.map((row) => within(row).getAllByRole('heading')[0].textContent)).toEqual([
+    expectNamed(rows.map((row) => within(row).getAllByRole('heading')[0]), [
       'A1 romanian deadlift',
       'A2 back squat',
     ])
@@ -554,7 +572,7 @@ describe('set progression follows the round, and each movement keeps its own row
 
     // The round moves on. A1 is prefilled from the set just done; A2 missed
     // round one and stays missing there rather than being filled in.
-    await screen.findByRole('form', { name: /^Log round 2 of / })
+    await nextRound(2)
     const next = formFor('romanian deadlift', 2)
     expect(rowFor('A1 romanian deadlift').getByText('Set 2/3')).toBeInTheDocument()
     expect(next.getByLabelText('Weight')).toHaveValue(60)
@@ -579,7 +597,7 @@ describe('set progression follows the round, and each movement keeps its own row
         await user.type(form.getByLabelText('Weight'), '60')
       }
       await user.click(logRoundButton(round))
-      await screen.findByRole('form', { name: new RegExp(`^Log round ${round + 1} of `) })
+      await nextRound(round + 1)
     }
 
     await waitFor(() => expect(workout.loggedSets()).toHaveLength(4))
@@ -639,7 +657,7 @@ describe('saving, refusing and retrying a set', () => {
 
     // The set is on the screen at once, and said to be saving — not saved.
     const a1 = rowFor('A1 romanian deadlift')
-    await screen.findByRole('form', { name: /^Log round 2 of / })
+    await nextRound(2)
     const busy = logRoundButton(2)
     await waitFor(() => expect(busy).toBeDisabled())
     expect(busy).toHaveAttribute('aria-busy', 'true')
@@ -702,8 +720,8 @@ describe('saving, refusing and retrying a set', () => {
     expect(workout.loggedSets()).toEqual([])
     expect(attempts).toHaveLength(1)
 
-    // Logging is not blocked by it: the round has moved on and is open.
-    await screen.findByRole('form', { name: /^Log round 2 of / })
+    // Logging is not blocked by it: the round has moved on and opens.
+    await nextRound(2)
     expect(logRoundButton(2)).toBeInTheDocument()
 
     // The connection returns, and the next set logged carries the first along.

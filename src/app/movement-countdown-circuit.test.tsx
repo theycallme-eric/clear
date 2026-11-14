@@ -1,5 +1,5 @@
 /** A circuit's movement clock belongs to its row, not optional load entry. */
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -74,6 +74,13 @@ function card() {
   return found
 }
 
+/** Round 7 (decision 1): the set is entered in a dialog, closed with Close log. */
+async function closeLog(user: ReturnType<typeof userEvent.setup>) {
+  const dialog = screen.getByRole('dialog', { name: 'Log set 1' })
+  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+  await waitFor(() => expect(dialog).not.toBeInTheDocument())
+}
+
 const region = () => screen.getByRole('region', { name: 'hollow body hold countdown' })
 const timer = () => within(region()).getByRole('timer', { name: 'Countdown' })
 const button = (name: string) => within(region()).getByRole('button', { name })
@@ -108,7 +115,7 @@ describe('AC-051: a circuit movement owns its countdown independently of load en
 
     // Opened: the shared logger's card, the clock above its Rest entry.
     await user.click(within(row()).getByRole('button', { name: 'Rest for hollow body hold' }))
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeLog(user)
     expect(card()).toContainElement(region())
     expect(region().compareDocumentPosition(
       within(card()).getByRole('button', { name: 'Rest' }),
@@ -128,7 +135,7 @@ describe('AC-051: a circuit movement owns its countdown independently of load en
     expect(screen.getAllByRole('region', { name: 'hollow body hold countdown' })).toHaveLength(1)
     expect(card()).toContainElement(region())
     advance(5)
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeLog(user)
     await user.click(within(row()).getByRole('button', { name: 'Hide load entry for hollow body hold' }))
     expect(timer()).toHaveTextContent('00:20')
     expect(button('Pause')).toBeInTheDocument()

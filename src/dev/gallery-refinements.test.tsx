@@ -1,20 +1,11 @@
 import { fireEvent, render, screen, within, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { LOGGING_CONTEXTS, type LoggingContext } from './gallery-refinement-data'
 import { GalleryLoggingMoment } from './gallery-refinement-forms'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
 import { REFINEMENT_STATE_IDS } from './gallery-refinement-states'
 import coverage from './gallery-refinement-coverage.json'
-
-// jsdom has no HTMLDialogElement.requestClose, which the real Close button calls.
-// This stand-in does what the browser does: a cancel event, then close.
-beforeAll(() => {
-  const proto = HTMLDialogElement.prototype as HTMLDialogElement & { requestClose?: () => void }
-  proto.requestClose ??= function (this: HTMLDialogElement) {
-    if (this.dispatchEvent(new Event('cancel', { cancelable: true }))) this.close()
-  }
-})
 
 const title = (context: LoggingContext) => LOGGING_CONTEXTS.find(([id]) => id === context)![1]
 

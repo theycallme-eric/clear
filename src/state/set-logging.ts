@@ -385,8 +385,13 @@ export interface SetLoggingApi {
    * immediately and flushes it from there (EXE-07). A renderer never sees the
    * row, the unit or the id — which is what keeps `exercise_set_logs` to one
    * writer for every structure type.
+   *
+   * Returns whether the set is recorded: true once it is queued (or was
+   * already recorded under that set number), false when the shell refused it
+   * and said so through its failure path. A screen confirms a save only on
+   * true, so a refused set never reads as logged.
    */
-  logSet(exerciseId: string, performed: PerformedSet): void
+  logSet(exerciseId: string, performed: PerformedSet): boolean
   /**
    * Every set recorded against this prescription, lowest set first — the rows
    * the database holds and the ones still queued alike, each carrying the

@@ -190,7 +190,7 @@ export function ExerciseSetLogger({
   const name = exerciseName(prescription.exercise_id)
   const title = ordinal === undefined ? name : `${ordinal} ${name}`
   const equipment = equipmentName(prescription.equipment_used)
-  const guidance = presentation?.suggestedLoads[prescription.exercise_id]
+  const guidance = presentation?.suggestedLoads?.[prescription.exercise_id]
   const load = distinctLoadText(guidance === undefined ? (prescription.load_type === null ? null : loadText(prescription.load_type, prescription.load_value, weightUnit)) : guidance, equipment)
 
   const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
@@ -241,6 +241,10 @@ export function ExerciseSetLogger({
    */
   const openNew = () => {
     setCorrection(null)
+    // AC-037: logging access is independent of rest. Reopening from the card
+    // goes to the next set's entry, with a running rest still inside the
+    // dialog, rather than back to the previous set's confirmation (A3).
+    setSavedEntry(null)
     const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
     if (restOnEntry !== null && !resting) {
       restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restOnEntry })
@@ -356,8 +360,8 @@ export function ExerciseSetLogger({
               return
             }
             // The save only: a running rest carries on, and none is started.
-            logSet(exercise.exerciseId, performed)
-            if(presentation)setSavedEntry(setNumber)
+            // A refused set keeps its entry and never reads as logged (A3).
+            if(logSet(exercise.exerciseId, performed)&&presentation)setSavedEntry(setNumber)
           }}
           onCancel={() => {
             setCorrection(null)
@@ -1068,9 +1072,14 @@ export function SupersetRoundSheet({
   const submit = (): boolean => {
     if (chosen.length === 0 || refused || saving) return false
 
+    // A round the shell refuses keeps what was typed and is never confirmed
+    // (A3). A part already queued is not written twice on a resubmit: the
+    // shell answers its set number as recorded.
+    let accepted = true
     for (const { part, reading } of chosen) {
-      if (reading.performed !== null) logSet(part.exercise.exerciseId, reading.performed)
+      if (reading.performed !== null && !logSet(part.exercise.exerciseId, reading.performed)) accepted = false
     }
+    if (!accepted) return false
     onLogged?.()
     return true
   }

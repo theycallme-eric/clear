@@ -26,7 +26,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -250,8 +250,11 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
     expect(countdown()).toHaveTextContent('00:25')
 
     advance(5)
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
-    expect(sheetForm()).toBeNull()
+    // Round 7 (decision 1): the set is entered in a dialog, closed with Close log.
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Log set 1' })).getByRole('button', { name: 'Close log' }),
+    )
+    await waitFor(() => expect(sheetForm()).toBeNull())
     expect(movementCard()).toContainElement(countdownRegion())
     advance(5)
     expect(countdown()).toHaveTextContent('00:15')
@@ -271,14 +274,24 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
         { name: 'Log set 1' },
       ),
     )
-    await screen.findByRole('form', { name: 'Log set 2 of hollow body hold' })
+    // Round 7 (decision 1): the logged set's dialog confirms it beside the rest.
+    const logged = await screen.findByRole('dialog', { name: 'Set 1 logged' })
 
-    // The rest is the sheet's clock; the countdown is the card's, re-armed.
-    expect(within(screen.getByRole('region', { name: 'Rest' })).getByRole('timer', {
+    // The rest is the dialog's clock; the countdown is the card's, re-armed.
+    const rest = screen.getByRole('region', { name: 'Rest' })
+    expect(logged).toContainElement(rest)
+    expect(within(rest).getByRole('timer', {
       name: 'Time remaining',
     })).toHaveTextContent('01:00')
     expect(countdown()).toHaveTextContent('00:30')
     expect(control('Start')).toBeEnabled()
+
+    // Once the rest is over the dialog closes, and Rest opens set 2.
+    await user.click(within(logged).getByRole('button', { name: 'Skip rest' }))
+    const entry = within(movementCard()).getByRole('button', { name: 'Rest' })
+    await waitFor(() => expect(entry).toHaveAttribute('aria-expanded', 'false'))
+    fireEvent.click(entry)
+    await screen.findByRole('form', { name: 'Log set 2 of hollow body hold' })
   })
 })
 

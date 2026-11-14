@@ -656,7 +656,8 @@ describe('the EMOM draws with the shared block frame', () => {
 
     const blockCard = cards()[0]
     const inside = within(blockCard)
-    expect(inside.getByText('EMOM · 10 MIN')).toBeInTheDocument()
+    // Round 7 (decision 6): the structure badge names the format only.
+    expect(inside.getByText('EMOM')).toBeInTheDocument()
     expect(inside.getByText('2 movements')).toBeInTheDocument()
 
     // Rows of one list, each headed by its movement — never cards of their own.

@@ -305,9 +305,12 @@ describe('all generated content renders', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const group = screen.getByRole('list', { name: 'superset, 4 rounds' }).parentElement!
-    const badge = group.closest('.clr-card')!.querySelector('[data-movement-group-header]')!
+    const card = group.closest('.clr-card')!
+    const badge = card.querySelector('[data-movement-group-header] .clr-movement-group-header__badge')!
     const sequence = group.firstElementChild!
-    expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
+    // Decision 6: the badge names the format only; the round count is the line under the header.
+    expect(badge).toHaveTextContent(/^SUPERSET$/)
+    expect(card.querySelector('.clr-timed-meta')).toHaveTextContent(/^4 ROUNDS$/)
     expect(sequence).toHaveTextContent('One round: 01 → 02')
     expect(group.lastElementChild).toHaveTextContent('Rest 90s between rounds')
     expect(group.textContent?.match(/between rounds/g)).toHaveLength(1)
@@ -319,7 +322,14 @@ describe('all generated content renders', () => {
 
     const text = briefingText()
     expect(text).not.toMatch(/STANDARD(?! · )/)
-    expect(text).toContain('STANDARD · LADDER UP')
+    // Decision 6: the standard block that names a scheme keeps its badge, which
+    // names the format only; the scheme is stated on the line under it.
+    const ladder = [...document.querySelectorAll<HTMLElement>('[data-review-section] .clr-card')]
+      .find((card) => within(card).queryByText('pull up') !== null)!
+    expect(
+      ladder.querySelector('[data-movement-group-header] .clr-movement-group-header__badge'),
+    ).toHaveTextContent(/^LADDER$/)
+    expect(ladder.querySelector('.clr-timed-meta')).toHaveTextContent(/^LADDER UP$/)
   })
 
   it('renders every structure type the database admits', async () => {
@@ -327,9 +337,13 @@ describe('all generated content renders', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const text = briefingText()
-    for (const label of ['STANDARD', 'SUPERSET', 'CIRCUIT', 'EMOM', 'AMRAP', 'FOR TIME']) {
+    // Decision 6: badges name the format only, so the ladder-format STANDARD
+    // and FOR TIME blocks are badged LADDER.
+    for (const label of ['SUPERSET', 'CIRCUIT', 'EMOM', 'AMRAP', 'LADDER']) {
       expect(text).toContain(label)
     }
+    // FOR TIME still reaches the screen, as its group's accessible name.
+    expect(screen.getAllByRole('list', { name: 'for time' }).length).toBeGreaterThan(0)
     // Every structure in the enum reached the screen under some label.
     expect(Constants.public.Enums.structure_type).toHaveLength(6)
   })

@@ -926,6 +926,8 @@ describe('Home’s one next-workout entry (REQ-007, U20)', () => {
 
     await openGenerate(user)
     expect(minutes()).toHaveValue(20)
+    // Round 7 offers Recovery among the choices Change focus opens.
+    await user.click(screen.getByRole('button', { name: 'Change focus' }))
     expect(screen.getByRole('button', { name: 'Recovery session' })).toHaveAttribute(
       'aria-pressed',
       'false',

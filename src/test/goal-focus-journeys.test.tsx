@@ -190,7 +190,13 @@ const chipIn = (name: string, label: string) =>
   within(group(name)).getByRole('button', { name: new RegExp(label, 'i') })
 const cta = () => screen.getByRole('button', { name: /generate workout/i })
 const slider = () => screen.getByRole('slider')
-const focusLine = () => screen.getByText(/^Focus:/)
+/**
+ * Round 7 states the Focus in the Goal/Focus summary (decision 4): its label,
+ * then its value — the Change focus action — and an override's marker.
+ */
+const focusLine = () =>
+  screen.getByText('Focus', { selector: '.clr-v4-program-summary span' }).parentElement!
+const changeFocus = () => screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })
 const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
 
 /** Start on Review: the session is accepted, then begun. */
@@ -464,6 +470,8 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted } = journey
     const RECOVERY = { goal: 'active_recovery', focus: 'lower_body' }
 
+    // Round 7 offers Recovery among the choices Change focus opens.
+    await user.click(changeFocus())
     await user.click(recovery())
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
@@ -511,6 +519,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const fresh = visit({ goal: journey.store.profile.goal_preset })
 
     expect(screen.getByText('Hypertrophy')).toBeInTheDocument()
+    await fresh.user.click(changeFocus())
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
 
     await fresh.user.click(cta())

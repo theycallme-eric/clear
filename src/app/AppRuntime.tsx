@@ -14,6 +14,8 @@ import { SummaryContext } from '../state/summary-queries'
 import { UserDataContext } from '../state/user-queries'
 import { WorkoutClientsContext } from '../state/workout-queries'
 import { ToastHost } from '../ui/toast-host'
+import { PRODUCT_PRESENTATION } from '../ui/product-presentation'
+import { WorkoutExperiencePresentationProvider } from '../ui/workout-experience-presentation'
 
 // AUTH-01's session client and AUTH-02's OTP client, built once from the
 // environment. The sign-in screen must hand its verified session to the same
@@ -45,9 +47,12 @@ export default function AppRuntime() {
                       <GenerationClientContext value={generation}>
                         {/* REQ-057: the app's real init, shown while it happens and
                             handed off the moment it finishes — no gate, no delay */}
-                        <BootGate>
-                          <RouterProvider router={appRouter} />
-                        </BootGate>
+                        {/* A3: the owner-approved Round 7 look, with no sample data */}
+                        <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+                          <BootGate>
+                            <RouterProvider router={appRouter} />
+                          </BootGate>
+                        </WorkoutExperiencePresentationProvider>
                       </GenerationClientContext>
                     </UserConstraintsContext>
                   </RestDayContext>

@@ -30,6 +30,8 @@ import {
   UserDataContext,
 } from '../state/user-queries'
 import { WorkoutClientsContext } from '../state/workout-queries'
+import { PRODUCT_PRESENTATION } from '../ui/product-presentation'
+import { WorkoutExperiencePresentationProvider } from '../ui/workout-experience-presentation'
 import { ToastHost } from '../ui/toast-host'
 import { createFakeAuthClient, createFakeOtpClient, signedInEvent } from './auth-double'
 import { createFakeConstraintsClient } from './constraints-double'
@@ -165,7 +167,10 @@ export function AppProviders({
                       <UserConstraintsContext value={constraintsClient}>
                         {/* Same GEN-03 client main.tsx mounts, over a double */}
                         <GenerationClientContext value={generationClient}>
-                          {children}
+                          {/* Same Round 7 presentation the product runtime mounts */}
+                          <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+                            {children}
+                          </WorkoutExperiencePresentationProvider>
                         </GenerationClientContext>
                       </UserConstraintsContext>
                     </RestDayContext>

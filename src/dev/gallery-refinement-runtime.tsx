@@ -61,7 +61,11 @@ setupDraft = onboardingReducer(setupDraft, { type: 'experience', value: 'some' }
 setupDraft = onboardingReducer(setupDraft, { type: 'goal', value: 'balanced' })
 
 /** The values the approved Round 7 captures were rendered with. */
-export function galleryPresentation(saveResult: NonNullable<WorkoutExperiencePresentation['timedWorkflows']>['saveResult']): WorkoutExperiencePresentation {
+/** The gallery's presentation carries every sample input the product leaves out. */
+export type GallerySamplePresentation = WorkoutExperiencePresentation
+  & Required<Pick<WorkoutExperiencePresentation, 'guides' | 'suggestedLoads' | 'equipmentSetupDraft' | 'showTrainingReport' | 'report'>>
+
+export function galleryPresentation(saveResult: NonNullable<NonNullable<WorkoutExperiencePresentation['timedWorkflows']>['saveResult']>): GallerySamplePresentation {
   return {
     dialogBackdrop: 'balanced', equipmentPlacement: 'name', loggingOverlay: 'dialog',
     timedWorkflows: { logPresentation: 'sheet', counterStyle: 'wide', logHierarchy: 'simple', rungEmphasis: 'reps', saveResult },

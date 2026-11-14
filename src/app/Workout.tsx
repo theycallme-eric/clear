@@ -496,7 +496,7 @@ function WorkoutShell({
                     />
                   </div>
                   <SectionLabelContext value={current.title}>
-                    {presentation && (current.sectionType === 'warmup' || current.sectionType === 'cooldown') ? <PreparationGuide guide={presentation.guides[current.sectionType]} withTimer /> : <>
+                    {presentation?.guides && (current.sectionType === 'warmup' || current.sectionType === 'cooldown') ? <PreparationGuide guide={presentation.guides[current.sectionType]} withTimer /> : <>
                     {current.blocks.map((block) => (
                       <BlockSlot key={block.blockId} block={block} />
                     ))}

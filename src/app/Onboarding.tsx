@@ -111,8 +111,9 @@ export function Onboarding() {
   const navigate = useNavigate()
 
   const presentation = useWorkoutExperiencePresentation()
-  const steps = presentation ? (['location','confirm'] as const) : ONBOARDING_STEPS
-  const [draft, dispatch] = useReducer(onboardingReducer, presentation?.equipmentSetupDraft ?? EMPTY_DRAFT)
+  const preview = presentation?.equipmentSetupDraft
+  const steps = preview ? (['location','confirm'] as const) : ONBOARDING_STEPS
+  const [draft, dispatch] = useReducer(onboardingReducer, preview ?? EMPTY_DRAFT)
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<Direction>('forward')
   const [commit, setCommit] = useState<Commit>({ status: 'idle' })
@@ -415,7 +416,7 @@ function Summary({ draft }: { draft: OnboardingDraft }) {
 
   return (
     <ListFrame as="dl">
-      {rows.filter(([term]) => !presentation || ['Setup','Equipment'].includes(term)).map(([term, value]) => (
+      {rows.filter(([term]) => !presentation?.equipmentSetupDraft || ['Setup','Equipment'].includes(term)).map(([term, value]) => (
         <ListRow key={term}>
           <dt className="label">{term}</dt>
           <dd>{value}</dd>

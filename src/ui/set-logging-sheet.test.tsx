@@ -10,6 +10,11 @@
  * per-set effort and its Clear between the measurement row and the action, in
  * both modes. Durable correction (TASK-011) is still exercised through its
  * interface with a test double only.
+ *
+ * Round 7 (owner decision 1, 2026-11-13): the sheet is drawn as the centred
+ * logging dialog, closed by its one Close, with the running rest inside it.
+ * After a save the dialog shows the logged set and its rest; once that rest
+ * is over, the card's Rest opens the next set.
  */
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -121,9 +126,30 @@ function mount(options: MountOptions = {}) {
 const main = () => within(screen.getByRole('main'))
 const foot = () => within(screen.getByRole('contentinfo', { name: 'Pinned foot' }))
 
+/** The open logging dialog: an entry, or a logged set showing its rest. */
+const LOGGING_DIALOG = /^(Log|Edit) set \d+$|^Set \d+ logged$/
+
 async function openSheet(user: ReturnType<typeof userEvent.setup>) {
   await user.click(main().getByRole('button', { name: 'Rest' }))
-  return screen.getByRole('region', { name: /^(Log|Edit) set \d+$/ })
+  return screen.getByRole('dialog', { name: /^(Log|Edit) set \d+$/ })
+}
+
+/** The dialog's one Close: it leaves, and the card is back. */
+async function closeSheet(user: ReturnType<typeof userEvent.setup>) {
+  const dialog = screen.getByRole('dialog', { name: LOGGING_DIALOG })
+  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
+  await waitFor(() => expect(dialog).not.toBeInTheDocument())
+}
+
+/**
+ * A logged set's dialog shows its running rest. Once the rest is over —
+ * skipped here — the dialog closes and the card's Rest opens the next set.
+ */
+async function nextSet(user: ReturnType<typeof userEvent.setup>, logged: number) {
+  const done = await screen.findByRole('dialog', { name: `Set ${logged} logged` })
+  await user.click(within(done).getByRole('button', { name: 'Skip rest' }))
+  await waitFor(() => expect(done).not.toBeInTheDocument())
+  return openSheet(user)
 }
 
 function form(setNumber: number, name = 'back squat') {
@@ -147,14 +173,20 @@ describe('AC-025: the card’s top row', () => {
     // Compact: the small element frame, in the label face, never a heading.
     expect(badge.querySelector('.clr-chamfer--sm.clr-chamfer--structure')).not.toBeNull()
     expect(badge.closest('h1, h2, h3, h4, h5, h6')).toBeNull()
-    expect(within(row as HTMLElement).queryByRole('heading')).toBeNull()
+    // Round 7 (decision 2): the section label is the row's one heading; the badge never is.
+    expect(within(row as HTMLElement).getAllByRole('heading')).toEqual([label])
   })
 
   it('leaves the movement name as the heading, so the badge never competes with it', () => {
     mount()
 
-    const headings = main().getAllByRole('heading')
-    expect(headings.map((heading) => heading.textContent)).toEqual(['back squat'])
+    // Round 7 (decision 2): the section name heads the block, then the movement
+    // is its own heading, named by the movement alone. The badge is neither.
+    expect(main().getAllByRole('heading')).toEqual([
+      main().getByRole('heading', { name: 'Primary lift' }),
+      main().getByRole('heading', { name: 'back squat' }),
+    ])
+    expect(main().queryByRole('heading', { name: /standard/i })).toBeNull()
   })
 })
 
@@ -166,17 +198,17 @@ describe('AC-026: heading, counter, prescription and equipment', () => {
     const headRow = heading.parentElement!
     expect(within(headRow).getByText('Set 1/3')).not.toHaveRole('heading')
 
-    const order = [
-      heading,
-      main().getByText('3 × 8 reps'),
-      // Round 7: equipment is the bare name in the identity's quiet context line.
-      main().getByText('barbell', { selector: '[data-movement-context]' }),
-    ]
+    // Round 7 look: equipment is the bare name, drawn inline after the movement
+    // name as the heading's description — never part of its name — and the
+    // prescription follows the heading.
+    const equipment = main().getByText('barbell', { selector: '[data-movement-context]' })
+    expect(heading).toContainElement(equipment)
+    expect(heading).toHaveAccessibleDescription('barbell')
+    expect(within(heading).getByText('back squat').compareDocumentPosition(equipment))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(heading.compareDocumentPosition(main().getByText('3 × 8 reps')))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     expect(main().queryByText(/Equipment ·/)).toBeNull()
-    for (let index = 1; index < order.length; index += 1) {
-      expect(order[index - 1].compareDocumentPosition(order[index]))
-        .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
-    }
   })
 
   it('moves the counter on as sets are logged', async () => {
@@ -219,7 +251,7 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     expect(screen.queryByRole('form')).toBeNull()
 
     const sheet = await openSheet(user)
-    expect(foot().getByRole('region', { name: 'Log set 1' })).toBe(sheet)
+    expect(foot().getByRole('dialog', { name: 'Log set 1' })).toBe(sheet)
     expect(main().queryByRole('spinbutton')).toBeNull()
     expect(main().getByRole('button', { name: 'Rest' })).toHaveAttribute('aria-expanded', 'true')
   })
@@ -230,14 +262,15 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     const sheet = within(await openSheet(user))
 
     const title = sheet.getByRole('heading', { name: 'Log set 1' })
-    const chevron = sheet.getByRole('button', { name: 'Minimize' })
+    // Round 7 (decision 1): the top dismiss control is the dialog's Close.
+    const close = sheet.getByRole('button', { name: 'Close log' })
     const context = sheet.getByText('back squat · 3 × 8 reps · barbell')
     const weight = sheet.getByLabelText('Weight')
     const effort = sheet.getByRole('radiogroup')
     const submit = sheet.getByRole('button', { name: 'Log set 1' })
 
     for (const [before, after] of [
-      [title, chevron], [chevron, context], [context, weight], [weight, effort], [effort, submit],
+      [title, close], [close, context], [context, weight], [weight, effort], [effort, submit],
     ]) {
       expect(before.compareDocumentPosition(after)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     }
@@ -245,7 +278,7 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     expect(sheet.getAllByRole('button').filter((button) => button.getAttribute('type') === 'submit'))
       .toHaveLength(1)
     expect(submit.closest('.clr-action-group')).not.toBeNull()
-    expect(sheet.queryByRole('button', { name: /^Minimi[sz]e$/ })).toBe(chevron)
+    expect(sheet.getAllByRole('button', { name: /close|minimi[sz]e/i })).toEqual([close])
     expect(sheet.queryByRole('button', { name: /Cancel|Save correction/ })).toBeNull()
   })
 
@@ -257,8 +290,8 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     await user.type(form(1).getByLabelText('Reps'), '6')
     await user.type(form(1).getByLabelText('Weight'), '70')
 
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
-    expect(screen.queryByRole('region', { name: 'Log set 1' })).toBeNull()
+    await closeSheet(user)
+    expect(screen.queryByRole('dialog', { name: 'Log set 1' })).toBeNull()
     expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
 
     await openSheet(user)
@@ -355,7 +388,7 @@ describe('AC-032: prescribed numbers are suggestions; only Log set records', () 
     expect(reps).toHaveValue(8)
     await user.clear(reps)
     await user.type(reps, '7')
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeSheet(user)
     await openSheet(user)
     expect(attempts).toEqual([])
 
@@ -400,8 +433,9 @@ describe('AC-034: result formatter, sync feedback, and a saved state only on suc
     const row = within(rows).getByRole('listitem')
     await waitFor(() => expect(within(row).getByText('Saved')).toBeInTheDocument())
     expect(row).toHaveTextContent('Set 1 · 8 reps · 60 kg')
-    // The sheet moves on to the next set, carrying the weight forward.
-    expect(screen.getByRole('region', { name: 'Log set 2' })).toBeInTheDocument()
+    // The next set's entry carries the weight forward. Round 7: it is opened
+    // from the card once the logged set's rest is over.
+    expect(await nextSet(user, 1)).toHaveAccessibleName('Log set 2')
     expect(form(2).getByLabelText('Weight')).toHaveValue(60)
   })
 
@@ -445,42 +479,39 @@ describe('AC-035: borders and the countdown', () => {
     mount()
     const sheet = await openSheet(user)
 
-    const frame = sheet.querySelector('.clr-set-sheet__frame')
-    expect(frame).toHaveClass('clr-chamfer--structure')
-    expect((frame!.parentElement as HTMLElement).style.getPropertyValue('--bleed'))
-      .toBe('var(--border-frame-structure)')
-    const chevron = within(sheet).getByRole('button', { name: 'Minimize' })
+    // Round 7 (decision 1): the sheet's structural frame is gone; the dialog's
+    // own panel frames the entry. Its Close keeps the action border.
+    const close = within(sheet).getByRole('button', { name: 'Close log' })
     // A secondary button: the normal action-coloured border.
-    expect(chevron).not.toHaveClass('clr-btn--quiet')
-    expect((chevron.parentElement as HTMLElement).style.getPropertyValue('--bleed'))
+    expect(close).not.toHaveClass('clr-btn--quiet')
+    expect((close.parentElement as HTMLElement).style.getPropertyValue('--bleed'))
       .toBe('var(--border-cta-primary)')
   })
 
   it('joins one accent bar to the frame, without making the sheet a card (B05-07.3, EXC-06)', async () => {
     const user = userEvent.setup()
     mount()
-    const sheet = await openSheet(user)
+    await openSheet(user)
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
-    await within(sheet).findByRole('region', { name: 'Rest' })
+    const sheet = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    const rest = within(sheet).getByRole('region', { name: 'Rest' })
 
-    const frame = sheet.querySelector('.clr-set-sheet__frame')!
-    const bars = Array.from(frame.parentElement!.children).filter((child) =>
-      child.classList.contains('clr-card__bar'))
-    expect(bars).toHaveLength(1)
-    expect(bars[0]).toHaveAttribute('aria-hidden', 'true')
-    expect(bars[0]!.nextElementSibling).toBe(frame)
-    // The sheet is an overlay, not a card: the rest's timer card inside it is not nested.
+    // Round 7 (decision 1): the sheet frame and its accent bar are gone. The
+    // dialog is an overlay, not a card: the rest's timer card inside it is its
+    // only card, and is not nested in another.
     expect(sheet.closest('.clr-card')).toBeNull()
-    expect(frame).not.toHaveClass('clr-card__body')
+    expect(Array.from(sheet.querySelectorAll('.clr-card'))).toEqual([rest.querySelector('.clr-card')])
+    expect(sheet.querySelector('.clr-chamfer')).not.toHaveClass('clr-card__body')
   })
 
   it('gives the rest timer card inside the sheet no Phosphor Echo: the sheet is not the background', async () => {
     const user = userEvent.setup()
     mount({ effects: true })
-    const sheet = await openSheet(user)
+    await openSheet(user)
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    const sheet = await screen.findByRole('dialog', { name: 'Set 1 logged' })
 
-    const rest = await within(sheet).findByRole('region', { name: 'Rest' })
+    const rest = within(sheet).getByRole('region', { name: 'Rest' })
     expect(rest.querySelector('.clr-card')).not.toBeNull()
     expect(sheet.querySelector('[data-echo], .clr-echo__source')).toBeNull()
   })
@@ -488,19 +519,29 @@ describe('AC-035: borders and the countdown', () => {
   it('draws a running rest with the timer card inside the sheet, without recolouring it', async () => {
     const user = userEvent.setup()
     mount()
+    // Rest started the prescribed rest as it opened the entry (REQ-012).
     const sheet = await openSheet(user)
-    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
 
-    const rest = await within(sheet).findByRole('region', { name: 'Rest' })
+    const rest = within(sheet).getByRole('region', { name: 'Rest' })
     expect(rest.querySelector('.clr-chamfer--timer, .clr-chamfer--timer-low')).not.toBeNull()
-    expect(sheet.querySelector('.clr-set-sheet__frame')).toHaveClass('clr-chamfer--structure')
-    expect(sheet.querySelector('.clr-set-sheet__frame')).not.toHaveClass('clr-chamfer--timer')
+    // Round 7 (decision 1): the dialog's own panel keeps its card border; the
+    // timer never recolours it.
+    const panel = sheet.querySelector<HTMLElement>('.clr-chamfer')!
+    expect(panel.style.getPropertyValue('--brd')).toBe('var(--border-card)')
+    expect(panel).not.toHaveClass('clr-chamfer--timer')
+    expect(panel).not.toHaveClass('clr-chamfer--timer-low')
 
     // Context, then the countdown, then the entry.
     const context = within(sheet).getByText(/back squat · 3 × 8 reps/)
     expect(context.compareDocumentPosition(rest)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
-    expect(rest.compareDocumentPosition(form(2).getByLabelText('Reps')))
+    expect(rest.compareDocumentPosition(form(1).getByLabelText('Reps')))
       .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+
+    // A save keeps the same running rest, drawn with its timer card in the dialog.
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    const logged = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    expect(within(logged).getByRole('region', { name: 'Rest' })
+      .querySelector('.clr-chamfer--timer, .clr-chamfer--timer-low')).not.toBeNull()
   })
 })
 
@@ -573,6 +614,7 @@ describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', ()
     await waitFor(() => expect(within(row).getByText('Saved')).toBeInTheDocument())
     expect(within(row).getByRole('img', { name: 'Effort: too hard' })).toBeInTheDocument()
     // The next set starts unanswered.
+    await nextSet(user, 1)
     expect(form(2).getAllByRole('radio').every((radio) => radio.getAttribute('aria-checked') === 'false'))
       .toBe(true)
   })
@@ -582,7 +624,7 @@ describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', ()
     const { attempts } = mount()
     await openSheet(user)
     await user.click(form(1).getByRole('radio', { name: 'Too easy' }))
-    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await closeSheet(user)
     await openSheet(user)
 
     expect(form(1).getByRole('radio', { name: 'Too easy' })).toHaveAttribute('aria-checked', 'true')
@@ -597,14 +639,19 @@ describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', ()
     await user.type(form(1).getByLabelText('Weight'), '60')
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
     await waitFor(() => expect(attempts).toHaveLength(1))
+    // Round 7: the logged set's dialog shows its rest; once that is over the
+    // next new entry is the one a finished correction returns to.
+    const done = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    await user.click(within(done).getByRole('button', { name: 'Skip rest' }))
+    await waitFor(() => expect(done).not.toBeInTheDocument())
 
     await user.click(await main().findByRole('button', { name: 'Edit set 1' }))
-    const sheet = within(screen.getByRole('region', { name: 'Edit set 1' }))
+    const sheet = within(screen.getByRole('dialog', { name: 'Edit set 1' }))
     const edit = within(screen.getByRole('form', { name: 'Edit set 1 of back squat' }))
     expect(edit.getByLabelText('Weight')).toHaveValue(60)
     expect(edit.getByRole('combobox', { name: 'Unit' })).toHaveValue('kg')
     expect(edit.getByLabelText('Reps')).toHaveValue(8)
-    expect(sheet.getByRole('button', { name: 'Minimize' })).toBeInTheDocument()
+    expect(sheet.getByRole('button', { name: 'Close log' })).toBeInTheDocument()
     // Edit mode asks effort in the same place, after the measures.
     expect(edit.getByLabelText('Reps').compareDocumentPosition(edit.getByRole('radiogroup')))
       .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
@@ -617,7 +664,7 @@ describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', ()
     // Cancel hands nothing over and returns to the next new entry.
     await user.click(cancel)
     expect(onCorrectSet).not.toHaveBeenCalled()
-    expect(screen.getByRole('region', { name: 'Log set 2' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Log set 2' })).toBeInTheDocument()
 
     // Save correction hands the corrected set to whoever inserted the interface.
     await user.click(main().getByRole('button', { name: 'Edit set 1' }))

@@ -262,7 +262,7 @@ function SessionDetailBody({
 
       <section aria-label={SESSION_DETAIL_SECTIONS_LABEL} className="clr-stack">
         {view.sections.map((section) => (
-          presentation && (section.type === 'warmup' || section.type === 'cooldown') ? <PreparationGuide key={section.id} guide={presentation.guides[section.type]} /> : <SessionSectionCard key={section.id} section={section} />
+          presentation?.guides && (section.type === 'warmup' || section.type === 'cooldown') ? <PreparationGuide key={section.id} guide={presentation.guides[section.type]} /> : <SessionSectionCard key={section.id} section={section} />
         ))}
       </section>
     </div>
