@@ -1,0 +1,114 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-005",
+  "description": "One grouped coaching and notes disclosure (REQ-005; C16; G11, G21; R29, R36, R73) delivered through GroupExerciseCoaching (src/ui/exercise-coaching.tsx: a labelled section per movement, each its own guidance read and its own note writer, draft, save and error), hosted by BlockPanel and the AMRAP card in the shared WorkoutCard's coaching slot (src/ui/refinements/workout-card.tsx), on the real /review and /workout routes (JOURNEY-005), with the accepted gallery state /gallery/refinements?state=cards (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-005 --check check-01 -- npx vitest run src/ui/group-exercise-coaching.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C16-01",
+        "AC-R005-01",
+        "AC-R005-02",
+        "JOURNEY-005"
+      ],
+      "files": [
+        "src/ui/group-exercise-coaching.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 /workout: each grouped block ends with one Coaching and notes disclosure with a labelled section per movement, and its rows carry none",
+          "criterion": "AC-C16-01"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 every grouped format — superset, circuit, EMOM, AMRAP, For Time and ladder — ends with one disclosure, and a standard block keeps each movement’s own",
+          "criterion": "AC-C16-01"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it",
+          "criterion": "AC-R005-01"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 keeps the note of a movement the library has no entry for, and saves it",
+          "criterion": "AC-R005-01"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 a resumed workout shows each movement’s stored note in its own section, and a blank note stays blank",
+          "criterion": "AC-R005-01"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 written guidance, blank guidance, no entry, loading and a failed read stay distinct, each in its own movement’s section, with no hide or replacement rule",
+          "criterion": "AC-R005-02"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft",
+          "criterion": "JOURNEY-005"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 recovery: a failed save keeps its draft through close and reopen, its retry stores it, and no performed work is recorded",
+          "criterion": "JOURNEY-005"
+        },
+        {
+          "file": "src/ui/group-exercise-coaching.test.tsx",
+          "name": "TASK-005 one grouped coaching and notes disclosure > renders the accepted gallery state cards with the actual disclosure at the foot of each grouped live card",
+          "criterion": "AC-C16-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-005 --check check-02 -- npx playwright test e2e/refinement/task-005.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C16-01",
+        "AC-R005-01",
+        "AC-R005-02",
+        "JOURNEY-005"
+      ],
+      "files": [
+        "e2e/refinement/task-005.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-005.spec.ts",
+          "project": "mobile",
+          "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 phone-320: Review then Workout — one bottom disclosure per grouped block, and each movement's note saves and fails on its own",
+          "criterion": "JOURNEY-005"
+        },
+        {
+          "file": "e2e/refinement/task-005.spec.ts",
+          "project": "mobile",
+          "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 phone-390: Review then Workout — one bottom disclosure per grouped block, and each movement's note saves and fails on its own",
+          "criterion": "JOURNEY-005"
+        },
+        {
+          "file": "e2e/refinement/task-005.spec.ts",
+          "project": "mobile",
+          "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 phone-390: written, blank, no entry, loading and failed guidance stay distinct per movement, and a retry recovers only its own",
+          "criterion": "AC-R005-02"
+        },
+        {
+          "file": "e2e/refinement/task-005.spec.ts",
+          "project": "mobile",
+          "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 keyboard and reduced motion phone-390: the disclosure opens and closes from the keyboard, drafts survive, and a refused save keeps its words until its retry stores them",
+          "criterion": "JOURNEY-005"
+        },
+        {
+          "file": "e2e/refinement/task-005.spec.ts",
+          "project": "mobile",
+          "name": "TASK-005 one grouped coaching and notes disclosure > gallery cards phone-320: the accepted state draws the actual disclosure at the foot of each grouped live card",
+          "criterion": "AC-C16-01"
+        }
+      ]
+    }
+  }
+}

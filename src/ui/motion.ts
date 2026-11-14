@@ -323,8 +323,9 @@ export function useArrivalStagger(): ArrivalStagger {
    -------------------------------------------------------------------------- */
 
 /**
- * What a loop is for, most state-bearing first. `urgent` is the low-timer
- * pulse, `busy` a real wait (scan, cursor, loading button), `ambient` a loop
+ * What a loop is for, most state-bearing first. `urgent` is a deadline's
+ * warning (the countdown warning's breathe and aura, `DeadlineTimer`), `busy`
+ * a real wait (scan, cursor, loading button), `ambient` a loop
  * that carries nothing. Atmosphere is exempt and never registers.
  */
 export type InterfaceLoopKind = 'urgent' | 'busy' | 'ambient'

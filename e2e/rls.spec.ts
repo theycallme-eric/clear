@@ -135,6 +135,9 @@ test.describe('row-level security', () => {
 
   const timestampPatch = (table: string, value: unknown) => {
     if (table === 'exercise_set_logs') return { actual_reps: value }
+    // TASK-015: MIG-B grants the authenticated role no `created_at` update, so
+    // the owner's real UPDATE restates the load it already holds.
+    if (table === 'block_movement_results') return { weight: value }
     if (table === 'load_anchors') return { updated_at: value }
     if (table === 'saved_workout_completions') return { started_at: value }
     return { created_at: value }
@@ -146,7 +149,9 @@ test.describe('row-level security', () => {
   ) => {
     const query = rowSelector(table, 'b', users.b.id)
     const patch = timestampPatch(table,
-      table === 'exercise_set_logs' ? before.actual_reps : before.created_at)
+      table === 'exercise_set_logs' ? before.actual_reps
+        : table === 'block_movement_results' ? before.weight
+        : before.created_at)
     expectDenied(await client.updateAs(table, query, patch, tokens.b),
       `${table}: owner bypassed the supported write interface`)
     expect(await ownedRow(table), `${table}: denied owner PATCH changed the row`).toEqual([before])
@@ -230,6 +235,8 @@ test.describe('row-level security', () => {
             table,
             table === 'exercise_set_logs'
               ? before.actual_reps
+              : table === 'block_movement_results'
+              ? before.weight
               : table === 'load_anchors'
               ? before.updated_at
               : table === 'saved_workout_completions'

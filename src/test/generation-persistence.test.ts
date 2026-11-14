@@ -1157,6 +1157,8 @@ describe('the migration that carries it is additive', () => {
       '20261024000026_v3_hinge_warmup.sql',
       '20261027000027_set_effort.sql',
       '20261027000028_set_observation_mutations.sql',
+      '20261110000029_block_result_effort.sql',
+      '20261110000030_block_movement_results.sql',
     ])
   })
 

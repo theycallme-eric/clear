@@ -382,7 +382,11 @@ function sourceIdentity() {
 }
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-const sheet = (page: Page) => page.locator('section.clr-set-sheet')
+/**
+ * The open entry: a superset round's or circuit entry's half-sheet, or — since
+ * TASK-043 (C45) — a standard block's set in the shared focused logging dialog.
+ */
+const sheet = (page: Page) => page.locator('section.clr-set-sheet, dialog.clr-accepted-log[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
 /** Complete both collapse measurements before the next card action.
@@ -392,7 +396,8 @@ const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact:
  * Wait for both actual boundaries, without a sleep or a second click.
  */
 async function collapseSheet(page: Page) {
-  await page.getByRole('button', { name: 'Minimize' }).click()
+  // TASK-043: the half-sheet's Minimize, or the focused log's framed X.
+  await page.getByRole('button', { name: /^(Minimize|Close log)$/ }).click()
   await expect(sheet(page)).toHaveCount(0)
   await expect.poll(() => page.locator('main#main > .clr-scroll-region').evaluate((region) => {
     const foot = region.querySelector(':scope > .clr-scroll-region__foot')
@@ -452,8 +457,11 @@ async function captureSheet(page: Page, testInfo: TestInfo, id: string) {
   await testInfo.attach(file, { path: testInfo.outputPath(file), contentType: 'image/png' })
   const geometry = await frame.evaluate((element) => {
     const box = element.getBoundingClientRect()
-    const head = element.querySelector('.clr-set-sheet__head')!.getBoundingClientRect()
-    const firstLabel = element.querySelector('form label, form [role="group"]')!.getBoundingClientRect()
+    // TASK-043: a standard set's entry is the focused log, its header the dialog's.
+    const head = element.querySelector('.clr-set-sheet__head, [data-logging-head]')!.getBoundingClientRect()
+    // TASK-020 (C46): after a Save the sheet holds its confirmation, not a form.
+    const firstLabel = (element.querySelector('form label, form [role="group"]')
+      ?? element.querySelector('.clr-set-sheet__frame > [role="status"], .clr-set-log > [role="status"]'))!.getBoundingClientRect()
     const rest = element.querySelector('[aria-label="Rest"]')?.getBoundingClientRect() ?? null
     return {
       width: box.width, height: box.height,
@@ -606,7 +614,9 @@ for (const { name: size, viewport } of VIEWPORTS) {
 
       // ── Log set 1 saves; the rest runs on ────────────────────────────────
       await form1.getByRole('button', { name: 'Log set 1', exact: true }).click()
-      await expect(page.getByRole('heading', { name: 'Log set 2', exact: true })).toBeVisible()
+      // TASK-020 (C46): set 1's confirmation beside the same rest, not set 2's form.
+      await expect(page.getByRole('heading', { name: 'Set 1 logged', exact: true })).toBeVisible()
+      await expect(page.getByRole('form', { name: 'Log set 2 of back squat' })).toHaveCount(0)
       await expect.poll(() => app.mutations.length).toBe(1)
       expect(app.mutations[0]).toMatchObject({
         operation: 'insert', exercise_id: EXERCISE_ID.get('back-squat'), set_number: 1,
@@ -619,7 +629,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(saved).toContainText('Saved')
       const logged = await captureSheet(page, testInfo, `sheet-after-log-${size}`)
       await record(page, testInfo, `sheet-after-log-${size}`, {
-        consumer: 'Workout · SetLoggingSheet new entry', state: 'Log set 1 saved; rest continues; next entry set 2', viewport,
+        consumer: 'Workout · SetLoggingSheet new entry', state: 'Log set 1 saved; rest continues; set 1 confirmed (TASK-020)', viewport,
         reference: refRecord(ref.sheet.region), measured: { referenceBands: ref.sheet.bands, actualBands: logged.bands },
         mutation: app.mutations[0], capture: logged.capture, criteria: { 'AC-037': 'pass', 'AC-051': 'pass', 'AC-067': 'pass' },
       })
@@ -832,6 +842,14 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
       // Expiry while a second combined draft is open saves nothing. Its
       // subsequent explicit save cannot silently start another round rest.
+      // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately,
+      // on the rest already running.
+      await expect(page.getByRole('heading', { name: 'Round 1 logged', exact: true })).toBeVisible()
+      // TASK-044: the round is the focused log, a modal over the card; it is
+      // closed with its X before the block's Rest is used.
+      await collapseSheet(page)
+      await pair.getByRole('button', { name: 'Rest', exact: true }).click()
+      await expectRestFrom(page, roundRest, 4)
       const round2 = page.getByRole('form', { name: 'Log round 2 of bench press and plank' })
       await expect(round2).toBeVisible()
       await round2.getByRole('group', { name: 'A1 bench press, set 2' }).getByLabel('Reps').fill('6')
@@ -848,6 +866,10 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await page.getByRole('button', { name: 'Next section' }).click()
       await page.getByRole('button', { name: 'Start round 1' }).click()
       await page.getByRole('button', { name: 'Finish round 1' }).click()
+      // TASK-021: the recorded round is confirmed in the shared focused log;
+      // its X returns the circuit's rest to the card.
+      await page.getByRole('dialog', { name: 'Round 1 recorded', exact: true })
+        .getByRole('button', { name: 'Close log', exact: true }).click()
       await expect(page.getByText('Rest between rounds', { exact: true })).toBeVisible()
       await expect(restBars(page)).toHaveCount(0)
       await expect(page.getByRole('button', { name: 'Rest for goblet squat', exact: true })).toBeVisible()

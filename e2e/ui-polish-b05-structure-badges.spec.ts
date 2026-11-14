@@ -609,14 +609,15 @@ for (const { name: size, viewport } of VIEWPORTS) {
       entries.push(...await checkAll(page, content, testInfo, `workout-conditioning-${size}`, consumerOf))
 
       const consumers = new Set(entries.map((entry) => entry.consumer))
-      expect([...consumers].sort()).toEqual(['AmrapBlock top row', 'BlockPanel top row', 'SectionHeader'])
+      // TASK-027 (C54; R35): the compact section navigator draws no badge, so SectionHeader is no longer a consumer here.
+      expect([...consumers].sort()).toEqual(['AmrapBlock top row', 'BlockPanel top row'])
       expect(entries.every((entry) => entry.parent === 'row')).toBe(true)
       expect(entries.map((entry) => entry.label)).toEqual(expect.arrayContaining([
         'SUPERSET', 'CIRCUIT · 3 ROUNDS · PYRAMID', 'AMRAP · 8 MIN · INVERSE', 'FOR TIME · 15 MIN CAP · LADDER DOWN',
       ]))
       const actionFrames = await expectActionsFill(page)
       await record(page, testInfo, `workout-${size}`, {
-        consumer: 'Active Workout (SectionHeader, BlockPanel, AmrapBlock)', state: 'active session, both sections',
+        consumer: 'Active Workout (BlockPanel, AmrapBlock)', state: 'active session, both sections',
         viewport, entries, actionFrames,
       })
       app.assertReadOnly()

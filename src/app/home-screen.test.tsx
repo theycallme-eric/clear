@@ -105,8 +105,10 @@ describe('Home actions and copy (REQ-003)', () => {
     // The existing disclosure, reason and write are unchanged.
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await user.click(trigger)
-    await user.selectOptions(within(rest).getByLabelText('Reason'), 'sick')
-    await user.click(within(rest).getByRole('button', { name: 'Save rest day' }))
+    // TASK-045: the reason and its save are in the focused logging dialog "Log rest day".
+    const log = screen.getByRole('dialog', { name: 'Log rest day' })
+    await user.selectOptions(within(log).getByLabelText('Reason'), 'sick')
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
 
     await waitFor(() =>
       expect(restDays.markCalls).toEqual([{ day: suggestionDay(), reason: 'sick', note: null }]),
@@ -343,15 +345,22 @@ describe('Recent workout rows (REQ-004)', () => {
     expect(status(unstarted).style.color).not.toBe(status(done).style.color)
   })
 
-  it('leaves History\'s own chronology row unchanged', async () => {
+  it('keeps History\'s own chronology row: its full title, with status and date beneath it (TASK-026, C53)', async () => {
     renderApp(
       ['/history'],
       signedIn({ workout: createWorkoutDouble({ session: null, historyRows: history() }).clients }),
     )
 
+    // The chronology keeps the full stored title (the recent row's trim is
+    // Home's alone) and, since C53 / R19, the same title-then-status/date order.
     const link = await screen.findByRole('link', { name: 'Upper-body strength session' })
     const row = link.closest('li')!
-    expect(row.querySelector('[data-part="head"]')).not.toBeNull()
+    // A3 task 2: Round 7's History row order (owner decision 7, 2026-11-13)
+    // replaces TASK-026's title / status-date layout: the title heads the row
+    // and the context line beneath it carries the status after the date.
     expect(row.querySelector('[data-part="status-date"]')).toBeNull()
+    expect([...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part')))
+      .toEqual(['head', 'context', 'status', 'metrics'])
+    expect(row.querySelector('[data-part="head"]')).toContainElement(link)
   })
 })

@@ -251,6 +251,26 @@ describe('all six structure types, with their logged outcomes', () => {
     expect(capped.outcome[1]).toEqual({ label: 'Cap', value: 'Stopped at the cap' })
   })
 
+  // TASK-010 (C29): the athlete's Incomplete for a race stopped before its cap.
+  it('reads an Incomplete stopped before the cap as Incomplete, and every capped row as before', () => {
+    const read = (result: { elapsed_seconds: number | null; completed_under_cap: boolean | null }, timerSeconds: number | null = 600) =>
+      firstBlock(oneBlock({ structureType: 'for_time', timerSeconds, result })).outcome
+
+    expect(read({ elapsed_seconds: 90, completed_under_cap: false })).toEqual([
+      { label: 'Elapsed', value: '01:30' },
+      { label: 'Cap', value: 'Incomplete' },
+    ])
+    // A Complete at the cap (the athlete could not stop the clock in time).
+    expect(read({ elapsed_seconds: 600, completed_under_cap: true })[1]).toEqual({ label: 'Cap', value: 'Finished under the cap' })
+    // Rows from before the question: false only ever came with the cap's own time.
+    expect(read({ elapsed_seconds: 600, completed_under_cap: false })[1]).toEqual({ label: 'Cap', value: 'Stopped at the cap' })
+    // An unknown time or cap claims nothing new.
+    expect(read({ elapsed_seconds: null, completed_under_cap: false })).toEqual([{ label: 'Cap', value: 'Stopped at the cap' }])
+    expect(read({ elapsed_seconds: 90, completed_under_cap: false }, null)[1]).toEqual({ label: 'Cap', value: 'Stopped at the cap' })
+    // Not answered: no reading at all.
+    expect(read({ elapsed_seconds: 200, completed_under_cap: null })).toEqual([{ label: 'Elapsed', value: '03:20' }])
+  })
+
   it('reads a ladder’s rung, which is its rep scheme rather than a seventh structure', () => {
     const block = firstBlock(
       oneBlock({

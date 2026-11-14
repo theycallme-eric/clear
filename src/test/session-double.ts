@@ -744,6 +744,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
         perceived_effort: null,
         notes: null,
         created_at: now(),
+        effort: null,
         ...result,
       })
     },

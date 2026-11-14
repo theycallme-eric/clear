@@ -1,0 +1,77 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-034",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/state/preparation-guide.test.ts",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-034/required-cases.json",
+    "sha256": "fffe7a1c18a140210175ec7441f58bf705fca014fc90f9a4cc8e7596f910f2e3"
+  },
+  "targets": [
+    {
+      "path": "src/state/preparation-guide.test.ts",
+      "sha256": "1cc61f7df44a2b0a43dae54ea96b4506f596fc553930a93a2786b4167cbf6545"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a composed Warm-up and Cooldown read the stable title, every prescribed movement in order and their own count, never the generated title, notes or per-movement prescription",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 the approximate time is GEN-06’s own section estimate from blocks and prescriptions, in whole minutes, never the model estimate, the computed session duration or the target",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a persisted session reads the same guide as the composed workout it was accepted from, and a swap shows its replacement in the same place",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 every owner the source record names resolves to a real export, and the contract states the same owners",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 missing: no workout, no Warm-up or Cooldown composed, and a section with no active movement read as missing with their reason, never as an empty guide",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 loading and error follow the source, and a persisted row whose target contradicts its kind is an error rather than a guess",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 content: the recorded generation reads its own Warm-up exactly as the Review briefing and the live workout name it, from the composed and the persisted source alike",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 readings follow the data, keep the concise ~N minutes format and carry no hard-coded illustrated four minutes, three rows or sample movements",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

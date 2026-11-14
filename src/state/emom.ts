@@ -41,6 +41,12 @@
  */
 import type { Enums } from '../data/database.types'
 import { prescribedTarget, type PrescribedColumns, type PrescribedTarget } from './prescription'
+import {
+  clockStopMoment,
+  pausedElapsedSeconds,
+  restoredPause,
+  withoutPause,
+} from './timed-lifecycle'
 import type { BlockProgress } from './workout-progress'
 
 const SECONDS_PER_MINUTE = 60
@@ -85,10 +91,25 @@ export interface EmomShape {
  * the schedule alone decides the phase (REQ-014).
  */
 export interface EmomState {
-  /** When the user started the block, ISO. Null before they have. */
+  /**
+   * When the user started the block, ISO. Null before they have. Moved forward
+   * by every Resume, so `now - startedAt` is always the grid's own time
+   * (`timed-lifecycle.ts`).
+   */
   readonly startedAt: string | null
   /** Retired; always null. Kept for records written before REQ-014. */
   readonly workDoneMinute: number | null
+  /**
+   * TASK-006 (C18): when the running grid was paused, ISO. Absent while it runs
+   * and in every record written before Pause existed.
+   */
+  readonly pausedAt?: string | null
+  /**
+   * TASK-006 (C18, R98): when the user ended the schedule early with Finish
+   * early, ISO. Absent until they do. It ends the schedule, and records no
+   * minute as performed (E01).
+   */
+  readonly finishedAt?: string | null
 }
 
 /** Not started: no clock running. */
@@ -107,7 +128,19 @@ export type EmomPhase = 'untimed' | 'ready' | 'work' | 'rest' | 'finished'
  * performed (E01).
  */
 export interface EmomView {
+  /**
+   * The grid's phase. A paused grid keeps the phase it was paused in — `work`
+   * or `rest` — so its markers still say which movement the minute is on.
+   */
   readonly phase: EmomPhase
+  /** TASK-006 (C18): the grid is frozen by the user's Pause. */
+  readonly paused: boolean
+  /**
+   * TASK-006: the user ended the schedule before its last minute ran — or, for
+   * a block that prescribes no window, ended it at all. False when the clock
+   * ran every prescribed minute.
+   */
+  readonly endedEarly: boolean
   /** 1-based, and never past the prescribed window. */
   readonly minute: number
   /** The window's minutes, as the shape read them. */
@@ -229,6 +262,25 @@ export function startEmom(state: EmomState, nowMs: number): EmomState {
 }
 
 /**
+ * TASK-006 (C18, R98): Finish early — the user ends the schedule where it is.
+ * A paused grid ends at its pause. Only a started grid that has not already
+ * ended can be finished; what it records is unchanged (E01: no minute counted).
+ */
+export function finishEmom(state: EmomState, nowMs: number): EmomState {
+  if (state.startedAt === null || (state.finishedAt ?? null) !== null) return state
+  return { ...withoutPause(state), finishedAt: new Date(clockStopMoment(state, nowMs)).toISOString() }
+}
+
+/** Seconds the grid ran before Finish early, or null when it was not finished. */
+function finishedSeconds(state: EmomState): number | null {
+  if (state.startedAt === null || state.finishedAt === undefined || state.finishedAt === null) return null
+  const started = Date.parse(state.startedAt)
+  const finished = Date.parse(state.finishedAt)
+  if (Number.isNaN(started) || Number.isNaN(finished) || finished < started) return null
+  return Math.floor((finished - started) / 1000)
+}
+
+/**
  * A restored record, repaired before it is used.
  *
  * A `startedAt` no clock can read is worse than no clock: elapsed time would
@@ -242,7 +294,16 @@ export function clampEmomState(stored: EmomState): EmomState {
       ? stored.startedAt
       : null
 
-  return { startedAt, workDoneMinute: null }
+  // An early finish and a pause belong to a started grid; one that cannot be
+  // read, or that precedes the start, is dropped. A finished grid has no pause.
+  const finishedAt = finishedSeconds({ startedAt, workDoneMinute: null, finishedAt: stored.finishedAt })
+  return {
+    startedAt,
+    workDoneMinute: null,
+    ...(finishedAt === null
+      ? restoredPause({ startedAt, pausedAt: stored.pausedAt })
+      : { finishedAt: stored.finishedAt as string }),
+  }
 }
 
 /**
@@ -260,6 +321,8 @@ export function emomView(
   if (!isEmomTimed(shape)) {
     return {
       phase: 'untimed',
+      paused: false,
+      endedEarly: false,
       minute: 1,
       minutes: shape.minutes,
       secondsRemaining: 0,
@@ -271,6 +334,8 @@ export function emomView(
   if (state.startedAt === null) {
     return {
       phase: 'ready',
+      paused: false,
+      endedEarly: false,
       minute: 1,
       minutes: shape.minutes,
       secondsRemaining: SECONDS_PER_MINUTE,
@@ -282,12 +347,18 @@ export function emomView(
     }
   }
 
-  const elapsed = Math.max(0, Math.floor(elapsedSeconds))
+  // TASK-006 (C18): an ended or paused grid reads the moment it stopped, so
+  // its minute, phase and seconds left stay where they were.
+  const finished = finishedSeconds(state)
+  const paused = finished === null ? pausedElapsedSeconds(state) : null
+  const elapsed = Math.max(0, Math.floor(finished ?? paused ?? elapsedSeconds))
   const elapsedMinutes = Math.floor(elapsed / SECONDS_PER_MINUTE)
 
   if (shape.minutes !== null && elapsedMinutes >= shape.minutes) {
     return {
       phase: 'finished',
+      paused: false,
+      endedEarly: false,
       minute: shape.minutes,
       minutes: shape.minutes,
       secondsRemaining: 0,
@@ -299,6 +370,20 @@ export function emomView(
   const minute = elapsedMinutes + 1
   const secondsRemaining = SECONDS_PER_MINUTE - (elapsed % SECONDS_PER_MINUTE)
 
+  // Finish early: the schedule ended in this minute, with nothing live after it.
+  if (finished !== null) {
+    return {
+      phase: 'finished',
+      paused: false,
+      endedEarly: true,
+      minute,
+      minutes: shape.minutes,
+      secondsRemaining: 0,
+      activePosition: null,
+      nextPosition: null,
+    }
+  }
+
   // The one way into the remainder: the block's own trailing rest window has
   // opened. It is the schedule speaking, not a claim the work was done.
   const resting = shape.restSeconds > 0 && secondsRemaining <= shape.restSeconds
@@ -306,6 +391,8 @@ export function emomView(
 
   return {
     phase: resting ? 'rest' : 'work',
+    paused: paused !== null,
+    endedEarly: false,
     minute,
     minutes: shape.minutes,
     secondsRemaining,

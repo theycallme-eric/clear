@@ -36,3 +36,102 @@ Client state machines, query hooks, and cross-screen state coordination belong h
   with no ref, no timer, no lock, and no fetch of any kind — a token refresh is one `setState` and
   cannot start a request. `status: 'error'` is the state D1 lacked: a session that could not be
   revalidated is not an anonymous user, and nothing may route it to onboarding.
+
+## Ladder attempt recovery (TASK-032)
+
+`src/state/ladder-recovery.ts` is one live ladder attempt as pure state, and
+`src/state/workout-persistence.ts` keeps it under `clear.workout-ladders`, one versioned record per
+block id. The record holds the attempt's ordered progress, its result draft, the accidental-Finish
+checkpoint Undo returns to and the original cap. Its clock is the For Time race clock, moved and
+read only by `for-time.ts`, `timed-lifecycle.ts` and `workout-clock.ts`.
+
+This is a foundation (REQ-032, foundation-provider), so **JOURNEY-032 is not complete** here. TASK-013
+adopted it in the route's ladder renderer (`src/ui/ladder-block.tsx`) for the clock, live check-off
+and the answer and rounds of its log; quiet Undo, the shared timed log and visible
+reload/reconnect/save recovery are adopted by the other tasks in the table below. TASK-048 owns the
+complete visible recovery.
+
+The rules every consumer inherits:
+
+- **Identity.** A record restores only for its own session and block (`readLadderAttempt`,
+  `restoreLadderAttempt`). Another attempt's record for the same block is never replaced
+  (`writeLadderAttempt` answers `refused` and the hook adopts the stored one). An unreadable,
+  foreign or other-version record restores nothing (`discarded`).
+- **Clock.** A reload counts the time closed while running and none while paused. The cap is
+  stamped once (`originalCapSeconds`) and never re-read from the block. Expiry is derived, never
+  written. After the cap there is no Pause, Resume, check-off, Finish or Undo.
+- **Finish and Undo.** Finish stops the clock (at the pause, for a paused clock) and carries tracked
+  progress into the draft. Undo restores the clock as though Finish never happened: a running clock
+  keeps the time spent finished, and a paused one is paused again. It restores progress from the
+  draft's rung, keeps the draft's entries and puts back the pre-Finish answer. Undo is not offered
+  after the original cap or after a save.
+- **Saved results.** A successful save, or the server's word that the row exists, closes the attempt
+  as a one-way latch. A failed save keeps everything for the retry. The block writer is insert-once,
+  so a retry never duplicates the row. `ladderDraftOutcome` gives only `highest_rung`. Effort, notes
+  and movement entries are kept durably but are never written from here.
+- **Older browsers.** A ladder clock already stored under the For Time key
+  (`clear.workout-for-time`) is adopted once by `restoreLadderAttempt` / `usePersistedLadder`
+  (`source: 'legacy-clock'`). The For Time record is left as it was. A finished legacy clock has no
+  checkpoint, so it cannot be undone.
+
+Interfaces:
+
+- `src/state/ladder-recovery.ts`
+  - Record: `LADDER_ATTEMPT_VERSION`, `EMPTY_LADDER_DRAFT`, `createLadderAttempt`,
+    `adoptLegacyLadderClock`, `clampLadderAttempt`.
+  - Cap: `normalizedCapSeconds`, `ladderRaceCapSeconds`.
+  - TASK-030's ladder rules, restated so the workout bundle does not carry the contract's tables
+    and pinned equal to `partialRoundFor` / `draftsAfterProgressChange` by the check:
+    `ladderPartialRound`, `movementsAfterRoundChange`.
+  - Read model: `ladderClockView`, `ladderAttemptView`, `ladderUndoAvailability`,
+    `ladderDraftOutcome`.
+  - Actions: `startLadderAttempt`, `pauseLadderAttempt`, `resumeLadderAttempt`,
+    `trackLadderProgress`, `finishLadderAttempt`, `undoLadderFinish`, `editLadderDraft`,
+    `ladderSaveSucceeded`, `ladderSaveFailed`, `ladderRecorded`.
+- `src/state/workout-persistence.ts`: `WORKOUT_LADDER_STORAGE_KEY`, `isLadderAttempt`,
+  `readLadderAttempt`, `writeLadderAttempt`, `restoreLadderAttempt`, `usePersistedLadder`.
+
+| Task | Consumes | What it must do |
+| --- | --- | --- |
+| TASK-013 (ladder result entry and live check-off) | `usePersistedLadder` (`track`, `editDraft`, `start`, `pause`, `resume`, `finish`), `ladderAttemptView` (`canTrack`, `progress`, `draft`, `outcome`, `lifecycle`), `ladderRaceCapSeconds` | Replace `usePersistedForTime` in the ladder's race with `usePersistedLadder`, for the clock and the progress together; never run both clocks. Move the answer, rung and effort from the renderer's memory into `editDraft`, and report `outcome` through `BlockCompletionControl`. Decide how a scheduled ladder (no cap here; its end is its schedule) uses the record. Re-run the TASK-010 and TASK-012 checks whose assertions this changes (for example "the ladder's draft starts again at Incomplete" and "no category in storage"). **Done (TASK-013):** one attempt per ladder, its session from `BlockCompletionApi.sessionId`; the answer and rounds through `editDraft` (Incomplete passes `highestRung: null`, so it never keeps the top rung); effort kept in the renderer's memory, unstored, until TASK-046/047's writer; a schedule keeps its start stamp, answer and rounds in the record with no cap and no check-off. |
+| TASK-014 (Undo Finish) | `ladderAttemptView` (`undo`), `usePersistedLadder` (`undoFinish`, `markRecorded`) | Offer the quiet Undo only while `undo.available`, and call `undoFinish`. It already clears the ending answer and restores the pause and progress. Never resume past the cap or grant time. **Done (TASK-014):** the route's ladder log offers `Undo finish · Resume ladder` only while `undo.available`, re-deriving the read model each second while a running Finish's Undo can still run out at the original cap, and returns the focus to the race's lead control. A successful save ends it durably: the shell's `onBlockRecorded` (`BlockCompletionApi`) calls the hook's `markRecorded` (`ladderRecorded`) in the same act as the row is known, before the section can be left, so a reload never finds a saved attempt open. `saveSucceeded` / `saveFailed` stay TASK-048's. |
+| TASK-015 (per-movement partial and load entry) | `ladderAttemptView` (`draft.movements`), `usePersistedLadder` (`editDraft({ movements })`), `ladderPartialRound` | **Done (TASK-015):** the ladder log's per-movement amount for the round after the stated prefix, and its load, are the durable draft's `movements` (`editLadderDraft` merges one movement's entry and clears the amounts when the rung changes); reported to the shell beside the outcome (`BlockCompletionApi.reportTimedResult`, with the rung count) and saved by the section's forward action through `BlockCompletionProvider` → `src/state/timed-results.ts`. Effort stays the renderer's memory, reported the same way. A saved ladder still claims no draft (TASK-048 reads the row back). |
+| TASK-046 (shared timed logging) | `ladderAttemptView` (`draft`, `editable`), `usePersistedLadder` (`editDraft`), `EMPTY_LADDER_DRAFT` | Read and write the ladder's log through the durable draft, never a second draft. Write effort, notes and movement entries only through TASK-015 / TASK-031's writers. `ladderDraftOutcome` stays `highest_rung` only. |
+| TASK-048 (visible reload, reconnect, Undo and save recovery) | `usePersistedLadder` (`source`, `discarded`, `durable`, `saveSucceeded`, `saveFailed`), `ladderAttemptView` (`authority`, `saveFailed`, `undo`), `restoreLadderAttempt`, `readLadderAttempt` | Call `saveSucceeded(attemptId)` or `saveFailed(attemptId)` with the attempt id captured when the forward action began, and pass `isBlockRecorded` as `recorded`. Make `discarded`, `durable: false` and `saveFailed` explicit on screen. Read the saved row back when `authority` is `saved-elsewhere`, and prefer it over the local echo. Prove it on the real lane. **Done (TASK-048, completes JOURNEY-032 on `/workout`):** the ladder's effort and notes moved from the renderer's memory into the durable draft (`editDraft({ effort })`, `editDraft({ notes })`), so the whole current draft survives a reload, a closed tab and an Undo. `BlockCompletionApi.onBlockRecorded` now tells how the row is known (`'saved'`: this device's answered save → `saveSucceeded(attemptId)`, shown as saved here; `'known'`: a bare 23505 or the performed read → `markRecorded`); `onBlockSaveFailed` → `saveFailed(attemptId)`, shown in the log as the accepted `Your log didn’t save. Try again.` until a save succeeds; `recordedResult` keeps the row the shell wrote or read, read back through `ladderDraftFromRow` ahead of the local echo; and a `'known'` row for an attempt whose own richer save failed reopens the block (`reopenBlock`) so the retry restates it once. `discarded` and `durable: false` are not yet drawn (no accepted copy; an open owner item in the TASK-048 note). Proof: `e2e/refinement/task-048.spec.ts` (backend lane and synthetic twins). |
+
+## Preparation guide content and approximate duration (TASK-034)
+
+`src/state/preparation-guide.ts` is the authoritative reading of a Warm-up or Cooldown guide (REQ-034).
+It is pure and writes nothing. The contract is `docs/specs/PREPARATION_GUIDE_CONTRACT.md`, and its
+typed source record is `PREPARATION_GUIDE_SOURCES`. Each field reads one owner:
+
+- the title from `sectionTypeLabel`, never `section_title` or `section_notes`;
+- every prescribed movement in composed order (the active rows after a swap), named by `exerciseName`;
+- the count of those movements;
+- the approximate time, which is GEN-06's `estimateDuration` of the section alone, read as `~N minutes`.
+
+`preparationGuideReading` follows the consumer's source through `loading`, `error`, `missing`
+(`no-workout`, `not-composed`, `no-movements`) and `ready`.
+
+| Task | Consumes | What it must do |
+| --- | --- | --- |
+| TASK-022 (concise Warm-up and Cooldown) | `composedPreparationGuide` (Review), `persistedPreparationGuide` / `preparationGuideReading` (Workout), `PreparationGuide` (`title`, `durationText`, `movements[].name`, `approximateMinutes`) | Done: `src/ui/preparation-guide.tsx` draws these readings on `/review`, `/workout` and the gallery `preparation` state, with no fixed duration, count or sample list. The live guide's separate clock (`preparation-clock.ts`) counts `approximateMinutes` down. |
+| TASK-023 (Regenerate after the workout) | — | Keep the guide's section in Review's section order. Regenerate comes after the Cooldown. |
+
+## Load guidance: prescribed target versus performed weight (TASK-036)
+
+`src/state/refinement-load-guidance.ts` is the load-guidance read model (REQ-036, G24). It is pure and
+writes nothing. The contract is `docs/specs/LOAD_GUIDANCE_CONTRACT.md`, and its typed source record
+is `LOAD_GUIDANCE_SOURCES`.
+
+- `prescribedLoad(columns, weightUnit)` is the prescribed target. It reads only `load_type`,
+  `load_value` and `equipment_used`, through `loadText` and `equipmentName`. A unit is given for an
+  `absolute` load only, and only the profile's. `range` is always `null` (`LOAD-RANGE-RULE`) and
+  `perHand` is never stated (`LOAD-PER-HAND`).
+- `performedLoad(row)` is a logged row's actual `weight` in its own `weight_unit`, or `null` when none
+  was recorded.
+- `LOAD_MEANINGS` gives each `load_guidance` kind's value and unit. `LOAD_DEFINITION_DEPENDENCIES`
+  records the two open definitions (owner Eric).
+
+`liveMovementReadings` (`src/ui/refinements/movement-readings.ts`) reads its load through
+`prescribedLoad`. Review keeps `loadText`, so both contexts read the same words.

@@ -51,6 +51,7 @@
  */
 import type { Enums } from '../data/database.types'
 import { formatFocus } from './history'
+import { ladderRoundReadings, type LadderRoundReading } from './ladder'
 import { prescriptionSiteKey } from './load-suggestions'
 import { sectionTypeLabel } from './onboarding'
 import { exerciseName, prescriptionText, restText, targetText } from './prescription'
@@ -89,7 +90,14 @@ export interface ReviewExerciseView {
   readonly equipment: string
   /** `75% 1RM`, `2 RIR`, `Bodyweight` — null when the guidance says nothing. */
   readonly load: string | null
-  /** `Rest 90s`, or null. A zero rest is never rendered as one. */
+  /**
+   * `Rest 90s`, or null. A zero rest is never rendered as one. Null for a
+   * movement in an EMOM, AMRAP or For Time block (TASK-003, C11; R41, R47,
+   * R60): a generic between-set rest does not describe a timed format, whose
+   * clock is its schedule, and the timed renderers honour none. The block's
+   * own rest (`roundRest`) and clock stay, and the prescription still carries
+   * the column — only this reading is dropped.
+   */
   readonly rest: string | null
   /**
    * `3-1-1-0`, display only — never parsed, here or anywhere. Not rendered on
@@ -125,6 +133,16 @@ export interface ReviewBlockView {
   readonly roundSequence: string | null
   /** In prescribed order: the order the array holds is the order performed. */
   readonly exercises: readonly ReviewExerciseView[]
+  /**
+   * TASK-012 (C35, JOURNEY-012): a block the ladder renderer performs is also
+   * read as its rounds — each round's work for every movement, the fixed
+   * companion included — through the same `ladderRoundReadings` the live
+   * ladder draws, so Review and Workout state a round in the same words. The
+   * round count is the explicit timing's, or the ladder's own rungs. Null for
+   * every other block. Read-only: the accepted Review rows above it (R65, R72)
+   * are unchanged.
+   */
+  readonly ladderRounds: readonly LadderRoundReading[] | null
 }
 
 /** One movement's prescribed cadence, for the optional tempo detail. */
@@ -151,8 +169,25 @@ export interface ReviewSectionView {
   readonly cadence: readonly ReviewCadence[]
 }
 
+/**
+ * What an Overview reading is (TASK-004, C14): declared by the owner of its
+ * value, so the shared fact composition can pick its glyph, order and term
+ * visibility without reading meaning out of a word. Review's facts are
+ * `duration`, `focus` (the anchor), `intensity`, `goal` and `movements`; a
+ * saved record adds its own `date` and `status`.
+ */
+export type FactKind =
+  | 'duration'
+  | 'focus'
+  | 'intensity'
+  | 'goal'
+  | 'movements'
+  | 'date'
+  | 'status'
+
 /** The header IA.md §4 asks for: intensity, anchor, goal — and the duration. */
 export interface ReviewFact {
+  readonly kind: FactKind
   readonly label: string
   readonly value: string
 }
@@ -210,7 +245,12 @@ export const ANCHOR_LABEL = 'Anchor'
 export const GOAL_LABEL = 'Goal'
 export const DURATION_LABEL = 'Duration'
 
-/** Compact Overview reading; intensity always uses the established ten-point scale. */
+/**
+ * The Overview's intensity reading (TASK-004: C12, R32): the value alone. The
+ * scale is still the fixed 1–10 one the value was chosen on; the reading no
+ * longer repeats `of 10`, and the value is never rescaled. Overview only —
+ * effort scores and stored data keep their own readings.
+ */
 export function briefingIntensity(effectiveIntensity: number): string {
   return String(effectiveIntensity)
 }
@@ -303,6 +343,24 @@ export function equipmentName(equipment: string): string {
 /** Equipment slugs that name no equipment: the body is not something to fetch. */
 const NO_EQUIPMENT: ReadonlySet<string> = new Set(['bodyweight', 'none'])
 
+/**
+ * Required equipment (REQ-006; TASK-004 C13, C14): each piece of equipment the
+ * given rows name, once, in the order it is first needed, in the user's words.
+ * Bodyweight is not equipment, so an all-bodyweight workout answers an empty
+ * list — the one case the Overview says `None — bodyweight only`. Review reads
+ * a composed prescription's `equipment`; a saved record reads the same value as
+ * persisted, `workout_exercises.equipment_used`.
+ */
+export function requiredEquipment(slugs: Iterable<string>): string[] {
+  const names: string[] = []
+  for (const slug of slugs) {
+    if (NO_EQUIPMENT.has(slug)) continue
+    const name = equipmentName(slug)
+    if (!names.includes(name)) names.push(name)
+  }
+  return names
+}
+
 /** `01`, `02` — a movement's place in its group, as the sequence line names it. */
 export function sequenceOrdinal(index: number): string {
   return String(index + 1).padStart(2, '0')
@@ -373,9 +431,10 @@ export function reviewBriefing(
   return {
     title: acceptance.workout.title,
     facts: [
-      { label: INTENSITY_LABEL, value: briefingIntensity(acceptance.effective_intensity) },
-      { label: ANCHOR_LABEL, value: formatFocus(acceptance.session_focus) },
+      { kind: 'intensity', label: INTENSITY_LABEL, value: briefingIntensity(acceptance.effective_intensity) },
+      { kind: 'focus', label: ANCHOR_LABEL, value: formatFocus(acceptance.session_focus) },
       {
+        kind: 'goal',
         label: GOAL_LABEL,
         value:
           acceptance.goal_preset === null
@@ -383,23 +442,18 @@ export function reviewBriefing(
             : GOAL_LABELS[acceptance.goal_preset],
       },
       {
+        kind: 'duration',
         label: DURATION_LABEL,
         value: briefingDuration(acceptance.effective_duration_target_mins),
       },
     ],
     adjustment: blankToNull(acceptance.adjustment_reason),
     sections,
-    equipment: [
-      ...new Set(
-        acceptance.workout.sections.flatMap((section) =>
-          section.blocks.flatMap((block) =>
-            block.exercises.flatMap((exercise) =>
-              NO_EQUIPMENT.has(exercise.equipment) ? [] : [equipmentName(exercise.equipment)],
-            ),
-          ),
-        ),
+    equipment: requiredEquipment(
+      acceptance.workout.sections.flatMap((section) =>
+        section.blocks.flatMap((block) => block.exercises.map((exercise) => exercise.equipment)),
       ),
-    ],
+    ),
     movementCount: sections.reduce((total, section) => total + section.movementCount, 0),
   }
 }
@@ -429,6 +483,12 @@ function reviewSection(
     ),
   }
 }
+
+/**
+ * The formats whose clock is the schedule (C11): their movements state no
+ * rest of their own in Review, exactly as their live renderers run none.
+ */
+const TIMED_FORMATS: ReadonlySet<Enums<'structure_type'>> = new Set(['emom', 'amrap', 'for_time'])
 
 function reviewBlock(
   block: WorkoutBlock,
@@ -464,8 +524,19 @@ function reviewBlock(
         prescriptionSiteKey(sectionIndex, blockIndex, index),
         weightUnit,
         performedInRounds && rounds !== null,
+        !TIMED_FORMATS.has(block.structure_type),
       ),
     ),
+    // `identity.format` is LADDER exactly when the ladder renderer performs
+    // the block (`performedAsLadder`), so Review shows the rounds the workout
+    // will.
+    ladderRounds:
+      identity.format === 'LADDER'
+        ? ladderRoundReadings(
+            block.exercises.map((exercise) => ({ prescription: exercise })),
+            block.ladder_timing?.rounds ?? null,
+          )
+        : null,
   }
 }
 
@@ -474,6 +545,7 @@ function reviewExercise(
   key: string,
   weightUnit: BriefingWeightUnit | null,
   inCountedRounds: boolean,
+  ownsRest: boolean,
 ): ReviewExerciseView {
   return {
     key,
@@ -485,7 +557,8 @@ function reviewExercise(
     load: loadText(exercise.load_type, exercise.load_value, weightUnit),
     // `restText` rather than a second sentence about the same column: the rest
     // a briefing promises and the rest the workout screen runs are one fact.
-    rest: restText(exercise.rest_seconds),
+    // A timed format's movement states none (C11): see `rest` above.
+    rest: ownsRest ? restText(exercise.rest_seconds) : null,
     tempo: blankToNull(exercise.tempo),
   }
 }

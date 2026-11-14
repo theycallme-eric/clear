@@ -1091,7 +1091,7 @@ describe('the block being performed right now', () => {
         blockId: BLOCK,
         structureType: 'amrap',
         repScheme: 'fixed',
-        identity: { label: 'AMRAP', glyph: 'Stopwatch', detail: null, repScheme: null },
+        identity: { label: 'AMRAP', format: 'AMRAP', glyph: 'Stopwatch', detail: null, repScheme: null },
         status: 'in_progress',
         exerciseCount: 1,
         exercises: [

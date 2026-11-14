@@ -1,0 +1,75 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-038",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "node-test",
+  "runnerVersion": null,
+  "command": [
+    "node",
+    "--test",
+    "scripts/refinement/task-038-definition.test.mjs"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-038/required-cases.json",
+    "sha256": "ea5beca62a4a3baad9f8a50e510f724e0e3dd0bd29ea994cb10ec114675af130"
+  },
+  "targets": [
+    {
+      "path": "scripts/refinement/task-038-definition.test.mjs",
+      "sha256": "6be2b5c090fb97cbfec44a9f6ca5015f203c911587677576a824bcc6480f9354"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the record passes the shared definition-record checker with its inventory, identity, catalog findings, notes and gallery sections",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every claim cites a listed source and every listed source is cited",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every identifier and quoted string a claim names occurs in a source that claim cites",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the inventory holds every guidance and note state the owner draws, in the owner’s words, with missing content, blank notes, loading and failure apart",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the hide/replacement/content rule is one exact owner decision with no option pre-selected, and nothing is hidden or reworded",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the follow-up stays in source-to-task traceability, and the accepted cards state draws the actual owner without claiming the inventory",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

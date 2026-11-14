@@ -1,0 +1,145 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-008",
+  "description": "Recovered smooth synchronized countdown warning (REQ-008; C22, C23, C24, C61; G06; R120, R125, R126, R133, R135, R144; P05) delivered through the accepted owners DeadlineTimer (src/ui/refinements/deadline-timer.tsx: the one warning, R7's useCountdownUrgency consolidated, the one deduplicated pointer-transparent screen-edge aura portalled into the topmost open native dialog, timer and aura pinned to one document-timeline phase) and countdown-warning.ts (colour at 10, edge at 5 while running, elapsed-only excluded), the per-clock deadline projection src/state/countdown-urgency.ts, the owner-selected tokens in src/ui/refinements/tokens.css and the recipe in presentation.css (ledger EXC-07), and every TimerFrame consumer (MovementCountdownView, RestTimerBar, EMOM minute, AMRAP window, ForTimeClock and the raced ladder, scheduled-ladder interval, circuit round rest) on the real /workout route, its open logging sheet and a native dialog (JOURNEY-008), and the accepted gallery state /gallery/refinements?state=urgency (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-008 --check check-01 -- npx vitest run src/state/countdown-urgency.test.ts src/ui/countdown-urgency.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C22-01",
+        "AC-C23-01",
+        "AC-C24-01",
+        "AC-C61-01",
+        "AC-R008-01",
+        "AC-R008-02",
+        "AC-R008-03",
+        "AC-R008-04",
+        "JOURNEY-008"
+      ],
+      "files": [
+        "src/state/countdown-urgency.test.ts",
+        "src/ui/countdown-urgency.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C23-01 the accepted rule: colour at 10 seconds left, the edge only while running at 5 and under, nothing at 11, at zero or for an unusable reading",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-R008-03 every countdown family warns on its own owner's remaining time: a movement countdown, the rest, an EMOM minute, an AMRAP window, a scheduled interval and a circuit round rest",
+          "criterion": "AC-R008-03"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C23-01 a count-up race warns on its cap minus elapsed, never on the number it shows: For Time and the raced ladder",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C24-01 pause holds the colour and stops the edge; resume brings it back; expiry, a finish and the cap end it",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-R008-03 elapsed-only clocks stay neutral at every reading: the session clock, a round's elapsed time and a race with no cap",
+          "criterion": "AC-R008-03"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C24-01 a warning records no work: reading every deadline stores nothing, starts nothing and changes no owner's record",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+          "criterion": "AC-C22-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+          "criterion": "AC-R008-03"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap's outcome never breathes",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C61-01 the timer and the aura share one phase: each breathe is pinned to the document timeline's epoch when it starts, again when the aura moves into or out of a dialog or the deadline resumes, and never restarted by a numeric tick",
+          "criterion": "AC-C61-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+          "criterion": "AC-R008-04"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the shared owner: held at 10 and 5, run into its last five, as a count-up cap, under an open native log with one aura in phase, and still",
+          "criterion": "AC-R008-02"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-008 --check check-02 -- npx playwright test e2e/refinement/task-008.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C22-01",
+        "AC-C23-01",
+        "AC-C24-01",
+        "AC-C61-01",
+        "AC-R008-01",
+        "AC-R008-02",
+        "AC-R008-03",
+        "AC-R008-04",
+        "JOURNEY-008"
+      ],
+      "files": [
+        "e2e/refinement/task-008.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "project": "mobile",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: a running countdown takes the colour at 10 and one soft edge at 5, breathing in phase with its timer over multiple cycles and numeric ticks; pause and expiry end it; elapsed-only clocks stay neutral",
+          "criterion": "AC-C61-01"
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "project": "mobile",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog's top layer and back on the same phase, and nothing is written",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "project": "mobile",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "project": "mobile",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 reduced motion phone-320: the urgent timer and the one edge hold a steady .5 with no animation, cover the narrow viewport, and lose no word, digit or colour",
+          "criterion": "AC-R008-04"
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "project": "mobile",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the shared owner — held at 10 and 5, run into its last five, a count-up cap, an open native log with one edge in phase, and the still preview — with no network",
+          "criterion": "AC-R008-02"
+        }
+      ]
+    }
+  }
+}

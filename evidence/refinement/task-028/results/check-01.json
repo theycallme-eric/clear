@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-028",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/view-state.test.tsx",
+    "--testNamePattern",
+    "error|retry",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-028/required-cases.json",
+    "sha256": "51ca36285111764a64434fc259cecd5ad9a9597b354996f8d2a92c1fee203c3d"
+  },
+  "targets": [
+    {
+      "path": "src/ui/view-state.test.tsx",
+      "sha256": "c00c6934dc82c38d5dae2f809ad2d5479480b37c703ddc163f1c409bbd8ab68a"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "reference screen: error > renders the AppError as an alert: plain message, requestId, what failed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "reference screen: error > the retry action re-runs the failed operation",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "containment: a state never puts a card inside a card > an error without a retry offers no action rather than a dead one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a standalone error scopes both border hooks to the error role at its root, so its frame, accent bar and emission share one role, and the glyph paints the error icon role",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 an error inside a card is that card’s content: the root keeps the error hooks, the glyph keeps the error icon role and no second frame, bar or emission is drawn",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a real route’s account-load error renders the shared error owner with its role, and Try again re-reads the account into the route",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 the accepted gallery state ?state=errors draws the shared error owner: a network timeout with the error role and its Retry",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-R028-01 error owner retained: PR611’s correction stays in the one shared ErrorView, no second error owner or stylesheet restates the role, and the pilot’s regression proof is in place",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 23,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 15,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

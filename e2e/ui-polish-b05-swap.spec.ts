@@ -49,10 +49,14 @@ const VIEWPORTS = { phone: PHONE, narrow: NARROW, short: SHORT } as const
 type ViewportName = keyof typeof VIEWPORTS
 const TOLERANCE = 1
 
-/** Air squat warms up; back squat and kb swing are the primary lift: three invocations. */
+/**
+ * Back squat and kb swing are the primary lift: the Review invocations. Air
+ * squat warms up; TASK-022 (C49; R01, R36) superseded its Swap: a Warm-up is
+ * the accepted concise guide — its names on separate lines, with no
+ * per-movement row or action — so it offers no Swap invocation.
+ */
 const ACCEPTANCE = makeSessionAcceptance({ date: new Date().toISOString().slice(0, 10), goal_preset: 'strength' })
 const INVOCATIONS = [
-  { slotName: 'air squat', section: 'warmup' },
   { slotName: 'back squat', section: 'primary_lift' },
   { slotName: 'kb swing', section: 'primary_lift' },
 ] as const
@@ -449,19 +453,23 @@ function expectRoomyRows(state: Composition) {
   expect(state.scroller!.right).toBeCloseTo(state.list!.right, 0)
 }
 
-/** The real grouped row readings, excluding only the movement that a pick replaces. */
+/**
+ * The real grouped row readings, excluding only the movement that a pick replaces.
+ *
+ * TASK-002: the structure badge is read from the group's card header (AC-C07-01,
+ * the static header Review shares with the live cards), and each member's
+ * compact equipment from beside its name (AC-C03-01), not from a separate line.
+ */
 async function groupReadings(list: Locator) {
   return list.evaluate((ol) => ({
-    badge: ol.parentElement!.firstElementChild!.textContent,
+    badge: ol.closest('[data-workout-card]')
+      ?.querySelector(':scope > [data-movement-group-header] .clr-movement-group-header__badge')?.textContent ?? null,
     rest: ol.parentElement!.lastElementChild!.textContent,
-    members: [...ol.children].map((item) => {
-      const [nameRow, prescription, equipment] = [...item.firstElementChild!.children]
-      return {
-        ordinal: nameRow!.firstElementChild!.firstElementChild!.textContent,
-        prescription: prescription!.textContent,
-        equipment: equipment!.textContent,
-      }
-    }),
+    members: [...ol.children].map((item) => ({
+      ordinal: item.querySelector('[data-movement-ordinal]')?.textContent ?? null,
+      prescription: item.querySelector('[data-movement-detail]')?.textContent ?? null,
+      equipment: item.querySelector('[data-movement-context]')?.textContent ?? null,
+    })),
   }))
 }
 
@@ -848,6 +856,16 @@ test.describe('B05 REQ-010 roomy swap selection', () => {
         await expect(original).toBeEnabled()
         const beforeText = await owner.innerText()
         const beforeReadings = await groupReadings(group)
+        // The readings are real, so their equality after a pick and Undo is not
+        // vacuous: the header's badge names this group (TASK-002 AC-C07-01) and
+        // every member reads its ordinal, prescription and equipment (AC-C03-01).
+        expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · '))
+        expect(beforeReadings.members.length).toBeGreaterThan(1)
+        for (const member of beforeReadings.members) {
+          expect(member.ordinal).toMatch(/^\d{2}$/)
+          expect(member.prescription).toBeTruthy()
+          expect(member.equipment).toBeTruthy()
+        }
         const otherText = await other.innerText()
         const siblingLabels = await group.getByRole('button', { name: /^Swap / })
           .evaluateAll((buttons) => buttons.slice(1).map((button) => button.getAttribute('aria-label')))
@@ -1075,15 +1093,16 @@ test.describe('B05 REQ-010 roomy swap selection', () => {
       await page.setViewportSize(viewport)
       const app = await syntheticReview(page, { kind: 'empty' })
       await openReview(page, visit)
-      const { dialog } = await openSwap(page, 'air squat')
+      // TASK-022: the Warm-up's air squat offers no Swap; the primary lift's back squat does.
+      const { dialog } = await openSwap(page, 'back squat')
       await expect(dialog.getByText('Nothing else fits this slot')).toBeVisible()
       const empty = await composition(dialog)
       expectRoomyFrame(empty)
       expect(empty.list).toBeNull()
       await capture(page, testInfo, `swap-empty-${viewportName}`, {
-        consumer: 'SwapDialog (warmup, Swap air squat)', state: 'empty (existing EmptyState)',
+        consumer: 'SwapDialog (primary_lift, Swap back squat)', state: 'empty (existing EmptyState)',
         criteria: ['AC-031', 'AC-049', 'AC-065'], composition: empty })
-      await dialog.getByRole('button', { name: 'Keep air squat', exact: true }).click()
+      await dialog.getByRole('button', { name: 'Keep back squat', exact: true }).click()
       await expect(dialog).toBeHidden()
       app.assertNoWrites()
     })

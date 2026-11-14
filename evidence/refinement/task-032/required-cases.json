@@ -1,0 +1,72 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-032",
+  "description": "Provide durable ladder draft and clock recovery state (REQ-032; TASK-AC-381E586395ED, TASK-AC-406D2CE971AA, TASK-AC-A168ED4B8418), foundation provider for JOURNEY-032 (completion owner of none). The durable state contract of one live ladder attempt — ordered rung progress, the current result draft, the accidental-Finish checkpoint and the original cap with its paused/elapsed clock identity — as pure state in src/state/ladder-recovery.ts over the existing For Time race clock owners (for-time.ts, timed-lifecycle.ts, workout-clock.ts), kept by the existing persistence owner src/state/workout-persistence.ts under clear.workout-ladders (one versioned record per block with session, block and attempt identity; usePersistedLadder, restoreLadderAttempt, writeLadderAttempt, readLadderAttempt; a ladder clock already stored under clear.workout-for-time adopted once). check-01 proves it deterministically with a fake wall clock and in-memory storage: reload counts time closed while running and none while paused, the original cap is never extended, expiry is derived and blocks Pause/Resume/check-off/Finish/Undo, Undo restores the pre-Finish clock, pause and progress, a failed save keeps the draft and Undo for the retry, a successful save or a server row closes the attempt; and through the shell's own BlockCompletionProvider and createWorkoutClients over TASK-030's in-memory PostgREST, a refused save writes nothing, the retry after a reload writes the durable draft once and a lost answer is read back as saved with no duplicate row. No route renderer, gallery state, migration, live call or writer changes: visible adoption is TASK-013, TASK-014, TASK-046 and TASK-048 (documented in src/state/README.md). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-032 --check check-01 -- npx vitest run src/state/refinement-ladder-recovery.test.ts --passWithNoTests=false",
+      "criteria": [
+        "TASK-AC-381E586395ED",
+        "TASK-AC-406D2CE971AA",
+        "TASK-AC-A168ED4B8418"
+      ],
+      "files": [
+        "src/state/refinement-ladder-recovery.test.ts"
+      ],
+      "cases": [
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-381E586395ED ordered progress, the current draft, the Finish checkpoint and the original cap round-trip through the workout-persistence owner under the attempt’s session, block and attempt identity",
+          "criterion": "TASK-AC-381E586395ED"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-381E586395ED a stale snapshot never attaches to another workout, block or attempt, and an unreadable or unknown-version record restores nothing",
+          "criterion": "TASK-AC-381E586395ED"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-381E586395ED a ladder clock already in a browser under the For Time key is adopted once — running, paused or finished — and older records keep restoring exactly as before",
+          "criterion": "TASK-AC-381E586395ED"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA close and reopen while running counts the time away, while paused counts none, and Resume keeps the original cap and the window left",
+          "criterion": "TASK-AC-406D2CE971AA"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA a clock that reached its cap while closed comes back expired: no Pause, Resume, check-off or Finish, and tracked progress carries into the log once",
+          "criterion": "TASK-AC-406D2CE971AA"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA Undo after Finish resumes as though Finish never happened: a running clock keeps the time spent finished, a paused one stays paused, progress and the draft come back, and the answer given to the ended attempt is undone",
+          "criterion": "TASK-AC-406D2CE971AA"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA Undo is unavailable once the original cap has passed, and an accidental Finish keeps its time instead of resuming past the cap",
+          "criterion": "TASK-AC-406D2CE971AA"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA a failed save keeps the draft and Undo for the retry; a successful save removes Undo, freezes the draft and the clock and survives a reload; a row the server reports is authoritative over any local draft",
+          "criterion": "TASK-AC-406D2CE971AA"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA through the shell’s one block writer: a refused save writes nothing, the retry after a reload writes the durable draft exactly once, and an answer lost in transit is read back as saved with no duplicate row",
+          "criterion": "TASK-AC-406D2CE971AA"
+        },
+        {
+          "file": "src/state/refinement-ladder-recovery.test.ts",
+          "name": "TASK-032 durable ladder draft and clock recovery > AC-A168ED4B8418 exposes the state and recovery interfaces TASK-013, TASK-014, TASK-046 and TASK-048 consume, documented with each task’s obligation, and claims no JOURNEY-032 completion",
+          "criterion": "TASK-AC-A168ED4B8418"
+        }
+      ]
+    }
+  }
+}

@@ -31,8 +31,9 @@ import type { Enums } from '../data/database.types'
 import { formatDay, formatFocus } from './history'
 import { moodStep, type MoodStep } from './mood'
 import { prescriptionText, exerciseName } from './prescription'
-import { equipmentName } from './review'
+import { equipmentName, requiredEquipment } from './review'
 import type {
+  BlockMovementResultRow,
   BlockResultRow,
   ExerciseSetLogRow,
   ReconstructionKind,
@@ -117,8 +118,38 @@ export interface BlockDetailView {
   readonly outcome: readonly OutcomeMeasurement[]
   /** `7 of 10`, the shell's one question for every structure, or null. */
   readonly perceivedEffort: string | null
+  /**
+   * TASK-031 (MIG-A): the block's categorical effort as recorded — one of the
+   * set's three categories, or null when unanswered. A category, never a
+   * number: it is not read onto the 1–10 scale above and nothing converts it.
+   * Its words are the existing effort owner's (`SET_EFFORT_CHOICES`).
+   */
+  readonly effort: Enums<'set_effort'> | null
   readonly notes: string | null
+  /**
+   * TASK-031 (MIG-B): each movement's recorded timed actuals — the partial
+   * amount with the round it belongs to, and the actual load — in the block's
+   * movement order. Only movements with a recorded row appear; nothing here is
+   * read from the plan.
+   */
+  readonly movementActuals: readonly MovementActualView[]
   readonly exercises: readonly ExerciseDetailView[]
+}
+
+/** TASK-031: one movement's recorded actuals in a timed block attempt. */
+export interface MovementActualView {
+  readonly key: string
+  /** `workout_exercises.id` — the movement as performed. */
+  readonly exerciseId: string
+  readonly name: string
+  /** The round the amount belongs to, or null on a load-only row. */
+  readonly round: number | null
+  /** `Rung 3` for a ladder, `Round 4` otherwise; null without a round. */
+  readonly roundLabel: string | null
+  /** `5 reps`, `20s` or `30 m`, the measurement of the prescription's modality. */
+  readonly amount: string | null
+  /** `24 kg` — the row carries its own stamped unit. */
+  readonly weight: string | null
 }
 
 export interface SectionDetailView {
@@ -139,6 +170,14 @@ export interface SessionDetailView {
   /** `42 min`, actual where it was measured and the estimate otherwise. */
   readonly duration: string | null
   readonly intensity: number
+  /**
+   * TASK-004 (C13, C14, G04): the Required equipment the recorded rows name —
+   * each row's own `equipment_used`, once each, in the order first needed,
+   * bodyweight excluded (`requiredEquipment`, the rule Review's Overview uses).
+   * Every row this reconstruction returns counts: a swapped-out row is only
+   * returned when work was logged against it. Empty for an all-bodyweight one.
+   */
+  readonly equipment: readonly string[]
   /** The debrief's two answers. Null means it was not answered. */
   readonly mood: MoodStep | null
   readonly notes: string | null
@@ -201,6 +240,11 @@ export function sessionDetail(reconstruction: SessionReconstruction): SessionDet
     stateLabel: STATE_LABELS[reconstruction.state],
     duration: sessionDuration(session.actual_duration_mins, session.computed_duration_mins),
     intensity: session.effective_intensity,
+    equipment: requiredEquipment(
+      reconstruction.sections.flatMap((entry) =>
+        entry.blocks.flatMap((block) => block.exercises.map(({ exercise }) => exercise.equipment_used)),
+      ),
+    ),
     mood: moodStep(session.mood),
     // Whitespace is not a note. The debrief trims before writing, but a row
     // written by anything else can still hold spaces, and a notes panel with
@@ -251,7 +295,9 @@ function blockDetail(
       result === null || result.perceived_effort === null
         ? null
         : `${result.perceived_effort} of 10`,
+    effort: result === null ? null : result.effort,
     notes: result === null ? null : blankToNull(result.notes),
+    movementActuals: movementActualReadings(entry.block, entry.exercises),
     exercises: entry.exercises.map(({ exercise, set_logs }) =>
       exerciseDetail(exercise, set_logs),
     ),
@@ -318,13 +364,62 @@ export function blockOutcome(
       readings.push(measurement('Elapsed', result.elapsed_seconds, formatElapsed))
       readings.push(
         measurement('Cap', result.completed_under_cap, (under) =>
-          under ? 'Finished under the cap' : 'Stopped at the cap',
+          under
+            ? 'Finished under the cap'
+            : stoppedBeforeCap(block, result)
+              ? // TASK-010 (C29): the athlete's Incomplete for a race they
+                // stopped before its cap — not a cap it reached.
+                'Incomplete'
+              : 'Stopped at the cap',
         ),
       )
       break
   }
 
   return readings.filter((reading): reading is OutcomeMeasurement => reading !== null)
+}
+
+/**
+ * TASK-031 (`timed-read-model`): the recorded per-movement actuals of a timed
+ * block, read from each movement's `block_movement_results` row as the
+ * reconstruction returns it — with its movement and round identity, and only
+ * what was recorded. A null column has no reading (never `0`), and a movement
+ * with no row has no entry; no amount or load is ever taken from the
+ * prescription's targets or `load_value`.
+ */
+export function movementActualReadings(
+  block: WorkoutBlockRow,
+  exercises: readonly {
+    readonly exercise: WorkoutExerciseRow
+    readonly movement_result: BlockMovementResultRow | null
+  }[],
+): readonly MovementActualView[] {
+  const unit = isLadderScheme(block.rep_scheme) ? 'Rung' : 'Round'
+  return exercises.flatMap(({ exercise, movement_result: row }) =>
+    row === null || row.workout_exercise_id !== exercise.id
+      ? []
+      : [
+          {
+            key: row.id,
+            exerciseId: exercise.id,
+            name: exerciseName(exercise.exercise_id),
+            round: row.round_number,
+            roundLabel: row.round_number === null ? null : `${unit} ${row.round_number}`,
+            amount: movementAmount(row),
+            weight: row.weight === null ? null : `${formatNumber(row.weight)} ${row.weight_unit}`,
+          },
+        ],
+  )
+}
+
+/** The one measurement a movement row records, formatted as a set's would be. */
+function movementAmount(row: BlockMovementResultRow): string | null {
+  if (row.actual_reps !== null) return `${row.actual_reps} ${row.actual_reps === 1 ? 'rep' : 'reps'}`
+  if (row.actual_duration_seconds !== null) return `${row.actual_duration_seconds}s`
+  if (row.actual_distance !== null) {
+    return `${formatNumber(row.actual_distance)} ${row.actual_distance_unit ?? ''}`.trim()
+  }
+  return null
 }
 
 function exerciseDetail(
@@ -396,6 +491,18 @@ function measurement<T>(
   format: (value: T) => string,
 ): OutcomeMeasurement | null {
   return value === null ? null : { label, value: format(value) }
+}
+
+/**
+ * TASK-010 (C29): a For Time row saved as not completed whose recorded time is
+ * short of its cap. Until the completion question existed, `false` came only
+ * from the cap, always with the cap's own time, so every such older row still
+ * reads "Stopped at the cap"; only an athlete's Incomplete for a race stopped
+ * earlier is short of it. An unknown time or cap claims nothing new.
+ */
+function stoppedBeforeCap(block: WorkoutBlockRow, result: BlockResultRow): boolean {
+  if (result.elapsed_seconds === null || block.timer_seconds === null) return false
+  return result.elapsed_seconds < Math.max(1, Math.trunc(block.timer_seconds))
 }
 
 /** Rounds against the prescription, because `4 of 5` is the fact `4` is not. */

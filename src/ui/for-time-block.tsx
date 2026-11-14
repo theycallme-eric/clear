@@ -272,6 +272,9 @@ function CapLine({ view }: { view: ForTimeView }) {
 const PHASE_WORDS: Readonly<Record<ForTimeView['phase'], string>> = {
   ready: 'Ready',
   running: 'Racing the clock',
+  // A3 task 2: the build's state adds a paused phase (TASK-006); the label is
+  // the build's own. Pause itself is wired in a later task.
+  paused: 'Paused',
   finished: 'Finished under cap',
   capped: 'Cap reached',
 }
@@ -336,6 +339,7 @@ const urgentLineStyle: CSSProperties = {
 const PHASE_COLOURS: Readonly<Record<ForTimeView['phase'], string>> = {
   ready: 'var(--text-card-label)',
   running: 'var(--text-card-label)',
+  paused: 'var(--text-card-label)',
   // The two endings, and the only two places this card leaves the label colour:
   // the timer's own colour for the result that beat the cap, its low colour for
   // the one the cap cut off (ATOMIC.md §3 — urgency is time pressure *and*

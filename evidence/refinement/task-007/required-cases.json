@@ -1,0 +1,153 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-007",
+  "description": "Whole timer frames and independent functional clocks (REQ-007; C19, C20, C21; G06; R15, R17, R42, R49, R53, R67, R96, R98, R102, R103, R119) delivered through the shared whole timer body DeadlineTimer (src/ui/refinements/deadline-timer.tsx, consolidating the former TimerFrame and the shipped TimerDisplay positions), the clock reading contract (src/state/timed-clock.ts) over each clock's existing owner, and every consumer — GlobalTimer, RestTimerBar, MovementCountdownView, the EMOM, AMRAP, scheduled-ladder and circuit countdowns, the circuit round clock and ForTimeClock — with the one-row .clr-workout-header recipe (src/ui/refinements/presentation.css), on the real /workout route and its open logging sheet (JOURNEY-007), and the accepted gallery states /gallery/refinements?state=cards and ?state=urgency (reference eded158cfd928d382c9a9409e2c372270312741d) drawing the actual consumers. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-007 --check check-01 -- npx vitest run src/state/timed-clock.test.ts src/ui/timer-frame-layout.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C19-01",
+        "AC-C20-01",
+        "AC-C21-01",
+        "AC-R007-01",
+        "AC-R007-02",
+        "AC-R007-03",
+        "JOURNEY-007"
+      ],
+      "files": [
+        "src/state/timed-clock.test.ts",
+        "src/ui/timer-frame-layout.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-C21-01 session elapsed, a movement countdown, the session rest and a format clock each read only their own owner at the same moment",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-C21-01 a section Pause freezes only its format clock and its cap; the session clock, the rest and a running countdown run on",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-C21-01 cap arithmetic is the race's own: cap minus elapsed while running, frozen while paused, zero once the cap is reached, none without a cap",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-C21-01 a movement countdown banks its own time on Pause, and a rest extension moves only the rest",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-C21-01 the session clock is elapsed only: it counts up, carries no deadline, and past an hour still reads as one clock",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-C21-01 each clock keeps its own name, direction and words",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/state/timed-clock.test.ts",
+          "name": "TASK-007 distinct functional clocks > AC-R007-03 a reading is a pure function of its owner's reading: re-read after a reload or in another place it is identical, and reading starts nothing",
+          "criterion": "AC-R007-03"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+          "criterion": "AC-C19-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, not a short readout beside its label",
+          "criterion": "AC-R007-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu's height and never stretched across the header",
+          "criterion": "AC-C20-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the gallery draws the route's own header on one row, and no two-row state",
+          "criterion": "AC-R007-02"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+          "criterion": "AC-R007-03"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-007 --check check-02 -- npx playwright test e2e/refinement/task-007.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C19-01",
+        "AC-C20-01",
+        "AC-C21-01",
+        "AC-R007-01",
+        "AC-R007-02",
+        "AC-R007-03",
+        "JOURNEY-007"
+      ],
+      "files": [
+        "e2e/refinement/task-007.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-320: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+          "criterion": "AC-C20-01"
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-320: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+          "criterion": "AC-C19-01"
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-390: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+          "criterion": "AC-C20-01"
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-390: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+          "criterion": "AC-C19-01"
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
+          "criterion": "AC-R007-03"
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "project": "mobile",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: the route's own one-row header, and every clock's actual consumer in one whole frame",
+          "criterion": "AC-R007-02"
+        }
+      ]
+    }
+  }
+}

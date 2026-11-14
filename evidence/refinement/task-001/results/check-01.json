@@ -1,0 +1,72 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-001",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/movement-list.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-001/required-cases.json",
+    "sha256": "c4fa3c4d0fc7c21221d2affa596ac8cc0f3d8240a7e0d0d311a384ee7a7a01da"
+  },
+  "targets": [
+    {
+      "path": "src/ui/movement-list.test.tsx",
+      "sha256": "8868eacd510c6fe84c6ab9ebbeef71fd0f8d8062aede9969cc659c6b76e352c6"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C01-01 Review and Workout lead with the prominent name, readable prescription and load, quiet equipment and their own action or progress slot",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C02-01 shows no Last-performance row in either context while the prescribed load stays visible",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C04-01 separates peers only between two movements, never after the last, with no inner grouping rail",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-01 standard, superset and circuit cards keep peer-only separators in both contexts and retain history data",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 long names and multi-digit ordinals wrap inside the name column without covering the action or progress slot",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 opens Review, starts that same workout and shows the same hierarchy on Workout",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-list.test.tsx",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > renders the accepted gallery state cards through the Review and Workout consumers",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

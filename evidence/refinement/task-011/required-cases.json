@@ -1,0 +1,99 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-011",
+  "description": "EMOM schedule and end logging without a completion counter (REQ-011; C31, C32; R40, R43, R44, R84) delivered through the EMOM owner EmomBlock (src/ui/emom-block.tsx: the annotated NOT STARTED and WORK phase captions removed while the minute, each movement's minute assignment and target, Now/Next, REST, PAUSED, FINISHED EARLY and COMPLETE stay; the natural-end sentence replaced by the end log) and the accepted shared owner TimedResultLog (src/ui/refinements/timed-result-log.tsx: its EMOM family, with no minutes-completed counter, no completion question and no confirmation step, and one group holding the existing optional notes), on the real /workout route (JOURNEY-011) through Start, a minute boundary and its rest, Pause/Resume, the natural end, Finish early, the section save, a reload, a failed save and its retry, and the History read. The schedule as specified is assumed: the saved block_results row carries the athlete's exception note in the block's existing notes column through the shell's one writer and no minutes_completed, elapsed time or completion flag; an early finish keeps its actual stop and is never recorded as a completed schedule; older stored records and saved rows read exactly as before. The accepted gallery states /gallery/refinements?state=emom and the cards state's Workout EMOM (reference eded158cfd928d382c9a9409e2c372270312741d) draw the actual EmomBlock. Every declared case must execute and pass; TASK-006's EMOM-named case in the same file is selected by the pattern and must pass too, but is not declared here.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-011 --check check-01 -- npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM --passWithNoTests=false",
+      "criteria": [
+        "AC-C31-01",
+        "AC-C32-01",
+        "AC-R011-01",
+        "AC-R011-02",
+        "JOURNEY-011"
+      ],
+      "files": [
+        "src/ui/timed-workout-flow.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state",
+          "criterion": "AC-R011-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them",
+          "criterion": "AC-C32-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions",
+          "criterion": "AC-C31-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption",
+          "criterion": "JOURNEY-011"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-011 --check check-02 -- npx playwright test e2e/refinement/task-011.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C31-01",
+        "AC-C32-01",
+        "AC-R011-01",
+        "AC-R011-02",
+        "JOURNEY-011"
+      ],
+      "files": [
+        "e2e/refinement/task-011.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-011.spec.ts",
+          "project": "mobile",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 touch phone-390 Signal: minute progress and Now/Next without the Not started or Work captions through a boundary, the rest and a pause; the natural end opens the counter-free log; an exception note survives a failed save, is saved once with no minutes tally, and History reads it",
+          "criterion": "AC-C32-01"
+        },
+        {
+          "file": "e2e/refinement/task-011.spec.ts",
+          "project": "mobile",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 keyboard phone-320 reduced motion: Finish early in minute 3 keeps FINISHED EARLY and the actual stop, never COMPLETE; the counter-free log by keyboard; a reload keeps the stop; the note is saved with no minutes tally or timing",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "e2e/refinement/task-011.spec.ts",
+          "project": "mobile",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 gallery emom and cards phone-390: the route’s own EmomBlock — the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption — with no network",
+          "criterion": "JOURNEY-011"
+        }
+      ]
+    }
+  }
+}

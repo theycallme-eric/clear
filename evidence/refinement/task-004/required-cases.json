@@ -1,0 +1,127 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-004",
+  "description": "Accepted Overview facts, equipment and summary frames (REQ-004; C12, C13, C14, C15; G04; V12) delivered through the shared owners SummaryFacts (wrapping, no carousel), OverviewFacts / EquipmentSummary / SummaryMetric (src/ui/refinements/overview.tsx) and the metric grid's card fill (shell.css, foreground-echo.css), adopted by Review's Overview, Session Detail's Overview and the completed Summary on the real /review, /history/:id and /summary routes (JOURNEY-004), with the accepted gallery state /gallery/refinements?state=overview (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-004 --check check-01 -- npx vitest run src/ui/summary-facts.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C12-01",
+        "AC-C13-01",
+        "AC-C14-01",
+        "AC-C15-01",
+        "AC-R004-01",
+        "AC-R004-02",
+        "AC-R004-03",
+        "JOURNEY-004"
+      ],
+      "files": [
+        "src/ui/summary-facts.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C12-01 /review: every useful fact is a whole glyph-led reading in one wrapping description list, with no carousel, rail or tab stop",
+          "criterion": "AC-C12-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-01 /review: intensity reads its value without \"of 10\", on the unchanged ten-point scale Start persists",
+          "criterion": "AC-R004-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C13-01 /review: Required equipment is one group under a rule, with the glyph-led label and each actual name once as an uppercase element",
+          "criterion": "AC-C13-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 None — bodyweight only appears for an all-bodyweight workout and never beside real equipment",
+          "criterion": "AC-R004-02"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C14-01 /history/:id: the saved Overview draws the same fact composition and equipment group as Review",
+          "criterion": "AC-C14-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-03 /history/:id: saved facts are the record’s own values and meanings, never the planned request",
+          "criterion": "AC-R004-03"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary: Duration and Streak are each the one frame of an equal-height metric cell and fill it",
+          "criterion": "AC-C15-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary recovery: a loading, failed or empty streak keeps its card filling the cell beside the recorded duration",
+          "criterion": "AC-C15-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery: a failed saved read keeps its error and retry, and shows no invented facts",
+          "criterion": "JOURNEY-004"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 gallery overview: the accepted state draws the Review, Session Detail and Summary consumers",
+          "criterion": "JOURNEY-004"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-004 --check check-02 -- npx playwright test e2e/refinement/task-004.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C12-01",
+        "AC-C13-01",
+        "AC-C14-01",
+        "AC-C15-01",
+        "AC-R004-01",
+        "AC-R004-02",
+        "AC-R004-03",
+        "JOURNEY-004"
+      ],
+      "files": [
+        "e2e/refinement/task-004.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-004.spec.ts",
+          "project": "mobile",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 phone-320: Review, the saved workout and Summary read wrapping glyph facts, one equipment group and filled metric frames",
+          "criterion": "JOURNEY-004"
+        },
+        {
+          "file": "e2e/refinement/task-004.spec.ts",
+          "project": "mobile",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 phone-390: Review, the saved workout and Summary read wrapping glyph facts, one equipment group and filled metric frames",
+          "criterion": "JOURNEY-004"
+        },
+        {
+          "file": "e2e/refinement/task-004.spec.ts",
+          "project": "mobile",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 phone-320: None — bodyweight only appears for an all-bodyweight workout, in Review and the saved Overview, and only there",
+          "criterion": "AC-R004-02"
+        },
+        {
+          "file": "e2e/refinement/task-004.spec.ts",
+          "project": "mobile",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery phone-390: a failed saved read and a failed streak read keep their meanings, retry by touch and reopen the same record",
+          "criterion": "JOURNEY-004"
+        },
+        {
+          "file": "e2e/refinement/task-004.spec.ts",
+          "project": "mobile",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > gallery overview phone-320: the accepted state draws the Review, saved and Summary consumers with the same facts, equipment and frames",
+          "criterion": "JOURNEY-004"
+        }
+      ]
+    }
+  }
+}

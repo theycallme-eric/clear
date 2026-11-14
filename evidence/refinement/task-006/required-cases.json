@@ -1,0 +1,128 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-006",
+  "description": "Timed Start/Pause/Resume/Finish action hierarchy (REQ-006; C17, C18; G05; R39, R48, R66, R68, R98) delivered through the shared lifecycle owner TimedWorkoutActions (src/ui/timed-workout-flow.tsx, consolidating the reviewed R7 TimedWorkoutFlow), its pause arithmetic (src/state/timed-lifecycle.ts) and the format controllers EmomBlock, AmrapBlock, ForTimeBlock and LadderBlock, with the shared .clr-timed-actions slot (src/ui/refinements/presentation.css), on the real /workout route (JOURNEY-006), and the accepted gallery states /gallery/refinements?state=ladder-4 and ?state=ladder-12 (reference eded158cfd928d382c9a9409e2c372270312741d) drawing the actual LadderBlock. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-006 --check check-01 -- npx vitest run src/ui/timed-workout-flow.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C17-01",
+        "AC-C18-01",
+        "AC-R006-01",
+        "AC-R006-02",
+        "JOURNEY-006"
+      ],
+      "files": [
+        "src/ui/timed-workout-flow.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
+          "criterion": "AC-R006-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 the long ladder keeps its Start near the top, after its identity and cap and before the repetitive rounds, with no second Start",
+          "criterion": "AC-R006-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
+          "criterion": "AC-C17-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 running controls are a secondary Pause and the format's primary Finish or Finish early, and paused controls a secondary Resume in Pause's place",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Pause freezes the section clock and its cap while the workout clock runs on, and Resume keeps the active time and the remaining window",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Finish ends each format's attempt where it stands — a paused attempt at its pause — and records nothing the format did not already observe",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-02 the section's Finish stays distinct from Finish workout: ending a block neither completes nor leaves the workout",
+          "criterion": "AC-R006-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 recovery: a paused section comes back paused after close and reopen, and a reached cap offers no Resume",
+          "criterion": "JOURNEY-006"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 draw the actual ladder renderer with the top Start and the Pause/Finish hierarchy",
+          "criterion": "JOURNEY-006"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-006 --check check-02 -- npx playwright test e2e/refinement/task-006.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C17-01",
+        "AC-C18-01",
+        "AC-R006-01",
+        "AC-R006-02",
+        "JOURNEY-006"
+      ],
+      "files": [
+        "e2e/refinement/task-006.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
+          "criterion": "AC-C17-01"
+        },
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
+          "criterion": "AC-C17-01"
+        },
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 keyboard and reduced motion: every action by keyboard, focus kept through Start and Pause, and the section Finish is not Finish workout",
+          "criterion": "AC-R006-02"
+        },
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 recovery phone-390: close and reopen keeps a paused section paused and frozen, and a running one running",
+          "criterion": "JOURNEY-006"
+        },
+        {
+          "file": "e2e/refinement/task-006.spec.ts",
+          "project": "mobile",
+          "name": "TASK-006 timed action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 phone-320: the actual ladder renderer, Start at the top, then Pause and Finish",
+          "criterion": "JOURNEY-006"
+        }
+      ]
+    }
+  }
+}

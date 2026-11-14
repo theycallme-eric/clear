@@ -32,6 +32,12 @@ export interface CardProps
   heading?: ReactNode
   /** Secondary text on the heading row, right-aligned (e.g. "Week 4"). */
   meta?: ReactNode
+  /**
+   * `label` draws the heading row's title in the same face as a plain label
+   * rather than a structural heading, where a heading above the card already
+   * names the same thing (TASK-022: the live Warm-up under its section header).
+   */
+  headingAs?: 'heading' | 'label'
 }
 
 const HEADING_ROW_STYLE: CSSProperties = {
@@ -51,15 +57,22 @@ const SUBGROUP_RULE_STYLE: CSSProperties = {
 function CardHeading({
   heading,
   meta,
+  headingAs = 'heading',
   ruled = false,
-}: Pick<CardProps, 'heading' | 'meta'> & { ruled?: boolean }) {
+}: Pick<CardProps, 'heading' | 'meta' | 'headingAs'> & { ruled?: boolean }) {
   if (!heading && !meta) return null
   return (
     <div style={ruled ? { ...HEADING_ROW_STYLE, ...SUBGROUP_RULE_STYLE } : HEADING_ROW_STYLE}>
       {heading ? (
-        <Heading className="label" style={HEADING_STYLE}>
-          {heading}
-        </Heading>
+        headingAs === 'label' ? (
+          <p className="label" style={HEADING_STYLE}>
+            {heading}
+          </p>
+        ) : (
+          <Heading className="label" style={HEADING_STYLE}>
+            {heading}
+          </Heading>
+        )
       ) : null}
       {meta ? (
         <span className="label" style={{ color: 'var(--text-secondary)' }}>
@@ -70,7 +83,7 @@ function CardHeading({
   )
 }
 
-export function Card({ heading, meta, role, padding, className, children, ...props }: CardProps) {
+export function Card({ heading, meta, headingAs, role, padding, className, children, ...props }: CardProps) {
   const insideCard = useInsideCard()
 
   if (insideCard) {
@@ -79,7 +92,7 @@ export function Card({ heading, meta, role, padding, className, children, ...pro
         className={['clr-stack', 'clr-stack--tight', className].filter(Boolean).join(' ')}
         {...props}
       >
-        <CardHeading heading={heading} meta={meta} ruled />
+        <CardHeading heading={heading} meta={meta} headingAs={headingAs} ruled />
         {children}
       </div>
     )
@@ -91,7 +104,7 @@ export function Card({ heading, meta, role, padding, className, children, ...pro
     <ForegroundEchoFrame>
       <PublicCard role={role} padding={padding} className={className} {...props} cornerSize="auto">
         <CardContainmentContext.Provider value>
-          <CardHeading heading={heading} meta={meta} />
+          <CardHeading heading={heading} meta={meta} headingAs={headingAs} />
           {children}
         </CardContainmentContext.Provider>
       </PublicCard>

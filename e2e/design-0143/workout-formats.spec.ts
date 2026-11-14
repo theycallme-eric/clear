@@ -48,7 +48,9 @@ function formats([one, two]: Catalogued[]) {
     ['conditioning', 'Conditioning', 'EMOM', block('emom')],
     ['conditioning', 'Conditioning', 'AMRAP', block('amrap')],
     ['conditioning', 'Conditioning', 'FOR TIME', block('for_time')],
-    ['conditioning', 'Conditioning', 'LADDER UP', block('for_time', {
+    // TASK-003 (AC-C08-01): the badge names the shape the ladder renderer
+    // performs, LADDER; `LADDER UP` is read on the block card's details line.
+    ['conditioning', 'Conditioning', 'LADDER', block('for_time', {
       rep_scheme: 'ladder_up',
       exercises: [prescription(one, { target_kind: 'sequence', target_value: null, target_sequence: [2, 4, 6], sets: null })],
     })],
@@ -112,7 +114,9 @@ test.describe('REQ-016 all formats, one session (TASK-030)', () => {
       for (const [index, [, label, badge]] of sections.entries()) {
         await expect(page.getByRole('heading', { level: 2, name: label, exact: true })).toBeVisible({ timeout: 30_000 })
         await expect(page.getByText(`Section ${index + 1} / ${sections.length}`, { exact: false }).first()).toBeVisible()
-        await expect(page.getByRole('list', { name: 'Structures in this section' })).toContainText(badge)
+        // TASK-027 (C54; R35): the compact navigator repeats no badge; the section's one block names its format on its card.
+        await expect(page.getByRole('list', { name: 'Structures in this section' })).toHaveCount(0)
+        await expect(page.locator('main .clr-movement-group-header__badge')).toHaveText([badge])
         if (index === 0) await checkA11y()
         if (index < sections.length - 1) {
           await nav.getByRole('button', { name: 'Next section', exact: true }).click()
@@ -122,6 +126,8 @@ test.describe('REQ-016 all formats, one session (TASK-030)', () => {
 
       await heading(page, 'Nice work')
       await expect(page.getByText(`${TITLE}, done.`)).toBeVisible()
+      // TASK-045: Save and close is in the Workout feedback dialog.
+      await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
       await page.getByRole('button', { name: 'Save and close', exact: true }).click()
       await heading(page, 'Today')
 

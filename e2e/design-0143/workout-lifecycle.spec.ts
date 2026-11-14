@@ -598,7 +598,79 @@ async function expectContained(page: Page, where: string) {
   return probe
 }
 
-/** One timer: its name, liveness, card depth, stepped crossing, low pulse and glow. */
+/**
+ * TASK-002 (AC-R002-02, AC-C07-01; R30, R37): Review's sections are static and
+ * always open. Each block is its own card under the header the live cards
+ * share: the section's name as the `h2` of the section's first card, then the
+ * block's structure badge. No header is a toggle, chevron or hit area, so no
+ * section can be collapsed, and the badge is the header's rather than the
+ * block body's. The spectrum persists seven sections of one block each, in
+ * this order; its plain standard block has no badge.
+ *
+ * TASK-003 (AC-C08-01, AC-C09-01, AC-R003-01) supersedes the badge's words and
+ * place: the badge, below the heading, names the format or shape alone (a For
+ * Time ladder is LADDER, as the ladder renderer performs it), and its rounds,
+ * clock, cap and scheme are the header's details line below the badge.
+ */
+const REVIEW_SECTIONS = [
+  { heading: 'Primary lift', badge: null, details: null },
+  { heading: 'Accessory', badge: 'SUPERSET', details: '2 ROUNDS' },
+  { heading: 'Conditioning', badge: 'CIRCUIT', details: '2 ROUNDS' },
+  { heading: 'Conditioning', badge: 'EMOM', details: '2 MIN' },
+  { heading: 'Conditioning', badge: 'AMRAP', details: '2 MIN' },
+  { heading: 'Conditioning', badge: 'FOR TIME', details: '2 MIN CAP' },
+  { heading: 'Conditioning', badge: 'LADDER', details: '2 MIN CAP · LADDER UP' },
+] as const
+
+async function expectStaticReviewSections(page: Page) {
+  const main = page.locator('main')
+  for (const name of new Set(REVIEW_SECTIONS.map((section) => section.heading))) {
+    await expect(main.getByRole('heading', { level: 2, name, exact: true }))
+      .toHaveCount(REVIEW_SECTIONS.filter((section) => section.heading === name).length)
+    // A section's name is never a control's name.
+    await expect(main.getByRole('button', { name: new RegExp(`^${name}`) })).toHaveCount(0)
+  }
+  const sections = await main.locator('[data-review-section]').evaluateAll((all) => all.map((section) => {
+    const cards = [...section.querySelectorAll<HTMLElement>('[data-workout-card="review"]')]
+    const header = cards[0]?.querySelector<HTMLElement>(':scope > [data-movement-group-header]') ?? null
+    return {
+      cards: cards.length,
+      framed: cards.filter((card) => card.closest('.clr-card') !== null).length,
+      heading: header?.querySelector(':scope > h2')?.textContent ?? null,
+      badge: header?.querySelector(':scope > .clr-movement-group-header__badge')?.textContent ?? null,
+      details: header?.querySelector(':scope > [data-structure-meta]')?.textContent ?? null,
+      // No toggle, chevron, hit area or pointer on the header…
+      headerControls: header === null ? -1 : header.querySelectorAll(
+        'button, a, [tabindex], [role="button"], [aria-expanded], [aria-controls], .clr-hit, .clr-collapsible__glyph',
+      ).length,
+      headerPointer: header !== null && getComputedStyle(header).cursor === 'pointer',
+      // …the block's work is never inside a disclosure or collapsed…
+      blocks: section.querySelectorAll('[data-review-block]').length,
+      disclosed: section.querySelectorAll(
+        '.clr-collapsible [data-review-block], [data-expanded] [data-review-block], [hidden] [data-review-block]',
+      ).length,
+      // …and the block's body carries no badge of its own.
+      bodyBadges: section.querySelectorAll('[data-review-block] .clr-chamfer--structure').length,
+    }
+  }))
+  expect(sections).toEqual(REVIEW_SECTIONS.map(({ heading, badge, details }) => ({
+    cards: 1, framed: 1, heading, badge, details, headerControls: 0, headerPointer: false,
+    blocks: 1, disclosed: 0, bodyBadges: 0,
+  })))
+  // The spectrum prescribes no tempo, so no section holds even the optional
+  // tempo disclosure: nothing in a section card toggles.
+  await expect(main.locator('[data-review-section] [aria-expanded]')).toHaveCount(0)
+  return sections
+}
+
+/**
+ * One timer: its name, liveness, card depth, stepped crossing, low colour,
+ * warning breathe and glow. TASK-008 (C22, C23, C61; R133, R135) supersedes the
+ * low marker and pulse read here: the colour from ten seconds left is the
+ * whole frame's `data-low`, and in a running deadline's final five the timer
+ * itself breathes on the shared smooth 1.5 s `clr-deadline-breathe` with one
+ * screen-edge aura — no longer the card's four-second stepped micro-pulse.
+ */
 function timerProbe(timer: Locator) {
   return timer.evaluate((el) => {
     const digits = el.querySelector<HTMLElement>('[aria-hidden="true"]')
@@ -607,13 +679,13 @@ function timerProbe(timer: Locator) {
     for (let node: Element | null = el; node; node = node.parentElement) {
       if (node.classList.contains('clr-card')) cardDepth += 1
     }
-    const pulse = el.closest<HTMLElement>('.clr-pulse-micro')
-    const pulseStyle = pulse ? getComputedStyle(pulse) : null
+    const urgent = el.getAttribute('data-urgent') === 'true'
+    const pulseStyle = urgent ? getComputedStyle(el) : null
     // Every text emits through `body`'s shadow; only its geometry is comparable,
     // because each element tints it with its own colour.
     const geometry = (shadow: string) => shadow.replace(/(?:color|rgba?)\([^)]*\)\s*/g, '').trim()
-    const pulseAnimation = pulse?.getAnimations().find((animation) =>
-      'animationName' in animation && (animation as CSSAnimation).animationName === 'clr-micro-pulse')
+    const pulseAnimation = urgent ? el.getAnimations().find((animation) =>
+      'animationName' in animation && (animation as CSSAnimation).animationName === 'clr-deadline-breathe') : undefined
     const opacities = pulseAnimation?.effect && 'getKeyframes' in pulseAnimation.effect
       ? (pulseAnimation.effect as KeyframeEffect).getKeyframes().map((frame) => Number(frame.opacity))
       : []
@@ -629,12 +701,14 @@ function timerProbe(timer: Locator) {
         body: geometry(getComputedStyle(document.body).textShadow),
         inline: digits?.style.textShadow || null,
       } : null,
-      low: pulse !== null,
+      low: el.closest('[data-low]') !== null,
       pulse: pulseStyle ? {
         animation: pulseStyle.animationName, duration: pulseStyle.animationDuration,
         timing: pulseStyle.animationTimingFunction, minimumOpacity: opacities.length ? Math.min(...opacities) : null,
+        maximumOpacity: opacities.length ? Math.max(...opacities) : null, opacity: Number(pulseStyle.opacity),
         running: pulseAnimation?.playState ?? 'none', boxShadow: pulseStyle.boxShadow,
       } : null,
+      edges: document.querySelectorAll('[data-countdown-edge]').length,
     }
   })
 }
@@ -650,15 +724,28 @@ function expectTimerContract(probe: TimerProbe, name: string) {
   expect(probe.digitGlow?.inline).toBeNull()
   expect(probe.digitGlow?.own).toBe(probe.digitGlow?.body)
 }
-function expectLowState(probe: TimerProbe, reducedMotion: boolean) {
+/** TASK-008 (C23): ten seconds left or fewer, not yet five — the colour alone. */
+function expectLowState(probe: TimerProbe) {
   expect(probe.low).toBe(true)
+  expect(probe.pulse).toBeNull()
+  expect(probe.edges).toBe(0)
+}
+/**
+ * TASK-008 (C22, C61): a running deadline's final five seconds — the timer
+ * breathes .2/.8/.2 on the smooth 1.5 s cycle with one soft screen-edge aura,
+ * no glow of its own; under reduced motion both hold a steady .5.
+ */
+function expectWarningBreathe(probe: TimerProbe, reducedMotion: boolean) {
+  expect(probe.low).toBe(true)
+  expect(probe.edges).toBe(1)
   expect(probe.pulse).toMatchObject({
-    animation: reducedMotion ? 'none' : 'clr-micro-pulse',
+    animation: reducedMotion ? 'none' : 'clr-deadline-breathe',
     boxShadow: 'none',
   })
-  if (!reducedMotion) {
-    expect(probe.pulse).toMatchObject({ duration: '4s', minimumOpacity: 0.8 })
-    expect(probe.pulse?.timing).toMatch(/^steps\(2(, end)?\)$/)
+  if (reducedMotion) {
+    expect(probe.pulse?.opacity).toBe(0.5)
+  } else {
+    expect(probe.pulse).toMatchObject({ duration: '1.5s', timing: 'ease-in-out', minimumOpacity: 0.2, maximumOpacity: 0.8, running: 'running' })
   }
 }
 
@@ -766,7 +853,8 @@ backendTest('responsive: original route families and seven renderers across widt
     const tab = page.getByRole('button', { name: new RegExp('^' + section.name + ', ') })
     await tab.click()
     if (section.name === 'Ladder') {
-      await page.getByRole('radio', { name: 'Finished the ladder', exact: true }).click()
+      // TASK-010 (C29; R78, R87): Complete beside Incomplete replaces "Finished the ladder".
+      await page.getByRole('radio', { name: 'Complete', exact: true }).click()
     }
     await evidence.shot('Workout', '/workout', section.state, '/workout', 'Workout', async () => {
       await expect(tab).toHaveAttribute('aria-current', 'step')
@@ -775,7 +863,7 @@ backendTest('responsive: original route families and seven renderers across widt
       if (section.name === 'Standard') {
         await expect(page.getByRole('form', { name: /^Log set 1 of/ }).first()).toBeVisible()
       } else if (section.name === 'Ladder') {
-        await expect(page.getByRole('radio', { name: 'Finished the ladder', exact: true })).toHaveAttribute('aria-checked', 'true')
+        await expect(page.getByRole('radio', { name: 'Complete', exact: true })).toHaveAttribute('aria-checked', 'true')
       } else {
         const names: Record<string, string> = {
           Superset: 'Movements in this superset', Circuit: 'Movements in this circuit',
@@ -792,21 +880,24 @@ backendTest('responsive: original route families and seven renderers across widt
   await page.getByRole('button', { name: /^EMOM, / }).click()
   await page.getByRole('button', { name: 'Start EMOM', exact: true }).click()
   const emomStart = await page.evaluate(() => Date.now())
-  await page.clock.pauseAt(emomStart + 52_000)
+  // TASK-008 (C23): the urgent moment is the minute's final five seconds.
+  await page.clock.pauseAt(emomStart + 56_000)
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const urgent = async () => {
-    expect(await seconds(timer)).toBe(8)
+    expect(await seconds(timer)).toBe(4)
     expectTimerContract(await timerProbe(timer), 'Time remaining')
-    expectLowState(await timerProbe(timer), false)
-    expect((await loops(page)).running).toHaveLength(1)
+    expectWarningBreathe(await timerProbe(timer), false)
+    // One loop: the warning — the timer and its one aura breathing together.
+    expect((await loops(page)).running).toEqual(['Time remaining', 'clr-deadline-edge'])
     await expectContained(page, 'Responsive urgent timer')
   }
   await evidence.shot('Workout', '/workout', 'active-emom-amrap-for-time-ladder', '/workout', 'Workout', urgent,
     { variant: 'responsive-emom-urgent', skins: true, acrossSkins: true })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await evidence.shot('Workout', '/workout', 'active-emom-amrap-for-time-ladder', '/workout', 'Workout', async () => {
-    expect(await seconds(timer)).toBe(8)
-    expectLowState(await timerProbe(timer), true)
+    expect(await seconds(timer)).toBe(4)
+    await expect.poll(async () => (await timerProbe(timer)).pulse?.opacity).toBe(0.5)
+    expectWarningBreathe(await timerProbe(timer), true)
     await expect.poll(() => page.evaluate(() =>
       document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0)
   }, { variant: 'responsive-emom-urgent-reduced', skins: true, acrossSkins: true })
@@ -815,6 +906,8 @@ backendTest('responsive: original route families and seven renderers across widt
   // Finish is the existing last-section action, not a control on Standard or EMOM.
   await page.getByRole('button', { name: /^Ladder, / }).click()
   await finish.click()
+  // TASK-045: the debrief is in the Workout feedback dialog the Debrief card opens.
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
   const save = page.getByRole('button', { name: 'Save and close', exact: true })
   await evidence.shot('Summary', '/summary', 'debrief-unrecorded-or-saved', '/summary', 'Nice work', async () => {
     await expect(save).toBeEnabled()
@@ -909,20 +1002,25 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
   }
   await restart()
 
-  const suggestion = page.locator('main .clr-text-action').first()
+  // The load suggestion is the movement's own attached TextAction. Swap is the
+  // other TextAction on a Review row, in the movement's slot beside its name
+  // (TASK-002 AC-C06-01), so the first TextAction on the screen is a Swap.
+  const suggestion = page.locator('main [data-movement-identity] > .clr-text-action').first()
   await evidence.shot('Review', '/review', 'validated-workout', at, TITLE, async () => {
     await expect(start).toBeEnabled()
     await expect(regenerate).toBeEnabled()
     await expect(suggestion).toBeVisible()
     const probe = await expectContained(page, 'Review')
-    // Overview card, then one card per section: no frame inside either.
-    const sections = await page.locator('main .clr-card [aria-expanded]').count()
-    expect(sections).toBe(7)
+    // Overview card, then one card per block — seven sections of one block
+    // each — under the static header the live cards share (TASK-002,
+    // AC-R002-02, AC-C07-01): no frame inside either, and no section toggle.
+    const sections = await expectStaticReviewSections(page)
+    expect(sections).toHaveLength(7)
     expect(probe.cards).toBeGreaterThanOrEqual(8)
     // The primary action is pinned below the scroller, not inside it.
     expect(await start.evaluate((el) => el.closest('.clr-scroll-region__foot') !== null &&
       el.closest('.clr-scroll-region__scroller') === null)).toBe(true)
-    evidence.note('containment', 'Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', probe)
+    evidence.note('containment', 'Review: overview metrics and seven always-open section cards under static headers (the section name an h2, the format-only structure badge below it and its rounds, clock or cap on the line below the badge, no toggle, chevron or collapsed state), no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', { ...probe, sections })
   }, { skins: true, short: start })
 
   // The quiet action: public TextAction, chevron, 40px, button semantics, keyboard focus.
@@ -953,13 +1051,34 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
   await page.keyboard.press('Escape')
   await expect(explain).toHaveCount(0)
 
-  const standard = page.locator('main [aria-expanded]').first()
-  await standard.click()
+  // TASK-002 (AC-R002-02, R37): a section's header is not a control, so no
+  // section can be collapsed. Tapping the first section's heading leaves its
+  // block open and the section at its size, with every header still static.
+  const firstSection = page.locator('main [data-review-section]').first()
+  const firstHeading = firstSection.getByRole('heading', { level: 2, name: REVIEW_SECTIONS[0].heading, exact: true })
+  const openHeight = (await firstSection.boundingBox())!.height
+  await firstHeading.click()
   await evidence.shot('Review', '/review', 'validated-workout', at, TITLE, async () => {
-    await expect(standard).toHaveAttribute('aria-expanded', 'false')
-    await expectContained(page, 'Review collapsed')
-  }, { variant: 'section-collapsed' })
-  await standard.click()
+    await expect(firstSection.locator('[data-review-block]')).toBeVisible()
+    expect((await firstSection.boundingBox())!.height).toBeCloseTo(openHeight, 0)
+    await expectStaticReviewSections(page)
+    await expectContained(page, 'Review after a section heading tap')
+  }, { variant: 'section-static' })
+  evidence.note('contract', 'Review sections are static (TASK-002, R37): a tap on a section heading collapses nothing, and the block stays open at the same size.')
+
+  // TASK-002 (AC-C06-01; U37): Swap is Review's contextual action. Its list
+  // opens for that slot and is left unchanged; the live workout never offers it.
+  const swap = page.locator('main').getByRole('button', { name: /^Swap / }).first()
+  await swap.click()
+  const swapDialog = page.getByRole('dialog')
+  await evidence.shot('Review', '/review', 'swap-confirmation', at, TITLE, async () => {
+    await expect(swapDialog).toBeVisible()
+    await expect(swapDialog.getByRole('list', { name: 'Alternatives' })
+      .or(swapDialog.getByText('Nothing else fits this slot'))).toBeVisible()
+  }, { variant: 'swap-options' })
+  await page.keyboard.press('Escape')
+  await expect(swapDialog).toHaveCount(0)
+  await expect(swap).toBeEnabled()
 
   await regenerate.click()
   const discard = page.getByRole('dialog', { name: 'Discard this workout?' })
@@ -1029,8 +1148,7 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
 
   evidence.disposition('Review', '/review', 'favorite-progression-loading', 'Reached only from a favorite\'s repeat surface; this lane restarts from History. The panel\'s four states are proved in src/ui/favorite-progression.test.tsx and src/app/ReviewRoute.test.tsx.', ['src/app/ReviewRoute.tsx', 'src/ui/favorite-progression.tsx'])
   evidence.disposition('Review', '/review', 'favorite-progression-error-retry', 'As favorite-progression-loading.', ['src/app/ReviewRoute.tsx', 'src/ui/favorite-progression.tsx'])
-  evidence.disposition('Review', '/review', 'swap-confirmation', 'Review renders no swap control in the current source; Swap lives on the Workout exercise card and is pictured there (active-standard-superset-circuit, variant swap-options).', ['src/app/Review.tsx', 'src/ui/exercise-swap.tsx'])
-  evidence.disposition('Review', '/review', 'swap-failure', 'As swap-confirmation; the swap list\'s failure state is proved in src/ui/exercise-swap.test.tsx and e2e/d6-swap-persistence.spec.ts.', ['src/ui/exercise-swap.tsx'])
+  evidence.disposition('Review', '/review', 'swap-failure', 'Swap is Review\'s action (TASK-002 AC-C06-01) and its options are pictured in this case (swap-confirmation, variant swap-options); this lane does not fail the real alternatives read. The swap list\'s failure state is proved in src/ui/exercise-swap.test.tsx, e2e/d6-swap-persistence.spec.ts and the TASK-002 recovery cases (src/ui/movement-identity.test.tsx, e2e/refinement/task-002.spec.ts).', ['src/ui/exercise-swap.tsx'])
   expect(evidence.modelAttempts()).toBe(1)
 })
 
@@ -1056,20 +1174,15 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     const probe = await expectContained(page, 'Standard')
     expectTimerContract(await timerProbe(sessionTime), 'Session time')
     await expect(page.getByRole('button', { name: 'Previous', exact: true })).toBeDisabled()
-    evidence.note('containment', 'Standard: shell, section, block and set form are sibling cards; fields and labels inside; Session time is a labelled non-live timer card.', probe)
+    evidence.note('containment', 'Standard: shell, section, block and set form are sibling cards; fields and labels inside; Session time is a labelled non-live whole timer frame (TASK-007, C20).', probe)
   }, { variant: 'standard', skins: true, short: logSet })
 
-  // Swap is the exercise card's action; its list is opened and left unchanged.
-  const swap = page.getByRole('button', { name: /^Swap / }).first()
-  await swap.click()
-  const swapDialog = page.getByRole('dialog')
-  await evidence.shot(...key('active-standard-superset-circuit'), at, 'Workout', async () => {
-    await expect(swapDialog).toBeVisible()
-    await expect(swapDialog.getByRole('list', { name: 'Alternatives' })
-      .or(swapDialog.getByText('Nothing else fits this slot'))).toBeVisible()
-  }, { variant: 'swap-options' })
-  await page.keyboard.press('Escape')
-  await expect(swapDialog).toHaveCount(0)
+  // TASK-002 (AC-C06-01, AC-R002-03; U37): Swap is Review's action, and its
+  // options are pictured in the review case (swap-confirmation, swap-options).
+  // The live workout offers set progress, Rest and logging, never Swap.
+  await expect(page.getByRole('button', { name: /^Swap / })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^Undo swap/ })).toHaveCount(0)
+  evidence.note('contract', 'Workout offers set progress, Rest and set logging and no Swap or Undo swap: Swap is Review\'s contextual action (TASK-002 C06) and is pictured in the review case.')
 
   // A real set, through the real table.
   await form.getByLabel(/^Weight/).fill('40')
@@ -1107,10 +1220,14 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   await evidence.shot(...key('rest-running-urgent-skipped'), at, 'Workout', async () => {
     await expect(page.getByText('Final 10 seconds', { exact: true })).toBeVisible()
     expectTimerContract(await timerProbe(restTimer), 'Time remaining')
-    expectLowState(await timerProbe(restTimer), false)
+    expectLowState(await timerProbe(restTimer))
     await expectContained(page, 'Rest urgent')
   }, { variant: 'running-urgent', skins: true })
-  evidence.note('timer', 'Rest low state: the card takes the timer-low role, digits cross colour over 0.4s in four steps, the card dims to 80% on the 4s two-step pulse, and no glow is added to the timer.', urgent)
+  evidence.note('timer', 'Rest low state (TASK-008, C23): from ten seconds left the card takes the timer-low role and the digits cross colour over 0.4s in four steps; in its final five the timer breathes on the smooth 1.5s cycle with one soft screen-edge aura. No glow is added to the timer.', urgent)
+
+  // TASK-008 (C23, C61): the warning holds the view's loop in the rest's final five seconds.
+  await page.clock.pauseAt(t0 + 21_000 + (after.rest - 4) * 1000)
+  expect(await seconds(restTimer)).toBe(4)
 
   // Coaching opened while the rest is urgent: its read is held, so two loops want the view.
   const definition = await boundary(page, { tail: 'exercise_definitions', method: 'GET' }, 'held-real')
@@ -1121,10 +1238,9 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     await evidence.shot(...key('rest-running-urgent-skipped'), at, 'Workout', async () => {
       await expect(page.locator('main [aria-busy="true"]').first()).toBeVisible()
       const held = await loops(page)
-      expect(held.running).toHaveLength(1)
-      expect(held.running[0]).toBe('Rest')
+      expect(held.running).toEqual(['Time remaining', 'clr-deadline-edge'])
       expect(held.stilled).toBeGreaterThan(0)
-      evidence.note('motion', 'Coaching loading beside an urgent rest: the rest pulse holds the one interface loop and the loading region is stilled but still busy.', held)
+      evidence.note('motion', 'Coaching loading beside an urgent rest: the rest warning (its timer and one aura, TASK-008) holds the one interface loop and the loading region is stilled but still busy.', held)
     }, { variant: 'rest-with-coaching-loading' })
     definition.release()
   } finally { await definition.dispose() }
@@ -1149,10 +1265,11 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     await evidence.shot(...key('rest-running-urgent-skipped'), at, 'Workout', async () => {
       await expect(page.getByText('Final 10 seconds', { exact: true })).toBeVisible()
       await expect(rest).toHaveAttribute('data-urgent', 'true')
-      expectLowState(await timerProbe(restTimer), true)
-      expect(await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0)
+      await expect.poll(async () => (await timerProbe(restTimer)).pulse?.opacity).toBe(0.5)
+      expectWarningBreathe(await timerProbe(restTimer), true)
+      await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0)
     }, { variant: 'reduced-motion' })
-    evidence.note('motion', 'Under reduced motion the urgent rest keeps its words, digits and low colours; the pulse and every other animation stop.')
+    evidence.note('motion', 'Under reduced motion the urgent rest keeps its words, digits and low colours; its timer and the one aura hold a steady .5 and every animation stops (TASK-008).')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
   }
   await page.clock.resume()
@@ -1210,21 +1327,24 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   const emomStart = await page.evaluate(() => Date.now())
   await page.clock.pauseAt(emomStart + 20_000)
   await evidence.shot(...key('active-emom-amrap-for-time-ladder'), at, 'Workout', async () => {
-    await expect(page.getByText('WORK', { exact: true })).toBeVisible()
+    // TASK-011 (C32, AC-R011-01; R40): the minute and Now carry the work; no WORK caption.
+    await expect(page.getByText(/^MIN 1 OF \d+$/)).toBeVisible()
+    await expect(page.getByText('WORK', { exact: true })).toHaveCount(0)
     const probe = await timerProbe(emomTimer)
     expectTimerContract(probe, 'Time remaining')
     expect(probe.low).toBe(false)
     expect(await seconds(emomTimer)).toBe(40)
   }, { variant: 'emom-active' })
-  await page.clock.pauseAt(emomStart + 52_000)
+  // TASK-008 (C23): the urgent moment is the minute's final five seconds.
+  await page.clock.pauseAt(emomStart + 56_000)
   await evidence.shot(...key('active-emom-amrap-for-time-ladder'), at, 'Workout', async () => {
-    expect(await seconds(emomTimer)).toBe(8)
+    expect(await seconds(emomTimer)).toBe(4)
     const probe = await timerProbe(emomTimer)
     expectTimerContract(probe, 'Time remaining')
-    expectLowState(probe, false)
-    expect((await loops(page)).running).toHaveLength(1)
+    expectWarningBreathe(probe, false)
+    expect((await loops(page)).running).toEqual(['Time remaining', 'clr-deadline-edge'])
     await expectContained(page, 'EMOM urgent')
-    evidence.note('timer', 'EMOM low state: the shipped TimerDisplay is its own card beside the block card, steps its colour over 0.4s and pulses to 80% on the one loop, with no extra glow.', probe)
+    evidence.note('timer', 'EMOM warning: the shared whole timer frame (TASK-007, C19) beside the block card, one chamfer filling its width, steps its colour over 0.4s from ten seconds left and, in the final five, breathes on the smooth 1.5s cycle with one soft screen-edge aura on the one loop (TASK-008), with no extra glow.', probe)
   }, { variant: 'emom-urgent', skins: true })
   await page.clock.resume()
 
@@ -1252,14 +1372,16 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     const probe = await timerProbe(page.getByRole('timer', { name: 'Block time', exact: true }))
     expectTimerContract(probe, 'Block time')
     expect(await seconds(page.getByRole('timer', { name: 'Block time', exact: true }))).toBe(45)
-    await expect(page.getByRole('group', { name: 'How did this block end?' })).toHaveCount(0)
+    // TASK-010 (C29): the completion question is the result log's, asked once the race ends.
+    await expect(page.getByRole('group', { name: 'Work completed' })).toHaveCount(0)
     await expectContained(page, 'For Time')
   }, { variant: 'for-time-active' })
   await page.clock.resume()
 
   await section('Ladder')
   await checkA11y()
-  const finished = page.getByRole('radio', { name: 'Finished the ladder', exact: true })
+  // TASK-010 (C29; R78, R87): Complete beside Incomplete replaces "Finished the ladder".
+  const finished = page.getByRole('radio', { name: 'Complete', exact: true })
   await finished.click()
   await evidence.shot(...key('active-emom-amrap-for-time-ladder'), at, 'Workout', async () => {
     await expect(page.getByRole('list', { name: 'Movements in this ladder' })).toBeVisible()
@@ -1440,6 +1562,8 @@ backendTest('summary: metric cards, debrief card, public moods, save busy, error
     }, { skins: true })
   } finally { await latest.dispose() }
   await page.getByRole('button', { name: 'Retry', exact: true }).click()
+  // TASK-045: the debrief is in the Workout feedback dialog the Debrief card opens.
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
   await expect(save).toBeEnabled()
 
   const moods = page.getByRole('radiogroup')
@@ -1447,25 +1571,29 @@ backendTest('summary: metric cards, debrief card, public moods, save busy, error
     await expect(notes).toHaveValue('')
     await expect(moods.getByRole('radio', { checked: true })).toHaveCount(0)
     const probe = await expectContained(page, 'Summary')
+    // TASK-045: the mood and notes share the Workout feedback dialog's one
+    // frame, with Save and close inside its form; no pinned foot remains.
     const layout = await page.evaluate(() => {
       const card = (text: string) => Array.from(document.querySelectorAll('main h2, main h3, main legend, main label'))
         .find((el) => el.textContent?.trim() === text)?.closest('.clr-card') ?? null
+      const framed = (text: string) => Array.from(document.querySelectorAll('dialog[open] legend, dialog[open] label'))
+        .find((el) => el.textContent?.trim() === text)?.closest('[data-logging-frame]') ?? null
       const duration = card('Duration')
       const streak = card('Streak')
-      const legend = card('How do you feel?')
-      const field = card('Notes · optional')
+      const legend = framed('How do you feel?')
+      const field = framed('Notes · optional')
       const button = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Save and close')
       return {
         durationOwnCard: duration !== null, streakOwnCard: streak !== null && streak !== duration,
         durationSmall: duration ? duration.getBoundingClientRect().width < document.querySelector('main')!.getBoundingClientRect().width : false,
         debriefOneCard: legend !== null && legend === field,
         debriefSeparateFromMetrics: legend !== duration && legend !== streak,
-        pinned: !!button && button.closest('.clr-scroll-region__foot') !== null && button.closest('.clr-scroll-region__scroller') === null,
+        pinned: !!button && button.closest('form#summary-debrief') !== null && button.closest('[data-logging-frame]') === legend,
       }
     })
     expect(layout).toEqual({ durationOwnCard: true, streakOwnCard: true, durationSmall: true,
       debriefOneCard: true, debriefSeparateFromMetrics: true, pinned: true })
-    evidence.note('containment', 'Summary: Duration and Streak are each their own small card; the mood choice and notes share one debrief card with their labels inside; Save and close is pinned in the footer outside the scroller.', { ...layout, ...probe })
+    evidence.note('containment', 'Summary: Duration and Streak are each their own small card; the mood choice and notes share the Workout feedback dialog frame with their labels inside; Save and close is in that dialog\'s form (TASK-045).', { ...layout, ...probe })
   }, { variant: 'unrecorded', skins: true, short: save })
 
   // The public faces, by geometry: the vendored mouth, one path, no plus.
@@ -1505,15 +1633,18 @@ backendTest('summary: metric cards, debrief card, public moods, save busy, error
     await expect.poll(() => peak.evaluate((el) => Number(getComputedStyle(el.querySelector('svg')!).opacity))).toBe(1)
   }, { variant: 'peak-selected', skins: true })
 
+  // The screen behind the modal log is inert: close it (the draft stays) before the favorite.
+  await page.getByRole('dialog', { name: 'Workout feedback', exact: true }).getByRole('button', { name: 'Close log', exact: true }).click()
   const favorite = await boundary(page, { tail: 'rpc/save_favorite', method: 'POST' }, 'failure')
   try {
     await page.getByRole('button', { name: 'Save as favorite', exact: true }).click()
     await evidence.shot('Summary', '/summary', 'favorite-save-failure-secondary', at, 'Nice work', async () => {
       await expect(page.getByRole('alert')).toContainText('That workout wasn’t saved as a favorite. Try again.')
-      await expect(save).toBeEnabled()
-      await expect(peak).toHaveAttribute('aria-checked', 'true')
+      await expect(page.getByRole('button', { name: 'Log workout feedback', exact: true })).toBeEnabled()
     })
   } finally { await favorite.dispose() }
+  await page.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+  await expect(peak).toHaveAttribute('aria-checked', 'true')
 
   const patch = await boundary(page, { tail: 'workout_sessions', method: 'PATCH' }, 'held-failure')
   try {

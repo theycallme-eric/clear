@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-027",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-027.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-027/required-cases.json",
+    "sha256": "238233110e5dce0f734a945bc2e5b118104b754d054e2e6037b7a00ab907562f"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-027.spec.ts",
+      "sha256": "e47c13fc5dcfd1403d03da7ef2401c57581856f8ceb00fb0542f38bd717b3e40"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "name": "TASK-027 compact live navigator preserves section access > JOURNEY-027 phone-320: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "name": "TASK-027 compact live navigator preserves section access > JOURNEY-027 phone-390: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 keyboard, reduced motion, failed read and reopen phone-390: the jump list opens and jumps from the keyboard with a visible focus on the opened card; a failed read keeps its retry; a reload keeps the section and grabs no focus",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "name": "TASK-027 compact live navigator preserves section access > gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}

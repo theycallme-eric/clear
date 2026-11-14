@@ -11,6 +11,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `src/ui/` | App-owned presentation | adding a reusable domain component not supplied by the design system |
 | `src/ui/crt-glass/` | The CRT Glass field (effects REQ-005): `preset.ts` is the only owner of its numbers; `motion-clock.ts` the clock and frame scheduler; `renderer.ts` + `shaders.ts` the WebGL2 pass, loaded only as a lazy chunk; `scanline-field.tsx` the lifecycle owner that reads the shared Visual effects policy | changing the CRT parameters (one edit in `preset.ts`, then the fidelity spec), the pass, or when it loads; never DOM capture, and not where it mounts (the texture surface owns that) |
 | `src/ui/crt-field/` | The live CRT Glass field on real HTML (effects REQ-006): `config.ts` is the one shipping configuration (appearance, cadence, identity) and its public API; `crt-field.tsx` + `crt-field.css` own layers, masking and lifecycle only. Mounted once by the root effects host in `RootLayout.tsx`, its viewport instance uses a pointer-transparent manual popover to stay above native dialogs; contained gallery specimens remain local. The retired atmosphere, frame and dialog-backdrop scans are overridden in `src/styles/atmosphere.css` | tuning the field (one edit in `config.ts`, bump its `id`, then `e2e/effects/crt-composition-fidelity.spec.ts` and `crt-live-overhead.spec.ts`); never DOM capture, readback or CSS keyframes. `src/ui/crt-glass/` stays as the raster reference |
+| `src/ui/refinements/` | Accepted workout refinements (gallery reference `eded158c…`, REUSE.md): `tokens.css` is the one file of app-owned semantic variables over Foundation tokens; `presentation.css` the shared recipes; `movement.tsx` the movement hierarchy and peer grouping (`MovementIdentity` / `MovementList` / `MovementGroupHeader`) that Review (`review-block.tsx`, `review-exercise-row.tsx`) and the live frame (`block-renderers-frame.tsx`) both draw; `workout-card.tsx` the one block card with the shared static header and each context's slot (`WorkoutCard`, Review's `ReviewMovement` with Swap, the live `LiveMovement` with set progress); `movement-readings.ts` the shared name/equipment/prescribed-load readings; `overview.tsx` the accepted Overview facts, Required equipment group and summary metric card (`OverviewFacts` / `EquipmentSummary` / `SummaryMetric`) that Review's and the saved workout's Overview and the completed Summary draw. The timed Start/Pause/Resume/Finish hierarchy is `src/ui/timed-workout-flow.tsx` (`TimedWorkoutActions`, the `.clr-timed-actions` slot) over the shared pause arithmetic in `src/state/timed-lifecycle.ts`, composed by the EMOM, AMRAP, For Time and ladder renderers, which keep their own clocks and records. `deadline-timer.tsx` is the whole timer body every live clock draws (`DeadlineTimer`, consolidating the former `TimerFrame`; the one-row `.clr-workout-header` recipe is in `presentation.css`), reading each clock's existing owner through `src/state/timed-clock.ts` (a reading contract, not a clock). It is also the one owner of the recovered countdown warning: eligibility is `countdown-warning.ts` (colour at 10 s, edge at 5 s while running, elapsed-only never), read from each clock's deadline through `src/state/countdown-urgency.ts`; the warning's exact values are in `tokens.css` (ledger EXC-07) and it draws one deduplicated pointer-transparent screen-edge aura, portalled into the topmost open native dialog, on the timer's own document-timeline phase. `timed-result-log.tsx` is the timed-results log in the simple hierarchy (`TimedResultLog`: one title, then its result groups; its AMRAP family groups rounds and the partial round; its For Time and ladder families ask Work completed — Complete beside Incomplete in one row, `.clr-timed-completion` — then the existing three-face effort, `SetEffortChoice` from `src/ui/set-effort.tsx`), presentation over each format controller's own record and writer — since TASK-015 also the accepted per-movement groups of its AMRAP, For Time and ladder families (`MovementEntryLog`: the amount completed in the round the partial belongs to, in the movement's unit, and the actual load used, each only where it applies; blank unrecorded, a typed 0 kept, the row rule refusing inline; `.clr-timed-log__group-title`, `--logging-movement-gap`) — and `quantity.tsx` the one framed count (`QuantitySelector`: framed minus and plus around a distinct value, blank distinct from zero, no reset); the AMRAP renderer composes both after its work, and the For Time and ladder renderers compose the completion family (the For Time keeps the athlete's answer on its race record, `workCompleted` in `for-time.ts`, saved as `completed_under_cap`; the categorical effort is reported to the shell and saved as `block_results.effort`, TASK-015), and the EMOM renderer composes its EMOM family once the schedule ends (no minutes-completed counter or completion question; the optional notes for an exception, reported as the block's existing `block_results.notes` and never as a minutes tally or timing). `ladder.tsx` is the compact truthful ladder prescription: `LadderPrescription` (one concise line per movement — compact equipment, whole progression or fixed companion target, prescribed load) over `LadderRounds` (every round as a wrapping read-only tile in the ×/· notation, the fixed companion in each), read from the prescription columns through `src/state/ladder.ts` (`ladderProgressionText`, `ladderRoundReadings`, over `ladderRungs`); the ladder renderer draws it for every ladder, and Review draws `LadderRounds` read-only under its accepted movement rows (`ReviewBlockView.ladderRounds`). The same owner holds the ordered progress (TASK-013): while a raced ladder's clock runs or is paused its round tiles are the live check-off (shared `Chip` toggles, the pressed prefix, `ladderPrefixAfterTap`, and the count), and `LadderCompletion` is the result log's rep-first wrapping tiles (target largest, round secondary, unit its own row; no tick), which `TimedResultLog`'s ladder family draws under Complete / Incomplete; the ladder renderer keeps the attempt — clock, progress and answer — in TASK-032's durable record (`usePersistedLadder`) and imports the checked prefix into the log at Finish or the cap | adding an accepted refinement owner or semantic variable; never a route-local look-alike. Stable gallery states live at `/gallery/refinements?state=…` (`src/dev/gallery-refinements.tsx`; named scenes in `src/dev/gallery-refinement-scenes.tsx`; the live ladder in `src/dev/gallery-refinement-flow.tsx`; the header and timer frames in `src/dev/gallery-refinement-timers.tsx`; the logging forms — the EMOM, AMRAP, For Time and ladder results so far, and the `cards` state's live EMOM — in `src/dev/gallery-refinement-forms.tsx`) |
 | `src/design-system/` | Vendored public design surface | integrating a versioned export in DS-01; never for app-owned components |
 | `src/styles/` | App-owned CSS the export does not ship | composing the shipped motion vocabulary or skin; never new visual ideas or raw values |
 | `src/test/` | Shared test setup | adding test-only configuration or helpers |
@@ -30,6 +31,8 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `scripts/generate-pwa-icons.mjs` | The PWA-01 icon renderer and its Vite plugin: the chamfered mark drawn to PNG at build time, served from memory in dev | changing the installed-app icon; it sits outside `src/` because the two skin hexes a PNG cannot read as tokens would fail the DS-08 gate there |
 | `scripts/dev-preflight/` | ENV-04's gate on `npm run dev`: the checks (`env.mjs`, `ping.mjs`), the sentences they print (`messages.mjs`), and the entry point Vite runs behind (`preflight.mjs`) | changing what must be true before the dev server starts, or how that failure reads; never app runtime code — it runs in Node before Vite exists |
 | `scripts/ui-polish/` | Verification-only schema rehearsals for the UI-polish body. `rehearse-effort-schema.mjs` (TASK-007, REQ-012) applies the real migrations to a new `--network none` container from a locally present Supabase PostgreSQL 17 image, proves the set-effort contract on synthetic rows under RLS, and removes only that container. Takes no target, never pulls, forwards no credential | adding a disposable local rehearsal for a candidate migration; never a remote or shared database, and never part of the dev flow |
+| `scripts/refinement/` | The clear-refinement-20261103 body's shared verification providers (TASK-039): `run-required-check.mjs` runs a task's declared check through the installed Vitest/Playwright/node:test runner and passes only when every requested file exists and every declared required case executed and passed in the native JSON/TAP report; `verify-delivery-evidence.mjs` has separate `baseline`, `references` and `final` modes; `verify-definition-record.mjs` checks definition-only records. `required-check.test.mjs` and `fixtures/` are their self-tests. Offline; no credential, network or package download. Contract in `evidence/refinement/README.md` | changing what counts as proof for that body; tasks add their own manifests and specs, never a competing checker |
+| `evidence/refinement/` | That body's evidence: `clear-refinement-20261103/` holds the hash manifests of the staged gallery/source references (resolved by identity, never by an owner-machine path; the object bytes stay outside Git in the project-level `evidence-store/` beside `runner-v2/`, `CLEAR_REFINEMENT_EVIDENCE_DIR` overrides), and each `task-NNN/` holds that task's `required-cases.json` and generated `results/` receipts | adding a task's manifest or rerunning its check; never by hand-editing a receipt or a hash manifest, or by committing a staged object |
 | `scripts/backend-audit/` | Read-only inventory and snapshot tooling for the reused Supabase project (`npm run backend:prereqs` / `backend:inventory` / `backend:snapshot`) | adding audit/snapshot capture steps; never mutation |
 | `scripts/generation-reliability/` | Generation-reliability release checks (`npm run gr:*`). `auth-email-template.mjs` checks the committed sign-in email renders a numeric code and, given `SUPABASE_ACCESS_TOKEN`, compares it read-only with the hosted template; the manual steps live in `docs/process/generation-reliability/release-checklist.md`. `release-lanes.mjs` (`npm run gr:lanes`) runs the fast contract, composition and critical browser lanes and records each pass per commit under the git-ignored `release-evidence/`; `release-gate.mjs` is what `e2e/core-loop.spec.ts` asks before the one paid generation, and what writes that journey's allow-listed evidence artifact. `release-exit.mjs` (`npm run gr:exit`) records only owner-reported UAT outcomes in a closed, privacy-checked record and refuses release exit when any criterion lacks linked passing evidence | adding a read-only release check or local evidence recorder for the generation-reliability recovery; never hosted mutation, never sending mail |
 | `scripts/generation-reliability/dispositions.mjs` | GR-02's configuration dispositions (`npm run gr:dispositions`): the legal-state matrix rebuilt from the seed *plus the ledger* (`projectCatalog`) in, `docs/process/generation-reliability/configuration-dispositions.json` out — every legal configuration as supported, or prevented at the preference boundary with the incompatible choice and reason. A projection only; `--check` fails when the file is stale or a configuration has neither disposition | changing how a configuration's disposition is decided; never by editing the generated JSON, and never to apply the ledger |
@@ -147,6 +150,12 @@ overrunning block — never trimmed, because what to cut is composition judgment
 one-sided on purpose: a fixed work-per-set under-counts real time, so a computed duration below the
 target says something about the allowance rather than about the workout. `computed_duration_mins`
 rides in the quality record beside the model's estimate, for the session row to carry both.
+The app reads that estimator once, for the Warm-up and Cooldown guide's approximate time
+(`src/state/preparation-guide.ts`, TASK-034, contract `docs/specs/PREPARATION_GUIDE_CONTRACT.md`).
+It imports the pure module rather than copying it, so there is still one duration model.
+`/review` and `/workout` draw that reading as the concise guide (`src/ui/preparation-guide.tsx`,
+TASK-022); the live guide's separate preparation clock is `src/state/preparation-clock.ts`, held per
+section by the shell's `PreparationClockProvider`, in memory only and writing nothing.
 `HARD_CHECKS` is the requirement's "the correspondence is listed" as data rather than prose — one
 row per check naming the constraint in `20260921000003_workout_domain.sql` that would refuse the row
 — and `src/test/generation-validation.test.ts` reads those declarations back out of the migration and
@@ -299,6 +308,22 @@ and an AMRAP records both. Null, zero and skipped stay three different observati
 column has a default, every one of them admits zero, and a skip is `execution_status` one level up.
 Reading it back is `session_performed`, a `SECURITY INVOKER` view — "as performed" is a view rather
 than a join, because set logs alone cannot show a skipped exercise or a block's own outcome.
+TASK-031 (MIG-A, MIG-B; declared in the repository and applied to the hosted project by the
+owner's LIVE-PRE-1 on 2026-11-10) adds the richer timed side: `block_results.effort`, the block's
+categorical effort beside the legacy 1–10 number, and `block_movement_results`, one row per
+movement per timed block attempt (its round partial and actual load) — deliberately not a set, so
+anchors, deload and History set counts never read it. The `session_as_*` reconstructions carry it
+per exercise as `movement_result`; History reads both through `sessionDetail` (`effort`,
+`movementActuals`), and `src/state/timed-results.ts` is the save provider (draft → rows,
+idempotent retry, draft kept on failure). TASK-015 wired it: the timed renderers report the log's
+effort and each movement's typed partial and load beside their outcome
+(`BlockCompletionApi.reportTimedResult`, through the one `BlockCompletionControl`), and
+`src/state/block-completion-provider.tsx` — still the only path that saves a block — saves such a
+block through `saveTimedResult` (row, correction on the unique key, movement rows; ids minted once
+per block) and a block with nothing new through the bare insert as before. The round each partial
+belongs to comes from TASK-030's rules in `src/data/refinement-logging-rules.ts`, never from the
+plan; the entries live on each family's own draft (`AmrapState.movements`,
+`ForTimeState.movements`, the ladder's durable `LadderDraft.movements`).
 
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and
@@ -447,8 +472,9 @@ EXE-02…EXE-04c land by replacing an entry; a renderer receives no client and n
 `blockRendererFor` takes the block and sends a For Time block whose `rep_scheme` is a ladder to
 EXE-04a's `src/ui/ladder-block.tsx`. Its rungs come from `target_sequence` through
 `src/state/ladder.ts` — pure over the snapshot like `prescription.ts` beside it, and the reason
-nothing in the renderer parses a pattern string — and are drawn by `src/ui/ladder-rungs.tsx`, which
-is read-only data during the block and a radio group once the cap is hit. `src/test/block-completion-ownership.test.ts` keeps it that way, naming the one
+nothing in the renderer parses a pattern string — and are drawn by the compact prescription and,
+since TASK-013, the result log's rep-first tiles in `src/ui/refinements/ladder.tsx`
+(`src/ui/ladder-rungs.tsx` remains the format preview's read-only rung row). `src/test/block-completion-ownership.test.ts` keeps it that way, naming the one
 file allowed to insert the row, the one allowed to ask for effort, and the one allowed to provide the
 seam — because a sixth renderer growing its own write is exactly how OVR-03's single input stops
 being single, and no behavioural test would notice. `src/ui/workout-chrome.tsx` holds the shell's
@@ -483,6 +509,30 @@ id, on the circuits' argument exactly: the score is nowhere in the rows until th
 and walking to the next section and back must not lose it. `BlockProgress` now carries `timerSeconds`
 alongside `rounds` and `roundRestSeconds`, because a renderer that has to count a window down needs
 the number and not the header's words.
+
+TASK-032 adds the ladder's durable attempt on the same terms one step further. A live ladder is
+more than its race clock: the rungs checked off, the result draft, the accidental-Finish checkpoint
+Undo returns to and the cap it was started against. `src/state/ladder-recovery.ts` is that state as
+pure arithmetic over the For Time clock (`for-time.ts`, `timed-lifecycle.ts`, `workout-clock.ts`).
+`workout-persistence.ts` keeps it under a sixth key, `clear.workout-ladders`, as one versioned record
+per block id carrying its session, block and attempt identity, with `usePersistedLadder` as the hook.
+A stale or foreign record restores nothing, another attempt's record is never replaced, and a ladder
+clock already stored under the For Time key is adopted once. Expiry is derived, the original cap is
+never re-read, and a saved row closes the attempt. TASK-013 adopted it in the route's ladder
+(`ladder-block.tsx`): one durable attempt per ladder holds its race clock (a schedule's start stamp,
+with no cap), its live checked progress and its answer and rounds; the session id comes from the
+completion seam (`BlockCompletionApi.sessionId`). Effort stays the renderer's memory until its writer
+exists. TASK-014 adopted the Finish checkpoint as the log's quiet Undo (`TimedResultLog`'s completion
+action). One new flow runs from the shell to a renderer for it: the completion provider tells a
+block's `onBlockRecorded` listeners in the same act as the block's row is known to exist, before
+`isBlockRecorded` renders and the forward action moves on, and the ladder closes its durable attempt
+there (`markRecorded`), so a saved attempt is never left open to Undo after a reload. TASK-046/048 adopt
+the rest (`src/state/README.md` lists what each must do). TASK-048 completes the flow: the listener is
+told how the row is known (`'saved'` for this device's answered save, `'known'` otherwise), a failed
+save is told to `onBlockSaveFailed`, the provider keeps the row it wrote or read (`recordedResult`,
+read back by `ladderDraftFromRow` ahead of the local echo), and a ladder whose own richer save failed
+while its row landed may `reopenBlock` so the retry restates it once. The ladder's effort and notes
+now live in its durable draft too.
 
 REQ-057 adds the one thing that renders *above* the route tree rather than inside it, and the
 reason is that boot is the app becoming ready rather than a screen it navigates to.

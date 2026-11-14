@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-034",
+  "description": "Use authoritative guide content and approximate duration (REQ-034; AC-R034-01, AC-R034-02). Engineering definition with a typed reading and deterministic tests; no route, component, clock, writer, migration or live call, and no claim that the accepted guide presentation (TASK-022) is implemented. The contract is docs/specs/PREPARATION_GUIDE_CONTRACT.md with its typed half src/state/preparation-guide.ts: the Warm-up/Cooldown title from sectionTypeLabel (never section_title or section_notes), every prescribed movement in composed order (active rows after a swap) named by exerciseName, its count, and the approximate time as GEN-06 estimateDuration of the section alone (~N minutes), never the model estimate, computed session duration or target; loading/error follow the consumer source, missing carries no-workout/not-composed/no-movements, and a malformed persisted row is an error. check-01 proves every case from real compositions (the edge parser over the recorded response, the factories, the sessions client over the session double) and that the module holds no illustrated 4-minute/3-movement fixture. Explicit gallery disposition: the app gallery has no preparation state at this base; TASK-022 owns that presentation and adopts this reading. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-034 --check check-01 -- npx vitest run src/state/preparation-guide.test.ts --passWithNoTests=false",
+      "criteria": [
+        "AC-R034-01",
+        "AC-R034-02"
+      ],
+      "files": [
+        "src/state/preparation-guide.test.ts"
+      ],
+      "cases": [
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a composed Warm-up and Cooldown read the stable title, every prescribed movement in order and their own count, never the generated title, notes or per-movement prescription",
+          "criterion": "AC-R034-01"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 the approximate time is GEN-06’s own section estimate from blocks and prescriptions, in whole minutes, never the model estimate, the computed session duration or the target",
+          "criterion": "AC-R034-01"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a persisted session reads the same guide as the composed workout it was accepted from, and a swap shows its replacement in the same place",
+          "criterion": "AC-R034-01"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 every owner the source record names resolves to a real export, and the contract states the same owners",
+          "criterion": "AC-R034-01"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 missing: no workout, no Warm-up or Cooldown composed, and a section with no active movement read as missing with their reason, never as an empty guide",
+          "criterion": "AC-R034-02"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 loading and error follow the source, and a persisted row whose target contradicts its kind is an error rather than a guess",
+          "criterion": "AC-R034-02"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 content: the recorded generation reads its own Warm-up exactly as the Review briefing and the live workout name it, from the composed and the persisted source alike",
+          "criterion": "AC-R034-02"
+        },
+        {
+          "file": "src/state/preparation-guide.test.ts",
+          "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 readings follow the data, keep the concise ~N minutes format and carry no hard-coded illustrated four minutes, three rows or sample movements",
+          "criterion": "AC-R034-02"
+        }
+      ]
+    }
+  }
+}

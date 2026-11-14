@@ -59,6 +59,7 @@ describe('the generated types are current (DATA-03)', () => {
     const names = schema.tables.map((table) => table.name)
 
     expect(names).toEqual([
+      'block_movement_results',
       'block_results',
       'component_pattern_map',
       'exercise_definitions',
@@ -183,6 +184,8 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20261024000026_v3_hinge_warmup.sql',
       '20261027000027_set_effort.sql',
       '20261027000028_set_observation_mutations.sql',
+      '20261110000029_block_result_effort.sql',
+      '20261110000030_block_movement_results.sql',
     ])
   })
 

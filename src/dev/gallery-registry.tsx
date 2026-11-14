@@ -832,6 +832,7 @@ const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
   id: 'gallery-detail-block',
   identity: {
     label: 'CIRCUIT',
+    format: 'CIRCUIT',
     detail: '4 ROUNDS',
     repScheme: null,
     glyph: 'Circuit',
@@ -842,6 +843,9 @@ const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
     { label: 'Elapsed', value: '08:12' },
   ],
   perceivedEffort: '8 of 10',
+  // The build's timed read model (TASK-031); this sample records neither.
+  effort: null,
+  movementActuals: [],
   notes: 'Moved cleanly through the final round.',
   exercises: [
     {
@@ -1088,6 +1092,9 @@ const SAMPLE_LOAD_SUGGESTION: LoadSuggestionView = {
   reason: 'RPE 7.5–8.5, all reps completed → +1 increment',
   clamped: false,
   delta: 2.5,
+  // The build's load suggestions say whether Review offers "Your weight" (TASK-003); a
+  // standard lift does, so the sample keeps the control it always showed.
+  adjustable: true,
   lastSession: {
     date: '2026-09-15',
     sets: [1, 2, 3].map((setNumber) => ({
@@ -2094,7 +2101,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     { state: 'Round 7 live ladder before Start', Render: () => <LiveFlow kind="ladder" /> },
   ] },
   { component: 'MovementGroupHeader', requirement: 'R30 / R37', module: 'src/ui/movement-presentation.tsx', summary: 'One static group-header owner used by actual Review and live BlockPanel: title left, compact structure badge right, no Review disclosure.', specimens: [
-    { state: 'superset and rounds', Render: () => <Card><MovementGroupHeader title="Accessory" badge={<StructureBadge identity={{label:'SUPERSET', detail:'3 ROUNDS',repScheme:null,glyph:'Superset'}} />} /></Card> },
+    { state: 'superset and rounds', Render: () => <Card><MovementGroupHeader title="Accessory" badge={<StructureBadge identity={{label:'SUPERSET', format:'SUPERSET', detail:'3 ROUNDS',repScheme:null,glyph:'Superset'}} />} /></Card> },
     { state: 'long section without structure badge', Render: () => <Card><MovementGroupHeader title="Primary strength work with a longer section name" /></Card> },
   ]},
   { component: 'EquipmentSummary', requirement: 'R27 / R34', module: 'src/ui/equipment-summary.tsx', summary: 'Read-only equipment group composed from existing tokens and a shared equipment glyph; no new per-equipment icon vocabulary. R3 visual first pass.', specimens: [

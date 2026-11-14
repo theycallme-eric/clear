@@ -26,7 +26,16 @@
  * Nothing here imports React, touches storage, or knows what a card looks like.
  * `for-time-block.tsx` draws it.
  */
+import { draftsAfterProgressChange, type MovementActualDraft } from '../data/refinement-logging-rules'
 import type { BlockOutcome } from './block-completion'
+import {
+  clockStopMoment,
+  isClockPaused,
+  pausedElapsedSeconds,
+  restoredPause,
+  withoutPause,
+  type TimedLifecyclePhase,
+} from './timed-lifecycle'
 import type { BlockProgress } from './workout-progress'
 
 /**
@@ -56,10 +65,36 @@ export interface ForTimeShape {
  * `finishedAt` is stamped by the one tap that ends the attempt early.
  */
 export interface ForTimeState {
-  /** When the attempt began, ISO. Null before the user starts it. */
+  /**
+   * When the attempt began, ISO. Null before the user starts it. Moved forward
+   * by every Resume, so `now - startedAt` is always the active time
+   * (`timed-lifecycle.ts`).
+   */
   readonly startedAt: string | null
   /** When the user called it finished, ISO. Null while it is still running. */
   readonly finishedAt: string | null
+  /**
+   * TASK-006 (C18): when the running attempt was paused, ISO. Absent while it
+   * runs, and in every record written before Pause existed.
+   */
+  readonly pausedAt?: string | null
+  /**
+   * TASK-010 (C29, AC-R010-01): the athlete's own answer to "Work completed",
+   * once the race has ended — `true` Complete, `false` Incomplete. Absent until
+   * they answer, and in every record written before the question existed;
+   * the clock's ending then supplies the initial answer (`forTimeCompletion`).
+   * Kept on the race's own record so a reload never replaces a correction with
+   * the clock's default — an Incomplete must not come back as Complete.
+   */
+  readonly workCompleted?: boolean
+  /**
+   * TASK-015 (C37): each movement's partial amount and actual load, as typed,
+   * by `workout_exercises.id` — kept on the race's own record beside the
+   * answer, so a reload or a walk away and back brings them back as entered.
+   * Absent in every record written before the fields existed and until the
+   * athlete types. Never derived from the plan or the clock.
+   */
+  readonly movements?: Readonly<Record<string, MovementActualDraft>>
 }
 
 /** Nothing started, nothing finished. */
@@ -67,14 +102,16 @@ export const FOR_TIME_START: ForTimeState = { startedAt: null, finishedAt: null 
 
 /**
  * `ready` — the clock has not been started · `running` — counting, under the
- * cap · `finished` — stopped by the user, under the cap · `capped` — the cap
- * was reached first.
+ * cap · `paused` — frozen by the user's Pause, cap and all (TASK-006, C18) ·
+ * `finished` — stopped by the user, under the cap · `capped` — the cap was
+ * reached first.
  *
  * The last two are the requirement's "both completion paths", and they are two
  * phases rather than one phase and a flag so that a renderer cannot draw them
- * the same way by forgetting to read the flag.
+ * the same way by forgetting to read the flag. Paused is its own phase for the
+ * same reason: a frozen clock must not be drawn as one running out.
  */
-export type ForTimePhase = 'ready' | 'running' | 'finished' | 'capped'
+export type ForTimePhase = 'ready' | 'running' | 'paused' | 'finished' | 'capped'
 
 const MILLISECONDS_PER_SECOND = 1000
 
@@ -114,13 +151,36 @@ export function startForTime(state: ForTimeState, now: number): ForTimeState {
 }
 
 /**
- * The tap that stops it. Only a running attempt can be finished — a block that
- * was never started has no elapsed time to freeze, and one that has already
- * finished keeps the moment it actually finished at.
+ * The start the running reading ticks from, or null when nothing is ticking:
+ * not started, finished, or paused (TASK-006). A stopped attempt's time is
+ * fixed by its stamps, and repainting it twice a second would change nothing.
+ */
+export function forTimeTicking(state: ForTimeState): string | null {
+  return state.finishedAt === null && !isClockPaused(state) ? state.startedAt : null
+}
+
+/** The race's phase, as the shared Start/Pause/Resume/Finish actions read it (C18). */
+export function forTimeLifecycle(phase: ForTimePhase): TimedLifecyclePhase {
+  switch (phase) {
+    case 'ready':
+    case 'running':
+    case 'paused':
+      return phase
+    case 'finished':
+    case 'capped':
+      return 'ended'
+  }
+}
+
+/**
+ * The tap that stops it. Only a running or paused attempt can be finished — a
+ * block that was never started has no elapsed time to freeze, and one that has
+ * already finished keeps the moment it actually finished at. A paused attempt
+ * finishes at its pause, not at the later tap (C18).
  */
 export function finishForTime(state: ForTimeState, now: number): ForTimeState {
   if (state.startedAt === null || state.finishedAt !== null) return state
-  return { ...state, finishedAt: new Date(now).toISOString() }
+  return { ...withoutPause(state), finishedAt: new Date(clockStopMoment(state, now)).toISOString() }
 }
 
 /**
@@ -145,7 +205,45 @@ export function clampForTimeState(state: ForTimeState): ForTimeState {
       ? state.finishedAt
       : null
 
-  return { startedAt, finishedAt }
+  // A pause belongs to an attempt still under way; a finished one has none.
+  // The athlete's answer (TASK-010) is kept only as the boolean it is.
+  return {
+    startedAt,
+    finishedAt,
+    ...(finishedAt === null ? restoredPause({ startedAt, pausedAt: state.pausedAt }) : {}),
+    ...(typeof state.workCompleted === 'boolean' ? { workCompleted: state.workCompleted } : {}),
+    // TASK-015: the per-movement entries, exactly as typed; absent stays absent.
+    ...(state.movements === undefined ? {} : { movements: state.movements }),
+  }
+}
+
+/**
+ * TASK-010 (C29): the athlete's Complete or Incomplete, written onto the race
+ * it judges. A race that never started has nothing to judge.
+ */
+export function answerForTime(state: ForTimeState, workCompleted: boolean): ForTimeState {
+  if (state.startedAt === null) return state
+  const next = { ...state, workCompleted }
+  // TASK-015: a partial amount belongs to the Incomplete race's round; once the
+  // answer changes, that round is no longer the one it was entered against, so
+  // every amount is cleared and every load kept (TASK-030's
+  // `draftsAfterProgressChange`). A record with no entries stays without them.
+  if (state.movements === undefined || state.workCompleted === workCompleted) return next
+  return { ...next, movements: draftsAfterProgressChange(state.movements, 1, 2) }
+}
+
+/**
+ * TASK-015 (C37): one movement's entry, as typed. Blank stays blank — nothing
+ * is recorded for it — and a typed zero stays zero. A race that never started
+ * has no movement to log against.
+ */
+export function setForTimeMovement(
+  state: ForTimeState,
+  workoutExerciseId: string,
+  entry: MovementActualDraft,
+): ForTimeState {
+  if (state.startedAt === null) return state
+  return { ...state, movements: { ...(state.movements ?? {}), [workoutExerciseId]: entry } }
 }
 
 /** Everything the renderer draws, derived rather than stored. */
@@ -172,9 +270,10 @@ export interface ForTimeView {
   /** The cap, for the line that states it. Null when there is none. */
   readonly capSeconds: number | null
   /**
-   * What completion supplies as `completed_under_cap`: true for a finish under
-   * the cap, false once the cap is reached, null while the answer is not known
-   * yet — and null for a block with no cap, which cannot be under or over one.
+   * How the clock stopped: true for a finish under the cap, false once the cap
+   * is reached, null while it has not stopped — and null for a block with no
+   * cap, which cannot be under or over one. TASK-010: this is the starting
+   * point of the completion answer, not the answer (`forTimeCompletion`).
    */
   readonly completedUnderCap: boolean | null
 }
@@ -208,7 +307,10 @@ export function forTimeView(
 
   const stopped =
     state.finishedAt === null ? null : secondsBetween(state.startedAt, state.finishedAt)
-  const raw = stopped ?? Math.max(0, Math.floor(runningElapsedSeconds))
+  // TASK-006 (C18): a paused attempt reads the moment it was paused, so the
+  // clock and its cap stay frozen however long the pause lasts.
+  const paused = stopped === null ? pausedElapsedSeconds(state) : null
+  const raw = stopped ?? paused ?? Math.max(0, Math.floor(runningElapsedSeconds))
   const capped = capSeconds !== null && raw >= capSeconds
   const elapsedSeconds = capped ? capSeconds : raw
   const remainingSeconds = capSeconds === null ? null : Math.max(0, capSeconds - elapsedSeconds)
@@ -242,13 +344,41 @@ export function forTimeView(
   }
 
   return {
-    phase: 'running',
+    phase: paused === null ? 'running' : 'paused',
     elapsedSeconds,
     remainingSeconds,
-    urgent: remainingSeconds !== null && remainingSeconds <= FOR_TIME_URGENCY_SECONDS,
+    // Nothing is running out while the clock is frozen: no urgency, no pulse.
+    urgent:
+      paused === null && remainingSeconds !== null && remainingSeconds <= FOR_TIME_URGENCY_SECONDS,
     capSeconds,
     completedUnderCap: null,
   }
+}
+
+/**
+ * TASK-010 (C29; AC-R010-01; R78, R86, R124) — whether the prescribed work was
+ * completed, as the result log offers it and `completed_under_cap` records it.
+ *
+ * The clock cannot know whether the athlete performed all the work, so this is
+ * an answer with a starting point rather than a measurement:
+ *
+ *   · **Finish under the cap** starts at Complete: in For Time the athlete's
+ *     Finish is their own report that the work is done (R78's manual-Finish
+ *     default) — and Incomplete is one tap away, because Finish proves nothing.
+ *   · **The cap** starts at Incomplete, with Complete still offered for someone
+ *     who finished but could not stop the clock in time (R78).
+ *   · **Before the race has ended** there is no answer at all: stopping to
+ *     record mid-race, pausing or never starting claims nothing.
+ *   · **No cap, no claim** (DATA_MODEL §8): a block with no deadline was
+ *     neither under one nor over it, so the question is not asked.
+ *
+ * `answer` is the athlete's own (`ForTimeState.workCompleted`) and wins over
+ * either starting point.
+ */
+export function forTimeCompletion(view: ForTimeView, answer?: boolean): boolean | null {
+  if (view.capSeconds === null) return null
+  if (view.phase !== 'finished' && view.phase !== 'capped') return null
+  return answer ?? view.phase === 'finished'
 }
 
 /**
@@ -259,18 +389,19 @@ export function forTimeView(
  * (DATA_MODEL §8). Everything else supplies the clock it actually ran, including
  * an attempt recorded while still running: the seconds are real, and stopping
  * to record is stopping.
+ *
+ * `completed_under_cap` is the completion answer (`forTimeCompletion`), and
+ * nothing when there is none. TASK-010 (AC-R010-01): an attempt recorded while
+ * still running claims no completion — stopping alone never marks the planned
+ * work performed — where it used to be read as a finish under the cap.
  */
-export function forTimeOutcome(view: ForTimeView): BlockOutcome {
+export function forTimeOutcome(view: ForTimeView, answer?: boolean): BlockOutcome {
   if (view.phase === 'ready') return {}
 
-  const underCap =
-    view.completedUnderCap ??
-    // Recorded mid-attempt: the clock had not reached the cap, so this is the
-    // same fact as finishing under it.
-    (view.capSeconds === null ? null : true)
+  const completed = forTimeCompletion(view, answer)
 
   return {
     elapsedSeconds: view.elapsedSeconds,
-    ...(underCap === null ? {} : { completedUnderCap: underCap }),
+    ...(completed === null ? {} : { completedUnderCap: completed }),
   }
 }

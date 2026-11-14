@@ -1,0 +1,65 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-043",
+  "description": "Adopt shared logging for sets, measurements and corrections (#669; REQ-019, C45; R82, R100, R115, R116; TASK-AC-4E98D150903F, TASK-AC-2990AF36316E, TASK-AC-342CDDB7111A; foundation provider for JOURNEY-019). On the real /workout route a standard block movement entry (ExerciseSetLogger with focused, drawn by StandardBlock) - the anchor/primary lift, another lift, a timed movement, a distance movement, an extra set and a saved-set correction - opens in the shared focused LoggingOverlay (src/ui/refinements/logging-overlay.tsx): a native modal over an inert workout, titled with the entry title, collapsed by its framed icon-only Close log X or Escape, with the Balanced backdrop and no half-sheet. The logger keeps its fields, draft, the original set-observation writer (insert, correct, clear), the TASK-020 Save confirmation and the session one rest. check-01 proves it in the browser on a contained synthetic session at 390 (touch; keyboard and reduced motion with a refused write retried under its own id) and 320 (other lift, timed and distance movement), shows a superset round staying on its half-sheet (TASK-044, not delivered here), and opens the accepted gallery states ?state=anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction (reference eded158cfd928d382c9a9409e2c372270312741d, the route StandardBlock over an in-memory set-observation client) in all four skins at 390. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-043 --check check-01 -- npx playwright test e2e/refinement/task-043.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-4E98D150903F",
+        "TASK-AC-2990AF36316E",
+        "TASK-AC-342CDDB7111A",
+        "JOURNEY-019"
+      ],
+      "files": [
+        "e2e/refinement/task-043.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 anchor and extra set phone-390 touch: Rest opens the modal log with its X over an inert workout, close and Escape keep the draft, Log set saves through the original writer beside the one rest, and the extra set is logged as set 3",
+          "criterion": "TASK-AC-4E98D150903F"
+        },
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 saved-set correction and retry phone-390 keyboard reduced motion: a refused write is held on this device and retried under its own id; Edit opens Edit set N in the log, Cancel and Save correction keep the writer, and Clear set asks with Keep set first",
+          "criterion": "TASK-AC-2990AF36316E"
+        },
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 other lift, timed and distance movement phone-320: each opens the focused log with its own fields and saves through the original writer, while a superset round stays on its half-sheet (TASK-044)",
+          "criterion": "TASK-AC-4E98D150903F"
+        },
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states clear phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-342CDDB7111A"
+        },
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states vapour phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-342CDDB7111A"
+        },
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states signal phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-342CDDB7111A"
+        },
+        {
+          "file": "e2e/refinement/task-043.spec.ts",
+          "project": "mobile",
+          "name": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states mono phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+          "criterion": "TASK-AC-342CDDB7111A"
+        }
+      ]
+    }
+  }
+}

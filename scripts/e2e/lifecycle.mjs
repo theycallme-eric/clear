@@ -228,6 +228,20 @@ export async function seed(client) {
       },
     ])
 
+    // TASK-015 (MIG-B, live since the owner's LIVE-PRE-1): one timed
+    // per-movement actual on the seeded exercise — a round-1 partial and its
+    // load. Not a set: nothing counts or anchors it.
+    await client.insertRows('block_movement_results', [
+      {
+        id: FIXTURE_IDS.movementResult[slot],
+        workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
+        round_number: 1,
+        actual_reps: 3,
+        weight: 135,
+        weight_unit: 'lb',
+      },
+    ])
+
     // A cleared observation's durable receipt survives without a set-log row.
     await client.insertRows('set_observation_mutations', [{
       mutation_id: FIXTURE_IDS.setObservationMutation[slot],

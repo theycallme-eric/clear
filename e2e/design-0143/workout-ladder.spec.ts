@@ -60,6 +60,12 @@ const CORS = {
 }
 const SESSION_KEY = 'clear.auth.session'
 const FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
+/**
+ * TASK-013 (C36; its adoption of TASK-032's durable attempt): every ladder,
+ * the schedule included, keeps its clock in its own versioned attempt record
+ * under this key, `{ clock: { startedAt, … }, progress, draft, … }` per block.
+ */
+const LADDER_STORAGE_KEY = 'clear.workout-ladders'
 const TITLE = 'TASK-033 timed ladders'
 
 /** Four rounds, a new one every 75 s: the block runs 300 s. */
@@ -430,18 +436,52 @@ function rounds(page: Page, index: number): Locator {
   return page.getByRole('list', { name: 'Rounds in this ladder', exact: true }).nth(index)
 }
 
+/**
+ * One round's tile. TASK-012 (C35, R95): the rounds are the compact
+ * prescription's wrapping tiles — `R1`, each movement's work — rather than rows
+ * headed `Round N`; a tile names its round for a screen reader as `Round N`.
+ */
 function round(page: Page, ladder: number, number: number): Locator {
-  return rounds(page, ladder).getByRole('listitem').filter({
-    has: page.getByRole('heading', { name: `Round ${number}`, exact: true }),
-  })
+  return rounds(page, ladder).locator(`:scope > li[data-ladder-round="${number}"]`)
 }
 
-/** The `n`th ladder's ending question. */
-function ending(page: Page, index: number): Locator {
-  return page.getByRole('group', { name: 'How did this block end?', exact: true }).nth(index)
+/**
+ * The open ladder log's ending question. TASK-010 (C29; R78, R87): the shared
+ * result log's Work completed, Complete beside Incomplete, replacing "How did
+ * this block end?" with "Finished the ladder" / "Hit the time cap".
+ */
+function ending(page: Page): Locator {
+  // TASK-046: in the ladder's log that is open in the shared focused dialog
+  // (`openLog(page, n)` opens the `n`th ladder's).
+  return openLadderLog(page).getByRole('group', { name: 'Work completed', exact: true })
 }
 
-/** Nothing on the screen asks for a set, a number or an exertion. */
+/**
+ * TASK-046 (C45; R100): each ladder's card holds one "Log results" action
+ * where its log was; the log opens in the shared focused dialog titled "Log
+ * results", one at a time, over a workout that is inert while it is open.
+ */
+function openLadderLog(page: Page): Locator {
+  return page.locator('dialog.clr-accepted-log[open]')
+}
+
+async function openLog(page: Page, index: number) {
+  await closeLog(page)
+  await page.locator('[data-timed-log-opener]').nth(index).getByRole('button', { name: 'Log results', exact: true }).click()
+  await expect(openLadderLog(page)).toBeVisible()
+}
+
+async function closeLog(page: Page) {
+  if ((await openLadderLog(page).count()) === 0) return
+  await openLadderLog(page).getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(openLadderLog(page)).toHaveCount(0)
+}
+
+/**
+ * Nothing on the screen asks for a set, a number or a numeric exertion. The
+ * result log's optional effort faces (TASK-010, C30) are three categories,
+ * never a number, a slider or an RPE.
+ */
 async function expectHandsOff(page: Page) {
   const main = page.locator('main')
   await expect(main.getByRole('form', { name: /^Log set/ })).toHaveCount(0)
@@ -513,7 +553,9 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   const [laddered, companion] = world.catalog
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const sessionTime = page.getByRole('timer', { name: 'Session time', exact: true })
-  const countdown = page.locator('[data-urgent]').filter({ has: timer })
+  // TASK-008 (C23): the interval's whole frame carries the low colour from ten
+  // seconds left (`data-low`); the breathe and the one edge are the last five's.
+  const countdown = page.locator('[data-timer-frame]').filter({ has: timer })
 
   await page.clock.install({ time: Date.now() })
   await visit('/workout')
@@ -526,8 +568,11 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   for (const [index, reps] of SCHEDULED_RUNGS.entries()) {
     const row = round(page, 0, index + 1)
     await expect(row.getByText(`Starts at ${['00:00', '01:15', '02:30', '03:45'][index]}`, { exact: true })).toBeVisible()
-    await expect(row.getByText(`${reps} reps ${display(laddered.id)}`, { exact: true })).toBeVisible()
-    await expect(row.getByText(`${COMPANION_REPS} reps ${display(companion.id)} — same every round`, { exact: true })).toBeVisible()
+    // TASK-012 (R72, AC-R012-02): the ×/· notation, and the companion's fixed
+    // target in every round without the rejected "— same every round" (R70).
+    await expect(row.getByText(`${reps} × ${display(laddered.id)}`, { exact: true })).toBeVisible()
+    await expect(row.getByText(`${COMPANION_REPS} × ${display(companion.id)}`, { exact: true })).toBeVisible()
+    await expect(row.getByText(/same every round/)).toHaveCount(0)
   }
   await expect(page.getByText('NOT STARTED', { exact: true })).toBeVisible()
   await expect(round(page, 0, 1).getByText('Next', { exact: true })).toBeVisible()
@@ -535,11 +580,11 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // ENTRY-053 — free-paced For Time and the capped window, with their caps.
   await expect(page.getByText('3 rounds · for time, at your pace · 10:00 cap', { exact: true })).toBeVisible()
   for (const [index, reps] of FREE_PACED_RUNGS.entries()) {
-    await expect(round(page, 1, index + 1).getByText(`${reps} reps ${display(laddered.id)}`, { exact: true })).toBeVisible()
+    await expect(round(page, 1, index + 1).getByText(`${reps} × ${display(laddered.id)}`, { exact: true })).toBeVisible()
   }
   await expect(page.getByText('3 rounds · 06:00 cap on the whole ladder', { exact: true })).toBeVisible()
   for (const [index, reps] of CAPPED_RUNGS.entries()) {
-    await expect(round(page, 2, index + 1).getByText(`${reps} reps ${display(companion.id)}`, { exact: true })).toBeVisible()
+    await expect(round(page, 2, index + 1).getByText(`${reps} × ${display(companion.id)}`, { exact: true })).toBeVisible()
   }
   await expectNoLiveRound(page, 1, FREE_PACED.rounds)
   await expectNoLiveRound(page, 2, CAPPED.rounds)
@@ -547,18 +592,21 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await projectRender(page, testInfo, 'ladders-ready')
 
   // The one tap: start the schedule. Everything after it is the clock's.
+  // TASK-013: the start stamp is the schedule's durable ladder attempt's clock.
   await page.getByRole('button', { name: 'Start schedule', exact: true }).click()
   const scheduleStart = await page.waitForFunction(({ key, blockId }) => {
     const records = JSON.parse(localStorage.getItem(key) ?? '{}') as
-      Record<string, { startedAt: string | null } | undefined>
-    const startedAt = records[blockId]?.startedAt
+      Record<string, { clock?: { startedAt: string | null } } | undefined>
+    const startedAt = records[blockId]?.clock?.startedAt
     return startedAt == null ? null : Date.parse(startedAt)
-  }, { key: FOR_TIME_STORAGE_KEY, blockId: world.blocks.scheduled }).then((handle) => handle.jsonValue() as Promise<number>)
-  // Only the scheduled ladder has a clock to start.
-  const freeAndCapped = await page.evaluate(({ key, ids }) => {
+  }, { key: LADDER_STORAGE_KEY, blockId: world.blocks.scheduled }).then((handle) => handle.jsonValue() as Promise<number>)
+  // Only the schedule was started. TASK-006 (AC-R006-01, C18; R66, R67): the
+  // free-paced and capped ladders now offer their own Start ladder at the top,
+  // but nothing has pressed it, so neither stores a clock — under either key.
+  const freeAndCapped = await page.evaluate(({ keys, ids }) => keys.flatMap((key) => {
     const records = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>
     return ids.filter((id) => id in records)
-  }, { key: FOR_TIME_STORAGE_KEY, ids: [world.blocks.freePaced, world.blocks.capped] })
+  }), { keys: [LADDER_STORAGE_KEY, FOR_TIME_STORAGE_KEY], ids: [world.blocks.freePaced, world.blocks.capped] })
   expect(freeAndCapped).toEqual([])
   await checkA11y()
 
@@ -567,7 +615,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await expect(page.getByText('ROUND 2 OF 4', { exact: true })).toBeVisible()
   await expect(round(page, 0, 2)).toHaveAttribute('aria-current', 'step')
   await expect(timer).toContainText('01:10')
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
   // However long has passed, the free-paced and capped ladders show no progress.
   await expectNoLiveRound(page, 1, FREE_PACED.rounds)
   await expectNoLiveRound(page, 2, CAPPED.rounds)
@@ -576,14 +624,17 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // The end-of-interval cue, with nothing to press.
   await page.clock.pauseAt(scheduleStart + 145_000)
   await expect(timer).toContainText('00:05')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
+  // Five seconds before the next start, while the schedule runs: the timer breathes with one edge.
+  await expect(timer).toHaveAttribute('data-urgent', 'true')
+  await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)
 
   // Backgrounded (phone on the floor) into round 3: read from the wall clock.
   await background(page, scheduleStart + 160_000)
   await expect(page.getByText('ROUND 3 OF 4', { exact: true })).toBeVisible()
   await expect(round(page, 0, 3)).toHaveAttribute('aria-current', 'step')
   await expect(timer).toContainText('01:05')
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
   await projectRender(page, testInfo, 'scheduled-round-3')
 
   // Refreshed inside round 4: restored from the stored start, not restarted.
@@ -616,17 +667,25 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await page.clock.resume()
 
   // Progress is declared, never inferred: finished the schedule; finished the
-  // free-paced ladder; reached the second rung inside the cap.
-  await ending(page, 0).getByRole('radio', { name: 'Finished the ladder', exact: true }).check()
-  await ending(page, 1).getByRole('radio', { name: 'Finished the ladder', exact: true }).check()
-  await ending(page, 2).getByRole('radio', { name: 'Hit the time cap', exact: true }).check()
-  const reached = page.getByRole('group', { name: 'How far did you get?', exact: true })
-  // The radio is visually hidden; the rung card that stands for it is its label.
-  await reached.locator('label', {
-    has: page.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true }),
-  }).click()
-  await expect(reached.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true })).toBeChecked()
-  await expect(page.getByText(`Reached rung 2 of 3 — ${CAPPED_RUNGS[1]} reps`, { exact: true })).toBeVisible()
+  // free-paced ladder; reached the second rung inside the cap. TASK-010
+  // (AC-R010-01): the schedule run out already starts its log at Incomplete,
+  // never at every rung, so Complete is the athlete's own answer.
+  await openLog(page, 0)
+  await expect(ending(page).getByRole('radio', { name: 'Incomplete', exact: true })).toBeChecked()
+  await ending(page).getByRole('radio', { name: 'Complete', exact: true }).check()
+  await openLog(page, 1)
+  await ending(page).getByRole('radio', { name: 'Complete', exact: true }).check()
+  await openLog(page, 2)
+  await ending(page).getByRole('radio', { name: 'Incomplete', exact: true }).check()
+  // TASK-013 (C33, C34; R88, R99): how far is each answered ladder's result
+  // log "Rounds completed" — rep-first tiles named by round and target, the
+  // prefix pressed and counted — in place of the "How far did you get?" radios.
+  // All three ladders are answered; the capped one's (the third) is open.
+  const reached = openLadderLog(page).getByRole('group', { name: 'Rounds completed', exact: true })
+  const secondRung = reached.getByRole('button', { name: `Round 2: ${CAPPED_RUNGS[1]} reps`, exact: true })
+  await secondRung.click()
+  await expect(secondRung).toHaveAttribute('aria-pressed', 'true')
+  await expect(reached.getByRole('status')).toHaveText('2 of 3 rounds completed')
   await expectHandsOff(page)
   await projectRender(page, testInfo, 'ladders-declared')
 
@@ -634,14 +693,21 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // the section with every declaration intact, and the retry is the same action.
   const failure = await failFirstBlockSave(page)
   try {
+    // TASK-046: the log is closed first; with the failure dismissed, the
+    // reopened logs read every declaration, and the retry is the forward action.
+    await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toContainText('That didn’t save')
     expect(failure.failed()).toBe(1)
     await expect(page.getByText('COMPLETE', { exact: true })).toBeVisible()
-    await expect(ending(page, 1).getByRole('radio', { name: 'Finished the ladder', exact: true })).toBeChecked()
-    await expect(reached.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true })).toBeChecked()
-    await dialog.getByRole('button', { name: 'Try again', exact: true }).click()
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click()
+    await openLog(page, 1)
+    await expect(ending(page).getByRole('radio', { name: 'Complete', exact: true })).toBeChecked()
+    await openLog(page, 2)
+    await expect(secondRung).toHaveAttribute('aria-pressed', 'true')
+    await closeLog(page)
+    await page.getByRole('button', { name: 'Next section', exact: true }).click()
   } finally {
     await failure.dispose()
   }

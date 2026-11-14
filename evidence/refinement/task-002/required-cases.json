@@ -1,0 +1,142 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-002",
+  "description": "Context-specific actions with compact equipment (REQ-002; C03, C06, C07) delivered through MovementIdentity / WorkoutCard / ReviewMovement / LiveMovement (src/ui/refinements/movement.tsx, src/ui/refinements/workout-card.tsx), adopted by BlockPanel and the Review section on the real /review and /workout routes (JOURNEY-002), with the accepted gallery state /gallery/refinements?state=cards (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-002 --check check-01 -- npx vitest run src/ui/movement-identity.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C03-01",
+        "AC-C06-01",
+        "AC-C07-01",
+        "AC-R002-01",
+        "AC-R002-02",
+        "AC-R002-03",
+        "JOURNEY-002"
+      ],
+      "files": [
+        "src/ui/movement-identity.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-C03-01 shows the compact equipment beside each movement name in Review and Workout, as readable wrapping text",
+          "criterion": "AC-C03-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-C06-01 offers Swap in Review’s movement slot and set progress, Rest and logging in Workout’s, never the other way round",
+          "criterion": "AC-C06-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-C07-01 heads Review’s block cards with the live cards’ static header: the section identity and the badge, in the same face",
+          "criterion": "AC-C07-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-01 says a duplicate Bodyweight once, by the equipment, in both contexts and never hides an actual prescribed load",
+          "criterion": "AC-R002-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keeps Review’s sections open under static semantic headings, with no toggle, chevron or hit area, and keeps the separate disclosures",
+          "criterion": "AC-R002-02"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-03 keeps planned sets, reps, rounds and rest in Review, keeps live counters and Rest or log controls out of it, and keeps Swap out of Workout",
+          "criterion": "AC-R002-03"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 opens Review, uses Swap, starts that same workout and uses Rest on Workout without recording work",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed formats show the same equipment beside each name in Review and in the live EMOM, AMRAP and For Time blocks",
+          "criterion": "AC-C03-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read or a failed Start keeps Review as planned and records no work",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > renders the shared owners with each context’s own slot",
+          "criterion": "AC-C06-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > renders the accepted gallery state cards through WorkoutCard with static headers and each context’s slot",
+          "criterion": "AC-C07-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-002 --check check-02 -- npx playwright test e2e/refinement/task-002.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C03-01",
+        "AC-C06-01",
+        "AC-C07-01",
+        "AC-R002-01",
+        "AC-R002-02",
+        "AC-R002-03",
+        "JOURNEY-002"
+      ],
+      "files": [
+        "e2e/refinement/task-002.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 phone-320: Review offers Swap under static headers, then Workout offers progress, Rest and logging with equipment beside each name",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 phone-390: Review offers Swap under static headers, then Workout offers progress, Rest and logging with equipment beside each name",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed phone-320: EMOM, AMRAP and For Time keep the same equipment beside each name in Review and Workout",
+          "criterion": "AC-C03-01"
+        },
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed phone-390: EMOM, AMRAP and For Time keep the same equipment beside each name in Review and Workout",
+          "criterion": "AC-C03-01"
+        },
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keyboard: Review section headers are not focus stops, Swap and the tempo detail are, and Coaching and notes stays a disclosure in Workout",
+          "criterion": "AC-R002-02"
+        },
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read and a failed Start keep Review as planned and record no work",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "e2e/refinement/task-002.spec.ts",
+          "project": "mobile",
+          "name": "TASK-002 context-specific actions with compact equipment > gallery cards: the accepted state draws Review and Workout through the same card, static header and context slots",
+          "criterion": "AC-C07-01"
+        }
+      ]
+    }
+  }
+}

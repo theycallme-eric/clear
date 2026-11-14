@@ -1,0 +1,80 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-027",
+  "description": "Compact live navigator preserves section access (REQ-027; C54, G22; R35, R98; AC-C54-01, AC-R027-01; JOURNEY-027). On the real /workout route the live section header is the accepted compact navigator (SectionHeader compact in src/ui/workout-chrome.tsx; reference eded158cfd928d382c9a9409e2c372270312741d, /gallery/refinements?state=cards): All sections with the N / M position over the collapsible, status-bearing jump list, with no section card, visible title, status line or Structures in this section badge list repeating the active card's identity. The section's level-two heading and its Section N / M · status reading stay for assistive technology, visually hidden; the trigger keeps the one name All sections. A jump from the list moves focus to the opened section's first card (owner decision 2026-11-10, option a); Previous and Next keep focusing the section heading. A jump records, corrects, clears and completes nothing, moves no section status and does not reset the session clock or a logged set. The gallery state ?state=cards draws the same consumer before its live cards over a memory-only position. check-01 proves the component, the real route over in-memory doubles and the gallery in jsdom; check-02 proves the route in the browser at 320 and 390 with a contained synthetic started session, touch, keyboard, reduced motion, a failed read and its retry and a reload, and the gallery state. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-027 --check check-01 -- npx vitest run src/ui/workout-chrome.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C54-01",
+        "AC-R027-01"
+      ],
+      "files": [
+        "src/ui/workout-chrome.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+          "criterion": "AC-C54-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the jump list opens by keyboard and touch, jumps and collapses, stays out of the tab order while collapsed, and is read-only while a move is saving",
+          "criterion": "AC-C54-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+          "criterion": "AC-R027-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery state ?state=cards draws the route’s own compact navigator before the live cards, jumping a memory-only position with nothing read or written",
+          "criterion": "AC-C54-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-027 --check check-02 -- npx playwright test e2e/refinement/task-027.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C54-01",
+        "AC-R027-01",
+        "JOURNEY-027"
+      ],
+      "files": [
+        "e2e/refinement/task-027.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-027.spec.ts",
+          "project": "mobile",
+          "name": "TASK-027 compact live navigator preserves section access > JOURNEY-027 phone-320: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+          "criterion": "JOURNEY-027"
+        },
+        {
+          "file": "e2e/refinement/task-027.spec.ts",
+          "project": "mobile",
+          "name": "TASK-027 compact live navigator preserves section access > JOURNEY-027 phone-390: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+          "criterion": "JOURNEY-027"
+        },
+        {
+          "file": "e2e/refinement/task-027.spec.ts",
+          "project": "mobile",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 keyboard, reduced motion, failed read and reopen phone-390: the jump list opens and jumps from the keyboard with a visible focus on the opened card; a failed read keeps its retry; a reload keeps the section and grabs no focus",
+          "criterion": "AC-C54-01"
+        },
+        {
+          "file": "e2e/refinement/task-027.spec.ts",
+          "project": "mobile",
+          "name": "TASK-027 compact live navigator preserves section access > gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written",
+          "criterion": "AC-C54-01"
+        }
+      ]
+    }
+  }
+}

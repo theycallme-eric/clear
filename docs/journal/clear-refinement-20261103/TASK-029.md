@@ -1,0 +1,257 @@
+# TASK-029 — Equipment asset inventory and readable fallback (#656)
+
+Body `clear-refinement-v2-20261109b`, attempt 1, base `95f1d95` (after TASK-026 #709). This is the
+task-owned progress note, the approved exception to the shared daily journal for this body. Only
+TASK-029 writes this file.
+
+## Intended outcome
+
+REQ-029 (AC-C56-01, AC-R029-01, AC-R029-02; C56; R122, R132), completion owner of JOURNEY-029 on
+the real `/review`, `/workout` and Setup equipment. The outcome has three parts:
+
+- Preserve the verified equipment inventory and the 75 existing icons, with the approved round
+  effort-face exception. Invent no taxonomy and no medicine-ball setup ID.
+- Equipment without a glyph keeps a readable label in the selected compact placement beside the
+  movement name. It is never silently icon-only.
+- New equipment artwork and its adoption are an explicit, recorded follow-up.
+
+Accepted gallery reference `eded158cfd928d382c9a9409e2c372270312741d`,
+`/gallery/refinements?state=assets`.
+
+## Before (verified against current source)
+
+- `src/design-system/assets/icons.tsx` has 75 named icons. It is byte-identical to the accepted
+  reference (sha256 `8368e49b…224d`), and the public entry re-exports all of them. The only round
+  icons are `Frown`, `Meh`, `Smile` and `SmilePlus`. `SetEffortChoice` uses Frown, Meh and Smile.
+- Equipment taxonomy is `EQUIPMENT` in `src/state/onboarding.ts`: 16 IDs, shared with Locations.
+  There is no medicine-ball ID. The Wall ball fixture's `medicine-ball` is composed equipment.
+- TASK-002 already draws movement-row equipment as text beside the name: `MovementIdentity`
+  `data-movement-context`, from `equipmentName`. `EquipmentSummary` (TASK-004) draws the one
+  shipped `Dumbbell` category glyph beside "Required equipment", followed by the names in words.
+  Setup and Locations name each choice in words.
+- Absent before this task:
+  - the wanted-list authority file;
+  - any in-source record of the inventory;
+  - the gallery `assets` state;
+  - any proof that a missing glyph still gives a readable label for every kind.
+
+## Changes
+
+- **Shared owner (new).** `src/ui/refinements/equipment-assets.ts` is the inventory in source:
+  - `SHIPPED_ICON_COUNT` (75), `ROUND_FACE_EXCEPTION` and `EFFORT_FACES`;
+  - `SHIPPED_EQUIPMENT_ICONS` (Dumbbell, and WeightPlate as plates only);
+  - `EQUIPMENT_ASSETS`, derived from `EQUIPMENT`, so no ID is added. Each entry has its glyph
+    (`dumbbells` → Dumbbell; all others null), status and proposed next step;
+  - `WANTED_REVIEW_LABELS`: Medicine ball, with `setupId: null`;
+  - `equipmentGlyph(id)`.
+
+  It is presentation-record only: no field, write or derivation.
+- **Authority record (new).**
+  `docs/design/library/refinements-2026-11-04/authority/EQUIPMENT-ICON-WANTED-LIST.md` adopts the
+  reference wanted list with its table unchanged. It adds three things:
+  - the verified 75-icon and face facts;
+  - the status in this build: placement in use, no glyph adopted in rows, no taxonomy change;
+  - an explicit follow-up list covering artwork batch, the Bodyweight decision, adoption beside the
+    label, and Medicine ball catalog coverage.
+
+  A focused check keeps the table and the module in step.
+- **Gallery `?state=assets` (new; append-only).** `GalleryEquipmentAssets` in
+  `gallery-refinement-scenes.tsx` is registered last in `REFINEMENT_STATES`. It draws:
+  - the inventory from the shared owner: shipped glyphs, and every Setup ID's status;
+  - the medicine-ball note;
+  - the routes' own consumers over one composition: Review's `EquipmentSummary` and `ReviewSection`
+    cards (`ReviewContextCards`), Workout's live cards (`WorkoutContextCards`), and `/onboarding`'s
+    `SetupStepView` equipment step.
+
+  The composition is `src/dev/gallery-refinement-assets-data.ts`: every Setup equipment ID once,
+  plus Wall ball with `medicine-ball`, across standard, superset and circuit. This deliberately
+  consolidates the reference's `GalleryEquipmentInventory`, which hand-listed `EQUIPMENT` with an
+  inline `dumbbells` test. Nothing is read or written. There is no route CSS and no new styling.
+- **No product UI change.** The real routes already had the readable fallback, and this task
+  proves it. Movement rows deliberately get no Dumbbell glyph. R132 selects the compact label, and
+  glyph adoption is the follow-up; adding a glyph would also break TASK-002's protected "no svg
+  beside the name" assertion. No route, owner, CSS, token, `icons.tsx` or taxonomy change.
+
+## Tests
+
+- **check-01, `src/ui/movement-identity.test.tsx` (shared with TASK-002).** New describe:
+  "TASK-029 equipment asset inventory and readable fallback". Eight cases:
+  - AC-C56-01 inventory: icons sha256 pin, 75 names, public entry, only two equipment glyphs,
+    16 Setup IDs read rather than redefined, WeightPlate never a stand-in.
+  - AC-C56-01 wanted list in step with the module.
+  - AC-R029-01 round faces exception and Effort faces.
+  - AC-R029-01 medicine ball on /review and /workout without a setup ID.
+  - AC-R029-01 Setup's 16 worded choices, with no medicine ball (real `/onboarding` route).
+  - AC-R029-02 / JOURNEY-029: every kind as a readable label on real /review and /workout, plus
+    Required equipment in words.
+  - JOURNEY-029 recovery after a failed Start.
+  - The gallery `assets` state.
+
+  Pattern `equipment` also matches TASK-002's describe, so 19 cases run and the 8 are required.
+- **check-02, `e2e/refinement/task-029.spec.ts` (new).** Five cases:
+  - JOURNEY-029 at phone-320 and at phone-390, Review then Workout. Browser geometry: label visible,
+    ≥ 12px and quieter than the name, untruncated, not inside the name, one line unit beside or
+    under the name, no glyph, no overflow. Required equipment in words beside one category glyph.
+  - AC-R029-01 Setup at phone-320: 16 worded choices, no medicine ball, touch and keyboard.
+  - JOURNEY-029 recovery at phone-320: failed Start in the error dialog, keyboard retry (same draft
+    sent again, fails again), Escape back to an unchanged Review, Start focusable.
+  - Gallery `assets` at phone-320, with nothing read or written.
+
+  Synthetic, contained harness. The only writes are Start's intercepted session calls.
+- `evidence/refinement/task-029/required-cases.json`: 8 + 5 required cases.
+
+## Failures and corrections
+
+- The Setup case first failed because `renderApp` defaults to a warm, onboarded query cache. The
+  fix passes a cold `QueryClient`, as `Onboarding.test.tsx` does.
+- The test first imported `../design-system/assets/icons`, which ESLint `no-restricted-imports`
+  forbids. It now uses the public entry only, and asserts that `index.js` re-exports
+  `./assets/icons`.
+- The e2e Setup tap on the label text timed out. The checkbox input lies over its row (U09), so the
+  case taps the checkbox.
+- The e2e recovery case found "Start workout" twice. A failed Start opens the modal `ErrorDialog`,
+  whose retry is also "Start workout". The case was rewritten around the dialog (keyboard retry,
+  then Escape).
+- One run of the Setup e2e case reported axe `region` on the skip link `a` after the
+  touch/keyboard steps. It did not reproduce in 9 later runs (3 + 6 repeats) or in the guard run.
+  It is recorded as a flake watch, not changed.
+
+## Consumer sweep
+
+- `movement-identity.test.tsx` is TASK-002 check-01's target. TASK-002 cases are unchanged, and its
+  guard was re-run: PASSED, 11/11 required.
+- Gallery hotspots are append-only: one import line extended, new imports, a scene appended, one
+  state appended and a header paragraph. Existing states are untouched.
+- No registry or COMPONENTS.md change. The scene is a gallery state, not a new shared component.
+  `node scripts/gallery-index.mjs --check` verified 76 entries.
+
+## Verification (final tree)
+
+- `node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-01 -- npx vitest run src/ui/movement-identity.test.tsx --testNamePattern equipment --passWithNoTests=false`:
+  PASSED (19 executed, 19 passed; 8 required passed).
+- `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-02 -- npx playwright test e2e/refinement/task-029.spec.ts --project=mobile`:
+  PASSED (5/5).
+- `node scripts/refinement/run-required-check.mjs --task TASK-002 --check check-01 -- npx vitest run src/ui/movement-identity.test.tsx --passWithNoTests=false`:
+  PASSED (re-run because its target changed).
+- `npm run build`: exit 0. `npm run lint:ds`: exit 0. `npm test`: 269 files, 6356 tests passed.
+- `npx eslint` on every changed source and spec file: 0 errors, 0 warnings.
+- `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks TASK-001,…,TASK-034`
+  (the 31 listed, including TASK-029): PASSED, all current passing receipts.
+
+## Open assumptions / UAT
+
+- Movement-row labels are the composed equipment value in words (`equipmentName`), such as
+  `pullup bar`, `assisted pullup dip` and `leg curl extension`. Setup's display labels (`Pull-up
+  bar`) are not used there. Changing that wording is outside this task: no taxonomy or label
+  change.
+- The inventory list in `?state=assets` is plain worded list items in the gallery's default text
+  styling. It is a reference record, not a product surface.
+- Bodyweight still shows `bodyweight` beside bodyweight movements (TASK-012 UAT item). The wanted
+  list keeps "text vs glyph" as an owner decision.
+- Follow-up, explicit and unscheduled: artwork batch (Kettlebell, Medicine ball, Barbell), the
+  Bodyweight decision, adoption beside the label, and Medicine ball catalog coverage.
+
+## Repair round 1: four-skin coverage
+
+- **Reviewer finding (rejected a1, patch 28223c5d04ef).** JOURNEY-029's action is "Read
+  movement/equipment context in each skin", but check-02 pinned `skin: 'clear'` only. The label
+  colour (`--text-secondary` on `.clr-movement-identity__equipment`) resolves per skin.
+- **Change (test-only, no product code).** `e2e/refinement/task-029.spec.ts` gains the
+  `SKINS = clear, vapour, signal, mono` set and `settledSkin`, following TASK-028's pattern.
+  `syntheticApp` takes a `skin` option, which defaults to clear so the existing five cases are
+  unchanged. There are eight new cases at phone-320:
+  - `JOURNEY-029 skin <skin> phone-320` (×4) runs Review → Start → Workout in that skin. It covers
+    Required equipment in words, every label's geometry and readability (`expectEveryLabel`), the
+    full-page axe scan on both routes, an explicit per-label contrast measurement, no overflow and
+    contained writes.
+  - `AC-R029-01 Setup equipment skin <skin> phone-320` (×4) covers `/onboarding` equipment in that
+    skin: 16 visible worded choices at 12px or more, no medicine ball, and the axe scan.
+- **Finding while adding contrast proof.** axe's `color-contrast` rule does not decide these labels
+  in any skin, clear included. Labels clipped out of the scroll region are "inapplicable", and on
+  screen axe returns "incomplete" ("background color could not be determined due to a pseudo
+  element", from the card's decorative pseudo element). The page-level `checkA11y` passing was
+  therefore never a contrast proof for the labels. `expectLabelContrast` now measures contrast
+  directly:
+  - it centres each label and asserts that the label is topmost at its centre;
+  - it asserts that the label paints the skin's own `--text-secondary`;
+  - it captures the ground beneath the label box with the label's paint made transparent
+    (transition disabled, then restored and re-checked);
+  - it composites the computed colour, including alpha, over every ground pixel and requires the
+    weakest pixel to reach WCAG AA 4.5:1.
+
+  A first attempt failed the restore check because the label's colour transition was mid-fade. It
+  was corrected by disabling the transition during the capture.
+- **Measured minimums (weakest pixel, phone-320, Review / Workout):**
+
+  | Skin | Review | Workout |
+  | --- | --- | --- |
+  | clear | 6.16 | 6.08 |
+  | vapour | 6.39 | 6.28 |
+  | signal | 5.53 | 5.40 |
+  | mono | 6.93 | 6.93 |
+
+  All 17 labels pass in every skin. No skin is a product finding.
+- `evidence/refinement/task-029/required-cases.json` declares 13 check-02 cases: the 5 existing
+  cases plus these 8.
+- **Verification (repair tree):**
+  - `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-02 -- npx playwright test e2e/refinement/task-029.spec.ts --project=mobile`:
+    PASSED, 13 total, 13 executed and passed, 0 skipped.
+  - `npx eslint e2e/refinement/task-029.spec.ts`: 0 errors, 0 warnings.
+  - `npm test`: 269 files, 6356 tests passed.
+  - The first delivery-evidence verifier run was REJECTED: "TASK-029 check-01: stale receipt:
+    required-case manifest changed after the run". The receipt binds the whole manifest, so
+    check-01 was re-run with an unchanged target. Result: PASSED, 19 executed and passed (8
+    required), 0 skipped.
+  - `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks TASK-001,…,TASK-035`
+    (the 32 listed): PASSED. TASK-029 has current passing receipts.
+
+## Next action
+
+Controller verification and review. No owner decision is needed to merge this task.
+
+## Repair round 2: Setup scan after redirect
+
+- **Reviewer finding (rejected a1, patch ff8985ef609d).** The four `AC-R029-01 Setup equipment
+  skin <skin> phone-320` cases intermittently failed axe `region` on the "Skip to content" link.
+  This happened in about 11% of vapour, signal and mono runs, and in none of the clear runs. One
+  check-02 guard re-run was REJECTED at 12/13.
+- **Cause (from the failing trace).** `visit('/')` waits for the first named `h1`. That `h1` is
+  the boot check's own `CLEAR` heading, rendered at `/` above the router. `visit` then starts its
+  scan. While axe was running, the boot handed off to the routed app and the onboarding guard
+  redirected to `/onboarding`. A trace snapshot taken mid-scan shows no `main` element, so at that
+  moment the skip link's `#main` target was gone. The previous journal entry recorded this as a
+  one-off flake watch; it is this same race.
+
+  This is not a product finding. The boot screen and the settled Setup screen both render
+  `<main id="main">`, and the gap exists only during the hand-off swap. The non-clear skins only
+  shift that timing.
+- **Change (spec-local; `e2e/fixtures.ts` and product code unchanged; no scan removed and no rule
+  disabled).**
+  - `syntheticApp` takes a `holdBoot` option and returns `releaseBoot()`. With `holdBoot` set, the
+    boot check's profile read is held until the case releases it.
+  - The new `enterSetup` helper runs the Setup entry in order:
+    1. `visit('/')`. Its automatic scan now reads the boot check while it is still checking.
+    2. It asserts that the URL is still `/` and the `h1` is exactly `CLEAR`.
+    3. It releases the boot.
+    4. It waits for the `/onboarding` URL, the `Set up CLEAR` `h1`, the Setup step heading,
+       `settle` and `settledSkin`.
+    5. It runs the full `checkA11y` on the settled Setup screen.
+
+    The cases' later assertions and their final scans are unchanged.
+  - All five Setup cases use `enterSetup`: the original clear `AC-R029-01 Setup equipment phone-320`
+    case, which had the same latent race, and the four skin cases. Test names are unchanged, so
+    `required-cases.json` is unchanged.
+- **Stability proof (under the host lock):**
+  - `npx playwright test e2e/refinement/task-029.spec.ts --project=mobile --grep "Setup equipment skin" --repeat-each=20`:
+    80 passed and 0 failed (4 skins × 20).
+  - `--grep "Setup equipment" --repeat-each=20`: 120 passed and 0 failed. This covers the original
+    clear Setup case, the four skin cases and the gallery case, × 20.
+- **Verification (repair-2 tree):**
+  - `node …/v2.mjs with-lock -- node scripts/refinement/run-required-check.mjs --task TASK-029 --check check-02 -- npx playwright test e2e/refinement/task-029.spec.ts --project=mobile`:
+    PASSED, with 13 total, 13 executed, 13 passed and 0 skipped. The receipt was refreshed.
+  - check-01 was not re-run. Its manifest and target are unchanged, and the verifier reports its
+    receipt current.
+  - `npx eslint e2e/refinement/task-029.spec.ts`: 0 errors.
+  - `npx vitest run src/test/e2e-harness.test.ts` (no direct `page.goto`): 42 passed.
+  - `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks <the 32 listed, TASK-001…TASK-035>`:
+    PASSED.

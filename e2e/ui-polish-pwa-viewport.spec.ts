@@ -398,6 +398,11 @@ for (const { name, viewport, reducedHeight, insets } of CASES) {
       await touchScroll(page, cdp, scroller)
       await mark.click()
       const reason = page.getByRole('combobox', { name: 'Reason', exact: true })
+      // TASK-045: the rest-day form is the shared "Log rest day" dialog, so
+      // its controls scroll inside the dialog's own scroll owner.
+      const restDialog = page.getByRole('dialog', { name: 'Log rest day', exact: true })
+      const restScroller = restDialog.locator('[data-logging-scroll]')
+      await expect(restScroller).toHaveCount(1)
       await expect(reason).toBeFocused()
       await reason.selectOption('injury')
       await expect(reason).toHaveValue('injury')
@@ -411,12 +416,9 @@ for (const { name, viewport, reducedHeight, insets } of CASES) {
       await frame(page, reduced, insets)
       await reason.scrollIntoViewIfNeeded()
       await safeBox(reason, reduced, insets)
-      await insideOwner(reason, scroller)
-      // Keyboard traversal can reveal the pinned action in its own measured
-      // layer even when a very short viewport makes that layer scrollable.
-      await reveal(generate, reduced, insets, footer)
+      await insideOwner(reason, restScroller)
       const cancel = page.getByRole('button', { name: 'Cancel', exact: true })
-      await reveal(cancel, reduced, insets, scroller)
+      await reveal(cancel, reduced, insets, restScroller)
       await cancel.click()
       await expect(mark).toBeFocused()
       await expect(reason).toHaveCount(0)
@@ -425,6 +427,10 @@ for (const { name, viewport, reducedHeight, insets } of CASES) {
       await page.keyboard.press('Escape')
       await expect(reason).toHaveCount(0)
       await expect(mark).toBeFocused()
+      // Keyboard traversal can reveal the pinned action in its own measured
+      // layer even when a very short viewport makes that layer scrollable.
+      // Generate is inert behind the modal, so this runs once it is closed.
+      await reveal(generate, reduced, insets, footer)
 
       await page.setViewportSize(viewport)
       await frame(page, viewport, insets)

@@ -87,6 +87,20 @@ describe('one writer for block_results (EXE-01)', () => {
       'src/state/block-completion-provider.tsx',
     ])
   })
+
+  it('saves the richer timed result from that same path, and from nowhere else (TASK-015, REQ-015)', () => {
+    // TASK-031's provider (`saveTimedResult`: the row, its correction on the
+    // unique key, then the movement rows) is called by the shell's one
+    // completion path only. No renderer, route or second module imports it or
+    // names the correction or the movement writer.
+    expect(filesMatching(/(?<!function )\bsaveTimedResult\(/)).toEqual(['src/state/block-completion-provider.tsx'])
+    expect(filesMatching(/from '[./]*state\/timed-results'|from '\.\/timed-results'/)).toEqual([
+      'src/state/block-completion-provider.tsx',
+    ])
+    expect(filesMatching(/blockResults\.(?:correct|recordMovements)\(/)).toEqual([])
+    // The movement rows are written by the one writer that names the table.
+    expect(filesMatching(/from\(\s*'block_movement_results'\s*\)/)).toEqual(['src/data/workout.ts'])
+  })
 })
 
 describe('no perceived-effort capture on the completion path (E04, REQ-013)', () => {
@@ -146,6 +160,9 @@ describe('a renderer supplies an outcome and nothing else (EXE-01)', () => {
     for (const file of reporting) {
       expect(read(file)).toContain('useBlockCompletion()')
     }
+    // TASK-015: the timed log's effort and typed entries go the same way — the
+    // same control, the same seam, one more thing the forward action saves.
+    expect(renderers.filter((file) => /reportTimedResult\b/.test(read(file)))).toEqual(['src/ui/block-completion-control.tsx'])
   })
 
   it('gives no renderer the section save', () => {

@@ -353,7 +353,10 @@ function blockView(block: PreviewBlock): BlockDetailView {
     scored: block.outcome !== null,
     outcome: block.outcome ?? [],
     perceivedEffort: null,
+    // A preview records nothing: no effort and no movement actuals (TASK-031).
+    effort: null,
     notes: null,
+    movementActuals: [],
     exercises: block.movements.map(movementView),
   }
 }
@@ -440,7 +443,10 @@ function LadderTimingCard() {
             </Heading>
             <StructureBadge identity={structureIdentity(ladder.columns)} />
             <p style={TEXT_STYLE}>{timingSummary(ladder.timing, ladder.columns.timer_seconds)}</p>
-            <p style={TEXT_STYLE}>{PACING_NOTES[ladder.timing.mode]}</p>
+            {/* TASK-012 (AC-R012-02, R71): the capped window has no pacing line. */}
+            {PACING_NOTES[ladder.timing.mode] !== null && (
+              <p style={TEXT_STYLE}>{PACING_NOTES[ladder.timing.mode]}</p>
+            )}
             <p style={TEXT_STYLE}>
               {exerciseName(ladder.movement.exercise_id)} · {prescriptionText(ladder.movement)}
             </p>

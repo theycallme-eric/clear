@@ -1,0 +1,91 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-001",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-001.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-001/required-cases.json",
+    "sha256": "c4fa3c4d0fc7c21221d2affa596ac8cc0f3d8240a7e0d0d311a384ee7a7a01da"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-001.spec.ts",
+      "sha256": "9912b8bc8963f53685bdacb7ccd78818730cd4356dca56b00223b8269d4a3526"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 phone-320: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 phone-390: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 tablet-768: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 desktop-1280: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 phone-320: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 phone-390: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 tablet-768: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 desktop-1280: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-001.spec.ts",
+      "name": "TASK-001 shared movement hierarchy and peer grouping > gallery cards: the accepted state renders the same peers through the Review and Workout consumers",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 9
+  },
+  "problems": []
+}

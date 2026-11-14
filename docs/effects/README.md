@@ -293,7 +293,8 @@ No other public integration gap was found.
   scroll and INP are unmeasured or not proven.
 - **Owner visual approval is recorded for the November 3 exported presets and current front-glass treatment.** The alternative rear-text cleanup is still a proposal. Main merge is authorized after the remaining engineering and verification closeout; this is not a claim that unfinished work or production performance has passed.
 
-- The corrected viewport field covers native dialog and sheet content once, with pointer and keyboard interaction passing through. Dialog/sheet outer-frame Echo opt-in is a separate pending consumer change.
+- The corrected viewport field covers native dialog and sheet content once, with pointer and keyboard interaction passing through. Dialog/sheet outer-frame Echo opt-in is a separate pending consumer change; the shared focused logging dialog (`src/ui/refinements/logging-overlay.tsx`) already draws its outer frame's Echo with the same kernel.
+- The final composition with the focused logging dialog's Balanced backdrop and the deadline warning (layer order, on/off/reduced-motion matrix, proof and limits) is recorded in [the effects composition contract](../specs/EFFECTS_COMPOSITION_CONTRACT.md) (refinement TASK-033).
 - Echo rears re-measure one frame after their owner resizes.
 
 Record the owner's visual decision and performance decision here, with their dates, when they are

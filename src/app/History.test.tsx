@@ -194,7 +194,7 @@ describe('History route', () => {
     renderHistory({}, sessionRows(2))
 
     await historyList()
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'partial')
     const statement = await screen.findByText(HISTORY_NO_MATCH_TITLE)
     expect(statement.parentElement!.children).toHaveLength(1)
     expect(screen.queryByRole('button', { name: HISTORY_EMPTY_ACTION })).not.toBeInTheDocument()
@@ -308,7 +308,7 @@ describe('History route', () => {
     renderHistory({}, sessionRows(2))
 
     await historyList()
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'partial')
 
     expect(await screen.findByText(HISTORY_NO_MATCH_TITLE)).toBeInTheDocument()
     expect(screen.queryByText(HISTORY_EMPTY_TITLE)).not.toBeInTheDocument()
@@ -319,7 +319,6 @@ describe('History route', () => {
   })
 
   it('renders rest days as their own entries, distinct from sessions', async () => {
-    const user = userEvent.setup()
     renderHistory({}, sessionRows(2))
 
     const list = await historyList()
@@ -330,11 +329,61 @@ describe('History route', () => {
     expect(
       within(list).getAllByRole('heading', { level: 2, name: 'Rest' }).length,
     ).toBeGreaterThan(0)
+  })
 
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'rest')
-    const restOnly = await historyList()
-    expect(within(restOnly).queryByRole('heading', { name: /^Session/ })).toBeNull()
-    expect(within(restOnly).getAllByText('Rest').length).toBeGreaterThan(0)
+  // A3 task 2: TASK-026's filter change, carried from the build branch with the
+  // build's own test. Round 7's row order (decision 7) replaces the build's
+  // chronology row layout, so the build's data-status/data-layout row checks
+  // are not carried; the status word is read from Round 7's status part.
+  it('AC-C53-01 the filter offers All entries, Completed and Partial, and All entries still lists rest runs and never-started workouts', async () => {
+    const user = userEvent.setup()
+    const day = (n: number) => `2026-09-${String(n).padStart(2, '0')}`
+    const rows = [
+      makeSessionRow({
+        id: 'b0000021-0000-4000-8000-000000000000', date: day(24), title: 'Finished lower',
+        created_at: `${day(24)}T15:00:00.000Z`, completed_at: `${day(24)}T15:40:00.000Z`,
+      }),
+      makeSessionRow({
+        id: 'b0000022-0000-4000-8000-000000000000', date: day(21), title: 'Stopped upper',
+        created_at: `${day(21)}T16:00:00.000Z`, started_at: `${day(21)}T16:05:00.000Z`,
+        completed_at: null, abandoned_at: `${day(21)}T16:15:00.000Z`, actual_duration_mins: 9,
+      }),
+      makeSessionRow({
+        id: 'b0000023-0000-4000-8000-000000000000', date: day(19), title: 'Never begun',
+        created_at: `${day(19)}T17:00:00.000Z`, started_at: null, completed_at: null,
+        actual_duration_mins: null,
+      }),
+    ]
+    renderHistory({}, rows)
+
+    const list = await historyList()
+    const filter = screen.getByLabelText(HISTORY_FILTER_LABEL)
+    const offered = [...(filter as HTMLSelectElement).options].map((option) => [option.value, option.textContent])
+    expect(offered).toEqual([['all', 'All entries'], ['completed', 'Completed'], ['partial', 'Partial']])
+    expect(within(filter).queryByRole('option', { name: 'Rest days' })).toBeNull()
+    expect(within(filter).queryByRole('option', { name: 'Not started' })).toBeNull()
+
+    // All entries keeps every record: both rest runs and the never-started
+    // workout, which keeps its stored status.
+    const heading = (title: string) => within(list).getByRole('heading', { level: 2, name: title })
+    expect(heading('Finished lower')).toBeInTheDocument()
+    expect(heading('Stopped upper')).toBeInTheDocument()
+    const unstarted = heading('Never begun').closest('li') as HTMLElement
+    expect(unstarted.querySelector('[data-part="status"]')).toHaveTextContent('Not started')
+    // The gaps between the three workouts (and any since the newest) are rest runs.
+    expect(within(list).getAllByRole('heading', { level: 2, name: 'Rest' }).length).toBeGreaterThanOrEqual(2)
+    const everything = within(list).getAllByRole('listitem').length
+
+    // Partial narrows to the stopped workout, with its recorded actual minutes.
+    await user.selectOptions(filter, 'partial')
+    const partial = await historyList()
+    expect(within(partial).getAllByRole('listitem')).toHaveLength(1)
+    expect(within(partial).getByRole('heading', { name: 'Stopped upper' })).toBeInTheDocument()
+    expect(within(partial).getByText('Actual 9 min')).toBeInTheDocument()
+
+    // Back to All entries: nothing was dropped by narrowing.
+    await user.selectOptions(filter, 'all')
+    expect(within(await historyList()).getAllByRole('listitem')).toHaveLength(everything)
   })
 
   it('is bounded to a page and load-more widens the window, not the filter', async () => {
@@ -392,7 +441,7 @@ describe('History route', () => {
     expectOneCard()
 
     // Filtered to nothing: the same card, still holding the filter.
-    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'partial')
     expect(historyCard()).toContainElement(await screen.findByText(HISTORY_NO_MATCH_TITLE))
     expect(historyCard()).toContainElement(screen.getByLabelText(HISTORY_FILTER_LABEL))
     expectOneCard()

@@ -1,0 +1,71 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-033",
+  "description": "Final CRT and Phosphor Echo composition (REQ-033; AC-R033-01, AC-R033-02, AC-R033-03; JOURNEY-033) through the current effects owners, re-verified rather than copied: the comfort policy src/state/visual-effects.ts and root effects host src/app/RootLayout.tsx, the one Echo kernel src/ui/phosphor-echo.tsx (preset phosphor-echo-preset.ts, eligibility foreground-echo.tsx), the one live CRT front glass src/ui/crt-field/ (preset config.ts), composed with TASK-016's Balanced LoggingOverlay (src/ui/refinements/logging-overlay.tsx) and TASK-008's deadline warning (src/ui/refinements/deadline-timer.tsx, countdown-warning.ts). Proven on the real /workout route (open log and a native dialog, effects on/off, nothing written), the accepted gallery states /gallery/refinements?state=urgency and ?state=ladder-long (reference eded158cfd928d382c9a9409e2c372270312741d), reduced motion (app and device) and all four skins. Contract: docs/specs/EFFECTS_COMPOSITION_CONTRACT.md. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-033 --check check-01 -- npx playwright test e2e/refinement/task-033.spec.ts --project=mobile",
+      "criteria": [
+        "AC-R033-01",
+        "AC-R033-02",
+        "AC-R033-03",
+        "JOURNEY-033"
+      ],
+      "files": [
+        "e2e/refinement/task-033.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > AC-R033-01 one shared kernel: the current effects owners, presets and moved intake paths are the accepted reference's, and no intake snapshot, second runtime owner or October 26 preview pattern is in the app",
+          "criterion": "AC-R033-01"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 touch phone-390 /workout: one front glass over the open log and a native dialog, the warning edge above them in phase, Echo beneath; effects off keeps the warning and the draft, on restores the glass above the dialog; nothing written",
+          "criterion": "AC-R033-02"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 gallery urgency phone-390: the warning under the accepted Balanced LoggingOverlay — glass over the sharp readable frame, its Echo beneath, one in-phase edge in the dialog's top layer, X focus and return; effects off keeps the backdrop and the warning",
+          "criterion": "AC-R033-02"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 reduced motion phone-320: the app's Reduce motion and the device setting each hold the glass still in place, the edge at a steady .5 and the backdrop without its fade, over the long log and the warning",
+          "criterion": "AC-R033-02"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin clear phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+          "criterion": "AC-R033-03"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin signal phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+          "criterion": "AC-R033-03"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin vapour phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+          "criterion": "AC-R033-03"
+        },
+        {
+          "file": "e2e/refinement/task-033.spec.ts",
+          "project": "mobile",
+          "name": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin mono phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+          "criterion": "AC-R033-03"
+        }
+      ]
+    }
+  }
+}

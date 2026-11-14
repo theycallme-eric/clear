@@ -396,14 +396,20 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   const second = movement(page, 2, fixed.id)
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const sessionTime = page.getByRole('timer', { name: 'Session time', exact: true })
-  const countdown = page.locator('[data-urgent]').filter({ has: timer })
+  // TASK-008 (C23): the countdown's whole frame carries the low colour from ten
+  // seconds left (`data-low`); the breathe and the one edge are the last five's.
+  const countdown = page.locator('[data-timer-frame]').filter({ has: timer })
 
   await page.clock.install({ time: Date.now() })
   await visit('/workout')
   await expect(page.getByRole('list', { name: 'Movements in this EMOM', exact: true })).toBeVisible()
 
   // Ready: the schedule is stated before the clock runs, and nothing is a form.
-  await expect(page.getByText('NOT STARTED', { exact: true })).toBeVisible()
+  // TASK-011 (C32, AC-R011-01; R40) supersedes the NOT STARTED caption: the
+  // minute ahead and the first movement's Next say it.
+  await expect(page.getByText('MIN 1 OF 6', { exact: true })).toBeVisible()
+  await expect(first.getByText('Next', { exact: true })).toBeVisible()
+  await expect(page.getByText('NOT STARTED', { exact: true })).toHaveCount(0)
   await expect(first.getByText('MIN 1 · 6 reps', { exact: true })).toBeVisible()
   await expect(first.getByText('Each turn: 6-8-10', { exact: true })).toBeVisible()
   await expect(second.getByText('MIN 2 · 12 reps', { exact: true })).toBeVisible()
@@ -424,7 +430,8 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   const sessionAtStart = (await sessionTime.textContent()) ?? ''
 
   await expect(page.getByText('MIN 1 OF 6', { exact: true })).toBeVisible()
-  await expect(page.getByText('WORK', { exact: true })).toBeVisible()
+  // TASK-011 (C32, AC-R011-01; R40): the minute and Now carry the work; no WORK caption.
+  await expect(page.getByText('WORK', { exact: true })).toHaveCount(0)
   // On a phone the countdown is in view without scrolling, so it can be read
   // from across the room.
   await expect(timer).toBeInViewport()
@@ -435,7 +442,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // The end-of-minute cue, then the rest window — with nothing to press.
   await page.clock.pauseAt(emomStart + 52_000)
   await expect(timer).toContainText('00:08')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
   await expect(page.getByText('REST', { exact: true })).toBeVisible()
   await expect(second.getByText('Next', { exact: true })).toBeVisible()
   await expectHandsOff(page)
@@ -443,7 +450,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // Boundary: minute 2 is the second movement's, with no tap; the cue resets.
   await page.clock.pauseAt(emomStart + 61_000)
   await expect(page.getByText('MIN 2 OF 6', { exact: true })).toBeVisible()
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
   await expect(second).toHaveAttribute('aria-current', 'step')
   await expect(second.getByText('MIN 2 · 12 reps', { exact: true })).toBeVisible()
   await expect(first.getByText('MIN 3 · 8 reps', { exact: true })).toBeVisible()
@@ -452,16 +459,17 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // target and the countdown are the wall clock's.
   await background(page, emomStart + 160_000)
   await expect(page.getByText('MIN 3 OF 6', { exact: true })).toBeVisible()
-  await expect(page.getByText('WORK', { exact: true })).toBeVisible()
+  // TASK-011 (C32, AC-R011-01): the minute and Now carry the work; no WORK caption.
+  await expect(page.getByText('WORK', { exact: true })).toHaveCount(0)
   await expect(first).toHaveAttribute('aria-current', 'step')
   await expect(first.getByText('MIN 3 · 8 reps', { exact: true })).toBeVisible()
   await expect(timer).toContainText('00:20')
-  await expect(countdown).toHaveAttribute('data-urgent', 'false')
+  await expect(countdown).not.toHaveAttribute('data-low')
 
   // Into its rest window: the end-of-minute cue, and the schedule looks ahead.
   await page.clock.pauseAt(emomStart + 172_000)
   await expect(timer).toContainText('00:08')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
   await expect(page.getByText('REST', { exact: true })).toBeVisible()
   await expect(second.getByText('Next', { exact: true })).toBeVisible()
   await expect(first.getByText('MIN 5 · 10 reps', { exact: true })).toBeVisible()
@@ -483,15 +491,27 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // The restored countdown still crosses into its cue at the end of the minute.
   await page.clock.pauseAt(emomStart + 292_000)
   await expect(timer).toContainText('00:08')
-  await expect(countdown).toHaveAttribute('data-urgent', 'true')
+  await expect(countdown).toHaveAttribute('data-low', 'true')
 
   // Expiry: the schedule ends; nothing claims the work was performed.
   await page.clock.pauseAt(emomStart + 400_000)
   await expect(page.getByText('COMPLETE', { exact: true })).toBeVisible()
   await expect(timer).toContainText('00:00')
-  await expect(page.getByText(/The clock has run every prescribed minute/)).toBeVisible()
+  // TASK-011 (C31, AC-R011-02; R43, R84) supersedes the closing sentence with
+  // the end log: no minutes-completed counter or completion question, only
+  // the optional notes for an exception (left blank here, so the row below
+  // still carries no note).
+  await expect(page.getByText(/The clock has run every prescribed minute/)).toHaveCount(0)
   await expect(first.getByText('6-8-10 reps', { exact: true })).toBeVisible()
   await expectHandsOff(page)
+  // TASK-046 (C45; R43, R100): the card's real Log action opens the end log
+  // in the shared focused dialog titled "Log results"; closed again with its X.
+  await page.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true }).click()
+  const endLog = page.getByRole('dialog', { name: 'Log results', exact: true })
+  await expect(endLog).toBeVisible()
+  await expect(endLog.getByRole('textbox', { name: 'Notes · optional', exact: true })).toBeVisible()
+  await endLog.getByRole('button', { name: 'Close log', exact: true }).click()
+  await expect(endLog).toHaveCount(0)
 
   // The global session clock is untouched by the EMOM: it kept counting
   // through the background, the refresh and the expiry.

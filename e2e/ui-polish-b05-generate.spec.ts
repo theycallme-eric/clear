@@ -18,7 +18,9 @@ import { expect, test as scanned } from './fixtures'
  * B05-02 marks the Generate form: a title that wraps (02.1), a Settings link
  * (02.3), a Focus explanation (02.4) and an intensity explanation (02.5) to
  * remove, a Focus to say beside the Goal (02.6), Recovery and Change focus as
- * one row beneath them (02.7) and a clipped MINUTES cap (02.9).
+ * one row beneath them (02.7) and a clipped MINUTES cap (02.9). TASK-024
+ * (C51; R10.1, R25) supersedes 02.7's pair: the Focus value is its own change
+ * control, and Recovery is reached inside its choices.
  *
  * The actual route is entered from Home and rendered at the phone width B05
  * was captured on and at a narrow, short phone. Each marked region of the
@@ -190,9 +192,7 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
         })).toBeVisible()
         await expect(page.getByLabel('Notes', { exact: true })).toBeVisible()
         await expect(page.getByLabel('Time available', { exact: true })).toHaveValue('45')
-        await expect(page.getByRole('button', {
-          name: 'Change focus', exact: true,
-        })).toBeVisible()
+        await expect(page.getByRole('button', { name: /^Focus:/ })).toBeVisible()
       } else if (path === '/dev/gallery/app') {
         // Wait for the lazy gallery route rather than scanning the boot shell.
         await expect(page.getByRole('heading', {
@@ -382,9 +382,10 @@ const originOf = (baseURL: string | undefined) => new URL(baseURL!).origin
 // ─────────────────────────────────────────────────────────────────────────────
 
 const card = (page: Page) => page.locator('main .clr-card').first()
-const focusLine = (page: Page) => card(page).getByText(/^Focus:/)
+/** TASK-024 (C51): the Focus fact, whose value is its own change control. */
+const focusLine = (page: Page) => card(page).locator('[data-intent-fact="focus"]')
 const recoveryAction = (page: Page) => page.getByRole('button', { name: 'Recovery session', exact: true })
-const changeFocusAction = (page: Page) => page.getByRole('button', { name: 'Change focus', exact: true })
+const changeFocusAction = (page: Page) => page.getByRole('button', { name: /^Focus:/ })
 const slider = (page: Page) => page.getByRole('slider', { name: 'Intensity' })
 const generateAction = (page: Page) => page.locator('.clr-footer').getByRole('button', { name: 'Generate workout', exact: true })
 
@@ -448,28 +449,27 @@ async function assertTitle(page: Page, testInfo: TestInfo, id: string) {
 }
 
 /**
- * 02.6/02.7: Goal then Focus said alike at the top; Recovery and Change focus
- * in one named action group beneath. The controls stay side by side at every
- * checked width. Label words may wrap inside those cells; DOM and pixel line
- * counts must agree and the complete label/tick must remain inside the frame.
+ * 02.6/02.7 as TASK-024 (C51; R10.1, R10.2, R21, R25) supersedes them: Goal
+ * and Focus said alike on the card's first summary row, the Focus value its
+ * own change control (no paired Recovery | Change focus row, no detached
+ * action), and — while the choices are open — Recovery as its own toggle
+ * inside them, apart from the four focuses. DOM and pixel line counts agree,
+ * and every label and tick stays inside its frame.
  */
 async function assertTopComposition(page: Page, testInfo: TestInfo, id: string) {
   // Filling the notes scrolled the form; the card's top is measured in view.
   await card(page).evaluate((element) => element.scrollIntoView({ block: 'start' }))
-  // The public Chip animates its tick width/margin for --dur-state even
-  // under reduced motion. Wait for those real finite transitions, then read
-  // controls, cells and text in one browser task; separate reads can straddle
-  // the tick's layout change and compare two different instants.
+  // The public Chip animates its tick width/margin for --dur-state even under
+  // reduced motion: wait for those finite transitions, then read in one task.
   const snapshot = await card(page).evaluate(async (card) => {
-    const group = card.querySelector<HTMLElement>('.clr-action-group--paired-labels')!
-    // Flush layout before enumerating CSS transitions that a new state started.
-    group.getBoundingClientRect()
-    const finiteMotion = () => group.getAnimations({ subtree: true }).filter((animation) =>
+    const intent = card.querySelector<HTMLElement>('[data-generate-intent]')!
+    intent.getBoundingClientRect()
+    const finiteMotion = () => intent.getAnimations({ subtree: true }).filter((animation) =>
       (animation.playState === 'running' || animation.pending) &&
       Number.isFinite(animation.effect?.getComputedTiming().endTime),
     )
     await Promise.all(finiteMotion().map((animation) => animation.finished))
-    if (finiteMotion().length !== 0) throw new Error('Generate pair motion did not settle before measurement')
+    if (finiteMotion().length !== 0) throw new Error('Generate focus motion did not settle before measurement')
 
     const box = (rect: DOMRect) => ({
       x: rect.x, y: rect.y, left: rect.left, top: rect.top, right: rect.right,
@@ -494,102 +494,77 @@ async function assertTopComposition(page: Page, testInfo: TestInfo, id: string) 
         content: element.textContent,
         lines: new Set(rects.map((rect) => Math.round(rect.bottom))).size,
         overflow: element.scrollWidth - element.clientWidth,
-        font: { family: style.fontFamily, size: style.fontSize, weight: style.fontWeight, lineHeight: style.lineHeight, color: style.color },
+        font: { family: style.fontFamily, size: style.fontSize, weight: style.fontWeight, lineHeight: style.lineHeight },
       }
     }
-    const paragraphs = [...card.querySelectorAll('p')]
-    const goal = paragraphs.find((element) => element.textContent?.startsWith('Goal:'))!
-    const focus = paragraphs.find((element) => element.textContent?.startsWith('Focus:'))!
-    const controls = [...group.querySelectorAll('button')]
-    const recovery = controls.find((element) => element.textContent === 'Recovery session')!
-    const change = controls.find((element) => element.textContent === 'Change focus')!
-    const tick = recovery.querySelector('svg')!
+    const goal = card.querySelector('[data-intent-fact="goal"]')!
+    const focus = card.querySelector('[data-intent-fact="focus"]')!
+    const control = focus.querySelector('button')!
+    const region = control.getAttribute('aria-controls') === null
+      ? null
+      : document.getElementById(control.getAttribute('aria-controls')!)
+    const group = region?.querySelector('[role="group"]') ?? null
+    const recovery = [...(region?.querySelectorAll('button') ?? [])].find((element) => element.textContent === 'Recovery session') ?? null
+    const tick = recovery?.querySelector('svg') ?? null
     const intensity = card.querySelector('input[type="range"], [role="slider"]')!
     return {
       goal: measureText(goal), focus: measureText(focus),
-      recovery: measureText(recovery), change: measureText(change),
-      selection: {
+      control: { expanded: control.getAttribute('aria-expanded'), box: box(control.getBoundingClientRect()), name: control.textContent },
+      summaryRow: goal.parentElement === focus.parentElement && goal.parentElement!.classList.contains('clr-intent-summary'),
+      recovery: recovery === null ? null : measureText(recovery),
+      recoveryInFocusGroup: recovery !== null && group !== null && group.contains(recovery),
+      selection: recovery === null || tick === null ? null : {
         pressed: recovery.getAttribute('aria-pressed'), opacity: getComputedStyle(tick).opacity,
         tick: box(tick.getBoundingClientRect()),
       },
-      pair: {
-        className: group.className,
-        cells: [...group.children].map((cell) => box(cell.getBoundingClientRect())),
-        box: box(group.getBoundingClientRect()),
-      },
+      pairedGroups: card.querySelectorAll('.clr-action-group--paired-labels').length,
+      changeFocusButtons: [...card.querySelectorAll('button')].filter((button) => /change focus/i.test(button.textContent ?? '')).length,
       cardBox: box(card.getBoundingClientRect()), intensity: box(intensity.getBoundingClientRect()),
     }
   })
-  const { goal, focus, recovery, change, selection, pair, cardBox, intensity } = snapshot
-  const detail = JSON.stringify({ goal, focus, recovery, change, selection, pair, cardBox, intensity })
+  const { goal, focus, control, summaryRow, recovery, recoveryInFocusGroup, selection, pairedGroups, changeFocusButtons, cardBox, intensity } = snapshot
+  const detail = JSON.stringify(snapshot)
 
-  // Goal and Focus: the first lines of the card, adjacent, in one typography.
+  // Goal and Focus: the card's first row, in one typography, above the intensity.
+  expect(summaryRow, detail).toBe(true)
   expect(goal.box.top - cardBox.y, detail).toBeLessThan(48)
-  expect(focus.box.top, detail).toBeGreaterThanOrEqual(goal.box.bottom - 0.5)
-  expect(focus.box.top - goal.box.bottom, detail).toBeLessThan(12)
-  expect(focus.font, detail).toEqual(goal.font)
-  // The pair: the shared action group, Recovery then Change focus, directly
-  // beneath the Focus and above the intensity, each label whole.
-  expect(pair.className.split(' '), detail).toContain('clr-action-group')
-  expect(pair.className.split(' '), detail).toContain('clr-action-group--paired-labels')
-  expect(pair.cells, detail).toHaveLength(2)
-  const sideBySide = Math.abs(pair.cells[0]!.top - pair.cells[1]!.top) <= 1 &&
-    pair.cells[1]!.left > pair.cells[0]!.right - 0.5
-  expect(sideBySide, detail).toBe(true)
-  // Each control's frame fills its cell: the frames meet at the group's gap.
-  expect(Math.abs(recovery.box.width - pair.cells[0]!.width), detail).toBeLessThanOrEqual(1)
-  expect(Math.abs(change.box.width - pair.cells[1]!.width), detail).toBeLessThanOrEqual(1)
-  for (const control of [recovery, change]) {
-    expect(control.lines, detail).toBeGreaterThanOrEqual(1)
-    expect(control.lines, detail).toBeLessThanOrEqual(2)
-    expect(control.text.left, detail).toBeGreaterThanOrEqual(control.box.left)
-    expect(control.text.right, detail).toBeLessThanOrEqual(control.box.right)
-    expect(control.text.top, detail).toBeGreaterThanOrEqual(control.box.top)
-    expect(control.text.bottom, detail).toBeLessThanOrEqual(control.box.bottom)
+  expect(focus.box.top, detail).toBeGreaterThanOrEqual(goal.box.top - 0.5)
+  expect(focus.font.family, detail).toBe(goal.font.family)
+  expect(focus.font.size, detail).toBe(goal.font.size)
+  expect(focus.box.bottom, detail).toBeLessThan(intensity.y)
+  expect(focus.box.right, detail).toBeLessThanOrEqual(cardBox.x + cardBox.width + 0.5)
+  // The Focus value is the change control; no paired or detached action.
+  expect(control.box.left, detail).toBeGreaterThanOrEqual(focus.box.left - 0.5)
+  expect(control.box.right, detail).toBeLessThanOrEqual(focus.box.right + 0.5)
+  expect(pairedGroups, detail).toBe(0)
+  expect(changeFocusButtons, detail).toBe(0)
+  // Recovery, when reached, is inside the choices, apart from the four focuses, whole.
+  if (recovery !== null) {
+    expect(control.expanded, detail).toBe('true')
+    expect(recoveryInFocusGroup, detail).toBe(false)
+    expect(recovery.overflow, detail).toBeLessThanOrEqual(0)
+    expect(recovery.text.left, detail).toBeGreaterThanOrEqual(recovery.box.left)
+    expect(recovery.text.right, detail).toBeLessThanOrEqual(recovery.box.right)
+    if (selection?.pressed === 'true') {
+      expect(selection.opacity, detail).toBe('1')
+      expect(selection.tick.left, detail).toBeGreaterThanOrEqual(recovery.box.left)
+      expect(selection.tick.right, detail).toBeLessThanOrEqual(recovery.box.right)
+    }
   }
-  expect(recovery.overflow, detail).toBeLessThanOrEqual(0)
-  expect(change.overflow, detail).toBeLessThanOrEqual(0)
-  if (selection.pressed === 'true') {
-    expect(selection.opacity, detail).toBe('1')
-    expect(selection.tick.width, detail).toBeGreaterThan(0)
-    expect(selection.tick.left, detail).toBeGreaterThanOrEqual(recovery.box.left)
-    expect(selection.tick.right, detail).toBeLessThanOrEqual(recovery.box.right)
-    expect(selection.tick.top, detail).toBeGreaterThanOrEqual(recovery.box.top)
-    expect(selection.tick.bottom, detail).toBeLessThanOrEqual(recovery.box.bottom)
-  }
-  expect(pair.box.top, detail).toBeGreaterThan(focus.box.bottom)
-  expect(pair.box.top - focus.box.bottom, detail).toBeLessThan(24)
-  expect(pair.box.bottom, detail).toBeLessThan(intensity.y)
-  expect(pair.box.right, detail).toBeLessThanOrEqual(cardBox.x + cardBox.width + 0.5)
 
-  // Read every drawn label line, including natural narrow-phone wrapping.
-  const top = { left: cardBox.x, top: cardBox.y, right: cardBox.x + cardBox.width, bottom: pair.box.bottom + 8 }
+  // Read every drawn summary line in the capture's own pixels.
+  const top = { left: cardBox.x, top: cardBox.y, right: cardBox.x + cardBox.width, bottom: Math.max(goal.box.bottom, focus.box.bottom) + 8 }
   const shot = await capture(page, testInfo, id, top)
   const join = Math.round(3 * shot.scale)
   const goalInk = await inkBands(page, shot.shot, 'image/png', shot.local(goal.text), join)
   const focusInk = await inkBands(page, shot.shot, 'image/png', shot.local(focus.text), join)
-  const recoveryInk = await inkBands(page, shot.shot, 'image/png', shot.local(recovery.text), join)
-  const changeInk = await inkBands(page, shot.shot, 'image/png', shot.local(change.text), join)
-  const pixels = { goalInk, focusInk, recoveryInk, changeInk }
+  const pixels = { goalInk, focusInk }
   const pixelDetail = JSON.stringify(pixels)
-  // Each text drawn as many rows of ink as it has laid-out lines.
-  const drawn: Array<[typeof goalInk, number]> = [
-    [goalInk, goal.lines], [focusInk, focus.lines], [recoveryInk, recovery.lines], [changeInk, change.lines],
-  ]
-  for (const [ink, lines] of drawn) {
+  for (const [ink, lines] of [[goalInk, goal.lines], [focusInk, focus.lines]] as const) {
     expect(ink.bands, pixelDetail).toHaveLength(lines)
     expect(ink.contrast, pixelDetail).toBeGreaterThan(40)
   }
-  const centre = (ink: typeof goalInk) => (ink.bands[0]!.top + ink.bands.at(-1)!.bottom) / 2 / shot.scale
-  const rowDelta = Math.abs(centre(recoveryInk) - centre(changeInk))
-  expect(rowDelta, pixelDetail).toBeLessThanOrEqual(2)
-  expect(centre(focusInk), pixelDetail).toBeGreaterThan(centre(goalInk))
-  expect(centre(recoveryInk), pixelDetail).toBeGreaterThan(centre(focusInk))
-  const labels = {
-    recovery: { text: recovery.content, lines: recovery.lines, inkRows: recoveryInk.bands.length, font: recovery.font },
-    changeFocus: { text: change.content, lines: change.lines, inkRows: changeInk.bands.length, font: change.font },
-  }
-  return { goal, focus, recovery, change, selection, labels, pair, sideBySide, pixels: { ...pixels, labelRowDelta: rowDelta }, capture: { file: shot.file, sha256: shot.sha256 } }
+  return { goal, focus, control, recovery, selection, summaryRow, pixels, capture: { file: shot.file, sha256: shot.sha256 } }
 }
 
 /** 02.3–02.5: the three marked texts are not on the route at all. */
@@ -761,7 +736,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
   test.describe(`B05 Generate @ ${size}`, () => {
     test.use({ viewport })
 
-    test('JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus and paired actions, notes and pinned action', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
+    test('JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus summary with its Focus control, notes and pinned action', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
       const app = await syntheticApp(page, originOf(baseURL))
       await enterGenerate(page, visit, checkA11y)
       const ref = reference()
@@ -787,17 +762,19 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(focusLine(page)).toHaveText('Focus: Lower body')
       await expect(slider(page)).toHaveValue('8')
 
-      // 02.6/02.7
+      // 02.6/02.7, as TASK-024 (C51) supersedes them: the stacked Recovery /
+      // Change focus rows of the reference are gone, not paired.
       const top = await assertTopComposition(page, testInfo, `generate-top-${size}`)
-      if (top.sideBySide) expect(top.pixels.labelRowDelta).toBeLessThan(referenceRowDelta - 50)
+      expect(top.recovery).toBeNull()
+      expect(referenceRowDelta).toBeGreaterThan(60)
       await record(page, testInfo, `generate-top-${size}`, {
-        consumer: 'Generate · form card top (Goal, Focus, ActionGroup: Recovery session | Change focus)',
+        consumer: 'Generate · form card top (GenerateIntent: Goal | Focus control)',
         state: 'recommended Focus, Recovery off, choices closed', viewport,
         reference: { file: ref.file, sha256: ref.sha256,
           regions: [REFERENCE_REGIONS.settings, REFERENCE_REGIONS.recovery, REFERENCE_REGIONS.focus,
             REFERENCE_REGIONS.reason, REFERENCE_REGIONS.changeFocus, REFERENCE_REGIONS.intensityNote],
           measured: { recoveryToChangeFocusRowDelta: referenceRowDelta } },
-        actual: { sideBySide: top.sideBySide, labels: top.labels, selection: top.selection, labelRowDelta: top.pixels.labelRowDelta, pair: top.pair, goalFont: top.goal.font, focusFont: top.focus.font },
+        actual: { summaryRow: top.summaryRow, control: top.control, goalFont: top.goal.font, focusFont: top.focus.font },
         capture: top.capture,
         criteria: { 'AC-015': 'pass', 'AC-016': 'pass', 'AC-017': 'pass', 'AC-047': 'pass', 'AC-060': 'pass',
           'AC-018': 'pass' },
@@ -813,15 +790,16 @@ for (const { name: size, viewport } of VIEWPORTS) {
       app.assertReadOnly()
     })
 
-    test('Recovery session, Change focus and intensity each keep their own behaviour from the paired row', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
+    test('Recovery session, the Focus control and intensity each keep their own behaviour, Recovery inside the Focus choices', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
       const app = await syntheticApp(page, originOf(baseURL))
       await enterGenerate(page, visit, checkA11y)
       const recovery = recoveryAction(page)
       const change = changeFocusAction(page)
       const choices = page.getByRole('group', { name: 'Focus for this workout' })
 
-      // Change focus alone: opens and closes the choices; Recovery is untouched.
+      // The Focus control alone: opens and closes the choices; Recovery waits inside them, off.
       await expect(change).toHaveAttribute('aria-expanded', 'false')
+      await expect(recovery).toHaveCount(0)
       await change.click()
       await expect(change).toHaveAttribute('aria-expanded', 'true')
       await expect(choices).toBeVisible()
@@ -834,10 +812,10 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await record(page, testInfo, `generate-top-override-${size}`, {
         consumer: 'Generate · form card top', state: 'Focus overridden for this workout, choices open', viewport,
         reference: { file: REFERENCE_FILE, sha256: reference().sha256, regions: [REFERENCE_REGIONS.recovery, REFERENCE_REGIONS.focus, REFERENCE_REGIONS.changeFocus] },
-        actual: { sideBySide: override.sideBySide, labels: override.labels, selection: override.selection, labelRowDelta: override.pixels.labelRowDelta, pair: override.pair },
+        actual: { summaryRow: override.summaryRow, control: override.control, recovery: override.recovery, selection: override.selection },
         capture: override.capture, criteria: { 'AC-018': 'pass', 'AC-047': 'pass', 'AC-060': 'pass' },
       })
-      // The single cancel action keeps its own group and row, outside the pair.
+      // The single cancel action keeps its own group and row.
       const cancel = page.getByRole('button', { name: 'Use the recommended focus', exact: true })
       await expect(cancel).toBeVisible()
       const single = await cancel.evaluate((element) => {
@@ -847,23 +825,25 @@ for (const { name: size, viewport } of VIEWPORTS) {
       expect(single).toEqual({ children: 1, text: 'Use the recommended focus' })
       await cancel.click()
       await expect(focusLine(page)).toHaveText('Focus: Lower body')
-      await change.click()
-      await expect(change).toHaveAttribute('aria-expanded', 'false')
-      await expect(choices).toHaveCount(0)
+      await expect(change).toHaveAttribute('aria-expanded', 'true')
 
-      // Recovery alone: pressed, says what it does, and turns off again.
+      // Recovery alone: pressed, says what it does, keeps the Focus, and turns off again.
       await recovery.click()
       await expect(recovery).toHaveAttribute('aria-pressed', 'true')
+      await expect(focusLine(page)).toHaveText('Focus: Lower body')
       await expect(card(page).getByText(/Power/).first()).toBeVisible()
       const recovering = await assertTopComposition(page, testInfo, `generate-top-recovery-${size}`)
       await record(page, testInfo, `generate-top-recovery-${size}`, {
-        consumer: 'Generate · form card top', state: 'Recovery session on (tick shown)', viewport,
+        consumer: 'Generate · form card top', state: 'Recovery session on (tick shown), inside the Focus choices', viewport,
         reference: { file: REFERENCE_FILE, sha256: reference().sha256, regions: [REFERENCE_REGIONS.recovery, REFERENCE_REGIONS.changeFocus] },
-        actual: { sideBySide: recovering.sideBySide, labels: recovering.labels, selection: recovering.selection, labelRowDelta: recovering.pixels.labelRowDelta, pair: recovering.pair },
+        actual: { summaryRow: recovering.summaryRow, control: recovering.control, recovery: recovering.recovery, selection: recovering.selection },
         capture: recovering.capture, criteria: { 'AC-018': 'pass', 'AC-047': 'pass' },
       })
       await recovery.click()
       await expect(recovery).toHaveAttribute('aria-pressed', 'false')
+      await change.click()
+      await expect(change).toHaveAttribute('aria-expanded', 'false')
+      await expect(choices).toHaveCount(0)
 
       // Intensity: the value moves with the control; no explanation appears.
       await expect(slider(page)).toHaveValue('8')
@@ -873,7 +853,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(slider(page)).toHaveAttribute('aria-valuetext', '7 of 10')
       await assertRemovals(page)
       await record(page, testInfo, `generate-behaviour-${size}`, {
-        consumer: 'Generate · Recovery session, Change focus, Intensity', state: 'each exercised independently', viewport,
+        consumer: 'Generate · Recovery session, Focus control, Intensity', state: 'each exercised independently', viewport,
         criteria: { 'AC-016': 'pass', 'AC-017': 'pass', 'AC-018': 'pass', 'AC-047': 'pass' },
       })
       app.assertReadOnly()

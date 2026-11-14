@@ -1,0 +1,97 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-022",
+  "description": "Accepted concise Warm-up and Cooldown with separate preparation timer (REQ-022; AC-C49-01, AC-R022-01, AC-R022-02; JOURNEY-022). On the real /review and /workout routes a Warm-up or Cooldown is the shared PreparationGuide (src/ui/preparation-guide.tsx) over TASK-034's reading (src/state/preparation-guide.ts): the stable title (Warm-up or Cooldown, never section_title), the approximate total time (~N minutes, GEN-06 estimate of the section) and the movement names on separate lines, with no prose and no per-movement sets, reps, load, time or rest, and no illustrated four minutes or three rows. The live workout adds a separate preparation clock (src/state/preparation-clock.ts) in the rest timer's own pattern (CountdownCard): Start / Pause and Add 30s over the guide's own time, distinct from the session, rest, movement and format clocks, sharing the countdown warning, recording nothing, with no Dismiss or substitute hide action. Loading, failed read, no movement left and an absent section keep their meanings; a malformed persisted row is an error. The accepted gallery state /gallery/refinements?state=preparation (reference eded158cfd928d382c9a9409e2c372270312741d) draws the routes' own consumers from the actual reading. check-01 proves the routes with in-memory doubles and an injected wall clock; check-02 proves them in the browser at 320 and 390 with a contained synthetic session, keyboard, touch, reduced motion, a failed read and its retry, and a reload. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-022 --check check-01 -- npx vitest run src/ui/preparation-guide.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C49-01",
+        "AC-R022-01",
+        "AC-R022-02"
+      ],
+      "files": [
+        "src/ui/preparation-guide.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /review route the Warm-up and Cooldown are each one concise card: the stable title, the approximate total time and the movement names on separate lines, with no generated title, prose, per-movement prescription or Swap",
+          "criterion": "AC-C49-01"
+        },
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 the titles, names, counts and times are TASK-034’s reading of the actual prescriptions on /review and /workout alike — four and two movements, never the illustrated four minutes or three rows — and change with the data",
+          "criterion": "AC-R022-01"
+        },
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /workout route the open Warm-up is its concise guide under the section header, read from the session’s active rows (a swap in place), with no set logging, rest or Dismiss substitute; Next section completes it as before",
+          "criterion": "AC-C49-01"
+        },
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 the separate preparation clock counts the guide’s own time down with Start, Pause and Add 30s, keeps the session clock and the rest distinct, records nothing and offers no Dismiss or other hide action",
+          "criterion": "AC-R022-02"
+        },
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 leaving the section and coming back finds the same clock, and its warning is the shared one: colour at 10 seconds, the edge at 5 while running, none when paused or run out; Add 30s after it runs out waits for Start",
+          "criterion": "AC-R022-02"
+        },
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 loading, a failed read, a section with no movement left and an absent section keep their meanings; a malformed persisted row is an error, never a guessed guide or clock",
+          "criterion": "AC-R022-01"
+        },
+        {
+          "file": "src/ui/preparation-guide.test.tsx",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss",
+          "criterion": "AC-C49-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-022 --check check-02 -- npx playwright test e2e/refinement/task-022.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C49-01",
+        "AC-R022-01",
+        "AC-R022-02",
+        "JOURNEY-022"
+      ],
+      "files": [
+        "e2e/refinement/task-022.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-022.spec.ts",
+          "project": "mobile",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > JOURNEY-022 phone-320: Review then Workout — concise Warm-up and Cooldown read from the prescriptions, and each preparation clock started, paused and extended with no Dismiss",
+          "criterion": "JOURNEY-022"
+        },
+        {
+          "file": "e2e/refinement/task-022.spec.ts",
+          "project": "mobile",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > JOURNEY-022 phone-390: Review then Workout — concise Warm-up and Cooldown read from the prescriptions, and each preparation clock started, paused and extended with no Dismiss",
+          "criterion": "JOURNEY-022"
+        },
+        {
+          "file": "e2e/refinement/task-022.spec.ts",
+          "project": "mobile",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 keyboard, reduced motion and reopen phone-390: Start, Pause and Add 30s from the keyboard; a failed session read keeps its meaning and its retry; a reload keeps the section and the guide and fabricates no work",
+          "criterion": "AC-R022-02"
+        },
+        {
+          "file": "e2e/refinement/task-022.spec.ts",
+          "project": "mobile",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own guides and clocks from the actual reading, with no Dismiss and nothing read or written",
+          "criterion": "AC-C49-01"
+        }
+      ]
+    }
+  }
+}

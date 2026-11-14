@@ -1,0 +1,53 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-047",
+  "description": "Visible timed-result persistence and History readback (REQ-031; AC-R031-01, AC-R031-02, AC-R031-03; JOURNEY-031, completion owner) on the real route /workout → /summary → /history/:id. The four timed families (EMOM, AMRAP, single-pass For Time, ladder; src/test/timed-readback-fixture.ts) take their accepted field set in the shared TimedResultLog (per-movement partials and actual loads where they apply, the existing categorical effort faces and the optional notes in one closing feedback group; the EMOM its loaded movements' loads with no round), reported by each consumer through the shell's one completion path (BlockCompletionProvider → saveTimedResult: block_results.notes and .effort, block_movement_results rows), and History /history/:id reads the category through the existing effort owner and each movement's recorded actual under its movement. Two backend-lane cases run on the authorized disposable test lane (PRE-001: a namespaced throwaway user, the session persisted by persist_session and started by start_session, the app's own writers against the hosted project with MIG-A/MIG-B applied by LIVE-PRE-1, rows read back with the service role filtered to that user's ids, the user deleted after); a missing backend fails these cases and is never a skipped proof. Two synthetic-lane cases run the same journey bodies over a contained PostgREST double (not backend proof). One gallery case checks the four accepted states (eded158cfd928d382c9a9409e2c372270312741d: ?state=emom, amrap, for_time, ladder) draw the route-owned fields over memory only. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-047 --check check-01 -- npx playwright test e2e/refinement/task-047.spec.ts --project=mobile",
+      "criteria": [
+        "AC-R031-01",
+        "AC-R031-02",
+        "AC-R031-03",
+        "JOURNEY-031"
+      ],
+      "files": [
+        "e2e/refinement/task-047.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-047.spec.ts",
+          "project": "mobile",
+          "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane touch phone-390 Signal: the four timed families’ partials, loads, categorical effort and notes save through the real writers with block, round and movement identity; a refused movement write keeps every entry and the athlete on the section; the retry writes each row once; Summary is reached and History reads back the actual entries, not the plan, before and after a reload",
+          "criterion": "AC-R031-02"
+        },
+        {
+          "file": "e2e/refinement/task-047.spec.ts",
+          "project": "mobile",
+          "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane keyboard phone-320 reduced motion: a block write and a movement write whose answers are lost are restated on the retry with the values corrected since, never duplicated; an entered zero is kept and a blank movement and an unreported count stay unrecorded; History reads back the corrected entries before and after a reload",
+          "criterion": "AC-R031-03"
+        },
+        {
+          "file": "e2e/refinement/task-047.spec.ts",
+          "project": "mobile",
+          "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 synthetic lane touch phone-390 Signal: the same refused-write journey over a contained PostgREST double — every entry kept, one write per row on the retry, the rows’ round and movement identity, History read back before and after a reload (not backend proof)",
+          "criterion": "AC-R031-01"
+        },
+        {
+          "file": "e2e/refinement/task-047.spec.ts",
+          "project": "mobile",
+          "name": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 synthetic lane keyboard phone-320 reduced motion: the same lost-answer journey over a contained PostgREST double — restated on the retry with the corrected values, zero kept, blanks unrecorded, History read back (not backend proof)",
+          "criterion": "AC-R031-03"
+        },
+        {
+          "file": "e2e/refinement/task-047.spec.ts",
+          "project": "mobile",
+          "name": "TASK-047 visible timed-result persistence and History readback > AC-R031-01 gallery emom, amrap, for_time and ladder phone-390: each state’s route-owned log draws the accepted closing feedback group — the effort faces and the notes — and the EMOM its loaded movement’s actual load, live over memory only with nothing stored and no network",
+          "criterion": "AC-R031-01"
+        }
+      ]
+    }
+  }
+}

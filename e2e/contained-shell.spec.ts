@@ -1011,9 +1011,13 @@ test.describe('REQ-001 phone shell — signed-in screens', () => {
       await page.keyboard.press('Enter')
 
       // ── Summary ───────────────────────────────────────────────────────
-      const save = page.getByRole('button', { name: 'Save and close', exact: true })
-      await expect(save).toBeVisible({ timeout: 30_000 })
+      // TASK-045: Summary's debrief entry is Log workout feedback; Save and
+      // close is inside the Workout feedback dialog it opens.
+      const feedback = page.getByRole('button', { name: 'Log workout feedback', exact: true })
+      await expect(feedback).toBeVisible({ timeout: 30_000 })
       await measure('Summary')
+      await feedback.click()
+      await expect(page.getByRole('button', { name: 'Save and close', exact: true })).toBeVisible()
 
       // Installed navigation back Home by touch keeps the same chrome.
       await tapFrameEdge(page, 'Save and close')

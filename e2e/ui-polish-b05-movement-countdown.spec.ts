@@ -183,7 +183,7 @@ async function arrangement(page: Page, image: Buffer, type: string, region: Regi
       return Math.abs(here - luminance(x + step, y)) > 25 || Math.abs(here - luminance(x, y + step)) > 25
     }
     // A frame's top or bottom stroke is a rule: a row lit across most of the
-    // width. The urgency cue's hard edge at the viewport side, digits and
+    // width. The urgency cue (a soft vignette since TASK-008), digits and
     // labels never are.
     const ruleRow = (y: number) => {
       let count = 0
@@ -479,7 +479,11 @@ function sourceIdentity() {
 }
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-const sheet = (page: Page) => page.locator('section.clr-set-sheet')
+/**
+ * The open entry: a superset round's or circuit entry's half-sheet, or — since
+ * TASK-043 (C45) — a standard block's set in the shared focused logging dialog.
+ */
+const sheet = (page: Page) => page.locator('section.clr-set-sheet, dialog.clr-accepted-log[open]')
 
 /** The one movement card, by its heading, on the main screen. */
 function card(page: Page, heading: string): Locator {
@@ -505,7 +509,8 @@ async function advance(page: Page, ms: number) {
 }
 
 async function collapseSheet(page: Page) {
-  await page.getByRole('button', { name: 'Minimize' }).click()
+  // TASK-043: the half-sheet's Minimize, or the focused log's framed X.
+  await page.getByRole('button', { name: /^(Minimize|Close log)$/ }).click()
   await expect(sheet(page)).toHaveCount(0)
 }
 
@@ -714,14 +719,16 @@ for (const { name: size, viewport } of VIEWPORTS) {
       expect(await digits(timer)).toBe(HOLD_SECONDS)
       await expect(reset).toBeDisabled()
 
-      // ── Final five seconds, with motion: low state, pulse, screen edge ───
+      // ── Final five seconds, with motion: low state, breathe, screen edge ─
+      // TASK-008 (C22, C23, C61): the colour comes at ten seconds left; in the
+      // final five the timer itself breathes with the one shared soft edge.
       await start.click()
       await advance(page, (HOLD_SECONDS - 4) * 1000)
       await expect(timer).toHaveClass(/clr-chamfer--timer-low/)
       await expect(status).toHaveText('Final 5 seconds')
       await expect(edge).toHaveCount(1)
       await expect(edge).toHaveAttribute('data-loop', 'run')
-      await expect(timer.locator('xpath=..')).toHaveAttribute('data-loop', 'run')
+      await expect(timer).toHaveAttribute('data-loop', 'run')
       await expect(session).not.toHaveClass(/clr-chamfer--timer-low/)
       await shoot('urgent')
 
@@ -748,7 +755,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(status).toHaveText('Final 5 seconds')
       await expect(edge).toHaveCount(1)
       await expect(edge).toHaveAttribute('data-loop', 'still')
-      await expect(timer.locator('xpath=..')).toHaveAttribute('data-loop', 'still')
+      await expect(timer).toHaveAttribute('data-loop', 'still')
       await shoot('urgent-reduced-motion')
 
       expect(app.writes).toEqual([])
@@ -850,7 +857,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect(region.getByRole('timer', { name: 'Round 1 time' })).toHaveCount(0)
       await expect(region).toHaveAttribute('data-countdown-status', 'finished')
 
-      // ── AMRAP: its window is the block's TimerDisplay, not a movement's ──
+      // ── AMRAP: its window is the block's own timer frame, not a movement's ──
       await page.getByRole('button', { name: 'Next section' }).click()
       await page.getByRole('button', { name: 'Start AMRAP', exact: true }).click()
       const amrapWindow = page.getByRole('timer', { name: 'Time remaining' })

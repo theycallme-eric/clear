@@ -527,6 +527,22 @@ async function timerSeconds(timer: Locator) {
   return digits[0].split(':').reduce((seconds, value) => seconds * 60 + Number(value), 0)
 }
 
+/**
+ * TASK-027 (C54; owner decision 2026-11-10): the compact navigator's section
+ * heading is visually hidden, so Previous and Next land on the newly active
+ * section's first card (the first card frame after its navigator), which a
+ * sighted athlete can see. The section's heading still names it.
+ */
+async function expectOpenedSectionFocused(page: Page, section: string, movement: RegExp) {
+  await expect(page.getByRole('heading', { level: 2, name: section, exact: true })).toHaveCount(1)
+  const card = page.locator(
+    'xpath=//*[@data-section-navigation]/following::*[contains(concat(" ", normalize-space(@class), " "), " clr-card__body ")][1]',
+  )
+  await expect(card).toBeFocused()
+  await expect(card).toBeVisible()
+  await expect(card).toContainText(movement)
+}
+
 test.use({ timezoneId: 'UTC' })
 
 test.beforeEach(({ browserName }, testInfo) => {
@@ -589,11 +605,14 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
       const form = (verb: 'Log' | 'Edit', set: number, movement = 'back squat') =>
         page.getByRole('form', { name: `${verb} set ${set} of ${movement}` })
-      const minimize = page.getByRole('button', { name: 'Minimize', exact: true })
+      // TASK-043 (C45): a standard block's entry is the shared focused
+      // logging dialog; its framed X, "Close log", is the one collapse (was
+      // Minimize), and the card's Rest carries the open state.
+      const minimize = page.getByRole('button', { name: 'Close log', exact: true })
       await expect(form('Log', 1)).toBeVisible()
       await expect(page.getByRole('heading', { name: 'Log set 1', exact: true })).toBeVisible()
       await expect(minimize).toHaveCount(1)
-      await expect(minimize).toHaveAttribute('aria-expanded', 'true')
+      await expect(squat.getByRole('button', { name: 'Rest', exact: true })).toHaveAttribute('aria-expanded', 'true')
       await reach(minimize)
       const reps = form('Log', 1).getByLabel('Reps', { exact: true })
       const weight = form('Log', 1).getByLabel('Weight', { exact: true })
@@ -667,6 +686,15 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await tap(rest.getByRole('button', { name: 'Skip rest', exact: true }))
       await expect(rest).toHaveCount(0)
       expect(api.mutations).toHaveLength(1)
+      // TASK-020 (C46): the rest's end collapses set 1's confirmation; no
+      // set-2 form opens by itself. The card's Rest opens it deliberately and
+      // starts its prescribed rest, skipped here so set 2 saves with none.
+      await expect(page.getByRole('dialog', { name: 'Set 1 logged', exact: true })).toHaveCount(0)
+      await expect(form('Log', 2)).toHaveCount(0)
+      await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
+      await expect(form('Log', 2)).toBeVisible()
+      await tap(rest.getByRole('button', { name: 'Skip rest', exact: true }))
+      await expect(rest).toHaveCount(0)
       await expect(form('Log', 2)).toBeVisible()
       await tap(form('Log', 2).getByRole('button', { name: 'Log set 2', exact: true }))
       await expect(logged.getByRole('listitem').filter({ hasText: 'Set 2' })).toContainText('Saved')
@@ -733,6 +761,9 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
 
       // Clearing a saved observation is distinct from clearing its effort.
       // Keep is safe; confirming removes just the intended observation.
+      // TASK-043: the log stays open on the next entry after Save correction,
+      // and the workout behind the modal log is inert: close it first.
+      await tap(minimize)
       await tap(editOne)
       await tap(form('Edit', 1).getByRole('button', { name: 'Clear set 1', exact: true }))
       const clearDialog = page.getByRole('dialog', { name: 'Clear set 1 of back squat?', exact: true })
@@ -758,7 +789,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
 
       // Paired navigation forward to the timed movement and its own clock.
       await tap(next)
-      await expect(page.getByRole('heading', { level: 2, name: 'Accessory' })).toBeFocused()
+      await expectOpenedSectionFocused(page, 'Accessory', /hollow body hold/i)
       await expect(nav.getByRole('progressbar', { name: 'Section 2 of 2' })).toBeVisible()
       // The last section's right-hand action is the existing finish, not pressed.
       await unclipped(nav.getByRole('button', { name: 'Finish workout', exact: true }), viewport)
@@ -800,7 +831,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
 
       // And back: Previous returns to the first section.
       await tap(previous)
-      await expect(page.getByRole('heading', { level: 2, name: 'Primary lift' })).toBeFocused()
+      await expectOpenedSectionFocused(page, 'Primary lift', /back squat/i)
       await expect(nav.getByRole('progressbar', { name: 'Section 1 of 2' })).toBeVisible()
       expect(await timerSeconds(sessionTime)).toBeGreaterThanOrEqual(sessionAtEntry + SQUAT_REST + 40)
       await expect(page).toHaveURL((url) => url.pathname === '/workout')
@@ -921,14 +952,18 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     expect(await timerSeconds(remaining)).toBeLessThan(beforeRest)
     expect(await timerSeconds(sessionTime)).toBeGreaterThanOrEqual(beforeRestGlobal + 2)
     expect(api.mutations).toHaveLength(2)
-    await expect(page.getByRole('form', { name: 'Log round 2 of bench press and plank', exact: true })).toBeVisible()
-    await tap(page.getByRole('button', { name: 'Minimize', exact: true }))
+    // TASK-020 (C46): round 1 is confirmed beside the same rest, not replaced
+    // by round 2's form.
+    // TASK-044: the round is held by the focused logging dialog; its X closes it (was Minimize).
+    await expect(page.getByRole('dialog', { name: 'Round 1 logged', exact: true })).toBeVisible()
+    await expect(page.getByRole('form', { name: 'Log round 2 of bench press and plank', exact: true })).toHaveCount(0)
+    await tap(page.getByRole('button', { name: 'Close log', exact: true }))
     await tap(sharedRest.getByRole('button', { name: 'Skip rest', exact: true }))
     await expect(sharedRest).toHaveCount(0)
     expect(api.mutations).toHaveLength(2)
 
     await tap(next)
-    await expect(page.getByRole('heading', { level: 2, name: 'Conditioning', exact: true })).toBeFocused()
+    await expectOpenedSectionFocused(page, 'Conditioning', /hollow body hold/i)
     await expect(nav.getByRole('progressbar', { name: 'Section 2 of 3' })).toBeVisible()
     const roundClock = page.getByRole('group', { name: 'Round clock', exact: true })
     await expect(roundClock.getByRole('status')).toHaveText('No rounds recorded')
@@ -950,7 +985,8 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     await page.clock.fastForward(2000)
     expect(await timerSeconds(movementClock)).toBeLessThanOrEqual(116)
     expect(api.mutations).toHaveLength(2)
-    await tap(page.getByRole('button', { name: 'Minimize', exact: true }))
+    // TASK-044: the circuit's movement entry is the focused log; its X closes it.
+    await tap(page.getByRole('button', { name: 'Close log', exact: true }))
     await tap(page.getByRole('button', { name: 'Hide load entry for hollow body hold', exact: true }))
     await expect(optionalForm).toHaveCount(0)
     await expect(countdown).toHaveCount(1)

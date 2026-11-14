@@ -36,6 +36,8 @@
  *   supabase/migrations/20261024000026_v3_hinge_warmup.sql
  *   supabase/migrations/20261027000027_set_effort.sql
  *   supabase/migrations/20261027000028_set_observation_mutations.sql
+ *   supabase/migrations/20261110000029_block_result_effort.sql
+ *   supabase/migrations/20261110000030_block_movement_results.sql
  */
 
 export type Json =
@@ -49,6 +51,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      block_movement_results: {
+        Row: {
+          id: string
+          workout_exercise_id: string
+          prescription_revision_status: Database['public']['Enums']['revision_status']
+          round_number: number | null
+          actual_reps: number | null
+          actual_duration_seconds: number | null
+          actual_distance: number | null
+          actual_distance_unit: Database['public']['Enums']['distance_unit'] | null
+          weight: number | null
+          weight_unit: Database['public']['Enums']['weight_unit']
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          workout_exercise_id: string
+          prescription_revision_status?: Database['public']['Enums']['revision_status']
+          round_number?: number | null
+          actual_reps?: number | null
+          actual_duration_seconds?: number | null
+          actual_distance?: number | null
+          actual_distance_unit?: Database['public']['Enums']['distance_unit'] | null
+          weight?: number | null
+          weight_unit: Database['public']['Enums']['weight_unit']
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workout_exercise_id?: string
+          prescription_revision_status?: Database['public']['Enums']['revision_status']
+          round_number?: number | null
+          actual_reps?: number | null
+          actual_duration_seconds?: number | null
+          actual_distance?: number | null
+          actual_distance_unit?: Database['public']['Enums']['distance_unit'] | null
+          weight?: number | null
+          weight_unit?: Database['public']['Enums']['weight_unit']
+          created_at?: string
+          updated_at?: string
+        }
+      }
       block_results: {
         Row: {
           id: string
@@ -62,6 +108,7 @@ export type Database = {
           perceived_effort: number | null
           notes: string | null
           created_at: string
+          effort: Database['public']['Enums']['set_effort'] | null
         }
         Insert: {
           id?: string
@@ -75,6 +122,7 @@ export type Database = {
           perceived_effort?: number | null
           notes?: string | null
           created_at?: string
+          effort?: Database['public']['Enums']['set_effort'] | null
         }
         Update: {
           id?: string
@@ -88,6 +136,7 @@ export type Database = {
           perceived_effort?: number | null
           notes?: string | null
           created_at?: string
+          effort?: Database['public']['Enums']['set_effort'] | null
         }
       }
       component_pattern_map: {

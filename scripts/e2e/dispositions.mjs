@@ -126,6 +126,23 @@ export const TABLE_DISPOSITIONS = [
     why: 'inherits ownership through its seeded workout exercise; writes use the ordered mutation RPC',
   },
   {
+    // TASK-031 (MIG-B). Unseeded on purpose while the hosted project lacks the
+    // table: applying MIG-B there is the owner's LIVE-PRE-1, and a seed insert
+    // into a table the hosted project does not have would abort the shared
+    // fixture seed every other standing assertion (and the D6 and appearance
+    // specs) depends on. Its cross-user read, write, delete and forge denials
+    // still run against it, and reported the missing table until MIG-B was
+    // applied. TASK-015 seeded the row (scripts/e2e/lifecycle.mjs) once it was.
+    table: 'block_movement_results',
+    standing: 'cross-user',
+    ownerColumn: null,
+    // TASK-015: MIG-B reached the hosted project (the owner's LIVE-PRE-1,
+    // 2026-11-10), so the seed writes one row per slot and the matrix has its
+    // positive control.
+    seeded: true,
+    why: 'timed per-movement actuals; inherits ownership through its workout exercise; seeded once MIG-B reached the hosted project (LIVE-PRE-1, 2026-11-10)',
+  },
+  {
     table: 'set_observation_mutations',
     standing: 'cross-user',
     ownerColumn: 'user_id',

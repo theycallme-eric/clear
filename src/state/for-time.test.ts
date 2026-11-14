@@ -11,8 +11,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  answerForTime,
   clampForTimeState,
   finishForTime,
+  forTimeCompletion,
   forTimeOutcome,
   forTimeShape,
   forTimeView,
@@ -255,10 +257,11 @@ describe('what the block completion is given', () => {
     })
   })
 
-  it('supplies the seconds so far when recorded mid-attempt', () => {
+  // TASK-010 (AC-R010-01) supersedes "the same fact as finishing under it":
+  // stopping to record mid-race never marks the planned work performed.
+  it('supplies the seconds so far when recorded mid-attempt, and claims no completion', () => {
     expect(forTimeOutcome(forTimeView(running(), CAP, 200))).toEqual({
       elapsedSeconds: 200,
-      completedUnderCap: true,
     })
   })
 
@@ -271,5 +274,53 @@ describe('what the block completion is given', () => {
 
     expect(forTimeOutcome(view)).toEqual({ elapsedSeconds: 200 })
     expect('completedUnderCap' in forTimeOutcome(view)).toBe(false)
+  })
+})
+
+describe('the completion answer — TASK-010 (C29, AC-R010-01; R78, R86)', () => {
+  const finished = () => forTimeView({ startedAt: STARTED_AT, finishedAt: stampedAt(383) }, CAP, 383)
+  const capped = () => forTimeView(running(), CAP, 999)
+
+  it('starts a finish under the cap at Complete and the cap at Incomplete', () => {
+    expect(forTimeCompletion(finished())).toBe(true)
+    expect(forTimeCompletion(capped())).toBe(false)
+  })
+
+  it('claims nothing before the race has ended, paused or never started', () => {
+    expect(forTimeCompletion(forTimeView(FOR_TIME_START, CAP, 0))).toBeNull()
+    expect(forTimeCompletion(forTimeView(running(), CAP, 200))).toBeNull()
+    const paused = { ...running(), pausedAt: stampedAt(100) }
+    expect(forTimeCompletion(forTimeView(paused, CAP, 300))).toBeNull()
+    // An answer cannot stand in for an ending that has not happened.
+    expect(forTimeCompletion(forTimeView(running(), CAP, 200), true)).toBeNull()
+  })
+
+  it('asks nothing of a block with no cap — no cap, no claim — whatever was answered', () => {
+    const view = forTimeView({ startedAt: STARTED_AT, finishedAt: stampedAt(200) }, { capSeconds: null, size: 2 }, 200)
+    expect(forTimeCompletion(view)).toBeNull()
+    expect(forTimeCompletion(view, false)).toBeNull()
+    expect(forTimeOutcome(view, false)).toEqual({ elapsedSeconds: 200 })
+  })
+
+  it('lets the athlete correct either starting point, and saves the answer', () => {
+    expect(forTimeCompletion(finished(), false)).toBe(false)
+    expect(forTimeCompletion(capped(), true)).toBe(true)
+    expect(forTimeOutcome(finished(), false)).toEqual({ elapsedSeconds: 383, completedUnderCap: false })
+    expect(forTimeOutcome(capped(), true)).toEqual({ elapsedSeconds: 480, completedUnderCap: true })
+  })
+
+  it('records the answer on the race it judges, and only on a race that ran', () => {
+    const done: ForTimeState = { startedAt: STARTED_AT, finishedAt: stampedAt(383) }
+    expect(answerForTime(done, false)).toEqual({ ...done, workCompleted: false })
+    expect(answerForTime(FOR_TIME_START, true)).toBe(FOR_TIME_START)
+  })
+
+  it('restores an answer as the boolean it is, and an older record without one unchanged', () => {
+    const done: ForTimeState = { startedAt: STARTED_AT, finishedAt: stampedAt(383) }
+    expect(clampForTimeState({ ...done, workCompleted: false })).toEqual({ ...done, workCompleted: false })
+    expect(clampForTimeState(done)).toEqual(done)
+    expect(clampForTimeState({ ...done, workCompleted: 'yes' as unknown as boolean })).toEqual(done)
+    // No race, no answer.
+    expect(clampForTimeState({ startedAt: null, finishedAt: null, workCompleted: true })).toEqual(FOR_TIME_START)
   })
 })

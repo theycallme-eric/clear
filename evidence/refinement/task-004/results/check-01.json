@@ -1,0 +1,87 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-004",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/summary-facts.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-004/required-cases.json",
+    "sha256": "048d3d5e8e1c5a2dcf3c96e5734ff6ac1c5269ad04db60ce23d545bdeb320941"
+  },
+  "targets": [
+    {
+      "path": "src/ui/summary-facts.test.tsx",
+      "sha256": "2d6dc33792f226a501687da0c345b2d89f59391cffe546d7f1f6816166521d4e"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C12-01 /review: every useful fact is a whole glyph-led reading in one wrapping description list, with no carousel, rail or tab stop",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-01 /review: intensity reads its value without \"of 10\", on the unchanged ten-point scale Start persists",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C13-01 /review: Required equipment is one group under a rule, with the glyph-led label and each actual name once as an uppercase element",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 None — bodyweight only appears for an all-bodyweight workout and never beside real equipment",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C14-01 /history/:id: the saved Overview draws the same fact composition and equipment group as Review",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-03 /history/:id: saved facts are the record’s own values and meanings, never the planned request",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary: Duration and Streak are each the one frame of an equal-height metric cell and fill it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary recovery: a loading, failed or empty streak keeps its card filling the cell beside the recorded duration",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery: a failed saved read keeps its error and retry, and shows no invented facts",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/summary-facts.test.tsx",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 gallery overview: the accepted state draws the Review, Session Detail and Summary consumers",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 10
+  },
+  "problems": []
+}

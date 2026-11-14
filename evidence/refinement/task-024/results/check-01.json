@@ -1,0 +1,117 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-024",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/Generate.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-024/required-cases.json",
+    "sha256": "2283c0b3455dd101aca40403df1755decc9c146ca8fcc169e479b863655a5b72"
+  },
+  "targets": [
+    {
+      "path": "src/app/Generate.test.tsx",
+      "sha256": "ca4102ee6b6b1ebc8bca49c76cf0a323582db731873df2e2bf7d6fef3fabbf63"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 keeps Goal and Focus first with an interactive Focus value, Recovery inside its choices, the minutes unit, the Generate title and the icon-only Home back, and no Place or Notes helper",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-01 Recovery is its own session toggle inside the focus choices, never a fifth focus value, and no detached or paired change action remains",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-02 Goal and Focus share the summary’s larger type, and the Focus value is a keyboard disclosure with its name and expanded state",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-03 the minutes unit is the public Input unit end cap fitted by the shared contract, with nothing Generate-specific sizing it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-04 the page title is Generate, and the generation action keeps its name",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-05 Back is the shared framed icon-only control named Home, and it goes Home",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-06 a first workout opens as a normal session: Recovery is offered unselected and recommended nowhere, and can still be chosen",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > AC-R024-07 removes the Place and Notes helper lines and leaves no description wired to either field",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > shows no helpers on an empty time and empty notes, with no error before submit",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > says the time error on the field, with the unit still there and no helper returning",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > sends a valid time as the minutes typed, and the chosen place",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > keeps the notes limit with a note at the length limit, and sends it whole",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-08 #286 is kept: a first workout requires one of four Anchors; history shows its Focus collapsed with the choices behind it, a different one for this workout only; the stored Goal; Intensity 1–10",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > puts Goal and Focus first on one row, the Focus value its change control, with no paired Recovery action (C51, superseding B05-02.6/02.7)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > keeps Recovery beside the Anchor choices when there is no Focus to change",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 the accepted gallery state ?state=screens draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, and sends nothing",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 119,
+    "passed": 119,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 119
+  },
+  "problems": []
+}

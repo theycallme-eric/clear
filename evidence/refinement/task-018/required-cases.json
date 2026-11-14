@@ -1,0 +1,76 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-018",
+  "description": "Contained scrolling without a lower gap, opening outline or scrollbar (REQ-018; C44, C57, C58, C59; P01, P02, P03; R16, R128, R129, R140) delivered as the shared provider contract of the accepted focused logging frame LoggingOverlay (src/ui/refinements/logging-overlay.tsx, created here from the accepted reference eded158cfd928d382c9a9409e2c372270312741d; recipe in src/ui/refinements/presentation.css over tokens.css): a native modal with one stationary continuous chamfered frame and one inner scrolling region seated on the ring's inner edge with no bottom inset and clipped on the inner chamfer (P01); no outline on the frame, scroller or dialog on open/reopen — diagnosed owners: the browser's default blue rounded ring on the keyboard-focusable scroller or the dialog that showModal() or a tap focuses (opening focus moved to the X in the same layout effect; containers given no outline), and Foundation's fallback .clr-chamfer:has(:focus-visible) ring, kept off the structural frame by a more specific rule — with the opening focus on the X and every control keeping its own keyboard focus (P02); all scrollbar chrome hidden with wheel/touch/keyboard/focus scrolling kept and no sideways overflow (P03); and height from the visible viewport (visualViewport, so an on-screen keyboard is respected), the accepted gap and the safe areas, never a half-height cap. Checked at the shared-component boundary with representative consumers (the shared TimedResultLog's twelve-round ladder log with a consumer Notes and Save, and its EMOM log) and the accepted gallery state /gallery/refinements?state=ladder-long. Provider acceptance only: no logging route has adopted the frame (TASK-043–046 migrate consumers; TASK-041 owns full-route geometry and JOURNEY-018 closure). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-018 --check check-01 -- npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C44-01",
+        "AC-C57-01",
+        "AC-C58-01",
+        "AC-C59-01",
+        "AC-R018-01",
+        "AC-R018-02",
+        "AC-R018-03",
+        "AC-R018-04",
+        "TASK-AC-D97C3E420929",
+        "TASK-AC-15110DB92C86",
+        "TASK-AC-932FEEF54F21",
+        "JOURNEY-018"
+      ],
+      "files": [
+        "src/ui/logging-overlay.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 scroll: one stationary continuous frame holds the only scrolling region, and the long log’s Notes and Save are inside it",
+          "criterion": "AC-C44-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C57-01 AC-R018-01 scroll: the scrolling region meets the inner lower border — no bottom inset, clipped on the inner chamfer, and no interior line crossing the form",
+          "criterion": "AC-C57-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: opening and reopening never focus the frame or the scroller — the opening focus lands on the X control",
+          "criterion": "AC-C58-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: the diagnosed owners — the browser’s default ring on a focused scroller or dialog, and Foundation’s fallback chamfer ring on the frame — never reach the containers, and the opening focus moves to the X in the same commit as showModal",
+          "criterion": "AC-C58-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: intentional keyboard focus is kept — Tab moves from the X through the controls to Notes and Save, and no control loses its focus indicator",
+          "criterion": "AC-C58-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C59-01 AC-R018-03 scroll: every scrollbar is hidden, overlay scrollbars included, while wheel, touch, keyboard and focus scrolling still work and nothing scrolls sideways",
+          "criterion": "AC-C59-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: the frame’s height is the visible viewport less the gap and safe areas — it follows an on-screen keyboard and is never a half-height cap",
+          "criterion": "AC-C44-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: a short form fits its content with Save in reach, and without a visual viewport the dynamic viewport is the fallback",
+          "criterion": "AC-C44-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > JOURNEY-018 viewport: gallery ladder-long draws the shared frame around the actual TimedResultLog — opened, closed and reopened, scrolling inside, nothing saved",
+          "criterion": "JOURNEY-018"
+        }
+      ]
+    }
+  }
+}

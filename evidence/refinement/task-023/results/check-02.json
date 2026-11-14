@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-023",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-023.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-023/required-cases.json",
+    "sha256": "7ee09061db9e7c7be34dd9db2523324a7a7a8ca5b51c380aa07fcd34ab93f7b7"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-023.spec.ts",
+      "sha256": "87d12004caed9bed5161d5c6e4620862548f0450a642c483803148c3352c94c8"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 phone-320: Review reads the Warm-up, the work and the Cooldown, then Regenerate last; it asks first, Keep it keeps the workout, and confirming runs the existing regeneration",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 phone-390: Review reads the Warm-up, the work and the Cooldown, then Regenerate last; it asks first, Keep it keeps the workout, and confirming runs the existing regeneration",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 keyboard, reduced motion and reopen phone-390: Regenerate is the next stop after the Cooldown, Escape keeps the workout, and a reload keeps the same order",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "name": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 recovery phone-390: a failed Start keeps the workout with Regenerate still last and enabled, and with nothing to review there is no Regenerate",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "name": "TASK-023 Review Regenerate follows the entire workout > gallery preparation phone-320: the accepted state draws Review’s own Regenerate after the Cooldown, which only asks, with nothing read or written",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

@@ -1,0 +1,132 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-001",
+  "description": "Shared movement hierarchy and peer grouping (REQ-001; C01, C02, C04) delivered through MovementIdentity / MovementList / MovementGroupHeader on the real /review and /workout routes (JOURNEY-001), with the accepted gallery state /gallery/refinements?state=cards (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-001 --check check-01 -- npx vitest run src/ui/movement-list.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C01-01",
+        "AC-C02-01",
+        "AC-C04-01",
+        "AC-R001-01",
+        "AC-R001-02",
+        "JOURNEY-001"
+      ],
+      "files": [
+        "src/ui/movement-list.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C01-01 Review and Workout lead with the prominent name, readable prescription and load, quiet equipment and their own action or progress slot",
+          "criterion": "AC-C01-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C02-01 shows no Last-performance row in either context while the prescribed load stays visible",
+          "criterion": "AC-C02-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C04-01 separates peers only between two movements, never after the last, with no inner grouping rail",
+          "criterion": "AC-C04-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-01 standard, superset and circuit cards keep peer-only separators in both contexts and retain history data",
+          "criterion": "AC-R001-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 long names and multi-digit ordinals wrap inside the name column without covering the action or progress slot",
+          "criterion": "AC-R001-02"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 opens Review, starts that same workout and shows the same hierarchy on Workout",
+          "criterion": "JOURNEY-001"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > renders the accepted gallery state cards through the Review and Workout consumers",
+          "criterion": "AC-C04-01"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-001 --check check-02 -- npx playwright test e2e/refinement/task-001.spec.ts --project=mobile",
+      "criteria": [
+        "AC-C01-01",
+        "AC-C02-01",
+        "AC-C04-01",
+        "AC-R001-01",
+        "AC-R001-02",
+        "JOURNEY-001"
+      ],
+      "files": [
+        "e2e/refinement/task-001.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 phone-320: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+          "criterion": "JOURNEY-001"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 phone-390: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+          "criterion": "JOURNEY-001"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 tablet-768: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+          "criterion": "JOURNEY-001"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 desktop-1280: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+          "criterion": "JOURNEY-001"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 phone-320: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+          "criterion": "AC-R001-02"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 phone-390: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+          "criterion": "AC-R001-02"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 tablet-768: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+          "criterion": "AC-R001-02"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 desktop-1280: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+          "criterion": "AC-R001-02"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > gallery cards: the accepted state renders the same peers through the Review and Workout consumers",
+          "criterion": "AC-C04-01"
+        }
+      ]
+    }
+  }
+}

@@ -14,7 +14,7 @@ export type LoggingContext = typeof LOGGING_CONTEXTS[number][0]
 
 export const SAMPLE: BlockProgress = {
   blockId: 'gallery-timed-block', structureType: 'amrap', repScheme: 'fixed',
-  identity: { label: 'AMRAP', detail: '8 MIN', repScheme: null, glyph: 'Stopwatch' },
+  identity: { label: 'AMRAP', format: 'AMRAP', detail: '8 MIN', repScheme: null, glyph: 'Stopwatch' },
   status: 'not_started', exerciseCount: 1, timerType: 'countdown', timerSeconds: 480, rounds: null, roundRestSeconds: null,
   exercises: [{ exerciseId: 'gallery-timed-exercise', blockId: 'gallery-timed-block', position: 1, status: 'not_started', setLogs: [],
     prescription: {

@@ -1,0 +1,103 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-028",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-028.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-028/required-cases.json",
+    "sha256": "51ca36285111764a64434fc259cecd5ad9a9597b354996f8d2a92c1fee203c3d"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-028.spec.ts",
+      "sha256": "93ef0cc327dd329eb3e35b58e907acfad9887fb427fe92242bef102fcbddbe79"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin clear phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin vapour phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin signal phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin mono phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin clear phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin vapour phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin signal phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 skin mono phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 phone-390 meanings: a held read is a busy status and not an alert, its failure is an alert that claims no work, and Retry re-runs only that read",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 phone-320 reduced motion and keyboard: the failure is still, keeps its one error role, copy and Retry, fits the narrow phone, and the keyboard reaches and activates Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "name": "TASK-028 released semantic error treatment > JOURNEY-028 phone-390 motion: a failure glitches once on arrival, never loops, and the gallery state does the same",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 11
+  },
+  "problems": []
+}

@@ -417,7 +417,9 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       return (await value.innerText()).trim()
     }
     const display = {
-      intensity: await displayedFact('Intensity', '3 of 10'),
+      // TASK-004 (AC-C12-01, AC-R004-01, R32): the Overview reads the effective
+      // intensity as its value alone — still 3, not the requested 9.
+      intensity: await displayedFact('Intensity', '3'),
       goal: await displayedFact('Goal', 'Active recovery'),
       focus: await displayedFact('Anchor', 'Full body'),
       duration: await displayedFact('Duration', '15 min'),
@@ -440,21 +442,20 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     expect(display.overviewSuppressed, 'Review contains unexpected overview prose').toBe(true)
     for (const section of workout.sections) {
       // Review intentionally labels sections by their canonical type, not the
-      // retired model-generated title/introduction fields.
-      const trigger = page.locator('main .clr-collapsible__trigger').filter({
-        has: page.getByText(sectionTypeLabel(section.section_type), { exact: true }),
+      // retired model-generated title/introduction fields. TASK-002
+      // (AC-R002-02, R37): the label is the section's static heading, always
+      // open, on its first block card; it is not a toggle.
+      const label = sectionTypeLabel(section.section_type)
+      const content = page.locator('main [data-review-section]').filter({
+        has: page.getByRole('heading', { level: 2, name: label, exact: true }),
       })
-      await expect(trigger).toHaveCount(1)
-      await expect(trigger).toBeVisible()
-      await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-      const regionId = await trigger.getAttribute('aria-controls')
-      if (!regionId) throw new Error('A Review section has no controlled region.')
-      const content = page.locator(`[id="${regionId}"]`)
-        .locator(':scope > .clr-collapsible__content')
+      await expect(content).toHaveCount(1)
       await expect(content).toBeVisible()
+      await expect(content.getByRole('button', { name: label, exact: true })).toHaveCount(0)
+      await expect(content.locator('[data-movement-group-header] [aria-expanded]')).toHaveCount(0)
       // Section introductions used these direct prose slots; movement notes
       // deeper inside their real block rows are deliberately not prohibited.
-      await expect(content.locator(':scope > p, :scope > .clr-stack--tight > p')).toHaveCount(0)
+      await expect(content.locator(':scope > p, [data-workout-card] > p')).toHaveCount(0)
     }
     display.sectionNotesSuppressed = true
     await expectPinnedAction(page, 'Start workout')
@@ -474,8 +475,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Summary ────────────────────────────────────────────────────────────
     await expectScreen('Summary', routeOf('Summary'), 'Nice work')
     await expect(page.getByText(`${workout.title}, done.`)).toBeVisible()
+    // TASK-045: the debrief is entered in the Workout feedback dialog its
+    // card opens; Save and close is inside it (no pinned foot on Summary).
+    await reachByKeyboard(page, 'Log workout feedback')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog', { name: 'Workout feedback', exact: true })).toBeVisible()
     await page.getByRole('radio', { name: /Ready/ }).click()
-    await expectPinnedAction(page, 'Save and close')
     await reachByKeyboard(page, 'Save and close')
     await page.screenshot({ path: testInfo.outputPath('vibe-c-summary.png') })
     await page.getByRole('button', { name: 'Save and close', exact: true }).click()

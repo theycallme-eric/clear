@@ -1,0 +1,77 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-036",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/state/refinement-load-guidance.test.ts",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-036/required-cases.json",
+    "sha256": "00be5d34c3848eca6efbaa1e72fe8be2d4727dedd4e973537aa4ab11fd98db61"
+  },
+  "targets": [
+    {
+      "path": "src/state/refinement-load-guidance.test.ts",
+      "sha256": "fe846a460c1ed98cc1aec2233e76cebca9ef2d6c37d47ed408e49fa28a3d2fe2"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 reads every load meaning and unit from the prescription’s own columns through loadText, and never a range",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 states no per-hand reading: the stored number is shown unchanged beside its implement, never doubled, halved or explained",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 keeps the prescribed target apart from the weight performed, each in its own unit",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 names one existing owner per reading and promotes no synthetic preview range into production code",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 consumes TASK-003’s current passing evidence that the verified circuit has no Review weight change and keeps its optional logger",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 removes the Review weight change for the circuit only and does not extrapolate that storage proof to other formats",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 records each definition dependency the source cannot establish, with its owner and what continues meanwhile",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 continues the prescribed-load presentation on the gallery cards state through the read model, with no range",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

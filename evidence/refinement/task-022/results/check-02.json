@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-022",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-022.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-022/required-cases.json",
+    "sha256": "3dea77b29d645068160a87d79781d2733d47719a1d0dedb6adb7519714d7f1f4"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-022.spec.ts",
+      "sha256": "e93d60bac81701c8594e1d80cf9d17aa829505226fa88749996ba7a6ad8e5f80"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > JOURNEY-022 phone-320: Review then Workout — concise Warm-up and Cooldown read from the prescriptions, and each preparation clock started, paused and extended with no Dismiss",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > JOURNEY-022 phone-390: Review then Workout — concise Warm-up and Cooldown read from the prescriptions, and each preparation clock started, paused and extended with no Dismiss",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 keyboard, reduced motion and reopen phone-390: Start, Pause and Add 30s from the keyboard; a failed session read keeps its meaning and its retry; a reload keeps the section and the guide and fabricates no work",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own guides and clocks from the actual reading, with no Dismiss and nothing read or written",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}

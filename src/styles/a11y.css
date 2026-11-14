@@ -78,11 +78,18 @@
 /* Reduced motion means the end state renders immediately — never a skipped
    animation that leaves content invisible or blocks interactivity. Durations
    collapse instead of `animation: none` so fill states still resolve; the
-   vendored motion.css handles the design system's own vocabulary. */
+   vendored motion.css handles the design system's own vocabulary.
+
+   TASK-033 (AC-R033-02): native dialog backdrops are included. 0.14.3's own
+   reduced-motion closure for the backdrop fade (`.clr-dialog[open]::backdrop`)
+   is outranked by its fade rule (`.clr-dialog[open]:not(.clr-dialog--closing)
+   ::backdrop`), so every modal backdrop — the logging dialog's Balanced one
+   included — still faded for 200 ms under either reduced-motion choice. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
-  *::after {
+  *::after,
+  *::backdrop {
     animation-duration: 0.01ms !important;
     animation-delay: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -96,7 +103,8 @@
    Functional clocks are state, not CSS animations, and keep counting. */
 html[data-reduce-motion] *,
 html[data-reduce-motion] *::before,
-html[data-reduce-motion] *::after {
+html[data-reduce-motion] *::after,
+html[data-reduce-motion] *::backdrop {
   animation-duration: 0.01ms !important;
   animation-delay: 0.01ms !important;
   animation-iteration-count: 1 !important;

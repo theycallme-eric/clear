@@ -76,6 +76,8 @@ function storedRow() {
     perceived_effort: 7,
     notes: null,
     created_at: '2026-09-24T09:30:00+00:00',
+    // TASK-031 (MIG-A): no category answered, so the stored row reads null.
+    effort: null,
   }
 }
 

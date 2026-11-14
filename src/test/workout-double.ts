@@ -335,7 +335,9 @@ export function reconstructionFixture(
           block.block.id,
           fixture.sections?.[sectionIndex]?.blocks?.[blockIndex]?.result,
         ),
-        exercises: block.exercises,
+        // No movement result: the MIG-B column a fixture has not stated is
+        // nothing recorded, as the schema reads an absent key.
+        exercises: block.exercises.map((entry) => ({ ...entry, movement_result: null })),
       })),
     })),
   }
@@ -360,6 +362,7 @@ function resultRow(
     perceived_effort: null,
     notes: null,
     created_at: '2026-09-24T09:30:00+00:00',
+    effort: null,
     ...overrides,
   }
 }
@@ -522,6 +525,7 @@ function blockResultRow(completion: BlockCompletion): BlockResultRow {
     perceived_effort: completion.perceivedEffort ?? null,
     notes: completion.outcome.notes ?? null,
     created_at: '2026-09-24T09:30:00+00:00',
+    effort: completion.outcome.effort ?? null,
   }
 }
 
@@ -692,7 +696,11 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
           ...section,
           blocks: section.blocks.map((block) => {
             const result = recorded.find((row) => row.blockId === block.block.id)
-            return { ...block, block_result: result === undefined ? null : blockResultRow(result) }
+            return {
+              ...block,
+              block_result: result === undefined ? null : blockResultRow(result),
+              exercises: block.exercises.map((entry) => ({ ...entry, movement_result: null })),
+            }
           }),
         })),
       })
@@ -761,6 +769,10 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       recorded.push(completion)
       return ok(blockResultRow(completion))
     },
+    // TASK-031's writers are not called by any shipped path; a test that
+    // reaches one without saying how it answers has wired something new.
+    correct: () => unsupported('blockResults.correct'),
+    recordMovements: () => unsupported('blockResults.recordMovements'),
     ...options.blockResults,
   }
 
