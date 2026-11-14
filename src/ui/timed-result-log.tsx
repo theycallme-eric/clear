@@ -8,6 +8,7 @@ import { QuantitySelector } from './quantity-selector'
 import { Heading, HeadingSection } from './Heading'
 import { LadderCompletion } from './ladder-rungs'
 import { SetEffortChoice } from './set-effort'
+import { useInvalidFocus } from './formFocus'
 import '../styles/timed-workout.css'
 
 export type TimedFormat = 'emom' | 'amrap' | 'for_time' | 'ladder'
@@ -56,6 +57,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
     const result = typeof next === 'function' ? next(draft) : next
     if (onDraftChange) onDraftChange(result); else setLocalDraft(result)
   }
+  const onSubmit = useInvalidFocus()
   const [saving, setSaving] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
   const patch = (part: Partial<TimedResultDraft>) => setDraft(previous => ({ ...previous, ...part }))
@@ -97,12 +99,11 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
   })
   const Container = embedded ? Fragment : HeadingSection
   return <Container>
-    <form className="clr-timed-log" data-log-hierarchy={hierarchy} aria-label={accessibleName} onSubmit={event => {
-      event.preventDefault()
-      if (saving) return
+    <form className="clr-timed-log" data-log-hierarchy={hierarchy} aria-label={accessibleName} onSubmit={onSubmit(() => {
+      if (saving) return false
       setSaving(true); setFailure(null)
-      void onSave(draft).catch(() => setFailure('Your log didn’t save. Try again.')).finally(() => setSaving(false))
-    }}>
+      return onSave(draft).then(() => true, () => { setFailure('Your log didn’t save. Try again.'); return false }).finally(() => setSaving(false))
+    })}>
       {!embedded && <Heading className="clr-timed-log__title">Log results</Heading>}
       <ResultGroup title={hierarchy === 'grouped' && format !== 'emom' ? 'Result' : undefined}>
         {(format === 'ladder' || format === 'for_time') && <ChoiceGroup className="clr-timed-completion" legend="Work completed"

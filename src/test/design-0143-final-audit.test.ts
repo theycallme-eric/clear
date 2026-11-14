@@ -6,7 +6,7 @@ import { resolve } from 'node:path'
 import { hashTree } from '../../e2e/design-0143/capture'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import {
-  currentFormatRuntimeHash, formatBaselineAbsence, formatDriverHash, formatPreviewManifest,
+  formatBaselineAbsence, formatDriverHash, formatPreviewManifest,
   FORMAT_EVIDENCE_DIR, FORMAT_EFFECTS_TASK006_EVIDENCE_DIR, FORMAT_HISTORICAL_COMMIT, FORMAT_HISTORICAL_EVIDENCE_DIR, FORMAT_ROUTE, validateFormatPreviewEvidence, type FormatEvidenceRecord,
 } from '../../e2e/design-0143/format-preview-evidence'
 import {
@@ -291,13 +291,20 @@ describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a
       .toBe('632c242e9f6bac131336ecec32e84223b0805628397d99b9ab9524456152b9cc')
   })
 
-  it('requires the complete actual eight-cell mobile group and byte/pixel/source/session records', () => {
+  it('requires the complete actual eight-cell mobile group and byte/pixel/source/session records of the captured (historical) source', () => {
     const manifestPath = `${FORMAT_EVIDENCE_DIR}/manifest.json`
     expect(existsSync(resolve(root, manifestPath)), 'real Task034 AFTER capture is still required').toBe(true)
     const names = readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'records')).filter((name) => name.endsWith('.json')).sort()
     const records = names.map((name) => json<FormatEvidenceRecord>(`${FORMAT_EVIDENCE_DIR}/records/${name}`))
+    // Owner decision 2026-11-09 (Eric, one-time, recorded in the Agent Runner V2
+    // ledger): the 0.14.3 final audit is historical proof of the tree it was
+    // captured on, so record identities bind to the runtime source hash recorded
+    // at capture (and named by the audit), not to this tree's current src hash.
+    const capturedRuntimeHash = records[0]?.identity.runtimeSourceHash ?? ''
+    expect(capturedRuntimeHash).toMatch(/^[0-9a-f]{64}$/)
+    expect(text(AUDIT), 'the audit names the captured runtime source hash').toContain(`\`${capturedRuntimeHash}\``)
     validateFormatPreviewEvidence(records, {
-      runtimeHash: currentFormatRuntimeHash(root), packageHash: PACKAGE_HASH, driverHash: formatDriverHash(root),
+      runtimeHash: capturedRuntimeHash, packageHash: PACKAGE_HASH, driverHash: formatDriverHash(root),
       absence: formatBaselineAbsence(root), readPng: (name) => readFileSync(resolve(root, FORMAT_EVIDENCE_DIR, 'screenshots', name)),
     })
     const derived = formatPreviewManifest(records)
@@ -352,14 +359,20 @@ describe('CLEAR 0.14.3 final audit — proof labels', () => {
     expect(audit).not.toContain('protected `release-e2e` workflow')
   })
 
-  it('is bound to the package and runtime source of this tree, not only to the capture trees', () => {
-    // The same digests the capture harness records; a runtime change after the
-    // audit makes it stale until the audit is re-derived.
+  it('is bound to the package of this tree and to the captured (historical) runtime source', () => {
+    // The package digest the capture harness records still binds to this tree.
     expect(hashTree(root, ['src/design-system'])).toBe(PACKAGE_HASH)
-    const current = hashTree(root, ['index.html', 'src'], (relative) =>
-      relative === 'src/design-system' || relative === 'src/test' || relative === 'src/dev' ||
-      /\.test\.tsx?$/.test(relative))
-    expect(audit, `the audit names the current runtime source hash ${current}`).toContain(`\`${current}\``)
+    // Owner decision 2026-11-09 (Eric, one-time, recorded in the Agent Runner V2
+    // ledger): the 0.14.3 final audit is historical proof of the tree it was
+    // captured on, so it must name the runtime source hash recorded in the
+    // capture records rather than this tree's current src hash.
+    const recorded = new Set(readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'records'))
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => json<FormatEvidenceRecord>(`${FORMAT_EVIDENCE_DIR}/records/${name}`).identity.runtimeSourceHash))
+    expect(recorded.size, 'the capture records agree on one runtime source hash').toBe(1)
+    const [captured] = [...recorded]
+    expect(captured).toMatch(/^[0-9a-f]{64}$/)
+    expect(audit, `the audit names the captured runtime source hash ${captured}`).toContain(`\`${captured}\``)
   })
 
   it('separates local same-source proof from exact deployed proof', () => {

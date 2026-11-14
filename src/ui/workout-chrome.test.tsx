@@ -110,10 +110,12 @@ describe('GlobalTimer', () => {
   it('is the shipped timer card — one bar, the timer role, and no frame around it', () => {
     renderWithProviders(<GlobalTimer seconds={750} />)
 
+    // The timer is the row inside the public Card's body; the body is its frame.
     const timer = screen.getByRole('timer', { name: 'Session time' })
-    expect(timer).toHaveClass('clr-chamfer', 'clr-card__body', 'clr-chamfer--timer')
+    const frame = timer.closest('.clr-card__body') as HTMLElement
+    expect(frame).toHaveClass('clr-chamfer', 'clr-card__body', 'clr-chamfer--timer')
     expect(cards()).toHaveLength(1)
-    expect(timer.parentElement).toBe(cards()[0])
+    expect(frame.parentElement).toBe(cards()[0])
     expect(cards()[0].querySelectorAll(':scope > .clr-card__bar')).toHaveLength(1)
 
     const bleed = cards()[0].parentElement as HTMLElement

@@ -17,7 +17,7 @@
  * and Reset side by side underneath as one paired action row, above the
  * card's Rest entry action.
  *
- * The frame is EXC-03's `TimerFrame`, the same adapter the session clock
+ * The frame is `TimerFrame`, the same adapter the session clock
  * draws with, so border, surface, chamfer and bar are one vocabulary. On a
  * card it is an element frame with no bar of its own: never a second card,
  * never a second bar.

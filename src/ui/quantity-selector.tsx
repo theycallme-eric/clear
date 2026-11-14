@@ -12,12 +12,9 @@ export function QuantitySelector({ label, value, onChange, max }: {
     <div className="clr-quantity clr-chamfer clr-chamfer--sm clr-chamfer--structure" role="group" aria-label={label}>
       <IconButton type="button" variant="secondary" size="sm" icon={<Minus />} label={`Decrease ${label.toLowerCase()}`}
         disabled={value === null || value === 0} onClick={() => onChange(Math.max(0, (value ?? 0) - 1))} />
-      <input id={id} type="number" inputMode="numeric" min={0} max={max} step={1} placeholder="—" value={value ?? ''}
-        onChange={event => {
-          const raw = event.target.value
-          if (raw === '') onChange(null)
-          else if (/^\d+$/.test(raw)) onChange(Math.min(max ?? Infinity, Number(raw)))
-        }} />
+      {/* Tap-only, as the shipped counter: typing a count would be new behaviour, and
+          text entry goes through the public fields. Blank reads as a dash, zero as 0. */}
+      <output id={id} data-empty={value === null ? '' : undefined} aria-label={value === null ? `${label}: not recorded` : undefined}>{value ?? '—'}</output>
       <IconButton type="button" variant="secondary" size="sm" icon={<Plus />} label={`Increase ${label.toLowerCase()}`}
         disabled={max !== undefined && value !== null && value >= max}
         onClick={() => onChange(Math.min(max ?? Infinity, (value ?? 0) + 1))} />

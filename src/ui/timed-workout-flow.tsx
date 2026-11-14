@@ -75,7 +75,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   useEffect(() => {
     if (showLog && !sheet) {
       const heading = logHost.current?.querySelector<HTMLElement>('h1,h2,h3,h4,h5,h6')
-      if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); heading.scrollIntoView?.({ block: 'start' }) }
+      if (heading) { heading.tabIndex = -1; heading.focus() }
     }
   }, [showLog, sheet])
 

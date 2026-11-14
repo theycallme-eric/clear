@@ -10,7 +10,7 @@
  * it composes the same shipped timer card and the same timer tokens rather than
  * borrowing a component whose meaning is the opposite. `SectionTimer` (EXE-03)
  * is the one that composes `TimerDisplay`, exactly as the IA says. The frame
- * itself is `TimerFrame` (EXC-03), shared with a movement's own countdown
+ * itself is `TimerFrame`, shared with a movement's own countdown
  * (`movement-countdown.tsx`, REQ-014) so both clocks speak one vocabulary.
  *
  * Containment, from 0.14.3: a timer is its own card — one accent bar, the timer
@@ -123,15 +123,16 @@ export interface TimerFrameProps {
 }
 
 /**
- * EXC-03's adapter: the shipped timer frame, as `TimerDisplay` builds it, for
- * the timers `TimerDisplay` cannot be — a count-up clock, or any timer that has
- * to sit inside a card. One vocabulary, so the session clock and a movement's
- * countdown share border, surface, chamfer and accent bar.
+ * The timer frame for the timers `TimerDisplay` cannot be — a count-up clock,
+ * or any timer that has to sit inside a card. One vocabulary, so the session
+ * clock and a movement's countdown share border, surface and accent bar.
  *
- * Outside a card it is the timer card: the emission, the accent bar and the
- * body all take the timer role, and no frame goes around it. Inside a card it
- * is that card's element frame instead — the same role, without a bar of its
- * own, so there is never a second bar or a frame in a frame.
+ * Outside a card it is the app's `Card` in the timer role (no hand-assembled
+ * card markup; EXC-03 stays retired): the emission, the accent bar and the
+ * body come from the public component, and the corner follows the card's own
+ * automatic rule. Inside a card it is that card's element frame instead — the
+ * same role, without a bar of its own, so there is never a second bar or a
+ * frame in a frame.
  */
 export function TimerFrame({
   label,
@@ -147,56 +148,84 @@ export function TimerFrame({
   const insideCard = useInsideCard()
   const role = low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'
 
-  const readout = (
-    <div
-      role="timer"
-      aria-label={label}
-      className={
-        insideCard
-          ? `clr-chamfer clr-chamfer--md ${role}`
-          : `clr-chamfer clr-chamfer--md clr-card__body ${role}`
-      }
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 'var(--spacing-200)',
-        padding: 'var(--spacing-100) var(--spacing-300)',
-        minHeight: 'var(--control-height)',
-        flex: fullWidth ? '1 1 0' : undefined,
-        minWidth: fullWidth ? 0 : undefined,
-      }}
+  const captionNode = caption === undefined ? null : (
+    <span
+      aria-hidden="true"
+      style={{ ...labelStyle, color: low ? 'var(--text-timer-low)' : 'var(--text-timer)' }}
     >
-      {caption === undefined ? null : (
-        <span
-          aria-hidden="true"
-          style={{ ...labelStyle, color: low ? 'var(--text-timer-low)' : 'var(--text-timer)' }}
-        >
-          {caption}
-        </span>
-      )}
-      <TimerDigits text={text} size={size} low={low} />
-      <span className="a11y-hidden">{spoken}</span>
-    </div>
+      {caption}
+    </span>
   )
 
+  if (insideCard) {
+    // Inside a card it is that card's element frame: the timer role, no bar.
+    return (
+      <span
+        className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
+        style={{ ...(low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE), display: fullWidth ? 'flex' : undefined, width: fullWidth ? '100%' : undefined }}
+        {...pulse}
+      >
+        <div
+          role="timer"
+          aria-label={label}
+          className={`clr-chamfer clr-chamfer--md ${role} clr-timer-frame__readout`}
+          style={{ ...READOUT_STYLE, flex: fullWidth ? '1 1 0' : undefined, minWidth: fullWidth ? 0 : undefined }}
+        >
+          {captionNode}
+          <TimerDigits text={text} size={size} low={low} />
+          <span className="a11y-hidden">{spoken}</span>
+        </div>
+      </span>
+    )
+  }
+
+  // Outside a card it is the timer card itself: the app's Card in the timer
+  // role, so the bar, body and emission come from the public component. The
+  // wrapper only decides width (content-sized, or the whole row) and carries
+  // the low state's pulse.
   return (
     <span
-      className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
-      style={{ ...(low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE), display: fullWidth ? 'flex' : undefined, width: fullWidth ? '100%' : undefined }}
+      className={pulse === undefined ? 'clr-timer-frame' : 'clr-timer-frame clr-pulse-micro'}
+      style={fullWidth ? FULL_FRAME_STYLE : INLINE_FRAME_STYLE}
       {...pulse}
     >
-      {insideCard ? (
-        readout
-      ) : (
-        <span className="clr-card" style={fullWidth ? { display: 'flex', width: '100%' } : undefined}>
-          <span className="clr-card__bar" aria-hidden="true" />
-          {readout}
-        </span>
-      )}
+      <Card role={low ? 'timer-low' : 'timer'} className="clr-timer-frame__readout" style={CARD_READOUT_STYLE}>
+        <div role="timer" aria-label={label} style={TIMER_ROW_STYLE}>
+          {captionNode}
+          <TimerDigits text={text} size={size} low={low} />
+          <span className="a11y-hidden">{spoken}</span>
+        </div>
+      </Card>
     </span>
   )
 }
+
+const READOUT_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 'var(--spacing-200)',
+  padding: 'var(--spacing-100) var(--spacing-300)',
+  minHeight: 'var(--control-height)',
+}
+
+/** The card body keeps the timer's own padding and height; the row inside is the timer. */
+const CARD_READOUT_STYLE: CSSProperties = {
+  ...READOUT_STYLE,
+  display: 'flex',
+  flexDirection: 'row',
+  paddingBottom: 'var(--spacing-100)',
+}
+
+const TIMER_ROW_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 'var(--spacing-200)',
+}
+
+const INLINE_FRAME_STYLE: CSSProperties = { display: 'inline-flex', flexDirection: 'column' }
+const FULL_FRAME_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column', width: '100%' }
 
 const TIMER_BLEED_STYLE = { '--bleed': 'var(--border-timer)' } as CSSProperties
 const TIMER_LOW_BLEED_STYLE = { '--bleed': 'var(--border-timer-low)' } as CSSProperties

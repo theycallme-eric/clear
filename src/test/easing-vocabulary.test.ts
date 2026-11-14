@@ -6,6 +6,15 @@
  * exception is the atmosphere blob drift, and it lives inside the vendored
  * export, which this guard deliberately does not scan. App-owned source reads
  * the semantic tokens (`var(--ease-mech)`) instead of naming a curve.
+ *
+ * One owner-selected exception, ledger EXC-07 (clear-refinement-20261103
+ * TASK-008: C22, C61; R133, R135, R144; P05): the recovered countdown warning's
+ * exact smooth 1.5 s ease-in-out breathe, which the owner selected over the
+ * shipped stepped pulse ("the four-second stepped micro-pulse is explicitly not
+ * this effect", R135). It is stated once, as its semantic variable in
+ * `src/ui/refinements/tokens.css`, and every other app-owned file still names
+ * no curve. The pin is exact: a second curve, a second occurrence, the curve
+ * anywhere else or the exception no longer needed all fail.
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -39,16 +48,37 @@ function appOwnedFiles(directory: string): string[] {
   })
 }
 
+/** EXC-07: the one owner-selected curve, its one file and its one declaration. */
+const OWNER_SELECTED_CURVE = {
+  file: join('ui', 'refinements', 'tokens.css'),
+  matches: ['ease-in-out'],
+  declaration: /^\s*--countdown-warning-easing: ease-in-out;$/m,
+} as const
+
 describe('motion vocabulary outside the design system', () => {
   it('names no easing curve of its own', () => {
     const offenders = appOwnedFiles(APP_SOURCE)
       .map((path) => ({
         file: relative(APP_SOURCE, path),
-        matches: readFileSync(path, 'utf8').match(NAMED_CURVE) ?? [],
+        text: readFileSync(path, 'utf8'),
       }))
+      .map(({ file, text }) => ({ file, text, matches: text.match(NAMED_CURVE) ?? [] }))
       .filter((result) => result.matches.length > 0)
+      .filter((result) => !(
+        result.file === OWNER_SELECTED_CURVE.file &&
+        result.matches.join() === OWNER_SELECTED_CURVE.matches.join() &&
+        OWNER_SELECTED_CURVE.declaration.test(result.text)
+      ))
+      .map(({ file, matches }) => ({ file, matches }))
 
     expect(offenders).toEqual([])
+  })
+
+  it('states the one owner-selected curve exactly once, as the countdown warning’s semantic variable (EXC-07)', () => {
+    const text = readFileSync(join(APP_SOURCE, OWNER_SELECTED_CURVE.file), 'utf8')
+
+    expect(text.match(NAMED_CURVE)).toEqual([...OWNER_SELECTED_CURVE.matches])
+    expect(text).toMatch(OWNER_SELECTED_CURVE.declaration)
   })
 
   it('scans app-owned source and not the vendored export', () => {

@@ -2,8 +2,8 @@
    1.5s warning vignette, running only in the final five seconds. */
 
 /* B05-06: the countdown spans its card's width, digits centred, with the
-   paired Start/Pause and Reset row underneath. The frame is TimerFrame's own
-   (EXC-03); only its width is decided here. */
+   paired Start/Pause and Reset row underneath. The frame is TimerFrame's own;
+   only its width is decided here. */
 .clr-movement-countdown {
   display: flex;
   flex-direction: column;

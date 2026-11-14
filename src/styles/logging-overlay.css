@@ -17,7 +17,7 @@
 }
 /* The stationary chamfer owns the complete surface. Only its content scrolls. */
 .clr-logging-overlay__scroll {
-  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   padding: var(--spacing-100); margin: calc(-1 * var(--spacing-100));
 }
 .clr-logging-overlay[data-overlay=sheet] {
@@ -44,11 +44,11 @@
 
 [data-logging-overlay] .clr-workout-header { gap:var(--spacing-200) !important; }
 [data-logging-overlay] .clr-workout-header [aria-label="Actions"],
-[data-logging-overlay] .clr-workout-header [role=timer] {
+[data-logging-overlay] .clr-workout-header .clr-timer-frame__readout {
   height:var(--heading-h1-line-height);
   min-height:var(--heading-h1-line-height) !important;
 }
-[data-logging-overlay] .clr-workout-header [role=timer] { padding-block:0 !important; }
+[data-logging-overlay] .clr-workout-header .clr-timer-frame__readout { padding-block:0 !important; }
 
 /* AppHeader's inline meta slot added a descender below the timer frame.
    A flex slot gives the title, timer and menu the same measured edges. */

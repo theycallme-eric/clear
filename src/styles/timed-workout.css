@@ -9,9 +9,10 @@
 .clr-timed-meta { margin:0; color:var(--text-secondary); }
 .clr-timed-meta, .clr-timed-log { font-family:var(--font-data); }
 .clr-quantity { display:grid; grid-template-columns:var(--control-height) minmax(0,1fr) var(--control-height); align-items:center; padding:var(--spacing-100); }
-.clr-quantity input { width:100%; min-width:0; appearance:textfield; border:0; background:transparent; color:var(--text-timer); font:var(--font-weight-bold) var(--heading-h3-size)/1 var(--font-data); text-align:center; padding:var(--spacing-100); }
-.clr-quantity input::-webkit-inner-spin-button, .clr-quantity input::-webkit-outer-spin-button { appearance:none; margin:0; }
-.clr-quantity input:focus-visible { outline:var(--border-width) solid var(--border-field-focus); outline-offset:var(--spacing-100); }
+.clr-quantity output { display:block; width:100%; min-width:0; border:0; background:transparent; color:var(--text-timer); font:var(--font-weight-bold) var(--heading-h3-size)/normal var(--font-data); text-align:center; padding:var(--spacing-100); }
+/* Blank (not recorded) reads as a quiet dash, as the field's placeholder did; 0 is a value. */
+.clr-quantity output[data-empty] { color:var(--text-disabled); }
+.clr-quantity output:focus-visible { outline:var(--border-width) solid var(--border-field-focus); outline-offset:var(--spacing-100); }
 .clr-timed-flow .clr-movement-group-header { flex-direction:column; align-items:flex-start; }
 .clr-timed-rung { display:flex; flex-direction:column; gap:var(--spacing-200); }
 .clr-timed-rung .label, .clr-timed-rung p { margin:0; }
@@ -19,10 +20,9 @@
 .clr-timed-saved p { margin:0; }
 .clr-timed-clock { display:flex; flex-direction:column; min-width:0; }
 .clr-timed-clock [role=timer] { flex-wrap:wrap; justify-content:center; }
-.clr-timed-clock .clr-card { min-height:var(--control-height); }
 .clr-timed-dialog { max-height:90dvh; overflow:auto; }
 [data-counter-style=wide] .clr-quantity { grid-template-columns:var(--control-height) minmax(0,1fr) var(--control-height); padding:var(--spacing-300); }
-[data-counter-style=wide] .clr-quantity input { font-size:var(--heading-h2-size); }
+[data-counter-style=wide] .clr-quantity output { font-size:var(--heading-h2-size); }
 .clr-v4-experience .clr-movement-group-header { flex-direction:column; align-items:flex-start; }
 .clr-v4-experience .clr-workout-section-nav__meta { font-size:var(--label-xs-size); }
 .clr-v4-experience .clr-workout-section-nav { padding:0; }

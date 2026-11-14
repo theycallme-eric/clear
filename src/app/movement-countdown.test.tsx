@@ -329,19 +329,23 @@ describe('Countdown framing matches the session clock (AC-052)', () => {
     expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
     expect(card.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
 
-    // The session clock's frame is the same chamfer and role.
-    const session = sessionClock()
-    expect(session).toHaveClass('clr-chamfer', 'clr-chamfer--md', 'clr-chamfer--timer')
+    // The session clock's frame is the same chamfered frame in the same role.
+    // Standing alone it is a public Card, whose corner size is the card's own
+    // automatic rule (from its height), so only the frame and role are shared.
+    const session = sessionClock().closest('.clr-chamfer') as HTMLElement
+    expect(session).toHaveClass('clr-chamfer', 'clr-card__body', 'clr-chamfer--timer')
   })
 
   it('is the shipped timer card, with one bar, wherever no card surrounds it', () => {
     renderWithProviders(<MovementCountdown seconds={30} movement="hollow body hold" />)
 
+    // The timer is the row inside the public Card's body; the body is its frame.
     const timer = screen.getByRole('timer', { name: 'Countdown' })
-    expect(timer).toHaveClass('clr-card__body', 'clr-chamfer--timer')
+    const frame = timer.closest('.clr-card__body') as HTMLElement
+    expect(frame).toHaveClass('clr-card__body', 'clr-chamfer--timer')
     expect(document.querySelectorAll('.clr-card')).toHaveLength(1)
     expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(1)
-    expect(timer.parentElement?.parentElement).toHaveClass('clr-bleed')
+    expect(frame.parentElement?.parentElement).toHaveClass('clr-bleed')
   })
 
   it('never adds a frame or bar in a card', () => {
@@ -439,8 +443,13 @@ describe('Final five seconds: low state and screen-edge cue (AC-053)', () => {
     // One keyframe, a soft opacity swing on a 1.5s cycle: well under three
     // flashes a second, never a hard flash.
     expect(URGENCY_CSS.match(/@keyframes/g)).toHaveLength(1)
-    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*animation:\s*cue-edge 1\.5s ease-in-out infinite/)
-    expect(URGENCY_CSS).toMatch(/@keyframes cue-edge\s*\{\s*0%, 100% \{ opacity: \.2; \}\s*50% \{ opacity: \.8; \}\s*\}/)
+    // EXC-07: the owner-selected breathe, on its tokens (1.5s ease-in-out, .2 to .8).
+    expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\s*\{[^}]*animation:\s*clr-deadline-breathe var\(--countdown-warning-period\) var\(--countdown-warning-easing\) infinite/)
+    expect(URGENCY_CSS).toMatch(/@keyframes clr-deadline-breathe\s*\{\s*0%, 100% \{ opacity: var\(--countdown-warning-opacity-min\); \}\s*50% \{ opacity: var\(--countdown-warning-opacity-max\); \}\s*\}/)
+    const tokens = readFileSync(resolve(import.meta.dirname, '../ui/refinements/tokens.css'), 'utf-8')
+    expect(tokens).toMatch(/--countdown-warning-period: 1\.5s;/)
+    expect(tokens).toMatch(/--countdown-warning-opacity-min: \.2;/)
+    expect(tokens).toMatch(/--countdown-warning-opacity-max: \.8;/)
     // A still loop and reduced motion both stop it, leaving the edge drawn.
     expect(URGENCY_CSS).toMatch(/\.clr-countdown-edge\[data-loop='still'\]\s*\{\s*animation: none;/)
     const reducedEdge = URGENCY_CSS.slice(URGENCY_CSS.indexOf('@media (prefers-reduced-motion: reduce)'))
