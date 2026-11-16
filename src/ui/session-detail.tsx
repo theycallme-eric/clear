@@ -27,12 +27,14 @@ import type {
   DetailProvenance,
   ExerciseDetailView,
   LoggedSetView,
+  MovementActualView,
   SectionDetailView,
 } from '../state/session-detail'
 import { Card } from './card'
 import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
 import { MovementIdentity, MovementList } from './movement-presentation'
+import { SetEffortReading } from './set-effort'
 import { StructureBadge } from './workout-chrome'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -120,6 +122,15 @@ export function StructureResultBadge({ block }: StructureResultBadgeProps) {
           {block.perceivedEffort !== null && (
             <Measurement label="Effort" value={block.perceivedEffort} />
           )}
+          {/*
+            TASK-047 (REQ-031, AC-R031-02), wired by A3 TASK-103: the block's
+            categorical effort as recorded, read back through the existing
+            effort owner's face — the category, never placed on the 1–10 scale
+            above. Unanswered draws nothing.
+          */}
+          {block.effort !== null && (
+            <Measurement label="Effort" value={<SetEffortReading value={block.effort} />} />
+          )}
         </>
       ) : (
         <span className="clr-text-data-xs">Not scored</span>
@@ -196,7 +207,9 @@ export function LoggedSetTable({ sets, label }: LoggedSetTableProps) {
           <HeaderCell>Set</HeaderCell>
           <HeaderCell>Weight</HeaderCell>
           <HeaderCell>Reps</HeaderCell>
-          <HeaderCell>Effort</HeaderCell>
+          {/* The set's legacy 1–10 number, named apart from the block's
+              categorical effort face (TASK-047, A3 TASK-103). */}
+          <HeaderCell>RPE</HeaderCell>
           {showsDuration && <HeaderCell>Time</HeaderCell>}
           {showsDistance && <HeaderCell>Distance</HeaderCell>}
         </tr>
@@ -293,7 +306,8 @@ export function SessionSectionCard({
                 <p style={{ ...VALUE_STYLE, margin: 0 }}>{block.notes}</p>
               )}
               <MovementList label={`Movements in ${block.identity.label}`}>
-                {block.exercises.map(exercise => <li key={exercise.id}><LoggedExercise exercise={exercise} /></li>)}
+                {block.exercises.map(exercise => <li key={exercise.id}><LoggedExercise exercise={exercise}
+                  actual={block.movementActuals.find((actual) => actual.exerciseId === exercise.id) ?? null} /></li>)}
               </MovementList>
             </div>
           ))}
@@ -318,7 +332,7 @@ const STATUS_GLYPH: Record<ExerciseDetailView['status'], ReactNode> = {
  * two movements in a slot that prescribed one deserves to be told which is
  * which.
  */
-function LoggedExercise({ exercise }: { exercise: ExerciseDetailView }) {
+function LoggedExercise({ exercise, actual = null }: { exercise: ExerciseDetailView; actual?: MovementActualView | null }) {
   return (
     <div style={STACK_STYLE}>
       <MovementIdentity name={exercise.name} prescription={exercise.prescription} equipment={exercise.equipment} />
@@ -334,11 +348,33 @@ function LoggedExercise({ exercise }: { exercise: ExerciseDetailView }) {
           </span>
         )}
       </div>
+      {/*
+        TASK-047 (REQ-031, AC-R031-02), wired by A3 TASK-103: the movement's
+        recorded timed actual — the round its partial belongs to, the amount
+        and the stamped load — under the movement it was recorded for, as
+        History's read model states it. Only a recorded row is drawn; nothing
+        comes from the plan.
+      */}
+      {actual !== null && <MovementActual actual={actual} />}
       {exercise.sets.length === 0 ? (
         <p className="clr-text-data-xs">No sets logged</p>
       ) : (
         <LoggedSetTable sets={exercise.sets} label={`Sets logged for ${exercise.name}`} />
       )}
+    </div>
+  )
+}
+
+/**
+ * TASK-047: one movement's recorded timed actual, as one reading —
+ * `Round 3 · 7 reps · 20 kg`, `Rung 3 · 4 reps`, or a load alone. A part that
+ * was not recorded is left out, never shown as zero.
+ */
+function MovementActual({ actual }: { actual: MovementActualView }) {
+  const reading = [actual.roundLabel, actual.amount, actual.weight].filter((part): part is string => part !== null)
+  return (
+    <div className="clr-row" data-movement-actual={actual.exerciseId}>
+      <Measurement label="Actual" value={reading.join(' · ')} />
     </div>
   )
 }

@@ -1,0 +1,219 @@
+{
+  "schema": "clear-task-103-parity/v1",
+  "task": "TASK-103",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "screens",
+  "width": 390,
+  "route": "/history",
+  "captures": {
+    "gallery": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-390-gallery.png",
+      "sha256": "f7a60087ce26c6c039cf0505f6c58556a76cf90df276d7c29c494ee7a0d19968"
+    },
+    "route": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-390-route.png",
+      "sha256": "98cd0ab66a501f613ddadf2808ac775b02d73d340d1f88f1ba8f5a41f444c6ff"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "HISTORY",
+      "FILTER",
+      "Completed",
+      "UPPER-BODY STRENGTH",
+      "November 3 · Completed",
+      "CONDITIONING AND LONGER SESSION NAME",
+      "November 1 · Incomplete"
+    ],
+    "route": [
+      "WORKOUT HISTORY",
+      "SHOW",
+      "Completed",
+      "Wed 4 Nov 2026 – Sun 15 Nov 2026 · 12 rest days",
+      "REST",
+      "UPPER-BODY STRENGTH",
+      "COMPLETED",
+      "Tue 3 Nov 2026",
+      "Upper body",
+      "Requested 45 min",
+      "Actual 47 min",
+      "Intensity 7/10",
+      "Mon 2 Nov 2026 · 1 rest day",
+      "REST",
+      "CONDITIONING AND LONGER SESSION NAME",
+      "PARTIAL",
+      "Sun 1 Nov 2026",
+      "Full body",
+      "Requested 45 min",
+      "Actual 18 min",
+      "Intensity 7/10",
+      "HISTORY"
+    ]
+  },
+  "filterOptions": {
+    "gallery": [
+      "All workouts",
+      "Completed",
+      "Incomplete"
+    ],
+    "route": [
+      "All entries",
+      "Completed",
+      "Partial"
+    ],
+    "differences": [
+      {
+        "side": "gallery only",
+        "text": "All workouts",
+        "criterion": "TASK-AC-6BFF651DF237",
+        "reason": "The filter offers All entries, Completed and Partial (TASK-026); the sample words are the gallery’s."
+      },
+      {
+        "side": "gallery only",
+        "text": "Incomplete",
+        "criterion": "TASK-AC-6BFF651DF237",
+        "reason": "The filter offers All entries, Completed and Partial (TASK-026); the sample words are the gallery’s."
+      },
+      {
+        "side": "route only",
+        "text": "All entries",
+        "criterion": "TASK-AC-6BFF651DF237",
+        "reason": "The filter offers All entries, Completed and Partial (TASK-026); a stopped workout reads Partial, as stored."
+      },
+      {
+        "side": "route only",
+        "text": "Partial",
+        "criterion": "TASK-AC-6BFF651DF237",
+        "reason": "The filter offers All entries, Completed and Partial (TASK-026); a stopped workout reads Partial, as stored."
+      }
+    ]
+  },
+  "differences": [
+    {
+      "side": "gallery only",
+      "text": "FILTER",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The route keeps its carried TASK-026 filter, labelled Show (task 2: the app keeps its own words)."
+    },
+    {
+      "side": "gallery only",
+      "text": "November 3 · Completed",
+      "criterion": "AC-C53-01",
+      "reason": "Decision 7 / C53: the route reads the status, then the stored date in the app’s day format, on the line beneath the title; the gallery sample is “date · status” in its own words."
+    },
+    {
+      "side": "gallery only",
+      "text": "November 1 · Incomplete",
+      "criterion": "AC-C53-01",
+      "reason": "Decision 7 / C53: the route reads the status, then the stored date in the app’s day format, on the line beneath the title; the gallery sample is “date · status” in its own words."
+    },
+    {
+      "side": "route only",
+      "text": "WORKOUT HISTORY",
+      "criterion": "AC-R026-01",
+      "reason": "History’s own list card names the chronology it holds."
+    },
+    {
+      "side": "route only",
+      "text": "SHOW",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The carried TASK-026 filter control, labelled Show."
+    },
+    {
+      "side": "route only",
+      "text": "Wed 4 Nov 2026 – Sun 15 Nov 2026 · 12 rest days",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "Rest days are still listed under All entries (TASK-026); the gallery sample has none."
+    },
+    {
+      "side": "route only",
+      "text": "REST",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "A rest run’s own row word, under All entries (TASK-026)."
+    },
+    {
+      "side": "route only",
+      "text": "COMPLETED",
+      "criterion": "AC-C53-01",
+      "reason": "Decision 7 / C53: the status, with its glyph, on the line beneath the title."
+    },
+    {
+      "side": "route only",
+      "text": "Tue 3 Nov 2026",
+      "criterion": "AC-C53-01",
+      "reason": "Decision 7 / C53: the stored date beside the status, in the app’s day format (AC-R026-01: truthful stored dates)."
+    },
+    {
+      "side": "route only",
+      "text": "Upper body",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "Then the metrics (decision 7): focus, requested and actual minutes, intensity — the record’s own values."
+    },
+    {
+      "side": "route only",
+      "text": "Requested 45 min",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The metrics row, wrapped at a narrow width."
+    },
+    {
+      "side": "route only",
+      "text": "Actual 47 min",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The metrics row, wrapped at a narrow width."
+    },
+    {
+      "side": "route only",
+      "text": "Intensity 7/10",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The metrics row, wrapped at a narrow width."
+    },
+    {
+      "side": "route only",
+      "text": "Mon 2 Nov 2026 · 1 rest day",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "Rest days are still listed under All entries (TASK-026); the gallery sample has none."
+    },
+    {
+      "side": "route only",
+      "text": "REST",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "A rest run’s own row word, under All entries (TASK-026)."
+    },
+    {
+      "side": "route only",
+      "text": "PARTIAL",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The filter offers All entries, Completed and Partial (TASK-026); a stopped workout reads Partial, as stored."
+    },
+    {
+      "side": "route only",
+      "text": "Sun 1 Nov 2026",
+      "criterion": "AC-C53-01",
+      "reason": "Decision 7 / C53: the stored date beside the status, in the app’s day format (AC-R026-01: truthful stored dates)."
+    },
+    {
+      "side": "route only",
+      "text": "Full body",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "Then the metrics (decision 7): focus, requested and actual minutes, intensity — the record’s own values."
+    },
+    {
+      "side": "route only",
+      "text": "Requested 45 min",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The metrics row, wrapped at a narrow width."
+    },
+    {
+      "side": "route only",
+      "text": "Actual 18 min",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The metrics row, wrapped at a narrow width."
+    },
+    {
+      "side": "route only",
+      "text": "Intensity 7/10",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "reason": "The metrics row, wrapped at a narrow width."
+    }
+  ]
+}

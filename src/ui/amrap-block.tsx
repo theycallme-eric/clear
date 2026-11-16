@@ -469,8 +469,11 @@ function Rounds({
  * conditioning history holds an identical earlier piece (OVR-03). Outside the
  * signed-in shell — a gallery, a renderer test — there is no history to read,
  * and the score stands alone with no claim about rows nobody read.
+ *
+ * Exported for A3 TASK-103: `TimedWorkoutFlow` draws the AMRAP on /workout
+ * and keeps this line, so switching the AMRAP to it loses nothing.
  */
-function AmrapComparison({ block, outcome }: { block: BlockProgress; outcome: BlockOutcome }) {
+export function AmrapComparison({ block, outcome }: { block: BlockProgress; outcome: BlockOutcome }) {
   const canRead =
     use(WorkoutClientsContext) !== null &&
     use(AuthContext) !== null &&

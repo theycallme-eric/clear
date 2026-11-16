@@ -101,6 +101,20 @@ describe('one writer for block_results (EXE-01)', () => {
     // The movement rows are written by the one writer that names the table.
     expect(filesMatching(/from\(\s*'block_movement_results'\s*\)/)).toEqual(['src/data/workout.ts'])
   })
+
+  it('saves Round 7’s explicit timed log through that same path, from the product presentation only (A3 TASK-103)', () => {
+    // The provider's `saveTimedLog` goes through the same richer save, and
+    // only the product's timed save calls it; the product presentation is the
+    // one place that binds it, and the gallery never mounts it.
+    const provider = read('src/state/block-completion-provider.tsx')
+    expect(provider).toMatch(/const saveTimedLog = useCallback\([\s\S]*?saveTimed\(blockId, outcome, report\)/)
+    expect(filesMatching(/\.saveTimedLog\(/)).toEqual(['src/ui/timed-result-shell.ts'])
+    expect(filesMatching(/\bsaveLogThroughShell\b/)).toEqual([
+      'src/ui/product-presentation.ts',
+      'src/ui/timed-result-shell.ts',
+    ])
+    expect(read('src/ui/product-presentation.ts')).toMatch(/saveResult: saveLogThroughShell/)
+  })
 })
 
 describe('no perceived-effort capture on the completion path (E04, REQ-013)', () => {

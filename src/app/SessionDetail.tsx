@@ -218,13 +218,16 @@ function SessionDetailBody({
   view: SessionDetailView
 }) {
   const presentation = useWorkoutExperiencePresentation()
+  // TASK-004 (AC-C14-01, R20), carried by A3 TASK-103 with the F1 detail
+  // tests: the readings the record shares with the plan first, in Review's
+  // Overview order, then the record's own date and status.
   const facts: readonly (readonly [string, string])[] = [
-    ['Date', view.day],
-    ['Focus', view.focus],
-    ['Status', view.stateLabel],
     // A session nobody timed has no duration, and no term for one.
     ...(view.duration === null ? [] : [['Duration', view.duration] as const]),
+    ['Focus', view.focus],
     ['Intensity', String(view.intensity)],
+    ['Date', view.day],
+    ['Status', view.stateLabel],
   ]
 
   return (

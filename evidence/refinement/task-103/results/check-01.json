@@ -1,0 +1,162 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-103",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/session-detail-timed-actuals.test.tsx",
+    "src/state/block-completion-provider.test.tsx",
+    "src/test/block-completion-ownership.test.ts",
+    "src/state/session-detail.test.ts",
+    "src/app/SessionDetail.test.tsx",
+    "src/app/History.test.tsx",
+    "src/ui/timed-flow-save.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-103/required-cases.json",
+    "sha256": "fbe7a5e69a4366cccc0740e97e9c3535e34ca5ac00289a9b331725d91b49bc9a"
+  },
+  "targets": [
+    {
+      "path": "src/ui/session-detail-timed-actuals.test.tsx",
+      "sha256": "f39b2e767ebc6c92c23dfc8c760d48a39c3a5703047565bdf78aad6b0a9e3704"
+    },
+    {
+      "path": "src/state/block-completion-provider.test.tsx",
+      "sha256": "dcc736ba74b896d943b48099b22e92e571bd135f1485935c2d362a5996c51f28"
+    },
+    {
+      "path": "src/test/block-completion-ownership.test.ts",
+      "sha256": "0f8bacb250cbb81f8ab07f58625f14048d2948e1019fa808b08d198f33907ac8"
+    },
+    {
+      "path": "src/state/session-detail.test.ts",
+      "sha256": "e969da1b9ae0c78d0aed8dc3cb59cf281d25885ba62d2984b1d0e2c960ab3e54"
+    },
+    {
+      "path": "src/app/SessionDetail.test.tsx",
+      "sha256": "3485a5cfab4710589073bd9e1d2b793f28136856e8e9de5c188913cb6205699f"
+    },
+    {
+      "path": "src/app/History.test.tsx",
+      "sha256": "de5c77612bfebbb29d058dc8fa830b66db83d21a8142c85b1b8abc8dc3f5343a"
+    },
+    {
+      "path": "src/ui/timed-flow-save.test.tsx",
+      "sha256": "3f5aea2884461ec4640b8d0274c24ff318929f328070820de46a4feaae0c3ceb"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-F0CF2CC7BC18 the product binds Round 7’s saveResult to the shell’s save, mounts no sample adapter, and draws every timed format with TimedWorkoutFlow",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-9971E7A16F92 a refused movement write keeps the draft and the dialog and says the log did not save; the retry restates the row and writes each movement once under the same id",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 EMOM and ladder keep their own contracts: the EMOM a load with no round and no measured outcome; the ladder its highest rung and a partial in the rung after it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-048 the saved row is read back as the saved log when the block is drawn again, and Edit log corrects it in place",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-015 the forward action saves an unsaved log through the same richer save: BlockPanel hands the shell the timed report",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-6B9598D96180 the attempt and the AMRAP’s counts survive the block being drawn again, as the shipped renderers’ did; outside the shell nothing is stored",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/session-detail-timed-actuals.test.tsx",
+      "name": "TASK-047 History reads back recorded timed actuals and categorical effort > draws the category through the existing effort face beside the block outcome, never on the 1–10 scale, and nothing when unanswered",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/session-detail-timed-actuals.test.tsx",
+      "name": "TASK-047 History reads back recorded timed actuals and categorical effort > draws each recorded actual under the movement it belongs to, a recorded zero as zero, a load alone without a round, and nothing for an unrecorded movement or from the plan",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/session-detail.test.ts",
+      "name": "all six structure types, with their logged outcomes > reads an Incomplete stopped before the cap as Incomplete, and every capped row as before",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/SessionDetail.test.tsx",
+      "name": "Session Detail populated state > displays weight, reps and RPE per logged set",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/SessionDetail.test.tsx",
+      "name": "Session Detail containment > heads the facts and their provenance inside one overview card, as readouts",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/History.test.tsx",
+      "name": "History route > U44: every row puts its title, then status with the context, then metrics, whatever its status",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/History.test.tsx",
+      "name": "History route > AC-C53-01 the filter offers All entries, Completed and Partial, and All entries still lists rest runs and never-started workouts",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/block-completion-ownership.test.ts",
+      "name": "one writer for block_results (EXE-01) > saves the richer timed result from that same path, and from nowhere else (TASK-015, REQ-015)",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/block-completion-ownership.test.ts",
+      "name": "one writer for block_results (EXE-01) > saves Round 7’s explicit timed log through that same path, from the product presentation only (A3 TASK-103)",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/block-completion-ownership.test.ts",
+      "name": "no perceived-effort capture on the completion path (E04, REQ-013) > writes every block result with no effort",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/block-completion-provider.test.tsx",
+      "name": "BlockCompletionProvider — idempotent saves and retries > restores only actual saved block rows and does not write those blocks again",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/block-completion-provider.test.tsx",
+      "name": "BlockCompletionProvider — the forward action saves what was observed > writes amrap’s own outcome fields, with no effort",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 139,
+    "passed": 139,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 139
+  },
+  "problems": []
+}

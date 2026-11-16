@@ -1,13 +1,27 @@
-/** Isolated timed-work proposal: shared presentation/clock, format-specific schedule/results. */
+/**
+ * Isolated timed-work proposal: shared presentation/clock, format-specific schedule/results.
+ *
+ * A3 TASK-103 (F1): on /workout this is the timed blocks' renderer, and its
+ * Save log is real. Inside the workout shell the attempt's clock (and an
+ * AMRAP's counts) are kept where the format's shipped renderer kept them
+ * (`timed-attempt-records.ts`), so a walk away and back or a reload loses
+ * nothing; the block reports its observed outcome and its log's effort and
+ * entries to the shell through `BlockPanel`, as every renderer does; Save log
+ * goes through `timedWorkflows.saveResult`, which the product binds to the
+ * shell's one completion path; and a saved row is read back as the saved log
+ * (TASK-048). In the gallery nothing is stored: there is no shell session.
+ */
 import { use, useEffect, useRef, useState } from 'react'
 import { Button, Check, Pause, Play, Stop } from '../design-system/index'
-import type { BlockOutcome } from '../state/block-completion'
+import { useBlockCompletion } from '../state/block-completion'
 import { emomShape, emomView, minuteAssignment, scheduledMinuteFor, targetForMinute } from '../state/emom'
 import { explicitLadderTiming, ladderRungs } from '../state/ladder'
 import { exerciseName, modalityLabel, targetText } from '../state/prescription'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { SetLoggingContext } from '../state/set-logging'
-import { EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptView } from '../state/timed-attempt'
+import { EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
+import { readTimedAttempt, writeTimedAttempt, writeTimedCounts } from '../state/timed-attempt-records'
+import { defaultShellStorage } from '../state/workout-persistence'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import type { BlockProgress } from '../state/workout-progress'
 import { LoggingOverlay } from './logging-overlay'
@@ -18,6 +32,8 @@ import { MovementIdentity } from './movement-presentation'
 import { TimerFrame } from './workout-chrome'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { TimedResultLog, type TimedFormat, type TimedResultReceipt, type TimedResultDraft } from './timed-result-log'
+import { initialTimedResultDraft, receiptFromRecorded, timedShellOutcome, timedShellReport, type TimedClockReading } from './timed-result-shell'
+import { AmrapComparison } from './amrap-block'
 import { SET_EFFORT_CHOICES } from './set-effort'
 import { useCountdownUrgency } from './countdown-urgency'
 import '../styles/timed-workout.css'
@@ -27,23 +43,52 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const presentation = useWorkoutExperiencePresentation()
   const options = presentation?.timedWorkflows
   const weightUnit = use(SetLoggingContext)?.weightUnit ?? null
-  const [attempt, setAttempt] = useState(EMPTY_TIMED_ATTEMPT)
-  const [receipt, setReceipt] = useState<TimedResultReceipt | null>(null)
-  const [trackedRung, setTrackedRung] = useState<number | null>(null)
-  const [resultDraft, setResultDraft] = useState<TimedResultDraft | null>(null)
-  const [undoAttempt, setUndoAttempt] = useState<typeof EMPTY_TIMED_ATTEMPT | null>(null)
-  const [editing, setEditing] = useState(false)
-  const [logOpen, setLogOpen] = useState(true)
-  const logHost = useRef<HTMLDivElement>(null)
+  const completion = useBlockCompletion()
   const timing = explicitLadderTiming(block)
   const cap = timing?.mode === 'capped_window' ? timing.cap_seconds : block.timerSeconds
+  // A3 TASK-103: the shell's session is what makes the attempt worth keeping;
+  // a gallery or bare mount has none and stores nothing.
+  const [storage] = useState(() => completion.sessionId === undefined ? null : defaultShellStorage())
+  const [restored] = useState(() => readTimedAttempt(storage, format, block))
+  const [attempt, setAttempt] = useState<TimedAttempt>(restored?.attempt ?? EMPTY_TIMED_ATTEMPT)
+  const [receipt, setReceipt] = useState<TimedResultReceipt | null>(null)
+  const [trackedRung, setTrackedRung] = useState<number | null>(null)
+  const [resultDraft, setResultDraft] = useState<TimedResultDraft | null>(() => {
+    const counts = restored?.counts
+    if (!counts || (counts.roundsCompleted === null && counts.partialRoundReps === null)) return null
+    return { ...initialTimedResultDraft('amrap', false, 0), count: counts.roundsCompleted, partialReps: counts.partialRoundReps }
+  })
+  const [undoAttempt, setUndoAttempt] = useState<typeof EMPTY_TIMED_ATTEMPT | null>(null)
+  const [editing, setEditing] = useState(false)
+  // An attempt that had already ended before this mount does not reopen its log on arrival.
+  const [logOpen, setLogOpen] = useState(() => {
+    if (restored === null) return true
+    const phase = timedAttemptView(restored.attempt, now(), cap).phase
+    return phase !== 'finished' && phase !== 'capped'
+  })
+  const logHost = useRef<HTMLDivElement>(null)
+  /** The attempt, kept where the format's shipped renderer kept its clock. */
+  const moveAttempt = (next: TimedAttempt) => {
+    setAttempt(next)
+    writeTimedAttempt(storage, format, block, next)
+  }
+  /** The log's draft; an AMRAP's counts are kept on its record, as the shipped AMRAP kept them. */
+  const changeDraft = (next: TimedResultDraft) => {
+    setResultDraft(next)
+    if (format === 'amrap') writeTimedCounts(storage, block, { roundsCompleted: next.count, partialRoundReps: next.partialReps ?? null })
+  }
   const adjustedStart = attempt.startedAt === null ? null : new Date(attempt.startedAt + attempt.pausedMs).toISOString()
   const elapsed = useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? now())
   const view = timedAttemptView(attempt, (attempt.startedAt ?? 0) + attempt.pausedMs + elapsed * 1000, cap)
   const ended = view.phase === 'finished' || view.phase === 'capped'
   const sheet = Boolean(presentation?.loggingOverlay) || options?.logPresentation === 'sheet'
-  const showLog = ended && (receipt === null || editing)
   const rungs = ladderRungs(block.exercises)
+  const clock: TimedClockReading = { started: view.phase !== 'ready', ended, elapsedSeconds: view.elapsed, capReached: view.phase === 'capped' }
+  // TASK-048: once the shell holds the block's row (this device's save, or the
+  // performed read after a reload), that row is the saved log shown.
+  const recorded = ended ? completion.recordedResult?.(block.blockId) ?? null : null
+  const saved = recorded === null ? receipt : receiptFromRecorded(recorded, block, format, clock, weightUnit)
+  const showLog = ended && (saved === null || editing)
   const shape = emomShape(block)
   const minute = emomView({ startedAt: adjustedStart, workDoneMinute: null }, shape, view.elapsed)
   const ladderDraft = (): TimedResultDraft => ({ completed: trackedRung === rungs.length,
@@ -56,7 +101,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
       }
       setLogOpen(true)
     }
-    setAttempt(current => moveTimedAttempt(current, next, now()))
+    moveAttempt(moveTimedAttempt(attempt, next, now()))
   }
   const trackRung = (highestRung: number) => {
     setTrackedRung(highestRung)
@@ -67,9 +112,9 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const undoFinish = () => {
     if (!undoAttempt) return
     setTrackedRung(resultDraft?.highestRung ?? trackedRung)
-    setAttempt(undoAttempt); setUndoAttempt(null); setLogOpen(true)
+    moveAttempt(undoAttempt); setUndoAttempt(null); setLogOpen(true)
   }
-  const canUndoFinish = format === 'ladder' && undoAttempt !== null && receipt === null && view.phase === 'finished'
+  const canUndoFinish = format === 'ladder' && undoAttempt !== null && saved === null && view.phase === 'finished'
 
 
   useEffect(() => {
@@ -79,12 +124,13 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     }
   }, [showLog, sheet])
 
-  const outcome: BlockOutcome = receipt === null ? {} : {
-    elapsedSeconds: receipt.elapsedSeconds,
-    ...(format === 'amrap' && receipt.result.count !== null ? { roundsCompleted: receipt.result.count } : {}),
-    ...(format === 'ladder' && receipt.result.highestRung !== null ? { highestRung: receipt.result.highestRung } : {}),
-    ...(format === 'for_time' || format === 'ladder' ? { completedUnderCap: receipt.result.completed === true && !receipt.capReached } : {}),
-  }
+  // What the block reports to the shell, in its format's existing contract: the
+  // saved log, or else the draft so far — so the section's forward action saves
+  // what the athlete entered even when Save log was never pressed (TASK-015).
+  const draftNow = resultDraft ?? (format === 'ladder' ? ladderDraft() : initialTimedResultDraft(format, view.phase === 'finished', rungs.length))
+  const reported = saved !== null && !editing ? saved.result : draftNow
+  const outcome = timedShellOutcome(format, block, reported, clock)
+  const timed = timedShellReport(format, block, reported, saved?.weightUnit ?? weightUnit, ended, recorded)
   const actions = !ended && <div className="clr-timed-actions">
     {view.phase === 'ready' ? <Button variant="primary" icon={<Play />} onClick={() => action('start')}>
       Start {format === 'ladder' ? 'ladder' : block.identity.label}
@@ -111,19 +157,21 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const log = showLog && <TimedResultLog embedded={sheet} block={block} format={format} weightUnit={weightUnit}
     finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
     completionAction={canUndoFinish ? <div className="clr-timed-undo"><Button type="button" variant="quiet" size="sm" onClick={undoFinish}>Undo finish · resume ladder</Button></div> : undefined}
-    initial={receipt?.result} value={resultDraft ?? (format === 'ladder' ? ladderDraft() : undefined)} onDraftChange={setResultDraft} onSave={async result => {
+    initial={saved?.result} value={resultDraft ?? (format === 'ladder' ? ladderDraft() : undefined)} onDraftChange={changeDraft} onSave={async result => {
       const saveResult = options?.saveResult
       if (!saveResult) throw new Error('No result adapter configured')
-      const next: TimedResultReceipt = { blockId: block.blockId, format, result, weightUnit,
+      const next: TimedResultReceipt = { blockId: block.blockId, format, result, weightUnit: saved?.weightUnit ?? weightUnit,
         elapsedSeconds: view.elapsed, capReached: view.phase === 'capped' }
-      await saveResult(next)
+      await saveResult(next, { block, shell: completion })
       setReceipt(next); setEditing(false); setLogOpen(false); setUndoAttempt(null)
     }} />
 
+  // `data-urgent`: the deadline marker every shipped timed renderer carried, so
+  // the shell's coordinated countdowns still find this one (A3 TASK-103).
   return <div className="clr-timed-flow" data-timed-format={format} data-phase={view.phase} data-cap-seconds={cap ?? undefined}
-    data-counter-style={options?.counterStyle ?? 'wide'}>
+    data-counter-style={options?.counterStyle ?? 'wide'} data-urgent={urgency.urgent ? 'true' : 'false'}>
     {urgency.edge}
-    <BlockPanel block={block} completion={{ outcome }} timer={view.phase === 'ready' ? null :
+    <BlockPanel block={block} completion={{ outcome, timed }} timer={view.phase === 'ready' ? null :
       <div className="clr-timed-clock"><TimerFrame label={`${format === 'ladder' ? 'Ladder' : block.identity.label} time`} text={formatElapsed(clockSeconds)}
         spoken={`${caption}. ${spokenElapsed(clockSeconds)}`} caption={caption} size="var(--heading-h2-size)" fullWidth
         low={urgency.low || (view.phase === 'capped' && (format === 'for_time' || format === 'ladder'))} pulse={urgency.urgent ? urgency.loop : undefined} /></div>}>
@@ -161,22 +209,24 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
             {log}
           </LoggingOverlay>
         </>}
-        {receipt !== null && !editing && <div className="clr-timed-log" data-timed-saved="">
+        {saved !== null && !editing && <div className="clr-timed-log" data-timed-saved="">
           <div className="clr-timed-saved" role="status"><Check /><p>Log saved</p></div>
-          <p className="clr-timed-meta">{formatElapsed(receipt.elapsedSeconds)} active time
-            {format !== 'amrap' || receipt.result.count === null ? '' : ` · ${receipt.result.count} rounds`}
-            {receipt.result.highestRung === null ? '' : ` · ${receipt.result.highestRung} rungs`}</p>
-          {receipt.result.effort === null ? null : <p className="clr-timed-meta">Effort: {SET_EFFORT_CHOICES.find(o => o.value === receipt.result.effort)?.label}</p>}
+          <p className="clr-timed-meta">{formatElapsed(saved.elapsedSeconds)} active time
+            {format !== 'amrap' || saved.result.count === null ? '' : ` · ${saved.result.count} rounds`}
+            {saved.result.highestRung === null ? '' : ` · ${saved.result.highestRung} rungs`}</p>
+          {saved.result.effort === null ? null : <p className="clr-timed-meta">Effort: {SET_EFFORT_CHOICES.find(o => o.value === saved.result.effort)?.label}</p>}
           {block.exercises.map(exercise => {
-            const value = receipt.result.measurements[exercise.exerciseId]
+            const value = saved.result.measurements[exercise.exerciseId]
             if (!value || (value.amount === '' && value.weight === '')) return null
             return <p key={exercise.exerciseId} className="clr-timed-meta">{exerciseName(exercise.prescription.exercise_id)}
               {value.amount === '' ? '' : ` · ${value.amount} ${modalityLabel(exercise.prescription).toLowerCase()}`}
-              {value.weight === '' ? '' : ` · ${value.weight} ${receipt.weightUnit ?? ''}`}</p>
+              {value.weight === '' ? '' : ` · ${value.weight} ${saved.weightUnit ?? ''}`}</p>
           })}
-          {receipt.result.notes.trim() === '' ? null : <p>{receipt.result.notes}</p>}
-          <Button variant="secondary" onClick={() => { setResultDraft(receipt.result); setEditing(true); setLogOpen(true) }}>Edit log</Button>
+          {saved.result.notes.trim() === '' ? null : <p>{saved.result.notes}</p>}
+          <Button variant="secondary" onClick={() => { setResultDraft(saved.result); setEditing(true); setLogOpen(true) }}>Edit log</Button>
         </div>}
+        {/* The shipped AMRAP's like-for-like score line (OVR-03), kept: it says nothing until rounds are recorded. */}
+        {format === 'amrap' && ended && <AmrapComparison block={block} outcome={outcome} />}
         {block.exercises.length === 1 && <GroupExerciseCoaching exercises={block.exercises} />}
       </>}
     </BlockPanel>

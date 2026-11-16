@@ -12,7 +12,6 @@ import {
   READBACK_PLANNED_LOAD,
   READBACK_SYNTHETIC_CATALOG,
   READBACK_TITLE,
-  READBACK_WORK_LISTS,
   readbackName,
   timedReadbackAcceptance,
   type ReadbackCatalog,
@@ -54,6 +53,17 @@ import { backend } from '../support/backend'
  *     keys' 23505, PATCH restates, the performed read returns what was
  *     written), which proves the same screens and requests anywhere but is
  *     not backend proof.
+ *
+ * A3 TASK-103 (F1) rewrote the journeys for Round 7, where the screens are
+ * `TimedWorkoutFlow` and its `TimedResultLog`: each block's log opens as its
+ * attempt ends and is saved by its own Save log, through the product
+ * presentation's `timedWorkflows.saveResult` bound to the shell's one
+ * completion path; a refused or lost write is answered in the open dialog
+ * ("Your log didn’t save. Try again."), which keeps the draft, and its retry is
+ * the same Save log. The forward action then finds every logged block saved
+ * and saves the unlogged ones as before. Every asserted request, row and
+ * History reading is the build's; only the controls they are reached through
+ * changed (see `evidence/refinement/task-103/test-ledger.json`).
  *
  * What is proved, in both lanes, from the requests the app sent, the rows that
  * hold, and what Summary and History render:
@@ -613,23 +623,24 @@ async function settle(page: Page) {
   })
 }
 
+/** A3 TASK-103: Round 7's timed card on /workout — `TimedWorkoutFlow`, by its format. */
+const FORMAT_OF: Readonly<Record<Family, string>> = { emom: 'emom', amrap: 'amrap', forTime: 'for_time', ladder: 'ladder' }
+
 function cardOf(page: Page, family: Family): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({
-    has: page.getByRole('list', { name: READBACK_WORK_LISTS[family], exact: true }),
-  })
+  return page.locator(`.clr-timed-flow[data-timed-format="${FORMAT_OF[family]}"]`)
 }
 
 function openerOf(card: Locator): Locator {
-  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+  return card.getByRole('button', { name: 'Log results', exact: true })
 }
 
-/** The open focused dialog's one form. */
+/** The open "Log results" dialog's one form. */
 function openLogForm(page: Page): Locator {
-  return page.locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+  return page.locator('dialog[open] form.clr-timed-log')
 }
 
 async function closeLog(page: Page) {
-  const open = page.locator('dialog.clr-accepted-log[open]')
+  const open = page.locator('dialog[open]').filter({ has: page.locator('form.clr-timed-log') })
   if ((await open.count()) === 0) return
   await open.getByRole('button', { name: 'Close log', exact: true }).click()
   await expect(open).toHaveCount(0)
@@ -655,7 +666,8 @@ async function press(locator: Locator, how: 'tap' | 'keyboard') {
   }
 }
 
-const amountOf = (log: Locator, name: string) => log.getByRole('spinbutton', { name: new RegExp(`^(?:Round \\d+|Completed) · ${name}$`) })
+/** Round 7's amount labels: the AMRAP's next round, a ladder's round, For Time's work completed. */
+const amountOf = (log: Locator, name: string) => log.getByRole('spinbutton', { name: new RegExp(`^(?:Next round|Round \\d+|Completed) · ${name}$`) })
 const weightOf = (log: Locator, name: string) => log.getByRole('spinbutton', { name: `Weight · ${name}`, exact: true })
 const notesOf = (log: Locator) => log.getByRole('textbox', { name: 'Notes · optional', exact: true })
 const effortOf = (log: Locator) => log.getByRole('group', { name: 'Effort · optional', exact: true })
@@ -675,22 +687,28 @@ async function chosenEffort(log: Locator): Promise<string[]> {
     radios.filter((radio) => radio.getAttribute('aria-checked') === 'true').map((radio) => radio.textContent ?? ''))
 }
 
-/** The log's sections in DOM order: movement groups by title, then the closing feedback group's fields. */
+/**
+ * The log's sections in DOM order: movement groups by title, then the closing
+ * feedback group's fields. Round 7's log (`TimedResultLog`): a movement group
+ * carries its movement's name as its title; the result and feedback groups
+ * carry none, and an empty result group (the EMOM's) says nothing.
+ */
 async function logOutline(log: Locator) {
-  return log.evaluate((form) => [...form.querySelectorAll<HTMLElement>('.clr-timed-log__group')].map((group) => {
-    if (group.hasAttribute('data-timed-movement')) return `movement:${group.querySelector('h1, h2, h3, h4, h5, h6')?.textContent ?? ''}`
+  return log.evaluate((form) => [...form.querySelectorAll<HTMLElement>('.clr-timed-log__group')].flatMap((group) => {
+    const title = group.querySelector(':scope > .clr-timed-log__group-title')
+    if (title !== null) return [`movement:${title.textContent ?? ''}`]
     const parts: string[] = []
     if (group.querySelector('.clr-set-effort')) parts.push('effort')
     if (group.querySelector('textarea')) parts.push('notes')
-    if (group.querySelector('[data-quantity-field]')) parts.push('counts')
+    if (group.querySelector('.clr-quantity')) parts.push('counts')
     if (group.querySelector('.clr-timed-completion')) parts.push('completion')
-    return `group:${parts.join('+')}`
+    return parts.length === 0 ? [] : [`group:${parts.join('+')}`]
   }))
 }
 
 /** The unit a typed load is stated in, as the field shows it. */
 async function loadUnit(log: Locator, name: string): Promise<string> {
-  const unit = await log.locator('[data-timed-movement]').filter({ has: log.page().getByRole('heading', { name, exact: true }) })
+  const unit = await log.locator('.clr-timed-log__group').filter({ has: log.page().getByRole('heading', { name, exact: true }) })
     .locator('.clr-field__unit').last().textContent()
   expect(unit ?? '').toMatch(/^(kg|lb)$/)
   return unit!
@@ -717,17 +735,43 @@ const movementColumns = (row: Row | undefined) => row === undefined ? undefined 
   weight_unit: row.weight_unit,
 }
 
-/** Starts and ends a timed block from its card, by its own actions. */
-async function runBlock(page: Page, family: Family, how: 'tap' | 'keyboard') {
+/**
+ * Starts and ends a timed block from its card, by its own actions. Round 7's
+ * log opens as the attempt ends; it is returned open.
+ */
+async function runBlock(page: Page, family: Family, how: 'tap' | 'keyboard'): Promise<Locator> {
   const card = cardOf(page, family)
-  const start = { emom: 'Start EMOM', amrap: 'Start AMRAP', forTime: 'Start For Time', ladder: 'Start ladder' }[family]
+  const start = { emom: 'Start EMOM', amrap: 'Start AMRAP', forTime: 'Start FOR TIME', ladder: 'Start ladder' }[family]
   const finish = family === 'emom' || family === 'amrap' ? 'Finish early' : 'Finish'
   // The workout behind an open log is inert: close it first.
   await closeLog(page)
   await press(card.getByRole('button', { name: start, exact: true }), how)
   await expect(card.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
   await press(card.getByRole('button', { name: finish, exact: true }), how)
-  await expect(openerOf(card)).toBeVisible()
+  await expect(openLogForm(page)).toBeVisible()
+  return openLogForm(page)
+}
+
+/** Round 7's Save log: the block's save, now, through the shell's one path. */
+async function saveLog(log: Locator, how: 'tap' | 'keyboard') {
+  await press(log.getByRole('button', { name: 'Save log', exact: true }), how)
+}
+
+/** Saved: the dialog closes and the card reads the saved log back. */
+async function expectSaved(page: Page, family: Family) {
+  await expect(cardOf(page, family).locator('[data-timed-saved]')).toBeVisible({ timeout: 15_000 })
+  await expect(openLogForm(page)).toHaveCount(0)
+}
+
+/**
+ * Refused: the log says it did not save, keeps its dialog open over the timed
+ * section, and claims no saved log (AC-R031-03, TASK-AC-9971E7A16F92).
+ */
+async function expectLogNotSaved(page: Page, log: Locator, family: Family) {
+  await expect(log.getByRole('alert')).toHaveText('Your log didn’t save. Try again.', { timeout: 15_000 })
+  await expect(openLogForm(page)).toBeVisible()
+  await expect(cardOf(page, family).locator('[data-timed-saved]')).toHaveCount(0)
+  await expect(cardOf(page, 'amrap')).toHaveCount(1)
 }
 
 async function forward(page: Page, how: 'tap' | 'keyboard') {
@@ -735,19 +779,9 @@ async function forward(page: Page, how: 'tap' | 'keyboard') {
   await press(page.getByRole('button', { name: 'Next section', exact: true }), how)
 }
 
-/** The forward action's existing failure dialog, dismissed so the logs can be read. */
-async function expectNotSaved(page: Page, how: 'tap' | 'keyboard') {
-  const dialog = page.getByRole('dialog').filter({ hasText: 'That didn’t save' })
-  await expect(dialog).toBeVisible()
-  await press(dialog.getByRole('button', { name: 'Close', exact: true }), how)
-  await expect(dialog).toHaveCount(0)
-  // Still on the timed section: nothing moved on.
-  await expect(page.getByRole('list', { name: READBACK_WORK_LISTS.amrap, exact: true })).toBeVisible()
-}
-
 /** Finish the workout from the cooldown, through Summary, to the saved result in History. */
 async function finishToHistory(page: Page, world: World, how: 'tap' | 'keyboard', visit: (path: string) => Promise<void>) {
-  await expect(page.getByRole('list', { name: READBACK_WORK_LISTS.amrap, exact: true })).toHaveCount(0)
+  await expect(cardOf(page, 'amrap')).toHaveCount(0)
   await press(page.getByRole('button', { name: 'Finish workout', exact: true }), how)
   await expect(page).toHaveURL(/\/summary$/, { timeout: 30_000 })
   await expect(page.getByText(READBACK_TITLE).first()).toBeVisible()
@@ -782,9 +816,9 @@ const NOTES = {
 } as const
 
 /**
- * JOURNEY-031, touch at 390 in Signal: every family's entries, a refused
- * movement write with the draft kept, the retry once, Summary, History and a
- * reload.
+ * JOURNEY-031, touch at 390 in Signal: every family's entries saved by its
+ * log's Save log, a refused movement write with the draft and the dialog kept,
+ * the retry once, Summary, History and a reload.
  */
 async function refusedWriteJourney(page: Page, world: World, visit: (path: string) => Promise<void>) {
   const sent = recordWrites(page)
@@ -796,8 +830,7 @@ async function refusedWriteJourney(page: Page, world: World, visit: (path: strin
 
   // EMOM: ended early; the effort, the loaded movement's actual load (no
   // amount: an EMOM has no partial round) and the notes.
-  await runBlock(page, 'emom', 'tap')
-  let log = await openLog(cardOf(page, 'emom'), 'tap')
+  let log = await runBlock(page, 'emom', 'tap')
   expect(await logOutline(log)).toEqual([`movement:${loaded}`, 'group:effort+notes'])
   await expect(log.getByRole('spinbutton')).toHaveCount(1)
   await expect(weightOf(log, loaded)).toHaveValue('')
@@ -806,11 +839,29 @@ async function refusedWriteJourney(page: Page, world: World, visit: (path: strin
   await chooseEffort(log, 'Too easy', 'tap')
   await notesOf(log).fill(NOTES.emom)
 
+  // AC-R031-03: the EMOM's movement write is refused. The athlete stays on
+  // the section with the log open; nothing is lost.
+  faults.refuse('block_movement_results', world.exercises.emom[0])
+  await saveLog(log, 'tap')
+  await expectLogNotSaved(page, log, 'emom')
+  await expect(weightOf(log, loaded)).toHaveValue('14')
+  await expect(weightOf(log, loaded)).toBeEnabled()
+  expect(await chosenEffort(log)).toEqual(['Too easy'])
+  await expect(notesOf(log)).toHaveValue(NOTES.emom)
+  expect((await world.movementRows()).length, 'the refused write stored no movement row').toBe(0)
+  // Closed and reopened, the draft is still the athlete's.
+  log = await openLog(cardOf(page, 'emom'), 'tap')
+  await expect(weightOf(log, loaded)).toHaveValue('14')
+  expect(await chosenEffort(log)).toEqual(['Too easy'])
+  await expect(notesOf(log)).toHaveValue(NOTES.emom)
+  // The retry: the same Save log. Each row once.
+  await saveLog(log, 'tap')
+  await expectSaved(page, 'emom')
+
   // AMRAP: two rounds and five reps into the third; each movement's round-3
   // amount (an explicit 0 for the bodyweight one) and the loaded one's load;
   // the effort and the notes in the closing group.
-  await runBlock(page, 'amrap', 'tap')
-  log = await openLog(cardOf(page, 'amrap'), 'tap')
+  log = await runBlock(page, 'amrap', 'tap')
   const plusRounds = log.getByRole('button', { name: 'Increase rounds completed', exact: true })
   await plusRounds.tap()
   await plusRounds.tap()
@@ -818,17 +869,18 @@ async function refusedWriteJourney(page: Page, world: World, visit: (path: strin
   for (let reps = 0; reps < 5; reps += 1) await plusReps.tap()
   await expect(amountOf(log, loaded)).toBeVisible()
   expect(await logOutline(log)).toEqual(['group:counts', `movement:${loaded}`, `movement:${bodyweight}`, 'group:effort+notes'])
-  await expect(log.getByLabel(`Round 3 · ${loaded}`, { exact: true })).toHaveValue('')
+  await expect(log.getByLabel(`Next round · ${loaded}`, { exact: true })).toHaveValue('')
   await amountOf(log, loaded).fill('5')
   await weightOf(log, loaded).fill('18')
   await amountOf(log, bodyweight).fill('0')
   await chooseEffort(log, 'About right', 'tap')
   await notesOf(log).fill(NOTES.amrap)
+  await saveLog(log, 'tap')
+  await expectSaved(page, 'amrap')
 
   // For Time: stopped and answered Incomplete — round 1 of the single pass;
   // the bodyweight movement left blank (unreported).
-  await runBlock(page, 'forTime', 'tap')
-  log = await openLog(cardOf(page, 'forTime'), 'tap')
+  log = await runBlock(page, 'forTime', 'tap')
   await log.getByRole('group', { name: 'Work completed', exact: true }).getByRole('radio', { name: 'Incomplete', exact: true }).tap()
   await expect(amountOf(log, loaded)).toBeVisible()
   expect(await logOutline(log)).toEqual(['group:completion', `movement:${loaded}`, `movement:${bodyweight}`, 'group:effort+notes'])
@@ -836,11 +888,12 @@ async function refusedWriteJourney(page: Page, world: World, visit: (path: strin
   await weightOf(log, loaded).fill('20')
   await chooseEffort(log, 'Too hard', 'tap')
   await notesOf(log).fill(NOTES.forTime)
+  await saveLog(log, 'tap')
+  await expectSaved(page, 'forTime')
 
   // Ladder: finished, Incomplete through round 1 — the partial belongs to
   // round 2; the bodyweight movement blank; notes only, effort unanswered.
-  await runBlock(page, 'ladder', 'tap')
-  log = await openLog(cardOf(page, 'ladder'), 'tap')
+  log = await runBlock(page, 'ladder', 'tap')
   await log.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('button', { name: /^Round 1: / }).tap()
   await expect(amountOf(log, loaded)).toBeVisible()
   await expect(log.getByLabel(`Round 2 · ${loaded}`, { exact: true })).toHaveValue('')
@@ -852,33 +905,12 @@ async function refusedWriteJourney(page: Page, world: World, visit: (path: strin
   for (const field of await log.getByRole('spinbutton').all()) {
     await expect(field).not.toHaveValue(String(READBACK_PLANNED_LOAD))
   }
+  await saveLog(log, 'tap')
+  await expectSaved(page, 'ladder')
 
-  // AC-R031-03: the first movement write (the EMOM's load) is refused. The
-  // athlete stays on the section with the existing dialog; nothing is lost.
-  faults.refuse('block_movement_results', world.exercises.emom[0])
+  // The forward action: every block is already saved, so nothing more is written.
   await forward(page, 'tap')
-  await expectNotSaved(page, 'tap')
-  log = await openLog(cardOf(page, 'emom'), 'tap')
-  await expect(weightOf(log, loaded)).toHaveValue('14')
-  await expect(weightOf(log, loaded)).toBeEnabled()
-  expect(await chosenEffort(log)).toEqual(['Too easy'])
-  await expect(notesOf(log)).toHaveValue(NOTES.emom)
-  log = await openLog(cardOf(page, 'amrap'), 'tap')
-  await expect(amountOf(log, loaded)).toHaveValue('5')
-  await expect(amountOf(log, bodyweight)).toHaveValue('0')
-  expect(await chosenEffort(log)).toEqual(['About right'])
-  await expect(notesOf(log)).toHaveValue(NOTES.amrap)
-  log = await openLog(cardOf(page, 'forTime'), 'tap')
-  await expect(amountOf(log, loaded)).toHaveValue('22')
-  await expect(notesOf(log)).toHaveValue(NOTES.forTime)
-  log = await openLog(cardOf(page, 'ladder'), 'tap')
-  await expect(amountOf(log, loaded)).toHaveValue('3')
-  await expect(notesOf(log)).toHaveValue(NOTES.ladder)
-  expect((await world.movementRows()).length, 'the refused write stored no movement row').toBe(0)
-
-  // The retry: the same forward action. Each row once.
-  await forward(page, 'tap')
-  await expect(page.getByRole('list', { name: READBACK_WORK_LISTS.amrap, exact: true })).toHaveCount(0, { timeout: 30_000 })
+  await expect(cardOf(page, 'amrap')).toHaveCount(0, { timeout: 30_000 })
   faults.spent()
 
   // What was sent: the EMOM's row, its 23505 on the retry corrected in place,
@@ -974,8 +1006,7 @@ async function lostAnswerJourney(page: Page, world: World, visit: (path: string)
 
   // AMRAP by keyboard: one round, so the partial belongs to round 2; the
   // reps into the next round left unreported.
-  await runBlock(page, 'amrap', 'keyboard')
-  let log = await openLog(cardOf(page, 'amrap'), 'keyboard')
+  let log = await runBlock(page, 'amrap', 'keyboard')
   const plusRounds = log.getByRole('button', { name: 'Increase rounds completed', exact: true })
   await plusRounds.focus()
   await page.keyboard.press('Enter')
@@ -987,27 +1018,14 @@ async function lostAnswerJourney(page: Page, world: World, visit: (path: string)
   await notesOf(log).fill('First pass.')
   const unit = await loadUnit(log, loaded)
 
-  // For Time by keyboard: Incomplete, round 1; a load; the bodyweight
-  // movement blank; no effort, no notes.
-  await runBlock(page, 'forTime', 'keyboard')
-  log = await openLog(cardOf(page, 'forTime'), 'keyboard')
-  const incomplete = log.getByRole('group', { name: 'Work completed', exact: true }).getByRole('radio', { name: 'Incomplete', exact: true })
-  await incomplete.focus()
-  await page.keyboard.press('Space')
-  await expect(amountOf(log, loaded)).toBeVisible()
-  await amountOf(log, loaded).fill('15')
-  await weightOf(log, loaded).fill('14')
-
   // The AMRAP's row lands but its answer is lost: the athlete is told it did
   // not save and stays, with every entry.
   faults.lose('block_results', world.blocks.amrap)
-  faults.lose('block_movement_results', world.exercises.forTime[0])
-  await forward(page, 'keyboard')
-  await expectNotSaved(page, 'keyboard')
+  await saveLog(log, 'keyboard')
+  await expectLogNotSaved(page, log, 'amrap')
   expect(blockColumns((await world.blockRows()).find((row) => row.block_id === world.blocks.amrap))).toMatchObject({ effort: 'too_hard', notes: 'First pass.' })
 
   // A correction before the retry: the effort, an amount and the notes.
-  log = await openLog(cardOf(page, 'amrap'), 'keyboard')
   await expect(amountOf(log, loaded)).toHaveValue('7')
   await expect(amountOf(log, bodyweight)).toHaveValue('0')
   expect(await chosenEffort(log)).toEqual(['Too hard'])
@@ -1015,18 +1033,34 @@ async function lostAnswerJourney(page: Page, world: World, visit: (path: string)
   await amountOf(log, loaded).fill('6')
   await notesOf(log).fill('Second pass.')
 
-  // Retry 1: the AMRAP's row is restated, not inserted again; its movements
-  // land; the For Time's row lands and its loaded movement's answer is lost.
-  await forward(page, 'keyboard')
-  await expectNotSaved(page, 'keyboard')
-  log = await openLog(cardOf(page, 'forTime'), 'keyboard')
+  // Retry 1: the AMRAP's row is restated, not inserted again; its movements land.
+  await saveLog(log, 'keyboard')
+  await expectSaved(page, 'amrap')
+
+  // For Time by keyboard: Incomplete, round 1; a load; the bodyweight
+  // movement blank; no effort, no notes. Its row lands and its loaded
+  // movement's answer is lost.
+  log = await runBlock(page, 'forTime', 'keyboard')
+  const incomplete = log.getByRole('group', { name: 'Work completed', exact: true }).getByRole('radio', { name: 'Incomplete', exact: true })
+  await incomplete.focus()
+  await page.keyboard.press('Space')
+  await expect(amountOf(log, loaded)).toBeVisible()
+  await amountOf(log, loaded).fill('15')
+  await weightOf(log, loaded).fill('14')
+  faults.lose('block_movement_results', world.exercises.forTime[0])
+  await saveLog(log, 'keyboard')
+  await expectLogNotSaved(page, log, 'forTime')
   await expect(amountOf(log, loaded)).toHaveValue('15')
   await expect(weightOf(log, loaded)).toHaveValue('14')
   await amountOf(log, loaded).fill('16')
 
   // Retry 2: the For Time's row and movement restated with the corrected amount.
+  await saveLog(log, 'keyboard')
+  await expectSaved(page, 'forTime')
+
+  // The forward action saves the two blocks nobody ran, measuring nothing.
   await forward(page, 'keyboard')
-  await expect(page.getByRole('list', { name: READBACK_WORK_LISTS.amrap, exact: true })).toHaveCount(0, { timeout: 30_000 })
+  await expect(cardOf(page, 'amrap')).toHaveCount(0, { timeout: 30_000 })
   faults.spent()
 
   expect(await trail(sent, 'block_results', world.blocks.emom)).toEqual(['POST 201'])
@@ -1141,15 +1175,17 @@ test.describe('TASK-047 visible timed-result persistence and History readback', 
       for_time: (outline) => expect(outline.at(-1)).toBe('group:effort+notes'),
       ladder: (outline) => expect(outline.at(-1)).toBe('group:effort+notes'),
     }
+    // A3 TASK-103: Round 7's gallery states run the real TimedWorkoutFlow on
+    // the gallery's memory runtime; "Open …" starts the attempt and runs it
+    // past its cap, which opens its Log results dialog.
+    const OPEN: Record<string, string> = { emom: 'Open EMOM results', amrap: 'Open AMRAP results', for_time: 'Open For Time results', ladder: 'Open Ladder results' }
     for (const state of ['emom', 'amrap', 'for_time', 'ladder'] as const) {
       await visit(`/gallery/refinements?state=${state}`)
       const root = page.locator(`[data-refinement-state="${state}"]`)
-      const opener = root.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true }).first()
-      await expect(opener).toBeVisible()
       const storedBefore = await page.evaluate(() => Object.keys(localStorage).sort())
-      await opener.tap()
+      await root.getByRole('button', { name: OPEN[state], exact: true }).tap()
       const log = openLogForm(page)
-      await expect(log).toBeVisible()
+      await expect(log).toBeVisible({ timeout: 15_000 })
       expected[state](await logOutline(log))
       // Live over memory: the effort and a note are taken and kept through close and reopen.
       await chooseEffort(log, 'About right', 'tap')
@@ -1160,6 +1196,7 @@ test.describe('TASK-047 visible timed-result persistence and History readback', 
         await load.fill('11')
       }
       await closeLog(page)
+      const opener = root.getByRole('button', { name: 'Log results', exact: true }).first()
       await opener.tap()
       await expect(log).toBeVisible()
       expect(await chosenEffort(log)).toEqual(['About right'])

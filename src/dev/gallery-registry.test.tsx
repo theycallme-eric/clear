@@ -83,6 +83,11 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   TimerFrame:
     'EXC-03 — the timer frame GlobalTimer and MovementCountdown draw with; it is framed through MovementCountdown’s specimen',
   BlockEffortDialog: 'EXE-01 — the perceived-effort capture, opened at block completion',
+  // A3 TASK-103: exported so TimedWorkoutFlow's AMRAP keeps the shipped AMRAP's
+  // score line. It reads a live session's conditioning history; what it draws
+  // is ConditioningScoreLine, which is framed.
+  AmrapComparison:
+    'OVR-03 — the AMRAP’s like-for-like score line over a live session’s history; framed through ConditioningScoreLine',
   AbandonConfirmDialog:
     'EXE-01 — `ConfirmDialog critical` with fixed copy; the surface is framed under ConfirmDialog, and what is new here is the wording, reviewed where it is asked',
   RemoveFavoriteDialog:

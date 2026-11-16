@@ -324,6 +324,13 @@ per block) and a block with nothing new through the bare insert as before. The r
 belongs to comes from TASK-030's rules in `src/data/refinement-logging-rules.ts`, never from the
 plan; the entries live on each family's own draft (`AmrapState.movements`,
 `ForTimeState.movements`, the ladder's durable `LadderDraft.movements`).
+A3 TASK-103 put Round 7 on that path: `/workout`'s timed blocks are `TimedWorkoutFlow`
+(`src/ui/timed-workout-flow.tsx`), reporting through `BlockPanel`'s `completion.timed`, and its
+explicit Save log goes through the product presentation's `timedWorkflows.saveResult`
+(`saveLogThroughShell` in `src/ui/timed-result-shell.ts`, the receipt ↔ outcome/report
+translation) to the provider's `saveTimedLog` — the same richer save, now, with the saved row read
+back through `recordedResult`. The flow keeps its clock (and an AMRAP's counts) in the per-format
+records the shipped renderers kept (`src/state/timed-attempt-records.ts`).
 
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and
