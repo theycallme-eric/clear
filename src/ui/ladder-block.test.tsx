@@ -45,7 +45,9 @@
  * "Log results" dialog, which Round 7 offers once the attempt has ended — so a
  * case that answers the ladder first ends the attempt (Start ladder, Finish),
  * which starts the log at the drawn Incomplete (TASK-010). A scheduled ladder
- * is still dispatched to Round 7's `LadderBlock`. Each case keeps the build's
+ * is the same flow's schedule (the durable attempt with no cap, its rounds
+ * marked by its own clock, Start schedule its one action, its end opening the
+ * same log), as every ladder on the route is. Each case keeps the build's
  * name and asserted behaviour; the test ledger
  * (`evidence/refinement/task-105/test-ledger.json`) says what each read changed.
  */

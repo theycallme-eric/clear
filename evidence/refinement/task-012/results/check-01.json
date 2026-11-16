@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-012",
   "check": "check-01",
-  "verdict": "rejected",
+  "verdict": "passed",
   "purpose": "delivery",
   "runner": "vitest",
   "runnerVersion": "4.1.11",
@@ -15,7 +15,7 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-012/required-cases.json",
-    "sha256": "4dde49cbfe9609b742055f0ca4b594de29ca079cc86bf68401899a02683f2572"
+    "sha256": "01f95394744feb14e55ee2b2388d2fc7efc4a6f96875aad8e7c6e094feffdbee"
   },
   "targets": [
     {
@@ -32,17 +32,17 @@
     {
       "file": "src/ui/ladder-rungs.test.tsx",
       "name": "TASK-012 compact truthful ladder prescription > AC-R012-01 every name, sequence, load and unit, round count and cap is read from each ladder’s own data — a loaded descending ladder with a distance companion and a scheduled pyramid with no cap — never from the accepted screenshot",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "src/ui/ladder-rungs.test.tsx",
       "name": "TASK-012 compact truthful ladder prescription > AC-R012-01 Review states every round of each ladder in the same words the workout performs, read-only, under its unchanged accepted movement rows",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "src/ui/ladder-rungs.test.tsx",
       "name": "TASK-012 compact truthful ladder prescription > AC-R012-02 no “same every round” suffix, no “Move through the rounds” paragraph and no “reps” between a quantity and its movement: the ×/· notation keeps the order, every target and each movement’s identity, the fixed companion in every round",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "src/ui/ladder-rungs.test.tsx",
@@ -52,7 +52,7 @@
     {
       "file": "src/ui/ladder-rungs.test.tsx",
       "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a scheduled ladder’s tiles keep each start and mark the live round from its own clock through Start, a close and reopen and the end of the schedule",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "src/ui/ladder-rungs.test.tsx",
@@ -72,17 +72,11 @@
   ],
   "totals": {
     "total": 9,
-    "passed": 5,
-    "failed": 4,
+    "passed": 9,
+    "failed": 0,
     "skipped": 0,
     "todo": 0,
     "executed": 9
   },
-  "problems": [
-    "runner exited with code 1",
-    "required case was failed: src/ui/ladder-rungs.test.tsx > TASK-012 compact truthful ladder prescription > AC-R012-01 every name, sequence, load and unit, round count and cap is read from each ladder’s own data — a loaded descending ladder with a distance companion and a scheduled pyramid with no cap — never from the accepted screenshot",
-    "required case was failed: src/ui/ladder-rungs.test.tsx > TASK-012 compact truthful ladder prescription > AC-R012-01 Review states every round of each ladder in the same words the workout performs, read-only, under its unchanged accepted movement rows",
-    "required case was failed: src/ui/ladder-rungs.test.tsx > TASK-012 compact truthful ladder prescription > AC-R012-02 no “same every round” suffix, no “Move through the rounds” paragraph and no “reps” between a quantity and its movement: the ×/· notation keeps the order, every target and each movement’s identity, the fixed companion in every round",
-    "required case was failed: src/ui/ladder-rungs.test.tsx > TASK-012 compact truthful ladder prescription > JOURNEY-012 a scheduled ladder’s tiles keep each start and mark the live round from its own clock through Start, a close and reopen and the end of the schedule"
-  ]
+  "problems": []
 }

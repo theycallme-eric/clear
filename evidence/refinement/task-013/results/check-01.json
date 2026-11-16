@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-013",
   "check": "check-01",
-  "verdict": "rejected",
+  "verdict": "passed",
   "purpose": "delivery",
   "runner": "vitest",
   "runnerVersion": "4.1.11",
@@ -59,7 +59,7 @@
     {
       "file": "src/ui/timed-workout-flow.test.tsx",
       "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "src/ui/timed-workout-flow.test.tsx",
@@ -69,14 +69,11 @@
   ],
   "totals": {
     "total": 29,
-    "passed": 11,
-    "failed": 1,
+    "passed": 12,
+    "failed": 0,
     "skipped": 17,
     "todo": 0,
     "executed": 12
   },
-  "problems": [
-    "runner exited with code 1",
-    "required case was failed: src/ui/timed-workout-flow.test.tsx > TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete"
-  ]
+  "problems": []
 }

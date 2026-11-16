@@ -8,8 +8,10 @@ import type { Locator, Page, Route } from '@playwright/test'
 import { readE2eEnv } from '../../scripts/e2e/env.mjs'
 import { resolveObjectStore } from '../../scripts/refinement/lib/references.mjs'
 import { timedBlock } from '../../src/dev/gallery-refinement-fixtures'
+import { reviewHandoff } from '../../src/state/review-handoff'
 import { CONTRACT_VERSION, sessionSnapshotSchema, type SessionAcceptance, type SessionSnapshot } from '../../src/state/schemas'
 import type { BlockProgress } from '../../src/state/workout-progress'
+import { SCHEDULED_INTERVAL, SCHEDULED_LADDER, SCHEDULED_ROUNDS, EXPECTED } from '../../src/test/compact-ladder-fixture'
 import { makePrescription, makeWorkoutBlock } from '../../src/test/factories'
 import { formatBadgesSnapshot } from '../../src/test/format-badges-fixture'
 import { fixtureLocation, onboardedProfile } from '../../src/test/user-data-double'
@@ -54,6 +56,18 @@ import { expect, test as scanned } from '../fixtures'
  * `evidence/refinement/task-105/parity/` and its captures beside the Runner's
  * evidence store (outside Git), recording each capture's SHA-256 in the
  * receipt. Synthetic and contained: nothing is written to any backend.
+ *
+ * `/review` is the other route this task wires (TASK-AC-F3CDA21AC50B): each
+ * ladder's rounds under its accepted movement rows, drawn by the same round
+ * grid (`LadderRounds`) the live ladder draws. No accepted state draws a
+ * Review card, so the round grid alone is compared with the one the accepted
+ * `ladder-4` and `ladder-12` states draw before Start, over the same blocks —
+ * in words and in layout, as above.
+ *
+ * A scheduled ladder on `/workout` (the route's `TimedWorkoutFlow` schedule)
+ * has no accepted gallery state at all (bec4454 draws none): its captures are
+ * kept for the look check with that disposition recorded in its receipt
+ * (`non-applicable`), and its words are read against its own data.
  *
  * The reload, the failed save and the read-back have no gallery counterpart
  * (the gallery keeps nothing); they are proved on the route by
@@ -215,6 +229,25 @@ async function keep(target: Locator, name: string) {
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, `${name}.png`), bytes)
   return { file: `${identity}/${name}.png`, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
+
+/**
+ * A whole tall card for the look check, where no gallery side is compared: at
+ * a phone width the app's fixed footer and its scroll area clip a tall card's
+ * capture, so the viewport is made tall (same width) for this one capture and
+ * then put back. Layout comparisons never use these.
+ */
+async function keepWhole(target: Locator, name: string) {
+  const page = target.page()
+  const viewport = page.viewportSize()!
+  await page.setViewportSize({ width: viewport.width, height: 3200 })
+  try {
+    await settle(page)
+    return await keep(target, name)
+  } finally {
+    await page.setViewportSize(viewport)
+    await settle(page)
+  }
 }
 
 function writeReceipt(name: string, receipt: Record<string, unknown>) {
@@ -429,8 +462,11 @@ function persistedBlock(block: BlockProgress) {
   })
 }
 
-function ladderSession(state: GalleryState): SessionSnapshot {
-  const acceptance: SessionAcceptance = {
+type ParityBlock = SessionAcceptance['workout']['sections'][number]['blocks'][number]
+
+/** One synthetic composition: the blocks in one conditioning section, then a one-movement cooldown. */
+function parityAcceptance(title: string, blocks: readonly ParityBlock[]): SessionAcceptance {
+  return {
     date: '2026-11-16',
     location_id: PLACE,
     session_focus: 'full_body',
@@ -446,11 +482,11 @@ function ladderSession(state: GalleryState): SessionSnapshot {
     contract_version: CONTRACT_VERSION,
     is_deload: false,
     workout: {
-      title: `TASK-105 parity ${state}`,
+      title,
       overview: null,
       estimated_duration_mins: 30,
       sections: [
-        { section_type: 'conditioning', section_title: 'Parity', section_notes: null, blocks: [persistedBlock(GALLERY_BLOCKS[state])] },
+        { section_type: 'conditioning', section_title: 'Parity', section_notes: null, blocks: [...blocks] },
         {
           section_type: 'cooldown', section_title: 'Cooldown', section_notes: null,
           blocks: [makeWorkoutBlock({ exercises: [makePrescription({ exercise_id: 'burpee', equipment: 'bodyweight', load_type: 'none', load_value: null, sets: 1, target_value: 1 })] })],
@@ -458,11 +494,24 @@ function ladderSession(state: GalleryState): SessionSnapshot {
       ],
     },
   }
+}
+
+/** The composition, persisted and running since a minute before the case's clock. */
+function runningSession(acceptance: SessionAcceptance): SessionSnapshot {
   return sessionSnapshotSchema.parse(formatBadgesSnapshot(acceptance, { userId: OWNER, startedAt: new Date(ENTRY - 60_000).toISOString() }))
 }
 
-/** The contained synthetic app: reads only; any write fails the case. */
-async function syntheticApp(page: Page, snapshot: SessionSnapshot) {
+function ladderSession(state: GalleryState): SessionSnapshot {
+  return runningSession(parityAcceptance(`TASK-105 parity ${state}`, [persistedBlock(GALLERY_BLOCKS[state])]))
+}
+
+/**
+ * The contained synthetic app: reads only; any write fails the case. With a
+ * `review` composition there is no running session yet, and `/review` is
+ * handed that composition through the existing Review hand-off.
+ */
+async function syntheticApp(page: Page, snapshot: SessionSnapshot, options: { review?: SessionAcceptance } = {}) {
+  const running = options.review === undefined
   const unexpected: string[] = []
   const handler = async (route: Route) => {
     const request = route.request()
@@ -477,11 +526,11 @@ async function syntheticApp(page: Page, snapshot: SessionSnapshot) {
     if (request.method() === 'GET' || request.method() === 'HEAD') {
       if (name === 'profiles') return reply([onboardedProfile({ id: OWNER, goal_preset: 'balanced', weight_unit: GALLERY_UNIT })])
       if (name === 'locations') return reply([fixtureLocation({ id: PLACE, user_id: OWNER, tier: 'full', is_default: true })])
-      if (name === 'workout_sessions') return reply([snapshot.session])
+      if (name === 'workout_sessions') return reply(running ? [snapshot.session] : [])
       return reply([])
     }
     if (request.method() === 'POST' && url.pathname.includes('/rpc/')) {
-      if (name === 'resume_session' || name === 'session_snapshot') return reply(snapshot)
+      if (name === 'resume_session' || name === 'session_snapshot') return reply(running ? snapshot : null)
       if (name === 'session_as_performed') {
         return reply({
           reconstruction: 'performed', as_of: snapshot.session.started_at, session: snapshot.session, state: snapshot.state,
@@ -491,7 +540,8 @@ async function syntheticApp(page: Page, snapshot: SessionSnapshot) {
           })),
         })
       }
-      if (['streak_sessions', 'constraints_in_force', 'anchor_evidence', 'conditioning_history', 'set_load_anchors'].includes(name)) return reply([])
+      if (['streak_sessions', 'constraints_in_force', 'anchor_evidence', 'conditioning_history', 'set_load_anchors',
+        'generation_refusal_diagnostics', 'generation_candidate_sets_for_goal', 'generation_candidate_sets'].includes(name)) return reply([])
     }
     unexpected.push(`${request.method()} ${url.pathname}`)
     return reply({ code: 'PGRST000', message: 'Unexpected synthetic TASK-105 request.' }, 503)
@@ -499,13 +549,16 @@ async function syntheticApp(page: Page, snapshot: SessionSnapshot) {
   await page.route('**/rest/v1/**', handler)
   await page.route('**/auth/v1/**', handler)
   await page.route('**/functions/v1/**', handler)
-  await page.addInitScript(({ owner }) => {
+  await page.addInitScript(({ owner, handoff }) => {
     localStorage.setItem('clear.auth.session', JSON.stringify({
       accessToken: 'synthetic-task-105-session', refreshToken: 'synthetic-task-105-refresh',
       expiresAt: Date.now() + 60 * 60 * 1000,
       user: { id: owner, email: 'synthetic-task-105@example.invalid' },
     }))
-  }, { owner: OWNER })
+    if (handoff !== null && location.pathname === '/review') {
+      history.replaceState({ usr: handoff, key: 'synthetic-task-105', idx: 0 }, '', location.href)
+    }
+  }, { owner: OWNER, handoff: options.review === undefined ? null : reviewHandoff(options.review) })
   return {
     assertContained() {
       expect(unexpected, 'Every synthetic API request has an explicit disposition').toEqual([])
@@ -661,14 +714,15 @@ function expectCapped(reading: Record<CappedMoment, Reading>, state: GalleryStat
 }
 
 function receiptOf<M extends string>(
-  state: GalleryState, width: number, drive: string, moments: readonly M[],
+  state: string, width: number, drive: string, moments: readonly M[],
   gallery: Record<M, Reading>, route: Record<M, Reading>,
+  where: { readonly route: string; readonly file: string; readonly extra?: Record<string, unknown> } = { route: '/workout', file: `${state}-phone-${width}` },
 ) {
   const differences = Object.fromEntries(moments.map((moment) => [moment, compare(gallery[moment].lines, route[moment].lines, LADDER_INTENDED)])) as Record<M, Difference[]>
   const layout = Object.fromEntries(moments.map((moment) => [moment, compareLayout(gallery[moment].boxes, route[moment].boxes, LADDER_LAYOUT_INTENDED)])) as Record<M, LayoutDifference[]>
   const part = (boxes: readonly Box[]) => boxes.find((box) => box.key === '(part)#0') ?? null
-  writeReceipt(`${state}-phone-${width}`, {
-    state, width, route: '/workout', drive,
+  writeReceipt(where.file, {
+    state, width, route: where.route, drive, ...where.extra,
     galleryChanges: GALLERY_CHANGES,
     captures: Object.fromEntries(moments.flatMap((moment) => [[`gallery-${moment}`, gallery[moment].capture], [`route-${moment}`, route[moment].capture]])),
     lines: {
@@ -770,4 +824,137 @@ for (const state of STATES) {
       app.assertContained()
     })
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// /review: each ladder's rounds, beside the accepted states' round grid
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The accepted states whose round grid (before Start) Review's grid is compared with, over the same blocks. */
+const REVIEW_STATES = ['ladder-4', 'ladder-12'] as const
+type ReviewState = (typeof REVIEW_STATES)[number]
+/** Review draws this grid under its accepted movement rows; as with the ladder, no criterion intends a difference inside it (`LADDER_INTENDED`). */
+const ROUND_GRID = 'ol[aria-label="Prescribed ladder rounds"]'
+
+for (const { name, viewport } of VIEWPORTS) {
+  test(`TASK-AC-FAEE8BA2A650 review ${name}: /review’s ladder rounds match the round grid the accepted ladder-4 and ladder-12 states draw before Start`, async ({ page, visit }) => {
+    test.setTimeout(240_000)
+    await page.setViewportSize(viewport)
+    await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
+
+    const gallery = {} as Record<ReviewState, Reading>
+    for (const state of REVIEW_STATES) {
+      await visit(`/gallery/refinements?state=${state}`)
+      gallery[state] = await read(page.locator(`[data-refinement-state="${state}"] .clr-timed-flow ${ROUND_GRID}`), `review-${name}-gallery-${state}`)
+    }
+
+    // The same two blocks, handed to the real /review route through its existing hand-off.
+    const acceptance = parityAcceptance('TASK-105 parity review', REVIEW_STATES.map((state) => persistedBlock(GALLERY_BLOCKS[state])))
+    const app = await syntheticApp(page, runningSession(acceptance), { review: acceptance })
+    await visit('/review')
+    await expect(page).toHaveURL(/\/review$/)
+    const grids = page.locator(`[data-review-section] ${ROUND_GRID}`)
+    await expect(grids).toHaveCount(REVIEW_STATES.length)
+    const route = {} as Record<ReviewState, Reading>
+    const cards: Record<string, { file: string; sha256: string }> = {}
+    for (const [index, state] of REVIEW_STATES.entries()) {
+      const grid = grids.nth(index)
+      route[state] = await read(grid, `review-${name}-route-${state}`)
+      // Read-only on Review: nothing in the grid is a control.
+      expect(await grid.locator('button, input, a, select, textarea, [tabindex]').count(), `review ${state} @${name}: read-only`).toBe(0)
+      // The whole Review card too, for the look check: the accepted movement rows, then the rounds.
+      const card = grid.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " clr-card ")][1]')
+      expect(await brokenWords(card), `review ${state} @${name}: no word broken across lines`).toEqual([])
+      cards[`route-card-${state}`] = await keepWhole(card, `review-${name}-route-card-${state}`)
+    }
+
+    const { differences, layout } = receiptOf('ladder-4, ladder-12 (the round grid before Start)', viewport.width,
+      'none: /review is read before Start; the gallery states are read before Start',
+      REVIEW_STATES, gallery, route, { route: '/review', file: `review-phone-${viewport.width}`, extra: { routeCards: cards } })
+    for (const state of REVIEW_STATES) {
+      const rounds = ROUNDS[state]
+      for (const [side, reading] of [['gallery', gallery], ['route', route]] as const) {
+        expect(reading[state].lines.filter((line) => /^R\d+$/.test(line)), `${side} ${state} @${name}: every round`).toEqual(
+          Array.from({ length: rounds }, (_, index) => `R${index + 1}`))
+      }
+      expectAllIntended(differences[state], `review ${state} @${name}`)
+      expectLayoutIntended(layout[state], `review ${state} layout @${name}`)
+    }
+    app.assertContained()
+  })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// /workout's scheduled ladder: no accepted state draws one
+// ─────────────────────────────────────────────────────────────────────────────
+
+type ScheduledMoment = 'ready' | 'running' | 'log' | 'ended'
+const SCHEDULED_MOMENTS: readonly ScheduledMoment[] = ['ready', 'running', 'log', 'ended']
+const at = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+
+for (const { name, viewport } of VIEWPORTS) {
+  test(`TASK-AC-FAEE8BA2A650 scheduled ${name}: /workout’s scheduled ladder, which no accepted gallery state draws, kept for the look check before Start, on its clock and once its schedule has run out, with its log`, async ({ page, visit }) => {
+    test.setTimeout(240_000)
+    await page.setViewportSize(viewport)
+    await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
+    await page.clock.install({ time: ENTRY })
+    const app = await syntheticApp(page, runningSession(parityAcceptance('TASK-105 parity scheduled', [SCHEDULED_LADDER])))
+    await visit('/workout')
+    const card = page.locator('.clr-timed-flow[data-timed-format="ladder"]')
+    await expect(card).toBeVisible()
+    const side = `scheduled-${name}-route`
+
+    const ready = await read(card, `${side}-ready`)
+    expect(await brokenWords(card), `ready @${name}: no word broken across lines`).toEqual([])
+    const whole: Record<string, { file: string; sha256: string }> = { 'route-ready': await keepWhole(card, `${side}-ready-whole`) }
+
+    const now = await page.evaluate(() => Date.now())
+    await page.clock.pauseAt(now + 1_000)
+    await card.getByRole('button', { name: 'Start schedule', exact: true }).click()
+    await page.clock.runFor((SCHEDULED_INTERVAL + 10) * 1_000)
+    await expect(card.locator('li[aria-current="step"]')).toHaveAttribute('data-ladder-round', '2')
+    const running = await read(card, `${side}-running`)
+    expect(await brokenWords(card), `running @${name}: no word broken across lines`).toEqual([])
+    whole['route-running'] = await keepWhole(card, `${side}-running-whole`)
+
+    // The schedule runs out: the log opens by itself, at Incomplete with no round stated.
+    await page.clock.runFor((SCHEDULED_INTERVAL * (SCHEDULED_ROUNDS - 1)) * 1_000)
+    const log = await readLog(page, `${side}-log`)
+    await page.locator('dialog[open]').getByRole('button', { name: 'Close log' }).click()
+    await expect(page.locator('dialog[open]')).toHaveCount(0)
+    const ended = await read(card, `${side}-ended`)
+    whole['route-ended'] = await keepWhole(card, `${side}-ended-whole`)
+    await page.clock.resume()
+    const reading: Record<ScheduledMoment, Reading> = { ready, running, log, ended }
+
+    const has = (moment: ScheduledMoment, pattern: RegExp) =>
+      expect(reading[moment].lines.some((line) => pattern.test(line)), `${moment} @${name}: ${pattern}`).toBe(true)
+    // Its own data: the timing line, every round's start, the schedule's words.
+    has('ready', new RegExp(`^${EXPECTED.scheduled.timing}$`))
+    has('ready', /^NOT STARTED$/i)
+    for (let round = 0; round < SCHEDULED_ROUNDS; round += 1) has('ready', new RegExp(`^Starts at ${at(round * SCHEDULED_INTERVAL)}$`))
+    has('ready', /^Each round starts on the clock\./)
+    has('running', new RegExp(`^ROUND 2 OF ${SCHEDULED_ROUNDS}$`, 'i'))
+    has('running', /^ON THE CLOCK$/i)
+    has('running', new RegExp(`^${at(SCHEDULED_INTERVAL - 10)}$`))
+    has('log', /^No rounds marked yet$/)
+    has('ended', /^COMPLETE$/i)
+    has('ended', /^The clock has run every scheduled round\./)
+    expect(reading.log.lines.some((line) => /Undo finish/i.test(line)), `log @${name}: a schedule's end is not undone`).toBe(false)
+    for (const moment of SCHEDULED_MOMENTS) {
+      expect(reading[moment].lines.some((line) => /same every round|Move through the rounds|between each rung/i.test(line)), `${moment} @${name}: removed copy`).toBe(false)
+    }
+    expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('clear.workout-')))).toContain('clear.workout-ladders')
+
+    writeReceipt(`scheduled-phone-${viewport.width}`, {
+      state: null, width: viewport.width, route: '/workout',
+      drive: `Start schedule; ${SCHEDULED_INTERVAL + 10} s (round 2 live); the rest of the schedule (the log opens by itself); Close log — on the browser clock, held between steps`,
+      disposition: 'non-applicable',
+      reason: 'No accepted gallery state (bec4454: ladder, ladder-4, ladder-12, ladder-long) draws a scheduled ladder, so there is nothing to compare; the captures are kept for the look check and its words are read against its own data (src/test/compact-ladder-fixture.ts, SCHEDULED_LADDER).',
+      captures: Object.fromEntries(SCHEDULED_MOMENTS.map((moment) => [`route-${moment}`, reading[moment].capture])),
+      wholeCardCaptures: whole,
+      lines: { route: Object.fromEntries(SCHEDULED_MOMENTS.map((moment) => [moment, reading[moment].lines])) },
+    })
+    app.assertContained()
+  })
 }

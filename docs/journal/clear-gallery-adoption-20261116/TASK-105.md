@@ -11,20 +11,24 @@ names `clear-gallery-adoption-20261113`. The brief's path is used, as TASK-103 a
 
 ## Status
 
-Attempt 1 (2026-11-16) committed on the worker branch. Everything inside the lane is done and
-proved. Two parts of the approved scope need files outside the lane, so they were not edited (as
-the controller instructed) and their inherited tests fail until those files are granted:
+Attempt 1, continued after the lane was widened (2026-11-16, `amendment-2026-11-16-lanes-105-widened`:
+`src/app/Review.tsx`, `src/ui/ladder-block.tsx`, `src/ui/block-renderers.tsx`,
+`evidence/refinement/task-032/`). The two parts the first lane could not reach are now wired, on
+top of the first three commits (`4dd6c8de`, `72531f84`, `95704d55`):
 
-1. **Review's ladder rounds** (TASK-AC-F3CDA21AC50B; JOURNEY-012 on `/review`) need
-   `src/app/Review.tsx`. Round 7's `ReviewSectionCard` / `ReviewBlockRows` read the Review model
-   but never draw a ladder block's `ladderRounds` (carried in `src/state/review.ts`). The
-   `/review` page shows each ladder's rung sequence row ("12 rungs · 2-4-…-24 reps") and no
-   rounds grid.
-2. **Scheduled ladders on `/workout`** (AC-R012-02, TASK-AC-65E0E29153D0, TASK-AC-72579D52073C
-   for `scheduled_starts`) need `src/ui/ladder-block.tsx`, or `src/ui/block-renderers.tsx` plus a
-   schedule mode in `TimedWorkoutFlow`. `BlockSlot` still sends a scheduled ladder to Round 7's
-   `LadderBlock`. That component still draws the rejected "— same every round" suffix and "Round N"
-   rows, keeps its clock under the For Time key and has no durable answer.
+1. **Review's ladder rounds** (TASK-AC-F3CDA21AC50B; JOURNEY-012 on `/review`): each ladder's
+   `ladderRounds` (`src/state/review.ts`) is drawn under its unchanged movement rows by the live
+   ladder's own round grid, `LadderPrescription.Rounds`.
+2. **Scheduled ladders on `/workout`** (AC-R012-02, TASK-AC-65E0E29153D0, TASK-AC-72579D52073C for
+   `scheduled_starts`): `BlockSlot` sends every ladder to `TimedWorkoutFlow`, which has a schedule
+   mode over the same durable attempt.
+
+Every inherited test that the blocked files held back now passes. One carried browser assertion
+still fails, for a different reason: see "Open: the twelve-round grid at 320 px" below. It needs a
+decision, not code.
+
+The first round's status, kept for the record: everything inside the first lane was done and
+proved, and the two parts above needed files outside it.
 
 ## Intended outcome
 
@@ -98,6 +102,83 @@ Gallery-owned files changed (for the controller's hand diff): `src/ui/timed-work
 shows each change in the same commit. Each parity receipt lists the changes against bec4454 with
 their criteria (`galleryChanges`).
 
+### Lane-widened round (2026-11-16)
+
+**Route choice for scheduled ladders.** The controller offered two routes: rework
+`ladder-block.tsx`, or send scheduled ladders through `block-renderers.tsx` to a schedule mode in
+`TimedWorkoutFlow`. The second is the smaller correct one, so it was taken. The durable attempt,
+the "Log results" dialog, the save authority (`onBlockRecorded`, `onBlockSaveFailed`,
+`reopenBlock`), the saved-log read-back and "Edit log" already live in `TimedWorkoutFlow`. A
+schedule needs only what is different about it: no cap, no check-off, no Pause or Finish, its own
+status and countdown, and an end that comes from its clock. Reworking `ladder-block.tsx` would have
+copied all of that shared work into a second consumer, which is the look-alike the brief forbids.
+
+- `src/ui/block-renderers.tsx` (gallery-owned): `BlockSlot` no longer skips `scheduled_starts`.
+  Under the product presentation every ladder is `TimedWorkoutFlow`.
+- `src/ui/timed-workout-flow.tsx` (gallery-owned): the schedule mode.
+  - It uses the same `usePersistedLadder` attempt. `ladderRaceCapSeconds` gives a schedule no cap,
+    and none is invented here. The start stamp, answer, rung, entries, effort and notes are
+    therefore durable, as for a raced ladder.
+  - Where the schedule is comes from the attempt's start stamp (`scheduleView`). Its end is the
+    attempt's end: the log opens at Incomplete with no round (TASK-010), and only `highest_rung` is
+    recorded.
+  - Its actions are `Start schedule` and nothing after it.
+  - The meta line is the schedule's own `timingSummary`, for example `7 rounds · a new round every 01:15`.
+  - Its status and countdown are the schedule's existing parts (`LadderBlock.ScheduleStatus`,
+    `LadderBlock.IntervalCountdown`, "Time remaining"). It also keeps its one pacing line and the
+    "The clock has run every scheduled round" note.
+  - Each round's tile states its start and the live round's `Now` (`Next` before Start), through
+    the prescription's round context.
+  - There is no Undo: a schedule's end is not a Finish.
+  - The once-a-second re-render stops once the schedule has run every round. Its active time is
+    capped at the schedule's length.
+- `src/ui/ladder-rungs.tsx` (gallery-owned):
+  - The round grid is now its own function, `LadderRounds`, exposed as `LadderPrescription.Rounds`
+    so Review can draw it. It is not a new exported component, so the gallery register stays
+    complete: `LadderPrescription`'s specimens draw it.
+  - It takes an optional `roundContext`, which a schedule uses for each round's start
+    (`.clr-ladder-prescription__detail`) and its live marker (`[data-ladder-marker]`, with
+    `aria-current="step"` on the live round's tile).
+  - A round with no context renders exactly the same DOM as before. The accepted states never pass
+    a context, so they draw nothing new.
+- `src/ui/ladder-rungs.css` (gallery-owned): two rules used only by a schedule's tiles. `__head`
+  keeps the round label and its marker on one line; `__detail` wraps the start inside the tile.
+- `src/app/Review.tsx` (gallery-owned): grouped blocks draw
+  `<LadderPrescription.Rounds rounds={block.ladderRounds} />` after their movement list and before
+  the round rest. The accepted rows are unchanged (R65).
+- `src/ui/ladder-block.tsx` (gallery-owned):
+  - `ScheduleStatus` takes an optional `onStart`. The flow's top action is the schedule's Start.
+  - `ScheduleStatus` and `IntervalCountdown` are attached as `LadderBlock.ScheduleStatus` and
+    `LadderBlock.IntervalCountdown`.
+  - Nothing else in `LadderBlock` changed. It is now drawn only where no presentation is provided
+    (tests and specimens). Its legacy schedule list and the "— same every round" suffix are
+    reached by no route.
+- `src/state/ladder.ts`: `scheduleView`, `ScheduleView` and `roundMarker` moved here from
+  `ladder-block.tsx`, unchanged, so both renderers read a schedule the same way.
+- Tests:
+  - No assertion was changed.
+  - Comments in `ladder-block.test.tsx` and `e2e/refinement/task-012.spec.ts` now say where a
+    scheduled ladder is drawn.
+- `e2e/refinement/task-105-parity.spec.ts`: four new cases.
+  - `review phone-320|390`: `/review`'s round grids for the `ladder-4` and `ladder-12` blocks
+    beside the grids those accepted states draw before Start. They are compared in words and
+    layout (element boxes within 2 px), and each Review card is captured.
+  - `scheduled phone-320|390`: `/workout`'s scheduled ladder before Start, running, with its log at
+    the end, and ended. No accepted state draws a schedule, so the receipt records
+    `disposition: non-applicable` and the words are read against the fixture's own data.
+- Evidence:
+  - `evidence/refinement/task-105/required-cases.json`: the four new parity cases are declared.
+    TASK-AC-F3CDA21AC50B is added to parity's criteria, and the description is updated.
+  - The TASK-012 and TASK-105 manifest descriptions now name the schedule mode and Review's grid.
+  - `test-ledger.json`: updated (see Verification).
+- `PROJECT_MAP.md`: scheduled ladders and Review's grid.
+
+Gallery-owned files changed in this round: `src/ui/timed-workout-flow.tsx`, `src/ui/ladder-rungs.tsx`,
+`src/ui/ladder-rungs.css`, `src/ui/block-renderers.tsx`, `src/ui/ladder-block.tsx`, `src/app/Review.tsx`
+(all are touched by the gallery commits `1633333c`–`bec44545`). None changes what an accepted
+`/gallery/refinements` state draws, because no accepted state passes a round context or draws a
+schedule or a Review card. `src/state/ladder.ts` is not gallery-owned.
+
 ## Failures and corrections
 
 - Removing the live tiles' "Complete round N" name broke the gallery's own test
@@ -123,7 +204,69 @@ their criteria (`galleryChanges`).
 - The parity spec's new word-break guard failed on the unfixed padding (the gallery's running state,
   six broken words) and passes with the fix.
 
-## Verification (this worktree)
+### Lane-widened round: failures and corrections
+
+- **New exported components broke the gallery register.** The first wiring exported `LadderRounds`
+  from `ladder-rungs.tsx`, and `ScheduleStatus` and `IntervalCountdown` from `ladder-block.tsx`.
+  `src/dev/gallery-registry.test.tsx` (outside the lane) then failed: every component `src/ui`
+  exports must be framed in the gallery or exempted. None of these is a new component, so they are
+  now parts of the components that own them: `LadderPrescription.Rounds`,
+  `LadderBlock.ScheduleStatus` and `LadderBlock.IntervalCountdown`. The register passes unchanged.
+- **Two new lint warnings.** Exporting `scheduleView` and `roundMarker` from a component file added
+  two `react-refresh/only-export-components` warnings. Both functions moved, unchanged, to
+  `src/state/ladder.ts`. Lint is back to 175 warnings and 0 errors, as at base.
+- **Clipped captures.** The first parity captures of a Review card and of the schedule were clipped
+  at 320 and 390 px. The app's fixed footer and its scroll area cut tall cards, which is the known
+  framing artifact from TASK-103. The look-check-only moments now also keep a whole-card capture
+  taken in a temporarily tall viewport at the same width (`keepWhole`). Layout comparisons never
+  use those captures.
+- **The host lock was busy for a long time.** TASK-106's TASK-041 run held it for about 20 minutes.
+  The browser checks were retried until the lock freed. This was environment waiting, not a defect.
+- **A carried assertion conflicts with the accepted gallery.** At 320 px the twelve-round grid is
+  592 px tall, and the bound is the 568 px screen. See "Open: the twelve-round grid at 320 px".
+
+## Verification (lane-widened round, final tree)
+
+Receipts are in `evidence/refinement/*/results/`. TASK-006 and TASK-104 are outside the lane, so
+they were run with `--no-receipt`. Browser checks ran in one hold of the host lock
+(`v2.mjs with-lock`).
+
+| Check | Result | Notes |
+|---|---|---|
+| TASK-105 check-01 | PASSED, 110/110 | Was 101/110 |
+| TASK-012 check-01 | PASSED, 9/9 | Was 5/9 |
+| TASK-012 check-02 | REJECTED, 4/5 | Review then Workout passes at 390, and the keyboard, touch-and-recovery (scheduled card) and gallery cases pass. At 320 the only failing check is the build's twelve-rounds-in-one-screen bound: 592 px against 568 px. See Open. |
+| TASK-013 check-01 | PASSED, 12/12 run (the pattern filters the rest) | Was 7/8 |
+| TASK-013 check-02 | PASSED, 5/5 | |
+| TASK-014 check-01 | PASSED, 14/14 run | Was rejected by the schedule case |
+| TASK-014 check-02 | PASSED, 5/5 | |
+| TASK-032 check-01 | PASSED, 10/10 | With its receipt now that it is in the lane. The receipt is byte-identical to base's. |
+| TASK-048 check-01 | REJECTED, 4/6 | Both backend lanes stop at PRE-001 (no test backend here; the controller supplies it). Both synthetic lanes, the deterministic clocks and the gallery case pass. |
+| TASK-105 parity | PASSED, 12/12 | The 8 earlier cases plus `review` and `scheduled` at 320 and 390. Zero text and layout differences. |
+| TASK-006 check-01 | PASSED, 29/29 | `--no-receipt` |
+| TASK-104 check-01 | PASSED, 162/162 | `--no-receipt` |
+| TASK-006 check-02 | PASSED, 7/7 | `--no-receipt`; TASK-104's lifecycle journeys over the same flow |
+
+- The brief's whole CI chain, as one command, exits 0:
+  - typecheck pass;
+  - lint 0 errors, 175 warnings (base 175);
+  - lint:ds pass;
+  - `gen-issues --check` pass (71 requirements, 136 edges);
+  - `gen:types --check` current;
+  - `npm test` 265 files, 6,279/6,279 tests;
+  - `npm run build` pass, with the two new rules built once each;
+  - console grep: no match.
+- Diagnostic, not a check: a throw-away copy of `task-012.spec.ts` was run once, with only the
+  320 px height bound made `expect.soft`. It reported that bound as the case's only failure, and
+  every later assertion passed: removed copy absent, no horizontal overflow, attachments and
+  containment. The copy was deleted and is not committed.
+- Ledger (`evidence/refinement/task-105/test-ledger.json`):
+  - 154 entries: 85 carried, 57 rewritten, 12 added, 0 retired, 0 deferred.
+  - 151 passed. 2 are the PRE-001 backend lanes, not run here. 1 failed: the 320 px height bound,
+    recorded under `rules.needsDecision`.
+  - `rules.blocked` is empty.
+
+## Verification (first round, this worktree)
 
 - Unit: `npx vitest run src/ui/timed-workout-flow.test.tsx`: 28/29. The one failure is JOURNEY-013
   "…and a schedule" (its schedule third; out-of-lane `ladder-block.tsx`).
@@ -141,7 +284,7 @@ their criteria (`galleryChanges`).
 - CI pieces: typecheck pass; lint 0 errors, 175 warnings (as base); lint:ds pass;
   `gen-issues --check` pass; `gen:types --check` pass; console grep no match.
 
-## Verification (final, through the guard; receipts in `evidence/refinement/*/results/`)
+## Verification (first round, through the guard)
 
 | Check | Result | Why |
 |---|---|---|
@@ -172,8 +315,34 @@ their criteria (`galleryChanges`).
 
 ## Open assumptions and questions
 
-- Out-of-lane needs (see Status): `src/app/Review.tsx` and `src/ui/ladder-block.tsx` (or
-  `block-renderers.tsx`).
+- **Open: the twelve-round grid at 320 px (needs a decision).** `task-012.spec.ts` carries the
+  build's bound "twelve rounds fit within one screen's height (R117)" unchanged:
+  `grid.height < viewport.height` at 320 × 568.
+  - Round 7's accepted grid at 320 px is two columns, so twelve rounds make six rows and 592 px.
+    The column rule is the accepted `minmax(calc(var(--control-height) * 2), 1fr)`, pinned by
+    AC-C35-01's unit case. The tiles keep the inset TASK-103 restored as the accepted look.
+  - The accepted state `ladder-12` draws the same grid: TASK-105's parity at 320 matches every
+    element box within 2 px. At 390 × 844 the bound holds.
+  - No TASK-105 criterion names a change to the accepted grid, and the bound may not be weakened.
+    So the case is left failing and recorded in the ledger (`rules.needsDecision`).
+  - Options:
+    1. change the accepted grid at narrow widths (a smaller tile inset or a third column) as a
+       recorded gallery change;
+    2. keep the accepted look and retire or rewrite this one bound with the owner's word.
+- **Parked for UAT (scheduled ladder, no gallery state).**
+  - The interval countdown is the schedule's existing one (`LadderBlock.IntervalCountdown`, the
+    design-system `TimerDisplay`), not Round 7's full-width timer frame.
+  - After the last interval it stays at `00:00` in its low colour, as before.
+  - Its status words are the existing capitals: NOT STARTED, ROUND N OF M, ON THE CLOCK, COMPLETE.
+  - The end note still says "Say how the block ended below"; below it is the "Log results" action.
+  - All of this is unchanged schedule behaviour, now inside Round 7's card. Whole-card captures are
+    in the evidence store (`scheduled-phone-*-route-*-whole.png`).
+- **The legacy `LadderBlock` is unchanged.** It still draws the "— same every round" list for a
+  schedule and the capped window's "Move through the rounds" paragraph. No route reaches it: under
+  the product presentation every ladder is `TimedWorkoutFlow`. It is kept for presentation-less
+  mounts.
+- `src/app/FormatPreview.tsx` (Settings) still prints the legacy `PACING_NOTES` line for each mode.
+  That is outside this task's screens and lane, and was not changed.
 - Round 7 offers the ladder's log once the attempt has ended. The build let an athlete answer, give
   an effort or write notes before Start or while paused; Round 7's accepted flow does not. The
   inherited tests now enter them after Finish, still before the reloads, Undo and saves that must
@@ -194,6 +363,10 @@ their criteria (`galleryChanges`).
 
 ## Next action
 
-Controller: grant `src/app/Review.tsx` and `src/ui/ladder-block.tsx` (or decide how scheduled
-ladders reach Round 7's owners) for a repair round, then rerun the brief's commands with PRE-001.
-Diff the five gallery-owned files above by hand.
+Controller:
+- decide the 320 px twelve-round bound (see Open);
+- rerun the brief's commands with PRE-001 for TASK-048's backend lanes;
+- diff the gallery-owned files by hand: `src/ui/timed-workout-flow.tsx`, `src/ui/ladder-rungs.tsx`,
+  `src/ui/ladder-rungs.css`, `src/ui/timed-result-log.tsx`, `src/ui/set-effort.tsx`,
+  `src/ui/block-renderers.tsx`, `src/ui/ladder-block.tsx` and `src/app/Review.tsx`;
+- look at the new `review-*` and `scheduled-*` captures in the evidence store.

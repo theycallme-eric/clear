@@ -343,7 +343,12 @@ check-off (Round 7's `LadderPrescription` in `src/ui/ladder-rungs.tsx`, over the
 `LadderCompletion`, `SetEffortChoice` and notes in the one "Log results" `LoggingOverlay`), the
 Undo checkpoint and the save authority (`onBlockRecorded`, `onBlockSaveFailed`, `reopenBlock`,
 `recordedResult`) are one record; `timed-attempt-records.ts` no longer writes ladders. A scheduled
-ladder is still Round 7's `ladder-block.tsx`, and Review does not yet draw `ladderRounds`.
+ladder (`scheduled_starts`) is the same flow's schedule: `BlockSlot` sends every ladder there under the
+product presentation, the attempt has no cap, its own clock marks each round (`scheduleView`,
+`roundMarker` in `state/ladder.ts`), and `ladder-block.tsx` lends it its status and interval countdown
+(`LadderBlock.ScheduleStatus`, `LadderBlock.IntervalCountdown`); `LadderBlock` itself now draws only
+where no presentation is provided. Review draws each ladder's `ladderRounds` under its movement rows
+with the live grid (`LadderPrescription.Rounds`).
 
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and

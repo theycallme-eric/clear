@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-105/required-cases.json",
-    "sha256": "36d18363b90d528701a8fbd7ccc0fbd6c4f1eb3961cc0b1447f727226f28c33c"
+    "sha256": "978f752d56aab19dc343ccc9ce526523de9929c362eb4ba569f77f62200df7e4"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-105-parity.spec.ts",
-      "sha256": "2af377352f3871f79033ac899a913892004c78fcfb06b7cf0c7b308cd8ff0108"
+      "sha256": "fe47de82be34bf95015e32aee8a40d169a90668ae7c044ece131a734cb57f823"
     }
   ],
   "requiredCases": [
@@ -63,15 +63,35 @@
       "file": "e2e/refinement/task-105-parity.spec.ts",
       "name": "TASK-AC-FAEE8BA2A650 ladder-long phone-390: /workout’s ladder matches the accepted gallery state before Start and past the cap, with its log",
       "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 review phone-320: /review’s ladder rounds match the round grid the accepted ladder-4 and ladder-12 states draw before Start",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 review phone-390: /review’s ladder rounds match the round grid the accepted ladder-4 and ladder-12 states draw before Start",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 scheduled phone-320: /workout’s scheduled ladder, which no accepted gallery state draws, kept for the look check before Start, on its clock and once its schedule has run out, with its log",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 scheduled phone-390: /workout’s scheduled ladder, which no accepted gallery state draws, kept for the look check before Start, on its clock and once its schedule has run out, with its log",
+      "status": "passed"
     }
   ],
   "totals": {
-    "total": 8,
-    "passed": 8,
+    "total": 12,
+    "passed": 12,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 8
+    "executed": 12
   },
   "problems": []
 }

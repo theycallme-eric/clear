@@ -406,6 +406,49 @@ export function scheduledRoundAt(
   return round <= timing.rounds ? round : null
 }
 
+/** Where a schedule is, read off the block's own clock. */
+export interface ScheduleView {
+  readonly phase: 'ready' | 'running' | 'complete'
+  /** The round whose start has passed and whose interval has not; null otherwise. */
+  readonly round: number | null
+  /** Seconds until the next start, or until the schedule ends on its last round. */
+  readonly secondsRemaining: number
+}
+
+/**
+ * A scheduled ladder's place, from its start stamp and the seconds since:
+ * ready before it starts, then the live round and what is left of its
+ * interval, then complete once every round has run. Moved here from
+ * `ladder-block.tsx` (A3 TASK-105) so the route's `TimedWorkoutFlow` and the
+ * legacy renderer read a schedule the same way.
+ */
+export function scheduleView(
+  timing: Extract<LadderTiming, { mode: 'scheduled_starts' }>,
+  startedAt: string | null,
+  elapsed: number,
+): ScheduleView {
+  if (startedAt === null) {
+    return { phase: 'ready', round: null, secondsRemaining: timing.interval_seconds }
+  }
+
+  const round = scheduledRoundAt(timing, elapsed)
+  if (round === null) return { phase: 'complete', round: null, secondsRemaining: 0 }
+
+  return {
+    phase: 'running',
+    round,
+    secondsRemaining: round * timing.interval_seconds - elapsed,
+  }
+}
+
+/** The live round is `now` and, before the schedule starts, its first round `next`; only a schedule has either. */
+export function roundMarker(round: Pick<LadderRoundPlan, 'number'>, live: ScheduleView | null): 'now' | 'next' | null {
+  if (live === null) return null
+  if (live.phase === 'ready') return round.number === 1 ? 'next' : null
+  if (live.round === null) return null
+  return round.number === live.round ? 'now' : null
+}
+
 /** The one cap a `capped_window` places on the whole ladder; `null` otherwise. */
 export function ladderCapSeconds(timing: LadderTiming): number | null {
   return timing.mode === 'capped_window' ? timing.cap_seconds : null

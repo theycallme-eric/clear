@@ -64,6 +64,18 @@
  *     retry; and when a row is known while this attempt's own richer save
  *     failed, the block is reopened (`reopenBlock`) so the retry restates it.
  *
+ * A scheduled ladder (`scheduled_starts`; TASK-012, TASK-013, TASK-032) is the
+ * same durable attempt with no cap (`ladderRaceCapSeconds` gives a schedule
+ * none, and none is invented here): its start stamp, its answer, rounds,
+ * entries, effort and notes are the attempt's, so a reload, a closed tab and a
+ * failed save keep them. Its own clock marks the live round — each round's
+ * tile states its start and the live one is `Now` (`Next` before it runs) —
+ * so it offers no check-off and nothing to pause or finish: Start schedule is
+ * its one action, its interval countdown and status are the schedule's own
+ * (`LadderBlock.IntervalCountdown`, `LadderBlock.ScheduleStatus`), and its end is its schedule's,
+ * which starts the log at Incomplete with no round (TASK-010). Its log is the
+ * same "Log results" dialog, and only `highest_rung` is recorded.
+ *
  * Neither Finish nor Undo completes or leaves the workout. In the gallery the
  * same attempt lives in memory only.
  */
@@ -72,7 +84,7 @@ import { Button, Check, Pause, Play, Stop } from '../design-system/index'
 import { movementEntryBlank } from '../data/refinement-logging-rules'
 import { useBlockCompletion, type BlockRecordedSource } from '../state/block-completion'
 import { emomShape, emomView, minuteAssignment, scheduledMinuteFor, targetForMinute } from '../state/emom'
-import { explicitLadderTiming, ladderRungs } from '../state/ladder'
+import { explicitLadderTiming, ladderRoundPlan, ladderRungs, roundMarker, scheduleView } from '../state/ladder'
 import { ladderAttemptView, ladderRaceCapSeconds, type LadderDraft, type LadderDraftPatch } from '../state/ladder-recovery'
 import { exerciseName, modalityLabel, targetText } from '../state/prescription'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
@@ -86,7 +98,8 @@ import type { BlockProgress } from '../state/workout-progress'
 import { LoggingOverlay } from './logging-overlay'
 import { BlockPanel } from './block-renderers-frame'
 import { GroupExerciseCoaching } from './exercise-coaching'
-import { LadderPrescription } from './ladder-rungs'
+import { LadderBlock, PACING_NOTES, timingSummary } from './ladder-block'
+import { LadderPrescription, type LadderRoundContext } from './ladder-rungs'
 import { MovementIdentity } from './movement-presentation'
 import { TimerFrame } from './workout-chrome'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
@@ -167,6 +180,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const rungs = ladderRungs(block.exercises)
   const recordFormat = format === 'ladder' ? null : format
   const isLadder = recordFormat === null
+  // A3 TASK-105: a scheduled ladder — the same durable attempt, its rounds moved on by its own clock.
+  const schedule = isLadder && timing?.mode === 'scheduled_starts' ? timing : null
   // A3 TASK-103: the shell's session is what makes the attempt worth keeping;
   // a gallery or bare mount has none and stores nothing.
   const [storage] = useState(() => completion.sessionId === undefined ? null : defaultShellStorage())
@@ -198,6 +213,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const [logOpen, setLogOpen] = useState(() => {
     const kept = isLadder ? timedAttemptFromClock(ladder.attempt.clock) : restored?.attempt ?? null
     if (kept === null || kept.startedAt === null) return true
+    // A schedule has ended once it has run every round.
+    if (schedule !== null) return scheduleView(schedule, ladder.attempt.clock.startedAt, activeSeconds(kept, now())).phase !== 'complete'
     const phase = timedAttemptView(kept, now(), cap).phase
     return phase !== 'finished' && phase !== 'capped'
   })
@@ -216,16 +233,22 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     if (format === 'amrap') writeTimedCounts(storage, block, { roundsCompleted: next.count, partialRoundReps: next.partialReps ?? null })
   }
   const adjustedStart = attempt.startedAt === null ? null : new Date(attempt.startedAt + attempt.pausedMs).toISOString()
-  // The hook re-renders the readout each second while the clock runs; the
-  // reading itself is the attempt's at this render, so an Undo finish (which
-  // brings back the same start) shows the attempt's own time at once rather
-  // than the finished reading until the next tick (A3 TASK-105; AC-R014-03).
-  useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? now())
   const elapsed = activeSeconds(attempt, now())
   const view = timedAttemptView(attempt, (attempt.startedAt ?? 0) + attempt.pausedMs + elapsed * 1000, cap)
-  const ended = view.phase === 'finished' || view.phase === 'capped'
+  // A schedule's place, read off the attempt's start stamp; null for every other ladder and format.
+  const scheduleNow = schedule === null ? null : scheduleView(schedule, ladder.attempt.clock.startedAt, view.elapsed)
+  // The hook re-renders the readout each second while the clock runs (a
+  // schedule's, until it has run every round); the reading itself is the
+  // attempt's at this render, so an Undo finish (which brings back the same
+  // start) shows the attempt's own time at once rather than the finished
+  // reading until the next tick (A3 TASK-105; AC-R014-03).
+  useElapsedSeconds(scheduleNow?.phase === 'complete' ? null : adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? now())
+  // A schedule ends with its last interval; every other attempt with Finish or its cap.
+  const ended = scheduleNow !== null ? scheduleNow.phase === 'complete' : view.phase === 'finished' || view.phase === 'capped'
+  // A schedule's active time is its run, never past its last interval.
+  const elapsedSeconds = schedule === null ? view.elapsed : Math.min(view.elapsed, schedule.rounds * schedule.interval_seconds)
   const sheet = Boolean(presentation?.loggingOverlay) || options?.logPresentation === 'sheet'
-  const clock: TimedClockReading = { started: view.phase !== 'ready', ended, elapsedSeconds: view.elapsed, capReached: view.phase === 'capped' }
+  const clock: TimedClockReading = { started: view.phase !== 'ready', ended, elapsedSeconds, capReached: view.phase === 'capped' }
   // The ladder's read model: its progress, its draft (tracked progress carried in once ended), Undo and save authority.
   const ladderView = ladderAttemptView(ladder.attempt, { rungCount: rungs.length, now: now(), recorded: ladderRecorded })
   // TASK-014: while an Undo can still run out (a running attempt finished under a cap), re-read the clock each second.
@@ -241,7 +264,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const ladderClosed = isLadder && ladderView.authority !== 'draft'
   const recorded = ended || ladderClosed ? completion.recordedResult?.(block.blockId) ?? null : null
   const ladderSaved: TimedResultReceipt | null = !ladderClosed ? null : {
-    blockId: block.blockId, format, elapsedSeconds: view.elapsed, capReached: view.phase === 'capped', weightUnit,
+    blockId: block.blockId, format, elapsedSeconds, capReached: view.phase === 'capped', weightUnit,
     result: ladderView.authority === 'saved-here' ? logDraftOfLadder(ladderView.draft, false) : NOTHING_CLAIMED,
   }
   const saved = recorded !== null ? receiptFromRecorded(recorded, block, format, clock, weightUnit) : receipt ?? ladderSaved
@@ -316,12 +339,13 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const outcome = timedShellOutcome(format, block, reported, clock)
   const timed = timedShellReport(format, block, reported, saved?.weightUnit ?? weightUnit, ended, recorded)
   // A saved ladder is closed (TASK-048): no clock action, even one never started.
+  // A running schedule has nothing to pause or finish: every round starts on its clock.
   const lifecycle: TimedLifecyclePhase = ladderClosed ? 'ended'
-    : view.phase === 'ready' ? 'ready' : ended ? 'ended' : view.phase === 'paused' ? 'paused' : 'running'
+    : view.phase === 'ready' ? 'ready' : ended || schedule !== null ? 'ended' : view.phase === 'paused' ? 'paused' : 'running'
   // A window the block prescribes can be ended early; a race, a ladder, or a window it does not prescribe is finished.
   const hasWindow = format === 'emom' ? shape.minutes !== null : cap !== null
   const actions = <TimedWorkoutActions phase={lifecycle} placement={format === 'ladder' ? 'top' : 'after-work'}
-    startLabel={`Start ${format === 'ladder' ? 'ladder' : block.identity.label}`} finishLabel={finishLabel(format, hasWindow)}
+    startLabel={schedule !== null ? 'Start schedule' : `Start ${format === 'ladder' ? 'ladder' : block.identity.label}`} finishLabel={finishLabel(format, hasWindow)}
     onStart={() => action('start')} onPause={() => action('pause')} onResume={() => action('resume')} onFinish={() => action('finish')}
     leadRef={leadRef} />
   // TASK-006/TASK-011: an EMOM ended before its last minute says so, and the minute it was in; nothing is counted (E01).
@@ -336,10 +360,20 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     : format === 'for_time' || format === 'ladder' ? 'Elapsed' : 'Remaining'
   const clockSeconds = format === 'emom' ? ended ? 0 : minute.secondsRemaining
     : format === 'amrap' ? view.remaining ?? view.elapsed : view.elapsed
-  const urgency = useCountdownUrgency(view.phase === 'ready' || ended ? null : format === 'emom' ? minute.secondsRemaining : view.remaining, view.phase === 'running')
-  const summary = format === 'ladder'
+  // A schedule's interval countdown carries its own warning (`LadderBlock.IntervalCountdown`).
+  const urgency = useCountdownUrgency(view.phase === 'ready' || ended || schedule !== null ? null
+    : format === 'emom' ? minute.secondsRemaining : view.remaining, view.phase === 'running')
+  // A schedule's line is its timing's own (`timingSummary`): its rounds and its interval, no cap.
+  const summary = schedule !== null ? timingSummary(schedule, block.timerSeconds) : format === 'ladder'
     ? `${rungs.length} rounds${cap === null ? '' : ` · ${formatElapsed(cap)} cap`}`
     : [block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')
+  // TASK-012 (JOURNEY-012): each scheduled round states its own start, and the live round is marked from the clock.
+  const plan = schedule === null ? [] : ladderRoundPlan(block.exercises, schedule)
+  const roundContext = scheduleNow === null ? undefined : (number: number): LadderRoundContext | null => {
+    const round = plan[number - 1]
+    if (round === undefined) return null
+    return { marker: roundMarker(round, scheduleNow), detail: round.startSeconds === null ? null : `Starts at ${formatElapsed(round.startSeconds)}` }
+  }
   const log = showLog && <TimedResultLog embedded={sheet} block={block} format={format} weightUnit={weightUnit}
     finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
     completionAction={canUndoFinish ? <div className="clr-timed-undo" data-timed-undo="" style={UNDO_TEXT_START}>
@@ -351,7 +385,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
       const saveResult = options?.saveResult
       if (!saveResult) throw new Error('No result adapter configured')
       const next: TimedResultReceipt = { blockId: block.blockId, format, result, weightUnit: saved?.weightUnit ?? weightUnit,
-        elapsedSeconds: view.elapsed, capReached: view.phase === 'capped' }
+        elapsedSeconds, capReached: view.phase === 'capped' }
       // A ladder's own save is kept on its attempt: refused, the draft and Undo stay for the retry; answered, the attempt closes.
       const durable = isLadder && !editing
       try {
@@ -369,18 +403,20 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   return <div className="clr-timed-flow" data-timed-format={format} data-phase={view.phase} data-cap-seconds={cap ?? undefined}
     data-counter-style={options?.counterStyle ?? 'wide'} data-urgent={urgency.urgent ? 'true' : 'false'}>
     {urgency.edge}
-    <BlockPanel block={block} completion={{ outcome, timed }} timer={view.phase === 'ready' ? null :
+    <BlockPanel block={block} completion={{ outcome, timed }} timer={view.phase === 'ready' ? null
+      : scheduleNow !== null ? <LadderBlock.IntervalCountdown view={scheduleNow} /> :
       <div className="clr-timed-clock"><TimerFrame label={`${format === 'ladder' ? 'Ladder' : block.identity.label} time`} text={formatElapsed(clockSeconds)}
         spoken={`${caption}. ${spokenElapsed(clockSeconds)}`} caption={caption} size="var(--heading-h2-size)" fullWidth
         low={urgency.low || (view.phase === 'capped' && (format === 'for_time' || format === 'ladder'))} pulse={urgency.urgent ? urgency.loop : undefined} /></div>}>
       {block.exercises.length === 0 ? <BlockPanel.EmptyNote /> : <>
         <p className="clr-text-data-xs clr-timed-meta">{summary}</p>
+        {scheduleNow !== null && schedule !== null && <LadderBlock.ScheduleStatus view={scheduleNow} rounds={schedule.rounds} />}
         {format === 'ladder' && actions}
         {/* A ladder scheme with no sequence on any movement: the block is malformed, and saying so is its existing meaning. */}
         {format === 'ladder' && rungs.length === 0 && <BlockPanel.Note>This ladder prescribes no rungs — perform the movements as written.</BlockPanel.Note>}
         {format === 'ladder' ? <LadderPrescription exercises={block.exercises} weightUnit={weightUnit} rounds={timing?.rounds ?? null}
-          completedThrough={ladderView.progress}
-          onProgress={ladderView.canTrack && (view.phase === 'running' || view.phase === 'paused') ? ladder.track : undefined} /> : <BlockPanel.MovementList label={`Movements in this ${block.identity.label}`}>
+          completedThrough={ladderView.progress} roundContext={roundContext}
+          onProgress={schedule === null && ladderView.canTrack && (view.phase === 'running' || view.phase === 'paused') ? ladder.track : undefined} /> : <BlockPanel.MovementList label={`Movements in this ${block.identity.label}`}>
           {block.exercises.map(exercise => {
             const p = exercise.prescription
             const equipment = equipmentName(p.equipment_used)
@@ -401,6 +437,9 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
           })}
         </BlockPanel.MovementList>}
         {format !== 'ladder' && actions}
+        {/* A schedule's one pacing line (not the removed capped-window paragraph), and its end in words: the clock's, not work performed. */}
+        {schedule !== null && <BlockPanel.Note>{PACING_NOTES.scheduled_starts}</BlockPanel.Note>}
+        {scheduleNow?.phase === 'complete' && <BlockPanel.Note>The clock has run every scheduled round. Say how the block ended below.</BlockPanel.Note>}
         {earlyNote !== null && <p className="clr-timed-meta" data-timed-ended-early="">{earlyNote}</p>}
         {view.phase === 'running' && format === 'amrap' && <p className="clr-timed-meta">Log when complete</p>}
         {showLog && !sheet && <div ref={logHost}>{log}</div>}

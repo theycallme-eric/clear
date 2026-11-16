@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-105",
-  "description": "A3 task 5a (F3): the durable ladder, live rung progress and Undo finish on Round 7’s owners (REQ-012, REQ-013, REQ-014, REQ-032; JOURNEY-012/013/014/032 completion owner; the ladder cases of JOURNEY-010/015/019/031). check-01 runs the inherited ladder tests carried onto Round 7: src/ui/ladder-block.test.tsx (the build’s 39, mounted as the route dispatches a ladder — BlockSlot under the product presentation, Round 7’s TimedWorkoutFlow for a raced ladder, Round 7’s LadderBlock for a scheduled one), src/ui/ladder-rungs.test.tsx (the build’s nine TASK-012 cases on Round 7’s LadderPrescription over the shared readings in src/state/ladder.ts, on the real /review and /workout routes), and the carried state owners’ tests (src/state/ladder-save-authority.test.tsx, src/state/refinement-ladder-recovery.test.ts, src/state/review.test.ts). The TASK-013/TASK-014 cases in src/ui/timed-workout-flow.test.tsx run under TASK-013 and TASK-014 check-01, and the browser journeys under TASK-012/013/014/048 check-02/01. parity is the look check (TASK-AC-FAEE8BA2A650): /workout’s ladder beside each accepted gallery state (bec4454: ladder, ladder-4, ladder-12, ladder-long) with matched data at 320 and 390 px — the live ladders driven alike on the browser clock through ready, rounds checked off, paused, Finish with its log and quiet Undo, Undo finish and Finish again; the results moments before Start and past the cap with their log — compared in words and in layout (every element’s box within 2 px), each card’s top scrolled into view before capture, and no word of a round tile broken across lines; every visible difference must be labelled with the criterion that intends it, and each receipt lists this task’s intended changes to the gallery state against bec4454 (galleryChanges).",
+  "description": "A3 task 5a (F3): the durable ladder, live rung progress and Undo finish on Round 7’s owners (REQ-012, REQ-013, REQ-014, REQ-032; JOURNEY-012/013/014/032 completion owner; the ladder cases of JOURNEY-010/015/019/031). check-01 runs the inherited ladder tests carried onto Round 7: src/ui/ladder-block.test.tsx (the build’s 39, mounted as the route dispatches a ladder — BlockSlot under the product presentation, Round 7’s TimedWorkoutFlow for every ladder, its schedule mode for a scheduled one), src/ui/ladder-rungs.test.tsx (the build’s nine TASK-012 cases on Round 7’s LadderPrescription over the shared readings in src/state/ladder.ts, on the real /review and /workout routes), and the carried state owners’ tests (src/state/ladder-save-authority.test.tsx, src/state/refinement-ladder-recovery.test.ts, src/state/review.test.ts). The TASK-013/TASK-014 cases in src/ui/timed-workout-flow.test.tsx run under TASK-013 and TASK-014 check-01, and the browser journeys under TASK-012/013/014/048 check-02/01. parity is the look check (TASK-AC-FAEE8BA2A650): /workout’s ladder beside each accepted gallery state (bec4454: ladder, ladder-4, ladder-12, ladder-long) with matched data at 320 and 390 px — the live ladders driven alike on the browser clock through ready, rounds checked off, paused, Finish with its log and quiet Undo, Undo finish and Finish again; the results moments before Start and past the cap with their log — compared in words and in layout (every element’s box within 2 px), each card’s top scrolled into view before capture, and no word of a round tile broken across lines; every visible difference must be labelled with the criterion that intends it, and each receipt lists this task’s intended changes to the gallery state against bec4454 (galleryChanges). /review, the other route this task wires (TASK-AC-F3CDA21AC50B), is compared the same way: each ladder’s rounds on /review (the grid Review draws under its movement rows) beside the round grid the accepted ladder-4 and ladder-12 states draw before Start, over the same blocks. A scheduled ladder on /workout has no accepted gallery state (bec4454 draws none): its ready, running, log and ended moments are captured for the look check with that disposition (non-applicable) in its receipt, and its words are read against its own data.",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -492,7 +492,8 @@
         "AC-R013-02",
         "JOURNEY-012",
         "JOURNEY-013",
-        "JOURNEY-014"
+        "JOURNEY-014",
+        "TASK-AC-F3CDA21AC50B"
       ],
       "files": [
         "e2e/refinement/task-105-parity.spec.ts"
@@ -529,6 +530,22 @@
         {
           "file": "e2e/refinement/task-105-parity.spec.ts",
           "name": "TASK-AC-FAEE8BA2A650 ladder-long phone-390: /workout’s ladder matches the accepted gallery state before Start and past the cap, with its log"
+        },
+        {
+          "file": "e2e/refinement/task-105-parity.spec.ts",
+          "name": "TASK-AC-FAEE8BA2A650 review phone-320: /review’s ladder rounds match the round grid the accepted ladder-4 and ladder-12 states draw before Start"
+        },
+        {
+          "file": "e2e/refinement/task-105-parity.spec.ts",
+          "name": "TASK-AC-FAEE8BA2A650 review phone-390: /review’s ladder rounds match the round grid the accepted ladder-4 and ladder-12 states draw before Start"
+        },
+        {
+          "file": "e2e/refinement/task-105-parity.spec.ts",
+          "name": "TASK-AC-FAEE8BA2A650 scheduled phone-320: /workout’s scheduled ladder, which no accepted gallery state draws, kept for the look check before Start, on its clock and once its schedule has run out, with its log"
+        },
+        {
+          "file": "e2e/refinement/task-105-parity.spec.ts",
+          "name": "TASK-AC-FAEE8BA2A650 scheduled phone-390: /workout’s scheduled ladder, which no accepted gallery state draws, kept for the look check before Start, on its clock and once its schedule has run out, with its log"
         }
       ]
     }

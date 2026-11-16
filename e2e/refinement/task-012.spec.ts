@@ -46,8 +46,10 @@ import { expect, test as scanned } from '../fixtures'
  * shared `state/ladder.ts` readings (the grid `Prescribed ladder rounds`, one
  * summary line per movement — `push up · 2 → 24 reps · +2 per round` — and the
  * meta line `12 rounds · 07:00 cap`), and its log is offered once the attempt
- * has ended; a scheduled ladder is Round 7's `LadderBlock`; Review's cards are
- * Round 7's `ReviewSectionCard`. Each case keeps the build's name and asserted
+ * has ended; a scheduled ladder is the same flow's schedule (each round's start
+ * and its live round on its tile, Start schedule, no cap); Review's cards are
+ * Round 7's `ReviewSectionCard`, each ladder's rounds drawn under its movement
+ * rows by the same round grid (`LadderRounds`). Each case keeps the build's name and asserted
  * behaviour, read from Round 7's markup and words.
  */
 /**

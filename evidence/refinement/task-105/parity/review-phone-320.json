@@ -1,0 +1,356 @@
+{
+  "schema": "clear-task-105-parity/v1",
+  "task": "TASK-105",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "ladder-4, ladder-12 (the round grid before Start)",
+  "width": 320,
+  "route": "/review",
+  "drive": "none: /review is read before Start; the gallery states are read before Start",
+  "routeCards": {
+    "route-card-ladder-4": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-320-route-card-ladder-4.png",
+      "sha256": "4b987de56da3935f929eb869ac4b11e375bfa28f437d0600029926d6f2e7adf0"
+    },
+    "route-card-ladder-12": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-320-route-card-ladder-12.png",
+      "sha256": "5ecb2566e9c29893fef707f2a61ae8bc623fc6d958fc7ff8cc121d5b8364244d"
+    }
+  },
+  "galleryChanges": [
+    {
+      "criterion": "AC-C34-01, TASK-AC-C021DADA60B8",
+      "change": "A ladder whose rounds nobody has marked yet reads \"No rounds marked yet\" (live count and the log's count), not \"0 of N rounds completed\": nothing stated is not zero; an explicit zero still reads \"0 of N\".",
+      "moments": [
+        "running before a round is checked",
+        "log after Finish or the cap with nothing checked"
+      ]
+    },
+    {
+      "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
+      "change": "Undo finish · resume ladder keeps its quiet style and control height but drops the small button's inline padding, so its text starts at the rounds-completed count's left edge.",
+      "moments": [
+        "log after the athlete's Finish"
+      ]
+    },
+    {
+      "criterion": "AC-R013-01, AC-R013-03, TASK-AC-C021DADA60B8",
+      "change": "The ladder log asks each movement's next-round amount only once a round is stated (zero included): with nothing stated there is no \"Completed in round 1\" field.",
+      "moments": [
+        "log after Finish or the cap with nothing checked"
+      ]
+    },
+    {
+      "criterion": "AC-R013-01",
+      "change": "A tap inside the live check-off's selection leaves only the rounds before it (the log tiles' rule), where it used to select through it.",
+      "moments": [
+        "interaction only"
+      ]
+    },
+    {
+      "criterion": "JOURNEY-012 (readable wrapping), AC-R013-02",
+      "change": "A live round tile keeps the read-only tile's declared inset (`var(--spacing-200)`) instead of the Chip's wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged.",
+      "moments": [
+        "running",
+        "paused",
+        "undone"
+      ]
+    },
+    {
+      "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
+      "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
+      "moments": [
+        "every moment (not drawn)"
+      ]
+    }
+  ],
+  "captures": {
+    "gallery-ladder-4": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-320-gallery-ladder-4.png",
+      "sha256": "26b8cfa02379c8d772d87da5df63e7c5efa727fd31bfb4e569bf255a88f7d814"
+    },
+    "route-ladder-4": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-320-route-ladder-4.png",
+      "sha256": "f91de887092d6bc6afe60d446a9c35baa497b8b0559d25b1e428475df08ae2ba"
+    },
+    "gallery-ladder-12": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-320-gallery-ladder-12.png",
+      "sha256": "5a6a9f4717e4f6fbda575f32a4baf9391f304204cfd0b9a99421aadbf3778848"
+    },
+    "route-ladder-12": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-320-route-ladder-12.png",
+      "sha256": "1e3d5ab1426ad35290a4c746a0466573952f286bd7888149146138f39b5177a5"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ladder-4": [
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps"
+      ],
+      "ladder-12": [
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R5",
+        "ROUND 5",
+        "10 × push up",
+        "push up, 10 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R6",
+        "ROUND 6",
+        "12 × push up",
+        "push up, 12 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R7",
+        "ROUND 7",
+        "14 × push up",
+        "push up, 14 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R8",
+        "ROUND 8",
+        "16 × push up",
+        "push up, 16 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R9",
+        "ROUND 9",
+        "18 × push up",
+        "push up, 18 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R10",
+        "ROUND 10",
+        "20 × push up",
+        "push up, 20 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R11",
+        "ROUND 11",
+        "22 × push up",
+        "push up, 22 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R12",
+        "ROUND 12",
+        "24 × push up",
+        "push up, 24 reps",
+        "4 × burpee",
+        "burpee, 4 reps"
+      ]
+    },
+    "route": {
+      "ladder-4": [
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps"
+      ],
+      "ladder-12": [
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R5",
+        "ROUND 5",
+        "10 × push up",
+        "push up, 10 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R6",
+        "ROUND 6",
+        "12 × push up",
+        "push up, 12 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R7",
+        "ROUND 7",
+        "14 × push up",
+        "push up, 14 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R8",
+        "ROUND 8",
+        "16 × push up",
+        "push up, 16 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R9",
+        "ROUND 9",
+        "18 × push up",
+        "push up, 18 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R10",
+        "ROUND 10",
+        "20 × push up",
+        "push up, 20 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R11",
+        "ROUND 11",
+        "22 × push up",
+        "push up, 22 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R12",
+        "ROUND 12",
+        "24 × push up",
+        "push up, 24 reps",
+        "4 × burpee",
+        "burpee, 4 reps"
+      ]
+    }
+  },
+  "readouts": {
+    "gallery": {
+      "ladder-4": null,
+      "ladder-12": null
+    },
+    "route": {
+      "ladder-4": null,
+      "ladder-12": null
+    }
+  },
+  "differences": {
+    "ladder-4": [],
+    "ladder-12": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ladder-4": 45,
+        "ladder-12": 133
+      },
+      "route": {
+        "ladder-4": 45,
+        "ladder-12": 133
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ladder-4": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 192
+        },
+        "ladder-12": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 592
+        }
+      },
+      "route": {
+        "ladder-4": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 192
+        },
+        "ladder-12": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 592
+        }
+      }
+    },
+    "differences": {
+      "ladder-4": [],
+      "ladder-12": []
+    }
+  }
+}

@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-012/required-cases.json",
-    "sha256": "4dde49cbfe9609b742055f0ca4b594de29ca079cc86bf68401899a02683f2572"
+    "sha256": "01f95394744feb14e55ee2b2388d2fc7efc4a6f96875aad8e7c6e094feffdbee"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-012.spec.ts",
-      "sha256": "a5a903651b61d3d51cd71788cd493b3824393b0b02da673f69a96cfebf04592f"
+      "sha256": "5fb907c5a8c3866e78e8bd8ed9b4563b7ecdfe32194abfd9a5b1126bafe0389e"
     }
   ],
   "requiredCases": [
@@ -34,7 +34,7 @@
       "file": "e2e/refinement/task-012.spec.ts",
       "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-390: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
       "project": "mobile",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "e2e/refinement/task-012.spec.ts",
@@ -46,7 +46,7 @@
       "file": "e2e/refinement/task-012.spec.ts",
       "name": "TASK-012 compact truthful ladder prescription > JOURNEY-012 touch and recovery phone-320: a tapped tile does nothing, and a close and reopen while the ladders run keeps every prescription as it was",
       "project": "mobile",
-      "status": "failed"
+      "status": "passed"
     },
     {
       "file": "e2e/refinement/task-012.spec.ts",
@@ -57,16 +57,14 @@
   ],
   "totals": {
     "total": 5,
-    "passed": 2,
-    "failed": 3,
+    "passed": 4,
+    "failed": 1,
     "skipped": 0,
     "todo": 0,
     "executed": 5
   },
   "problems": [
     "runner exited with code 1",
-    "required case was failed: e2e/refinement/task-012.spec.ts > TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-320: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data [mobile]",
-    "required case was failed: e2e/refinement/task-012.spec.ts > TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-390: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data [mobile]",
-    "required case was failed: e2e/refinement/task-012.spec.ts > TASK-012 compact truthful ladder prescription > JOURNEY-012 touch and recovery phone-320: a tapped tile does nothing, and a close and reopen while the ladders run keeps every prescription as it was [mobile]"
+    "required case was failed: e2e/refinement/task-012.spec.ts > TASK-012 compact truthful ladder prescription > JOURNEY-012 phone-320: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data [mobile]"
   ]
 }

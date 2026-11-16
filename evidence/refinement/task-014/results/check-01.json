@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-014",
   "check": "check-01",
-  "verdict": "rejected",
+  "verdict": "passed",
   "purpose": "delivery",
   "runner": "vitest",
   "runnerVersion": "4.1.11",
@@ -64,13 +64,11 @@
   ],
   "totals": {
     "total": 29,
-    "passed": 13,
-    "failed": 1,
+    "passed": 14,
+    "failed": 0,
     "skipped": 15,
     "todo": 0,
     "executed": 14
   },
-  "problems": [
-    "runner exited with code 1"
-  ]
+  "problems": []
 }
