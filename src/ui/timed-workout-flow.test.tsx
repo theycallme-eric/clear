@@ -213,9 +213,21 @@ function clockWords(format: TimedFormat, scope?: ParentNode): HTMLElement {
   return timer.firstElementChild as HTMLElement
 }
 
+/**
+ * Each card's Coaching and notes accessible name is TASK-005's (the build's):
+ * the visible words, then the block's format and movements, so each card's
+ * region is named apart (axe `landmark-unique`, TASK-006 check-02).
+ */
+const COACHING: Readonly<Record<TimedFormat, string>> = {
+  emom: 'Coaching and notes — EMOM: kb swing, burpee',
+  amrap: 'Coaching and notes — AMRAP: kb swing, burpee',
+  for_time: 'Coaching and notes — FOR TIME: wall ball',
+  ladder: 'Coaching and notes — LADDER: push up, burpee',
+}
+
 /** The card's Coaching and notes disclosure: the slot the actions must precede. */
 function coachingOf(format: TimedFormat): HTMLElement {
-  return within(cardOf(format)).getByRole('button', { name: 'Coaching and notes' })
+  return within(cardOf(format)).getByRole('button', { name: COACHING[format] })
 }
 
 /** The movements a marker word sits on — Round 7's `Now` / `Next` — by name. */
@@ -290,7 +302,7 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
       // Before coaching: the card's one Coaching and notes disclosure follows the slot.
       const coaching = coachingOf(format)
       expect(follows(coaching, row), `${format}: before coaching`).toBe(true)
-      expect(within(card).getAllByRole('button', { name: 'Coaching and notes' })).toHaveLength(1)
+      expect(within(card).getAllByRole('button', { name: /^Coaching and notes/ })).toHaveLength(1)
     }
 
     // The EMOM's schedule is part of its prescription: each movement's minute

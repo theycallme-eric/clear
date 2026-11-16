@@ -82,20 +82,43 @@ export function ExerciseCoaching({ exercise }: ExerciseCoachingProps) {
   return <CoachingPanel exercise={exercise} />
 }
 
+export interface GroupExerciseCoachingProps {
+  /**
+   * The block's format, in its badge's words (`SUPERSET`, `AMRAP`). With the
+   * movements' names it tells this block's disclosure apart from another's to
+   * assistive technology; the visible label stays the accepted words.
+   */
+  format: string
+  exercises: readonly ExerciseProgress[]
+}
+
 /** One disclosure for grouped work; each movement keeps its own reads/writes. */
-export function GroupExerciseCoaching({ exercises }: { exercises: readonly ExerciseProgress[] }) {
+export function GroupExerciseCoaching({ format, exercises }: GroupExerciseCoachingProps) {
   const clients = use(WorkoutClientsContext)
   const cache = use(QueryClientContext)
   if (clients === null || cache === null || exercises.length === 0) return null
-  return <GroupCoachingPanel exercises={exercises} />
+  return <GroupCoachingPanel format={format} exercises={exercises} />
 }
 
-function GroupCoachingPanel({ exercises }: { exercises: readonly ExerciseProgress[] }) {
+function GroupCoachingPanel({ format, exercises }: GroupExerciseCoachingProps) {
   const [expanded, setExpanded] = useState(false)
   const [opened, setOpened] = useState(false)
+  const names = exercises.map(exercise => exerciseName(exercise.prescription.exercise_id))
   return (
     <Card>
-      <CollapsibleSection label="Coaching and notes" expanded={expanded} onExpandedChange={next => { setExpanded(next); if (next) setOpened(true) }}>
+      <CollapsibleSection
+        label={
+          <>
+            Coaching and notes{' '}
+            {/* TASK-005 (the build's name): names this block's disclosure apart
+                from another block's on the same screen; the visible label
+                stays the accepted words. */}
+            <span className="a11y-hidden">— {format}: {names.join(', ')}</span>
+          </>
+        }
+        expanded={expanded}
+        onExpandedChange={next => { setExpanded(next); if (next) setOpened(true) }}
+      >
         <div className="clr-stack">
           {exercises.map(exercise => {
             const name = exerciseName(exercise.prescription.exercise_id)

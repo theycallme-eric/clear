@@ -167,7 +167,8 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     const list = screen.getByRole('list', { name: 'Movements in this circuit' })
     const coaching = screen.getAllByRole('button', { name: /^Coaching and notes/ })
     expect(coaching).toHaveLength(1)
-    expect(coaching[0]).toHaveAccessibleName('Coaching and notes')
+    // TASK-005 (the build's name): the block's format and movements name it apart.
+    expect(coaching[0]).toHaveAccessibleName(`Coaching and notes — CIRCUIT: ${NAMES.join(', ')}`)
     expect(coaching[0]).toHaveAttribute('aria-expanded', 'false')
     expect(list.contains(coaching[0]!)).toBe(false)
     await userEvent.setup().click(coaching[0]!)

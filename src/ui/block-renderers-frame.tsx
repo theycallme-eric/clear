@@ -135,7 +135,7 @@ export function BlockPanel({
         <MovementGroupHeader heading={presentation !== null} title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`} badge={<StructureBadge identity={identity} formatOnly={presentation?.timedWorkflows !== undefined} />} />
         <GroupCoachingContext value={groupedCoaching}>
           {children}
-          {groupedCoaching && <GroupExerciseCoaching exercises={block.exercises} />}
+          {groupedCoaching && <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} />}
         </GroupCoachingContext>
         <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} timed={completion.timed ?? null} />
       </div>

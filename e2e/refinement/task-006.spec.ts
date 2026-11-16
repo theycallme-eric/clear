@@ -292,8 +292,9 @@ async function readSlot(page: Page, format: TimedFormat): Promise<SlotGeometry> 
     }
     const row = card.querySelector('[data-timed-actions]')!
     const list = [...card.querySelectorAll('ul, ol')].find((node) => node.getAttribute('aria-label') === listName)!
-    // The card's Coaching and notes disclosure (Round 7's one grouped disclosure).
-    const coaching = [...card.querySelectorAll('button')].find((node) => node.textContent?.trim() === 'Coaching and notes')?.closest('.clr-collapsible') ?? null
+    // The card's Coaching and notes disclosure (Round 7's one grouped disclosure),
+    // named by TASK-005's words: the visible label, then its block's format and movements.
+    const coaching = [...card.querySelectorAll('button')].find((node) => /^Coaching and notes — [^:]+: /.test(node.textContent?.trim() ?? ''))?.closest('.clr-collapsible') ?? null
     const work = [...card.querySelectorAll('.clr-movement-identity, [data-movement-detail], ul, ol')]
       .filter((node) => !row.contains(node) && (coaching === null || !coaching.contains(node)))
     return {

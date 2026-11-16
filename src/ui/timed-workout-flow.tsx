@@ -256,7 +256,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
         </div>}
         {/* The shipped AMRAP's like-for-like score line (OVR-03), kept: it says nothing until rounds are recorded. */}
         {format === 'amrap' && ended && <AmrapComparison block={block} outcome={outcome} />}
-        {block.exercises.length === 1 && <GroupExerciseCoaching exercises={block.exercises} />}
+        {block.exercises.length === 1 && <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} />}
       </>}
     </BlockPanel>
   </div>

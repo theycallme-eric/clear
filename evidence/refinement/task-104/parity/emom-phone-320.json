@@ -60,6 +60,7 @@
         "24 lb",
         "START EMOM",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -81,6 +82,7 @@
         "PAUSE",
         "FINISH EARLY",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -102,6 +104,7 @@
         "RESUME",
         "FINISH EARLY",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -122,6 +125,7 @@
         "Finished early, in minute 1 of 10. Continue when you are ready.",
         "LOG RESULTS",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -147,6 +151,7 @@
         "24 lb",
         "START EMOM",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -168,6 +173,7 @@
         "PAUSE",
         "FINISH EARLY",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -189,6 +195,7 @@
         "RESUME",
         "FINISH EARLY",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -209,6 +216,7 @@
         "Finished early, in minute 1 of 10. Continue when you are ready.",
         "LOG RESULTS",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -253,17 +261,17 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 49,
-        "running": 72,
-        "paused": 72,
-        "ended": 66,
+        "ready": 50,
+        "running": 73,
+        "paused": 73,
+        "ended": 67,
         "log": 52
       },
       "route": {
-        "ready": 49,
-        "running": 72,
-        "paused": 72,
-        "ended": 66,
+        "ready": 50,
+        "running": 73,
+        "paused": 73,
+        "ended": 67,
         "log": 52
       }
     },

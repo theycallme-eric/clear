@@ -9,20 +9,28 @@
   "skipOnlyTodoAdded": false,
   "matchersWeakened": false,
   "retired": [],
-  "unresolved": [
+  "deferred": [
    {
-    "what": "23 of the 32 build tests in src/ui/timed-workout-flow.test.tsx (TASK-011 ×8, TASK-013 ×8, TASK-014 ×7)",
-    "why": "They assert F3 behaviour (EMOM end log; durable ladder check-off, handoff and Undo) owned by TASK-116 and TASK-105, which run them by name pattern in their own verification. Neither carried, rewritten nor retired here; recorded as deferred-unresolved for the controller."
+    "what": "15 build tests in src/ui/timed-workout-flow.test.tsx (TASK-013 ×8, TASK-014 ×7)",
+    "task": "TASK-105",
+    "why": "Controller decision 2026-11-16: owned by TASK-105, whose approved verification runs them by name (TASK-013 check-01 \"ladder|rung|handoff\", TASK-014 check-01 \"undo|resume|cap\"); TASK-115’s end-of-run ledger check requires them carried."
    },
    {
-    "what": "e2e/refinement/task-006.spec.ts, the axe scan that ends six route cases",
-    "why": "Round 7’s four grouped “Coaching and notes” disclosures are regions with one shared name (axe landmark-unique), in src/ui/exercise-coaching.tsx (gallery-owned; the build named each apart, TASK-005, F7 → TASK-109). Not fixed here and not excepted; every other assertion in those cases passes."
+    "what": "8 build tests in src/ui/timed-workout-flow.test.tsx (TASK-011 ×8)",
+    "task": "TASK-116",
+    "why": "Controller decision 2026-11-16: owned by TASK-116, whose approved verification runs them by name (TASK-011 check-01 \"EMOM\"); TASK-115’s end-of-run ledger check requires them carried."
+   }
+  ],
+  "resolved": [
+   {
+    "what": "e2e/refinement/task-006.spec.ts, the axe scan that ends six route cases (landmark-unique)",
+    "how": "Controller decision 2026-11-16: the build’s TASK-005 unique accessible name for each grouped Coaching and notes region brought into src/ui/exercise-coaching.tsx (visually hidden format and movements; same visible look). No scan exception, no rule disabled. Two Round 7 base assertions follow it (entries above, rewritten)."
    }
   ]
  },
  "summary": {
-  "rewritten": 16,
-  "deferred-unresolved": 23,
+  "rewritten": 18,
+  "deferred": 23,
   "carried": 64,
   "added": 15
  },
@@ -32,7 +40,7 @@
    "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
    "ledger": "deferred (F2)",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour: one [data-timed-actions] slot ('after-work') holding only the primary Start, after the movement list and every prescription reading (.clr-movement-identity, [data-movement-detail]) and before the card’s one Coaching and notes disclosure; running, Pause and the format’s Finish early in the same slot. Reads Round 7’s card (.clr-timed-flow) and words (Start EMOM, Start AMRAP; lists ‘Movements in this EMOM/AMRAP’). Round 7 draws no ‘15s rest at the end of each minute’ line nor an ‘Each round:’ card, so the two instances read Round 7’s own last prescription lines instead: the EMOM’s ‘Min 2 · 10 reps’ minute line and the AMRAP round’s last movement. The build’s ‘coaching is the card’s last element’ is read as ‘one Coaching and notes disclosure, after the slot’ (Round 7’s card ends with the shell’s completion control)."
+   "note": "Round 7 look, same asserted behaviour: one [data-timed-actions] slot ('after-work') holding only the primary Start, after the movement list and every prescription reading (.clr-movement-identity, [data-movement-detail]) and before the card’s one Coaching and notes disclosure; running, Pause and the format’s Finish early in the same slot. Reads Round 7’s card (.clr-timed-flow) and words (Start EMOM, Start AMRAP; lists ‘Movements in this EMOM/AMRAP’). Round 7 draws no ‘15s rest at the end of each minute’ line nor an ‘Each round:’ card, so the two instances read Round 7’s own last prescription lines instead: the EMOM’s ‘Min 2 · 10 reps’ minute line and the AMRAP round’s last movement. The build’s ‘coaching is the card’s last element’ is read as ‘one Coaching and notes disclosure, after the slot’ (Round 7’s card ends with the shell’s completion control). The card’s disclosure is found by its TASK-005 accessible name (‘Coaching and notes — EMOM: kb swing, burpee’, ‘— AMRAP: kb swing, burpee’, ‘— FOR TIME: wall ball’, ‘— LADDER: push up, burpee’), and the card still holds exactly one."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
@@ -46,7 +54,7 @@
    "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
    "ledger": "deferred (F2)",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour and the same declared recipe, read from Round 7’s one declaring file (src/styles/timed-workout.css, not the build’s refinements/presentation.css): grid, repeat(auto-fit, minmax(0, 1fr)), gap var(--spacing-300), cells and buttons width 100%, no px; computed display grid; each control a clr-btn in its own clr-bleed cell; after the work for every format but the ladder (‘top’). For Time’s ‘The work:’ label does not exist in Round 7; its Start is asserted after every For Time movement and prescription reading."
+   "note": "Round 7 look, same asserted behaviour and the same declared recipe, read from Round 7’s one declaring file (src/styles/timed-workout.css, not the build’s refinements/presentation.css): grid, repeat(auto-fit, minmax(0, 1fr)), gap var(--spacing-300), cells and buttons width 100%, no px; computed display grid; each control a clr-btn in its own clr-bleed cell; after the work for every format but the ladder (‘top’). For Time’s ‘The work:’ label does not exist in Round 7; its Start is asserted after every For Time movement and prescription reading. The card’s disclosure is found by its TASK-005 accessible name (‘Coaching and notes — EMOM: kb swing, burpee’, ‘— AMRAP: kb swing, burpee’, ‘— FOR TIME: wall ball’, ‘— LADDER: push up, burpee’), and the card still holds exactly one."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
@@ -94,227 +102,227 @@
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-116",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the EMOM end log without a minutes counter, its REST/COMPLETE schedule words and Now/Next look-ahead in rest, its note in block notes and its save-failure retry (F3, TASK-116), which this task’s scope does not include and which the build test asserts end to end. A3 task 5b (F3) owns JOURNEY-011 and verifies this file with `--testNamePattern EMOM` (its TASK-011 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable ladder attempt’s live rung check-off, its rep-first handoff into the log and the progress kept across reloads (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-013 and verifies this file with `--testNamePattern \"ladder|rung|handoff\"` (its TASK-013 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "src/ui/timed-workout-flow.test.tsx",
    "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo",
    "ledger": "deferred (F2)",
-   "disposition": "deferred-unresolved",
-   "owner": "TASK-105",
-   "note": "Not carried by this task and not retired: its asserted behaviour is the durable Undo finish: withdrawn at the original cap, surviving close/reopen and a failed save, closed by a save (F3, TASK-105), which this task’s scope does not include and which the build test asserts end to end. A3 task 5a (F3) owns JOURNEY-014 and verifies this file with `--testNamePattern \"undo|resume|cap\"` (its TASK-014 check-01). The groundwork ledger gives the whole file to F2; the issue body asks for all 32 rewritten. Reported to the controller as a scope conflict; no .skip/.todo stands in for it."
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
    "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
    "ledger": "e2e expected after F2",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The EMOM’s rest line does not exist in Round 7; Start is below its last minute line (‘Min 2 · 10 reps’)."
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The EMOM’s rest line does not exist in Round 7; Start is below its last minute line (‘Min 2 · 10 reps’). The card’s Coaching and notes disclosure is found by its TASK-005 name (visible words, then ‘— FORMAT: movements’), and the closing axe scan passes with no exception now that each region is named apart."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
    "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
    "ledger": "e2e expected after F2",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘MIN 1 OF 10’ is Round 7’s caption ‘Minute 1 of 10’."
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘MIN 1 OF 10’ is Round 7’s caption ‘Minute 1 of 10’. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
    "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
    "ledger": "e2e expected after F2",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The EMOM’s rest line does not exist in Round 7; Start is below its last minute line (‘Min 2 · 10 reps’)."
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The EMOM’s rest line does not exist in Round 7; Start is below its last minute line (‘Min 2 · 10 reps’). The card’s Coaching and notes disclosure is found by its TASK-005 name (visible words, then ‘— FORMAT: movements’), and the closing axe scan passes with no exception now that each region is named apart."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
    "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
    "ledger": "e2e expected after F2",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘MIN 1 OF 10’ is Round 7’s caption ‘Minute 1 of 10’."
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘MIN 1 OF 10’ is Round 7’s caption ‘Minute 1 of 10’. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
    "test": "TASK-006 timed action hierarchy > JOURNEY-006 keyboard and reduced motion: every action by keyboard, focus kept through Start and Pause, and the section Finish is not Finish workout",
    "ledger": "e2e expected after F2",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The browser clock is held from entry (as the touch cases hold it) so each reading is exact, and released before the axe scan; For Time reads ‘Finished’ at 00:20, the AMRAP’s window 07:40 left with ‘Finished’ (the build: ‘00:20 on the clock’), the EMOM’s exact build note, the ladder ‘Finished’; each block’s Round 7 log, opened by its Finish, is closed with ‘Close log’ before the next keyboard step."
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The browser clock is held from entry (as the touch cases hold it) so each reading is exact, and released before the axe scan; For Time reads ‘Finished’ at 00:20, the AMRAP’s window 07:40 left with ‘Finished’ (the build: ‘00:20 on the clock’), the EMOM’s exact build note, the ladder ‘Finished’; each block’s Round 7 log, opened by its Finish, is closed with ‘Close log’ before the next keyboard step. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
    "test": "TASK-006 timed action hierarchy > JOURNEY-006 recovery phone-390: close and reopen keeps a paused section paused and frozen, and a running one running",
    "ledger": "e2e expected after F2",
    "disposition": "rewritten",
-   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘Paused’ is read in Round 7’s timer frame beside the card."
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘Paused’ is read in Round 7’s timer frame beside the card. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
   },
   {
    "file": "e2e/refinement/task-006.spec.ts",
@@ -875,6 +883,22 @@
    "ledger": "new",
    "disposition": "added",
    "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "src/app/circuit-rounds.test.tsx",
+   "test": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one grouped coaching disclosure",
+   "ledger": "Round 7 base test (not a build test)",
+   "disposition": "rewritten",
+   "reason": "TASK-005 accessibility naming, required by TASK-006 check-02 (controller decision, 2026-11-16): Round 7’s grouped Coaching and notes regions all shared one accessible name, so axe’s landmark-unique failed on /workout. GroupExerciseCoaching (src/ui/exercise-coaching.tsx) now names each as the build did (TASK-005): the visible words ‘Coaching and notes’, then a visually hidden ‘— FORMAT: movement, …’. Same visible look; TASK-109 re-proves it.",
+   "note": "One assertion changed: the disclosure’s accessible name, from ‘Coaching and notes’ to the build’s ‘Coaching and notes — CIRCUIT: kettlebell swing, push up, goblet squat’ (the build’s own version of this assertion, 181e580). Every other assertion in the case is unchanged."
+  },
+  {
+   "file": "src/app/Workout.test.tsx",
+   "test": "Workout — coaching and notes > groups coaching under one disclosure, preserving separate movement drafts (R29)",
+   "ledger": "Round 7 base test (not a build test)",
+   "disposition": "rewritten",
+   "reason": "TASK-005 accessibility naming, required by TASK-006 check-02 (controller decision, 2026-11-16): Round 7’s grouped Coaching and notes regions all shared one accessible name, so axe’s landmark-unique failed on /workout. GroupExerciseCoaching (src/ui/exercise-coaching.tsx) now names each as the build did (TASK-005): the visible words ‘Coaching and notes’, then a visually hidden ‘— FORMAT: movement, …’. Same visible look; TASK-109 re-proves it.",
+   "note": "Two lookups changed: the disclosure button and its region are found by the build’s name ‘Coaching and notes — SUPERSET: back squat, barbell row’ (the build’s own GROUP constant, 181e580) instead of ‘Coaching and notes’. Every other assertion in the case is unchanged."
   }
  ]
 }
