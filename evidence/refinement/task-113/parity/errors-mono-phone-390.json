@@ -1,0 +1,185 @@
+{
+  "schema": "clear-task-113-parity/v1",
+  "task": "TASK-113",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "errors",
+  "skin": "mono",
+  "width": 390,
+  "route": "/summary",
+  "captures": {
+    "gallery": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-mono-phone-390-gallery.png",
+      "sha256": "031b1eb347884bd68b68803a4cb68b79f92702385f8ebc45937d86656e4c152a"
+    },
+    "route": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-mono-phone-390-route.png",
+      "sha256": "3b98610fffc3d17d59fd9cdea6fd5a9e969f3a297c12ad88e84bb09edb5be0c5"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "Request failed",
+      "Request timed out. Try again.",
+      "RETRY"
+    ],
+    "route": [
+      "That session didn’t load",
+      "Server error. Try again later.",
+      "RETRY"
+    ]
+  },
+  "differences": [
+    {
+      "side": "gallery only",
+      "text": "Request failed",
+      "criterion": "AC-R028-01",
+      "reason": "The owner’s default title on the gallery sample. A real route names what failed (ErrorView: “never Oops”), here Summary’s session read; the error/retry meaning is kept, not weakened."
+    },
+    {
+      "side": "gallery only",
+      "text": "Request timed out. Try again.",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The gallery’s sample failure (NETWORK_TIMEOUT). Real data only: the route says the failure it actually met — the read answered 503, a server error — and no route read produces a timeout to match."
+    },
+    {
+      "side": "route only",
+      "text": "That session didn’t load",
+      "criterion": "AC-R028-01",
+      "reason": "Summary’s own title for its failed session read, passed to the one shared ErrorView."
+    },
+    {
+      "side": "route only",
+      "text": "Server error. Try again later.",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real failure’s own message (NETWORK_SERVER_ERROR for the 503 the read met)."
+    }
+  ],
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": 19,
+      "route": 19
+    },
+    "parts": {
+      "gallery": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 358,
+        "height": 154
+      },
+      "route": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 358,
+        "height": 154
+      }
+    },
+    "differences": []
+  },
+  "paints": {
+    "gallery": {
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "surface": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "errorRole": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "errorIcon": [
+        255,
+        255,
+        255,
+        255
+      ]
+    },
+    "route": {
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "surface": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "errorRole": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "errorIcon": [
+        255,
+        255,
+        255,
+        255
+      ]
+    },
+    "differences": []
+  }
+}

@@ -12,9 +12,12 @@ import { expect, test as scanned } from '../fixtures'
  * TASK-025 (REQ-025; C52, G17, R24; AC-C52-01, AC-R025-01; JOURNEY-025) — on
  * the real Setup / onboarding equipment screen, Set up CLEAR, the step label
  * and its progress stay pinned together above one shared divider while the
- * equipment content scrolls. Accepted gallery reference
- * eded158cfd928d382c9a9409e2c372270312741d, `/gallery/refinements?state=screens`,
- * which draws the route's own `SetupProgress` and `SetupStepView`.
+ * equipment content scrolls. A3 TASK-113 (Round 7, accepted gallery
+ * bec44545eb982f6dc136a583400f7e314c306d1d): the route is wired to Round 7's
+ * setup head — `clr-setup-header` and `clr-setup-progress` in Screen's pinned
+ * head — which replaces the build's `.clr-screen__pinned` wrapper; the
+ * accepted `/gallery/refinements?state=screens` draws Setup as a static
+ * composition, compared with the route in `e2e/refinement/task-113-parity.spec.ts`.
  *
  * Entry (ENTRY-025): a signed-in athlete who has not set up yet reaches
  * `/onboarding` through the existing auth and onboarding guards; choosing a
@@ -137,6 +140,13 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
   const unexpected: string[] = []
   const commits: Array<Record<string, unknown>> = []
   const guard = await installDeterministicCapture(page, { skin: 'clear', reducedMotion: options.reducedMotion ?? true })
+  // A3 TASK-113: every API answer waits for `release()`. `visit` scans the
+  // first screen whose heading shows; held, that is the steady boot screen,
+  // not a DOM torn while the boot hands over to the route (axe then flagged
+  // the skip link, `region`, in about one run in eight). The setup screen is
+  // scanned in `openSetup` once it has settled.
+  let release: () => void = () => undefined
+  const held = new Promise<void>((settle) => { release = settle })
 
   const handler = async (route: Route) => {
     const request = route.request()
@@ -145,6 +155,7 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
     const reply = (body: unknown, status = 200) =>
       route.fulfill({ status, headers: CORS, json: body }).catch(() => undefined)
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS })
+    await held
     if (request.method() === 'GET' && url.pathname.startsWith('/rest/v1/')) {
       if (name === 'profiles') return reply([notOnboardedProfile({ id: OWNER })])
       // No places, history, catalog or favorites yet.
@@ -173,6 +184,7 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
   }, { owner: OWNER })
 
   return {
+    release,
     commits: () => commits,
     assertContained(expected: { commits?: number } = {}) {
       expect(unexpected, 'Every API request has an explicit synthetic disposition').toEqual([])
@@ -198,12 +210,19 @@ async function settle(page: Page) {
 }
 
 /** ENTRY-025: the guard sends a signed-in athlete without a setup to /onboarding. */
-async function openSetup(page: Page, visit: (path: string) => Promise<void>) {
+async function openSetup(
+  page: Page,
+  visit: (path: string) => Promise<void>,
+  app: { release: () => void },
+  checkA11y: () => Promise<void>,
+) {
   await visit('/')
+  app.release()
   await expect(page).toHaveURL((url) => url.pathname === '/onboarding')
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(TITLE)
   await expect(page.getByRole('heading', { level: 2, name: STEP_1 })).toBeVisible()
   await settle(page)
+  await checkA11y()
 }
 
 async function attach(target: Page | Locator, name: string) {
@@ -250,7 +269,8 @@ async function readHead(root: Locator): Promise<HeadReading> {
       return { top, bottom, left, right }
     }
     const title = head.querySelector<HTMLElement>(':scope > header :is(h1, h2, h3, h4, h5, h6)')
-    const bar = head.querySelector<HTMLElement>(':scope > .clr-screen__pinned [role="progressbar"]')
+    // A3 TASK-113: Round 7's setup progress is the pinned layer (was the build's `.clr-screen__pinned`).
+    const bar = head.querySelector<HTMLElement>(':scope > .clr-setup-progress [role="progressbar"]')
     const label = bar?.previousElementSibling?.textContent?.trim() ?? ''
     const draws = (node: Element) => {
       const style = getComputedStyle(node)
@@ -315,6 +335,76 @@ function expectStill(before: HeadReading, after: HeadReading, label: string) {
   expect(Math.abs(before.headBottom - after.headBottom), `${label}: the divider stayed put`).toBeLessThanOrEqual(0.5)
 }
 
+/** Round 7's accepted Setup part (bec4454): its label and step line, as the gallery draws them. */
+const GALLERY_SETUP_TITLE = 'Setup'
+const GALLERY_STEP_1 = 'Step 1 of 5 · Equipment'
+
+/**
+ * A3 TASK-113: the accepted Setup part read as `readHead` reads the route —
+ * its header is the pinned head (label, then step line), its body the
+ * scroller. The step line stands where the route's progress does.
+ */
+async function readAcceptedSetup(setup: Locator): Promise<HeadReading> {
+  return setup.evaluate((root) => {
+    const head = root.querySelector<HTMLElement>(':scope > header')!
+    const scroller = root.querySelector<HTMLElement>(':scope > div')!
+    const box = (node: Element): Box => {
+      const { top, bottom, left, right } = node.getBoundingClientRect()
+      return { top, bottom, left, right }
+    }
+    const title = head.querySelector<HTMLElement>(':scope > p.label')
+    const step = head.querySelector<HTMLElement>(':scope > p:not(.label)')
+    const draws = (node: Element) => {
+      const style = getComputedStyle(node)
+      const top = parseFloat(style.borderTopWidth) > 0 && style.borderTopStyle !== 'none'
+      const bottom = parseFloat(style.borderBottomWidth) > 0 && style.borderBottomStyle !== 'none'
+      return top || bottom
+    }
+    const rules = [head, ...head.querySelectorAll('*')].filter(draws).map((node) =>
+      node === head ? 'head' : `${node.tagName.toLowerCase()}.${[...node.classList].join('.')}`)
+    const headBox = head.getBoundingClientRect()
+    const overlays = [...scroller.querySelectorAll('*')].filter((node) =>
+      ['sticky', 'fixed'].includes(getComputedStyle(node).position)).length
+    return {
+      title: title?.textContent?.trim() ?? null,
+      progress: step && {
+        name: null, now: null, max: null,
+        hidden: step.closest('[aria-hidden="true"], [hidden], [inert]') !== null ||
+          getComputedStyle(step).visibility === 'hidden' || step.getBoundingClientRect().height === 0,
+        label: step.textContent?.trim() ?? '',
+      },
+      rules,
+      rule: {
+        width: parseFloat(getComputedStyle(head).borderBottomWidth),
+        left: headBox.left,
+        right: headBox.right,
+        bottom: headBox.bottom,
+      },
+      titleBox: title ? box(title) : { top: NaN, bottom: NaN, left: NaN, right: NaN },
+      progressBox: step ? box(step) : { top: NaN, bottom: NaN, left: NaN, right: NaN },
+      headBottom: headBox.bottom,
+      scroller: { ...box(scroller), scrollTop: scroller.scrollTop, scrollHeight: scroller.scrollHeight, clientHeight: scroller.clientHeight },
+      overlays,
+      viewport: document.documentElement.clientWidth,
+    }
+  })
+}
+
+/** C52 on the accepted part: its label and step line pinned together over one divider, the content below it. */
+function expectAcceptedHead(reading: HeadReading, label: string, frameWidth: number) {
+  expect(reading.title, `${label}: the title is in the head`).toBe(GALLERY_SETUP_TITLE)
+  expect(reading.progress, `${label}: the step line is in the head and shown`).toEqual({
+    name: null, now: null, max: null, hidden: false, label: GALLERY_STEP_1,
+  })
+  expect(reading.progressBox.top, `${label}: the step line sits under the title`).toBeGreaterThanOrEqual(reading.titleBox.bottom - 0.5)
+  expect(reading.rules, `${label}: one divider — the head's — and no second rule`).toEqual(['head'])
+  expect(reading.rule.width, `${label}: the divider is drawn`).toBeGreaterThan(0)
+  expect(reading.progressBox.bottom, `${label}: the divider is below the step line`).toBeLessThanOrEqual(reading.rule.bottom - reading.rule.width + 0.5)
+  expect(reading.rule.right - reading.rule.left, `${label}: the divider spans the frame`).toBeCloseTo(frameWidth, 0)
+  expect(Math.abs(reading.scroller.top - reading.headBottom), `${label}: the content starts at the divider`).toBeLessThanOrEqual(0.5)
+  expect(reading.overlays, `${label}: no sticky overlay in the content`).toBe(0)
+}
+
 /** A control inside the scroller is wholly in its visible box: below the divider, above the foot. */
 async function withinScroller(control: Locator, scroller: Locator) {
   const [c, s] = await Promise.all([control.boundingBox(), scroller.boundingBox()])
@@ -342,7 +432,7 @@ test.describe('TASK-025 Pinned Setup title, step and progress', () => {
       test.setTimeout(120_000)
       await page.setViewportSize(viewport)
       const app = await syntheticApp(page)
-      await openSetup(page, visit)
+      await openSetup(page, visit, app, checkA11y)
       const main = page.locator('main')
       const scroller = scrollerOf(page)
 
@@ -395,7 +485,7 @@ test.describe('TASK-025 Pinned Setup title, step and progress', () => {
     test.setTimeout(120_000)
     await page.setViewportSize({ width: 320, height: 568 })
     const app = await syntheticApp(page, { reducedMotion: true })
-    await openSetup(page, visit)
+    await openSetup(page, visit, app, checkA11y)
     expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true)
     const main = page.locator('main')
     const scroller = scrollerOf(page)
@@ -446,7 +536,7 @@ test.describe('TASK-025 Pinned Setup title, step and progress', () => {
     test.setTimeout(120_000)
     await page.setViewportSize({ width: 320, height: 568 })
     const app = await syntheticApp(page)
-    await openSetup(page, visit)
+    await openSetup(page, visit, app, checkA11y)
     const main = page.locator('main')
     const next = page.getByRole('button', { name: /^(Next|Skip)$/ })
 
@@ -487,7 +577,7 @@ test.describe('TASK-025 Pinned Setup title, step and progress', () => {
     app.assertContained({ commits: 2 })
   })
 
-  test('gallery screens phone-320: the accepted state draws Setup’s own pinned title, step and progress over one divider, the equipment scrolling beneath, with nothing read or written', async ({ page, visit }) => {
+  test('gallery screens phone-320: the accepted state draws Setup’s title and step line pinned over one divider, the equipment beneath it, with nothing read or written', async ({ page, visit }) => {
     test.setTimeout(120_000)
     await page.setViewportSize({ width: 320, height: 568 })
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
@@ -497,27 +587,34 @@ test.describe('TASK-025 Pinned Setup title, step and progress', () => {
     })
     await visit('/gallery/refinements?state=screens')
     const state = page.locator('[data-refinement-state="screens"]')
-    const setup = state.locator('[data-gallery-setup]')
+    // A3 TASK-113: Round 7's accepted Setup part (gallery bec4454) is a static
+    // composition — a header holding the label and the step line over a
+    // scrolling body — not the build's part drawn from the route's own
+    // SetupProgress. Its title is the label Setup and its step line names the
+    // step; it has no progressbar, and its three-choice sample fits its frame.
+    // The route is compared with it in e2e/refinement/task-113-parity.spec.ts.
+    const setup = state.locator('.clr-accepted-setup')
     await setup.scrollIntoViewIfNeeded()
-    await expect(setup.getByRole('heading', { name: TITLE, exact: true })).toBeVisible()
-    await expect(setup.getByRole('heading', { name: STEP_1, exact: true })).toBeAttached()
+    await expect(setup.locator(':scope > header').getByText(GALLERY_SETUP_TITLE, { exact: true })).toBeVisible()
+    await expect(setup.locator(':scope > header').getByText(GALLERY_STEP_1, { exact: true })).toBeVisible()
     await settle(page)
 
     const frameWidth = (await setup.boundingBox())!.width
-    const top = await readHead(setup)
-    expectPinnedHead(top, 1, 'gallery top', frameWidth)
-    expect(top.scroller.scrollHeight, 'the equipment overflows the frame').toBeGreaterThan(top.scroller.clientHeight)
+    const top = await readAcceptedSetup(setup)
+    expectAcceptedHead(top, 'gallery top', frameWidth)
     await attach(setup, 'gallery-setup-top-phone-320')
 
-    const scroller = setup.getByRole('region', { name: `${TITLE} content` })
+    const scroller = setup.locator(':scope > div')
     await scrollToEnd(scroller)
     await settle(page)
-    const end = await readHead(setup)
-    expect(end.scroller.scrollTop).toBeGreaterThan(0)
+    const end = await readAcceptedSetup(setup)
+    expectAcceptedHead(end, 'gallery scrolled', frameWidth)
     expectStill(top, end, 'gallery scrolled')
-    const last = equipment(setup, 'Hack squat')
-    await last.tap()
-    await expect(last).toBeChecked()
+    // The last equipment choice is in view below the divider. The accepted
+    // part is a static sample (its choices are fixed), so it does not answer
+    // a tap; the route's choices answer in the journeys above.
+    const last = setup.getByRole('group', { name: 'Equipment' }).getByRole('button', { name: 'Bench', exact: true })
+    await expect(last).toBeVisible()
     expect(await withinScroller(last, scroller)).toBe(true)
     await attach(setup, 'gallery-setup-scrolled-phone-320')
     await noHorizontalOverflow(page)

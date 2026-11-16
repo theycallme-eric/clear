@@ -17,6 +17,16 @@
  * streak lights on that rule. With no pinned footer, an overflowing screen
  * gets a bare lower edge layer: the foot's rule, and the bottom inset beneath
  * it, with no action added. Content that fits gets neither.
+ *
+ * TASK-025 (C52, R24), A3 TASK-113: a screen with both a fixed header and a
+ * `pinnedHead` pins them together as one head, closed by one divider: the
+ * header gives up its own closing rule to the region's (or to the pinned
+ * layer's own, with `pinnedHeadRule={false}`), so the title and the layer
+ * beneath it never draw two rules. Setup's head (Round 7's `clr-setup-header`
+ * over `clr-setup-progress`) is the one such screen. The header's rule is
+ * `src/styles/shell.css`'s, at a specificity no header class outranks, so it
+ * is given up on the header itself; the layer stays in the accessibility tree
+ * and the scroller starts below the whole head.
  */
 import {
   isValidElement,
@@ -25,6 +35,7 @@ import {
   useRef,
   useState,
   type AriaAttributes,
+  type CSSProperties,
   type ReactNode,
   type RefObject,
 } from 'react'
@@ -36,6 +47,9 @@ import { useScreenRegistry } from './screen-registry'
 
 const APP_NAME = 'CLEAR'
 
+/** A header joined by a pinned layer hands its closing rule to the one head (TASK-025, C52). */
+const JOINED_HEADER_STYLE: CSSProperties = { borderBottom: 0 }
+
 /** The fixed header's slots; its title is always the screen's own heading. */
 export type ScreenHeader = Pick<AppHeaderProps, 'left' | 'meta' | 'actions' | 'className'>
 
@@ -46,7 +60,10 @@ export interface ScreenProps {
   heading?: ReactNode
   /** Fixed header above the screen; when set, the h1 is its title. */
   header?: ScreenHeader
-  /** Optional transparent layer pinned above this screen's scrolling content. */
+  /**
+   * Optional transparent layer pinned above this screen's scrolling content.
+   * With `header`, it sits under the header and the two share one divider.
+   */
   pinnedHead?: ReactNode
   /** Optional transparent layer pinned below this screen's scrolling content. */
   pinnedFoot?: ReactNode
@@ -148,7 +165,9 @@ export function Screen({
       pinnedHead
     ) : (
       <>
-        <AppHeader {...headerSlots}>{pageTitle}</AppHeader>
+        <AppHeader {...headerSlots} style={pinnedHead ? JOINED_HEADER_STYLE : undefined}>
+          {pageTitle}
+        </AppHeader>
         {pinnedHead}
       </>
     )

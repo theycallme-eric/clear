@@ -1,0 +1,97 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-113",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-113-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-113/required-cases.json",
+    "sha256": "38146c8f787a62c43fb10288b06386d5c4d0ffb29873755b34f08d7a96017063"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-113-parity.spec.ts",
+      "sha256": "3a34da000881a96d691bcbed0943aca73c64f968a185dc95e45f6abcbcc2b9b8"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 screens phone-320: /onboarding’s Round 7 setup head beside the accepted Setup part — title and step pinned over one divider above the scrolling equipment, every difference one a criterion intends",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 screens phone-390: /onboarding’s Round 7 setup head beside the accepted Setup part — title and step pinned over one divider above the scrolling equipment, every difference one a criterion intends",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors clear phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors clear phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors vapour phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors vapour phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors signal phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors signal phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors mono phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "name": "TASK-AC-426B098BA948 errors mono phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 10
+  },
+  "problems": []
+}

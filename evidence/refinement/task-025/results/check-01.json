@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-025/required-cases.json",
-    "sha256": "7cc2f9601ad21091057c69f5115f2ed6e012081148b1d8f70b3aa51da9c7ed7d"
+    "sha256": "793545b6c111e1480493a8a09dc9c87215919b1391357373930468fadb1f6a5e"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-025.spec.ts",
-      "sha256": "d7e08ebe19819e9869b1b2641b030b0fc3da85da6254823a9ba067a0dfd07ffc"
+      "sha256": "ad14ab419e0c579790ba957014fe7e1e42b41417f679fdea95066fb16aa29c06"
     }
   ],
   "requiredCases": [
@@ -50,7 +50,7 @@
     },
     {
       "file": "e2e/refinement/task-025.spec.ts",
-      "name": "TASK-025 Pinned Setup title, step and progress > gallery screens phone-320: the accepted state draws Setup’s own pinned title, step and progress over one divider, the equipment scrolling beneath, with nothing read or written",
+      "name": "TASK-025 Pinned Setup title, step and progress > gallery screens phone-320: the accepted state draws Setup’s title and step line pinned over one divider, the equipment beneath it, with nothing read or written",
       "project": "mobile",
       "status": "passed"
     }

@@ -1,0 +1,550 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-113",
+  "family": "Setup and error re-proof (A3 task 13)",
+  "base": "ebedaf23883c0ee1f10b6a920381c3c873a0b14d",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): src/app/Onboarding.test.tsx carried-adapted (18 carried, 2 rewritten), src/ui/view-state.test.tsx carried (23), src/app/Screen.test.tsx retired (its 2 TASK-025 tests), e2e/refinement/task-025.spec.ts (added, expected after F10) and e2e/refinement/task-028.spec.ts (added, expected at the pre-UAT run). The ledger lists no build test body pending or absent for these files.",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "notApplicable": "No matcher on the real route changed. The TASK-025 gallery case was rewritten against Round 7’s accepted Setup part, a static composition: three of the build’s assertions about the build’s own gallery part (progressbar name and values, overflow, a tap answering) cannot hold there and are listed in its entry, each proved on the real route instead.",
+    "retired": [
+      "src/app/Screen.test.tsx > Screen scroll boundaries (B05 REQ-003) > TASK-025 pins a header and a pinned layer together as one head closed by one divider",
+      "src/app/Screen.test.tsx > Screen scroll boundaries (B05 REQ-003) > TASK-025 lets a pinned layer that draws its own rule close the shared head instead"
+    ]
+  },
+  "summary": {
+    "carried": 52,
+    "rewritten": 7,
+    "retired": 2,
+    "added": 14
+  },
+  "entries": [
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > renders inside Screen: one h1, the screen title, and the first step",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > walks the five declared steps in order, and says why Next is held",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > keeps a selected group and its dependent group in the same card",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > keeps every entered value when stepping back",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > commits toAnswers(draft) once through completeOnboarding and lands on Home",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > renders a committing state while the transaction runs",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > keeps the draft on a failed commit, stores nothing, and retries the same payload",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "ONB-01 onboarding wizard > shows a refused setup in the confirm card, stores nothing, and clears it on an edit",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "REQ-004 goal-derived sections, previewed > is information, not a control: nothing in it can be focused or toggled",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "REQ-004 goal-derived sections, previewed > lists the goal’s actual sections, follows a goal change, and says one may be left out",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "REQ-004 goal-derived sections, previewed > keeps equipment editable beside it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "REQ-004 goal-derived sections, previewed > leaves Settings’ section toggles editable",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "U17 ongoing limitations > asks about ongoing limitations, in wording that does not expire",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "U17 ongoing limitations > says the note travels with a ticked movement, and is context once one is",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "U17 ongoing limitations > commits ticks as hard exclusions and infers none from the prose",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "U09 checkbox activation > label and Space each toggle an equipment and a limitation choice once",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "TASK-025 pinned Setup title, step and progress > AC-C52-01 pins the title, step label and progress in one head above the scrolling equipment",
+      "ledger": "rewritten (task 2)",
+      "disposition": "rewritten",
+      "note": "Rewritten by A3 task 2 and kept as is: reads the progress in Round 7’s .clr-setup-progress, not the build’s .clr-screen__pinned wrapper. Everything else is the build’s."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "TASK-025 pinned Setup title, step and progress > AC-C52-01 keeps the pinned step label and progress current as the step controls move through the steps",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "TASK-025 pinned Setup title, step and progress > AC-R025-01 reuses Screen’s header and pinned slot: no bespoke sticky overlay, no second divider, no hidden progress",
+      "ledger": "rewritten (task 2)",
+      "disposition": "rewritten",
+      "note": "Rewritten by A3 task 2 and kept as is: the head children are Round 7’s header.clr-setup-header and div.clr-setup-progress, and the source check names Round 7’s pinnedHead. Its “no second divider” proof reads Round 7’s .clr-setup-header CSS text, which jsdom cannot cascade; in a browser that rule loses to shell.css and the route drew two dividers. The real proof is now the added one-divider test and e2e/refinement/task-025.spec.ts’s computed rules."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "TASK-025 pinned Setup title, step and progress > AC-R025-01 keeps the title pinned in the header while the setup is committing and after a failed commit",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged; passes on Round 7’s route under the product presentation. The file gained imports for the added tests only."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "reference screen: loading > shows a polite busy status region, not a blank and not the empty copy",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "reference screen: loading > admits it is slow after the threshold instead of appearing frozen",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "reference screen: empty > is a distinct screen: factual copy and one action, no busy region, no alert",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "reference screen: error > renders the AppError as an alert: plain message, requestId, what failed",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "reference screen: error > the retry action re-runs the failed operation",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "reference screen: populated > renders the data and none of the other three states",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > standalone, each state is the one self-framed card and nothing wraps it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > loading inside a card keeps the heading and adds the scan and one cursor line",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > a slow section inside a card says so on the same line and stays busy",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > a failure inside a card keeps its glyph, message, request id and action",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > a failure glitches once, standalone and inside a card",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > an error without a retry offers no action rather than a dead one",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "containment: a state never puts a card inside a card > emptiness inside a card is that card’s copy, not a second card",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "one interface loop across concurrently loading sections > runs the first and stills the rest, every one still busy under its own label",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "one interface loop across concurrently loading sections > hands the loop to the next section when the first arrives",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "one interface loop across concurrently loading sections > a section that fails gives the loop up and does not stay busy",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "one interface loop across concurrently loading sections > is static everywhere under reduced motion and still truthfully busy",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "one interface loop across concurrently loading sections > the stilled treatment covers the scan band and the cursor",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "TASK-028 released error role (C55, R22) > AC-C55-01 a standalone error scopes both border hooks to the error role at its root, so its frame, accent bar and emission share one role, and the glyph paints the error icon role",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "TASK-028 released error role (C55, R22) > AC-C55-01 an error inside a card is that card’s content: the root keeps the error hooks, the glyph keeps the error icon role and no second frame, bar or emission is drawn",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "TASK-028 released error role (C55, R22) > AC-C55-01 a real route’s account-load error renders the shared error owner with its role, and Try again re-reads the account into the route",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "TASK-028 released error role (C55, R22) > AC-C55-01 the accepted gallery state ?state=errors draws the shared error owner: a network timeout with the error role and its Retry",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "test": "TASK-028 released error role (C55, R22) > AC-R028-01 error owner retained: PR611’s correction stays in the one shared ErrorView, no second error owner or stylesheet restates the role, and the pilot’s regression proof is in place",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte (and Round 7’s gallery left src/ui/view-state.tsx unchanged); passes unchanged."
+    },
+    {
+      "file": "src/app/Screen.test.tsx",
+      "test": "Screen scroll boundaries (B05 REQ-003) > TASK-025 pins a header and a pinned layer together as one head closed by one divider",
+      "ledger": "retired (task 2)",
+      "disposition": "retired",
+      "note": "Retired by A3 task 2 (category a) and kept retired: it asserts the build’s .clr-screen__pinned wrapper and its shell.css :has() rule, neither of which exists on Round 7. Its behaviour — header and pinned layer as one head, the header giving up its rule, the layer outside the scroller, one divider — is restored in the shared Screen by this task (JOINED_HEADER_STYLE) and proved on the real route by Onboarding’s added AC-R025-01 one-divider test and e2e/refinement/task-025.spec.ts (computed rules = the head’s only). Screen.test.tsx is outside this task’s file lane."
+    },
+    {
+      "file": "src/app/Screen.test.tsx",
+      "test": "Screen scroll boundaries (B05 REQ-003) > TASK-025 lets a pinned layer that draws its own rule close the shared head instead",
+      "ledger": "retired (task 2)",
+      "disposition": "retired",
+      "note": "Retired by A3 task 2 and kept retired: it reads the build’s .clr-screen__pinned wrapper. Screen still honours pinnedHeadRule={false} (the head draws no rule; the joined header gives up its own), but no screen passes it, so no route proves it; Screen.test.tsx is outside this task’s file lane. Open for TASK-115’s end-of-run ledger."
+    },
+    {
+      "file": "e2e/refinement/task-025.spec.ts",
+      "test": "TASK-025 Pinned Setup title, step and progress > JOURNEY-025 phone-320: Set up CLEAR, the step label and progress stay pinned above one divider while the equipment scrolls and the step controls move on and back",
+      "ledger": "added e2e, expected after F10",
+      "disposition": "rewritten",
+      "note": "Rewritten: readHead reads the progress in Round 7’s .clr-setup-progress (was the build’s .clr-screen__pinned); the synthetic answers are held until visit’s scan of the boot screen ends, and openSetup then scans the settled setup screen (the build’s visit sometimes scanned the boot handing over to the route and axe flagged the skip link, region, about one run in eight). Every assertion is the build’s. Before this task’s Screen fix it failed at “one divider — the head’s — and no second rule” (rules: head, header.clr-setup-header)."
+    },
+    {
+      "file": "e2e/refinement/task-025.spec.ts",
+      "test": "TASK-025 Pinned Setup title, step and progress > JOURNEY-025 phone-390: Set up CLEAR, the step label and progress stay pinned above one divider while the equipment scrolls and the step controls move on and back",
+      "ledger": "added e2e, expected after F10",
+      "disposition": "rewritten",
+      "note": "Same rewrite (Round 7 selector, held boot, settled scan); every assertion is the build’s. Failed on the base at the same second-rule check."
+    },
+    {
+      "file": "e2e/refinement/task-025.spec.ts",
+      "test": "TASK-025 Pinned Setup title, step and progress > JOURNEY-025 keyboard, reduced motion and reopen phone-320: every equipment choice takes focus in view below the pinned head, Space answers, and a reopen pins the head again",
+      "ledger": "added e2e, expected after F10",
+      "disposition": "rewritten",
+      "note": "Same rewrite (Round 7 selector, held boot, settled scan); every assertion is the build’s. Failed on the base at the same second-rule check."
+    },
+    {
+      "file": "e2e/refinement/task-025.spec.ts",
+      "test": "TASK-025 Pinned Setup title, step and progress > JOURNEY-025 recovery phone-320: a failed setup commit is said, keeps every answer and the pinned head, and a retry sends the same draft",
+      "ledger": "added e2e, expected after F10",
+      "disposition": "rewritten",
+      "note": "Same rewrite (Round 7 selector, held boot, settled scan); every assertion is the build’s. Failed on the base at the same second-rule check."
+    },
+    {
+      "file": "e2e/refinement/task-025.spec.ts",
+      "test": "TASK-025 Pinned Setup title, step and progress > gallery screens phone-320: the accepted state draws Setup’s title and step line pinned over one divider, the equipment beneath it, with nothing read or written",
+      "ledger": "added e2e, expected after F10",
+      "disposition": "rewritten",
+      "note": "Renamed from “…draws Setup’s own pinned title, step and progress over one divider, the equipment scrolling beneath…”: the build’s gallery part ([data-gallery-setup], the route’s own SetupProgress and SetupStepView) does not exist in Round 7’s accepted gallery, whose screens state draws Setup as a static composition. Kept: title and step in the head, the step under the title, one divider (the head’s only), drawn and spanning the frame, below the step, the content starting at it, no sticky overlay, the head still when the content scrolls, the last equipment choice in view below the divider, no horizontal overflow, the URL, no network. Not kept, because the accepted part cannot meet them: the progressbar’s name and values (it has a step line, no progressbar), “the equipment overflows the frame” (its three-choice sample fits), and the tap answering (its choices are a fixed sample). Each is proved on the real route by the four journeys above, and the parity spec compares the route’s head with this part."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin clear phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin vapour phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin signal phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin mono phone-390 real routes: the boot account-load failure keeps its card's one role with the error glyph and Retry re-reads only the account; /summary's failure paints frame, accent bar, emission and icon in the one error role and Retry re-reads the session into the debrief; nothing written",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin clear phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin vapour phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin signal phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 skin mono phone-390 gallery ?state=errors: the accepted released error state paints frame, accent bar, emission and icon in the one error role beside its Retry",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 phone-390 meanings: a held read is a busy status and not an alert, its failure is an alert that claims no work, and Retry re-runs only that read",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 phone-320 reduced motion and keyboard: the failure is still, keeps its one error role, copy and Retry, fits the narrow phone, and the keyboard reaches and activates Retry",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "e2e/refinement/task-028.spec.ts",
+      "test": "TASK-028 released semantic error treatment > JOURNEY-028 phone-390 motion: a failure glitches once on arrival, never loops, and the gallery state does the same",
+      "ledger": "added e2e, expected at the pre-UAT run",
+      "disposition": "carried",
+      "note": "The build’s spec, byte for byte; passes unchanged on Round 7 (the errors state draws the same ErrorView)."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > TASK-AC-A76ECE156C75 /onboarding under the product presentation pins Round 7’s setup head on every one of the five steps, from the empty draft, never the review app’s two-step preview",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > AC-R025-01 one divider: Round 7’s setup header hands its closing rule to the head under the pinned progress, on the header itself, so no stylesheet order can draw a second rule",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > AC-R025-01 keeps the title pinned in Round 7’s setup header while the setup is committing, closed by the header’s own rule, then rejoins the progress after a failed commit",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113."
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "test": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > TASK-AC-7B8DC9E87617 no production module supplies a setup draft: only Onboarding reads equipmentSetupDraft, only the gallery’s dev runtime gives one, and the app root mounts the product presentation",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 screens phone-320: /onboarding’s Round 7 setup head beside the accepted Setup part — title and step pinned over one divider above the scrolling equipment, every difference one a criterion intends",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 screens phone-390: /onboarding’s Round 7 setup head beside the accepted Setup part — title and step pinned over one divider above the scrolling equipment, every difference one a criterion intends",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors clear phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors clear phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors vapour phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors vapour phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors signal phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors signal phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors mono phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    },
+    {
+      "file": "e2e/refinement/task-113-parity.spec.ts",
+      "test": "TASK-AC-426B098BA948 errors mono phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+      "ledger": null,
+      "disposition": "added",
+      "note": "New with A3 TASK-113: the look check (TASK-AC-426B098BA948)."
+    }
+  ]
+}

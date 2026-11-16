@@ -1,0 +1,142 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-113",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/Onboarding.test.tsx",
+    "src/ui/view-state.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-113/required-cases.json",
+    "sha256": "38146c8f787a62c43fb10288b06386d5c4d0ffb29873755b34f08d7a96017063"
+  },
+  "targets": [
+    {
+      "path": "src/app/Onboarding.test.tsx",
+      "sha256": "ff5f73aadb246f6f4dc611f733b21b76632d41bb1b2595726ccfa4dfc0bfe221"
+    },
+    {
+      "path": "src/ui/view-state.test.tsx",
+      "sha256": "c00c6934dc82c38d5dae2f809ad2d5479480b37c703ddc163f1c409bbd8ab68a"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "ONB-01 onboarding wizard > walks the five declared steps in order, and says why Next is held",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "ONB-01 onboarding wizard > keeps the draft on a failed commit, stores nothing, and retries the same payload",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "ONB-01 onboarding wizard > renders a committing state while the transaction runs",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "TASK-025 pinned Setup title, step and progress > AC-C52-01 pins the title, step label and progress in one head above the scrolling equipment",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "TASK-025 pinned Setup title, step and progress > AC-C52-01 keeps the pinned step label and progress current as the step controls move through the steps",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "TASK-025 pinned Setup title, step and progress > AC-R025-01 reuses Screen’s header and pinned slot: no bespoke sticky overlay, no second divider, no hidden progress",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "TASK-025 pinned Setup title, step and progress > AC-R025-01 keeps the title pinned in the header while the setup is committing and after a failed commit",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > TASK-AC-A76ECE156C75 /onboarding under the product presentation pins Round 7’s setup head on every one of the five steps, from the empty draft, never the review app’s two-step preview",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > AC-R025-01 one divider: Round 7’s setup header hands its closing rule to the head under the pinned progress, on the header itself, so no stylesheet order can draw a second rule",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > AC-R025-01 keeps the title pinned in Round 7’s setup header while the setup is committing, closed by the header’s own rule, then rejoins the progress after a failed commit",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Onboarding.test.tsx",
+      "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > TASK-AC-7B8DC9E87617 no production module supplies a setup draft: only Onboarding reads equipmentSetupDraft, only the gallery’s dev runtime gives one, and the app root mounts the product presentation",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "reference screen: error > renders the AppError as an alert: plain message, requestId, what failed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "reference screen: error > the retry action re-runs the failed operation",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "containment: a state never puts a card inside a card > a failure inside a card keeps its glyph, message, request id and action",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "containment: a state never puts a card inside a card > an error without a retry offers no action rather than a dead one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a standalone error scopes both border hooks to the error role at its root, so its frame, accent bar and emission share one role, and the glyph paints the error icon role",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 an error inside a card is that card’s content: the root keeps the error hooks, the glyph keeps the error icon role and no second frame, bar or emission is drawn",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a real route’s account-load error renders the shared error owner with its role, and Try again re-reads the account into the route",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-C55-01 the accepted gallery state ?state=errors draws the shared error owner: a network timeout with the error role and its Retry",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/view-state.test.tsx",
+      "name": "TASK-028 released error role (C55, R22) > AC-R028-01 error owner retained: PR611’s correction stays in the one shared ErrorView, no second error owner or stylesheet restates the role, and the pilot’s regression proof is in place",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 47,
+    "passed": 47,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 47
+  },
+  "problems": []
+}

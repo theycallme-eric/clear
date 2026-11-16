@@ -7,8 +7,8 @@
  * payload committed is `toAnswers(draft)` and nothing assembled beside it, and
  * that committing, commit-failed and the step view are each a real screen.
  */
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent, { type UserEvent } from '@testing-library/user-event'
@@ -36,6 +36,7 @@ import type { Location, Profile } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import { createFakeConstraintsClient } from '../test/constraints-double'
 import { renderApp, signedIn } from '../test/render'
+import { PRODUCT_PRESENTATION } from '../ui/product-presentation'
 import {
   committedFor,
   createFakeUserDataClient,
@@ -712,5 +713,139 @@ describe('TASK-025 pinned Setup title, step and progress', () => {
     expect(head().querySelector(':scope > header h1')).toHaveTextContent(ONBOARDING_TITLE)
     expect(within(head()).getByRole('progressbar', { name: 'Step 5 of 5' })).toBeInTheDocument()
     expect(within(scroller()).getByText(COMMIT_FAILED_TITLE)).toBeInTheDocument()
+  })
+})
+
+/**
+ * A3 TASK-113 (TASK-AC-A76ECE156C75, TASK-AC-7B8DC9E87617; JOURNEY-025): the
+ * real route is wired to Round 7's setup head and keeps every onboarding step.
+ * `equipmentSetupDraft` is the review app's preview — a seeded draft and two
+ * steps — and never the product's: the product presentation carries none, so
+ * `/onboarding` starts from the empty draft and walks all five steps under the
+ * one pinned head, and no production module supplies a draft.
+ */
+describe('A3 TASK-113 Setup on Round 7’s setup head with every onboarding step', () => {
+  const head = () => {
+    const found = screen.getByRole('main').querySelector<HTMLElement>(
+      ':scope > .clr-scroll-region > .clr-scroll-region__head',
+    )
+    expect(found).not.toBeNull()
+    return found!
+  }
+
+  it('TASK-AC-A76ECE156C75 /onboarding under the product presentation pins Round 7’s setup head on every one of the five steps, from the empty draft, never the review app’s two-step preview', async () => {
+    expect(PRODUCT_PRESENTATION).not.toHaveProperty('equipmentSetupDraft')
+    const { user } = setup()
+
+    await onStep('location')
+    // Real data only: nothing is chosen for the athlete before they answer.
+    for (const radio of screen.getAllByRole('radio')) expect(radio).not.toHaveAttribute('aria-checked', 'true')
+    expect(screen.queryByRole('group', { name: 'Equipment' })).not.toBeInTheDocument()
+    expect(next()).toBeDisabled()
+
+    const expectHead = (n: number) => {
+      // Round 7's head: its setup header with the title, then its progress, and the head's one rule.
+      expect([...head().children].map((child) => `${child.tagName.toLowerCase()}.${child.className}`))
+        .toEqual(['header.clr-setup-header', 'div.clr-setup-progress'])
+      expect(head().querySelector(':scope > header h1')).toHaveTextContent(ONBOARDING_TITLE)
+      const progress = within(head()).getByRole('progressbar', { name: `Step ${n} of ${ONBOARDING_STEPS.length}` })
+      expect(progress).toHaveAttribute('aria-valuenow', String(n))
+      expect(progress).toHaveAttribute('aria-valuemax', String(ONBOARDING_STEPS.length))
+      expect(within(head()).getByText(`Step ${n} of ${ONBOARDING_STEPS.length}`)).toBeVisible()
+      expect(head()).toHaveAttribute('data-rule')
+      expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+    }
+
+    expectHead(1)
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+    await user.click(next())
+    await onStep('experience')
+    expectHead(2)
+    await user.click(screen.getByRole('radio', { name: 'Some experience' }))
+    await user.click(next())
+    await onStep('goals')
+    expectHead(3)
+    await user.click(screen.getByRole('radio', { name: 'Strength' }))
+    await user.click(next())
+    await onStep('limitations')
+    expectHead(4)
+    await user.click(next())
+    await onStep('confirm')
+    expectHead(5)
+
+    // The confirmation reads back every answer, not the preview's two rows.
+    expect([...stepCard().querySelectorAll('dt')].map((term) => term.textContent))
+      .toEqual(['Setup', 'Equipment', 'Experience', 'Goal', 'Sections', 'Work around'])
+  })
+
+  it('AC-R025-01 one divider: Round 7’s setup header hands its closing rule to the head under the pinned progress, on the header itself, so no stylesheet order can draw a second rule', async () => {
+    setup()
+    await onStep('location')
+
+    const header = head().querySelector<HTMLElement>(':scope > header.clr-setup-header')!
+    expect(header).not.toBeNull()
+    // shell.css closes every fixed header with its own rule at a specificity
+    // Round 7's `.clr-setup-header { border-block-end: 0 }` does not outrank,
+    // so in a browser that header drew a second rule over the progress. The
+    // shared Screen gives it up on the header when a pinned layer joins it.
+    expect(header.style.borderBottom).toMatch(/^0(px)?$/)
+    expect(head()).toHaveAttribute('data-rule')
+    expect(head().querySelector(':scope > .clr-setup-progress')).toContainElement(
+      screen.getByRole('progressbar', { name: 'Step 1 of 5' }),
+    )
+    // The source names the joined head in the one shared owner, not a bespoke overlay.
+    const owner = readFileSync(resolve(import.meta.dirname, 'Screen.tsx'), 'utf8')
+    expect(owner).toMatch(/style=\{pinnedHead \? JOINED_HEADER_STYLE : undefined\}/)
+    expect(owner).not.toMatch(/sticky/)
+  })
+
+  it('AC-R025-01 keeps the title pinned in Round 7’s setup header while the setup is committing, closed by the header’s own rule, then rejoins the progress after a failed commit', async () => {
+    let finish: (value: Awaited<ReturnType<NonNullable<FakeUserDataOptions['completeOnboarding']>>>) => void = () => undefined
+    const { user } = setup({ completeOnboarding: () => new Promise((settle) => { finish = settle }) })
+    await answerEverything(user)
+    const before = head().querySelector(':scope > header h1')
+    expect(before).toHaveTextContent(ONBOARDING_TITLE)
+    await user.click(screen.getByRole('button', { name: 'Finish setup' }))
+
+    // Committing: the same header pins the title; nothing joins it, so it keeps its own rule.
+    const waiting = await within(screen.getByRole('main')).findByRole('status')
+    expect(waiting).toHaveTextContent(COMMITTING_LABEL)
+    const committingHeader = head().querySelector<HTMLElement>(':scope > header.clr-setup-header')
+    expect(committingHeader?.querySelector('h1')).toHaveTextContent(ONBOARDING_TITLE)
+    expect([...head().children].map((child) => child.tagName.toLowerCase())).toEqual(['header'])
+    expect(committingHeader!.style.borderBottom).toBe('')
+    expect(head()).not.toHaveAttribute('data-rule')
+    expect(screen.getByRole('region', { name: `${ONBOARDING_TITLE} content` })).toContainElement(waiting)
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+
+    finish(err(createError(ErrorCode.NETWORK_SERVER_ERROR, { details: { status: 500 } })))
+    await screen.findByRole('button', { name: 'Try again' })
+    expect(head().querySelector(':scope > header h1')).toHaveTextContent(ONBOARDING_TITLE)
+    expect(within(head()).getByRole('progressbar', { name: 'Step 5 of 5' })).toBeInTheDocument()
+    expect(head()).toHaveAttribute('data-rule')
+  })
+
+  it('TASK-AC-7B8DC9E87617 no production module supplies a setup draft: only Onboarding reads equipmentSetupDraft, only the gallery’s dev runtime gives one, and the app root mounts the product presentation', () => {
+    const root = process.cwd()
+    const walk = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name)
+      if (entry.isDirectory()) return walk(path)
+      return /\.(?:ts|tsx)$/.test(entry.name) && !/\.test\.(?:ts|tsx)$/.test(entry.name) ? [path] : []
+    })
+    const production = walk(resolve(root, 'src'))
+      .map((path) => relative(root, path).split('\\').join('/'))
+      .filter((path) => !path.startsWith('src/dev/') && !path.startsWith('src/test/'))
+    const mentions = production.filter((path) => readFileSync(resolve(root, path), 'utf8').includes('equipmentSetupDraft'))
+    // The type, and the one reader.
+    expect(mentions.sort()).toEqual(['src/app/Onboarding.tsx', 'src/ui/workout-experience-presentation.tsx'])
+    // Neither gives it a value: the type declares it optional, Onboarding only reads it.
+    for (const path of mentions) {
+      expect(readFileSync(resolve(root, path), 'utf8'), path).not.toMatch(/equipmentSetupDraft\s*:/)
+    }
+    expect(readFileSync(resolve(root, 'src/ui/product-presentation.ts'), 'utf8')).not.toMatch(/equipmentSetupDraft|setupDraft|onboardingReducer/)
+    expect(readFileSync(resolve(root, 'src/app/AppRuntime.tsx'), 'utf8'))
+      .toMatch(/<WorkoutExperiencePresentationProvider value=\{PRODUCT_PRESENTATION\}>/)
+    // The sample draft is the gallery runtime's own.
+    expect(readFileSync(resolve(root, 'src/dev/gallery-refinement-runtime.tsx'), 'utf8')).toMatch(/equipmentSetupDraft: setupDraft/)
   })
 })
