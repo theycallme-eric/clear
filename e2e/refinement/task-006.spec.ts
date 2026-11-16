@@ -10,8 +10,6 @@ import {
   LONG_LADDER_ROUNDS,
   TIMED_FINISH,
   TIMED_FORMATS,
-  TIMED_LISTS,
-  TIMED_START,
   timedActionsAcceptance,
   timedActionsSnapshot,
   type TimedFormat,
@@ -41,6 +39,13 @@ import { expect, test as scanned } from '../fixtures'
  * browser clock is Playwright's, so pauses are read exactly. Nothing is
  * written: no set, no block result and no session call — the workout's own
  * Finish is never pressed here.
+ *
+ * A3 TASK-104 (F2, #727) carried this spec onto Round 7. The route's timed
+ * blocks are Round 7's `TimedWorkoutFlow` (A3 TASK-103), so each case reads
+ * Round 7's controls and words — its card, its `[data-timed-actions]` row, its
+ * timer frame's caption and readout, its lists' names and its Coaching and
+ * notes disclosure — and asserts the build's behaviour unchanged. What each
+ * read changed is in `evidence/refinement/task-104/test-ledger.json`.
  */
 const OWNER = '00000000-0000-4000-8000-000000000601'
 const PLACE = '00000000-0000-4000-8000-000000000611'
@@ -118,6 +123,19 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
 test.describe.configure({ mode: 'default' })
 
 type Viewport = { width: number; height: number }
+/** Round 7's Start words: the block's own structure label, the ladder's `Start ladder`. */
+const TIMED_START: Readonly<Record<TimedFormat, string>> = {
+  emom: 'Start EMOM', amrap: 'Start AMRAP', for_time: 'Start FOR TIME', ladder: 'Start ladder',
+}
+
+/** The list each Round 7 card names its work by (the ladder's: its rounds). */
+const TIMED_LISTS: Readonly<Record<TimedFormat, string>> = {
+  emom: 'Movements in this EMOM',
+  amrap: 'Movements in this AMRAP',
+  for_time: 'Movements in this FOR TIME',
+  ladder: 'Prescribed ladder rounds',
+}
+
 /** The approved mobile scope: the narrow phone and the project's own phone. */
 const VIEWPORTS: ReadonlyArray<{ name: string; viewport: Viewport }> = [
   { name: 'phone-320', viewport: { width: 320, height: 568 } },
@@ -150,7 +168,7 @@ async function syntheticApp(page: Page, options: { reducedMotion?: boolean } = {
       unexpected.push(`${request.method()} ${url.pathname}`)
       return route.abort('blockedbyclient')
     }
-    if (request.method() === 'GET') {
+    if (request.method() === 'GET' || request.method() === 'HEAD') {
       if (name === 'profiles') return reply([onboardedProfile({ id: OWNER, goal_preset: 'balanced' })])
       if (name === 'locations') return reply([fixtureLocation({ id: PLACE, user_id: OWNER, tier: 'full', is_default: true })])
       // Every other read is an empty answer: no history, notes, anchors or favorites.
@@ -221,15 +239,14 @@ function seconds(reading: string): number {
   return minutes * 60 + rest
 }
 
-function cardOf(page: Page, format: TimedFormat): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({
-    has: page.getByRole('list', { name: TIMED_LISTS[format], exact: true }),
-  })
+/** The block: Round 7's timed flow, its clock beside its card. */
+function blockOf(page: Page, format: TimedFormat): Locator {
+  return page.locator(`main .clr-timed-flow[data-timed-format="${format}"]`)
 }
 
-/** The block's stack: its clock beside its card. */
-function blockOf(page: Page, format: TimedFormat): Locator {
-  return page.locator('main .clr-stack').filter({ has: cardOf(page, format) }).last()
+/** The block's one card: the one holding its group header and its work. */
+function cardOf(page: Page, format: TimedFormat): Locator {
+  return blockOf(page, format).locator('.clr-card').filter({ has: page.locator('[data-movement-group-header]') })
 }
 
 function rowOf(page: Page, format: TimedFormat): Locator {
@@ -240,9 +257,10 @@ function controlOf(page: Page, format: TimedFormat, name: string): Locator {
   return rowOf(page, format).getByRole('button', { name, exact: true })
 }
 
+/** The section clock's readout: its digits, as drawn (the caption beside them is words). */
 async function blockTime(page: Page, format: TimedFormat): Promise<string> {
-  const text = (await blockOf(page, format).getByRole('timer').first().textContent()) ?? ''
-  return /\d{2}:\d{2}/.exec(text)?.[0] ?? ''
+  return blockOf(page, format).getByRole('timer').first().evaluate((timer) =>
+    [...timer.children].map((part) => part.textContent ?? '').find((text) => /^\d{2}:\d{2}$/.test(text)) ?? '')
 }
 
 async function sessionTime(page: Page): Promise<string> {
@@ -274,10 +292,13 @@ async function readSlot(page: Page, format: TimedFormat): Promise<SlotGeometry> 
     }
     const row = card.querySelector('[data-timed-actions]')!
     const list = [...card.querySelectorAll('ul, ol')].find((node) => node.getAttribute('aria-label') === listName)!
-    const coaching = card.querySelector('[data-coaching-group]')
-    const work = [...card.querySelectorAll('[data-movement-identity], ul, ol')].filter((node) => !row.contains(node))
+    // The card's Coaching and notes disclosure (Round 7's one grouped disclosure).
+    const coaching = [...card.querySelectorAll('button')].find((node) => node.textContent?.trim() === 'Coaching and notes')?.closest('.clr-collapsible') ?? null
+    const work = [...card.querySelectorAll('.clr-movement-identity, [data-movement-detail], ul, ol')]
+      .filter((node) => !row.contains(node) && (coaching === null || !coaching.contains(node)))
     return {
-      card: box(card),
+      // The card's own content box: Round 7's movement group, which holds the work and the slot.
+      card: box(card.querySelector('.clr-movement-group')!),
       row: box(row),
       cells: [...row.children].map(box),
       controls: [...row.querySelectorAll('button')].map((button) => ({
@@ -291,7 +312,7 @@ async function readSlot(page: Page, format: TimedFormat): Promise<SlotGeometry> 
       coachingTop: coaching === null ? null : coaching.getBoundingClientRect().top,
       listTop: list.getBoundingClientRect().top,
       listBottom: list.getBoundingClientRect().bottom,
-      headerBottom: card.querySelector(':scope > [data-movement-group-header]')!.getBoundingClientRect().bottom,
+      headerBottom: card.querySelector('[data-movement-group-header]')!.getBoundingClientRect().bottom,
       rowPosition: getComputedStyle(row).position,
     }
   }, TIMED_LISTS[format])
@@ -344,7 +365,7 @@ async function attachBlocks(page: Page, state: string) {
 
 /** What the athlete sees on arrival at a card: the viewport, scrolled to its header. */
 async function attachViewport(page: Page, format: TimedFormat, name: string) {
-  await cardOf(page, format).locator(':scope > [data-movement-group-header]').evaluate((header) => header.scrollIntoView({ block: 'start' }))
+  await cardOf(page, format).locator('[data-movement-group-header]').evaluate((header) => header.scrollIntoView({ block: 'start' }))
   await settle(page)
   await test.info().attach(`${name}.png`, { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
 }
@@ -370,6 +391,17 @@ async function checkJourneyA11y(page: Page) {
   expect(results.violations.map((violation) => ({ id: violation.id, nodes: violation.nodes.map((node) => node.target.join(' ')) }))).toEqual([])
 }
 
+/**
+ * A section's Finish opens its Round 7 log (the focused "Log results" dialog);
+ * the athlete closes it with its framed X before moving on, as on the route.
+ */
+async function closeLog(page: Page) {
+  const dialog = page.locator('dialog[open]').filter({ has: page.locator('form.clr-timed-log') })
+  await expect(dialog).toHaveCount(1)
+  await dialog.getByRole('button', { name: 'Close log' }).click()
+  await expect(dialog).toHaveCount(0)
+}
+
 async function noHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 }
@@ -392,9 +424,10 @@ test.describe('TASK-006 timed action hierarchy', () => {
         expect(slot.coachingTop, `${format}: the card's coaching`).not.toBeNull()
         expect(slot.coachingTop!, `${format}: before coaching`).toBeGreaterThanOrEqual(slot.row.bottom - TOLERANCE)
       }
-      // The EMOM's minute rest is part of its prescription: Start is below it too.
-      const rest = await cardOf(page, 'emom').getByText('15s rest at the end of each minute').boundingBox()
-      expect((await readSlot(page, 'emom')).row.top).toBeGreaterThanOrEqual(rest!.y + rest!.height - TOLERANCE)
+      // The EMOM's schedule is part of its prescription — each movement's minute
+      // and target: Start is below the last of it too.
+      const minute = await cardOf(page, 'emom').getByText('Min 2 · 10 reps', { exact: true }).boundingBox()
+      expect((await readSlot(page, 'emom')).row.top).toBeGreaterThanOrEqual(minute!.y + minute!.height - TOLERANCE)
 
       // The long ladder: Start after its identity and cap, before every round.
       const ladder = await readSlot(page, 'ladder')
@@ -470,7 +503,7 @@ test.describe('TASK-006 timed action hierarchy', () => {
         amrap: await blockTime(page, 'amrap'), for_time: await blockTime(page, 'for_time'), ladder: await blockTime(page, 'ladder'),
       }).toEqual({ amrap: '07:20', for_time: '00:40', ladder: '00:40' })
       expect(await blockTime(page, 'emom')).toBe('00:20')
-      await expect(cardOf(page, 'emom').getByText('MIN 1 OF 10')).toBeVisible()
+      await expect(blockOf(page, 'emom').getByText('Minute 1 of 10', { exact: true })).toBeVisible()
       await attachBlocks(page, `running-${name}`)
       // axe keeps its own timers: let the browser's clock run again to scan.
       await page.clock.resume()
@@ -483,6 +516,8 @@ test.describe('TASK-006 timed action hierarchy', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     const app = await syntheticApp(page, { reducedMotion: true })
     await openWorkout(page, visit)
+    // Held still, so each section's reading below is exact arithmetic.
+    await hold(page)
 
     for (const format of TIMED_FORMATS) {
       const start = controlOf(page, format, TIMED_START[format])
@@ -516,17 +551,26 @@ test.describe('TASK-006 timed action hierarchy', () => {
     await pass(page, 20)
     await controlOf(page, 'for_time', 'Finish').focus()
     await page.keyboard.press('Enter')
-    await expect(blockOf(page, 'for_time').getByRole('status').filter({ hasText: 'Finished under cap' })).toBeVisible()
+    await expect(blockOf(page, 'for_time').getByRole('timer')).toContainText('Finished')
+    expect(await blockTime(page, 'for_time')).toBe('00:20')
     await expect(rowOf(page, 'for_time')).toHaveCount(0)
+    await closeLog(page)
     await controlOf(page, 'amrap', 'Finish early').focus()
     await page.keyboard.press('Enter')
-    await expect(cardOf(page, 'amrap').getByText('00:20 on the clock')).toBeVisible()
+    // The window is settled where it was ended: twenty seconds into its eight minutes.
+    await expect(blockOf(page, 'amrap').getByRole('timer')).toContainText('Finished')
+    expect(await blockTime(page, 'amrap')).toBe('07:40')
+    await closeLog(page)
     await controlOf(page, 'emom', 'Finish early').focus()
     await page.keyboard.press('Enter')
     await expect(cardOf(page, 'emom').getByText('Finished early, in minute 1 of 10. Continue when you are ready.')).toBeVisible()
+    await closeLog(page)
     await controlOf(page, 'ladder', 'Finish').focus()
     await page.keyboard.press('Enter')
-    await expect(blockOf(page, 'ladder').getByRole('status').filter({ hasText: 'Finished' })).toBeVisible()
+    await expect(blockOf(page, 'ladder').getByRole('timer')).toContainText('Finished')
+    await closeLog(page)
+    // axe keeps its own timers: let the browser's clock run again to scan.
+    await page.clock.resume()
 
     await expect(page).toHaveURL(/\/workout$/)
     const finishWorkout = page.getByRole('button', { name: 'Finish workout', exact: true })
@@ -555,7 +599,7 @@ test.describe('TASK-006 timed action hierarchy', () => {
     await expect(page.getByRole('list', { name: TIMED_LISTS.ladder, exact: true })).toBeVisible()
     await settle(page)
     expect((await readSlot(page, 'amrap')).controls.map(({ name: label }) => label)).toEqual(['Resume', 'Finish early'])
-    await expect(cardOf(page, 'amrap').getByText('Paused', { exact: true })).toBeVisible()
+    await expect(blockOf(page, 'amrap').getByText('Paused', { exact: true })).toBeVisible()
     expect(await blockTime(page, 'amrap')).toBe(frozen)
     // The ladder was running: it ran on through the close (at least the 75
     // seconds stepped here, plus however long the reload took).
@@ -583,7 +627,7 @@ test.describe('TASK-006 timed action hierarchy', () => {
     for (const rounds of [4, 12] as const) {
       await visit(`/gallery/refinements?state=ladder-${rounds}`)
       const state = page.locator(`[data-refinement-state="ladder-${rounds}"]`)
-      const card = state.locator('[data-workout-card="workout"]')
+      const card = state.locator('.clr-timed-flow[data-timed-format="ladder"] .clr-card').filter({ has: page.locator('[data-movement-group-header]') })
       const list = card.getByRole('list', { name: TIMED_LISTS.ladder, exact: true })
       await expect(list.getByRole('listitem')).toHaveCount(rounds)
       const row = card.locator('[data-timed-actions]')
