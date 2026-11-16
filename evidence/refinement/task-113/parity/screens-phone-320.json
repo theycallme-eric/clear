@@ -1,0 +1,510 @@
+{
+  "schema": "clear-task-113-parity/v1",
+  "task": "TASK-113",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "screens",
+  "part": "Setup",
+  "width": 320,
+  "route": "/onboarding",
+  "captures": {
+    "gallery": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-gallery.png",
+      "sha256": "6b5a235f8a0a27ec750af3a59e18d18dc325b84c075bcedff05f799c81c49ece"
+    },
+    "route": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-route.png",
+      "sha256": "b58175df245155aa20ff4421d092fae22aebd57d23347a37f26ea21218c38710"
+    },
+    "routeScrolled": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-route-scrolled.png",
+      "sha256": "8131f0ed3921a981ce42502effedc024563ff4c6de9d3356b0e7738949b95693"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "SETUP",
+      "Step 1 of 5 · Equipment",
+      "EQUIPMENT",
+      "DUMBBELLS",
+      "KETTLEBELL",
+      "BENCH"
+    ],
+    "route": [
+      "WHAT’S YOUR GYM SETUP?",
+      "SETUP",
+      "MINIMAL",
+      "HOME GYM",
+      "BUILDING GYM",
+      "FULL GYM",
+      "EQUIPMENT",
+      "BODYWEIGHT",
+      "RESISTANCE BANDS",
+      "FOAM ROLLER",
+      "DUMBBELLS",
+      "KETTLEBELLS",
+      "PULL-UP BAR",
+      "BARBELL",
+      "PLYO BOX",
+      "CABLE MACHINE",
+      "ROWING MACHINE",
+      "ASSAULT BIKE",
+      "BATTLE ROPES",
+      "ASSISTED PULL-UP / DIP",
+      "LEG PRESS",
+      "LEG CURL / EXTENSION",
+      "HACK SQUAT",
+      "SET UP CLEAR",
+      "STEP 1 OF 5",
+      "NEXT"
+    ]
+  },
+  "differences": [
+    {
+      "side": "gallery only",
+      "text": "Step 1 of 5 · Equipment",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "Every onboarding step stays with its own question: the route’s first step is the setup and its equipment, asked by the step card; the pinned step line is the progress’s own name (Step 1 of 5)."
+    },
+    {
+      "side": "gallery only",
+      "text": "KETTLEBELL",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "Gallery sample options. The route lists the real Setup equipment catalogue (EQUIPMENT): Kettlebells, and no Bench, which is not a Setup equipment ID (the gallery’s own asset note says so)."
+    },
+    {
+      "side": "gallery only",
+      "text": "BENCH",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "Gallery sample options. The route lists the real Setup equipment catalogue (EQUIPMENT): Kettlebells, and no Bench, which is not a Setup equipment ID (the gallery’s own asset note says so)."
+    },
+    {
+      "side": "route only",
+      "text": "WHAT’S YOUR GYM SETUP?",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "The first onboarding step’s own question, its card heading (every onboarding step stays)."
+    },
+    {
+      "side": "route only",
+      "text": "MINIMAL",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "side": "route only",
+      "text": "HOME GYM",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "side": "route only",
+      "text": "BUILDING GYM",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "side": "route only",
+      "text": "FULL GYM",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "side": "route only",
+      "text": "BODYWEIGHT",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "RESISTANCE BANDS",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "FOAM ROLLER",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "KETTLEBELLS",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "PULL-UP BAR",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "BARBELL",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "PLYO BOX",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "CABLE MACHINE",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "ROWING MACHINE",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "ASSAULT BIKE",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "BATTLE ROPES",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "ASSISTED PULL-UP / DIP",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "LEG PRESS",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "LEG CURL / EXTENSION",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "HACK SQUAT",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "reason": "The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "side": "route only",
+      "text": "SET UP CLEAR",
+      "criterion": "AC-C52-01",
+      "reason": "The pinned title is the screen’s own h1, Set up CLEAR, in Round 7’s setup header (C52, R24); the gallery part is labelled Setup."
+    },
+    {
+      "side": "route only",
+      "text": "STEP 1 OF 5",
+      "criterion": "AC-C52-01",
+      "reason": "The pinned step label, the named progressbar’s visible label (C52; AC-R025-01: no hidden progress)."
+    },
+    {
+      "side": "route only",
+      "text": "NEXT",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "The step control in the pinned footer: the onboarding steps stay reachable."
+    }
+  ],
+  "ticked": {
+    "gallery": [
+      "Dumbbells"
+    ],
+    "route": [
+      "Dumbbells"
+    ]
+  },
+  "equipmentControl": {
+    "gallery": "chip",
+    "route": "checkbox",
+    "difference": {
+      "criterion": "TASK-AC-A76ECE156C75",
+      "reason": "Every onboarding step stays with its own controls: Round 7’s Onboarding (gallery-owned) keeps the shipped CheckboxGroup for equipment (U09 checkbox activation); the accepted part composes its three-item sample from chips."
+    }
+  },
+  "layout": {
+    "method": "pinned head geometry",
+    "reason": "The accepted screens state draws Setup as a static composition in its own words (labelled above), so its elements have no one-for-one counterparts on the route; both sides must draw the pinned hierarchy C52 names.",
+    "tolerancePx": 2,
+    "facts": {
+      "gallery": {
+        "stepBeneathTitle": true,
+        "stepFromTitleEdge": true,
+        "oneDivider": true,
+        "dividerClosesHead": true,
+        "dividerSpansHead": true,
+        "contentStartsAtDivider": true,
+        "equipmentScrolls": true,
+        "headStill": true,
+        "noOverlay": true
+      },
+      "route": {
+        "stepBeneathTitle": true,
+        "stepFromTitleEdge": true,
+        "oneDivider": true,
+        "dividerClosesHead": true,
+        "dividerSpansHead": true,
+        "contentStartsAtDivider": true,
+        "equipmentScrolls": true,
+        "headStill": true,
+        "noOverlay": true
+      }
+    },
+    "gaps": {
+      "gallery": {
+        "titleToStep": 0,
+        "stepToDivider": 10
+      },
+      "route": {
+        "titleToStep": 20,
+        "stepToDivider": 14
+      }
+    },
+    "gallery": {
+      "top": {
+        "boxes": {
+          "part": {
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 174
+          },
+          "head": {
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 46
+          },
+          "title": {
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 16
+          },
+          "step": {
+            "x": 0,
+            "y": 16,
+            "width": 254,
+            "height": 20
+          },
+          "scroller": {
+            "x": 0,
+            "y": 46,
+            "width": 254,
+            "height": 128
+          },
+          "equipment": {
+            "x": 0,
+            "y": 58,
+            "width": 254,
+            "height": 104
+          }
+        },
+        "rules": [
+          {
+            "element": "head",
+            "edge": "bottom",
+            "y": 46,
+            "x": 0,
+            "width": 254
+          }
+        ],
+        "overflowing": false,
+        "scrollTop": 0,
+        "overlays": 0,
+        "ticked": [
+          "Dumbbells"
+        ],
+        "equipmentControl": "chip",
+        "equipmentInScroller": true,
+        "equipmentInHead": false
+      },
+      "scrolled": {
+        "boxes": {
+          "part": {
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 174
+          },
+          "head": {
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 46
+          },
+          "title": {
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 16
+          },
+          "step": {
+            "x": 0,
+            "y": 16,
+            "width": 254,
+            "height": 20
+          },
+          "scroller": {
+            "x": 0,
+            "y": 46,
+            "width": 254,
+            "height": 128
+          },
+          "equipment": {
+            "x": 0,
+            "y": 58,
+            "width": 254,
+            "height": 104
+          }
+        },
+        "rules": [
+          {
+            "element": "head",
+            "edge": "bottom",
+            "y": 46,
+            "x": 0,
+            "width": 254
+          }
+        ],
+        "overflowing": false,
+        "scrollTop": 0,
+        "overlays": 0,
+        "ticked": [
+          "Dumbbells"
+        ],
+        "equipmentControl": "chip",
+        "equipmentInScroller": true,
+        "equipmentInHead": false
+      }
+    },
+    "route": {
+      "top": {
+        "boxes": {
+          "part": {
+            "x": 0,
+            "y": 0,
+            "width": 320,
+            "height": 548
+          },
+          "head": {
+            "x": 0,
+            "y": 0,
+            "width": 320,
+            "height": 102
+          },
+          "title": {
+            "x": 16,
+            "y": 0,
+            "width": 185.6,
+            "height": 40
+          },
+          "step": {
+            "x": 16,
+            "y": 60,
+            "width": 288,
+            "height": 28
+          },
+          "scroller": {
+            "x": 0,
+            "y": 102,
+            "width": 320,
+            "height": 368
+          },
+          "equipment": {
+            "x": 38,
+            "y": 274,
+            "width": 254,
+            "height": 840
+          }
+        },
+        "rules": [
+          {
+            "element": "head",
+            "edge": "bottom",
+            "y": 102,
+            "x": 0,
+            "width": 320
+          }
+        ],
+        "overflowing": true,
+        "scrollTop": 0,
+        "overlays": 0,
+        "ticked": [
+          "Dumbbells"
+        ],
+        "equipmentControl": "checkbox",
+        "equipmentInScroller": true,
+        "equipmentInHead": false
+      },
+      "scrolled": {
+        "boxes": {
+          "part": {
+            "x": 0,
+            "y": 0,
+            "width": 320,
+            "height": 548
+          },
+          "head": {
+            "x": 0,
+            "y": 0,
+            "width": 320,
+            "height": 102
+          },
+          "title": {
+            "x": 16,
+            "y": 0,
+            "width": 185.6,
+            "height": 40
+          },
+          "step": {
+            "x": 16,
+            "y": 60,
+            "width": 288,
+            "height": 28
+          },
+          "scroller": {
+            "x": 0,
+            "y": 102,
+            "width": 320,
+            "height": 368
+          },
+          "equipment": {
+            "x": 38,
+            "y": -411,
+            "width": 254,
+            "height": 840
+          }
+        },
+        "rules": [
+          {
+            "element": "head",
+            "edge": "bottom",
+            "y": 102,
+            "x": 0,
+            "width": 320
+          }
+        ],
+        "overflowing": true,
+        "scrollTop": 685,
+        "overlays": 0,
+        "ticked": [
+          "Dumbbells"
+        ],
+        "equipmentControl": "checkbox",
+        "equipmentInScroller": true,
+        "equipmentInHead": false
+      }
+    }
+  }
+}

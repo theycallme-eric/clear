@@ -165,7 +165,10 @@ export function Onboarding() {
 
   if (commit.status === 'committing') {
     return (
-      <Screen title={ONBOARDING_TITLE}>
+      // TASK-025 (AC-R025-01), A3 TASK-113: the title stays pinned in Round 7's
+      // setup header while the setup commits; nothing joins it, so the header
+      // keeps its own closing rule.
+      <Screen title={ONBOARDING_TITLE} header={presentation ? { className: 'clr-setup-header' } : undefined}>
         <LoadingView label={COMMITTING_LABEL} />
       </Screen>
     )

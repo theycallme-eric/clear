@@ -1,0 +1,204 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-113",
+  "description": "A3 task 13: Setup and error screens re-proved on Round 7 (REQ-025, REQ-028; JOURNEY-025 and JOURNEY-028, completion owner). check-01 proves on the real components: /onboarding under the product presentation (no equipmentSetupDraft) starts from the empty draft and walks all five onboarding steps under Round 7's setup head — clr-setup-header with the Set up CLEAR title over clr-setup-progress, Step N of 5, in Screen's one pinned head — whose header hands its own closing rule to the head on the header itself (the shared Screen: a header joined by a pinned layer gives up its rule; shell.css's header rule outranks Round 7's .clr-setup-header rule, so in a browser the route had drawn two dividers); the title stays pinned in the setup header while the setup commits and after a failed commit; no production module supplies a setup draft; the released ErrorView (src/ui/view-state.tsx, unchanged) keeps the error role on frame, accent bar, emission and glyph, its retry and the one-owner rule. The route-level journeys are e2e/refinement/task-025.spec.ts (JOURNEY-025, rewritten for Round 7's head) and e2e/refinement/task-028.spec.ts (JOURNEY-028, carried), run under their own manifests. parity is the look check: each real route beside its accepted gallery state (bec4454) with matched data at 320 and 390 px — /onboarding's equipment step (Dumbbells ticked) beside the screens state's Setup part, a static composition, compared in words and in the pinned head's geometry (title, step line beneath it from the same edge, one divider closing the head and spanning it, the content starting at it, the head still while the content scrolls, no sticky overlay) and in how the equipment choices are drawn (the part's sample chips beside the route's shipped checkbox rows, labelled); /summary's failed session read beside ?state=errors in each of the four skins, compared in words, in every element's box within 2 px and in the painted roles. Every visible difference must be labelled with the criterion that intends it, and each case writes its receipt to evidence/refinement/task-113/parity/. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-113 --check check-01 -- npx vitest run src/app/Onboarding.test.tsx src/ui/view-state.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C52-01",
+        "AC-R025-01",
+        "AC-C55-01",
+        "AC-R028-01",
+        "TASK-AC-A76ECE156C75",
+        "TASK-AC-7AAC965AC7CB",
+        "TASK-AC-7B8DC9E87617",
+        "JOURNEY-025"
+      ],
+      "files": [
+        "src/app/Onboarding.test.tsx",
+        "src/ui/view-state.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "ONB-01 onboarding wizard > walks the five declared steps in order, and says why Next is held",
+          "criterion": "TASK-AC-A76ECE156C75"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "ONB-01 onboarding wizard > keeps the draft on a failed commit, stores nothing, and retries the same payload",
+          "criterion": "JOURNEY-025"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "ONB-01 onboarding wizard > renders a committing state while the transaction runs",
+          "criterion": "JOURNEY-025"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "TASK-025 pinned Setup title, step and progress > AC-C52-01 pins the title, step label and progress in one head above the scrolling equipment",
+          "criterion": "AC-C52-01"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "TASK-025 pinned Setup title, step and progress > AC-C52-01 keeps the pinned step label and progress current as the step controls move through the steps",
+          "criterion": "AC-C52-01"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "TASK-025 pinned Setup title, step and progress > AC-R025-01 reuses Screen’s header and pinned slot: no bespoke sticky overlay, no second divider, no hidden progress",
+          "criterion": "AC-R025-01"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "TASK-025 pinned Setup title, step and progress > AC-R025-01 keeps the title pinned in the header while the setup is committing and after a failed commit",
+          "criterion": "AC-R025-01"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > TASK-AC-A76ECE156C75 /onboarding under the product presentation pins Round 7’s setup head on every one of the five steps, from the empty draft, never the review app’s two-step preview",
+          "criterion": "TASK-AC-A76ECE156C75"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > AC-R025-01 one divider: Round 7’s setup header hands its closing rule to the head under the pinned progress, on the header itself, so no stylesheet order can draw a second rule",
+          "criterion": "AC-R025-01"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > AC-R025-01 keeps the title pinned in Round 7’s setup header while the setup is committing, closed by the header’s own rule, then rejoins the progress after a failed commit",
+          "criterion": "AC-R025-01"
+        },
+        {
+          "file": "src/app/Onboarding.test.tsx",
+          "name": "A3 TASK-113 Setup on Round 7’s setup head with every onboarding step > TASK-AC-7B8DC9E87617 no production module supplies a setup draft: only Onboarding reads equipmentSetupDraft, only the gallery’s dev runtime gives one, and the app root mounts the product presentation",
+          "criterion": "TASK-AC-7B8DC9E87617"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "reference screen: error > renders the AppError as an alert: plain message, requestId, what failed",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "reference screen: error > the retry action re-runs the failed operation",
+          "criterion": "TASK-AC-7AAC965AC7CB"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "containment: a state never puts a card inside a card > a failure inside a card keeps its glyph, message, request id and action",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "containment: a state never puts a card inside a card > an error without a retry offers no action rather than a dead one",
+          "criterion": "AC-R028-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a standalone error scopes both border hooks to the error role at its root, so its frame, accent bar and emission share one role, and the glyph paints the error icon role",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 an error inside a card is that card’s content: the root keeps the error hooks, the glyph keeps the error icon role and no second frame, bar or emission is drawn",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 a real route’s account-load error renders the shared error owner with its role, and Try again re-reads the account into the route",
+          "criterion": "TASK-AC-7AAC965AC7CB"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-C55-01 the accepted gallery state ?state=errors draws the shared error owner: a network timeout with the error role and its Retry",
+          "criterion": "AC-C55-01"
+        },
+        {
+          "file": "src/ui/view-state.test.tsx",
+          "name": "TASK-028 released error role (C55, R22) > AC-R028-01 error owner retained: PR611’s correction stays in the one shared ErrorView, no second error owner or stylesheet restates the role, and the pilot’s regression proof is in place",
+          "criterion": "AC-R028-01"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-113 --check parity -- npx playwright test e2e/refinement/task-113-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-426B098BA948",
+        "AC-C52-01",
+        "AC-C55-01",
+        "TASK-AC-7B8DC9E87617"
+      ],
+      "files": [
+        "e2e/refinement/task-113-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 screens phone-320: /onboarding’s Round 7 setup head beside the accepted Setup part — title and step pinned over one divider above the scrolling equipment, every difference one a criterion intends",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 screens phone-390: /onboarding’s Round 7 setup head beside the accepted Setup part — title and step pinned over one divider above the scrolling equipment, every difference one a criterion intends",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors clear phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors clear phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors vapour phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors vapour phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors signal phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors signal phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors mono phone-320: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        },
+        {
+          "file": "e2e/refinement/task-113-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-426B098BA948 errors mono phone-390: /summary’s failed read draws the released ErrorView where and as the accepted errors state does — frame, accent bar, emission, glyph and Retry",
+          "criterion": "TASK-AC-426B098BA948"
+        }
+      ]
+    }
+  }
+}
