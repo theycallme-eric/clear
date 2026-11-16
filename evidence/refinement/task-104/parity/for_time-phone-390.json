@@ -1,0 +1,394 @@
+{
+  "schema": "clear-task-104-parity/v1",
+  "task": "TASK-104",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "for_time",
+  "format": "for_time",
+  "width": 390,
+  "route": "/workout",
+  "drive": "Start; 30 s; Pause; 60 s; Finish; 1 s — on the browser clock, held between steps",
+  "captures": {
+    "gallery-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-ready.png",
+      "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441"
+    },
+    "route-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-ready.png",
+      "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d"
+    },
+    "gallery-running": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-running.png",
+      "sha256": "59357e6563e0bb711996f77cfacf57c770e18bd9bdab6488ea80ccaa1bc72495"
+    },
+    "route-running": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-running.png",
+      "sha256": "d08c19c4af679cc5b8949afe852eebcb0d675402642d6710c588332e5b5f1f72"
+    },
+    "gallery-paused": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-paused.png",
+      "sha256": "933eff7896d3a8018873806e287aeaa2793ebfe34921c10640626c23d5b9c04c"
+    },
+    "route-paused": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-paused.png",
+      "sha256": "92ba0f9e364e6adfc45711fb2964e85a92b5805eefb9660c80ca002e12cad981"
+    },
+    "gallery-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-ended.png",
+      "sha256": "297272ab2f0cb33111a8cc5e803f37af1a2ff1371487cf08d3bba8827193a4ac"
+    },
+    "route-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-ended.png",
+      "sha256": "19753ebca11323a1f5d993adfac81752e85a8885421958f45f840fb719f5cabd"
+    },
+    "gallery-log": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-log.png",
+      "sha256": "6952b4f3b2f80220eda90e8fccc3d8465437bccc0b17d77dcac32dba68594d7f"
+    },
+    "route-log": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-log.png",
+      "sha256": "9973222b18d2b1834ecdaf7a404724f86a6768495ca61003da1122d48e505cf7"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "running": [
+        "ELAPSED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Elapsed. 30 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "PAUSE",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "paused": [
+        "PAUSED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Paused. 30 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "RESUME",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "ended": [
+        "FINISHED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Finished. 30 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "running": [
+        "ELAPSED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Elapsed. 30 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "PAUSE",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "paused": [
+        "PAUSED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Paused. 30 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "RESUME",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "ended": [
+        "FINISHED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Finished. 30 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ]
+    }
+  },
+  "readouts": {
+    "gallery": {
+      "ready": null,
+      "running": "00:30",
+      "paused": "00:30",
+      "ended": "00:30",
+      "log": null
+    },
+    "route": {
+      "ready": null,
+      "running": "00:30",
+      "paused": "00:30",
+      "ended": "00:30",
+      "log": null
+    }
+  },
+  "differences": {
+    "ready": [],
+    "running": [],
+    "paused": [],
+    "ended": [],
+    "log": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 65,
+        "running": 87,
+        "paused": 87,
+        "ended": 81,
+        "log": 64
+      },
+      "route": {
+        "ready": 65,
+        "running": 87,
+        "paused": 87,
+        "ended": 81,
+        "log": 64
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 469
+        },
+        "paused": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 469
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 450.5
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 469
+        },
+        "paused": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 469
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 450.5
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "running": [],
+      "paused": [],
+      "ended": [],
+      "log": []
+    }
+  }
+}

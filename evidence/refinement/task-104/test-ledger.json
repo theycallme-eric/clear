@@ -1,0 +1,904 @@
+{
+ "schema": "clear-task-test-ledger/v1",
+ "task": "TASK-104",
+ "family": "F2",
+ "base": "ebedaf23883c0ee1f10b6a920381c3c873a0b14d",
+ "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+ "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F2 = src/ui/timed-workout-flow.test.tsx (32, deferred whole file) and e2e/refinement/task-006.spec.ts. The brief adds src/state/timed-lifecycle.test.ts and the lifecycle cases of src/ui/amrap-block.test.tsx, src/ui/emom-block.test.tsx and src/ui/for-time-block.test.tsx.",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "retired": [],
+  "deferred": [
+   {
+    "what": "15 build tests in src/ui/timed-workout-flow.test.tsx (TASK-013 ×8, TASK-014 ×7)",
+    "task": "TASK-105",
+    "why": "Controller decision 2026-11-16: owned by TASK-105, whose approved verification runs them by name (TASK-013 check-01 \"ladder|rung|handoff\", TASK-014 check-01 \"undo|resume|cap\"); TASK-115’s end-of-run ledger check requires them carried."
+   },
+   {
+    "what": "8 build tests in src/ui/timed-workout-flow.test.tsx (TASK-011 ×8)",
+    "task": "TASK-116",
+    "why": "Controller decision 2026-11-16: owned by TASK-116, whose approved verification runs them by name (TASK-011 check-01 \"EMOM\"); TASK-115’s end-of-run ledger check requires them carried."
+   }
+  ],
+  "resolved": [
+   {
+    "what": "e2e/refinement/task-006.spec.ts, the axe scan that ends six route cases (landmark-unique)",
+    "how": "Controller decision 2026-11-16: the build’s TASK-005 unique accessible name for each grouped Coaching and notes region brought into src/ui/exercise-coaching.tsx (visually hidden format and movements; same visible look). No scan exception, no rule disabled. Two Round 7 base assertions follow it (entries above, rewritten)."
+   }
+  ]
+ },
+ "summary": {
+  "rewritten": 18,
+  "deferred": 23,
+  "carried": 64,
+  "added": 15
+ },
+ "entries": [
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: one [data-timed-actions] slot ('after-work') holding only the primary Start, after the movement list and every prescription reading (.clr-movement-identity, [data-movement-detail]) and before the card’s one Coaching and notes disclosure; running, Pause and the format’s Finish early in the same slot. Reads Round 7’s card (.clr-timed-flow) and words (Start EMOM, Start AMRAP; lists ‘Movements in this EMOM/AMRAP’). Round 7 draws no ‘15s rest at the end of each minute’ line nor an ‘Each round:’ card, so the two instances read Round 7’s own last prescription lines instead: the EMOM’s ‘Min 2 · 10 reps’ minute line and the AMRAP round’s last movement. The build’s ‘coaching is the card’s last element’ is read as ‘one Coaching and notes disclosure, after the slot’ (Round 7’s card ends with the shell’s completion control). The card’s disclosure is found by its TASK-005 accessible name (‘Coaching and notes — EMOM: kb swing, burpee’, ‘— AMRAP: kb swing, burpee’, ‘— FOR TIME: wall ball’, ‘— LADDER: push up, burpee’), and the card still holds exactly one."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 the long ladder keeps its Start near the top, after its identity and cap and before the repetitive rounds, with no second Start",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: the ladder’s slot is ‘top’, after its header (LADDER badge) and Round 7’s identity-and-cap line ‘12 rounds · 07:00 cap’, before the compact summary and all twelve rounds (‘Prescribed ladder rounds’), nothing of the work before it, one Start, not sticky or fixed; running, Pause and Finish in the same top slot. The build’s structure meta ‘7 MIN CAP · LADDER UP’ and timing line are Round 7’s single meta line."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour and the same declared recipe, read from Round 7’s one declaring file (src/styles/timed-workout.css, not the build’s refinements/presentation.css): grid, repeat(auto-fit, minmax(0, 1fr)), gap var(--spacing-300), cells and buttons width 100%, no px; computed display grid; each control a clr-btn in its own clr-bleed cell; after the work for every format but the ladder (‘top’). For Time’s ‘The work:’ label does not exist in Round 7; its Start is asserted after every For Time movement and prescription reading. The card’s disclosure is found by its TASK-005 accessible name (‘Coaching and notes — EMOM: kb swing, burpee’, ‘— AMRAP: kb swing, burpee’, ‘— FOR TIME: wall ball’, ‘— LADDER: push up, burpee’), and the card still holds exactly one."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 running controls are a secondary Pause and the format's primary Finish or Finish early, and paused controls a secondary Resume in Pause's place",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: ready [Start, primary]; running [Pause secondary, Finish/Finish early primary]; paused [Resume secondary, same Finish]; focus kept on the one lead control through Start → Pause → Resume; finishLabel’s six readings unchanged. The windowless AMRAP and EMOM are mounted through BlockSlot under the product presentation (Round 7’s route renderer) and say Finish. The build’s direct mounts of its exported TimedWorkoutActions (ended draws nothing; a schedule with no Pause draws nothing) are read through the flow: after Finish the slot is gone. Round 7’s action row is internal to TimedWorkoutFlow and Round 7 draws no schedule in it (a scheduled ladder stays LadderBlock), so the schedule sub-assertion has no Round 7 counterpart."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Pause freezes the section clock and its cap while the workout clock runs on, and Resume keeps the active time and the remaining window",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour and the same arithmetic (session clock 01:00 → 03:30 while the section is paused). Readouts are Round 7’s timer-frame digits; phase words are its caption (Paused, Elapsed, Minute N of 10). Round 7 draws no ‘Cap in mm:ss’ line, so ‘the cap holds’ is asserted by pausing past what was left of the cap (For Time: 900 s; ladder: 400 s against 320 left) and finding the clock still paused, never ‘Cap reached’; the stored pausedAt is the build’s assertion unchanged. The EMOM’s minute is held by Round 7’s Now marker staying on minute 1’s movement and its seconds left (the caption says Paused while paused), then ‘Minute 2 of 10’ with Now on the next movement after Resume. Final session time 36:15 is the same sum over the reordered steps."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Finish ends each format's attempt where it stands — a paused attempt at its pause — and records nothing the format did not already observe",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: For Time paused at 40 s and finished later reads 00:40 and ‘Finished’ (Round 7’s caption for the build’s ‘Finished under cap’); AMRAP Finish early settles its window at 06:25 left (Round 7 draws the window left, the build ‘01:35 on the clock’) and holds it; EMOM Finish early: the build’s exact note ‘Finished early, in minute 3 of 10. Continue when you are ready.’, held as time passes; ladder 03:20 and its log asks Work completed. Logs are closed with Round 7’s ‘Close log’; the forward action records exactly the build’s four outcomes."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-02 the section's Finish stays distinct from Finish workout: ending a block neither completes nor leaves the workout",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: Finish workout lives in the section navigation; each section Finish lives in its card; ending all four leaves the route on /workout with nothing recorded or completed; Finish workout then completes once. Logs closed with Round 7’s ‘Close log’."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 recovery: a paused section comes back paused after close and reopen, and a reached cap offers no Resume",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: after close and a ten-minute reopen For Time and EMOM come back [Resume, Finish / Finish early] at 00:45 and PAUSED; the never-started AMRAP stored nothing; Resume runs on (00:50) and clears the stored pausedAt; the ladder ran on to its cap: no controls, 07:00, ‘Cap reached’. Adds: the ladder’s clock is its durable attempt’s (clear.workout-ladders), never a For Time record."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 draw the actual ladder renderer with the top Start and the Pause/Finish hierarchy",
+   "ledger": "deferred (F2)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour: the accepted gallery’s ladder-4 and ladder-12 states draw the route’s own renderer — Round 7’s TimedWorkoutFlow, which BlockSlot draws on /workout (source checked) — with every round (‘N × push up’, ‘4 × burpee’), the top slot, Start → [Pause, Finish] → [Resume, Finish], over memory only (no For Time or ladder key) and no fetch."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-116",
+   "reason": "Deferred to TASK-116 (controller decision, 2026-11-16). The behaviour this build test asserts — the EMOM end log without a minutes counter, its schedule words and Now/Next look-ahead, its note in block notes and its save-failure retry (F3, A3 task 5b) — is owned by TASK-116, not TASK-104. TASK-116’s approved verification runs this test by name in this file (TASK-011 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern EMOM). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-116 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the durable ladder’s rep-first live rung check-off and its result handoff (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-013 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"ladder|rung|handoff\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo",
+   "ledger": "deferred (F2)",
+   "disposition": "deferred",
+   "task": "TASK-105",
+   "reason": "Deferred to TASK-105 (controller decision, 2026-11-16). The behaviour this build test asserts — the ladder’s durable Undo finish (F3, A3 task 5a) — is owned by TASK-105, not TASK-104. TASK-105’s approved verification runs this test by name in this file (TASK-014 check-01: npx vitest run src/ui/timed-workout-flow.test.tsx --testNamePattern \"undo|resume|cap\"). TASK-115’s end-of-run ledger check (its body-level rerun of gallery-a2/tools/a3-test-ledger.mjs; none may be pending, deferred or unplaced) requires it carried, so TASK-105 must land it before the body closes. Not added here as a failing, skipped or todo test."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The EMOM’s rest line does not exist in Round 7; Start is below its last minute line (‘Min 2 · 10 reps’). The card’s Coaching and notes disclosure is found by its TASK-005 name (visible words, then ‘— FORMAT: movements’), and the closing axe scan passes with no exception now that each region is named apart."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-320: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘MIN 1 OF 10’ is Round 7’s caption ‘Minute 1 of 10’. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: EMOM, AMRAP and For Time Start spans the card after the work and before coaching; the long ladder's Start is near the top",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The EMOM’s rest line does not exist in Round 7; Start is below its last minute line (‘Min 2 · 10 reps’). The card’s Coaching and notes disclosure is found by its TASK-005 name (visible words, then ‘— FORMAT: movements’), and the closing axe scan passes with no exception now that each region is named apart."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 phone-390: by touch, a secondary Pause beside the primary Finish or Finish early, Resume in its place; the section clock freezes while the workout clock runs",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘MIN 1 OF 10’ is Round 7’s caption ‘Minute 1 of 10’. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 keyboard and reduced motion: every action by keyboard, focus kept through Start and Pause, and the section Finish is not Finish workout",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The browser clock is held from entry (as the touch cases hold it) so each reading is exact, and released before the axe scan; For Time reads ‘Finished’ at 00:20, the AMRAP’s window 07:40 left with ‘Finished’ (the build: ‘00:20 on the clock’), the EMOM’s exact build note, the ladder ‘Finished’; each block’s Round 7 log, opened by its Finish, is closed with ‘Close log’ before the next keyboard step. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 recovery phone-390: close and reopen keeps a paused section paused and frozen, and a running one running",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. ‘Paused’ is read in Round 7’s timer frame beside the card. Its closing axe scan passes with no exception now that each grouped Coaching and notes region is named apart (TASK-005 naming)."
+  },
+  {
+   "file": "e2e/refinement/task-006.spec.ts",
+   "test": "TASK-006 timed action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 phone-320: the actual ladder renderer, Start at the top, then Pause and Finish",
+   "ledger": "e2e expected after F2",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Reads Round 7’s block (.clr-timed-flow[data-timed-format]), its card, its [data-timed-actions] row, its timer-frame digits and caption, its list names and its Coaching and notes disclosure; Start words are Round 7’s (‘Start FOR TIME’), defined in the spec, the shared fixture unchanged. The slot’s full width is measured against the card’s content box (Round 7’s .clr-movement-group, which holds the work), as the build measured its card’s content box. Reads also accept HEAD as a read. Every axe scan runs unexcepted. The card is Round 7’s ladder card in the gallery state."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the shared pause arithmetic > freezes at the pause and resumes with the same active time",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the shared pause arithmetic > ends a paused attempt at its pause, and a running one at the tap",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the shared pause arithmetic > does nothing to a clock that never started",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the shared pause arithmetic > keeps each format’s own Finish wording",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the formats apply it to their own clocks > For Time: paused, the clock and its cap hold; finished while paused, the race ends at the pause",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the formats apply it to their own clocks > For Time: paused near the cap is not urgent, and resumed it is again",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the formats apply it to their own clocks > AMRAP: a paused window holds what is left and ends at its pause",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "the formats apply it to their own clocks > EMOM: a paused grid keeps its minute and phase; Finish early ends it in that minute and counts nothing",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "restoring a record > round-trips a paused clock and an early finish through storage",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/state/timed-lifecycle.test.ts",
+   "test": "restoring a record > restores records written before Pause existed, and drops a stamp no clock can use",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "The build’s file, byte for byte; it proves pauseClock, resumeClock, clockStopMoment, finishLabel and the record repair this task now drives from Round 7’s flow."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "the window, hands-off > runs with nothing to enter and no round goal — only the countdown and a way to stop",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "the window closing > never expires on its own when the block prescribes no window",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "the 0.14.3 card, timer and group grammar > draws the settled time as the shared bare readout, and says when the cap ended it",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "the 0.14.3 card, timer and group grammar > does not call an early finish a cap",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > comes back to the window that is left, with nothing recorded in it",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > keeps the post-window result it was holding, zero included",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > restores an edit made after the window as the edit, not the first entry",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > restores a stored record from before rounds became optional",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > starts from the top when the stored record cannot be used",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/amrap-block.test.tsx",
+   "test": "surviving a refresh > cannot log a window longer than a cap that has since been shortened",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the EMOM runs the clock the block prescribes > counts the minutes off a block whose window is a different length",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the EMOM runs the clock the block prescribes > runs no grid at all for a block whose timer type is none",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the EMOM runs the clock the block prescribes > counts on without a last minute when the block carries no window",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the minute boundary flips the active work > names what is coming during the rest window rather than telling the user to start",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the minute boundary flips the active work > says the block is done once its last minute has elapsed",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the minute boundary flips the active work > marks the live movement for a screen reader, not only in colour",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > comes back to the minute the clock is actually in",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > restores a record written by an earlier visit",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > comes back finished when the window expired while the tab was away",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > ignores a record no clock can be read against",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts",
+   "ledger": "build-edit-pending (F3)",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree at the integration branch’s body. The groundwork ledger gives the build’s edited body to F3 (result entry), not to F2; it is listed here as a lifecycle case this task must keep green."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "completion never records a scheduled minute as performed work > reports no minutes while the clock runs",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "completion never records a scheduled minute as performed work > reports no minutes once every prescribed minute has elapsed",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "completion never records a scheduled minute as performed work > reports nothing at all when the clock never ran",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "completion never records a scheduled minute as performed work > reports nothing for a block that prescribes no clock",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/emom-block.test.tsx",
+   "test": "completion never records a scheduled minute as performed work > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "before the clock starts > states the cap and the work, and offers the one control that starts it",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "before the clock starts > records nothing it did not observe",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "while the clock runs > counts up from the tap that started it",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "while the clock runs > offers no second start that would discard the time it took",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "the first completion path: finished under the cap > stops the clock at the finish, not at the cap",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "the first completion path: finished under the cap > supplies the elapsed seconds and the under-cap finish to the shell",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "the first completion path: finished under the cap > wears the finished treatment, and no urgency however close it came",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "the second completion path: the cap is reached > stops at the cap on its own, with no tap and no stamp",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "the second completion path: the cap is reached > reads differently from a finish — the words and the treatment both",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "the second completion path: the cap is reached > supplies the cap and the cap-expiry outcome to the shell",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "across a refresh > comes back to the race it was in, elapsed from the wall clock",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "across a refresh > comes back to a finish it already recorded",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "across a refresh > ignores a stored clock it cannot believe",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/ui/for-time-block.test.tsx",
+   "test": "a block with no cap > counts up, states no deadline, and claims nothing about one",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree."
+  },
+  {
+   "file": "src/state/timed-attempt.test.ts",
+   "test": "paused section active time > excludes paused time while a separate wall-clock workout can continue",
+   "ledger": "gallery (bec4454) test, not a build test",
+   "disposition": "carried",
+   "note": "Round 7’s own test of timed-attempt.ts, unchanged; it passes now that moveTimedAttempt moves the clock through timed-lifecycle.ts."
+  },
+  {
+   "file": "src/state/timed-attempt.test.ts",
+   "test": "paused section active time > freezes a finish during pause at the active time already observed",
+   "ledger": "gallery (bec4454) test, not a build test",
+   "disposition": "carried",
+   "note": "Round 7’s own test of timed-attempt.ts, unchanged; it passes now that moveTimedAttempt moves the clock through timed-lifecycle.ts."
+  },
+  {
+   "file": "src/state/timed-attempt.test.ts",
+   "test": "paused section active time > keeps repeated starts and actions after a finish from resetting the attempt",
+   "ledger": "gallery (bec4454) test, not a build test",
+   "disposition": "carried",
+   "note": "Round 7’s own test of timed-attempt.ts, unchanged; it passes now that moveTimedAttempt moves the clock through timed-lifecycle.ts."
+  },
+  {
+   "file": "src/state/timed-attempt.test.ts",
+   "test": "paused section active time > supports multiple pauses and does not manufacture a cap for an open attempt",
+   "ledger": "gallery (bec4454) test, not a build test",
+   "disposition": "carried",
+   "note": "Round 7’s own test of timed-attempt.ts, unchanged; it passes now that moveTimedAttempt moves the clock through timed-lifecycle.ts."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a reload while paused restores every format’s paused clock with the same time left, kept as one pause stamp beside its start in the format’s own record",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "TASK-104’s own case for TASK-AC-591C4D5CE263."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C EMOM Pause and Finish early: PAUSED, then FINISHED EARLY and the minute it was in, stored as the stop and never counted as performed minutes",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "TASK-104’s own case for TASK-AC-8E33C288F00C."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C the For Time Finish label follows the cap: a race is finished with a cap or without one, never ended early, while a prescribed EMOM or AMRAP window is",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "TASK-104’s own case for TASK-AC-8E33C288F00C."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a raced ladder’s clock pauses and resumes inside its durable attempt, an older For Time-kept clock is adopted, and Undo finish puts the focus back on the lead control",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "TASK-104’s own case for TASK-AC-591C4D5CE263."
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 the accepted gallery states emom, amrap and for_time draw the route’s own flow with its lifecycle, over memory only",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "TASK-104’s own case for TASK-AC-591C4D5CE263."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 emom phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 emom phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 amrap phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 amrap phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 for_time phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 for_time phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 ladder-4 phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 ladder-4 phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 ladder-12 phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "e2e/refinement/task-104-parity.spec.ts",
+   "test": "TASK-AC-57108F133EA2 ladder-12 phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+   "ledger": "new",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-57108F133EA2): words and every element box within 2 px, ready, running, paused, log and ended."
+  },
+  {
+   "file": "src/app/circuit-rounds.test.tsx",
+   "test": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one grouped coaching disclosure",
+   "ledger": "Round 7 base test (not a build test)",
+   "disposition": "rewritten",
+   "reason": "TASK-005 accessibility naming, required by TASK-006 check-02 (controller decision, 2026-11-16): Round 7’s grouped Coaching and notes regions all shared one accessible name, so axe’s landmark-unique failed on /workout. GroupExerciseCoaching (src/ui/exercise-coaching.tsx) now names each as the build did (TASK-005): the visible words ‘Coaching and notes’, then a visually hidden ‘— FORMAT: movement, …’. Same visible look; TASK-109 re-proves it.",
+   "note": "One assertion changed: the disclosure’s accessible name, from ‘Coaching and notes’ to the build’s ‘Coaching and notes — CIRCUIT: kettlebell swing, push up, goblet squat’ (the build’s own version of this assertion, 181e580). Every other assertion in the case is unchanged."
+  },
+  {
+   "file": "src/app/Workout.test.tsx",
+   "test": "Workout — coaching and notes > groups coaching under one disclosure, preserving separate movement drafts (R29)",
+   "ledger": "Round 7 base test (not a build test)",
+   "disposition": "rewritten",
+   "reason": "TASK-005 accessibility naming, required by TASK-006 check-02 (controller decision, 2026-11-16): Round 7’s grouped Coaching and notes regions all shared one accessible name, so axe’s landmark-unique failed on /workout. GroupExerciseCoaching (src/ui/exercise-coaching.tsx) now names each as the build did (TASK-005): the visible words ‘Coaching and notes’, then a visually hidden ‘— FORMAT: movement, …’. Same visible look; TASK-109 re-proves it.",
+   "note": "Two lookups changed: the disclosure button and its region are found by the build’s name ‘Coaching and notes — SUPERSET: back squat, barbell row’ (the build’s own GROUP constant, 181e580) instead of ‘Coaching and notes’. Every other assertion in the case is unchanged."
+  }
+ ]
+}

@@ -1290,11 +1290,13 @@ describe('Workout — coaching and notes', () => {
       definitions: { 'back-squat': definitionFixture() },
     })
 
-    const toggle = screen.getByRole('button', { name: 'Coaching and notes' })
+    // TASK-005 (the build's name): the block's format and movements name it apart.
+    const GROUP = 'Coaching and notes — SUPERSET: back squat, barbell row'
+    const toggle = screen.getByRole('button', { name: GROUP })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByRole('button', { name: PANEL })).not.toBeInTheDocument()
     await user.click(toggle)
-    const panel = screen.getByRole('region', { name: 'Coaching and notes' })
+    const panel = screen.getByRole('region', { name: GROUP })
     expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
     expect(within(panel).getByRole('heading', { name: 'back squat' })).toBeInTheDocument()
     expect(within(panel).getByRole('heading', { name: 'barbell row' })).toBeInTheDocument()

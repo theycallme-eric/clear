@@ -1,0 +1,408 @@
+{
+  "schema": "clear-task-104-parity/v1",
+  "task": "TASK-104",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "amrap",
+  "format": "amrap",
+  "width": 390,
+  "route": "/workout",
+  "drive": "Start; 30 s; Pause; 60 s; Finish early; 1 s — on the browser clock, held between steps",
+  "captures": {
+    "gallery-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-gallery-ready.png",
+      "sha256": "19d142ff38fd1726b4de65065cd5d7e809290244f20f59ea8b2e8c6ed4b794e7"
+    },
+    "route-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-route-ready.png",
+      "sha256": "4aad4e620701cd38b8baffa2edc1e4db6cd949dd1a6eff49d550d80c3eca9e67"
+    },
+    "gallery-running": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-gallery-running.png",
+      "sha256": "36cf260fc439c327046972d53ebfb5aa864fd202c34d8d479d7500f5f1ee8213"
+    },
+    "route-running": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-route-running.png",
+      "sha256": "93213fef6ba5bc48b20c856a7b47b9438f10ed2933786ff3af956c8f49c7bb06"
+    },
+    "gallery-paused": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-gallery-paused.png",
+      "sha256": "d97428f481246078c5f5bed8162d62f744d7a1f1005e035331308c16db45399e"
+    },
+    "route-paused": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-route-paused.png",
+      "sha256": "be01d2de56433bb5fca312aaa185b4c04b8448a62eb4ba78ee0506bb0ab26eac"
+    },
+    "gallery-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-gallery-ended.png",
+      "sha256": "d9c30b7ed3eab8bdb3b99699ec904aa3b5c228d1fd108ded2ae00f773d37adab"
+    },
+    "route-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-route-ended.png",
+      "sha256": "037b6bb8e03dddccaf1b91aebc7efc4c784a95b6ff510169c53a538775f317d1"
+    },
+    "gallery-log": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-gallery-log.png",
+      "sha256": "6a09221f9236e3a7379e4b624e21e3b7119bcff2eb9a087cf1a2f303a9bf7b8d"
+    },
+    "route-log": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-route-log.png",
+      "sha256": "03d4650dc450c38e19af92ba215459d85820f2a530bdf1208fb3dd20868390e9"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "START AMRAP",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "running": [
+        "REMAINING",
+        "0",
+        "7",
+        ":",
+        "3",
+        "0",
+        "Remaining. 7 minutes 30 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "Log when complete",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "paused": [
+        "PAUSED",
+        "0",
+        "7",
+        ":",
+        "3",
+        "0",
+        "Paused. 7 minutes 30 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "RESUME",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "ended": [
+        "FINISHED",
+        "0",
+        "7",
+        ":",
+        "3",
+        "0",
+        "Finished. 7 minutes 30 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "ROUNDS COMPLETED",
+        "—",
+        "REPS INTO THE NEXT ROUND",
+        "—",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "START AMRAP",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "running": [
+        "REMAINING",
+        "0",
+        "7",
+        ":",
+        "3",
+        "0",
+        "Remaining. 7 minutes 30 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "Log when complete",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "paused": [
+        "PAUSED",
+        "0",
+        "7",
+        ":",
+        "3",
+        "0",
+        "Paused. 7 minutes 30 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "RESUME",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "ended": [
+        "FINISHED",
+        "0",
+        "7",
+        ":",
+        "3",
+        "0",
+        "Finished. 7 minutes 30 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "ROUNDS COMPLETED",
+        "—",
+        "REPS INTO THE NEXT ROUND",
+        "—",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ]
+    }
+  },
+  "readouts": {
+    "gallery": {
+      "ready": null,
+      "running": "07:30",
+      "paused": "07:30",
+      "ended": "07:30",
+      "log": null
+    },
+    "route": {
+      "ready": null,
+      "running": "07:30",
+      "paused": "07:30",
+      "ended": "07:30",
+      "log": null
+    }
+  },
+  "differences": {
+    "ready": [],
+    "running": [],
+    "paused": [],
+    "ended": [],
+    "log": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 65,
+        "running": 88,
+        "paused": 87,
+        "ended": 81,
+        "log": 91
+      },
+      "route": {
+        "ready": 65,
+        "running": 88,
+        "paused": 87,
+        "ended": 81,
+        "log": 91
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 517
+        },
+        "paused": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 481
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 788.5
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 517
+        },
+        "paused": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 481
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 788.5
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "running": [],
+      "paused": [],
+      "ended": [],
+      "log": []
+    }
+  }
+}

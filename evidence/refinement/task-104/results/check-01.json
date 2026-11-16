@@ -1,0 +1,427 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-104",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/timed-workout-flow.test.tsx",
+    "src/state/timed-lifecycle.test.ts",
+    "src/ui/amrap-block.test.tsx",
+    "src/ui/emom-block.test.tsx",
+    "src/ui/for-time-block.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-104/required-cases.json",
+    "sha256": "679706519296140fb4cdef64cae59b38e96c269a83bfe6f017bb33683ccf6e7a"
+  },
+  "targets": [
+    {
+      "path": "src/ui/timed-workout-flow.test.tsx",
+      "sha256": "f8c8ac8fac37647d918a403630b931190032440dae5505a56b59ccdcd9c17ccb"
+    },
+    {
+      "path": "src/state/timed-lifecycle.test.ts",
+      "sha256": "6511c5b6585458233c9049c5604b007c80899e46939cdf78934ac59aa924dde2"
+    },
+    {
+      "path": "src/ui/amrap-block.test.tsx",
+      "sha256": "ecc4a74955af68aefd7786bfef82ee43a0d715c74f1c889a82b881d7c176d84d"
+    },
+    {
+      "path": "src/ui/emom-block.test.tsx",
+      "sha256": "95e7191df54ab48574b36d9d2ff86072f192d828a957b702fba9c8f9343bc89b"
+    },
+    {
+      "path": "src/ui/for-time-block.test.tsx",
+      "sha256": "1ae2ebfd407896e91914f4cec677774844f0e49c628e6808b60e0acf50f95a72"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the shared pause arithmetic > freezes at the pause and resumes with the same active time",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the shared pause arithmetic > ends a paused attempt at its pause, and a running one at the tap",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the shared pause arithmetic > does nothing to a clock that never started",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the shared pause arithmetic > keeps each format’s own Finish wording",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the formats apply it to their own clocks > For Time: paused, the clock and its cap hold; finished while paused, the race ends at the pause",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the formats apply it to their own clocks > For Time: paused near the cap is not urgent, and resumed it is again",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the formats apply it to their own clocks > AMRAP: a paused window holds what is left and ends at its pause",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "the formats apply it to their own clocks > EMOM: a paused grid keeps its minute and phase; Finish early ends it in that minute and counts nothing",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "restoring a record > round-trips a paused clock and an early finish through storage",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/timed-lifecycle.test.ts",
+      "name": "restoring a record > restores records written before Pause existed, and drops a stamp no clock can use",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window, hands-off > runs with nothing to enter and no round goal — only the countdown and a way to stop",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window closing > never expires on its own when the block prescribes no window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > draws the settled time as the shared bare readout, and says when the cap ended it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > does not call an early finish a cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > comes back to the window that is left, with nothing recorded in it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > keeps the post-window result it was holding, zero included",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > restores an edit made after the window as the edit, not the first entry",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > restores a stored record from before rounds became optional",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > starts from the top when the stored record cannot be used",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > cannot log a window longer than a cap that has since been shortened",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > counts the minutes off a block whose window is a different length",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > runs no grid at all for a block whose timer type is none",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > counts on without a last minute when the block carries no window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > names what is coming during the rest window rather than telling the user to start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > says the block is done once its last minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > marks the live movement for a screen reader, not only in colour",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > comes back to the minute the clock is actually in",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > restores a record written by an earlier visit",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > comes back finished when the window expired while the tab was away",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > ignores a record no clock can be read against",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports no minutes while the clock runs",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports no minutes once every prescribed minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports nothing at all when the clock never ran",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports nothing for a block that prescribes no clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "before the clock starts > states the cap and the work, and offers the one control that starts it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "before the clock starts > records nothing it did not observe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "while the clock runs > counts up from the tap that started it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "while the clock runs > offers no second start that would discard the time it took",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the first completion path: finished under the cap > stops the clock at the finish, not at the cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the first completion path: finished under the cap > supplies the elapsed seconds and the under-cap finish to the shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the first completion path: finished under the cap > wears the finished treatment, and no urgency however close it came",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the second completion path: the cap is reached > stops at the cap on its own, with no tap and no stamp",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the second completion path: the cap is reached > reads differently from a finish — the words and the treatment both",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the second completion path: the cap is reached > supplies the cap and the cap-expiry outcome to the shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "across a refresh > comes back to the race it was in, elapsed from the wall clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "across a refresh > comes back to a finish it already recorded",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "across a refresh > ignores a stored clock it cannot believe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "a block with no cap > counts up, states no deadline, and claims nothing about one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 the long ladder keeps its Start near the top, after its identity and cap and before the repetitive rounds, with no second Start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 running controls are a secondary Pause and the format's primary Finish or Finish early, and paused controls a secondary Resume in Pause's place",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Pause freezes the section clock and its cap while the workout clock runs on, and Resume keeps the active time and the remaining window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Finish ends each format's attempt where it stands — a paused attempt at its pause — and records nothing the format did not already observe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-02 the section's Finish stays distinct from Finish workout: ending a block neither completes nor leaves the workout",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 recovery: a paused section comes back paused after close and reopen, and a reached cap offers no Resume",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 draw the actual ladder renderer with the top Start and the Pause/Finish hierarchy",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a reload while paused restores every format’s paused clock with the same time left, kept as one pause stamp beside its start in the format’s own record",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C EMOM Pause and Finish early: PAUSED, then FINISHED EARLY and the minute it was in, stored as the stop and never counted as performed minutes",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C the For Time Finish label follows the cap: a race is finished with a cap or without one, never ended early, while a prescribed EMOM or AMRAP window is",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a raced ladder’s clock pauses and resumes inside its durable attempt, an older For Time-kept clock is adopted, and Undo finish puts the focus back on the lead control",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 the accepted gallery states emom, amrap and for_time draw the route’s own flow with its lifecycle, over memory only",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 147,
+    "passed": 147,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 147
+  },
+  "problems": []
+}

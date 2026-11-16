@@ -1,0 +1,362 @@
+{
+  "schema": "clear-task-104-parity/v1",
+  "task": "TASK-104",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "emom",
+  "format": "emom",
+  "width": 320,
+  "route": "/workout",
+  "drive": "Start; 30 s; Pause; 60 s; Finish early; 1 s — on the browser clock, held between steps",
+  "captures": {
+    "gallery-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ready.png",
+      "sha256": "c21aa3a35fb75fa73165622498a5ecdab502479450feaf9911839538c94d8671"
+    },
+    "route-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ready.png",
+      "sha256": "217b93ea4517e03b42f77559b18642e6074e788411b8df4ff20f2f2f4400c68f"
+    },
+    "gallery-running": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-running.png",
+      "sha256": "0a55098bc507db8f20c658013b0ea9c3172c14b282f556e9096b14709490a714"
+    },
+    "route-running": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-running.png",
+      "sha256": "fa23088234a144d993f0c8883306085edab304a08e444c0a16fa90aeb501111d"
+    },
+    "gallery-paused": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-paused.png",
+      "sha256": "f8111d829c25060a350ecf6ddfd052d0df36538fc64aab4f212f7e623c76307d"
+    },
+    "route-paused": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-paused.png",
+      "sha256": "f7553fc46adcd76023a137f0dcefb40abc6dc20cbb7e27041c7a9c5d8a2d9987"
+    },
+    "gallery-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ended.png",
+      "sha256": "aa9d863963d19c61f08e239cb4fea93dea3762bf5ee83114756c9a91420e3a8c"
+    },
+    "route-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ended.png",
+      "sha256": "afd1c964b68bcb2b5b32fa069cae847883486db38e19f45bdbe06ef9c46922fc"
+    },
+    "gallery-log": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-log.png",
+      "sha256": "794cc4f9de2f01ddb13f79d5a5e3fc79973b6b78001c4dfe39a301b2325fa93f"
+    },
+    "route-log": {
+      "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-log.png",
+      "sha256": "18342fc2718078748b140ad2ead3ff7029529b626707b79afea4d786bb4bce0f"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "START EMOM",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "running": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Minute 1 of 10. 30 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "paused": [
+        "PAUSED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Paused. 30 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "RESUME",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "ended": [
+        "FINISHED EARLY",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Finished early. 0 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "Finished early, in minute 1 of 10. Continue when you are ready.",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "START EMOM",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "running": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Minute 1 of 10. 30 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "paused": [
+        "PAUSED",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "Paused. 30 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "RESUME",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "ended": [
+        "FINISHED EARLY",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Finished early. 0 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "Finished early, in minute 1 of 10. Continue when you are ready.",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ]
+    }
+  },
+  "readouts": {
+    "gallery": {
+      "ready": null,
+      "running": "00:30",
+      "paused": "00:30",
+      "ended": "00:00",
+      "log": null
+    },
+    "route": {
+      "ready": null,
+      "running": "00:30",
+      "paused": "00:30",
+      "ended": "00:00",
+      "log": null
+    }
+  },
+  "differences": {
+    "ready": [],
+    "running": [],
+    "paused": [],
+    "ended": [],
+    "log": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 50,
+        "running": 73,
+        "paused": 73,
+        "ended": 67,
+        "log": 52
+      },
+      "route": {
+        "ready": 50,
+        "running": 73,
+        "paused": 73,
+        "ended": 67,
+        "log": 52
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "paused": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 431
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 362.5
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "paused": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 431
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 362.5
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "running": [],
+      "paused": [],
+      "ended": [],
+      "log": []
+    }
+  }
+}

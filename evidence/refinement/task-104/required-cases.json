@@ -1,0 +1,475 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-104",
+  "description": "A3 task 4 (F2): timed Pause, Resume and Finish early on Round 7’s TimedWorkoutFlow, kept across reloads (REQ-006; C17, C18; JOURNEY-006, completion owner). check-01 proves the wiring on the real /workout route and the real components: the build’s nine TASK-006 cases rewritten to Round 7’s controls (Start, then a secondary Pause beside the format’s primary Finish or Finish early from finishLabel, Resume in Pause’s place, the lead control one element so focus is kept, the slot after the work and before coaching and the long ladder’s top exception, section Finish distinct from Finish workout, a paused section back paused after close and reopen, the gallery ladder-4 and ladder-12 states); TASK-104’s own cases (every format’s paused clock restored with the same time left from one pause stamp in its own record, the ladder’s inside its durable attempt through pauseLadderAttempt/resumeLadderAttempt, an older For Time-kept ladder clock adopted, Undo finish returning focus to the lead control, the EMOM’s PAUSED and FINISHED EARLY and ‘Finished early, in minute N of M’ with nothing counted, the For Time Finish label following the cap, the gallery emom/amrap/for_time states over memory only); the carried pause arithmetic (src/state/timed-lifecycle.test.ts); and the carried lifecycle cases of the shipped AMRAP, EMOM and For Time renderers. parity is the look check: /workout’s timed card beside each accepted gallery state (bec4454: emom, amrap, for_time, ladder-4, ladder-12) with matched data at 320 and 390 px, driven alike on the browser clock through ready, running, paused, the Log results dialog and the ended card, compared in words and in layout (every element’s box within 2 px); every visible difference must be labelled with the criterion that intends it, and each case writes its receipt to evidence/refinement/task-104/parity/ and its captures to the evidence store. The route-level journey is e2e/refinement/task-006.spec.ts (TASK-006 check-02, rewritten for Round 7), run under TASK-006’s manifest.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-104 --check check-01 -- npx vitest run src/ui/timed-workout-flow.test.tsx src/state/timed-lifecycle.test.ts src/ui/amrap-block.test.tsx src/ui/emom-block.test.tsx src/ui/for-time-block.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C17-01",
+        "AC-C18-01",
+        "AC-R006-01",
+        "AC-R006-02",
+        "JOURNEY-006",
+        "TASK-AC-591C4D5CE263",
+        "TASK-AC-8E33C288F00C"
+      ],
+      "files": [
+        "src/ui/timed-workout-flow.test.tsx",
+        "src/state/timed-lifecycle.test.ts",
+        "src/ui/amrap-block.test.tsx",
+        "src/ui/emom-block.test.tsx",
+        "src/ui/for-time-block.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the shared pause arithmetic > freezes at the pause and resumes with the same active time",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the shared pause arithmetic > ends a paused attempt at its pause, and a running one at the tap",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the shared pause arithmetic > does nothing to a clock that never started",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the shared pause arithmetic > keeps each format’s own Finish wording",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the formats apply it to their own clocks > For Time: paused, the clock and its cap hold; finished while paused, the race ends at the pause",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the formats apply it to their own clocks > For Time: paused near the cap is not urgent, and resumed it is again",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the formats apply it to their own clocks > AMRAP: a paused window holds what is left and ends at its pause",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "the formats apply it to their own clocks > EMOM: a paused grid keeps its minute and phase; Finish early ends it in that minute and counts nothing",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "restoring a record > round-trips a paused clock and an early finish through storage",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/state/timed-lifecycle.test.ts",
+          "name": "restoring a record > restores records written before Pause existed, and drops a stamp no clock can use",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window, hands-off > runs with nothing to enter and no round goal — only the countdown and a way to stop",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window closing > never expires on its own when the block prescribes no window",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > draws the settled time as the shared bare readout, and says when the cap ended it",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > does not call an early finish a cap",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > comes back to the window that is left, with nothing recorded in it",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > keeps the post-window result it was holding, zero included",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > restores an edit made after the window as the edit, not the first entry",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > restores a stored record from before rounds became optional",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > starts from the top when the stored record cannot be used",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > cannot log a window longer than a cap that has since been shortened",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > counts the minutes off a block whose window is a different length",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > runs no grid at all for a block whose timer type is none",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > counts on without a last minute when the block carries no window",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > names what is coming during the rest window rather than telling the user to start",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > says the block is done once its last minute has elapsed",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > marks the live movement for a screen reader, not only in colour",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > comes back to the minute the clock is actually in",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > restores a record written by an earlier visit",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > comes back finished when the window expired while the tab was away",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > ignores a record no clock can be read against",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports no minutes while the clock runs",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports no minutes once every prescribed minute has elapsed",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports nothing at all when the clock never ran",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports nothing for a block that prescribes no clock",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "before the clock starts > states the cap and the work, and offers the one control that starts it",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "before the clock starts > records nothing it did not observe",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "while the clock runs > counts up from the tap that started it",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "while the clock runs > offers no second start that would discard the time it took",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the first completion path: finished under the cap > stops the clock at the finish, not at the cap",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the first completion path: finished under the cap > supplies the elapsed seconds and the under-cap finish to the shell",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the first completion path: finished under the cap > wears the finished treatment, and no urgency however close it came",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the second completion path: the cap is reached > stops at the cap on its own, with no tap and no stamp",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the second completion path: the cap is reached > reads differently from a finish — the words and the treatment both",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the second completion path: the cap is reached > supplies the cap and the cap-expiry outcome to the shell",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "across a refresh > comes back to the race it was in, elapsed from the wall clock",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "across a refresh > comes back to a finish it already recorded",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "across a refresh > ignores a stored clock it cannot believe",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "a block with no cap > counts up, states no deadline, and claims nothing about one",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
+          "criterion": "AC-R006-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 the long ladder keeps its Start near the top, after its identity and cap and before the repetitive rounds, with no second Start",
+          "criterion": "AC-R006-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
+          "criterion": "AC-C17-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 running controls are a secondary Pause and the format's primary Finish or Finish early, and paused controls a secondary Resume in Pause's place",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Pause freezes the section clock and its cap while the workout clock runs on, and Resume keeps the active time and the remaining window",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Finish ends each format's attempt where it stands — a paused attempt at its pause — and records nothing the format did not already observe",
+          "criterion": "AC-C18-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-02 the section's Finish stays distinct from Finish workout: ending a block neither completes nor leaves the workout",
+          "criterion": "AC-R006-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 recovery: a paused section comes back paused after close and reopen, and a reached cap offers no Resume",
+          "criterion": "JOURNEY-006"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 draw the actual ladder renderer with the top Start and the Pause/Finish hierarchy",
+          "criterion": "JOURNEY-006"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a reload while paused restores every format’s paused clock with the same time left, kept as one pause stamp beside its start in the format’s own record",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C EMOM Pause and Finish early: PAUSED, then FINISHED EARLY and the minute it was in, stored as the stop and never counted as performed minutes",
+          "criterion": "TASK-AC-8E33C288F00C"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C the For Time Finish label follows the cap: a race is finished with a cap or without one, never ended early, while a prescribed EMOM or AMRAP window is",
+          "criterion": "TASK-AC-8E33C288F00C"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a raced ladder’s clock pauses and resumes inside its durable attempt, an older For Time-kept clock is adopted, and Undo finish puts the focus back on the lead control",
+          "criterion": "TASK-AC-591C4D5CE263"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 the accepted gallery states emom, amrap and for_time draw the route’s own flow with its lifecycle, over memory only",
+          "criterion": "TASK-AC-591C4D5CE263"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-104 --check parity -- npx playwright test e2e/refinement/task-104-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-57108F133EA2",
+        "TASK-AC-A8D9984F200A",
+        "TASK-AC-56A0BA388481"
+      ],
+      "files": [
+        "e2e/refinement/task-104-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 emom phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 emom phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 amrap phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 amrap phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish early, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 for_time phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 for_time phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 ladder-4 phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 ladder-4 phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 ladder-12 phone-320: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        },
+        {
+          "file": "e2e/refinement/task-104-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-57108F133EA2 ladder-12 phone-390: /workout’s timed card matches the accepted gallery state through Start, Pause and Finish, with its Log results dialog",
+          "criterion": "TASK-AC-57108F133EA2"
+        }
+      ]
+    }
+  }
+}

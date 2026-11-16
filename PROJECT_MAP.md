@@ -331,6 +331,11 @@ explicit Save log goes through the product presentation's `timedWorkflows.saveRe
 translation) to the provider's `saveTimedLog` — the same richer save, now, with the saved row read
 back through `recordedResult`. The flow keeps its clock (and an AMRAP's counts) in the per-format
 records the shipped renderers kept (`src/state/timed-attempt-records.ts`).
+A3 TASK-104 added the lifecycle: Pause, Resume and Finish move Round 7's attempt
+(`src/state/timed-attempt.ts`) through `src/state/timed-lifecycle.ts`, each record keeps the pause
+stamp beside its start, and a raced ladder's clock now lives inside its durable attempt
+(`clear.workout-ladders`, moved by `ladder-recovery.ts`'s start/pause/resume/finish/undo) rather
+than under the For Time key, whose older ladder clocks are adopted on the first action.
 
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and

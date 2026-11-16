@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/timed-workout-flow.test.tsx",
-      "sha256": "4130603cb5b89fc6e70ec0bc59e0f4c232e5f70da26ab66f3384ed06b9ec6d71"
+      "sha256": "f8c8ac8fac37647d918a403630b931190032440dae5505a56b59ccdcd9c17ccb"
     }
   ],
   "requiredCases": [
@@ -71,12 +71,12 @@
     }
   ],
   "totals": {
-    "total": 32,
-    "passed": 32,
+    "total": 14,
+    "passed": 14,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 32
+    "executed": 14
   },
   "problems": []
 }

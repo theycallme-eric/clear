@@ -10,8 +10,21 @@
  * goes through `timedWorkflows.saveResult`, which the product binds to the
  * shell's one completion path; and a saved row is read back as the saved log
  * (TASK-048). In the gallery nothing is stored: there is no shell session.
+ *
+ * A3 TASK-104 (F2; TASK-006, C17, C18, R39, R48, R66, R68, R98): the actions
+ * are the build's lifecycle on Round 7's controls (`TimedWorkoutActions`).
+ * Ready, one primary Start; running, a secondary Pause beside the format's
+ * primary Finish or Finish early (`finishLabel`); paused, Resume in Pause's
+ * place; ended, nothing. The lead control is one element through Start, Pause
+ * and Resume, so focus stays on it, and an Undo finish returns focus to it.
+ * Pause, Resume and Finish move the attempt through `timed-lifecycle.ts`
+ * (`timed-attempt.ts`) and the pause is kept in the format's record — a raced
+ * ladder's inside its durable attempt — so a reload while paused comes back
+ * paused with the same time left (`timed-attempt-records.ts`). An EMOM ended
+ * early says FINISHED EARLY and the minute it was in. The section's Finish
+ * ends this block's attempt only; Finish workout stays the shell's.
  */
-import { use, useEffect, useRef, useState } from 'react'
+import { use, useEffect, useRef, useState, type Ref } from 'react'
 import { Button, Check, Pause, Play, Stop } from '../design-system/index'
 import { useBlockCompletion } from '../state/block-completion'
 import { emomShape, emomView, minuteAssignment, scheduledMinuteFor, targetForMinute } from '../state/emom'
@@ -20,7 +33,8 @@ import { exerciseName, modalityLabel, targetText } from '../state/prescription'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { SetLoggingContext } from '../state/set-logging'
 import { EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
-import { readTimedAttempt, writeTimedAttempt, writeTimedCounts } from '../state/timed-attempt-records'
+import { readTimedAttempt, recordTimedAction, writeTimedCounts, type TimedRecordAction } from '../state/timed-attempt-records'
+import { finishLabel, type TimedLifecyclePhase } from '../state/timed-lifecycle'
 import { defaultShellStorage } from '../state/workout-persistence'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import type { BlockProgress } from '../state/workout-progress'
@@ -49,7 +63,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   // A3 TASK-103: the shell's session is what makes the attempt worth keeping;
   // a gallery or bare mount has none and stores nothing.
   const [storage] = useState(() => completion.sessionId === undefined ? null : defaultShellStorage())
-  const [restored] = useState(() => readTimedAttempt(storage, format, block))
+  const scope = { storage, sessionId: completion.sessionId ?? null }
+  const [restored] = useState(() => readTimedAttempt(scope, format, block))
   const [attempt, setAttempt] = useState<TimedAttempt>(restored?.attempt ?? EMPTY_TIMED_ATTEMPT)
   const [receipt, setReceipt] = useState<TimedResultReceipt | null>(null)
   const [trackedRung, setTrackedRung] = useState<number | null>(null)
@@ -67,10 +82,13 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     return phase !== 'finished' && phase !== 'capped'
   })
   const logHost = useRef<HTMLDivElement>(null)
-  /** The attempt, kept where the format's shipped renderer kept its clock. */
-  const moveAttempt = (next: TimedAttempt) => {
+  /** TASK-104: Start, then Pause and Resume, are this one control; Undo finish returns focus to it. */
+  const leadRef = useRef<HTMLButtonElement>(null)
+  const refocusLead = useRef(false)
+  /** The attempt, kept where the format's shipped renderer kept its clock (a ladder's, in its durable attempt). */
+  const moveAttempt = (next: TimedAttempt, step: TimedRecordAction, at: number) => {
     setAttempt(next)
-    writeTimedAttempt(storage, format, block, next)
+    recordTimedAction(scope, format, block, step, next, at)
   }
   /** The log's draft; an AMRAP's counts are kept on its record, as the shipped AMRAP kept them. */
   const changeDraft = (next: TimedResultDraft) => {
@@ -101,7 +119,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
       }
       setLogOpen(true)
     }
-    moveAttempt(moveTimedAttempt(attempt, next, now()))
+    const at = now()
+    moveAttempt(moveTimedAttempt(attempt, next, at), next, at)
   }
   const trackRung = (highestRung: number) => {
     setTrackedRung(highestRung)
@@ -112,10 +131,19 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const undoFinish = () => {
     if (!undoAttempt) return
     setTrackedRung(resultDraft?.highestRung ?? trackedRung)
-    moveAttempt(undoAttempt); setUndoAttempt(null); setLogOpen(true)
+    moveAttempt(undoAttempt, 'undo', now()); setUndoAttempt(null); setLogOpen(true)
+    refocusLead.current = true
   }
   const canUndoFinish = format === 'ladder' && undoAttempt !== null && saved === null && view.phase === 'finished'
 
+
+  // Undo finish: the control the athlete left the attempt by is gone; the attempt's lead control takes the focus.
+  useEffect(() => {
+    if (refocusLead.current && leadRef.current !== null) {
+      refocusLead.current = false
+      leadRef.current.focus()
+    }
+  })
 
   useEffect(() => {
     if (showLog && !sheet) {
@@ -131,22 +159,22 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const reported = saved !== null && !editing ? saved.result : draftNow
   const outcome = timedShellOutcome(format, block, reported, clock)
   const timed = timedShellReport(format, block, reported, saved?.weightUnit ?? weightUnit, ended, recorded)
-  const actions = !ended && <div className="clr-timed-actions">
-    {view.phase === 'ready' ? <Button variant="primary" icon={<Play />} onClick={() => action('start')}>
-      Start {format === 'ladder' ? 'ladder' : block.identity.label}
-    </Button> : <>
-      <Button variant="secondary" icon={view.phase === 'paused' ? <Play /> : <Pause />}
-        onClick={() => action(view.phase === 'paused' ? 'resume' : 'pause')}>
-        {view.phase === 'paused' ? 'Resume' : 'Pause'}
-      </Button>
-      <Button variant="primary" icon={<Stop />} onClick={() => action('finish')}>
-        {format === 'amrap' || format === 'emom' ? 'Finish early' : 'Finish'}
-      </Button>
-    </>}
-  </div>
+  const lifecycle: TimedLifecyclePhase = view.phase === 'ready' ? 'ready' : ended ? 'ended' : view.phase === 'paused' ? 'paused' : 'running'
+  // A window the block prescribes can be ended early; a race, a ladder, or a window it does not prescribe is finished.
+  const hasWindow = format === 'emom' ? shape.minutes !== null : cap !== null
+  const actions = <TimedWorkoutActions phase={lifecycle} placement={format === 'ladder' ? 'top' : 'after-work'}
+    startLabel={`Start ${format === 'ladder' ? 'ladder' : block.identity.label}`} finishLabel={finishLabel(format, hasWindow)}
+    onStart={() => action('start')} onPause={() => action('pause')} onResume={() => action('resume')} onFinish={() => action('finish')}
+    leadRef={leadRef} />
+  // TASK-006/TASK-011: an EMOM ended before its last minute says so, and the minute it was in; nothing is counted (E01).
+  const endedEarly = format === 'emom' && view.phase === 'finished'
+  const earlyNote = !endedEarly ? null : shape.minutes === null
+    ? `Finished in minute ${minute.minute}. Continue when you are ready.`
+    : `Finished early, in minute ${minute.minute} of ${shape.minutes}. Continue when you are ready.`
   const caption = view.phase === 'paused' ? 'Paused' : view.phase === 'capped'
     ? format === 'for_time' || format === 'ladder' ? 'Cap reached' : 'Time complete'
-    : view.phase === 'finished' ? 'Finished' : format === 'emom' ? `Minute ${minute.minute} of ${shape.minutes ?? '—'}`
+    : view.phase === 'finished' ? endedEarly && shape.minutes !== null ? 'Finished early' : 'Finished'
+    : format === 'emom' ? `Minute ${minute.minute} of ${shape.minutes ?? '—'}`
     : format === 'for_time' || format === 'ladder' ? 'Elapsed' : 'Remaining'
   const clockSeconds = format === 'emom' ? ended ? 0 : minute.secondsRemaining
     : format === 'amrap' ? view.remaining ?? view.elapsed : view.elapsed
@@ -200,6 +228,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
           })}
         </BlockPanel.MovementList>}
         {format !== 'ladder' && actions}
+        {earlyNote !== null && <p className="clr-timed-meta" data-timed-ended-early="">{earlyNote}</p>}
         {view.phase === 'running' && format === 'amrap' && <p className="clr-timed-meta">Log when complete</p>}
         {showLog && !sheet && <div ref={logHost}>{log}</div>}
         {showLog && sheet && <>
@@ -227,8 +256,49 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
         </div>}
         {/* The shipped AMRAP's like-for-like score line (OVR-03), kept: it says nothing until rounds are recorded. */}
         {format === 'amrap' && ended && <AmrapComparison block={block} outcome={outcome} />}
-        {block.exercises.length === 1 && <GroupExerciseCoaching exercises={block.exercises} />}
+        {block.exercises.length === 1 && <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} />}
       </>}
     </BlockPanel>
+  </div>
+}
+
+/** Where the slot sits in the card: after the work (C17), or the long ladder's top (R66). */
+type TimedActionPlacement = 'after-work' | 'top'
+
+interface TimedWorkoutActionsProps {
+  readonly phase: TimedLifecyclePhase
+  /** The format's own Start words — `Start EMOM`, `Start ladder`. */
+  readonly startLabel: string
+  /** The format's own end words (`finishLabel`): `Finish` or `Finish early`. */
+  readonly finishLabel: string
+  readonly onStart: () => void
+  readonly onPause: () => void
+  readonly onResume: () => void
+  readonly onFinish: () => void
+  /** Where the consumer placed the slot; it names the placement, nothing more. */
+  readonly placement?: TimedActionPlacement
+  /** The lead control — Start, Pause or Resume, one element through every phase. */
+  readonly leadRef?: Ref<HTMLButtonElement>
+}
+
+/**
+ * A3 TASK-104 (TASK-006; C17, C18): one timed block's actions in Round 7's
+ * full-width `.clr-timed-actions` row. Ready: the primary Start. Running: a
+ * secondary Pause beside the primary Finish or Finish early. Paused: Resume in
+ * Pause's place. Ended: nothing — a second Start would discard the attempt,
+ * and a reached cap cannot be resumed. The lead control keeps its place
+ * through every phase, so the button under a keyboard or a thumb stays the
+ * same element and focus is not lost when its words change.
+ */
+function TimedWorkoutActions({ phase, startLabel, finishLabel: finish, onStart, onPause, onResume, onFinish,
+  placement = 'after-work', leadRef }: TimedWorkoutActionsProps) {
+  if (phase === 'ended') return null
+  const ready = phase === 'ready'
+  return <div className="clr-timed-actions" data-timed-actions={placement} data-timed-phase={phase}>
+    <Button variant={ready ? 'primary' : 'secondary'} icon={ready || phase === 'paused' ? <Play /> : <Pause />}
+      onClick={ready ? onStart : phase === 'paused' ? onResume : onPause} buttonRef={leadRef}>
+      {ready ? startLabel : phase === 'paused' ? 'Resume' : 'Pause'}
+    </Button>
+    {!ready && <Button variant="primary" icon={<Stop />} onClick={onFinish}>{finish}</Button>}
   </div>
 }
