@@ -37,6 +37,18 @@ import { expect, test as scanned } from '../fixtures'
  * Synthetic and contained: an intercepted session for a fictional user and
  * synthetic reads only. Nothing is written: every non-read request is
  * recorded and fails the case.
+ *
+ * A3 TASK-103 (JOURNEY-026, completion owner) rewrote the row reading for
+ * Round 7's History row (owner decision 7, `WorkoutListItem` in
+ * `src/ui/history-list.tsx`): the title alone in the row's head, then the
+ * status with the stored date in its context line, then the metrics. Every
+ * asserted behaviour is the build's; only the markup it is read from changed
+ * (`data-part="head"`, then `"context"` holding the build's `status` and
+ * the date, instead of its `title / status-date / date` parts and
+ * `data-layout`). The gallery case reads
+ * Round 7's accepted `screens` state, a static History composition with its own
+ * sample words (the route keeps the app's words); see
+ * `evidence/refinement/task-103/test-ledger.json`.
  */
 const OWNER = '00000000-0000-4000-8000-000000002601'
 const PLACE = '00000000-0000-4000-8000-000000002641'
@@ -353,7 +365,6 @@ interface RowReading {
   status: string
   date: string
   metrics: string[]
-  layout: string | null
   parts: string[]
   rowBox: Box
   contentLeft: number
@@ -385,7 +396,12 @@ async function readRows(list: Locator): Promise<RowReading[]> {
       .filter((row) => row.querySelector('[data-part="status"]') !== null)
       .map((row) => {
         const part = (name: string) => row.querySelector<HTMLElement>(`[data-part="${name}"]`)!
-        const title = part('title')
+        // Round 7's row (decision 7): the head holds the title alone; the
+        // context line holds the status, then the stored date.
+        const head = part('head')
+        const title = head.querySelector<HTMLElement>('h1, h2, h3, h4, h5, h6')!
+        const context = part('context')
+        const status = part('status')
         const style = getComputedStyle(row)
         const rowBox = box(row)
         const titleBox = box(title)
@@ -393,7 +409,7 @@ async function readRows(list: Locator): Promise<RowReading[]> {
         range.selectNodeContents(title)
         const titleLines = new Set([...range.getClientRects()].map((rect) => Math.round(rect.top))).size
         const besideTitle = [...row.querySelectorAll<HTMLElement>('[data-part]')]
-          .filter((node) => node !== title && !title.contains(node) && !node.contains(title))
+          .filter((node) => node !== head && !head.contains(node) && !node.contains(head))
           .filter((node) => {
             const other = node.getBoundingClientRect()
             return other.height > 0 && other.top < titleBox.bottom - 0.5 && other.bottom > titleBox.top + 0.5
@@ -401,19 +417,18 @@ async function readRows(list: Locator): Promise<RowReading[]> {
           .map((node) => node.dataset.part ?? '')
         return {
           title: textOf(title),
-          status: textOf(part('status')),
-          date: textOf(part('date')),
+          status: textOf(status),
+          date: textOf(context.querySelector(':scope > .clr-nowrap')!),
           metrics: [...part('metrics').querySelectorAll('.clr-nowrap')].map((node) => (node.textContent ?? '').trim()),
-          layout: row.getAttribute('data-layout'),
           parts: [...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part') ?? ''),
           rowBox,
           contentLeft: rowBox.left + parseFloat(style.paddingLeft) + parseFloat(style.borderLeftWidth),
           contentRight: rowBox.right - parseFloat(style.paddingRight) - parseFloat(style.borderRightWidth),
           titleBox,
           titleLines,
-          statusBox: box(part('status')),
-          dateBox: box(part('date')),
-          statusDateBox: box(part('status-date')),
+          statusBox: box(status),
+          dateBox: box(context.querySelector(':scope > .clr-nowrap')!),
+          statusDateBox: box(context),
           metricsBox: box(part('metrics')),
           besideTitle,
         }
@@ -421,9 +436,9 @@ async function readRows(list: Locator): Promise<RowReading[]> {
   })
 }
 
-/** C53 / R19: the title alone on its row; status then date together beneath it; then the metrics. */
+/** C53 / R19, decision 7: the title alone on its row; status then date together beneath it; then the metrics. */
 function expectHierarchy(reading: RowReading, label: string) {
-  expect(reading.parts, `${label}: one order in every row`).toEqual(['title', 'status-date', 'status', 'date', 'metrics'])
+  expect(reading.parts, `${label}: one order in every row`).toEqual(['head', 'context', 'status', 'metrics'])
   expect(reading.besideTitle, `${label}: nothing shares the title's row`).toEqual([])
   expect(reading.titleBox.right - reading.titleBox.left, `${label}: the title has the row's full width`)
     .toBeGreaterThanOrEqual(reading.contentRight - reading.contentLeft - 1)
@@ -432,7 +447,6 @@ function expectHierarchy(reading: RowReading, label: string) {
   expect(Math.abs(centre(reading.statusBox) - centre(reading.dateBox)), `${label}: the date is beside the status, on its line`).toBeLessThanOrEqual(2)
   expect(reading.dateBox.left, `${label}: the status comes first, then the date`).toBeGreaterThan(reading.statusBox.right)
   expect(reading.metricsBox.top, `${label}: the metrics close the row`).toBeGreaterThanOrEqual(reading.statusDateBox.bottom - 0.5)
-  expect(reading.layout, `${label}: History's own chronology row`).toBe('chronology')
 }
 
 /** AC-R026-01: what a row says is what the record stores. */
@@ -602,8 +616,8 @@ test.describe('TASK-026 History row hierarchy and intentional filter options', (
     await expect(listOf(page)).toBeVisible()
     await expectOffered(page)
     // The retried window holds every stored workout, the never-started one with its status.
-    await expect(listOf(page).locator('[data-layout="chronology"]')).toHaveCount(LONG_RECORD.length)
-    await expect(listOf(page).locator('[data-status="unstarted"]')).toContainText('Not started')
+    await expect(listOf(page).locator(':scope > li:has([data-part="status"])')).toHaveCount(LONG_RECORD.length)
+    await expect(listOf(page).locator(':scope > li').filter({ has: page.locator('[data-part="status"]', { hasText: 'Not started' }) })).toHaveCount(1)
 
     // A filter matching nothing is not an empty history.
     app.setRows(COMPLETED_ONLY)
@@ -647,26 +661,50 @@ test.describe('TASK-026 History row hierarchy and intentional filter options', (
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
     await visit('/gallery/refinements?state=screens')
-    const part = page.locator('[data-refinement-state="screens"] [data-gallery-history]')
+    // A3 TASK-103: Round 7's accepted `screens` state draws History as a static
+    // composition (a card, its filter and two sample rows) rather than the
+    // route's own list, with its own sample words; the route's rows and words
+    // are proved by the four cases above.
+    const scene = page.locator('[data-refinement-state="screens"]')
+    const part = scene.locator(':has(> .clr-accepted-history-row)').last()
     await part.scrollIntoViewIfNeeded()
-    await expect(part.getByRole('heading', { name: 'History', exact: true })).toBeVisible()
-    const list = part.getByRole('list', { name: LIST })
-    await expect(list).toBeVisible()
+    await expect(scene.getByText('History', { exact: true })).toBeVisible()
     await settle(page)
 
-    await expectOffered(part)
-    const rows = await readRows(list)
-    expect(rows.map((row) => row.status)).toEqual(['Completed', 'Completed', 'Partial', 'Not started'])
-    rows.forEach((reading) => expectHierarchy(reading, `gallery ${reading.title}`))
-    await expect(restRows(list)).not.toHaveCount(0)
+    const filter = part.getByLabel('Filter', { exact: true })
+    const offered = (await filter.locator('option').allTextContents()).map((text) => text.trim())
+    expect(offered, 'the accepted sample offers the three useful choices in its own words').toEqual(['All workouts', 'Completed', 'Incomplete'])
+    for (const retired of RETIRED) expect(offered, `${retired} is not a filter option`).not.toContain(retired)
+
+    // Each sample row: the title alone on its row, the status and date together beneath it.
+    const rows = part.locator('.clr-accepted-history-row')
+    await expect(rows).toHaveCount(2)
+    for (const row of await rows.all()) {
+      const reading = await row.evaluate((element) => {
+        const [title, line] = [...element.querySelectorAll('p')]
+        const box = (node: Element) => node.getBoundingClientRect()
+        const rowBox = box(element)
+        return {
+          title: (title.textContent ?? '').trim(),
+          line: (line.textContent ?? '').trim(),
+          titleWidth: box(title).width,
+          rowWidth: rowBox.width,
+          lineTop: box(line).top,
+          titleBottom: box(title).bottom,
+        }
+      })
+      expect(reading.title.length).toBeGreaterThan(0)
+      expect(reading.titleWidth, `${reading.title}: the title has the row's full width`).toBeGreaterThanOrEqual(reading.rowWidth - 1)
+      expect(reading.lineTop, `${reading.title}: status and date sit beneath the title`).toBeGreaterThanOrEqual(reading.titleBottom - 0.5)
+      expect(reading.line, `${reading.title}: a date and a status, together`).toMatch(/^[A-Z][a-z]+ \d{1,2} · (Completed|Incomplete)$/)
+    }
     await attach(part, 'gallery-history-phone-320')
 
-    await filterOf(part).selectOption('partial')
-    await expect(list.getByRole('listitem')).toHaveCount(1)
-    await filterOf(part).selectOption('all')
-    await expect(list.locator('[data-status="unstarted"]')).toHaveCount(1)
-    // The titles open nothing here.
-    await titleLink(list, rows[0].title).tap()
+    // The sample's filter is live over memory, and nothing navigates.
+    await filter.selectOption('partial')
+    await expect(filter).toHaveValue('partial')
+    await filter.selectOption('all')
+    await expect(filter).toHaveValue('all')
     await noHorizontalOverflow(page)
     await expect(page).toHaveURL(/\/gallery\/refinements\?state=screens$/)
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])

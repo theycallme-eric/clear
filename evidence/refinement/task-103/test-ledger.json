@@ -1,0 +1,273 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-103",
+  "family": "F1",
+  "base": "a6cd01c926d516b3c72770b32443ea0dadfe47a9",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F1 = src/ui/session-detail-timed-actuals.test.tsx (2), src/app/SessionDetail.test.tsx (2 body pending), e2e/refinement/task-047.spec.ts. The brief adds the inherited unit files and e2e/refinement/task-026.spec.ts.",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "retired": []
+  },
+  "summary": {
+    "carried": 11,
+    "rewritten": 14,
+    "retired": 0,
+    "added": 11
+  },
+  "entries": [
+    {
+      "file": "src/ui/session-detail-timed-actuals.test.tsx",
+      "test": "TASK-047 History reads back recorded timed actuals and categorical effort > draws the category through the existing effort face beside the block outcome, never on the 1–10 scale, and nothing when unanswered",
+      "ledger": "deferred (F1)",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte; it passes against Round 7’s StructureResultBadge now that it draws the effort face (src/ui/session-detail.tsx)."
+    },
+    {
+      "file": "src/ui/session-detail-timed-actuals.test.tsx",
+      "test": "TASK-047 History reads back recorded timed actuals and categorical effort > draws each recorded actual under the movement it belongs to, a recorded zero as zero, a load alone without a round, and nothing for an unrecorded movement or from the plan",
+      "ledger": "deferred (F1)",
+      "disposition": "carried",
+      "note": "The whole file is the build’s, byte for byte; it passes against Round 7’s SessionSectionCard now that each movement draws its recorded actual."
+    },
+    {
+      "file": "src/app/SessionDetail.test.tsx",
+      "test": "Session Detail populated state > displays weight, reps and RPE per logged set",
+      "ledger": "build-edit-pending (F1)",
+      "disposition": "carried",
+      "note": "The build’s body restored (the file now equals the build’s). Round 7 had renamed the set table’s RPE column Effort; it reads RPE again so the set’s legacy 1–10 number is named apart from the block’s categorical effort face (TASK-AC-A5FD8C464D85, AC-R030-02)."
+    },
+    {
+      "file": "src/app/SessionDetail.test.tsx",
+      "test": "Session Detail containment > heads the facts and their provenance inside one overview card, as readouts",
+      "ledger": "build-edit-pending (F1)",
+      "disposition": "carried",
+      "note": "The build’s body restored. The saved Overview facts read in Review’s order — Duration, Focus, Intensity, then the record’s Date and Status (TASK-004) — in Round 7’s SummaryFacts. FactKind glyphs and the equipment group stay TASK-110’s (F8)."
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "test": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane touch phone-390 Signal: the four timed families’ partials, loads, categorical effort and notes save through the real writers with block, round and movement identity; a refused movement write keeps every entry and the athlete on the section; the retry writes each row once; Summary is reached and History reads back the actual entries, not the plan, before and after a reload",
+      "ledger": "e2e expected after F1",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: each block’s log is Round 7’s TimedResultLog, saved by its own Save log (the product presentation’s timedWorkflows.saveResult bound to BlockCompletionProvider.saveTimedLog) instead of by the section’s forward action, so a refused or lost write is answered in the open dialog (“Your log didn’t save. Try again.”) and retried by the same Save log. Every asserted request trail, row, round/movement identity, zero/blank rule and History read-back (before and after a reload) is the build’s. Selectors follow Round 7: the card is .clr-timed-flow[data-timed-format], the AMRAP amount is “Next round · <movement>”, For Time’s Start is “Start FOR TIME”, the log outline reads Round 7’s groups. Backend lane: not run by the worker (no PRE-001 credentials); the journey body is the same as the synthetic lane’s, which passes."
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "test": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 backend lane keyboard phone-320 reduced motion: a block write and a movement write whose answers are lost are restated on the retry with the values corrected since, never duplicated; an entered zero is kept and a blank movement and an unreported count stay unrecorded; History reads back the corrected entries before and after a reload",
+      "ledger": "e2e expected after F1",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: each block’s log is Round 7’s TimedResultLog, saved by its own Save log (the product presentation’s timedWorkflows.saveResult bound to BlockCompletionProvider.saveTimedLog) instead of by the section’s forward action, so a refused or lost write is answered in the open dialog (“Your log didn’t save. Try again.”) and retried by the same Save log. Every asserted request trail, row, round/movement identity, zero/blank rule and History read-back (before and after a reload) is the build’s. Selectors follow Round 7: the card is .clr-timed-flow[data-timed-format], the AMRAP amount is “Next round · <movement>”, For Time’s Start is “Start FOR TIME”, the log outline reads Round 7’s groups. Backend lane: not run by the worker (no PRE-001 credentials); the journey body is the same as the synthetic lane’s, which passes."
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "test": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 synthetic lane touch phone-390 Signal: the same refused-write journey over a contained PostgREST double — every entry kept, one write per row on the retry, the rows’ round and movement identity, History read back before and after a reload (not backend proof)",
+      "ledger": "e2e expected after F1",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: each block’s log is Round 7’s TimedResultLog, saved by its own Save log (the product presentation’s timedWorkflows.saveResult bound to BlockCompletionProvider.saveTimedLog) instead of by the section’s forward action, so a refused or lost write is answered in the open dialog (“Your log didn’t save. Try again.”) and retried by the same Save log. Every asserted request trail, row, round/movement identity, zero/blank rule and History read-back (before and after a reload) is the build’s. Selectors follow Round 7: the card is .clr-timed-flow[data-timed-format], the AMRAP amount is “Next round · <movement>”, For Time’s Start is “Start FOR TIME”, the log outline reads Round 7’s groups. Synthetic lane: run and passing."
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "test": "TASK-047 visible timed-result persistence and History readback > JOURNEY-031 synthetic lane keyboard phone-320 reduced motion: the same lost-answer journey over a contained PostgREST double — restated on the retry with the corrected values, zero kept, blanks unrecorded, History read back (not backend proof)",
+      "ledger": "e2e expected after F1",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: each block’s log is Round 7’s TimedResultLog, saved by its own Save log (the product presentation’s timedWorkflows.saveResult bound to BlockCompletionProvider.saveTimedLog) instead of by the section’s forward action, so a refused or lost write is answered in the open dialog (“Your log didn’t save. Try again.”) and retried by the same Save log. Every asserted request trail, row, round/movement identity, zero/blank rule and History read-back (before and after a reload) is the build’s. Selectors follow Round 7: the card is .clr-timed-flow[data-timed-format], the AMRAP amount is “Next round · <movement>”, For Time’s Start is “Start FOR TIME”, the log outline reads Round 7’s groups. Synthetic lane: run and passing."
+    },
+    {
+      "file": "e2e/refinement/task-047.spec.ts",
+      "test": "TASK-047 visible timed-result persistence and History readback > AC-R031-01 gallery emom, amrap, for_time and ladder phone-390: each state’s route-owned log draws the accepted closing feedback group — the effort faces and the notes — and the EMOM its loaded movement’s actual load, live over memory only with nothing stored and no network",
+      "ledger": "e2e expected after F1",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s gallery state is driven by its own “Open … results” (start, past the cap), and its log is TimedResultLog; the case still checks the closing effort and notes group (and the EMOM load), the draft kept through close and reopen, nothing stored and no network."
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "test": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 phone-320: each title has its own row with status and date beneath, the filter offers All entries, Completed and Partial, and a row opens its saved detail",
+      "ledger": "e2e expected after F10 (run by TASK-103 per its brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the row is read from Round 7’s markup (data-part head, then context holding the status and the date, then metrics) instead of the build’s title / status-date / date parts and data-layout; every hierarchy, alignment, truthfulness, filter, keyboard, reload and recovery assertion is the build’s. The History row was changed to keep the status and the date on one line beneath the title (TASK-AC-6BFF651DF237, C53)."
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "test": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 phone-390: each title has its own row with status and date beneath, the filter offers All entries, Completed and Partial, and a row opens its saved detail",
+      "ledger": "e2e expected after F10 (run by TASK-103 per its brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the row is read from Round 7’s markup (data-part head, then context holding the status and the date, then metrics) instead of the build’s title / status-date / date parts and data-layout; every hierarchy, alignment, truthfulness, filter, keyboard, reload and recovery assertion is the build’s. The History row was changed to keep the status and the date on one line beneath the title (TASK-AC-6BFF651DF237, C53)."
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "test": "TASK-026 History row hierarchy and intentional filter options > AC-R026-01 keyboard, reduced motion and reopen phone-320: every row keeps its stored date, status and actuals, a never-started workout stays listed and opens by keyboard, and a reload keeps it all",
+      "ledger": "e2e expected after F10 (run by TASK-103 per its brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the row is read from Round 7’s markup (data-part head, then context holding the status and the date, then metrics) instead of the build’s title / status-date / date parts and data-layout; every hierarchy, alignment, truthfulness, filter, keyboard, reload and recovery assertion is the build’s. The History row was changed to keep the status and the date on one line beneath the title (TASK-AC-6BFF651DF237, C53)."
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "test": "TASK-026 History row hierarchy and intentional filter options > JOURNEY-026 recovery phone-320: a failed read is said and a retry answers, an empty history and a filter matching nothing keep their own meanings, and a failed detail read retries",
+      "ledger": "e2e expected after F10 (run by TASK-103 per its brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the row is read from Round 7’s markup (data-part head, then context holding the status and the date, then metrics) instead of the build’s title / status-date / date parts and data-layout; every hierarchy, alignment, truthfulness, filter, keyboard, reload and recovery assertion is the build’s. The History row was changed to keep the status and the date on one line beneath the title (TASK-AC-6BFF651DF237, C53)."
+    },
+    {
+      "file": "e2e/refinement/task-026.spec.ts",
+      "test": "TASK-026 History row hierarchy and intentional filter options > gallery screens phone-320: the accepted state draws History’s own card, filter and rows — title alone, status and date beneath — with nothing read or written",
+      "ledger": "e2e expected after F10 (run by TASK-103 per its brief)",
+      "disposition": "rewritten",
+      "note": "Round 7’s accepted screens state draws History as a static composition (a card, its filter and two sample rows) with its own words; the case checks that card, its three choices with neither retired option, each row’s title alone with the status and date beneath it, and that nothing is read or written. The route’s own rows and words are proved by the other four cases. The build’s gallery HistoryCollection is not carried (the ledger retired its unit counterpart, inventory F10)."
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — one forward action saves, then continues > saves the rounds the athlete entered, as entered",
+      "ledger": "base test (not in the build ledger)",
+      "disposition": "rewritten",
+      "note": "Body unchanged; its helpers performTwoRounds and roundsShown read Round 7’s AMRAP: rounds entered in the Log results dialog (Increase rounds completed), which is closed without Save log, so the forward action still saves the count as entered."
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — one forward action saves, then continues > keeps the athlete on the section with input preserved when the save fails, and retries once",
+      "ledger": "base test",
+      "disposition": "rewritten",
+      "note": "Body unchanged; same helpers as above (the count is read from the dialog, which keeps its form while closed)."
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — one forward action saves, then continues > keeps entries through backward navigation after a failed save, and saves each block once",
+      "ledger": "base test",
+      "disposition": "rewritten",
+      "note": "Body unchanged; same helpers. The count survives the remount because TimedWorkoutFlow keeps it on clear.workout-amraps, as the shipped AMRAP did."
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — one forward action saves, then continues > keeps entries across leaving and returning, and a resaved section writes no duplicate",
+      "ledger": "base test",
+      "disposition": "rewritten",
+      "note": "Body unchanged; same helpers. The attempt and count survive the closed tab through the same per-format record."
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > coordinates a low AMRAP window with the low session rest across navigation",
+      "ledger": "base test",
+      "disposition": "carried",
+      "note": "Unchanged. Passes with TimedWorkoutFlow drawing the AMRAP: its clock survives navigation (persisted start) and its root carries the shipped renderers’ data-urgent marker."
+    },
+    {
+      "file": "src/state/block-completion-provider.test.tsx",
+      "test": "(whole file)",
+      "ledger": "carried by task 2",
+      "disposition": "carried",
+      "note": "Identical body to the build (181e580); passes unchanged."
+    },
+    {
+      "file": "src/state/session-detail.test.ts",
+      "test": "(whole file)",
+      "ledger": "carried by task 2",
+      "disposition": "carried",
+      "note": "Identical body to the build (181e580); passes unchanged."
+    },
+    {
+      "file": "src/data/refinement-logging-contract.test.ts",
+      "test": "(whole file)",
+      "ledger": "carried by task 2",
+      "disposition": "carried",
+      "note": "Identical body to the build (181e580); passes unchanged."
+    },
+    {
+      "file": "src/data/refinement-timed-actuals.test.ts",
+      "test": "(whole file)",
+      "ledger": "carried by task 2 (one assertion edited by task 2)",
+      "disposition": "carried",
+      "note": "Passes unchanged at its task 2 version; its adoption check still finds only the provider and the read model importing the timed writers."
+    },
+    {
+      "file": "src/app/History.test.tsx",
+      "test": "(whole file)",
+      "ledger": "ported by task 2",
+      "disposition": "carried",
+      "note": "Passes unchanged at its task 2 version (TASK-026 filter tests ported; U44 reads Round 7’s row order)."
+    },
+    {
+      "file": "src/test/block-completion-ownership.test.ts",
+      "test": "one writer for block_results (EXE-01) > saves Round 7’s explicit timed log through that same path, from the product presentation only (A3 TASK-103)",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "New assertion: saveTimedLog goes through the same richer save, is called only by src/ui/timed-result-shell.ts, and is bound only by the product presentation. Every existing assertion in the file is unchanged."
+    },
+    {
+      "file": "src/dev/gallery-registry.test.tsx",
+      "test": "gallery coverage of app-composed components > frames every component src/ui exports, or records why not",
+      "ledger": "base test",
+      "disposition": "carried",
+      "note": "Assertion unchanged; its exemption map records AmrapComparison (exported so TimedWorkoutFlow keeps the shipped AMRAP’s score line), which draws ConditioningScoreLine, already framed."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-F0CF2CC7BC18 the product binds Round 7’s saveResult to the shell’s save, mounts no sample adapter, and draws every timed format with TimedWorkoutFlow",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept, the load in the profile’s unit",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation. Repair round 1 (review 2026-11-16, TASK-AC-21D8C507B137): the shell is mounted as the route mounts it, with SetLoggingProvider holding the profile’s unit (pounds here), and the case asserts that unit on every movement row instead of the kg a removed fallback supplied; the in-memory table stores exactly the unit sent."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-9971E7A16F92 a refused movement write keeps the draft and the dialog and says the log did not save; the retry restates the row and writes each movement once under the same id",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-21D8C507B137 with the profile unread there is no unit: Save log is refused as a set is (profile-unread), nothing is written or guessed, the draft and the dialog stay; the forward action is refused the same; once the profile is read the retry saves in its unit",
+      "ledger": "new (repair round 1, review 2026-11-16)",
+      "disposition": "added",
+      "note": "Real data only for the load unit: with the profile unread Save log and the forward action are refused with VALIDATION_REQUIRED_FIELD profile-unread before anything is sent (no row, no movement row), the draft and the dialog are kept, and once the profile is read the same draft saves in the profile’s unit. Fails on the previous candidate, which stamped kg."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-A5FD8C464D85 /history/:id reads a For Time saved as Incomplete before its cap through Round 7’s log as Incomplete, with its effort face and the movement’s recorded actual, from the rows stored",
+      "ledger": "new (repair round 1, review 2026-11-16)",
+      "disposition": "added",
+      "note": "Route-level proof the review asked for: a For Time saved as Incomplete through Round 7’s log, read back on the real /history/:id route (renderApp, asPerformed over the rows stored), reads Incomplete — not Stopped at the cap — beside the effort face and the movement’s recorded actual."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 EMOM and ladder keep their own contracts: the EMOM a load with no round and no measured outcome; the ladder its highest rung and a partial in the rung after it",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-048 the saved row is read back as the saved log when the block is drawn again, and Edit log corrects it in place",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-015 the forward action saves an unsaved log through the same richer save: BlockPanel hands the shell the timed report",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-6B9598D96180 the attempt and the AMRAP’s counts survive the block being drawn again, as the shipped renderers’ did; outside the shell nothing is stored",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "e2e/refinement/task-103-parity.spec.ts",
+      "test": "(10 cases: emom, amrap, for_time, ladder and screens at phone-320 and phone-390)",
+      "ledger": "new (named by the brief)",
+      "disposition": "added",
+      "note": "The look check. Receipts: evidence/refinement/task-103/parity/*.json. Repair round 1 (review 2026-11-16): the cases also compare layout, not only words — every rendered element’s box on the timed cards and their Log results dialog within 2 px, and History’s row-hierarchy geometry — so the ladder rung grid’s inset difference the text comparison missed now fails. Every earlier assertion is kept."
+    }
+  ]
+}

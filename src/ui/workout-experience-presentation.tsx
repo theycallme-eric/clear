@@ -6,9 +6,13 @@
  * optional and absent in the product
  * until a real source is wired: `guides` (warm-up/cooldown from the session),
  * `suggestedLoads` (absent: the prescription's own load is shown),
- * `timedWorkflows.saveResult` (absent: the timed blocks keep their shipped
- * renderers), the training report, and `equipmentSetupDraft` (the review app's
+ * the training report, and `equipmentSetupDraft` (the review app's
  * onboarding preview, never the product's). The gallery passes sample values.
+ * `timedWorkflows.saveResult` is the one real exception (A3 TASK-103): the
+ * product's is the shell's timed save (`./timed-result-shell`), handed the
+ * block and the shell it is performed in; with it present, `BlockSlot` draws
+ * the timed formats with `TimedWorkoutFlow`. The gallery's keeps results in
+ * memory and ignores the shell.
  * A presentation never removes behaviour: Settings, History and Onboarding keep
  * their full controls under it.
  */
@@ -17,13 +21,14 @@ import '../styles/workout-r7.css'
 import {createContext,use,type ReactNode} from 'react'
 import type {OnboardingDraft} from '../state/onboarding'
 import type { TimedResultReceipt } from './timed-result-log'
+import type { TimedSaveContext } from './timed-result-shell'
 export interface PreparationGuideView {title:'Warm-up'|'Cooldown';minutes:number;movements:readonly string[]}
 export interface TrainingProgressView {movement:string;equipment:string;previous:string;latest:string;next:string;evidence:string}
 export interface WorkoutExperiencePresentation {
  dialogBackdrop?: 'balanced' | 'dark' | 'soft'
  equipmentPlacement?: 'name' | 'line'
  loggingOverlay?: 'dialog' | 'sheet'
- timedWorkflows?: { logPresentation: 'inline' | 'sheet'; counterStyle: 'compact' | 'wide'; logHierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; saveResult?: (result: TimedResultReceipt) => Promise<void> }
+ timedWorkflows?: { logPresentation: 'inline' | 'sheet'; counterStyle: 'compact' | 'wide'; logHierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; saveResult?: (result: TimedResultReceipt, context: TimedSaveContext) => Promise<void> }
  focusAction:'text'|'framed'
  guides?:{warmup:PreparationGuideView;cooldown:PreparationGuideView}
  suggestedLoads?:Readonly<Record<string,string|null>>

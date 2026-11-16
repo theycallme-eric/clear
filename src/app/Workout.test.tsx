@@ -931,23 +931,30 @@ describe('Workout — one forward action saves, then continues', () => {
     return section.blocks.map((block) => block.blockId)
   }
 
-  /** The AMRAP's live round count, as the athlete reads it. */
+  /**
+   * The AMRAP's round count, as the athlete entered it. A3 TASK-103: Round 7's
+   * AMRAP takes its result in the "Log results" dialog, which keeps its form
+   * while closed, so the count is read there whether or not it is open.
+   */
   function roundsShown(): string | null {
-    return within(screen.getByRole('group', { name: 'Rounds completed' })).getByRole('status')
-      .textContent
+    return within(screen.getByRole('group', { name: 'Rounds completed', hidden: true }))
+      .getByRole('status', { hidden: true }).textContent
   }
 
   /**
    * Runs the Finisher's AMRAP window, then records two rounds after it — the
-   * result is entered only once the window has closed (REQ-014).
+   * result is entered only once the window has closed (REQ-014). A3 TASK-103:
+   * Round 7's log opens as the window closes; it is closed again without Save
+   * log, so the section's forward action is what saves the count, as before.
    */
   async function performTwoRounds(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
-    await user.click(screen.getByRole('button', { name: 'Record rounds' }))
-    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
-    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+    const log = within(dialogTitled('Log results'))
+    await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
+    await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
     expect(roundsShown()).toBe('2')
+    await closeLog(user)
   }
 
   /**

@@ -216,8 +216,14 @@ export interface TimedResultReport {
   readonly effort: Enums<'set_effort'> | null
   /** Each movement's typed entry by `workout_exercises.id`; blank is not recorded. */
   readonly movements: Readonly<Record<string, MovementActualDraft>>
-  /** The unit a typed load is stated in: the athlete's choice, else the profile's. */
-  readonly weightUnit: Enums<'weight_unit'>
+  /**
+   * The unit a typed load is stated in: the athlete's choice, else the
+   * profile's. `null` while the profile is unread (A3 TASK-103): then there is
+   * nothing to stamp on a movement row (`weight_unit` is NOT NULL), and the
+   * shell refuses the richer save with `profile-unread` — exactly as the set
+   * path refuses a set — rather than guess between kilograms and pounds.
+   */
+  readonly weightUnit: Enums<'weight_unit'> | null
   /** A ladder's rung count (`ladderRungs(...).length`); its partial's round is bounded by it. */
   readonly rungCount?: number
 }
@@ -302,6 +308,25 @@ export interface BlockCompletionApi {
    * omit it.
    */
   reopenBlock?(blockId: string): void
+  /**
+   * A3 TASK-103 (REQ-031; AC-R031-01…03): Round 7's explicit "Save log" for a
+   * timed block (`TimedWorkoutFlow`, `TimedResultLog`), through this same one
+   * path. The outcome and the timed report are kept as the block's latest
+   * report — so a forward action after a refused save retries exactly what the
+   * log sent — and saved now through the richer timed save (TASK-015/031): the
+   * row, corrected in place on its unique key's 23505, then each movement's row
+   * under the ids minted once per block, so a retry or a correction converges on
+   * the same rows and never writes a second one. Answered, the block is
+   * recorded (`onBlockRecorded` with `saved`) and its rows are what
+   * `recordedResult` reads back; refused, nothing is recorded and the error is
+   * the caller's to show while it keeps the draft. Only the product's timed
+   * save (`src/ui/timed-result-shell.ts`) calls it; a bare seam may omit it.
+   */
+  saveTimedLog?(
+    blockId: string,
+    outcome: BlockOutcome,
+    report: TimedResultReport,
+  ): Promise<Result<RecordedBlockResult | null>>
 }
 
 /** TASK-048: how the shell learned a block's row exists (`onBlockRecorded`). */

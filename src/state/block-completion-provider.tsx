@@ -62,6 +62,15 @@
  *     (the row landed, a later write did not) may reopen the block in the same
  *     act (`reopenBlock`): it is then outstanding, not recorded, and the
  *     forward action restates the row and writes its movements once.
+ *   · **Saves Round 7's explicit timed log (A3 TASK-103)** through that same
+ *     richer save: `saveTimedLog` is the "Save log" of `TimedWorkoutFlow`,
+ *     reached only through the product presentation's `timedWorkflows.saveResult`
+ *     (`src/ui/timed-result-shell.ts`). It keeps the report as the block's
+ *     latest, saves it now, and on an answer the block is recorded with the
+ *     rows `recordedResult` reads back; a correction restates them in place.
+ *     The forward action then finds the block recorded and writes nothing more.
+ *     Like a set, a timed save with no unit to stamp (the profile unread) is
+ *     refused with `profile-unread` before anything is sent — never guessed.
  *
  * The numeric effort is not asked (E04): every row is written with
  * `perceived_effort` `null` through TASK-029's nullable writer, and nothing
@@ -83,7 +92,7 @@ import {
   type TimedResultReport,
 } from './block-completion'
 import type { AppError, Result } from './errors'
-import { ErrorCode, isErr, ok } from './errors'
+import { createError, err, ErrorCode, isErr, ok } from './errors'
 import { reportedTimedEntries, saveTimedResult, timedDraftFromReport, timedResultRequest, type SavedTimedResult } from './timed-results'
 import type { BlockMovementResultRow } from './schemas'
 import type { BlockProgress } from './workout-progress'
@@ -232,6 +241,18 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
   const saveTimed = useCallback(async (blockId: string, outcome: BlockOutcome, report: TimedResultReport): Promise<Result<SavedTimedResult | null>> => {
     const block = latest.current.blocks.find((candidate) => candidate.blockId === blockId)
     if (block === undefined) return ok(null)
+    // A3 TASK-103: a movement row's `weight_unit` is NOT NULL and is the
+    // profile's at write time. With the profile unread there is nothing to
+    // stamp, so the save is refused before anything is sent — exactly as the
+    // set path refuses a set (`set-logging-provider.tsx`) — never stamped with
+    // a guessed unit. The caller keeps the draft; a retry once the profile is
+    // read saves it.
+    const { weightUnit } = report
+    if (weightUnit === null) {
+      return err(createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { field: 'weight_unit', reason: 'profile-unread' },
+      }))
+    }
     let rowIds = movementRowIds.current.get(blockId)
     if (rowIds === undefined) {
       rowIds = Object.fromEntries(block.exercises.map((exercise) => [exercise.exerciseId, crypto.randomUUID()]))
@@ -241,11 +262,39 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
       block: { id: blockId, rounds: block.rounds },
       movements: block.exercises.map((exercise) => exercise.prescription),
       ...(report.rungCount === undefined ? {} : { rungCount: report.rungCount }),
-      weightUnit: report.weightUnit,
+      weightUnit,
     })
     if (isErr(request)) return request
     return saveTimedResult(latest.current.blockResults, request.value)
   }, [])
+
+  /**
+   * A3 TASK-103: Round 7's explicit Save log, through the richer save above —
+   * never a second writer. Kept as the block's latest report first, so a
+   * forward action after a refusal retries exactly what the log sent. A save
+   * already in flight finishes first: one write at a time. A correction of a
+   * block already recorded restates its row and movements (23505 → correct)
+   * and replaces the rows `recordedResult` reads back.
+   */
+  const saveTimedLog = useCallback(
+    async (blockId: string, outcome: BlockOutcome, report: TimedResultReport): Promise<Result<RecordedBlockResult | null>> => {
+      outcomes.current.set(blockId, outcome)
+      timedReports.current.set(blockId, report)
+      if (inFlight.current !== null) await inFlight.current
+      const result = await saveTimed(blockId, outcome, report)
+      if (isErr(result)) return result
+      if (result.value === null) return ok(null)
+      const rows = savedRows(result.value)
+      if (written.current.has(blockId)) {
+        recordedRows.current.set(blockId, rows)
+        setRecorded(new Set(written.current))
+      } else {
+        remember(blockId, 'saved', rows)
+      }
+      return ok(rows)
+    },
+    [remember, saveTimed],
+  )
 
   /** TASK-048: a failed save of the block, told to its renderer. */
   const failed = useCallback((blockId: string) => {
@@ -328,8 +377,9 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
       // Read when the recorded set renders: rows are kept before it changes.
       recordedResult: (blockId) => (recorded.has(blockId) ? (recordedRows.current.get(blockId) ?? null) : null),
       reopenBlock,
+      saveTimedLog,
     }),
-    [onBlockRecorded, onBlockSaveFailed, recorded, reopenBlock, reportOutcome, reportTimedResult, sessionId],
+    [onBlockRecorded, onBlockSaveFailed, recorded, reopenBlock, reportOutcome, reportTimedResult, saveTimedLog, sessionId],
   )
 
   const section = useMemo<SectionCompletionApi>(

@@ -192,10 +192,24 @@ function SessionItem({
         </Heading>
         {!presentation && statusNode}
       </div>
-      <p data-part="context" className="clr-text-data-xs" style={{ ...(presentation ? ROW_STYLE : {}), marginTop: 'var(--spacing-100)' }}>
-        {presentation && statusNode}
-        {presentation ? formatDay(entry.day) : `${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
-      </p>
+      {/* Decision 7 (A3 TASK-103, C53): under Round 7 the status then the
+          stored date share one line beneath the title — the same status-date
+          line Home's recent row draws, so neither wraps away from the other. */}
+      {presentation ? (
+        <p data-part="context" className="clr-text-data-xs" style={RECENT_STATUS_DATE_STYLE}>
+          <span data-part="status" style={{ ...RECENT_STATUS_STYLE, color: 'var(--text-card-header)' }}>
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              {RECENT_STATUS_GLYPH[entry.status]}
+            </span>
+            {HISTORY_STATUS_LABELS[entry.status]}
+          </span>
+          <span className="clr-nowrap">{formatDay(entry.day)}</span>
+        </p>
+      ) : (
+        <p data-part="context" className="clr-text-data-xs" style={{ marginTop: 'var(--spacing-100)' }}>
+          {`${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
+        </p>
+      )}
       {/* A count never wraps away from its unit. */}
       <p data-part="metrics" className="clr-text-data-xs" style={{ ...ROW_STYLE, marginTop: 'var(--spacing-100)' }}>
         {presentation && <span className="clr-nowrap">{formatFocus(entry.focus)}</span>}

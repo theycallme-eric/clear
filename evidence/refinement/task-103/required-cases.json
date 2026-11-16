@@ -1,0 +1,218 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-103",
+  "description": "A3 task 3 (F1): Round 7’s timed flow saves for real and History reads it back (REQ-026, REQ-030, REQ-031; JOURNEY-031 and JOURNEY-026, completion owner). check-01 proves the wiring on the real components over the real BlockCompletionProvider: the product presentation’s timedWorkflows.saveResult is the shell’s timed save (saveTimedLog → saveTimedResult), each timed format saves its own contract with block, round and movement identity, a refused write keeps the draft and the dialog and the retry converges, a load is stamped with the profile’s unit and, with the profile unread, the save is refused (profile-unread) as a set is — never stamped with a guessed unit — and saves once the profile is read, the saved row is read back, the forward action still saves an unsaved log, the attempt survives a remount as the shipped renderers’ did; History detail draws the categorical effort face apart from RPE, each movement’s recorded actual and For Time’s Incomplete; the real /history/:id route reads a For Time saved through Round 7’s log as Incomplete before its cap back from the rows stored; History keeps Round 7’s rows and the TASK-026 filter. The route-level journeys are e2e/refinement/task-047.spec.ts (JOURNEY-031, rewritten for Round 7) and e2e/refinement/task-026.spec.ts (JOURNEY-026, rewritten rows), run under their own manifests. parity is the look check: each real route this task wires beside its accepted gallery state (bec4454: emom, amrap, for_time, ladder, screens) with matched data at 320 and 390 px, compared in words and in layout (every element’s box on the timed cards and their log within 2 px; History’s row-hierarchy geometry, its accepted state being a static composition); every visible difference must be labelled with the criterion that intends it, and each case writes its receipt to evidence/refinement/task-103/parity/. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-103 --check check-01 -- npx vitest run src/ui/session-detail-timed-actuals.test.tsx src/state/block-completion-provider.test.tsx src/test/block-completion-ownership.test.ts src/state/session-detail.test.ts src/app/SessionDetail.test.tsx src/app/History.test.tsx src/ui/timed-flow-save.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-R031-01",
+        "AC-R031-02",
+        "AC-R031-03",
+        "AC-R030-02",
+        "AC-R030-03",
+        "AC-C53-01",
+        "AC-R026-01",
+        "TASK-AC-F0CF2CC7BC18",
+        "TASK-AC-A5FD8C464D85",
+        "TASK-AC-9971E7A16F92",
+        "TASK-AC-6B9598D96180",
+        "TASK-AC-6BFF651DF237",
+        "TASK-AC-21D8C507B137"
+      ],
+      "files": [
+        "src/ui/session-detail-timed-actuals.test.tsx",
+        "src/state/block-completion-provider.test.tsx",
+        "src/test/block-completion-ownership.test.ts",
+        "src/state/session-detail.test.ts",
+        "src/app/SessionDetail.test.tsx",
+        "src/app/History.test.tsx",
+        "src/ui/timed-flow-save.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-F0CF2CC7BC18 the product binds Round 7’s saveResult to the shell’s save, mounts no sample adapter, and draws every timed format with TimedWorkoutFlow",
+          "criterion": "TASK-AC-F0CF2CC7BC18"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept, the load in the profile’s unit",
+          "criterion": "AC-R031-01"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-9971E7A16F92 a refused movement write keeps the draft and the dialog and says the log did not save; the retry restates the row and writes each movement once under the same id",
+          "criterion": "TASK-AC-9971E7A16F92"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-21D8C507B137 with the profile unread there is no unit: Save log is refused as a set is (profile-unread), nothing is written or guessed, the draft and the dialog stay; the forward action is refused the same; once the profile is read the retry saves in its unit",
+          "criterion": "TASK-AC-21D8C507B137"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-A5FD8C464D85 /history/:id reads a For Time saved as Incomplete before its cap through Round 7’s log as Incomplete, with its effort face and the movement’s recorded actual, from the rows stored",
+          "criterion": "TASK-AC-A5FD8C464D85"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 EMOM and ladder keep their own contracts: the EMOM a load with no round and no measured outcome; the ladder its highest rung and a partial in the rung after it",
+          "criterion": "AC-R031-01"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-048 the saved row is read back as the saved log when the block is drawn again, and Edit log corrects it in place",
+          "criterion": "AC-R031-02"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-015 the forward action saves an unsaved log through the same richer save: BlockPanel hands the shell the timed report",
+          "criterion": "AC-R031-01"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-6B9598D96180 the attempt and the AMRAP’s counts survive the block being drawn again, as the shipped renderers’ did; outside the shell nothing is stored",
+          "criterion": "TASK-AC-6B9598D96180"
+        },
+        {
+          "file": "src/ui/session-detail-timed-actuals.test.tsx",
+          "name": "TASK-047 History reads back recorded timed actuals and categorical effort > draws the category through the existing effort face beside the block outcome, never on the 1–10 scale, and nothing when unanswered",
+          "criterion": "TASK-AC-A5FD8C464D85"
+        },
+        {
+          "file": "src/ui/session-detail-timed-actuals.test.tsx",
+          "name": "TASK-047 History reads back recorded timed actuals and categorical effort > draws each recorded actual under the movement it belongs to, a recorded zero as zero, a load alone without a round, and nothing for an unrecorded movement or from the plan",
+          "criterion": "TASK-AC-A5FD8C464D85"
+        },
+        {
+          "file": "src/state/session-detail.test.ts",
+          "name": "all six structure types, with their logged outcomes > reads an Incomplete stopped before the cap as Incomplete, and every capped row as before",
+          "criterion": "TASK-AC-A5FD8C464D85"
+        },
+        {
+          "file": "src/app/SessionDetail.test.tsx",
+          "name": "Session Detail populated state > displays weight, reps and RPE per logged set",
+          "criterion": "TASK-AC-A5FD8C464D85"
+        },
+        {
+          "file": "src/app/SessionDetail.test.tsx",
+          "name": "Session Detail containment > heads the facts and their provenance inside one overview card, as readouts",
+          "criterion": "AC-R026-01"
+        },
+        {
+          "file": "src/app/History.test.tsx",
+          "name": "History route > U44: every row puts its title, then status with the context, then metrics, whatever its status",
+          "criterion": "AC-C53-01"
+        },
+        {
+          "file": "src/app/History.test.tsx",
+          "name": "History route > AC-C53-01 the filter offers All entries, Completed and Partial, and All entries still lists rest runs and never-started workouts",
+          "criterion": "TASK-AC-6BFF651DF237"
+        },
+        {
+          "file": "src/test/block-completion-ownership.test.ts",
+          "name": "one writer for block_results (EXE-01) > saves the richer timed result from that same path, and from nowhere else (TASK-015, REQ-015)",
+          "criterion": "AC-R030-03"
+        },
+        {
+          "file": "src/test/block-completion-ownership.test.ts",
+          "name": "one writer for block_results (EXE-01) > saves Round 7’s explicit timed log through that same path, from the product presentation only (A3 TASK-103)",
+          "criterion": "TASK-AC-F0CF2CC7BC18"
+        },
+        {
+          "file": "src/test/block-completion-ownership.test.ts",
+          "name": "no perceived-effort capture on the completion path (E04, REQ-013) > writes every block result with no effort",
+          "criterion": "AC-R030-02"
+        },
+        {
+          "file": "src/state/block-completion-provider.test.tsx",
+          "name": "BlockCompletionProvider — idempotent saves and retries > restores only actual saved block rows and does not write those blocks again",
+          "criterion": "AC-R031-03"
+        },
+        {
+          "file": "src/state/block-completion-provider.test.tsx",
+          "name": "BlockCompletionProvider — the forward action saves what was observed > writes amrap’s own outcome fields, with no effort",
+          "criterion": "AC-R031-01"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-103 --check parity -- npx playwright test e2e/refinement/task-103-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-A6EC0ADCD3BD",
+        "TASK-AC-33FD32BBC1A4",
+        "TASK-AC-21D8C507B137"
+      ],
+      "files": [
+        "e2e/refinement/task-103-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD emom phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD emom phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD amrap phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD amrap phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD for_time phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD for_time phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD ladder phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD ladder phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start and past the cap",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD screens phone-320: /history’s rows and filter beside the accepted History part, every difference one a criterion intends",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        },
+        {
+          "file": "e2e/refinement/task-103-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-A6EC0ADCD3BD screens phone-390: /history’s rows and filter beside the accepted History part, every difference one a criterion intends",
+          "criterion": "TASK-AC-A6EC0ADCD3BD"
+        }
+      ]
+    }
+  }
+}

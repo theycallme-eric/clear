@@ -9,12 +9,19 @@ import { Heading, HeadingSection } from './Heading'
 import { LadderCompletion } from './ladder-rungs'
 import { SetEffortChoice } from './set-effort'
 import { useInvalidFocus } from './formFocus'
+import { initialTimedResultDraft } from './timed-result-shell'
 import '../styles/timed-workout.css'
 
 export type TimedFormat = 'emom' | 'amrap' | 'for_time' | 'ladder'
 export interface TimedResultDraft {
   completed: boolean | null
   count: number | null
+  /**
+   * AMRAP: reps into the round the window closed on — the shipped AMRAP's
+   * partial-round count, kept beside the per-movement amounts (owner decision
+   * in the logging contract). Blank (`null`, or absent) is not recorded; 0 is.
+   */
+  partialReps?: number | null
   highestRung: number | null
   effort: Enums<'set_effort'> | null
   notes: string
@@ -47,11 +54,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
   hierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; accessibleName?: string; embedded?: boolean
 }) {
   const rungs = ladderRungs(block.exercises)
-  const [localDraft, setLocalDraft] = useState<TimedResultDraft>(() => initial ?? {
-    completed: format === 'emom' ? true : format === 'ladder' || format === 'for_time' ? finished : null,
-    count: null, highestRung: format === 'ladder' && finished ? rungs.length : null,
-    effort: null, notes: '', measurements: {},
-  })
+  const [localDraft, setLocalDraft] = useState<TimedResultDraft>(() => initial ?? initialTimedResultDraft(format, finished, rungs.length))
   const draft = value ?? localDraft
   const setDraft = (next: TimedResultDraft | ((current: TimedResultDraft) => TimedResultDraft)) => {
     const result = typeof next === 'function' ? next(draft) : next
@@ -115,6 +118,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
           }} />}
         {completionAction}
         {format === 'amrap' && <QuantitySelector label="Rounds completed" value={draft.count} onChange={count => patch({ count })} />}
+        {format === 'amrap' && <QuantitySelector label="Reps into the next round" value={draft.partialReps ?? null} onChange={partialReps => patch({ partialReps })} />}
         {format === 'ladder' && <LadderCompletion rungs={rungs} unit={rungUnit} completedThrough={draft.highestRung}
           emphasis={rungEmphasis} onChange={highestRung => progress(highestRung === rungs.length, highestRung)} />}
       </ResultGroup>
