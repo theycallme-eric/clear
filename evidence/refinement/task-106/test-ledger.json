@@ -4,7 +4,7 @@
   "family": "F4",
   "base": "4e65efb18e7f03f4b1198224512fb7851cbe8609",
   "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
-  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F4 = src/ui/logging-overlay.test.tsx (24) and its -focus-brackets (3), -focus-kept (2) and -stale-close (1) files (deferred whole files), and the F4 build tests pending in src/ui/set-logging-sheet.test.tsx (21), src/app/sheet-minimize-access.test.tsx (6), src/app/rest-footer-lifecycle.test.tsx (8), src/app/superset-logging.test.tsx (6), src/ui/set-correction.test.tsx (1), src/ui/superset-block.test.tsx (11) and src/ui/set-effort.test.tsx (1); e2e task-019, task-020, task-043 and task-044. The brief adds src/ui/set-logger.test.tsx. Every build test of these files is listed, carried ones included.",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F4 = src/ui/logging-overlay.test.tsx (24) and its -focus-brackets (3), -focus-kept (2) and -stale-close (1) files (deferred whole files), and the F4 build tests pending in src/ui/set-logging-sheet.test.tsx (21), src/app/sheet-minimize-access.test.tsx (6), src/app/rest-footer-lifecycle.test.tsx (8), src/app/superset-logging.test.tsx (6), src/ui/set-correction.test.tsx (1), src/ui/superset-block.test.tsx (11) and src/ui/set-effort.test.tsx (1); e2e task-019, task-020, task-043 and task-044. The brief adds src/ui/set-logger.test.tsx. Every build test of these files is listed, carried ones included. Repair round 1: e2e task-019 and task-041 are this task’s (criterion obligations AC-C45-01 and AC-R016-03), rewritten here.",
   "rules": {
     "skipOnlyTodoAdded": false,
     "matchersWeakened": false,
@@ -21,24 +21,25 @@
         "why": "REQ-017 (C05, C42, C47) is owned by A3 TASK-114, whose approved verification runs these by name in this file (TASK-017 check-01 --testNamePattern \"group|spacing|helper\"); they assert the build’s rhythm tokens and its .clr-logging-movement groups, which Round 7 draws with its own .clr-round-movement rules."
       },
       {
-        "what": "e2e/refinement/task-019.spec.ts (the ledger’s F4)",
-        "task": "TASK-114",
-        "why": "A3 TASK-114’s approved verification runs it (TASK-019 check-01); it is the cross-family writers’ proof over every logging moment, of which F4 is one."
-      },
-      {
         "what": "e2e/refinement/task-044.spec.ts (the ledger’s F4)",
         "task": "TASK-107",
         "why": "A3 TASK-107’s approved verification runs it (TASK-044 check-01): “e2e task-044 (supersets and circuits) runs here, after TASK-106”."
       }
     ],
-    "resolved": []
+    "resolved": [
+      {
+        "what": "e2e/refinement/task-019.spec.ts (the ledger’s F4) and e2e/refinement/task-041.spec.ts (pre-UAT, no wire family)",
+        "when": "2026-11-16, repair round 1",
+        "why": "Both are obligations of this task’s criteria (AC-C45-01 runs TASK-019 check-01; AC-R016-03 runs TASK-041 check-01) and the controller added them to this lane. Round 0 recorded task-019 as deferred to TASK-114 and treated task-041 as another task’s. Both are now rewritten here for Round 7 (entries below); the cases that need behaviour another A3 task restores are named in each entry’s blockedOnThisCandidate and in the progress note."
+      }
+    ]
   },
   "summary": {
-    "deferred": 18,
-    "rewritten": 50,
+    "deferred": 17,
+    "rewritten": 65,
     "carried": 130,
     "kept": 1,
-    "added": 20,
+    "added": 21,
     "superseded": 9
   },
   "entries": [
@@ -554,6 +555,13 @@
       "ledger": "new",
       "disposition": "added",
       "note": "TASK-106’s own case for TASK-AC-A7CEAC5DC9DB (TASK-043: the Clear-set confirmation inside the dialog)."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB a long entry opened by keyboard takes its opening focus on the X, never on the dialog’s scrolling region",
+      "ledger": "new (repair round 1)",
+      "disposition": "added",
+      "note": "Red before green: fails on round 0’s LoggingOverlay (focus left on the scroller), passes with the fix. Found by task-019’s keyboard case at 320 px. In TASK-106 check-01."
     },
     {
       "file": "src/ui/set-logging-sheet.test.tsx",
@@ -1650,20 +1658,179 @@
       "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
     },
     {
-      "file": "e2e/refinement/task-019.spec.ts",
-      "test": "(whole spec)",
-      "ledger": "added (F4)",
-      "disposition": "deferred",
-      "task": "TASK-114",
-      "reason": "A3 TASK-114’s approved verification runs it (TASK-019 check-01); it proves every logging moment’s writers across families. Not edited here."
-    },
-    {
       "file": "e2e/refinement/task-044.spec.ts",
       "test": "(whole spec)",
       "ledger": "added (F4)",
       "disposition": "deferred",
       "task": "TASK-107",
       "reason": "A3 TASK-107’s approved verification runs it (TASK-044 check-01: “runs here, after TASK-106”). Not edited here."
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 set, group and note moments on one /workout phone-390 touch: anchor, other lift, timed and distance movement, extra set, saved-set correction, superset round, circuit round, circuit movement and movement note open the same focused log, keep their own fields and drafts through close and reopen, write only through their original writers and never draw a second rest",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]); a set’s or a round’s read-back is [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Round 7 draws a log in place, inside the screen’s markup, so the inert-behind check leaves out the open log’s own controls (as task-041’s check already did); Round 7 repeats the section label as each block card’s heading, so the section is read from the first. Every action waits at most 30 s (test.use actionTimeout), so a control that never appears fails where it is looked for. Every step and assertion is the build’s. Round 7’s words: the movement note’s dialog is “Movement note” and its field is named by the movement (Round 7’s ExerciseCoaching); the circuit’s rest in the round’s log is “Rest between rounds” (the build’s “Rest after round 1”). Product fix found by this case: a circuit movement’s entry showed the circuit’s round rest in place of the session’s running rest, leaving the session’s rest drawn nowhere (src/ui/circuit-block.tsx; the build’s TASK-044 behaviour restored).",
+      "blockedOnThisCandidate": [
+        "TASK-107 (F5): at the circuit round, C21’s “each rest drawn exactly once” fails — Round 7 draws the circuit’s rest between rounds both on its card and in the “Round 1 recorded” log (3 “Time remaining” timers, expected 2); TASK-107 moves the rest into the dialog. With that one assertion set aside in an uncommitted scratch run, every other assertion of the case passed on this candidate."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 errors and retry by keyboard phone-320 reduced motion: a refused set, superset round, circuit movement, note and circuit block write each keep their entry and retry it once under the same identity, every moment opens and closes from the keyboard with focus back on its own control, and nothing animates beyond a hard cut",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]); a set’s or a round’s read-back is [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Round 7 draws a log in place, inside the screen’s markup, so the inert-behind check leaves out the open log’s own controls (as task-041’s check already did); Round 7 repeats the section label as each block card’s heading, so the section is read from the first. Every action waits at most 30 s (test.use actionTimeout), so a control that never appears fails where it is looked for. Every step and assertion is the build’s. Round 7’s words as in the case above. Product fix found by this case: opened by keyboard at 320 px, the correction’s opening focus landed on the dialog’s scrolling region (Chromium counts a scroller as a focusable area ahead of the X), not the X (src/ui/logging-overlay.tsx; unit case added).",
+      "blockedOnThisCandidate": [
+        "TASK-107 (F5, TASK-021): Escape from “Round 1 recorded” does not return focus into the round clock — the opener (Finish round 1) is gone and Round 7’s circuit gives the dialog no return target. With that one assertion set aside in an uncommitted scratch run, every other assertion passed."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 the four timed-result families and their clocks on /workout phone-390 touch: EMOM, AMRAP, For Time and ladder open Log results in the same focused log beside no second rest, the block clock keeps running behind an open note or log and stays paused while paused, Undo finish closes the log, close and reopen keep every entry, and a refused save keeps them for the one forward-action writer",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]); a set’s or a round’s read-back is [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Round 7 draws a log in place, inside the screen’s markup, so the inert-behind check leaves out the open log’s own controls (as task-041’s check already did); Round 7 repeats the section label as each block card’s heading, so the section is read from the first. Every action waits at most 30 s (test.use actionTimeout), so a control that never appears fails where it is looked for. Every step and assertion is the build’s. Rewritten for TASK-103’s accepted change: a timed block’s one writer is its log’s Save log (the build’s writer was the section’s forward action), so the refused write and its single retry are the log’s own Save log, and the forward action then finds every block saved; the row, block and no-extra-write assertions are the build’s. Round 7’s words: “Start FOR TIME”; a timed log opens itself as its attempt ends and is closed, then reopened from the card’s own Log results (the build’s opener); the EMOM’s clock reads “Time complete” (the build’s COMPLETE); the open AMRAP log is read inside its own .clr-timed-flow (the build’s form[data-timed-format]); the ladder’s live rounds are “Complete round N” in “Prescribed ladder rounds” and its undo is “Undo finish · resume ladder” (TASK-105’s Round 7 words).",
+      "blockedOnThisCandidate": [
+        "TASK-105 (F3; decision pending — its reviewer item 1): Round 7 offers the ladder’s log only once the attempt has ended, so “its race clock runs on behind its own open log” cannot be performed (no Log results while the ladder runs).",
+        "TASK-105 (F3): the ladder’s log has no “Rounds completed” group reading “1 of 4 rounds completed” (LadderCompletion in the log). With the ladder steps set aside in an uncommitted scratch run, AMRAP, For Time, EMOM, the note over a running and a paused clock, the refused Save log and its retry, and every block row (the ladder’s highest_rung 1 included) passed."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 workout feedback on /summary and rest day on Home phone-320 touch and keyboard reduced motion: each opens the same focused log from its real entry, keeps its own fields, its draft or its existing cancel meaning through close and reopen, keeps the entry through a refused write and saves it once through its original writer on retry",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]); a set’s or a round’s read-back is [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Round 7 draws a log in place, inside the screen’s markup, so the inert-behind check leaves out the open log’s own controls (as task-041’s check already did); Round 7 repeats the section label as each block card’s heading, so the section is read from the first. Every action waits at most 30 s (test.use actionTimeout), so a control that never appears fails where it is looked for. Every step and assertion is the build’s. Workout feedback (/summary) and the rest day (Home) are Round 7’s LoggingOverlay already; no word changed.",
+      "blockedOnThisCandidate": [
+        "TASK-111 (F9): Home draws the refused rest day’s “The rest day wasn’t saved. Try again.” alert in the card behind the dialog, not in the open log. With that one assertion set aside in an uncommitted scratch run, everything else passed: the feedback draft through X and Escape, its refused save kept with focus on the title and its single retry, the rest day by keyboard with its picker focused first, its cancel meaning and the reason change."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "TASK-019 every logging moment in the shared focused interaction > accepted gallery states clear phone-390: all sixteen logging states open the route’s own moment in the one shared focused log with identical chrome, and the X returns focus to the control that opened it, with nothing read or written over the network",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]); a set’s or a round’s read-back is [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Round 7 draws a log in place, inside the screen’s markup, so the inert-behind check leaves out the open log’s own controls (as task-041’s check already did); Round 7 repeats the section label as each block card’s heading, so the section is read from the first. Every action waits at most 30 s (test.use actionTimeout), so a control that never appears fails where it is looked for. Every step and assertion is the build’s. Round 7’s accepted states (gallery bec4454): each [data-refinement-state] section mounts the real component over memory and the route’s own control is pressed, as the build pressed it; the movement-note state’s superset is Round 7’s sample (“Add note — one arm row”, dialog “Movement note”); a timed state’s “Open … results” runs the real flow past its cap, its self-opened log is closed, and the card’s Log results is the opener read.",
+      "blockedOnThisCandidate": [
+        "TASK-107 (F5, TASK-021): after the X on “Round 1 recorded”, focus is not in the round clock (as on the route). With that one assertion set aside in an uncommitted scratch run, every other state passed, chrome identical across all sixteen."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 every /workout logging moment phone-390 touch: anchor, other lift, timed and distance movement, extra set, correction, superset round, circuit round and movement, movement notes, ladder, AMRAP, For Time and EMOM each open the selected dialog with the framed icon-only X on the visible title top, exactly the Balanced backdrop and a sharp stationary frame, over an inert workout whose rest and block clocks keep counting, with drafts and focus kept through X, Escape and reopen",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. In an uncommitted soft-assertion run, every other assertion passed on this candidate: drafts through X, Escape and reopen, the rest and block clocks counting behind, the inert screen, focus back on each opener, the Balanced backdrop.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden.",
+        "Needs a decision (TASK-109 / TASK-114): Round 7’s movement-note title is the generic “Movement note” and never wraps (its long name wraps in the field label); the build asserts the long note title wraps on a phone.",
+        "TASK-105 (decision pending, its reviewer item 1): the ladder’s log is not offered while it runs, so “the ladder clock runs on behind its open log” cannot be performed."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 wrapped titles, Workout feedback on /summary and the rest day on Home phone-320 keyboard reduced motion: a wrapped note title and Workout feedback keep the framed X on the first visible line, every moment opens and closes from the keyboard with visible keyboard focus inside, the rest day keeps its cancel meaning, and nothing is written",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Otherwise passed in the soft run: keyboard open and close with visible keyboard focus and the brackets painted inside each log, Workout feedback’s and the note’s drafts, the rest day’s picker focused first and its cancel meaning, nothing written.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden.",
+        "Needs a decision (as above): the build asserts the long note title wraps over at least three lines at 320 px; Round 7’s “Movement note” does not."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-017 rhythm on /review, /workout and the shared logs phone-390: grouped cards keep each movement together and whole movements further apart, the superset round, For Time and AMRAP logs separate complete movement groups by the movement gap only, every choice legend sits at the field gap, the ladder keeps its Rounds completed heading gap and stands its count apart, and the removed helper paragraph is nowhere while performed and unrecorded entries keep their meaning",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Not reached on this candidate past /review.",
+      "blockedOnThisCandidate": [
+        "TASK-112 / TASK-110 (Review, G01 R111): Round 7’s /review draws the standard block without a “Movements in this block” list, so the card peers cannot be read there (the case stops there).",
+        "TASK-114 / TASK-110 (REQ-017, G01): Round 7 has no --movement-peer-gap, --movement-tier-gap or --logging-movement-field-gap token (each reads 0)."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-018 long logs on /workout phone-320 touch and wheel reduced motion: the anchor set, superset round and twelve-round ladder scroll only inside one stationary frame that fills the visible viewport, a control is painted down to the inner lower border mid-scroll, touch and wheel reach Save and Notes, no scrollbar or sideways overflow shows, reopen draws no container outline, and a short note stays content-height without scrolling",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden.",
+        "TASK-114 (REQ-018 C44): at 320 × 568 the anchor’s log does not fill the visible viewport and scroll inside, so no control reaches the lower border."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-018 keyboard and focus on /workout phone-390 and desktop-1280: opened by keyboard the X and every Tab stop show their focus brackets inside the log while no container is outlined, each stop is scrolled into the frame up to Save, opened by touch nothing is ringed, a shrinking visible viewport (on-screen keyboard) shrinks the frame with Save still reachable, and long and short forms use the available height at both sizes",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Otherwise passed in the soft run at 390 and 1280: keyboard-opened X with focus brackets painted in the log, every Tab stop kept and scrolled into the frame up to Log round 1, touch reopen with no ring and no brackets, the frame following a shrinking visual viewport with Save reachable.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > accepted gallery states clear phone-390: all sixteen logging states, ladder-long with its provider specimen and the route’s own twelve-round ladder, and the urgency demonstration open the one selected dialog with the framed icon-only X on the title’s visible top, the Balanced backdrop and the contained frame, with nothing read or written over the network",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Round 7’s accepted states are read by the route’s own controls; ladder-long is Round 7’s one state for the route’s twelve-round ladder (the build’s separate provider specimen has no Round 7 counterpart, so both build readings are this state).",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden.",
+        "TASK-107 (F5, TASK-021): after the X on circuit-round, focus is not in the round clock.",
+        "TASK-114: Round 7’s accepted gallery has no urgency log (“Open log over the warning”); its urgency state draws the live flows only."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin clear /workout phone-390: the superset round opens with the Balanced backdrop in the clear skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Otherwise passed in the soft run: the Balanced backdrop in the skin and per-text AA contrast for every title, movement line, label and legend in view.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin vapour /workout phone-390: the superset round opens with the Balanced backdrop in the vapour skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Otherwise passed in the soft run: the Balanced backdrop in the skin and per-text AA contrast for every title, movement line, label and legend in view.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin signal /workout phone-390: the superset round opens with the Balanced backdrop in the signal skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Otherwise passed in the soft run: the Balanced backdrop in the skin and per-text AA contrast for every title, movement line, label and legend in view.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden."
+      ]
+    },
+    {
+      "file": "e2e/refinement/task-041.spec.ts",
+      "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin mono /workout phone-390: the superset round opens with the Balanced backdrop in the mono skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+      "ledger": "pre-UAT run (TASK-041 has no wire family; an obligation of AC-R016-03 here)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same measurements and asserted behaviour. The dialog, frame, scroller, header and body are Round 7’s LoggingOverlay parts (dialog.clr-logging-overlay, :scope > .clr-bleed > .clr-chamfer, .clr-logging-overlay__scroll, .clr-logging-overlay__head, .clr-logging-overlay__body) in place of the build’s dialog.clr-accepted-log and data-logging-* hooks; a complete movement group is .clr-round-movement or a titled .clr-timed-log__group (the build’s .clr-logging-movement); a card’s movement is .clr-movement-identity; a timed card is TimedWorkoutFlow by format, whose self-opened log is closed and reopened from the card’s Log results; the movement note’s dialog is “Movement note”; “Start FOR TIME”; the ladder’s rounds “Complete round N”. Every action waits at most 30 s (test.use actionTimeout): the round-0 JOURNEY-017 run spent 6.1 minutes waiting on a build-only selector. Every measurement and assertion is the build’s. Otherwise passed in the soft run: the Balanced backdrop in the skin and per-text AA contrast for every title, movement line, label and legend in view.",
+      "blockedOnThisCandidate": [
+        "TASK-114 (REQ-016 C41/R105): on every moment the X frame’s visible top is not on the title’s visible top (Round 7’s title line box is not trimmed to its capitals; 4–14 px apart).",
+        "TASK-114 (REQ-018 C44/C57/C58/C59, P01–P03): Round 7’s frame contract differs on every moment — the dialog box is not the frame (its 20 px padding-block), the scroller sits 12 px inside the frame’s 16 px padding, a 4 px scroll padding, no inner chamfer clip, the scrollbar not hidden."
+      ]
     }
   ]
 }

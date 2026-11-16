@@ -13,10 +13,16 @@ Lane note: TASK-105 ran in parallel. `PROJECT_MAP.md` is TASK-105's, so the map 
 
 ## Status
 
-Attempt 1 (2026-11-16) implemented and committed on the worker branch, awaiting controller
-verification. One reading of the brief is an open question for the owner (see "Open assumptions",
-first item): with no rest prescribed, the dialog closes itself after the confirmed save, as Round 7
-did; with a rest that has already ended, the carried TASK-020 rule keeps the confirmation until Close.
+Attempt 1 (2026-11-16) implemented and committed on the worker branch (`2794e3dd`). Controller
+verification round 0 failed on TASK-041 check-01 (timed out; JOURNEY-017 waited 6.1 minutes per try
+on a build-only selector) and never reached TASK-019 check-01. Repair round 1 (same day, same
+worktree, on top of `2794e3dd`): both specs rewritten for Round 7 and two product defects they found
+fixed — see "Repair round 1". Both checks still fail on this candidate, only at behaviour other A3
+tasks restore (listed there); that is an ordering question for the controller and the owner.
+
+One reading of the brief is an open question for the owner (see "Open assumptions", first item):
+with no rest prescribed, the dialog closes itself after the confirmed save, as Round 7 did; with a
+rest that has already ended, the carried TASK-020 rule keeps the confirmation until Close.
 
 ## Intended outcome
 
@@ -71,7 +77,8 @@ Components (all named by the objective; the gallery states render them live, so
   lifecycle, focus return to the block's Rest; the title is always `Round N logged` (Round 7's
   "Round N entries logged" variant is replaced: the read-back names the movements logged).
 - `src/ui/standard-block.tsx` (gallery-owned): documentation only (wiring and the retired prop).
-- `src/ui/circuit-block.tsx`, `src/ui/app-dialog.tsx`, `src/styles/logging-overlay.css`: unchanged.
+- `src/ui/app-dialog.tsx`, `src/styles/logging-overlay.css`: unchanged. `src/ui/circuit-block.tsx`:
+  unchanged in round 0; repair round 1 changed its movement entry's rest (see "Repair round 1").
   The circuit movement entry is `ExerciseSetLogger` and is wired through it.
 
 Tests and specs:
@@ -96,7 +103,8 @@ Tests and specs:
 
 Gallery-owned files changed (for the controller's hand diff): `src/ui/logging-overlay.tsx`,
 `src/ui/set-logging-sheet.tsx`, `src/ui/set-logging-sheet-context.ts`, `src/ui/set-logger.tsx`,
-`src/ui/superset-block.tsx`, `src/ui/standard-block.tsx` (comment). All are named by the objective
+`src/ui/superset-block.tsx`, `src/ui/standard-block.tsx` (comment); repair round 1 adds
+`src/ui/circuit-block.tsx` and a second change to `src/ui/logging-overlay.tsx`. All are named by the objective
 (TASK-AC-8A16F03271D0, TASK-AC-20C6E9E8B952, TASK-AC-A7CEAC5DC9DB, TASK-AC-C53DC0A896ED). No CSS
 changed. The parity check found zero unlabelled text or layout differences on the eight states.
 
@@ -127,7 +135,95 @@ through `LoggingOverlay.onAfterClose`.
   driver has pressed, both sides read 500 ms later, and the sample words are labelled
   (TASK-AC-EFB0DB480A73) and read as one name in the layout keys so every element is still compared.
 
-## Verification (this worktree, final tree, 2026-11-16)
+## Repair round 1 (2026-11-16)
+
+Input: the round-0 verification log (`TASK-106-a1-r0-…-verify.log`), the controller's lane widening
+(`e2e/refinement/task-019.spec.ts`, `task-041.spec.ts`, `evidence/refinement/task-019/`,
+`task-041/`). Both checks are obligations of this task's criteria: AC-C45-01 runs TASK-019
+check-01 and AC-R016-03 runs TASK-041 check-01. Round 0 had recorded task-019 as deferred to
+TASK-114 and treated task-041 as another task's; that was wrong.
+
+Specs rewritten for Round 7 (case names unchanged, every assertion and measurement kept; each change
+recorded per case in `evidence/refinement/task-106/test-ledger.json`):
+
+- Both: the open log is `dialog.clr-logging-overlay` and its parts (`.clr-logging-overlay__head`,
+  `__scroll`, `__body`, the frame `:scope > .clr-bleed > .clr-chamfer`); a set's read-back is
+  `[role=status].clr-set-sheet__saved`; the movement note is Round 7's "Movement note" dialog with
+  its field named by the movement; timed cards are `TimedWorkoutFlow` by format ("Start FOR TIME"),
+  whose log opens itself at the end and is reopened from the card's Log results; the ladder's rounds
+  are "Complete round N" (TASK-105's words); the gallery cases read Round 7's states by the route's
+  own controls. `test.use({ actionTimeout: 30_000 })`: a control that never appears fails where it
+  is looked for (round 0's 6.1-minute wait was `locator.evaluate` on the build's /review list).
+- task-019: the inert-behind check leaves out the open log's own controls (Round 7 draws a log in
+  place, inside `main`; task-041's check already did this); the timed case follows TASK-103's
+  accepted change (Save log is the block's writer, so the refused write and its retry are the log's).
+- task-041: groups are `.clr-round-movement` / titled `.clr-timed-log__group`, cards
+  `.clr-movement-identity`; ladder-long is Round 7's one state (the build's separate specimen has no
+  Round 7 counterpart).
+
+Product defects the rewritten specs found, fixed here:
+
+- `src/ui/logging-overlay.tsx`: opened by keyboard at 320 px, a long correction's opening focus was
+  on the dialog's scrolling region (Chromium counts a scroller as a focusable area ahead of the X),
+  and the overlay left it there because focus was "inside". It now moves focus to the X unless a
+  consumer put it on a control. Unit case added (red on round 0's overlay, green now):
+  `set-logging-sheet.test.tsx` "… a long entry opened by keyboard takes its opening focus on the X,
+  never on the dialog's scrolling region" (TASK-106 check-01 now 169 cases).
+- `src/ui/circuit-block.tsx` (gallery-owned, in this lane): a circuit movement's entry drew the
+  circuit's rest between rounds in place of the session's running rest, so while the circuit rested
+  the session's rest was drawn nowhere (footer hidden behind the open entry). Restored the build's
+  TASK-044 behaviour: the entry shows the session's one rest; the circuit's rest stays on its card.
+  No gallery state shows a resting circuit's movement entry, so no accepted state changes.
+
+What still fails on this candidate, and whose behaviour it needs (each found with an uncommitted
+soft-assertion copy of the spec, so every later assertion was also read; full detail per case in the
+ledger's `blockedOnThisCandidate`):
+
+- TASK-019 check-01 (5 cases, all fail):
+  - set/group/note moments: TASK-107 — the circuit's rest is drawn twice (card and "Round 1
+    recorded" log), C21. Everything else passes.
+  - errors by keyboard: TASK-107 — Escape from "Round 1 recorded" does not return focus into the
+    round clock. Everything else passes.
+  - timed families: TASK-105 — no ladder log while the ladder runs (its reviewer item 1, a pending
+    decision) and no "Rounds completed … 1 of 4" group in the ladder's log. AMRAP, For Time, EMOM,
+    notes over the clock, refused Save log and retry, every block row pass.
+  - /summary and Home: TASK-111 — Home's refused rest day alert is drawn behind the dialog, not in
+    it. Everything else passes.
+  - gallery: TASK-107 — circuit-round focus return. All other states pass.
+- TASK-041 check-01 (10 cases, all fail): every case opens logs through `inspect`, which asserts
+  TASK-114's REQ-016 C41 (X frame on the title's visible top; 4–14 px apart on Round 7) and REQ-018
+  frame contract (dialog box ≠ frame, scroller inset, scroll padding, no chamfer clip, visible
+  scrollbar, the 320 px long form not filling the viewport). Also: TASK-105 (ladder log while
+  running); TASK-112/TASK-110 (/review has no "Movements in this block" list; REQ-017 tokens
+  absent); TASK-107 (gallery circuit-round focus); TASK-114 (no urgency log in Round 7's gallery);
+  and a decision: Round 7's note title is the generic "Movement note" and never wraps, where the
+  build asserts the long note title wraps. Everything TASK-106 owns in these cases passed in the
+  soft run: drafts through X/Escape/reopen, clocks counting behind, inert screen, focus return,
+  keyboard brackets and Tab stops in the frame, touch reopen without a ring, AA contrast in all
+  four skins.
+
+## Verification, repair round 1 (this worktree, final tree, 2026-11-16)
+
+Browser checks under the host lock (`v2.mjs with-lock`), receipts written by `run-required-check`:
+
+- TASK-106 check-01 (vitest, 11 files): PASSED, 169 executed (the new opening-focus case included).
+- TASK-020 check-01: PASSED (19 executed by the name filter). TASK-016 check-01: PASSED (8).
+- TASK-106 parity: PASSED, 16/16. TASK-020 check-02: PASSED, 3/3. TASK-043 check-01: PASSED, 7/7.
+- TASK-041 check-01: REJECTED, 0/10 — each case fails within 2–32 s at the first blocked assertion
+  (nine at TASK-114's C41 X/title visible top; JOURNEY-017 at Round 7's /review list), no hang.
+- TASK-019 check-01: REJECTED, 0/5 — at TASK-107 (cases 1, 2, 5), TASK-105 (case 3) and TASK-111
+  (case 4), as listed in "Repair round 1".
+- Uncommitted soft-assertion copies of both specs (scratch, deleted) read every later assertion;
+  results are in "Repair round 1" and the ledger's `blockedOnThisCandidate`.
+- New unit case red on round 0's `logging-overlay.tsx`, green with the fix.
+- CI chain (the brief's one command): exit 0 — typecheck pass; lint 0 errors, 175 warnings (as
+  base); lint:ds pass; gen-issues --check pass; gen:types --check pass; `npm test` 6,284/6,284 in
+  268 files; build pass; console grep no match.
+- `verify-delivery-evidence.mjs --mode final --body clear-refinement-20261103 --tasks
+  TASK-106,TASK-020,TASK-043,TASK-016`: current passing receipts for all four.
+- Not run: real phones.
+
+## Verification round 0 (this worktree, 2026-11-16)
 
 - `run-required-check TASK-106 check-01` (vitest, 11 files): PASSED, 167 required cases (168
   executed; one `it.each` title prints twice).
@@ -166,6 +262,16 @@ through `LoggingOverlay.onAfterClose`.
 
 ## Open assumptions and questions
 
+- **Ordering (controller and owner).** TASK-019 and TASK-041 check-01 run every logging moment,
+  including families other A3 tasks wire later (TASK-105 ladder, TASK-107 circuit round, TASK-111
+  rest day, TASK-112/110 Review cards, TASK-114 dialog geometry and rhythm). TASK-106 cannot pass
+  them alone; see "Repair round 1" for each case's blocker.
+- **Movement-note title (owner decision).** Round 7's note dialog is titled "Movement note" and
+  never wraps; task-041 (kept as written) asserts the long note title wraps. Either the note title
+  names the movement again (TASK-109) or the assertion is retired with the owner's reason.
+- **Circuit movement rest.** Restored the build's rule (the entry shows the session's rest; the
+  circuit's rest stays on its card); Round 7 had drawn the circuit's rest instead. [inferred: no
+  owner decision chose Round 7's version; the inventory lists only the dialog for F4.]
 - **No rest prescribed (owner question).** The brief's TASK-AC-C53DC0A896ED says the dialog closes
   itself when "rest ended or skipped, or no rest prescribed". The carried TASK-020 rule (check-01's
   AC-R020-02 case, the B05 case, TASK-107's circuit cases) keeps a confirmation saved with no rest
@@ -187,5 +293,8 @@ through `LoggingOverlay.onAfterClose`.
 
 ## Next action
 
-Controller: run the brief's commands; diff the gallery-owned files above; review the parity
-receipts and the test ledger; take the no-rest question to the owner.
+Controller: run the brief's commands; diff the gallery-owned files (round 0's list plus
+`src/ui/circuit-block.tsx` and the second `logging-overlay.tsx` change); review the parity receipts
+and the test ledger; decide the ordering of TASK-019/TASK-041 check-01 (they need TASK-105, TASK-107,
+TASK-111, TASK-112/110 and TASK-114 behaviour, listed above); take the no-rest question and the
+note-title question to the owner.

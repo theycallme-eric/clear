@@ -10,10 +10,12 @@
  *     held inside reads through `LoggingOverlayTitleContext` — the set entry
  *     moves focus there when Save replaces the form with its confirmation
  *     (TASK-020, TASK-043).
- *   · **Opening focus is a control's.** After `showModal()` the X takes focus,
- *     as Chromium's own dialog focusing steps already give it (the X is the
- *     first control in tree order), so every browser and the tests agree.
- *     Focus already inside the dialog is left where it is.
+ *   · **Opening focus is a control's.** After `showModal()` the X takes focus
+ *     (the X is the first control in tree order), so every browser and the
+ *     tests agree. Focus a consumer already put on a control inside is left
+ *     where it is; focus the browser put on the dialog, its frame or its
+ *     scrolling region (Chromium counts a scroller as a focusable area ahead
+ *     of the X) is moved to the X.
  *   · **Focus comes back, once the dialog has closed.** The control that
  *     opened the log is remembered; when the native dialog has closed —
  *     however it closed: its X, Escape, or the consumer closing it after a
@@ -56,6 +58,18 @@ function openerOf(dialog: HTMLDialogElement): HTMLElement | null {
   return dialog.contains(active) ? null : active
 }
 
+/**
+ * Focus a reader or a consumer put on one of the log's controls — not the
+ * dialog itself, its frame or its scroller. Chromium's dialog focusing steps
+ * count a scrolling region as a focusable area that comes before the X in
+ * tree order, so a long form opened by keyboard on a small phone had its
+ * opening focus on the scroller (A3 TASK-106 repair, found by task-019).
+ */
+function onControl(dialog: HTMLDialogElement, active: Element | null): boolean {
+  if (!(active instanceof HTMLElement) || active === dialog || !dialog.contains(active)) return false
+  return active.matches('button, input, select, textarea, a[href], summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])')
+}
+
 /** Focus with nowhere to be: on the page body, gone, or inside a closed dialog. */
 function stranded(dialog: HTMLDialogElement): boolean {
   const active = dialog.ownerDocument.activeElement
@@ -86,11 +100,12 @@ export function LoggingOverlay({ open, title, onClose, onAfterClose, children, v
   }, [open])
 
   // Once it is open, its focus belongs to a control: the X, unless focus is
-  // already inside (the dialog's own focusing steps, or a consumer's).
+  // already on one of its controls (a consumer's). The dialog, its frame or
+  // its scroller holding focus is not a control's focus.
   useEffect(() => {
     const dialog = dialogOf()
     if (!open || dialog === null || !dialog.open) return
-    if (dialog.contains(dialog.ownerDocument.activeElement)) return
+    if (onControl(dialog, dialog.ownerDocument.activeElement)) return
     dialog.querySelector<HTMLButtonElement>(`button[aria-label="${CLOSE_LABEL}"]`)?.focus({ preventScroll: true })
   }, [open])
 

@@ -311,6 +311,11 @@
           "criterion": "TASK-AC-A7CEAC5DC9DB"
         },
         {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB a long entry opened by keyboard takes its opening focus on the X, never on the dialog’s scrolling region",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
           "file": "src/app/sheet-minimize-access.test.tsx",
           "name": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > draws one Close log X, in the dialog header beside its title, over an inert workout, and no Minimize or bottom collapse",
           "criterion": "TASK-AC-8A16F03271D0"

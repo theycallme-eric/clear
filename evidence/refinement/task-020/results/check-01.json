@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/set-logging-sheet.test.tsx",
-      "sha256": "c88f02fd21524f8929e9c4056d6809119204c8c65c8a7a0d101c97b794d994cb"
+      "sha256": "5a7e72ec744d65770a43a470b0dbb4f2d503e7f26c66084f77b4ba5ab4ea8ef1"
     }
   ],
   "requiredCases": [
@@ -53,10 +53,10 @@
     }
   ],
   "totals": {
-    "total": 41,
+    "total": 42,
     "passed": 19,
     "failed": 0,
-    "skipped": 22,
+    "skipped": 23,
     "todo": 0,
     "executed": 19
   },

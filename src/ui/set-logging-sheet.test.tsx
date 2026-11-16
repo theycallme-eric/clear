@@ -1213,4 +1213,38 @@ describe('A3 TASK-106 set logging in the Round 7 dialog: focus return and the di
     expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
     expect(main().queryByRole('list', { name: 'Logged sets' })).toBeNull()
   })
+
+  it('TASK-AC-A7CEAC5DC9DB a long entry opened by keyboard takes its opening focus on the X, never on the dialog’s scrolling region', { timeout: 20_000 }, async () => {
+    // Chromium's dialog focusing steps count a scrolling region as a focusable
+    // area ahead of the X in tree order: a long correction opened by keyboard
+    // on a 320 px phone had its opening focus on the scroller (task-019,
+    // JOURNEY-019 by keyboard). The browser's choice is reproduced here.
+    const showModal = HTMLDialogElement.prototype.showModal
+    const spy = vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (this: HTMLDialogElement) {
+      showModal.call(this)
+      const scroller = this.querySelector<HTMLElement>('.clr-logging-overlay__scroll')
+      if (scroller === null) return
+      scroller.tabIndex = -1
+      scroller.focus()
+    })
+    try {
+      const user = userEvent.setup()
+      mount({ corrections: true })
+      await openSheet(user)
+      const opened = screen.getByRole('dialog', { name: 'Log set 1' })
+      expect(within(opened).getByRole('button', CLOSE_LOG)).toHaveFocus()
+      await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+      await screen.findByRole('dialog', { name: 'Set 1 logged' })
+      await closeLog(user)
+
+      const edit = await main().findByRole('button', { name: 'Edit set 1' })
+      edit.focus()
+      await user.keyboard('{Enter}')
+      const correction = screen.getByRole('dialog', { name: 'Edit set 1' })
+      expect(within(correction).getByRole('button', CLOSE_LOG)).toHaveFocus()
+      expect(document.activeElement).not.toBe(correction.querySelector('.clr-logging-overlay__scroll'))
+    } finally {
+      spy.mockRestore()
+    }
+  })
 })
