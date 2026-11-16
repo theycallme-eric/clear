@@ -14,7 +14,7 @@
     "carried": 11,
     "rewritten": 14,
     "retired": 0,
-    "added": 9
+    "added": 11
   },
   "entries": [
     {
@@ -208,10 +208,10 @@
     },
     {
       "file": "src/ui/timed-flow-save.test.tsx",
-      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept, the load in the profile’s unit",
       "ledger": "new (named by the brief)",
       "disposition": "added",
-      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+      "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation. Repair round 1 (review 2026-11-16, TASK-AC-21D8C507B137): the shell is mounted as the route mounts it, with SetLoggingProvider holding the profile’s unit (pounds here), and the case asserts that unit on every movement row instead of the kg a removed fallback supplied; the in-memory table stores exactly the unit sent."
     },
     {
       "file": "src/ui/timed-flow-save.test.tsx",
@@ -219,6 +219,20 @@
       "ledger": "new (named by the brief)",
       "disposition": "added",
       "note": "Task-owned proof over the real TimedWorkoutFlow, BlockPanel and BlockCompletionProvider with the product presentation."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-21D8C507B137 with the profile unread there is no unit: Save log is refused as a set is (profile-unread), nothing is written or guessed, the draft and the dialog stay; the forward action is refused the same; once the profile is read the retry saves in its unit",
+      "ledger": "new (repair round 1, review 2026-11-16)",
+      "disposition": "added",
+      "note": "Real data only for the load unit: with the profile unread Save log and the forward action are refused with VALIDATION_REQUIRED_FIELD profile-unread before anything is sent (no row, no movement row), the draft and the dialog are kept, and once the profile is read the same draft saves in the profile’s unit. Fails on the previous candidate, which stamped kg."
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "test": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-A5FD8C464D85 /history/:id reads a For Time saved as Incomplete before its cap through Round 7’s log as Incomplete, with its effort face and the movement’s recorded actual, from the rows stored",
+      "ledger": "new (repair round 1, review 2026-11-16)",
+      "disposition": "added",
+      "note": "Route-level proof the review asked for: a For Time saved as Incomplete through Round 7’s log, read back on the real /history/:id route (renderApp, asPerformed over the rows stored), reads Incomplete — not Stopped at the cap — beside the effort face and the movement’s recorded actual."
     },
     {
       "file": "src/ui/timed-flow-save.test.tsx",
@@ -253,7 +267,7 @@
       "test": "(10 cases: emom, amrap, for_time, ladder and screens at phone-320 and phone-390)",
       "ledger": "new (named by the brief)",
       "disposition": "added",
-      "note": "The look check. Receipts: evidence/refinement/task-103/parity/*.json."
+      "note": "The look check. Receipts: evidence/refinement/task-103/parity/*.json. Repair round 1 (review 2026-11-16): the cases also compare layout, not only words — every rendered element’s box on the timed cards and their Log results dialog within 2 px, and History’s row-hierarchy geometry — so the ladder rung grid’s inset difference the text comparison missed now fails. Every earlier assertion is kept."
     }
   ]
 }

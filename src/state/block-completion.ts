@@ -216,8 +216,14 @@ export interface TimedResultReport {
   readonly effort: Enums<'set_effort'> | null
   /** Each movement's typed entry by `workout_exercises.id`; blank is not recorded. */
   readonly movements: Readonly<Record<string, MovementActualDraft>>
-  /** The unit a typed load is stated in: the athlete's choice, else the profile's. */
-  readonly weightUnit: Enums<'weight_unit'>
+  /**
+   * The unit a typed load is stated in: the athlete's choice, else the
+   * profile's. `null` while the profile is unread (A3 TASK-103): then there is
+   * nothing to stamp on a movement row (`weight_unit` is NOT NULL), and the
+   * shell refuses the richer save with `profile-unread` — exactly as the set
+   * path refuses a set — rather than guess between kilograms and pounds.
+   */
+  readonly weightUnit: Enums<'weight_unit'> | null
   /** A ladder's rung count (`ladderRungs(...).length`); its partial's round is bounded by it. */
   readonly rungCount?: number
 }

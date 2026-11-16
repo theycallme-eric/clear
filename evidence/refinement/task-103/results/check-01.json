@@ -21,7 +21,7 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-103/required-cases.json",
-    "sha256": "fbe7a5e69a4366cccc0740e97e9c3535e34ca5ac00289a9b331725d91b49bc9a"
+    "sha256": "6fb859a0acc0fba9b10a326bffb9ee2a91830647b6a8e06421bcd3ece9c3a30c"
   },
   "targets": [
     {
@@ -50,7 +50,7 @@
     },
     {
       "path": "src/ui/timed-flow-save.test.tsx",
-      "sha256": "3f5aea2884461ec4640b8d0274c24ff318929f328070820de46a4feaae0c3ceb"
+      "sha256": "e5b8ab4e176a60e640f43e5b87cb34cd5bc802784e5f69000f391a5362251de3"
     }
   ],
   "requiredCases": [
@@ -61,12 +61,22 @@
     },
     {
       "file": "src/ui/timed-flow-save.test.tsx",
-      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept, the load in the profile’s unit",
       "status": "passed"
     },
     {
       "file": "src/ui/timed-flow-save.test.tsx",
       "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-9971E7A16F92 a refused movement write keeps the draft and the dialog and says the log did not save; the retry restates the row and writes each movement once under the same id",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-21D8C507B137 with the profile unread there is no unit: Save log is refused as a set is (profile-unread), nothing is written or guessed, the draft and the dialog stay; the forward action is refused the same; once the profile is read the retry saves in its unit",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-flow-save.test.tsx",
+      "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-A5FD8C464D85 /history/:id reads a For Time saved as Incomplete before its cap through Round 7’s log as Incomplete, with its effort face and the movement’s recorded actual, from the rows stored",
       "status": "passed"
     },
     {
@@ -151,12 +161,12 @@
     }
   ],
   "totals": {
-    "total": 139,
-    "passed": 139,
+    "total": 141,
+    "passed": 141,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 139
+    "executed": 141
   },
   "problems": []
 }

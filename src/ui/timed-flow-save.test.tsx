@@ -18,8 +18,15 @@
  *     effort as its category and never a number, blank unrecorded and 0 kept;
  *   · a refused write keeps the draft and the dialog and says the log did not
  *     save; the retry converges on the same rows, never a duplicate;
+ *   · a load is stamped with the profile's unit, read as the route reads it
+ *     (`SetLoggingProvider`'s `weightUnit`); with the profile unread there is
+ *     no unit, and the save is refused (`profile-unread`) as the set path
+ *     refuses a set — never stamped with a guessed unit;
  *   · the saved row is read back as the saved log, and a correction restates
  *     it in place;
+ *   · the real `/history/:id` route reads the rows stored back: a For Time
+ *     saved as Incomplete before its cap reads Incomplete (TASK-010), beside
+ *     its effort face and the movement's recorded actual (TASK-047);
  *   · the forward action still saves what was entered without Save log;
  *   · the attempt and the AMRAP's counts survive the block being drawn again,
  *     as the shipped renderers' did; outside the shell nothing is stored.
@@ -34,11 +41,13 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { MovementResultWrite, BlockCompletion } from '../state/block-completion'
 import { blockResultInsert, useSectionCompletion } from '../state/block-completion'
 import { BlockCompletionProvider, PreviewBlockCompletion } from '../state/block-completion-provider'
+import type { Enums } from '../data/database.types'
 import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
+import { SetLoggingProvider } from '../state/set-logging-provider'
 import { sessionSnapshotSchema, type BlockMovementResultRow, type BlockResultRow, type SessionSnapshot } from '../state/schemas'
 import { sessionProgress, type BlockProgress } from '../state/workout-progress'
 import { formatBadgesSnapshot } from '../test/format-badges-fixture'
-import { AppProviders } from '../test/render'
+import { AppProviders, renderApp, signedIn } from '../test/render'
 import { readbackName, timedReadbackAcceptance, READBACK_SYNTHETIC_CATALOG } from '../test/timed-readback-fixture'
 import { createWorkoutDouble } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
@@ -149,7 +158,8 @@ function tables() {
         actual_distance: write.row.actual_distance ?? null,
         actual_distance_unit: write.row.actual_distance_unit ?? null,
         weight: write.row.weight ?? null,
-        weight_unit: write.row.weight_unit ?? 'kg',
+        // Exactly the unit sent: the table never supplies one.
+        weight_unit: write.row.weight_unit,
         created_at: previous?.created_at ?? AT,
         updated_at: AT,
       }
@@ -199,7 +209,14 @@ function Forward({ blockIds, onResult }: { blockIds: readonly string[]; onResult
   return <button type="button" onClick={() => { void completeSection(blockIds).then(onResult) }}>Next section</button>
 }
 
-function mountShell(store: Tables, snapshot = session()) {
+/**
+ * The profile's unit as the route reads it (`Workout.tsx`): the profile's
+ * `weight_unit` once it is read, `null` while it is not (loading or failed).
+ */
+type ProfileUnit = Enums<'weight_unit'> | null
+
+/** The workout shell as the route mounts it: the one completion path, then the set path with the profile's unit. */
+function mountShell(store: Tables, { snapshot = session(), weightUnit = 'kg' }: { snapshot?: SessionSnapshot; weightUnit?: ProfileUnit } = {}) {
   const double = createWorkoutDouble({
     session: snapshot,
     blockResults: store.writer,
@@ -207,18 +224,24 @@ function mountShell(store: Tables, snapshot = session()) {
   })
   const progress = sessionProgress(snapshot)
   const blocks = progress.sections.flatMap((section) => section.blocks)
+  const exercises = blocks.flatMap((block) => block.exercises)
   const timed = progress.sections[0].blocks
   const results: Result<undefined>[] = []
-  const view = render(
+  const tree = (unit: ProfileUnit) => (
     <AppProviders workout={double.clients}>
       <BlockCompletionProvider sessionId={snapshot.session.id} blocks={blocks}>
-        {timed.map((block) => <BlockSlot key={block.blockId} block={block} />)}
-        <Forward blockIds={timed.map((block) => block.blockId)} onResult={(result) => results.push(result)} />
+        <SetLoggingProvider sessionId={snapshot.session.id} exercises={exercises} weightUnit={unit} onFailure={() => {}} storage={null}>
+          {timed.map((block) => <BlockSlot key={block.blockId} block={block} />)}
+          <Forward blockIds={timed.map((block) => block.blockId)} onResult={(result) => results.push(result)} />
+        </SetLoggingProvider>
       </BlockCompletionProvider>
-    </AppProviders>,
+    </AppProviders>
   )
+  const view = render(tree(weightUnit))
+  /** The profile read (or lost) after mount: the same shell, drawn again with its unit. */
+  const profileRead = (unit: ProfileUnit) => view.rerender(tree(unit))
   const [emom, amrap, forTime, ladder] = timed
-  return { view, snapshot, results, blocks: { emom, amrap, forTime, ladder } }
+  return { view, snapshot, results, profileRead, blocks: { emom, amrap, forTime, ladder } }
 }
 
 function flow(format: string): HTMLElement {
@@ -257,10 +280,11 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
     for (const format of ['emom', 'amrap', 'for_time', 'ladder']) expect(flow(format)).toBeInTheDocument()
   })
 
-  it('AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept', async () => {
+  it('AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept, the load in the profile’s unit', async () => {
     const user = userEvent.setup()
     const store = tables()
-    const { blocks } = mountShell(store)
+    // The profile's unit, read as the route reads it — pounds, so the stamp is visibly the profile's.
+    const { blocks } = mountShell(store, { weightUnit: 'lb' })
     const log = await run(user, 'amrap', 'Start AMRAP', 'Finish early')
     await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
     await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
@@ -280,8 +304,8 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
     })
     expect(row?.elapsed_seconds).not.toBeNull()
     const [loaded, bodyweight] = exerciseIds(blocks.amrap)
-    expect(store.movements.get(loaded)).toMatchObject({ round_number: 3, actual_reps: 5, weight: 18, weight_unit: 'kg' })
-    expect(store.movements.get(bodyweight)).toMatchObject({ round_number: 3, actual_reps: 0, weight: null })
+    expect(store.movements.get(loaded)).toMatchObject({ round_number: 3, actual_reps: 5, weight: 18, weight_unit: 'lb' })
+    expect(store.movements.get(bodyweight)).toMatchObject({ round_number: 3, actual_reps: 0, weight: null, weight_unit: 'lb' })
     // The dialog closed on the answer, and the block is recorded by the shell.
     expect(document.querySelectorAll('dialog[open]')).toHaveLength(0)
     expect(within(flow('amrap')).getByText('Block saved')).toBeInTheDocument()
@@ -329,6 +353,89 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
     expect(store.calls.some((call) => call.includes(bodyweight))).toBe(false)
   })
 
+  it('TASK-AC-21D8C507B137 with the profile unread there is no unit: Save log is refused as a set is (profile-unread), nothing is written or guessed, the draft and the dialog stay; the forward action is refused the same; once the profile is read the retry saves in its unit', async () => {
+    const user = userEvent.setup()
+    const store = tables()
+    // `Workout.tsx` hands the shell `null` while the profile is loading or failed.
+    const { blocks, results, profileRead } = mountShell(store, { weightUnit: null })
+    const log = await run(user, 'amrap', 'Start AMRAP', 'Finish early')
+    await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
+    await user.type(log.getByRole('spinbutton', { name: `Next round · ${LOADED}` }), '4')
+    await user.type(log.getByRole('spinbutton', { name: `Weight · ${LOADED}` }), '16')
+    await user.click(log.getByRole('radio', { name: 'Too hard' }))
+    await user.click(log.getByRole('button', { name: 'Save log' }))
+
+    expect(await log.findByRole('alert')).toHaveTextContent('Your log didn’t save. Try again.')
+    // Still open, still holding every entry; nothing claims a save.
+    expect(openLog()).toBeInTheDocument()
+    expect(log.getByRole('spinbutton', { name: `Next round · ${LOADED}` })).toHaveValue(4)
+    expect(log.getByRole('spinbutton', { name: `Weight · ${LOADED}` })).toHaveValue(16)
+    expect(log.getByRole('radio', { name: 'Too hard' })).toHaveAttribute('aria-checked', 'true')
+    expect(within(flow('amrap')).queryByText('Log saved')).toBeNull()
+    // Refused before anything is sent: no row, no movement, no unit stamped.
+    expect(store.calls).toEqual([])
+    expect(store.blocks.size).toBe(0)
+    expect(store.movements.size).toBe(0)
+
+    // The section's forward action saves through the same path and is refused the same way.
+    await closeLog(user)
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await waitFor(() => expect(results).toHaveLength(1))
+    expect(results[0]).toMatchObject({
+      ok: false,
+      error: { code: ErrorCode.VALIDATION_REQUIRED_FIELD, details: { field: 'weight_unit', reason: 'profile-unread' } },
+    })
+    expect(store.blocks.has(blocks.amrap.blockId)).toBe(false)
+    expect(store.movements.size).toBe(0)
+    expect(store.calls.some((call) => call.includes(blocks.amrap.blockId))).toBe(false)
+
+    // The profile is read: the same draft, kept, now saves in the profile's unit.
+    profileRead('lb')
+    await user.click(within(flow('amrap')).getByRole('button', { name: 'Log results' }))
+    const retry = within(openLog())
+    expect(retry.getByRole('spinbutton', { name: `Next round · ${LOADED}` })).toHaveValue(4)
+    expect(retry.getByRole('spinbutton', { name: `Weight · ${LOADED}` })).toHaveValue(16)
+    await user.click(retry.getByRole('button', { name: 'Save log' }))
+    await waitFor(() => expect(within(flow('amrap')).getByText('Log saved')).toBeInTheDocument())
+    const [loaded] = exerciseIds(blocks.amrap)
+    expect(store.blocks.get(blocks.amrap.blockId)).toMatchObject({ rounds_completed: 1, effort: 'too_hard', perceived_effort: null })
+    expect(store.movements.get(loaded)).toMatchObject({ round_number: 2, actual_reps: 4, weight: 16, weight_unit: 'lb' })
+    expect(store.calls.filter((call) => call.startsWith(`insert ${loaded}`))).toHaveLength(1)
+    expect(store.calls.filter((call) => call === `record ${blocks.amrap.blockId}`)).toHaveLength(1)
+  })
+
+  it('TASK-AC-A5FD8C464D85 /history/:id reads a For Time saved as Incomplete before its cap through Round 7’s log as Incomplete, with its effort face and the movement’s recorded actual, from the rows stored', async () => {
+    const user = userEvent.setup()
+    const store = tables()
+    const snapshot = session()
+    const first = mountShell(store, { snapshot })
+    const log = await run(user, 'for_time', 'Start FOR TIME', 'Finish')
+    await user.click(log.getByRole('radio', { name: 'Incomplete' }))
+    await user.type(log.getByRole('spinbutton', { name: `Completed · ${LOADED}` }), '22')
+    await user.type(log.getByRole('spinbutton', { name: `Weight · ${LOADED}` }), '20')
+    await user.click(log.getByRole('radio', { name: 'Too hard' }))
+    await user.click(log.getByRole('button', { name: 'Save log' }))
+    await waitFor(() => expect(within(flow('for_time')).getByText('Log saved')).toBeInTheDocument())
+    const stored = store.blocks.get(first.blocks.forTime.blockId)
+    // Stopped before the cap: the time recorded is short of it.
+    expect(stored).toMatchObject({ completed_under_cap: false, effort: 'too_hard', perceived_effort: null })
+    expect(stored?.elapsed_seconds).toBeLessThan(first.blocks.forTime.timerSeconds ?? 0)
+    first.view.unmount()
+
+    // The real route, reading exactly what the tables hold through `asPerformed`.
+    const double = createWorkoutDouble({ session: null, sessions: { asPerformed: async () => ok(performed(snapshot, store)) } })
+    renderApp([`/history/${snapshot.session.id}`], signedIn({ workout: double.clients }))
+    const cap = await screen.findByText('Incomplete')
+    // The saved For Time block, as History draws it.
+    const block = cap.closest<HTMLElement>('[data-detail-block]')
+    expect(block).not.toBeNull()
+    expect(within(block!).queryByText('Stopped at the cap')).toBeNull()
+    expect(within(block!).queryByText('Finished under the cap')).toBeNull()
+    expect(within(block!).getByRole('img', { name: 'Effort: too hard' })).toBeInTheDocument()
+    const [loaded] = exerciseIds(first.blocks.forTime)
+    expect(block!.querySelector(`[data-movement-actual="${loaded}"]`)).toHaveTextContent(/^ActualRound 1 · 22 reps · 20 kg$/)
+  })
+
   it('AC-R031-01 EMOM and ladder keep their own contracts: the EMOM a load with no round and no measured outcome; the ladder its highest rung and a partial in the rung after it', async () => {
     const user = userEvent.setup()
     const store = tables()
@@ -362,7 +469,7 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
     const user = userEvent.setup()
     const store = tables()
     const snapshot = session()
-    const first = mountShell(store, snapshot)
+    const first = mountShell(store, { snapshot })
     const log = await run(user, 'amrap', 'Start AMRAP', 'Finish early')
     await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
     await user.type(log.getByRole('spinbutton', { name: `Next round · ${LOADED}` }), '7')
@@ -371,7 +478,7 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
 
     // Drawn again from nothing held in memory: the performed read is the authority.
     first.view.unmount()
-    const again = mountShell(store, snapshot)
+    const again = mountShell(store, { snapshot })
     const saved = await waitFor(() => {
       const readout = flow('amrap').querySelector<HTMLElement>('[data-timed-saved]')
       expect(readout).not.toBeNull()
@@ -416,7 +523,7 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
     const user = userEvent.setup()
     const store = tables()
     const snapshot = session()
-    const first = mountShell(store, snapshot)
+    const first = mountShell(store, { snapshot })
     await user.click(within(flow('for_time')).getByRole('button', { name: 'Start FOR TIME' }))
     const log = await run(user, 'amrap', 'Start AMRAP', 'Finish early')
     await user.click(log.getByRole('button', { name: 'Increase rounds completed' }))
@@ -425,7 +532,7 @@ describe('A3 TASK-103 Round 7’s timed flow saves through the shell’s one com
     await closeLog(user)
     first.view.unmount()
 
-    mountShell(store, snapshot)
+    mountShell(store, { snapshot })
     // The race is still running; the AMRAP is still ended, its log not reopened, its count kept.
     expect(within(flow('for_time')).getByRole('button', { name: 'Pause' })).toBeInTheDocument()
     expect(flow('amrap')).toHaveAttribute('data-phase', 'finished')

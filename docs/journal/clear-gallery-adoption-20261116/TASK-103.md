@@ -10,9 +10,85 @@ names `clear-gallery-adoption-20261113`. The brief's path is used; the controlle
 
 ## Status
 
-Implementation complete and committed on the worker branch, awaiting controller verification.
-Everything ran here except the two TASK-047 backend-lane cases, which need the PRE-001 test
-backend (no `.env.runner.local` in this worktree; they fail at their explicit precondition).
+Repair round 1 (2026-11-16) complete and committed on the worker branch, awaiting controller
+verification. The reviewer rejected two criteria. Both are fixed: no load unit is guessed
+(TASK-AC-21D8C507B137 / JOURNEY-031), and the ladder rung grid resolves to the accepted gallery's
+inset tiles in dev and production (TASK-AC-A6EC0ADCD3BD). The parity check now compares layout as
+well as words. Everything ran here except the two TASK-047 backend-lane cases, which need the
+PRE-001 test backend (no `.env.runner.local` in this worktree; they fail at their explicit
+precondition).
+
+## Repair round 1 (review `TASK-103-a1-0912243326fd`, 2026-11-16)
+
+### Rule: never guess a load unit (TASK-AC-21D8C507B137, JOURNEY-031)
+
+A timed load is stamped with the unit the route knows: a saved row's unit, else the profile's
+(`SetLoggingProvider`'s `weightUnit`). While the profile is unread (loading or failed),
+`Workout.tsx` hands the shell `null`. The timed save is then refused exactly as the set path
+refuses a set: `VALIDATION_REQUIRED_FIELD` with `{ field: 'weight_unit', reason: 'profile-unread' }`,
+before anything is sent. The log keeps its draft and its dialog and says "Your log didn’t save. Try
+again."; the forward action is refused the same way; once the profile is read, the same draft saves
+in the profile's unit. `block_movement_results.weight_unit` is NOT NULL, so this applies to any timed
+save made while no unit is known.
+
+- `src/ui/timed-result-shell.ts`: removed `UNSCOPED_WEIGHT_UNIT` (`'kg'`) and the `weightUnit ?? 'kg'`
+  fallback; the report carries the unit as known, or `null`.
+- `src/state/block-completion.ts`: `TimedResultReport.weightUnit` is `Enums<'weight_unit'> | null`,
+  documented as above.
+- `src/state/block-completion-provider.tsx`: `saveTimed` (the one path for Save log and the forward
+  action) refuses with `profile-unread` when the unit is `null`. TASK-031's `timedResultRequest`
+  is unchanged.
+- `src/ui/timed-flow-save.test.tsx`: the shell is mounted as the route mounts it, with the real
+  `SetLoggingProvider` holding the profile's unit. The AMRAP case now uses pounds and asserts `lb`
+  on every movement row (it asserted the fallback's `kg` before). The in-memory table stores exactly
+  the unit sent. New case: with the profile unread, Save log and the forward action are refused,
+  nothing is written, the draft and the dialog stay, and the retry after the profile is read saves
+  in its unit. This case failed on the previous candidate (it saved `kg`).
+
+### Look check: ladder rung tiles (TASK-AC-A6EC0ADCD3BD)
+
+Cause: `.clr-ladder-prescription__grid li` had `padding: var(--spacing-200)` in
+`src/ui/ladder-rungs.css` and `padding: 0; gap: 0` in `src/styles/workout-r7.css`, with equal
+specificity, so stylesheet order decided. The gallery's dev chunk loaded `ladder-rungs.css` last
+(inset tiles, the accepted look); the product chunk on `/workout` and the production bundle's shared
+CSS chunk loaded `workout-r7.css` last (full-width tiles). Fix: the `li` declarations were removed
+from `workout-r7.css`, so `ladder-rungs.css` is the only rule for that box and no load order can
+change it. A static scan of every app CSS file (design system excluded) found no other identical
+selector declared with conflicting values in two files. The gallery's look is unchanged: its ladder
+card measures 523 px (320) and 559 px (390) tall before and after.
+
+Production [inferred from the built CSS before the fix]: the pre-fix bundle carried both rules in one
+shared chunk with `padding:0` last, so the production gallery drew full-width tiles too. After the
+fix the bundle has one rule (`padding:var(--spacing-200)`). The dev gallery look, which the
+controller confirmed as the accepted one, now holds in every build.
+
+Parity spec (`e2e/refinement/task-103-parity.spec.ts`), every earlier assertion kept:
+- Timed states: every rendered element of the card (ready, ended) and of the Log results form is
+  measured (box relative to its part, scroll included) and compared one-for-one with the gallery's
+  within 2 px. Heading levels are normalised (the gallery nests the card one outline level deeper),
+  and a modal dialog inside the ended card is left out (top layer; measured as the log part).
+- History (`screens`): the accepted state is a static composition in its own words, so the row
+  hierarchy's geometry is compared: title alone on its line, status line beneath it from the same
+  left edge, filter above the rows, for the same two workouts in order.
+- Receipt schema `clear-task-103-parity/v2` adds `layout` (method, tolerance, counts, part boxes,
+  differences or geometry).
+- Before the CSS fix the strengthened spec failed exactly the two ladder cases (rung tiles 92 vs
+  76 px tall at 320, 110 vs 76 at 390, frame inset 8 px vs 0); emom, amrap and for_time passed.
+
+### Optional: For Time "Incomplete" at the route
+
+New case in `src/ui/timed-flow-save.test.tsx`: a For Time saved as Incomplete through Round 7's log
+is read back on the real `/history/:id` route (`renderApp`, `asPerformed` over the rows stored) as
+Incomplete, not "Stopped at the cap", beside the effort face ("Effort: too hard") and the movement's
+recorded actual ("ActualRound 1 · 22 reps · 20 kg"). `SessionDetail.test.tsx` stays byte-identical
+to the build.
+
+### Evidence updated
+
+`required-cases.json` (AMRAP case renamed, two cases added to check-01, layout described),
+`test-ledger.json` (11 carried, 14 rewritten, 0 retired, 11 added), `results/check-01.json`,
+`results/parity.json`, and every `parity/*.json` receipt with its captures regenerated by the
+final dev run.
 
 ## Intended outcome
 
@@ -68,7 +144,9 @@ backend (no `.env.runner.local` in this worktree; they fail at their explicit pr
   hashed in the receipts.
 - `PROJECT_MAP.md`: the Save log data flow.
 
-Gallery-owned files changed (for the controller's hand diff): `src/ui/timed-workout-flow.tsx`,
+Gallery-owned files changed (for the controller's hand diff): `src/styles/workout-r7.css` (repair
+round 1: the ladder `li` declarations removed, TASK-AC-A6EC0ADCD3BD; the dev gallery's look is
+unchanged), `src/ui/timed-workout-flow.tsx`,
 `src/ui/timed-result-log.tsx` (AMRAP partial count; visible in the gallery's AMRAP log),
 `src/ui/workout-experience-presentation.tsx` (seam type), `src/ui/block-renderers-frame.tsx`,
 `src/ui/session-detail.tsx`, `src/ui/history-list.tsx`, `src/ui/amrap-block.tsx` (export only).
@@ -88,8 +166,34 @@ same commit; the parity check found no text difference between the timed states 
   animations and stable text.
 - Exporting `AmrapComparison` tripped the gallery registry's coverage test; recorded as an exemption
   (it draws `ConditioningScoreLine`, already framed).
+- Review round 0 (2026-11-16) rejected two criteria. (1) The timed save fell back to `kg` when the
+  profile was unread, and the AMRAP test asserted that fallback; corrected as described above. (2)
+  The parity spec compared text only, so it recorded zero differences while the ladder tiles were
+  drawn differently. The first layout-aware run also flagged heading levels and the top-layer
+  dialog inside the ended card, both measurement artifacts; the comparison now normalises those,
+  and after that only the real ladder difference failed.
 
 ## Verification (this worktree)
+
+Repair round 1 (2026-11-16), final tree:
+
+- `run-required-check TASK-103 check-01`: PASSED, 141/141 (21 required cases).
+- `run-required-check TASK-103 parity` (host lock, dev server): PASSED, 10/10. Zero text and
+  zero layout differences on every timed state at 320 and 390 (ready, log, ended). History's text
+  differences are all labelled, and its row geometry matches the gallery's.
+- Same spec against a production build (`vite build` with synthetic public values into the
+  scratchpad, `vite preview`, `E2E_BASE_URL`; host lock): 10/10. Ladder card 523/559 px on both
+  sides. Its receipts were then replaced by the dev run above.
+- Before the CSS fix the strengthened parity spec failed 2/10 (both ladder cases).
+- `npx playwright test e2e/refinement/task-026.spec.ts` 5/5; `task-047.spec.ts` 3/5, with the two
+  backend lanes stopping at their PRE-001 precondition as before. Run directly, not through
+  `run-required-check`, so the other tasks' receipts were not rewritten.
+- `npm run typecheck` pass; `npm run lint` 0 errors, 175 warnings (as base); `npm run lint:ds`
+  pass; console grep: no match; `gen-issues --check` pass; `gen:types --check` pass; `npm test`
+  6,241/6,241 (263 files); `npm run build` pass, and its CSS has one `.clr-ladder-prescription__grid li`
+  rule (`padding:var(--spacing-200)`).
+
+Round 0 (before review):
 
 - `run-required-check TASK-103 check-01` (vitest, 7 files): PASSED, 139/139.
 - `run-required-check TASK-103 parity` (playwright, host lock): PASSED, 10/10. Every timed state
@@ -115,9 +219,19 @@ same commit; the parity check found no text difference between the timed states 
 - For the owner: Round 7's gallery History sample reads "date · status"; the app reads the status,
   then the date (decision 7 as task 1 implemented it, C53's carried row). Labelled AC-C53-01 in the
   receipt; worth confirming at approval.
-- The backend lanes of TASK-047 are unverified until the controller runs them with PRE-001.
+- The backend lanes of TASK-047 are unverified until the controller runs them with PRE-001. They
+  read the expected unit from the weight field's unit cap, which is drawn only when the profile's
+  unit is known, so they never relied on the removed fallback [inferred from the spec].
+- The accepted ladder look is the dev gallery's inset tiles, as the controller confirmed. Before this
+  fix the production gallery drew full-width tiles [inferred from the built CSS]. If the owner
+  accepted from a deployed preview, they saw that look; worth a glance at approval.
+- At 320 the route's fixed section footer overlaps the bottom of tall timed cards in the element
+  captures. This is how the spec captured before too; the box comparison measures the full card.
+- A timed save with no unit known is refused even if it carries only effort or notes. The rule
+  follows the set path ("no unit, no write"); the profile is normally read long before a block ends.
 
 ## Next action
 
 Controller: run the brief's commands with the disposable backend, diff the gallery-owned files
-above, and review the parity receipts and captures.
+above (now including `src/styles/workout-r7.css`), and review the parity receipts (`layout`
+sections) and the regenerated captures.

@@ -1,5 +1,5 @@
 {
-  "schema": "clear-task-103-parity/v1",
+  "schema": "clear-task-103-parity/v2",
   "task": "TASK-103",
   "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
   "state": "ladder",
@@ -16,7 +16,7 @@
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-390-route-ready.png",
-      "sha256": "7beb145af1bdd07625d4defcbefe7aad806bfa9101957def79f8726018b2585b"
+      "sha256": "f597c678cf9c68c80ee96099e4b93e5ec1f4a1461edfa875eaea50721e7307fe"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-390-route-log.png",
@@ -269,5 +269,74 @@
     "ready": [],
     "log": [],
     "ended": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 71,
+        "log": 100,
+        "ended": 87
+      },
+      "route": {
+        "ready": 71,
+        "log": 100,
+        "ended": 87
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 559
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 738.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 609
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 559
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 738.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 609
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "ended": []
+    }
   }
 }

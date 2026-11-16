@@ -1,5 +1,5 @@
 {
-  "schema": "clear-task-103-parity/v1",
+  "schema": "clear-task-103-parity/v2",
   "task": "TASK-103",
   "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
   "state": "amrap",
@@ -189,5 +189,74 @@
     "ready": [],
     "log": [],
     "ended": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 64,
+        "log": 91,
+        "ended": 80
+      },
+      "route": {
+        "ready": 64,
+        "log": 91,
+        "ended": 80
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 788.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 788.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "ended": []
+    }
   }
 }

@@ -21,7 +21,11 @@
  *   · `timedShellReport` is the effort as its category (never a number) and
  *     each movement's typed partial and load, exactly as typed. A blank entry
  *     is not recorded; a cleared entry for a movement that already has a row
- *     is sent blank so the row is removed, never zeroed.
+ *     is sent blank so the row is removed, never zeroed. The unit is the one
+ *     the route knows — a saved row's, else the profile's — and `null` while
+ *     the profile is unread: no unit is ever guessed, and the shell refuses
+ *     that save (`profile-unread`) as it refuses a set, so the log keeps its
+ *     draft and its dialog and says it did not save.
  *   · `receiptFromRecorded` reads a saved row and its movement rows back into
  *     the log's shape (TASK-048: the saved result is the authority).
  *   · `saveLogThroughShell` is the product's `timedWorkflows.saveResult`
@@ -43,9 +47,6 @@ import { isErr } from '../state/errors'
 import { ladderRungs } from '../state/ladder'
 import type { BlockProgress } from '../state/workout-progress'
 import type { TimedFormat, TimedResultDraft, TimedResultReceipt } from './timed-result-log'
-
-/** The unit a load is stated in where no shell supplies the profile's; the route always does. */
-export const UNSCOPED_WEIGHT_UNIT: Enums<'weight_unit'> = 'kg'
 
 /** Where the attempt's own clock is. */
 export interface TimedClockReading {
@@ -114,7 +115,8 @@ export function timedShellOutcome(
 
 /**
  * The effort and typed entries beside the outcome, once the attempt has
- * ended; null withdraws any earlier report.
+ * ended; null withdraws any earlier report. `weightUnit` is passed through as
+ * known — `null` while the profile is unread, which the shell refuses.
  */
 export function timedShellReport(
   format: TimedFormat,
@@ -138,7 +140,7 @@ export function timedShellReport(
     family: format,
     effort: draft.effort,
     movements,
-    weightUnit: weightUnit ?? UNSCOPED_WEIGHT_UNIT,
+    weightUnit,
     ...(format === 'ladder' ? { rungCount: ladderRungs(block.exercises).length } : {}),
   }
 }

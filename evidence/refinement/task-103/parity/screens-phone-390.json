@@ -1,5 +1,5 @@
 {
-  "schema": "clear-task-103-parity/v1",
+  "schema": "clear-task-103-parity/v2",
   "task": "TASK-103",
   "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
   "state": "screens",
@@ -215,5 +215,136 @@
       "criterion": "TASK-AC-6BFF651DF237",
       "reason": "The metrics row, wrapped at a narrow width."
     }
-  ]
+  ],
+  "layout": {
+    "method": "row hierarchy geometry",
+    "reason": "The accepted screens state draws History as a static composition in its own words (labelled above), so its elements have no one-for-one counterparts; both sides must draw the same row hierarchy.",
+    "tolerancePx": 2,
+    "gallery": {
+      "filterAboveRows": true,
+      "rows": [
+        {
+          "title": "Upper-body strength",
+          "titleAlone": true,
+          "statusBeneathTitle": true,
+          "statusFromTitleEdge": true,
+          "boxes": {
+            "row": {
+              "key": "row",
+              "x": 12,
+              "y": 104,
+              "width": 324,
+              "height": 60
+            },
+            "title": {
+              "key": "title",
+              "x": 12,
+              "y": 116,
+              "width": 324,
+              "height": 16
+            },
+            "status": {
+              "key": "status",
+              "x": 12,
+              "y": 132,
+              "width": 324,
+              "height": 20
+            }
+          }
+        },
+        {
+          "title": "Conditioning and longer session name",
+          "titleAlone": true,
+          "statusBeneathTitle": true,
+          "statusFromTitleEdge": true,
+          "boxes": {
+            "row": {
+              "key": "row",
+              "x": 12,
+              "y": 172,
+              "width": 324,
+              "height": 62
+            },
+            "title": {
+              "key": "title",
+              "x": 12,
+              "y": 186,
+              "width": 324,
+              "height": 16
+            },
+            "status": {
+              "key": "status",
+              "x": 12,
+              "y": 202,
+              "width": 324,
+              "height": 20
+            }
+          }
+        }
+      ]
+    },
+    "route": {
+      "filterAboveRows": true,
+      "rows": [
+        {
+          "title": "Upper-body strength",
+          "titleAlone": true,
+          "statusBeneathTitle": true,
+          "statusFromTitleEdge": true,
+          "boxes": {
+            "row": {
+              "key": "row",
+              "x": 38,
+              "y": 271,
+              "width": 324,
+              "height": 128
+            },
+            "title": {
+              "key": "title",
+              "x": 50,
+              "y": 283,
+              "width": 300,
+              "height": 32
+            },
+            "status": {
+              "key": "status",
+              "x": 50,
+              "y": 319,
+              "width": 300,
+              "height": 16
+            }
+          }
+        },
+        {
+          "title": "Conditioning and longer session name",
+          "titleAlone": true,
+          "statusBeneathTitle": true,
+          "statusFromTitleEdge": true,
+          "boxes": {
+            "row": {
+              "key": "row",
+              "x": 38,
+              "y": 476,
+              "width": 324,
+              "height": 160
+            },
+            "title": {
+              "key": "title",
+              "x": 50,
+              "y": 488,
+              "width": 300,
+              "height": 64
+            },
+            "status": {
+              "key": "status",
+              "x": 50,
+              "y": 556,
+              "width": 300,
+              "height": 16
+            }
+          }
+        }
+      ]
+    }
+  }
 }

@@ -69,6 +69,8 @@
  *     latest, saves it now, and on an answer the block is recorded with the
  *     rows `recordedResult` reads back; a correction restates them in place.
  *     The forward action then finds the block recorded and writes nothing more.
+ *     Like a set, a timed save with no unit to stamp (the profile unread) is
+ *     refused with `profile-unread` before anything is sent — never guessed.
  *
  * The numeric effort is not asked (E04): every row is written with
  * `perceived_effort` `null` through TASK-029's nullable writer, and nothing
@@ -90,7 +92,7 @@ import {
   type TimedResultReport,
 } from './block-completion'
 import type { AppError, Result } from './errors'
-import { ErrorCode, isErr, ok } from './errors'
+import { createError, err, ErrorCode, isErr, ok } from './errors'
 import { reportedTimedEntries, saveTimedResult, timedDraftFromReport, timedResultRequest, type SavedTimedResult } from './timed-results'
 import type { BlockMovementResultRow } from './schemas'
 import type { BlockProgress } from './workout-progress'
@@ -239,6 +241,18 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
   const saveTimed = useCallback(async (blockId: string, outcome: BlockOutcome, report: TimedResultReport): Promise<Result<SavedTimedResult | null>> => {
     const block = latest.current.blocks.find((candidate) => candidate.blockId === blockId)
     if (block === undefined) return ok(null)
+    // A3 TASK-103: a movement row's `weight_unit` is NOT NULL and is the
+    // profile's at write time. With the profile unread there is nothing to
+    // stamp, so the save is refused before anything is sent — exactly as the
+    // set path refuses a set (`set-logging-provider.tsx`) — never stamped with
+    // a guessed unit. The caller keeps the draft; a retry once the profile is
+    // read saves it.
+    const { weightUnit } = report
+    if (weightUnit === null) {
+      return err(createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { field: 'weight_unit', reason: 'profile-unread' },
+      }))
+    }
     let rowIds = movementRowIds.current.get(blockId)
     if (rowIds === undefined) {
       rowIds = Object.fromEntries(block.exercises.map((exercise) => [exercise.exerciseId, crypto.randomUUID()]))
@@ -248,7 +262,7 @@ export function BlockCompletionProvider({ sessionId, blocks, onRecorded, childre
       block: { id: blockId, rounds: block.rounds },
       movements: block.exercises.map((exercise) => exercise.prescription),
       ...(report.rungCount === undefined ? {} : { rungCount: report.rungCount }),
-      weightUnit: report.weightUnit,
+      weightUnit,
     })
     if (isErr(request)) return request
     return saveTimedResult(latest.current.blockResults, request.value)

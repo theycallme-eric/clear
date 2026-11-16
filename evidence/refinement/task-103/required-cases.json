@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-103",
-  "description": "A3 task 3 (F1): Round 7’s timed flow saves for real and History reads it back (REQ-026, REQ-030, REQ-031; JOURNEY-031 and JOURNEY-026, completion owner). check-01 proves the wiring on the real components over the real BlockCompletionProvider: the product presentation’s timedWorkflows.saveResult is the shell’s timed save (saveTimedLog → saveTimedResult), each timed format saves its own contract with block, round and movement identity, a refused write keeps the draft and the dialog and the retry converges, the saved row is read back, the forward action still saves an unsaved log, the attempt survives a remount as the shipped renderers’ did; History detail draws the categorical effort face apart from RPE, each movement’s recorded actual and For Time’s Incomplete; History keeps Round 7’s rows and the TASK-026 filter. The route-level journeys are e2e/refinement/task-047.spec.ts (JOURNEY-031, rewritten for Round 7) and e2e/refinement/task-026.spec.ts (JOURNEY-026, rewritten rows), run under their own manifests. parity is the look check: each real route this task wires beside its accepted gallery state (bec4454: emom, amrap, for_time, ladder, screens) with matched data at 320 and 390 px; every visible difference must be labelled with the criterion that intends it, and each case writes its receipt to evidence/refinement/task-103/parity/. Every declared case must execute and pass.",
+  "description": "A3 task 3 (F1): Round 7’s timed flow saves for real and History reads it back (REQ-026, REQ-030, REQ-031; JOURNEY-031 and JOURNEY-026, completion owner). check-01 proves the wiring on the real components over the real BlockCompletionProvider: the product presentation’s timedWorkflows.saveResult is the shell’s timed save (saveTimedLog → saveTimedResult), each timed format saves its own contract with block, round and movement identity, a refused write keeps the draft and the dialog and the retry converges, a load is stamped with the profile’s unit and, with the profile unread, the save is refused (profile-unread) as a set is — never stamped with a guessed unit — and saves once the profile is read, the saved row is read back, the forward action still saves an unsaved log, the attempt survives a remount as the shipped renderers’ did; History detail draws the categorical effort face apart from RPE, each movement’s recorded actual and For Time’s Incomplete; the real /history/:id route reads a For Time saved through Round 7’s log as Incomplete before its cap back from the rows stored; History keeps Round 7’s rows and the TASK-026 filter. The route-level journeys are e2e/refinement/task-047.spec.ts (JOURNEY-031, rewritten for Round 7) and e2e/refinement/task-026.spec.ts (JOURNEY-026, rewritten rows), run under their own manifests. parity is the look check: each real route this task wires beside its accepted gallery state (bec4454: emom, amrap, for_time, ladder, screens) with matched data at 320 and 390 px, compared in words and in layout (every element’s box on the timed cards and their log within 2 px; History’s row-hierarchy geometry, its accepted state being a static composition); every visible difference must be labelled with the criterion that intends it, and each case writes its receipt to evidence/refinement/task-103/parity/. Every declared case must execute and pass.",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -19,7 +19,8 @@
         "TASK-AC-A5FD8C464D85",
         "TASK-AC-9971E7A16F92",
         "TASK-AC-6B9598D96180",
-        "TASK-AC-6BFF651DF237"
+        "TASK-AC-6BFF651DF237",
+        "TASK-AC-21D8C507B137"
       ],
       "files": [
         "src/ui/session-detail-timed-actuals.test.tsx",
@@ -38,13 +39,23 @@
         },
         {
           "file": "src/ui/timed-flow-save.test.tsx",
-          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > AC-R031-01 AMRAP: Save log writes the counts, the category as effort and never a number, the notes, and each movement’s partial in the round after the count, a typed 0 kept, the load in the profile’s unit",
           "criterion": "AC-R031-01"
         },
         {
           "file": "src/ui/timed-flow-save.test.tsx",
           "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-9971E7A16F92 a refused movement write keeps the draft and the dialog and says the log did not save; the retry restates the row and writes each movement once under the same id",
           "criterion": "TASK-AC-9971E7A16F92"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-21D8C507B137 with the profile unread there is no unit: Save log is refused as a set is (profile-unread), nothing is written or guessed, the draft and the dialog stay; the forward action is refused the same; once the profile is read the retry saves in its unit",
+          "criterion": "TASK-AC-21D8C507B137"
+        },
+        {
+          "file": "src/ui/timed-flow-save.test.tsx",
+          "name": "A3 TASK-103 Round 7’s timed flow saves through the shell’s one completion path > TASK-AC-A5FD8C464D85 /history/:id reads a For Time saved as Incomplete before its cap through Round 7’s log as Incomplete, with its effort face and the movement’s recorded actual, from the rows stored",
+          "criterion": "TASK-AC-A5FD8C464D85"
         },
         {
           "file": "src/ui/timed-flow-save.test.tsx",

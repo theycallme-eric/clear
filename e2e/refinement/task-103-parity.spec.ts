@@ -34,8 +34,15 @@ import { expect, test as scanned } from '../fixtures'
  *     the carried TASK-026 filter) beside the accepted state's History part,
  *     over the same two workouts on the same days.
  *
- * Every visible word is read from both sides. A difference no criterion
- * intends fails the case; an intended one is labelled with its criterion ID.
+ * Every visible word is read from both sides, and so is the layout: words
+ * alone cannot see an inset tile drawn full width (the ladder's rung grid did
+ * exactly that, review of 2026-11-16). On the timed cards and their log every
+ * rendered element's box is measured and compared with its counterpart within
+ * `LAYOUT_TOLERANCE_PX`; on History, whose accepted state is a static
+ * composition in its own words, the row hierarchy's geometry is compared
+ * (title alone on its line, the status line beneath it from the same left
+ * edge, the filter above the rows). A difference no criterion intends fails
+ * the case; an intended one is labelled with its criterion ID.
  * Each case writes its receipt to `evidence/refinement/task-103/parity/` and
  * its captures beside the Runner's evidence store (outside Git), recording
  * each capture's SHA-256 in the receipt. Synthetic and contained: nothing is
@@ -351,12 +358,112 @@ async function keep(target: Locator, name: string) {
 
 function writeReceipt(name: string, receipt: Record<string, unknown>) {
   mkdirSync(RECEIPTS, { recursive: true })
-  writeFileSync(join(RECEIPTS, `${name}.json`), `${JSON.stringify({ schema: 'clear-task-103-parity/v1', task: 'TASK-103', gallery: 'bec44545eb982f6dc136a583400f7e314c306d1d', ...receipt }, null, 2)}\n`)
+  writeFileSync(join(RECEIPTS, `${name}.json`), `${JSON.stringify({ schema: 'clear-task-103-parity/v2', task: 'TASK-103', gallery: 'bec44545eb982f6dc136a583400f7e314c306d1d', ...receipt }, null, 2)}\n`)
 }
 
 function expectAllIntended(differences: readonly Difference[], label: string) {
   const unintended = differences.filter((difference) => difference.criterion === null)
   expect(unintended, `${label}: every visible difference is one a criterion intends`).toEqual([])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout: where each element is drawn, not only what it says
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** How far, in CSS px, an element's edge or size may sit from its counterpart's. */
+const LAYOUT_TOLERANCE_PX = 2
+
+/** One rendered element's box, in CSS px from its part's top-left corner, scroll included. */
+interface Box { readonly key: string; readonly x: number; readonly y: number; readonly width: number; readonly height: number }
+interface LayoutDifference {
+  readonly key: string
+  readonly gallery: Box | null
+  readonly route: Box | null
+  readonly criterion: string | null
+  readonly reason: string | null
+}
+interface IntendedLayout { readonly criterion: string; readonly reason: string; readonly match: RegExp }
+
+/**
+ * Every rendered element of a part (the part itself first), named by its tag,
+ * its `clr-` classes and the words it draws and numbered in document order, so
+ * the same element is found on both sides whatever wraps the part. A heading
+ * is named `h` whatever its level: the level follows the host page's outline
+ * (the gallery nests the card one level deeper), not the layout. Elements not
+ * drawn (`display: none`, hidden, or no box at all) are left out, and so is a
+ * modal dialog the part holds: it is drawn in the top layer against the
+ * viewport, not inside the part, and is measured as its own part.
+ */
+async function boxesOf(target: Locator): Promise<Box[]> {
+  return target.evaluate((root) => {
+    const origin = root.getBoundingClientRect()
+    const rounded = (value: number) => Math.round(value * 10) / 10
+    // A scrolled container moves what it holds; measured as drawn unscrolled.
+    const scrolled = (element: Element) => {
+      let x = 0
+      let y = 0
+      for (let node = element.parentElement; node !== null && node !== root.parentElement; node = node.parentElement) {
+        x += node.scrollLeft
+        y += node.scrollTop
+      }
+      return { x, y }
+    }
+    const seen = new Map<string, number>()
+    const boxes: { key: string; x: number; y: number; width: number; height: number }[] = []
+    for (const element of [root, ...root.querySelectorAll('*')]) {
+      const modal = element.closest(':modal')
+      if (modal !== null && modal !== root && root.contains(modal)) continue
+      const style = getComputedStyle(element)
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') continue
+      const rect = element.getBoundingClientRect()
+      if (rect.width === 0 && rect.height === 0) continue
+      const classes = [...element.classList].filter((name) => name.startsWith('clr-')).sort().map((name) => `.${name}`).join('')
+      const words = (element instanceof HTMLElement ? element.innerText : (element.textContent ?? '')).replace(/\s+/g, ' ').trim().slice(0, 80)
+      const tag = element.tagName.toLowerCase().replace(/^h[1-6]$/, 'h')
+      const name = element === root ? '(part)' : `${tag}${classes}|${words}`
+      const index = seen.get(name) ?? 0
+      seen.set(name, index + 1)
+      const scroll = element === root ? { x: 0, y: 0 } : scrolled(element)
+      boxes.push({
+        key: `${name}#${index}`,
+        x: rounded(rect.left - origin.left + scroll.x),
+        y: rounded(rect.top - origin.top + scroll.y),
+        width: rounded(rect.width),
+        height: rounded(rect.height),
+      })
+    }
+    return boxes
+  })
+}
+
+/** Each element drawn elsewhere, at another size, or on one side only, labelled if a criterion intends it. */
+function compareLayout(gallery: readonly Box[], route: readonly Box[], intended: readonly IntendedLayout[]): LayoutDifference[] {
+  const remaining = new Map(route.map((box) => [box.key, box]))
+  const differences: LayoutDifference[] = []
+  const labelled = (key: string, galleryBox: Box | null, routeBox: Box | null): LayoutDifference => {
+    const rule = intended.find((candidate) => candidate.match.test(key))
+    return { key, gallery: galleryBox, route: routeBox, criterion: rule?.criterion ?? null, reason: rule?.reason ?? null }
+  }
+  for (const box of gallery) {
+    const counterpart = remaining.get(box.key)
+    remaining.delete(box.key)
+    if (counterpart === undefined) {
+      differences.push(labelled(box.key, box, null))
+      continue
+    }
+    const offset = Math.max(
+      Math.abs(box.x - counterpart.x), Math.abs(box.y - counterpart.y),
+      Math.abs(box.width - counterpart.width), Math.abs(box.height - counterpart.height),
+    )
+    if (offset > LAYOUT_TOLERANCE_PX) differences.push(labelled(box.key, box, counterpart))
+  }
+  for (const box of remaining.values()) differences.push(labelled(box.key, null, box))
+  return differences
+}
+
+function expectLayoutIntended(differences: readonly LayoutDifference[], label: string) {
+  const unintended = differences.filter((difference) => difference.criterion === null)
+  expect(unintended, `${label}: every element is drawn where the accepted gallery draws it, within ${LAYOUT_TOLERANCE_PX}px, unless a criterion intends otherwise`).toEqual([])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -369,6 +476,8 @@ function expectAllIntended(differences: readonly Difference[], label: string) {
  * table stays explicit so a future one is labelled rather than waved through.
  */
 const TIMED_INTENDED: readonly Intended[] = []
+/** Layout differences a criterion intends on the timed cards: none, for the same reason. */
+const TIMED_LAYOUT_INTENDED: readonly IntendedLayout[] = []
 
 const capOf = (state: TimedState) => {
   const block = GALLERY_BLOCKS[state]
@@ -388,13 +497,16 @@ for (const state of TIMED_STATES) {
       await expect(galleryCard).toBeVisible()
       await settle(page)
       const galleryReady = await linesOf(galleryCard)
+      const galleryReadyBoxes = await boxesOf(galleryCard)
       const galleryReadyCapture = await keep(galleryCard, `${state}-${name}-gallery-ready`)
       await page.getByRole('button', { name: OPEN[state], exact: true }).click()
       const galleryLog = page.locator('dialog[open] form.clr-timed-log')
       await expect(galleryLog).toBeVisible({ timeout: 15_000 })
       await settle(page)
       const galleryLogLines = await linesOf(galleryLog)
+      const galleryLogBoxes = await boxesOf(galleryLog)
       const galleryEnded = await linesOf(page.locator(`[data-refinement-state="${state}"] .clr-timed-flow`))
+      const galleryEndedBoxes = await boxesOf(page.locator(`[data-refinement-state="${state}"] .clr-timed-flow`))
       const galleryLogCapture = await keep(page.locator('dialog[open]'), `${state}-${name}-gallery-log`)
 
       // The real route, over the same block, with its clock moved past the same cap.
@@ -405,6 +517,7 @@ for (const state of TIMED_STATES) {
       await expect(routeCard).toBeVisible()
       await settle(page)
       const routeReady = await linesOf(routeCard)
+      const routeReadyBoxes = await boxesOf(routeCard)
       const routeReadyCapture = await keep(routeCard, `${state}-${name}-route-ready`)
       await routeCard.getByRole('button', { name: /^Start / }).click()
       await page.clock.fastForward((capOf(state) + 1) * 1000)
@@ -412,7 +525,9 @@ for (const state of TIMED_STATES) {
       await expect(routeLog).toBeVisible({ timeout: 15_000 })
       await settle(page)
       const routeLogLines = await linesOf(routeLog)
+      const routeLogBoxes = await boxesOf(routeLog)
       const routeEnded = await linesOf(routeCard)
+      const routeEndedBoxes = await boxesOf(routeCard)
       const routeLogCapture = await keep(page.locator('dialog[open]'), `${state}-${name}-route-log`)
 
       const moments = {
@@ -420,13 +535,33 @@ for (const state of TIMED_STATES) {
         log: compare(galleryLogLines, routeLogLines, TIMED_INTENDED),
         ended: compare(galleryEnded, routeEnded, TIMED_INTENDED),
       }
+      const layout = {
+        ready: compareLayout(galleryReadyBoxes, routeReadyBoxes, TIMED_LAYOUT_INTENDED),
+        log: compareLayout(galleryLogBoxes, routeLogBoxes, TIMED_LAYOUT_INTENDED),
+        ended: compareLayout(galleryEndedBoxes, routeEndedBoxes, TIMED_LAYOUT_INTENDED),
+      }
+      const part = (boxes: readonly Box[]) => boxes.find((box) => box.key === '(part)#0') ?? null
       writeReceipt(`${state}-${name}`, {
         state, width: viewport.width, route: '/workout',
         captures: { galleryReady: galleryReadyCapture, galleryLog: galleryLogCapture, routeReady: routeReadyCapture, routeLog: routeLogCapture },
         lines: { gallery: { ready: galleryReady, log: galleryLogLines, ended: galleryEnded }, route: { ready: routeReady, log: routeLogLines, ended: routeEnded } },
         differences: moments,
+        layout: {
+          method: 'element boxes',
+          tolerancePx: LAYOUT_TOLERANCE_PX,
+          measured: {
+            gallery: { ready: galleryReadyBoxes.length, log: galleryLogBoxes.length, ended: galleryEndedBoxes.length },
+            route: { ready: routeReadyBoxes.length, log: routeLogBoxes.length, ended: routeEndedBoxes.length },
+          },
+          parts: {
+            gallery: { ready: part(galleryReadyBoxes), log: part(galleryLogBoxes), ended: part(galleryEndedBoxes) },
+            route: { ready: part(routeReadyBoxes), log: part(routeLogBoxes), ended: part(routeEndedBoxes) },
+          },
+          differences: layout,
+        },
       })
       for (const [moment, differences] of Object.entries(moments)) expectAllIntended(differences, `${state} ${moment} @${name}`)
+      for (const [moment, differences] of Object.entries(layout)) expectLayoutIntended(differences, `${state} ${moment} layout @${name}`)
       // Nothing outside the card is claimed: the route stays contained.
       app.assertContained()
     })
@@ -472,6 +607,92 @@ const HISTORY_INTENDED: readonly Intended[] = [
     reason: 'The gallery card is headed History; the route’s History is the page itself (its h1) around the Workout history card.' },
 ]
 
+/** Where one History row draws its hierarchy (C53, decision 7). */
+interface RowGeometry {
+  readonly title: string
+  /** Nothing else in the row is drawn on the title's lines. */
+  readonly titleAlone: boolean
+  /** The status line starts below the title's last line… */
+  readonly statusBeneathTitle: boolean
+  /** …and from the title's left edge. */
+  readonly statusFromTitleEdge: boolean
+  readonly boxes: { readonly row: Box; readonly title: Box; readonly status: Box }
+}
+interface HistoryGeometry {
+  /** The filter is drawn above the first row. */
+  readonly filterAboveRows: boolean
+  readonly rows: readonly RowGeometry[]
+}
+/** Where a side keeps its workout rows, each row's title and its status line. */
+interface HistoryParts { readonly row: string; readonly title: string; readonly status: string }
+
+/** The accepted state's static rows: a label-faced title, then “date · status”. */
+const GALLERY_HISTORY_PARTS: HistoryParts = {
+  row: '.clr-accepted-history-row', title: ':scope > p.label', status: ':scope > p:not(.label)',
+}
+/** The route's `WorkoutListItem` rows (a rest run has no head and is not one). */
+const ROUTE_HISTORY_PARTS: HistoryParts = {
+  row: ':has(> [data-part="head"])', title: '[data-part="head"] :is(h1, h2, h3, h4, h5, h6)', status: '[data-part="context"]',
+}
+
+/**
+ * The accepted History part is a static composition in its own words, so its
+ * elements have no one-for-one counterparts on the route; what both must share
+ * is the row hierarchy's geometry. Measured from the drawn boxes, within the
+ * same tolerance as the timed cards.
+ */
+async function historyGeometry(part: Locator, parts: HistoryParts): Promise<HistoryGeometry> {
+  return part.evaluate((root, { parts, tolerance }) => {
+    const origin = root.getBoundingClientRect()
+    const rounded = (value: number) => Math.round(value * 10) / 10
+    const boxOf = (key: string, element: Element) => {
+      const rect = element.getBoundingClientRect()
+      return { key, x: rounded(rect.left - origin.left), y: rounded(rect.top - origin.top), width: rounded(rect.width), height: rounded(rect.height) }
+    }
+    const drawn = (element: Element) => {
+      const style = getComputedStyle(element)
+      const rect = element.getBoundingClientRect()
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0
+    }
+    // What a row actually draws: words and glyphs.
+    const marks = (row: Element) => [...row.querySelectorAll('*')].filter((element) => drawn(element) && (
+      element instanceof SVGSVGElement
+      || [...element.childNodes].some((node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '')))
+    const filter = root.querySelector('select')
+    const rows = [...root.querySelectorAll(parts.row)].filter(drawn)
+    return {
+      filterAboveRows: filter !== null && rows.length > 0
+        && filter.getBoundingClientRect().bottom <= rows[0].getBoundingClientRect().top + tolerance,
+      rows: rows.map((row) => {
+        const title = row.querySelector(parts.title)
+        const status = row.querySelector(parts.status)
+        if (title === null || status === null) throw new Error(`A History row has no title or status line: ${(row as HTMLElement).innerText}`)
+        const head = title.getBoundingClientRect()
+        const line = status.getBoundingClientRect()
+        const beside = marks(row)
+          .filter((element) => !title.contains(element) && !element.contains(title))
+          .some((element) => {
+            const rect = element.getBoundingClientRect()
+            return rect.top < head.bottom - tolerance && rect.bottom > head.top + tolerance
+          })
+        return {
+          title: (title.textContent ?? '').trim(),
+          titleAlone: !beside,
+          statusBeneathTitle: line.top >= head.bottom - tolerance,
+          statusFromTitleEdge: Math.abs(line.left - head.left) <= tolerance,
+          boxes: { row: boxOf('row', row), title: boxOf('title', title), status: boxOf('status', status) },
+        }
+      }),
+    }
+  }, { parts, tolerance: LAYOUT_TOLERANCE_PX })
+}
+
+/** The facts both sides must share, without the boxes they were measured from. */
+const geometryFacts = (geometry: HistoryGeometry) => ({
+  filterAboveRows: geometry.filterAboveRows,
+  rows: geometry.rows.map(({ titleAlone, statusBeneathTitle, statusFromTitleEdge }) => ({ titleAlone, statusBeneathTitle, statusFromTitleEdge })),
+})
+
 for (const { name, viewport } of VIEWPORTS) {
   test(`TASK-AC-A6EC0ADCD3BD screens ${name}: /history’s rows and filter beside the accepted History part, every difference one a criterion intends`, async ({ page, visit }) => {
     test.setTimeout(180_000)
@@ -486,6 +707,7 @@ for (const { name, viewport } of VIEWPORTS) {
     await settle(page)
     const galleryOptions = (await galleryPart.locator('select option').allTextContents()).map((text) => text.trim())
     const gallery = (await linesOf(galleryPart)).filter((line) => !galleryOptions.includes(line) || line === 'Completed')
+    const galleryGeometry = await historyGeometry(galleryPart, GALLERY_HISTORY_PARTS)
     const galleryCapture = await keep(galleryPart, `screens-${name}-gallery`)
 
     const app = await syntheticApp(page, null)
@@ -496,6 +718,7 @@ for (const { name, viewport } of VIEWPORTS) {
     const routePart = page.locator('main')
     const routeOptions = (await routePart.locator('select option').allTextContents()).map((text) => text.trim())
     const route = (await linesOf(routePart)).filter((line) => line !== 'History' && (!routeOptions.includes(line) || line === 'Completed'))
+    const routeGeometry = await historyGeometry(routePart, ROUTE_HISTORY_PARTS)
     const routeCapture = await keep(routePart, `screens-${name}-route`)
 
     // The rows themselves: title alone, then status with the stored date, then the metrics.
@@ -518,9 +741,24 @@ for (const { name, viewport } of VIEWPORTS) {
       lines: { gallery, route },
       filterOptions: options,
       differences,
+      layout: {
+        method: 'row hierarchy geometry',
+        reason: 'The accepted screens state draws History as a static composition in its own words (labelled above), so its elements have no one-for-one counterparts; both sides must draw the same row hierarchy.',
+        tolerancePx: LAYOUT_TOLERANCE_PX,
+        gallery: galleryGeometry,
+        route: routeGeometry,
+      },
     })
     expectAllIntended(options.differences, `screens filter options @${name}`)
     expectAllIntended(differences, `screens @${name}`)
+    // The same two workouts, in the same order, drawn with the same hierarchy.
+    expect(galleryGeometry.rows.map((row) => row.title.toLowerCase())).toEqual(HISTORY_ROWS.map(({ row }) => row.title.toLowerCase()))
+    expect(routeGeometry.rows.map((row) => row.title.toLowerCase())).toEqual(HISTORY_ROWS.map(({ row }) => row.title.toLowerCase()))
+    expect(geometryFacts(routeGeometry), `screens layout @${name}: the route draws the accepted row hierarchy`).toEqual(geometryFacts(galleryGeometry))
+    expect(geometryFacts(galleryGeometry), `screens layout @${name}: the accepted row hierarchy, as measured`).toEqual({
+      filterAboveRows: true,
+      rows: HISTORY_ROWS.map(() => ({ titleAlone: true, statusBeneathTitle: true, statusFromTitleEdge: true })),
+    })
     app.assertContained()
   })
 }
