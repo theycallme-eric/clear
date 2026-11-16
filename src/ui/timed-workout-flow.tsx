@@ -77,7 +77,7 @@ import { ladderAttemptView, ladderRaceCapSeconds, type LadderDraft, type LadderD
 import { exerciseName, modalityLabel, targetText } from '../state/prescription'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { SetLoggingContext } from '../state/set-logging'
-import { EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptFromClock, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
+import { activeSeconds, EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptFromClock, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
 import { readTimedAttempt, recordTimedAction, writeTimedCounts } from '../state/timed-attempt-records'
 import { finishLabel, type TimedLifecyclePhase } from '../state/timed-lifecycle'
 import { defaultShellStorage, usePersistedLadder } from '../state/workout-persistence'
@@ -111,11 +111,14 @@ const NO_ENTRIES: Readonly<Record<string, never>> = Object.freeze({})
 const NOTHING_CLAIMED: TimedResultDraft = { completed: null, count: null, highestRung: null, effort: null, notes: '', measurements: NO_ENTRIES }
 
 /**
- * TASK-014 (C39, C60; R130, R141; P04): the quiet Undo keeps its control
- * height and block padding but drops the button's inline inset, so its visible
- * text starts at the same left edge as the rounds-completed count beneath it.
+ * TASK-014 (C39, C60; R130, R141; P04): the quiet Undo's visible text starts at
+ * the same left edge as the rounds-completed count beneath it. The small
+ * button keeps its own inset (`var(--spacing-300)`, so its focus frame clears
+ * the first letter and its box reaches past the text alike on both sides) and
+ * its control height; its row gives that inset back outside the box, so no
+ * inherited inset is left on the text.
  */
-const UNDO_TEXT_START: CSSProperties = { padding: 'var(--spacing-200) 0' }
+const UNDO_TEXT_START: CSSProperties = { marginInline: 'calc(var(--spacing-300) * -1)' }
 
 /**
  * The ladder's durable draft as the log's draft. Once the attempt has ended an
@@ -213,7 +216,12 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     if (format === 'amrap') writeTimedCounts(storage, block, { roundsCompleted: next.count, partialRoundReps: next.partialReps ?? null })
   }
   const adjustedStart = attempt.startedAt === null ? null : new Date(attempt.startedAt + attempt.pausedMs).toISOString()
-  const elapsed = useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? now())
+  // The hook re-renders the readout each second while the clock runs; the
+  // reading itself is the attempt's at this render, so an Undo finish (which
+  // brings back the same start) shows the attempt's own time at once rather
+  // than the finished reading until the next tick (A3 TASK-105; AC-R014-03).
+  useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? now())
+  const elapsed = activeSeconds(attempt, now())
   const view = timedAttemptView(attempt, (attempt.startedAt ?? 0) + attempt.pausedMs + elapsed * 1000, cap)
   const ended = view.phase === 'finished' || view.phase === 'capped'
   const sheet = Boolean(presentation?.loggingOverlay) || options?.logPresentation === 'sheet'
@@ -334,8 +342,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     : [block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')
   const log = showLog && <TimedResultLog embedded={sheet} block={block} format={format} weightUnit={weightUnit}
     finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
-    completionAction={canUndoFinish ? <div className="clr-timed-undo" data-timed-undo=""><Button type="button" variant="quiet" size="sm"
-      style={UNDO_TEXT_START} onClick={undoFinish}>Undo finish · resume ladder</Button></div> : undefined}
+    completionAction={canUndoFinish ? <div className="clr-timed-undo" data-timed-undo="" style={UNDO_TEXT_START}>
+      <Button type="button" variant="quiet" size="sm" onClick={undoFinish}>Undo finish · resume ladder</Button></div> : undefined}
     saveFailed={isLadder && !editing && ladderView.saveFailed}
     initial={saved?.result}
     value={isLadder ? (editing && resultDraft !== null ? resultDraft : ladderShown) : resultDraft ?? undefined}

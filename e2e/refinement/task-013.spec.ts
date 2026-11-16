@@ -8,16 +8,14 @@ import { readE2eEnv } from '../../scripts/e2e/env.mjs'
 import { sessionSnapshotSchema, type SessionSnapshot } from '../../src/state/schemas'
 import {
   HANDOFF_COOLDOWN_TITLE,
-  LADDER_ROUNDS_LIST,
   LONG_CAP_SECONDS,
   LONG_ROUNDS,
   LONG_TARGETS,
-  LONG_TIMING_LINE,
   LONG_UNIT,
   ROUNDS_COMPLETED,
+  SHORT_CAP_SECONDS,
   SHORT_ROUNDS,
   SHORT_TARGETS,
-  SHORT_TIMING_LINE,
   SHORT_UNIT,
   WORK_COMPLETED,
   ladderHandoffAcceptance,
@@ -54,6 +52,17 @@ import { expect, test as scanned } from '../fixtures'
  * is the app's own write contract on a synthetic origin, not backend
  * persistence proof (`e2e/design-0143/workout-ladder.spec.ts` is the ladder's
  * backend lane).
+ *
+ * A3 TASK-105 (F3, #728) carries this spec onto Round 7: the route's ladders
+ * are Round 7's `TimedWorkoutFlow` over the ladder's durable attempt, with
+ * `LadderPrescription`'s live check-off and the "Log results" dialog holding
+ * `TimedResultLog` and `LadderCompletion`. Each case keeps the build's name and
+ * asserted behaviour, read from Round 7's markup and words: the grid
+ * `Prescribed ladder rounds`, the meta line that tells the two ladders apart
+ * (`12 rounds · 09:00 cap`, `4 rounds · 15:00 cap`), the card's own "Log
+ * results" action and the log Round 7 opens by itself at Finish and at the
+ * cap, the round any partial work belongs to named on each movement's
+ * `Completed in round N` field, and the quiet `Undo finish · resume ladder`.
  */
 const OWNER = '00000000-0000-4000-8000-000000001301'
 const PLACE = '00000000-0000-4000-8000-000000001311'
@@ -129,6 +138,15 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
 })
 
 test.describe.configure({ mode: 'default' })
+
+/** Round 7's name for a ladder's round grid (`LadderPrescription`). */
+const LADDER_ROUNDS_LIST = 'Prescribed ladder rounds'
+const clockText = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+/** Round 7's meta lines: each ladder's rounds and its one cap — what tells the two cards apart. */
+const LONG_TIMING_LINE = `${LONG_ROUNDS} rounds · ${clockText(LONG_CAP_SECONDS)} cap`
+const SHORT_TIMING_LINE = `${SHORT_ROUNDS} rounds · ${clockText(SHORT_CAP_SECONDS)} cap`
+/** Round 7's quiet Undo in the ladder's log: its words are its name. */
+const UNDO_FINISH = 'Undo finish · resume ladder'
 
 type Viewport = { width: number; height: number }
 const PHONE_320: Viewport = { width: 320, height: 568 }
@@ -258,16 +276,16 @@ const TIMING_LINES: Readonly<Record<LadderKey, string>> = { long: LONG_TIMING_LI
 const TARGETS: Readonly<Record<LadderKey, readonly number[]>> = { long: LONG_TARGETS, short: SHORT_TARGETS }
 const UNITS: Readonly<Record<LadderKey, string>> = { long: LONG_UNIT, short: SHORT_UNIT }
 
+/** One ladder's Round 7 flow — its card, its clock and its log — told apart by its meta line. */
 function cardOf(scope: Page | Locator, key: LadderKey): Locator {
   const page = 'page' in scope ? scope.page() : scope
-  return scope.locator('[data-workout-card="workout"]').filter({ has: page.getByText(TIMING_LINES[key], { exact: true }) })
+  return scope.locator('.clr-timed-flow[data-timed-format="ladder"]').filter({ has: page.getByText(TIMING_LINES[key], { exact: true }) })
 }
 
-/** The block's clock: the reading beside its card, in its own stack. */
+/** The block's clock: the digits its timer draws. */
 async function blockTime(page: Page, key: LadderKey): Promise<string> {
-  const stack = page.locator('main .clr-stack').filter({ has: cardOf(page, key) }).last()
-  const text = (await stack.getByRole('timer').first().textContent()) ?? ''
-  return /\d{2}:\d{2}/.exec(text)?.[0] ?? ''
+  return cardOf(page, key).getByRole('timer').first().evaluate((timer) =>
+    [...timer.children].map((part) => part.textContent ?? '').find((text) => /^\d{2}:\d{2}$/.test(text)) ?? '')
 }
 
 function liveTile(card: Locator, round: number): Locator {
@@ -279,23 +297,26 @@ function liveCount(card: Locator): Locator {
 }
 
 /**
- * TASK-046 (C45; R100): each ladder's card holds one "Log results" action
- * where its log was; the log — the same form — opens in the shared focused
- * dialog titled "Log results". One log is open at a time, over a workout
- * that is inert while it is open.
+ * TASK-046 (C45; R100): once its attempt has ended, each ladder's card holds
+ * one "Log results" action; the log — the same form — is Round 7's one
+ * `LoggingOverlay` titled "Log results", which also opens by itself at Finish
+ * and at the cap. One log is open at a time, over a workout that is inert
+ * while it is open.
  */
 function openerOf(card: Locator): Locator {
-  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+  return card.getByRole('button', { name: 'Log results', exact: true })
 }
 
-/** The open log's form. */
+/** The card's open log's form. */
 function logOf(card: Locator): Locator {
-  return card.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+  return card.locator('dialog[open] form.clr-timed-log')
 }
 
-/** Opens the card's log by touch (closing any other first) and returns it. */
+/** Opens the card's log by touch (closing any other first) unless it is open, and returns it. */
 async function openLog(card: Locator): Promise<Locator> {
-  if ((await openerOf(card).getAttribute('aria-expanded')) !== 'true') {
+  // Round 7 opens the log by itself at Finish and at the cap: wait a moment for it.
+  await logOf(card).waitFor({ state: 'attached', timeout: 1_000 }).catch(() => undefined)
+  if ((await logOf(card).count()) === 0) {
     await closeLog(card.page())
     await openerOf(card).tap()
   }
@@ -305,6 +326,8 @@ async function openLog(card: Locator): Promise<Locator> {
 
 /** Opens the card's log by keyboard: the action focused, then Enter. */
 async function openLogByKeyboard(card: Locator): Promise<Locator> {
+  await logOf(card).waitFor({ state: 'attached', timeout: 1_000 }).catch(() => undefined)
+  if ((await logOf(card).count()) > 0) return logOf(card)
   await openerOf(card).focus()
   await card.page().keyboard.press('Enter')
   await expect(logOf(card)).toBeVisible()
@@ -313,7 +336,7 @@ async function openLogByKeyboard(card: Locator): Promise<Locator> {
 
 /** Closes the open log with its framed X. */
 async function closeLog(page: Page) {
-  const open = page.locator('dialog.clr-accepted-log[open]')
+  const open = page.locator('dialog[open]').filter({ has: page.locator('form.clr-timed-log') })
   if ((await open.count()) === 0) return
   await open.getByRole('button', { name: 'Close log', exact: true }).click()
   await expect(open).toHaveCount(0)
@@ -502,7 +525,7 @@ async function readLiveTiles(card: Locator): Promise<LiveReading> {
       tiles: [...grid.querySelectorAll(':scope > li button')].map((tile) => ({
         pressed: tile.getAttribute('aria-pressed') === 'true',
         box: box(tile),
-        labelTop: tile.querySelector('.clr-ladder-prescription__label')!.getBoundingClientRect().top,
+        labelTop: tile.querySelector('.label')!.getBoundingClientRect().top,
         glyphs: [...tile.querySelectorAll('svg')].filter((svg) => getComputedStyle(svg).display !== 'none' && svg.getBoundingClientRect().width > 0).length,
         clipped: tile.scrollWidth > tile.clientWidth + 1,
       })),
@@ -624,7 +647,8 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       // Editable: the athlete says the last round was not done.
       await resultTile(short, 4, 'short').tap()
       await expect.poll(() => chosen(completionOf(short))).toEqual(['Incomplete'])
-      await expect(roundsOf(short).getByText('Any partial work belongs to round 4', { exact: true })).toBeVisible()
+      // The round any partial work belongs to: Round 7 names it on each movement's field.
+      await expect(logOf(short).getByText('Completed in round 4', { exact: true }).first()).toBeVisible()
 
       // The cap: the twelve-rung ladder runs out with five rounds checked —
       // imported as they were, never every rung. (The browser clock jumps to
@@ -638,7 +662,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       await expect.poll(() => chosen(completionOf(long))).toEqual(['Incomplete'])
       await settle(page)
       expectRepFirstTiles(await readResultTiles(long), 'long', 5, `long capped @${name}`)
-      await expect(roundsOf(long).getByText('Any partial work belongs to round 6', { exact: true })).toBeVisible()
+      await expect(logOf(long).getByText('Completed in round 6', { exact: true }).first()).toBeVisible()
       await noHorizontalOverflow(page)
       await checkJourneyA11y(page)
       await attachCard(page, long, `long-cap-incomplete-${name}`)
@@ -695,7 +719,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     // so it is the one stop between them.
     await completionOf(long).getByRole('radio', { name: 'Incomplete', exact: true }).focus()
     await page.keyboard.press('Tab')
-    await expect(logOf(long).getByRole('button', { name: 'Undo finish · Resume ladder', exact: true })).toBeFocused()
+    await expect(logOf(long).getByRole('button', { name: UNDO_FINISH, exact: true })).toBeFocused()
     await page.keyboard.press('Tab')
     await expect(resultTile(long, 1, 'long')).toBeFocused()
     for (let step = 1; step < 7; step += 1) await page.keyboard.press('Tab')
@@ -819,7 +843,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
     for (const rounds of [4, 12] as const) {
       await visit(`/gallery/refinements?state=ladder-${rounds}`)
       const state = page.locator(`[data-refinement-state="ladder-${rounds}"]`)
-      const card = state.locator('[data-workout-card="workout"]')
+      const card = state.locator('.clr-timed-flow')
       await card.getByRole('button', { name: 'Start ladder', exact: true }).tap()
       await liveTile(card, 2).tap()
       await expect(liveCount(card)).toHaveText(`2 of ${rounds} rounds completed`)
@@ -835,7 +859,7 @@ test.describe('TASK-013 rep-first ordered live ladder progress and result handof
       expect(reading.tiles.every((tile) => tile.glyphs === 0 && !tile.clipped)).toBe(true)
       await noHorizontalOverflow(page)
       await checkJourneyA11y(page)
-      await test.info().attach(`gallery-ladder-${rounds}-handoff-phone-320.png`, { body: await card.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+      await test.info().attach(`gallery-ladder-${rounds}-handoff-phone-320.png`, { body: await logOf(card).screenshot({ caret: 'hide' }), contentType: 'image/png' })
       await test.info().attach(`gallery-ladder-${rounds}-handoff-log-phone-320.png`, { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
       await closeLog(page)
       expect(await page.evaluate(() => [localStorage.getItem('clear.workout-ladders'), localStorage.getItem('clear.workout-for-time')])).toEqual([null, null])

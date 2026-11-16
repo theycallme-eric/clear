@@ -1899,8 +1899,6 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     // Thirty seconds later: Undo.
     advance(30)
     await user.click(undoOf('long')!)
-    // The running clock's next read (its tick): Round 7's readout re-reads on its interval.
-    advance(0)
     // The same attempt, running from the same start: the thirty seconds spent
     // finished count, and the cap it runs against is the original one (09:00,
     // so 05:30 is left).
@@ -1942,7 +1940,6 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     await user.click(ladderButton('short', 'Finish'))
     expect(answerOf('short')).toEqual(['Complete'])
     await user.click(undoOf('short')!)
-    advance(0)
     expect(attemptClock('short')).toEqual({ reading: '00:45', words: 'Elapsed', cap: String(SHORT_CAP_SECONDS) })
     expect(livePressed('short')).toEqual(through(SHORT_ROUNDS))
     expect(queryLadderLog('short')).toBeNull()
@@ -2118,7 +2115,6 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
 
     // Undo: the same attempt, running on from its start (02:00 + 30 s closed).
     await user.click(undoOf('long')!)
-    advance(0)
     expect(attemptClock('long')).toMatchObject({ reading: '02:30', words: 'Elapsed' })
     expect(livePressed('long')).toEqual(through(6))
     await user.click(liveToggles('long')[7])
@@ -2226,15 +2222,18 @@ describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () =>
     expect(undo.parentElement!.style.getPropertyValue('--bleed')).toBe('transparent')
     expect(undo.parentElement).not.toHaveClass('clr-glow')
 
-    // The recipe: left-aligned (Round 7's `.clr-timed-undo` rules), and no
-    // inline inset on the text — the small button keeps its block padding
-    // token and its control height, drops its inline padding, and declares
+    // The recipe: left-aligned (Round 7's `.clr-timed-undo` rules), and the
+    // button's own inline inset — the small button's token — given back
+    // outside its box by its row, so no inset is left on the text; and
     // nothing else: no size, colour, frame or type of its own.
     expect(rule('.clr-timed-undo')).toMatch(/justify-content:\s*flex-start/)
     const button = rule('.clr-timed-undo button')
     expect(button).toMatch(/justify-content:\s*flex-start/)
     expect(button).toMatch(/text-align:\s*start/)
-    expect(undo.style.padding).toMatch(/^var\(--spacing-200\) 0(px)?$/)
+    const inset = /^var\(--spacing-200\) var\((--spacing-[\w-]+)\)$/.exec(undo.style.padding)?.[1]
+    expect(inset).toMatch(/^--spacing-/)
+    expect(wrapper.style.marginInline).toBe(`calc(var(${inset}) * -1)`)
+    expect(wrapper.getAttribute('style')).not.toMatch(/\d+px|height|color|background|border|font|letter-spacing|box-shadow|padding/)
     for (const declared of [rule('.clr-timed-undo'), button]) {
       expect(declared).not.toMatch(/\d+px|height|color|background|border|font|letter-spacing|box-shadow|padding-block/)
     }
