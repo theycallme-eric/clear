@@ -3,7 +3,7 @@ import { Button, ChoiceGroup, Input } from '../design-system/index'
 import type { Enums } from '../data/database.types'
 import { exerciseName, modalityLabel } from '../state/prescription'
 import type { BlockProgress } from '../state/workout-progress'
-import { ladderRungs } from '../state/ladder'
+import { ladderRungs, ladderUnit } from '../state/ladder'
 import { QuantitySelector } from './quantity-selector'
 import { Heading, HeadingSection } from './Heading'
 import { LadderCompletion } from './ladder-rungs'
@@ -45,13 +45,25 @@ function ResultGroup({ title, children }: { title?: string; children: ReactNode 
   </HeadingSection>
 }
 
+/** The log's words for a save that did not land (the accepted reference's, eded158c…). */
+const TIMED_LOG_SAVE_FAILED = 'Your log didn’t save. Try again.'
+
+/**
+ * A3 TASK-105 (F3; TASK-048, AC-R032-01/03): `saveFailed` is a failure the
+ * block keeps beyond this form — a ladder's durable attempt notes it, so it is
+ * said again after a reload or a refused forward-action save — until a save
+ * succeeds. The form's own failure (a Save log refused while it is open) is
+ * said in the same words; either way there is one alert.
+ */
 export function TimedResultLog({ block, format, finished, weightUnit, onSave, initial,
   value, onDraftChange, completionAction, hierarchy = 'simple', rungEmphasis = 'reps', accessibleName = 'Log section results', embedded = false,
+  saveFailed = false,
 }: {
   block: BlockProgress; format: TimedFormat; finished: boolean; weightUnit: Enums<'weight_unit'> | null
   onSave: (result: TimedResultDraft) => Promise<void>; initial?: TimedResultDraft
   value?: TimedResultDraft; onDraftChange?: (next: TimedResultDraft) => void; completionAction?: ReactNode
   hierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; accessibleName?: string; embedded?: boolean
+  saveFailed?: boolean
 }) {
   const rungs = ladderRungs(block.exercises)
   const [localDraft, setLocalDraft] = useState<TimedResultDraft>(() => initial ?? initialTimedResultDraft(format, finished, rungs.length))
@@ -77,9 +89,15 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
       .map(([id, value]) => [id, { ...value, amount: '' }])),
   }))
   const nextRung = (draft.highestRung ?? 0) + 1
-  const hasNextRung = nextRung <= rungs.length
-  const laddered = block.exercises.find(exercise => exercise.prescription.target_sequence !== null)
-  const rungUnit = laddered ? modalityLabel(laddered.prescription).toLowerCase() : 'reps'
+  // A3 TASK-105 (TASK-013/TASK-015, AC-R013-01/03): a ladder's partial work
+  // belongs to the round after the stated prefix, so it is asked only once a
+  // prefix is stated (zero included) and a round is left — nothing stated is
+  // not round 0, and no field is offered for a round nobody named.
+  const hasNextRung = nextRung <= rungs.length && (format !== 'ladder' || draft.highestRung !== null)
+  // A3 TASK-105 (C33, AC-R013-02): the rung's unit is the ladder's shared
+  // reading (`ladderUnit`), the same `reps` / `sec` / `m` its prescription grid
+  // states — never a longer word than the round it names.
+  const rungUnit = ladderUnit(block.exercises)
   const measurements = block.exercises.flatMap(exercise => {
     const p = exercise.prescription
     const loaded = p.equipment_used !== 'bodyweight' && p.load_type !== 'bodyweight' && p.equipment_used !== 'none'
@@ -105,7 +123,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
     <form className="clr-timed-log" data-log-hierarchy={hierarchy} aria-label={accessibleName} onSubmit={onSubmit(() => {
       if (saving) return false
       setSaving(true); setFailure(null)
-      return onSave(draft).then(() => true, () => { setFailure('Your log didn’t save. Try again.'); return false }).finally(() => setSaving(false))
+      return onSave(draft).then(() => true, () => { setFailure(TIMED_LOG_SAVE_FAILED); return false }).finally(() => setSaving(false))
     })}>
       {!embedded && <Heading className="clr-timed-log__title">Log results</Heading>}
       <ResultGroup title={hierarchy === 'grouped' && format !== 'emom' ? 'Result' : undefined}>
@@ -129,7 +147,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
           onChange={effort => patch({ effort })} />
         <Input label="Notes · optional" multiline rows={2} value={draft.notes} onChange={notes => patch({ notes })} />
       </ResultGroup>
-      {failure !== null && <p role="alert">{failure}</p>}
+      {(failure !== null || saveFailed) && <p role="alert">{failure ?? TIMED_LOG_SAVE_FAILED}</p>}
       <div className="clr-timed-actions"><Button type="submit" variant="primary" loading={saving}>Save log</Button></div>
     </form>
   </Container>

@@ -18,16 +18,16 @@
  * restores the paused clock with the same active time and the same time left,
  * and Finish on a paused clock ends it at the pause.
  *
- * A raced ladder's clock is kept inside its durable attempt (TASK-032's
- * `clear.workout-ladders`, `ladder-recovery.ts`), not as a For Time race beside
- * it: Start, Pause, Resume, Finish and Undo finish move it through
- * `startLadderAttempt`, `pauseLadderAttempt`, `resumeLadderAttempt`,
- * `finishLadderAttempt` and `undoLadderFinish`, under the workout's session.
- * A ladder clock an earlier build kept under the For Time key is adopted on
- * the first action (`restoreLadderAttempt`), and the For Time record is left
- * as it was. The rest of the durable attempt — live progress, the draft, the
- * Undo checkpoint's progress, save authority — is TASK-105's; nothing here
- * writes it. The richer per-format entries (`movements`, `workCompleted`) are
+ * A raced ladder is not kept here. A3 TASK-104 first moved its clock into its
+ * durable attempt (TASK-032's `clear.workout-ladders`, `ladder-recovery.ts`)
+ * from this module; A3 TASK-105 (F3) gives that whole attempt — the clock, the
+ * live progress, the draft, the Undo checkpoint and the save authority — one
+ * owner, `usePersistedLadder` (`workout-persistence.ts`), which the route's
+ * `TimedWorkoutFlow` holds for a ladder. One writer: the record is never moved
+ * from here behind that owner's back. TASK-104's rule for an older ladder
+ * clock under the For Time key is kept by that owner (`adoptLegacyClock:
+ * 'on-first-change'`): adopted by the first action, the For Time record left
+ * as it was. The richer per-format entries (`movements`, `workCompleted`) are
  * TASK-116's. Anything such a record already holds is kept on every write.
  *
  * No React here, and the storage is injected: outside the workout shell (the
@@ -41,16 +41,6 @@ import {
 } from './amrap'
 import { clampEmomState, type EmomState } from './emom'
 import { clampForTimeState, type ForTimeState } from './for-time'
-import { ladderRungs } from './ladder'
-import {
-  finishLadderAttempt,
-  ladderRaceCapSeconds,
-  pauseLadderAttempt,
-  resumeLadderAttempt,
-  startLadderAttempt,
-  undoLadderFinish,
-  type LadderAttempt,
-} from './ladder-recovery'
 import {
   activeSeconds,
   timedAttemptClock,
@@ -61,19 +51,18 @@ import {
   readAmrapState,
   readEmomState,
   readForTimeState,
-  restoreLadderAttempt,
   writeAmrapState,
   writeEmomState,
   writeForTimeState,
-  writeLadderAttempt,
   type ShellStorage,
 } from './workout-persistence'
 import type { BlockProgress } from './workout-progress'
 
-export type TimedRecordFormat = 'emom' | 'amrap' | 'for_time' | 'ladder'
+/** The formats kept here; a ladder's attempt is `usePersistedLadder`'s (A3 TASK-105). */
+export type TimedRecordFormat = 'emom' | 'amrap' | 'for_time'
 
-/** What moves an attempt's clock; `undo` is a ladder's Undo finish. */
-export type TimedRecordAction = 'start' | 'pause' | 'resume' | 'finish' | 'undo'
+/** What moves an attempt's clock. */
+export type TimedRecordAction = 'start' | 'pause' | 'resume' | 'finish'
 
 /** An AMRAP's two counts as the athlete recorded them; `null` is not recorded. */
 export interface TimedCounts {
@@ -88,9 +77,9 @@ export interface RestoredTimedAttempt {
 }
 
 /**
- * Where a block's attempt is kept: the shell's storage and the workout's
- * session. The session identifies a ladder's durable attempt; the other
- * records are per block, as their renderers kept them.
+ * Where a block's attempt is kept: the shell's storage, and the workout's
+ * session the block is performed in. These records are per block, as their
+ * renderers kept them.
  */
 export interface TimedRecordScope {
   readonly storage: ShellStorage | null
@@ -106,18 +95,6 @@ function clockStamps(attempt: TimedAttempt): { startedAt: string | null; pausedA
     startedAt: clock.startedAt,
     ...(attempt.finishedAt === null && typeof clock.pausedAt === 'string' ? { pausedAt: clock.pausedAt } : {}),
   }
-}
-
-/** A ladder's durable attempt as the route finds it: stored, adopted from an older For Time clock, or new. */
-function ladderAttemptOf(scope: TimedRecordScope, block: BlockProgress): LadderAttempt | null {
-  if (scope.storage === null || scope.sessionId === null) return null
-  return restoreLadderAttempt(scope.storage, {
-    sessionId: scope.sessionId,
-    blockId: block.blockId,
-    capSeconds: ladderRaceCapSeconds(block),
-    rungCount: ladderRungs(block.exercises).length,
-    mintId: () => crypto.randomUUID(),
-  }).attempt
 }
 
 /**
@@ -152,46 +129,21 @@ export function readTimedAttempt(
       if (stored === null) return null
       return { attempt: timedAttemptFromClock(clampForTimeState(stored)), counts: null }
     }
-    case 'ladder': {
-      const attempt = ladderAttemptOf(scope, block)
-      if (attempt === null || attempt.clock.startedAt === null) return null
-      return { attempt: timedAttemptFromClock(attempt.clock), counts: null }
-    }
   }
 }
 
-/** A ladder's durable attempt, moved by the action at `at` through `ladder-recovery.ts`. */
-function moveLadderAttempt(scope: TimedRecordScope, block: BlockProgress, action: TimedRecordAction, at: number): void {
-  const attempt = ladderAttemptOf(scope, block)
-  if (attempt === null) return
-  const rungs = ladderRungs(block.exercises).length
-  const next = action === 'start' ? startLadderAttempt(attempt, at)
-    : action === 'pause' ? pauseLadderAttempt(attempt, at)
-    : action === 'resume' ? resumeLadderAttempt(attempt, at)
-    : action === 'finish' ? finishLadderAttempt(attempt, rungs, at)
-    : undoLadderFinish(attempt, rungs, at)
-  if (next !== attempt) writeLadderAttempt(scope.storage, next)
-}
-
 /**
- * Keeps the block's attempt after `action`, taken at `at`, moved it to
+ * Keeps the block's attempt after an action (`TimedRecordAction`) moved it to
  * `attempt`: the format's record is written with its clock (and, for an
- * AMRAP, its counts), keeping every other field it already holds; a ladder's
- * durable attempt is moved by the same action.
+ * AMRAP, its counts), keeping every other field it already holds.
  */
 export function recordTimedAction(
   scope: TimedRecordScope,
   format: TimedRecordFormat,
   block: BlockProgress,
-  action: TimedRecordAction,
   attempt: TimedAttempt,
-  at: number,
 ): void {
   if (scope.storage === null) return
-  if (format === 'ladder') {
-    moveLadderAttempt(scope, block, action, at)
-    return
-  }
   writeTimedAttempt(scope.storage, format, block, attempt)
 }
 
@@ -202,7 +154,7 @@ export function recordTimedAction(
  */
 export function writeTimedAttempt(
   storage: ShellStorage | null,
-  format: Exclude<TimedRecordFormat, 'ladder'>,
+  format: TimedRecordFormat,
   block: BlockProgress,
   attempt: TimedAttempt,
   counts: TimedCounts | null = null,

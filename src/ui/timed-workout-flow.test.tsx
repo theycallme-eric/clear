@@ -36,20 +36,56 @@
  * Later tasks add their cases here (A3 TASK-105: TASK-013/TASK-014; A3
  * TASK-116: TASK-011), each in its own describe block, selected by their own
  * name patterns.
+ *
+ * A3 TASK-105 (F3, #728) carries the build's TASK-013 and TASK-014 cases
+ * (TASK-104's test ledger deferred them here). TASK-013 (REQ-013; C33, C34,
+ * C36; AC-C33-01, AC-C34-01, AC-C36-01, AC-R013-01/02/03; JOURNEY-013) —
+ * rep-first ordered live ladder progress and its result handoff — and TASK-014
+ * (REQ-014; C38, C39, C60; AC-C38-01, AC-C39-01, AC-C60-01, AC-R014-01/02/03;
+ * JOURNEY-014) — accidental Finish recovery with an aligned quiet Undo — are
+ * proved on Round 7's owners: `TimedWorkoutFlow` holding the ladder's one
+ * durable attempt (`usePersistedLadder`, TASK-032's `clear.workout-ladders`),
+ * `LadderPrescription` (the live check-off) and `LadderCompletion` (the log's
+ * rep-first tiles) in `src/ui/ladder-rungs.tsx`, and `TimedResultLog` in the
+ * one "Log results" `LoggingOverlay`. Each keeps the build's name and its
+ * asserted behaviour, read from Round 7's controls and words (the test ledger,
+ * `evidence/refinement/task-105/test-ledger.json`, says what each read
+ * changed): Round 7's list `Prescribed ladder rounds`, its meta line (`12
+ * rounds · 09:00 cap`), its clock captions (`Elapsed`, `Paused`, `Finished`,
+ * `Cap reached`) with the original cap kept as `data-cap-seconds`, a log that
+ * exists once the attempt has ended, the partial round named on each
+ * movement's `Completed in round N` field, and the quiet `Undo finish · resume
+ * ladder`. The route fixture is the build's (`ladder-handoff-fixture.ts`,
+ * carried unchanged: a twelve-rung capped kettlebell ladder and a four-rung
+ * timed plank ladder, a cooldown after). TASK-013's describe title carries
+ * "ladder", "rung" and "handoff" and TASK-014's "undo", so their check-01
+ * patterns select them; no TASK-014 name carries "ladder", "rung" or
+ * "handoff". Browser geometry is `e2e/refinement/task-013.spec.ts` and
+ * `task-014.spec.ts`.
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routes } from '../app/router'
 import { timedBlock } from '../dev/gallery-refinement-fixtures'
+import { LADDER_CAP_SECONDS, pushUpRungs } from '../dev/gallery-refinement-flow-data'
 import { GalleryRefinements } from '../dev/gallery-refinements'
-import { BlockCompletionContext, type BlockCompletionApi, type BlockOutcome } from '../state/block-completion'
-import { ladderRungs } from '../state/ladder'
+import {
+  blockResultInsert,
+  BlockCompletionContext,
+  type BlockCompletion,
+  type BlockCompletionApi,
+  type BlockOutcome,
+} from '../state/block-completion'
+import { createError, err, ErrorCode, ok } from '../state/errors'
+import { ladderPrefixAfterTap, ladderRungs } from '../state/ladder'
+import { ladderPartialRound } from '../state/ladder-recovery'
+import type { BlockResultRow } from '../state/schemas'
 import { finishLabel } from '../state/timed-lifecycle'
 import {
   readAmrapState,
@@ -59,7 +95,23 @@ import {
   WORKOUT_FOR_TIME_STORAGE_KEY,
   WORKOUT_LADDER_STORAGE_KEY,
 } from '../state/workout-persistence'
-import { sessionProgress } from '../state/workout-progress'
+import { sessionProgress, type BlockProgress } from '../state/workout-progress'
+import {
+  HANDOFF_COOLDOWN_TITLE,
+  LONG_CAP_SECONDS,
+  LONG_ROUNDS,
+  LONG_TARGETS,
+  LONG_UNIT,
+  ROUNDS_COMPLETED,
+  SHORT_CAP_SECONDS,
+  SHORT_ROUNDS,
+  SHORT_TARGETS,
+  SHORT_UNIT,
+  WORK_COMPLETED,
+  ladderHandoffAcceptance,
+  ladderHandoffBlocks,
+  ladderHandoffSnapshot,
+} from '../test/ladder-handoff-fixture'
 import {
   LONG_LADDER_ROUNDS,
   TIMED_FINISH,
@@ -70,7 +122,7 @@ import {
 } from '../test/timed-actions-fixture'
 import { AppProviders, signedIn } from '../test/render'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
-import { createWorkoutDouble, snapshotFixture, type BlockFixture } from '../test/workout-double'
+import { createWorkoutDouble, snapshotFixture, type BlockFixture, type WorkoutDoubleOptions } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
 import { PRODUCT_PRESENTATION } from './product-presentation'
 import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
@@ -944,4 +996,1391 @@ describe('A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, 
     }
     expect(fetch).not.toHaveBeenCalled()
   })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A3 TASK-105 — TASK-013: rep-first ordered live ladder progress and its handoff (C33, C34, C36)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Explicit per-case time: each journey mounts the whole app; generous on a slower CI runner. */
+const LADDER_TIMEOUT = 30_000
+
+const FOUNDATION_CSS = readFileSync(resolve(ROOT, 'src/design-system/css/foundation.css'), 'utf8')
+
+/** The stylesheets Round 7's ladder owners are drawn by: the rung tiles' own and the workout's. */
+const LADDER_STYLESHEETS = ['src/ui/ladder-rungs.css', 'src/styles/workout-r7.css'] as const
+const LADDER_CSS = LADDER_STYLESHEETS.map((file) => readFileSync(resolve(ROOT, file), 'utf8'))
+  .join('\n')
+  .replaceAll(/\/\*[\s\S]*?\*\//g, '')
+
+/** Applies the ladder's stylesheets to the document (once), so the drawn recipe is read from the cascade. */
+function applyLadderStylesheets() {
+  for (const file of LADDER_STYLESHEETS) {
+    if (document.head.querySelector(`style[data-task105="${file}"]`) !== null) continue
+    const style = document.createElement('style')
+    style.dataset.task105 = file
+    style.textContent = readFileSync(resolve(ROOT, file), 'utf8')
+    document.head.append(style)
+  }
+}
+
+/** JOURNEY-013's session: started a minute before entry, both ladders ready. */
+const LADDER_SESSION = () =>
+  ladderHandoffSnapshot(ladderHandoffAcceptance(), {
+    userId: FIXTURE_USER_ID,
+    startedAt: new Date(clock - 60_000).toISOString(),
+  })
+
+type LadderKey = 'long' | 'short'
+
+/**
+ * Round 7's meta line for each ladder — its rounds and its one cap — which is
+ * what tells the two cards apart (the build told them apart by its timing line).
+ */
+const LADDER_META: Readonly<Record<LadderKey, string>> = {
+  long: `${LONG_ROUNDS} rounds · 09:00 cap`,
+  short: `${SHORT_ROUNDS} rounds · 15:00 cap`,
+}
+
+/** Round 7's name for a ladder's round grid (`LadderPrescription`). */
+const LADDER_ROUNDS_LIST = LISTS.ladder
+
+/** JOURNEY-013's entry: `/workout`, behind the existing guard, both ladders ready in the first section. */
+async function openLadders(options: Omit<WorkoutDoubleOptions, 'session'> = {}) {
+  const snapshot = LADDER_SESSION()
+  const double = createWorkoutDouble({ session: snapshot, ...options })
+  const router = createMemoryRouter(routes, { initialEntries: ['/', '/workout'], initialIndex: 1 })
+  const view = render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  await screen.findByRole('navigation', { name: 'Workout sections' })
+  await screen.findByText(LADDER_META.long)
+  await screen.findByText(LADDER_META.short)
+  return { double, router, view, snapshot, ...ladderHandoffBlocks(snapshot) }
+}
+
+/** One ladder's Round 7 flow: its card, its clock and its log, told apart by its meta line. */
+function ladderFlowOf(key: LadderKey): HTMLElement {
+  const flow = screen.getByText(LADDER_META[key]).closest<HTMLElement>('.clr-timed-flow')
+  if (flow === null) throw new Error(`the ${key} ladder has no timed flow`)
+  return flow
+}
+
+/** One ladder's live card. */
+function ladderCardOf(key: LadderKey): HTMLElement {
+  const card = ladderFlowOf(key).querySelector('[data-movement-group-header]')?.closest<HTMLElement>('.clr-card') ?? null
+  if (card === null) throw new Error(`the ${key} ladder has no live card`)
+  return card
+}
+
+function ladderButton(key: LadderKey, name: string): HTMLElement {
+  return within(ladderCardOf(key)).getByRole('button', { name })
+}
+
+/** The prescription's round grid: read-only tiles, or the live check-off while the race runs. */
+function roundGrid(key: LadderKey): HTMLElement {
+  return within(ladderCardOf(key)).getByRole('list', { name: LADDER_ROUNDS_LIST })
+}
+
+/** The live check-off's toggles, in round order; none while it is read-only. */
+function liveToggles(key: LadderKey): HTMLElement[] {
+  return within(roundGrid(key)).queryAllByRole('button')
+}
+
+/** The rounds pressed in the live check-off, by round number. */
+function livePressed(key: LadderKey): number[] {
+  return liveToggles(key)
+    .filter((toggle) => toggle.getAttribute('aria-pressed') === 'true')
+    .map((toggle) => Number(toggle.closest('li')!.dataset.ladderRound))
+}
+
+/** The live count beneath the rounds, or null when nothing can be tracked. */
+function liveCount(key: LadderKey): string | null {
+  const prescription = ladderCardOf(key).querySelector<HTMLElement>('[data-ladder-prescription]')!
+  return within(prescription).queryByRole('status')?.textContent ?? null
+}
+
+/** The ladder's open log dialogs: Round 7's one "Log results" `LoggingOverlay`. */
+function openLadderDialogs(key: LadderKey): HTMLDialogElement[] {
+  return [...ladderFlowOf(key).querySelectorAll<HTMLDialogElement>('dialog[open]')].filter(
+    (dialog) => dialog.querySelector('form.clr-timed-log') !== null,
+  )
+}
+
+/**
+ * TASK-046: the ladder's log, in the one "Log results" dialog its card opens —
+ * opened by the card's own "Log results" action when it is not already open.
+ * Null when the attempt offers no log: Round 7 draws one only once the attempt
+ * has ended and while its result is unsaved (or being edited).
+ */
+function queryLadderLog(key: LadderKey): HTMLElement | null {
+  if (openLadderDialogs(key).length === 0) {
+    const opener = within(ladderCardOf(key)).queryByRole('button', { name: 'Log results' })
+    if (opener === null) return null
+    fireEvent.click(opener)
+  }
+  const open = openLadderDialogs(key)
+  expect(open, `${key}: one open log`).toHaveLength(1)
+  return open[0].querySelector<HTMLElement>('form.clr-timed-log')
+}
+
+function logOf(key: LadderKey): HTMLElement {
+  const log = queryLadderLog(key)
+  if (log === null) throw new Error(`the ${key} ladder offers no result log`)
+  return log
+}
+
+function answerGroup(key: LadderKey): HTMLElement {
+  return within(logOf(key)).getByRole('group', { name: WORK_COMPLETED })
+}
+
+/** The athlete's checked answer: none, Complete or Incomplete. */
+function answerOf(key: LadderKey): string[] {
+  return within(answerGroup(key)).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent ?? '')
+}
+
+async function answerWith(user: ReturnType<typeof userEvent.setup>, key: LadderKey, word: 'Complete' | 'Incomplete') {
+  await user.click(within(answerGroup(key)).getByRole('radio', { name: word }))
+}
+
+/** The log's rep-first result tiles (`LadderCompletion`), or null when the log has none. */
+function roundsGroup(key: LadderKey): HTMLElement | null {
+  return within(logOf(key)).queryByRole('group', { name: ROUNDS_COMPLETED })
+}
+
+function resultTiles(key: LadderKey): HTMLElement[] {
+  return within(roundsGroup(key)!).getAllByRole('button')
+}
+
+function resultTile(key: LadderKey, round: number): HTMLElement {
+  const tile = resultTiles(key).find((candidate) => candidate.dataset.ladderRung === String(round))
+  if (tile === undefined) throw new Error(`the ${key} log has no round ${round}`)
+  return tile
+}
+
+function resultPressed(key: LadderKey): number[] {
+  return resultTiles(key)
+    .filter((tile) => tile.getAttribute('aria-pressed') === 'true')
+    .map((tile) => Number(tile.dataset.ladderRung))
+}
+
+function resultCount(key: LadderKey): string {
+  return within(roundsGroup(key)!).getByRole('status').textContent ?? ''
+}
+
+/**
+ * The round any partial work belongs to (TASK-015's identity, not a field of
+ * its own): Round 7 names it on each movement's amount field, `Completed in
+ * round 5`. Null when no field asks for one.
+ */
+function partialRound(key: LadderKey): number | null {
+  const named = within(logOf(key)).queryAllByText(/^Completed in round \d+$/)
+  const rounds = new Set(named.map((label) => Number(/\d+$/.exec(label.textContent ?? '')![0])))
+  expect(rounds.size, `${key}: at most one partial round`).toBeLessThanOrEqual(1)
+  return [...rounds][0] ?? null
+}
+
+/** Rounds 1…n: an ordered prefix. */
+const through = (count: number) => Array.from({ length: count }, (_, index) => index + 1)
+
+/** The ladder's durable attempt, as the route stored it (TASK-032's record). */
+function ladderAttemptRecord(blockId: string): Record<string, unknown> | undefined {
+  return stored(WORKOUT_LADDER_STORAGE_KEY)[blockId]
+}
+
+/** Every column of the saved row a planned target or a timing could hide in. */
+function resultRow(completion: BlockCompletion) {
+  const row = blockResultInsert(completion)
+  return {
+    minutes_completed: row.minutes_completed,
+    elapsed_seconds: row.elapsed_seconds,
+    completed_under_cap: row.completed_under_cap,
+    rounds_completed: row.rounds_completed,
+    partial_round_reps: row.partial_round_reps,
+    highest_rung: row.highest_rung,
+    perceived_effort: row.perceived_effort,
+    notes: row.notes,
+  }
+}
+
+/** The row's result columns, as the shell's one writer would insert them. */
+function ladderRow(double: ReturnType<typeof createWorkoutDouble>, blockId: string) {
+  const rows = double.recorded().filter((row) => row.blockId === blockId)
+  expect(rows, `one row for ${blockId}`).toHaveLength(1)
+  return { completion: rows[0], insert: resultRow(rows[0]) }
+}
+
+const NOTHING_BUT_THE_RUNG = {
+  minutes_completed: null, elapsed_seconds: null, completed_under_cap: null, rounds_completed: null,
+  partial_round_reps: null, perceived_effort: null, notes: null,
+}
+
+async function saveLadders(user: ReturnType<typeof userEvent.setup>) {
+  await closeLogs(user)
+  await user.click(screen.getByRole('button', { name: 'Next section' }))
+  await screen.findByRole('heading', { name: HANDOFF_COOLDOWN_TITLE })
+}
+
+/** The smallest value a design token takes at any breakpoint, in CSS pixels. */
+function tokenFloor(name: string): number {
+  const values = [...FOUNDATION_CSS.matchAll(new RegExp(`${name}:\\s*(\\d+(?:\\.\\d+)?)px`, 'g'))].map((match) => Number(match[1]))
+  expect(values.length, name).toBeGreaterThan(0)
+  return Math.min(...values)
+}
+
+function tokenCeiling(name: string): number {
+  const values = [...FOUNDATION_CSS.matchAll(new RegExp(`${name}:\\s*(\\d+(?:\\.\\d+)?)px`, 'g'))].map((match) => Number(match[1]))
+  expect(values.length, name).toBeGreaterThan(0)
+  return Math.max(...values)
+}
+
+/**
+ * A direct mount of one ladder block, as the route draws it (`BlockSlot` under
+ * the product presentation), inside a bare completion seam that names its
+ * session — so the route's own storage (`localStorage`) keeps its attempt.
+ */
+function mountLadderBlock(
+  block: BlockFixture,
+  completion: BlockCompletionApi,
+  timing: BlockProgress['ladderTiming'] = null,
+) {
+  const snapshot = snapshotFixture({ sections: [{ title: 'Ladder', sectionType: 'conditioning', blocks: [block] }] })
+  const progress: BlockProgress = { ...sessionProgress(snapshot).sections[0].blocks[0], ladderTiming: timing }
+  const view = render(
+    <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+      <BlockCompletionContext value={completion}>
+        <BlockSlot block={progress} />
+      </BlockCompletionContext>
+    </WorkoutExperiencePresentationProvider>,
+  )
+  return { ...view, block: progress }
+}
+
+/** A direct mount's one open log. */
+function directLog(): HTMLElement {
+  const open = openLogs()
+  expect(open).toHaveLength(1)
+  return open[0].querySelector<HTMLElement>('form.clr-timed-log')!
+}
+
+describe('TASK-013 rep-first ordered live ladder progress and result handoff', () => {
+  beforeAll(applyLadderStylesheets)
+
+  it('AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard', async () => {
+    const user = userEvent.setup()
+    const { long, short } = await openLadders()
+
+    // Ready: the prescription, read-only — no control and no count yet.
+    expect(liveToggles('long')).toEqual([])
+    expect(liveCount('long')).toBeNull()
+    await user.click(ladderButton('long', 'Start ladder'))
+
+    // Running: every round a toggle, in order, none pressed. R88: position and
+    // target never confused — Round 7 names each toggle by its round
+    // (`Complete round 3`) and describes its work in words; nothing stated is
+    // not zero.
+    let toggles = liveToggles('long')
+    expect(toggles).toHaveLength(LONG_ROUNDS)
+    expect(toggles.map((toggle) => toggle.closest('li')!.dataset.ladderRound)).toEqual(through(LONG_ROUNDS).map(String))
+    expect(toggles.every((toggle) => toggle.getAttribute('aria-pressed') === 'false')).toBe(true)
+    expect(toggles[2]).toHaveAccessibleName('Complete round 3')
+    expect(toggles[2]).toHaveAccessibleDescription('kettlebell swing, 9 reps row, 200 m')
+    expect(toggles[11]).toHaveAccessibleName('Complete round 12')
+    expect(toggles[11]).toHaveAccessibleDescription('kettlebell swing, 36 reps row, 200 m')
+    expect(liveCount('long')).toBe('No rounds marked yet')
+
+    // A tap on R3 selects R1–R3: the prefix through it, and the count.
+    await user.click(toggles[2])
+    expect(livePressed('long')).toEqual(through(3))
+    expect(liveCount('long')).toBe(`3 of ${LONG_ROUNDS} rounds completed`)
+    // A tap inside the prefix leaves the rounds before it — never a gap.
+    await user.click(liveToggles('long')[1])
+    expect(livePressed('long')).toEqual([1])
+    await user.click(liveToggles('long')[0])
+    expect(livePressed('long')).toEqual([])
+    // An explicit zero reads as zero, unlike nothing stated.
+    expect(liveCount('long')).toBe(`0 of ${LONG_ROUNDS} rounds completed`)
+
+    // Keyboard: each round is a real control — Enter, then Tab and Space —
+    // and focus stays where it was.
+    liveToggles('long')[4].focus()
+    await user.keyboard('{Enter}')
+    expect(livePressed('long')).toEqual(through(5))
+    expect(document.activeElement).toBe(liveToggles('long')[4])
+    await user.keyboard('{Tab}')
+    expect(document.activeElement).toBe(liveToggles('long')[5])
+    await user.keyboard(' ')
+    expect(livePressed('long')).toEqual(through(6))
+    // The count is a polite status: each change is announced.
+    const status = within(ladderCardOf('long').querySelector<HTMLElement>('[data-ladder-prescription]')!).getByRole('status')
+    expect(status).toHaveTextContent(`6 of ${LONG_ROUNDS} rounds completed`)
+
+    // No literal check glyph on a rung tile, pressed or not (R92): the shared
+    // Chip's tick is not drawn; the selected surface and the count carry it.
+    toggles = liveToggles('long')
+    for (const toggle of toggles) {
+      for (const glyph of toggle.querySelectorAll('svg')) expect(getComputedStyle(glyph).display).toBe('none')
+      expect(toggle.classList.contains('clr-chamfer--selected')).toBe(toggle.getAttribute('aria-pressed') === 'true')
+    }
+    expect(LADDER_CSS).toMatch(/\.clr-ladder-prescription__round > svg\s*\{\s*display:\s*none;?\s*\}/)
+    expect(LADDER_CSS).toMatch(/\.clr-ladder-completion__tile > svg\s*\{\s*display:\s*none;?\s*\}/)
+
+    // Stored as the attempt's ordered progress, under the ladder's own key —
+    // never a For Time record beside it.
+    expect(ladderAttemptRecord(long.blockId)).toMatchObject({ progress: 6, identity: { blockId: long.blockId } })
+    expect(stored(WORKOUT_FOR_TIME_STORAGE_KEY)[long.blockId]).toBeUndefined()
+
+    // Paused, the check-off stays the athlete's.
+    advance(40)
+    await user.click(ladderButton('long', 'Pause'))
+    expect(liveToggles('long')).toHaveLength(LONG_ROUNDS)
+    await user.click(liveToggles('long')[7])
+    expect(livePressed('long')).toEqual(through(8))
+
+    // The other ladder is its own: nothing to track before its own Start, nothing stored.
+    expect(liveToggles('short')).toEqual([])
+    expect(ladderAttemptRecord(short.blockId)).toBeUndefined()
+
+    // Finish ends the check-off: the tiles are the prescription again.
+    await user.click(ladderButton('long', 'Finish'))
+    expect(liveToggles('long')).toEqual([])
+    expect(liveCount('long')).toBeNull()
+  }, LADDER_TIMEOUT)
+
+  it('AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone', async () => {
+    const user = userEvent.setup()
+    const { double, long } = await openLadders()
+    await user.click(ladderButton('long', 'Start ladder'))
+    await user.click(liveToggles('long')[3])
+    advance(200)
+    await user.click(ladderButton('long', 'Finish'))
+
+    // The log: the same prefix, and the round after it named as where any
+    // partial work belongs — its identity, not a field of its own (TASK-015).
+    expect(resultPressed('long')).toEqual(through(4))
+    expect(partialRound('long')).toBe(5)
+
+    // Any sequence of taps leaves one contiguous run from R1.
+    for (const round of [9, 2, 11, 11, 1, 7, 7, 12, 3, 6]) {
+      await user.click(resultTile('long', round))
+      const pressed = resultPressed('long')
+      expect(pressed, `after R${round}`).toEqual(through(pressed.length))
+    }
+    // 12 → Complete → R3 → [1,2] → R6 → 1…6.
+    expect(resultPressed('long')).toEqual(through(6))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultCount('long')).toBe(`6 of ${LONG_ROUNDS} rounds completed`)
+    expect(partialRound('long')).toBe(7)
+
+    // Every rung of the ladder, each way a tap can go: the rule is the
+    // prefix's, and the partial round is always the rung after it (TASK-030's
+    // rule, restated by TASK-032).
+    const rungCount = ladderRungs(long.exercises).length
+    for (const before of [null, ...Array.from({ length: rungCount + 1 }, (_, index) => index)]) {
+      for (let rung = 1; rung <= rungCount; rung += 1) {
+        const after = ladderPrefixAfterTap(rung, before)
+        expect(after).toBeGreaterThanOrEqual(0)
+        expect(after).toBeLessThanOrEqual(rungCount)
+        // The tapped rung changes side: in the prefix after a tap outside it, and out after a tap inside it.
+        expect(rung <= after).toBe(!(before !== null && rung <= before))
+        expect(ladderPartialRound(after, rungCount)).toBe(after < rungCount ? after + 1 : null)
+      }
+    }
+
+    // An explicit zero: no round completed, and round 1 is where any partial belongs.
+    await user.click(resultTile('long', 1))
+    expect(resultPressed('long')).toEqual([])
+    expect(resultCount('long')).toBe(`0 of ${LONG_ROUNDS} rounds completed`)
+    expect(partialRound('long')).toBe(1)
+    // Complete: every rung, and no partial round.
+    await user.click(resultTile('long', LONG_ROUNDS))
+    expect(answerOf('long')).toEqual(['Complete'])
+    expect(partialRound('long')).toBeNull()
+    await user.click(resultTile('long', 6))
+    expect(resultPressed('long')).toEqual(through(5))
+
+    // One number holds it: no per-movement amount, no second model.
+    expect(ladderAttemptRecord(long.blockId)).toMatchObject({ draft: { completed: false, highestRung: 5 } })
+    expect((ladderAttemptRecord(long.blockId)?.draft as { movements: object }).movements).toEqual({})
+
+    // Saved: the rounds completed through, and nothing else.
+    await saveLadders(user)
+    const row = ladderRow(double, long.blockId)
+    expect(row.completion.outcome).toEqual({ highestRung: 5 })
+    expect(row.insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 5 })
+  }, LADDER_TIMEOUT)
+
+  it('AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save', async () => {
+    const user = userEvent.setup()
+    const { double, long, short } = await openLadders()
+
+    // The long ladder: five rounds checked, then Finish.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(90)
+    await user.click(liveToggles('long')[4])
+    advance(90)
+    // Before the end nothing is imported: Round 7 offers no log until the
+    // attempt ends, and the durable attempt holds no answer.
+    expect(queryLadderLog('long')).toBeNull()
+    expect(ladderAttemptRecord(long.blockId)).toMatchObject({ progress: 5, draft: null, endCarried: false })
+    await user.click(ladderButton('long', 'Finish'))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(5))
+    expect(resultCount('long')).toBe(`5 of ${LONG_ROUNDS} rounds completed`)
+    expect(ladderAttemptRecord(long.blockId)).toMatchObject({ endCarried: true, draft: { completed: false, highestRung: 5 } })
+
+    // Editable: a later round, then Complete, then Incomplete, which states
+    // its round again rather than keeping the top one Complete recorded.
+    await user.click(resultTile('long', 7))
+    expect(resultPressed('long')).toEqual(through(7))
+    await answerWith(user, 'long', 'Complete')
+    expect(resultPressed('long')).toEqual(through(LONG_ROUNDS))
+    expect(resultCount('long')).toBe(`${LONG_ROUNDS} of ${LONG_ROUNDS} rounds completed`)
+    await answerWith(user, 'long', 'Incomplete')
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual([])
+    expect(resultCount('long')).toBe('No rounds marked yet')
+    expect(ladderAttemptRecord(long.blockId)).toMatchObject({ draft: { completed: false, highestRung: null } })
+    await user.click(resultTile('long', 7))
+    // Planned targets are never entered as actuals by any of it.
+    expect((ladderAttemptRecord(long.blockId)?.draft as { movements: object }).movements).toEqual({})
+
+    // The short ladder: every round checked, then Finish — Complete, editable.
+    await user.click(ladderButton('short', 'Start ladder'))
+    for (const round of through(SHORT_ROUNDS)) {
+      advance(30)
+      await user.click(liveToggles('short')[round - 1])
+    }
+    expect(liveCount('short')).toBe(`${SHORT_ROUNDS} of ${SHORT_ROUNDS} rounds completed`)
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+    expect(resultPressed('short')).toEqual(through(SHORT_ROUNDS))
+    expect(partialRound('short')).toBeNull()
+    await user.click(resultTile('short', 4))
+    expect(answerOf('short')).toEqual(['Incomplete'])
+    expect(resultPressed('short')).toEqual(through(3))
+    expect(partialRound('short')).toBe(4)
+
+    // The save records the athlete's corrected rounds, and only them.
+    await saveLadders(user)
+    expect(ladderRow(double, long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 7 })
+    expect(ladderRow(double, short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 3 })
+    expect(double.loggedSets()).toEqual([])
+  }, LADDER_TIMEOUT)
+
+  it('AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked', async () => {
+    const user = userEvent.setup()
+    const { double, long, short } = await openLadders()
+
+    // Finish with nothing tracked: Incomplete, how far asked, no round
+    // selected, nothing recorded — never every rung.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(120)
+    await user.click(ladderButton('long', 'Finish'))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultTiles('long')).toHaveLength(LONG_ROUNDS)
+    expect(resultPressed('long')).toEqual([])
+    expect(resultCount('long')).toBe('No rounds marked yet')
+    expect(partialRound('long')).toBeNull()
+    // Nothing was stated, so the draft holds no answer and no round.
+    expect(ladderAttemptRecord(long.blockId)).toMatchObject({ progress: null, draft: null })
+
+    // The short ladder runs into its cap with two rounds checked: the cap
+    // imports them, and nothing more.
+    await user.click(ladderButton('short', 'Start ladder'))
+    advance(200)
+    await user.click(liveToggles('short')[1])
+    advance(SHORT_CAP_SECONDS)
+    expect(attemptClock('short')).toMatchObject({ reading: '15:00', words: 'Cap reached' })
+    expect(liveToggles('short')).toEqual([])
+    expect(within(ladderCardOf('short')).queryByRole('button', { name: /^(Pause|Resume|Finish)$/ })).toBeNull()
+    expect(answerOf('short')).toEqual(['Incomplete'])
+    expect(resultPressed('short')).toEqual(through(2))
+    expect(resultCount('short')).toBe(`2 of ${SHORT_ROUNDS} rounds completed`)
+    expect(partialRound('short')).toBe(3)
+
+    // Planned targets are prescription, never actuals: no amount for any
+    // movement in either draft, and the rows carry only the rounds stated.
+    for (const blockId of [long.blockId, short.blockId]) {
+      const draft = (ladderAttemptRecord(blockId)?.draft ?? null) as { movements?: object } | null
+      expect(draft === null ? {} : draft.movements).toEqual({})
+    }
+    await saveLadders(user)
+    expect(ladderRow(double, long.blockId).completion.outcome).toEqual({})
+    expect(ladderRow(double, long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: null })
+    expect(ladderRow(double, short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 2 })
+    // Only the rounds stated are an outcome: no planned rep, second or metre.
+    for (const row of double.recorded()) expect(Object.keys(row.outcome).every((key) => key === 'highestRung')).toBe(true)
+    expect(double.loggedSets()).toEqual([])
+  }, LADDER_TIMEOUT)
+
+  it('AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)', async () => {
+    const user = userEvent.setup()
+    await openLadders()
+    await user.click(ladderButton('long', 'Start ladder'))
+    await user.click(liveToggles('long')[2])
+    await user.click(ladderButton('long', 'Finish'))
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[3])
+    await user.click(ladderButton('short', 'Finish'))
+
+    for (const [key, targets, unit] of [['long', LONG_TARGETS, LONG_UNIT], ['short', SHORT_TARGETS, SHORT_UNIT]] as const) {
+      const group = roundsGroup(key)!
+      expect(group.tagName).toBe('FIELDSET')
+      const tiles = resultTiles(key)
+      expect(tiles).toHaveLength(targets.length)
+      // One digit and two in the same ladder.
+      expect(targets.some((target) => target < 10) && targets.some((target) => target >= 10)).toBe(true)
+      tiles.forEach((tile, index) => {
+        // R88: the round and the target both said, never confused.
+        expect(tile).toHaveAccessibleName(`Round ${index + 1}: ${targets[index]} ${unit}`)
+        // Three rows, in order: the round, the target, the unit (Round 7's
+        // rep-first tile: `__round`, `__number`, then `__target` holding the unit).
+        const content = tile.querySelector<HTMLElement>('.clr-ladder-completion__content')!
+        expect(content).toHaveAttribute('aria-hidden', 'true')
+        expect([...content.children].map((row) => [row.className, row.textContent])).toEqual([
+          ['clr-ladder-completion__round', `R${index + 1}`],
+          ['clr-ladder-completion__number', String(targets[index])],
+          ['clr-ladder-completion__target', unit],
+        ])
+        // No literal check glyph (R92).
+        for (const glyph of tile.querySelectorAll('svg')) expect(getComputedStyle(glyph).display).toBe('none')
+        // The shared Chip: a real toggle with its pressed state and selected surface.
+        expect(tile).toHaveClass('clr-chip', 'clr-ladder-completion__tile')
+        expect(tile.parentElement).toHaveClass('clr-bleed')
+        expect(tile.parentElement!.parentElement).toHaveClass('clr-ladder-completion__tiles')
+      })
+    }
+
+    // The hierarchy from the cascade: the target in the heading face, the
+    // round and the unit in the smallest label face — the target is the
+    // largest at every breakpoint (R99), the round secondary.
+    const sample = resultTiles('long')[11]
+    const [round, number, unitRow] = [...sample.querySelector('.clr-ladder-completion__content')!.children] as HTMLElement[]
+    expect(getComputedStyle(number).fontSize).toBe('var(--heading-h3-size)')
+    expect(getComputedStyle(round).fontSize).toBe('var(--label-xs-size)')
+    expect(getComputedStyle(unitRow).fontSize).toBe('var(--label-xs-size)')
+    expect(tokenFloor('--heading-h3-size')).toBeGreaterThan(tokenCeiling('--label-xs-size'))
+    // Level rows (R93): every row of every tile is one line with a fixed line
+    // height — the round label never wraps, and the number and the unit are
+    // each one unbroken token — so no label pushes its target below its peers.
+    expect(getComputedStyle(round).whiteSpace).toBe('nowrap')
+    for (const key of ['long', 'short'] as const) {
+      for (const tile of resultTiles(key)) {
+        const [, digits, unitText] = [...tile.querySelector('.clr-ladder-completion__content')!.children]
+        expect(digits.textContent).toMatch(/^\d+$/)
+        expect(unitText.textContent).toMatch(/^\S+$/)
+      }
+    }
+    expect(getComputedStyle(number).lineHeight).toBe('var(--heading-h3-line-height)')
+    expect(getComputedStyle(round).lineHeight).toBe('var(--label-xs-line-height)')
+    expect(getComputedStyle(unitRow).lineHeight).toBe('var(--label-xs-line-height)')
+    expect(getComputedStyle(sample.querySelector('.clr-ladder-completion__content')!).flexDirection).toBe('column')
+
+    // Wrapping tiles (R77): a grid that adds columns as they fit, with no
+    // horizontal scroller and no rail anywhere in the ladder.
+    const tilesBox = roundsGroup('long')!.querySelector<HTMLElement>('.clr-ladder-completion__tiles')!
+    expect(getComputedStyle(tilesBox).display).toBe('grid')
+    expect(getComputedStyle(tilesBox).gridTemplateColumns)
+      .toBe('repeat(auto-fill, minmax(calc(var(--control-height) + var(--spacing-500)), 1fr))')
+    for (const key of ['long', 'short'] as const) {
+      expect(ladderCardOf(key).querySelector('.clr-rail, .clr-rail__scroller, .clr-rungs')).toBeNull()
+    }
+    // No ladder rule makes a scroller of any kind (the browser proof measures it).
+    const ladderRules = [...LADDER_CSS.matchAll(/([^{}]*clr-ladder[^{}]*)\{([^}]*)\}/g)]
+    expect(ladderRules.length).toBeGreaterThan(10)
+    for (const [, selector, body] of ladderRules) expect(body, selector).not.toMatch(/overflow[^:;]*:\s*(auto|scroll)/)
+    // The selected prefix: pressed, on the shared selected surface; the rest not.
+    expect(resultTiles('long').map((tile) => tile.getAttribute('aria-pressed'))).toEqual(
+      through(LONG_ROUNDS).map((n) => String(n <= 3)),
+    )
+    expect(resultTiles('long').map((tile) => tile.classList.contains('clr-chamfer--selected'))).toEqual(
+      through(LONG_ROUNDS).map((n) => n <= 3),
+    )
+  }, LADDER_TIMEOUT)
+
+  it('JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer', async () => {
+    const user = userEvent.setup()
+    const first = await openLadders()
+
+    // The long ladder: three rounds checked, paused at 01:40.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(60)
+    await user.click(liveToggles('long')[2])
+    advance(40)
+    await user.click(ladderButton('long', 'Pause'))
+    // The short ladder: running, two rounds checked.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[1])
+
+    // Close the app; ten minutes later, reopen it.
+    first.view.unmount()
+    clock += 600_000
+    const second = await openLadders()
+    // Paused and frozen, its progress kept.
+    expect(attemptClock('long')).toMatchObject({ reading: '01:40', words: 'Paused' })
+    expect(within(ladderCardOf('long')).getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+    expect(livePressed('long')).toEqual(through(3))
+    expect(liveCount('long')).toBe(`3 of ${LONG_ROUNDS} rounds completed`)
+    // Running through the close, its progress kept.
+    expect(attemptClock('short').reading).toBe('10:00')
+    expect(livePressed('short')).toEqual(through(2))
+
+    // Resume, track on, Finish; correct the log; answer an effort face.
+    await user.click(ladderButton('long', 'Resume'))
+    await user.click(liveToggles('long')[4])
+    await user.click(ladderButton('long', 'Finish'))
+    await user.click(resultTile('long', 8))
+    await user.click(within(logOf('long')).getByRole('radio', { name: 'Too hard' }))
+
+    // Close and reopen again: the edited log comes back, not re-imported over.
+    // TASK-048 (AC-R032-01, superseding "the effort was this screen's alone"):
+    // the effort is part of the durable draft, so it comes back as answered,
+    // kept as the category word in the ladder's own record and nowhere else.
+    second.view.unmount()
+    clock += 30_000
+    const third = await openLadders()
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(8))
+    expect(within(logOf('long')).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)).toEqual(['Incomplete', 'Too hard'])
+    expect(stored(WORKOUT_LADDER_STORAGE_KEY)[third.long.blockId]).toMatchObject({ draft: { effort: 'too_hard' } })
+    expect(JSON.stringify(stored(WORKOUT_FOR_TIME_STORAGE_KEY))).not.toMatch(/too_hard|about_right|too_easy/)
+    // One durable record per ladder; the For Time record is never written for one.
+    expect(Object.keys(stored(WORKOUT_LADDER_STORAGE_KEY)).sort()).toEqual([third.long.blockId, third.short.blockId].sort())
+    expect(stored(WORKOUT_FOR_TIME_STORAGE_KEY)).toEqual({})
+
+    // The short ladder finishes now with its two rounds.
+    await user.click(ladderButton('short', 'Finish'))
+    expect(resultPressed('short')).toEqual(through(2))
+    await saveLadders(user)
+    expect(ladderRow(third.double, third.long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 8 })
+    expect(ladderRow(third.double, third.short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 2 })
+
+    // Back to the saved section: the saved row is the answer, and nothing is
+    // offered as a choice; no clock action. TASK-048 (AC-R032-02, superseding
+    // "claims no answer"): the saved result is read back — through 8 and
+    // through 2 — rather than nothing. On Round 7 a saved ladder shows its
+    // saved log (`Log saved`, its rungs read back from the row) with no open
+    // answer, no live check-off and no Undo.
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    await screen.findByText(LADDER_META.long)
+    for (const [key, rung] of [['long', 8], ['short', 2]] as const) {
+      const savedLog = ladderCardOf(key).querySelector<HTMLElement>('[data-timed-saved]')!
+      expect(within(savedLog).getByRole('status')).toHaveTextContent('Log saved')
+      expect(savedLog).toHaveTextContent(` · ${rung} rungs`)
+      expect(queryLadderLog(key)).toBeNull()
+      expect(liveToggles(key)).toEqual([])
+      expect(within(ladderCardOf(key)).queryByRole('button', { name: /^(Start ladder|Pause|Resume|Finish)$/ })).toBeNull()
+      expect(within(ladderCardOf(key)).queryByRole('button', { name: /^Undo finish|^Resume ladder$/ })).toBeNull()
+      expect(within(ladderCardOf(key)).getByText('Block saved')).toBeInTheDocument()
+    }
+    expect(within(ladderCardOf('long')).getByText('Effort: Too hard')).toBeInTheDocument()
+    expect(third.double.recorded()).toHaveLength(2)
+  }, LADDER_TIMEOUT)
+
+  it('JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete', async () => {
+    const user = userEvent.setup()
+    const reports: { blockId: string; outcome: BlockOutcome }[] = []
+    const completion: BlockCompletionApi = {
+      reportOutcome: (blockId, outcome) => void reports.push({ blockId, outcome }),
+      isBlockRecorded: () => false,
+      sessionId: 'session-task-013',
+    }
+    const lastOf = (blockId: string) => reports.filter((report) => report.blockId === blockId).at(-1)?.outcome
+    const pullUps = { prescription: { exercise_id: 'pull-up', target_kind: 'sequence' as const, target_value: null, target_sequence: [1, 3, 5, 7, 9, 11] } }
+
+    // No cap: a legacy ladder whose block carries no clock. It runs for an
+    // hour and never caps; only Finish imports what was checked.
+    const uncapped = mountLadderBlock({ structureType: 'for_time', repScheme: 'ladder_up', timerType: 'countdown', timerSeconds: null, exercises: [pullUps] }, completion)
+    await user.click(screen.getByRole('button', { name: 'Start ladder' }))
+    await user.click(within(screen.getByRole('list', { name: LADDER_ROUNDS_LIST })).getAllByRole('button')[1])
+    advance(3600)
+    expect(screen.queryByText('Cap reached')).toBeNull()
+    expect(within(screen.getByRole('list', { name: LADDER_ROUNDS_LIST })).getAllByRole('button')).toHaveLength(6)
+    expect(lastOf(uncapped.block.blockId)).toEqual({})
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(within(within(directLog()).getByRole('group', { name: ROUNDS_COMPLETED })).getAllByRole('button')
+      .filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toHaveLength(2)
+    expect(lastOf(uncapped.block.blockId)).toEqual({ highestRung: 2 })
+    expect(stored(WORKOUT_LADDER_STORAGE_KEY)[uncapped.block.blockId]).toMatchObject({
+      originalCapSeconds: null, identity: { sessionId: 'session-task-013' },
+    })
+    uncapped.unmount()
+    localStorage.clear()
+
+    // A ladder clock an older build kept under the For Time key: adopted once,
+    // still running, and tracked from here; the For Time record is left as it was.
+    const legacy = { structureType: 'for_time' as const, repScheme: 'ladder_up' as const, timerType: 'countdown' as const, timerSeconds: 600, exercises: [pullUps] }
+    const blockId = sessionProgress(snapshotFixture({ sections: [{ title: 'Ladder', sectionType: 'conditioning', blocks: [legacy] }] })).sections[0].blocks[0].blockId
+    const olderClock = JSON.stringify({ [blockId]: { startedAt: new Date(clock - 120_000).toISOString(), finishedAt: null } })
+    localStorage.setItem(WORKOUT_FOR_TIME_STORAGE_KEY, olderClock)
+    const adopted = mountLadderBlock(legacy, completion)
+    expect(within(adopted.container).getByRole('timer')).toHaveTextContent('02:00')
+    await user.click(within(screen.getByRole('list', { name: LADDER_ROUNDS_LIST })).getAllByRole('button')[2])
+    expect(stored(WORKOUT_LADDER_STORAGE_KEY)[blockId]).toMatchObject({ progress: 3 })
+    expect(localStorage.getItem(WORKOUT_FOR_TIME_STORAGE_KEY)).toBe(olderClock)
+    adopted.unmount()
+    localStorage.clear()
+
+    // A schedule: its start stamp in the same durable record, no cap, no
+    // check-off (its own clock marks the live round), and its end starts the
+    // log at Incomplete with no round; the athlete states the rounds, which a
+    // reopen keeps.
+    const schedule = { structureType: 'emom' as const, repScheme: 'ladder_up' as const, timerType: 'per_minute' as const, timerSeconds: 180, exercises: [{ prescription: { exercise_id: 'thruster', target_kind: 'sequence' as const, target_value: null, target_sequence: [3, 5, 7] } }] }
+    const timing = { mode: 'scheduled_starts' as const, rounds: 3, interval_seconds: 60, cap_seconds: null }
+    const run = mountLadderBlock(schedule, completion, timing)
+    await user.click(screen.getByRole('button', { name: 'Start schedule' }))
+    advance(70)
+    expect(within(screen.getByRole('list', { name: LADDER_ROUNDS_LIST })).queryAllByRole('button')).toEqual([])
+    expect(stored(WORKOUT_LADDER_STORAGE_KEY)[run.block.blockId]).toMatchObject({
+      originalCapSeconds: null, clock: { startedAt: new Date(clock - 70_000).toISOString(), finishedAt: null },
+    })
+    advance(120)
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    const ending = within(directLog()).getByRole('group', { name: WORK_COMPLETED })
+    expect(within(ending).getByRole('radio', { name: 'Incomplete' })).toHaveAttribute('aria-checked', 'true')
+    expect(lastOf(run.block.blockId)).toEqual({})
+    await user.click(within(within(directLog()).getByRole('group', { name: ROUNDS_COMPLETED })).getByRole('button', { name: 'Round 2: 5 reps' }))
+    expect(lastOf(run.block.blockId)).toEqual({ highestRung: 2 })
+    run.unmount()
+    const reopened = mountLadderBlock(schedule, completion, timing)
+    fireEvent.click(screen.getByRole('button', { name: 'Log results' }))
+    expect(within(within(directLog()).getByRole('group', { name: ROUNDS_COMPLETED })).getByRole('status')).toHaveTextContent('2 of 3 rounds completed')
+    expect(lastOf(reopened.block.blockId)).toEqual({ highestRung: 2 })
+  }, LADDER_TIMEOUT)
+
+  it('JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only', async () => {
+    const user = userEvent.setup()
+    const fetch = vi.spyOn(globalThis, 'fetch')
+    for (const rounds of [4, 12] as const) {
+      render(
+        <MemoryRouter initialEntries={[`/gallery/refinements?state=ladder-${rounds}`]}>
+          <GalleryRefinements />
+        </MemoryRouter>,
+      )
+      const state = document.querySelector<HTMLElement>(`[data-refinement-state="ladder-${rounds}"]`)!
+      const card = cardOf('ladder', state)
+      const grid = within(card).getByRole('list', { name: LADDER_ROUNDS_LIST })
+      expect(within(grid).queryAllByRole('button')).toEqual([])
+      await user.click(within(card).getByRole('button', { name: 'Start ladder' }))
+      const toggles = within(grid).getAllByRole('button')
+      expect(toggles).toHaveLength(rounds)
+      await user.click(toggles[1])
+      expect(within(card.querySelector<HTMLElement>('[data-ladder-prescription]')!).getByRole('status'))
+        .toHaveTextContent(`2 of ${rounds} rounds completed`)
+      await user.click(within(card).getByRole('button', { name: 'Finish' }))
+
+      // The handoff: Incomplete through R2, rep-first, the accepted push up's targets.
+      // TASK-046: in the one "Log results" dialog, opened at Finish.
+      const dialogs = openLogs().filter((dialog) => state.contains(dialog))
+      expect(dialogs).toHaveLength(1)
+      const log = dialogs[0].querySelector<HTMLElement>('form.clr-timed-log')!
+      expect(within(within(log).getByRole('group', { name: WORK_COMPLETED })).getByRole('radio', { name: 'Incomplete' }))
+        .toHaveAttribute('aria-checked', 'true')
+      const tiles = within(within(log).getByRole('group', { name: ROUNDS_COMPLETED })).getAllByRole('button')
+      expect(tiles.map((tile) => tile.getAttribute('aria-label'))).toEqual(pushUpRungs(rounds).map((reps, index) => `Round ${index + 1}: ${reps} reps`))
+      expect(tiles.map((tile) => tile.getAttribute('aria-pressed'))).toEqual(through(rounds).map((n) => String(n <= 2)))
+      await user.click(within(within(log).getByRole('group', { name: WORK_COMPLETED })).getByRole('radio', { name: 'Complete' }))
+      expect(tiles.every((tile) => tile.getAttribute('aria-pressed') === 'true')).toBe(true)
+      // Memory only: the route's storage is untouched, under every key.
+      expect(localStorage.length).toBe(0)
+      cleanup()
+    }
+    expect(fetch).not.toHaveBeenCalled()
+  }, LADDER_TIMEOUT)
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A3 TASK-105 — TASK-014: accidental Finish recovery with an aligned quiet Undo (C38, C39, C60)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Heavier journeys: several close/reopen cycles of the whole app. */
+const UNDO_TIMEOUT = 45_000
+
+/**
+ * Round 7's quiet action in the log (`TimedWorkoutFlow`'s completion action),
+ * whose words are also its name — the accepted gallery's `Undo finish · resume
+ * ladder` — and the card's own secondary `Resume ladder` beside "Log results".
+ */
+const UNDO_FINISH = 'Undo finish · resume ladder'
+const RESUME_LADDER = 'Resume ladder'
+
+/** The quiet Undo in an attempt's log, or null when it is not offered (or the attempt offers no log). */
+function undoOf(key: LadderKey): HTMLElement | null {
+  const log = queryLadderLog(key)
+  return log === null ? null : within(log).queryByRole('button', { name: UNDO_FINISH })
+}
+
+/**
+ * The attempt's clock: its reading, its phase in words (Round 7's timer
+ * caption) and the original cap it is raced against, in seconds — which Round 7
+ * states as its meta line and keeps on the flow as `data-cap-seconds`.
+ */
+function attemptClock(key: LadderKey): { reading: string; words: string; cap: string | null } {
+  const flow = ladderFlowOf(key)
+  const timer = within(flow).getByRole('timer')
+  return {
+    reading: [...timer.children].map((part) => part.textContent ?? '').find((text) => /^\d{2}:\d{2}$/.test(text)) ?? '',
+    words: timer.firstElementChild?.textContent ?? '',
+    cap: flow.dataset.capSeconds ?? null,
+  }
+}
+
+/** The race's Start / Pause / Resume / Finish controls in the card, by name. */
+function lifecycleControls(key: LadderKey): string[] {
+  return within(ladderCardOf(key))
+    .queryAllByRole('button', { name: /^(Start ladder|Pause|Resume|Finish)$/ })
+    .map((button) => button.textContent ?? '')
+}
+
+/** The log's effort face that is chosen, if any. */
+function effortOf(key: LadderKey): string[] {
+  return ['Too hard', 'About right', 'Too easy'].filter(
+    (name) => within(logOf(key)).getByRole('radio', { name }).getAttribute('aria-checked') === 'true',
+  )
+}
+
+/** The durable attempt as the route stored it, typed for the fields Undo restores. */
+interface StoredAttempt {
+  identity: { sessionId: string; blockId: string; attemptId: string }
+  originalCapSeconds: number | null
+  clock: { startedAt: string | null; finishedAt: string | null; pausedAt?: string }
+  progress: number | null
+  draft: { completed: boolean | null; highestRung: number | null; effort: string | null } | null
+  endCarried: boolean
+  checkpoint: { pausedAt: string | null; progress: number | null; completed: boolean | null } | null
+  save: { status: string; source?: string }
+}
+
+function attemptRecord(blockId: string): StoredAttempt {
+  const record = ladderAttemptRecord(blockId)
+  if (record === undefined) throw new Error(`no stored attempt for ${blockId}`)
+  return record as unknown as StoredAttempt
+}
+
+/** Reopens the app after the section was saved: the shell comes back on its cooldown. */
+async function reopenAtCooldown(options: Omit<WorkoutDoubleOptions, 'session'> = {}) {
+  const double = createWorkoutDouble({ session: LADDER_SESSION(), ...options })
+  const router = createMemoryRouter(routes, { initialEntries: ['/', '/workout'], initialIndex: 1 })
+  const view = render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  await screen.findByRole('navigation', { name: 'Workout sections' })
+  await screen.findByRole('heading', { name: HANDOFF_COOLDOWN_TITLE })
+  return { double, view }
+}
+
+describe('TASK-014 accidental Finish recovery with an aligned quiet undo', () => {
+  beforeAll(applyLadderStylesheets)
+
+  it('AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)', async () => {
+    const user = userEvent.setup()
+    const { double, long, short } = await openLadders()
+
+    // The twelve-round attempt: three rounds checked, then Finish at 03:00.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(60)
+    await user.click(liveToggles('long')[2])
+    advance(120)
+    const before = attemptRecord(long.blockId)
+    await user.click(ladderButton('long', 'Finish'))
+    expect(attemptClock('long')).toMatchObject({ reading: '03:00', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(3))
+    // The athlete's log: the rounds corrected to four, an effort face.
+    await user.click(resultTile('long', 4))
+    await user.click(within(logOf('long')).getByRole('radio', { name: 'Too hard' }))
+    expect(lifecycleControls('long')).toEqual([])
+
+    // Thirty seconds later: Undo.
+    advance(30)
+    await user.click(undoOf('long')!)
+    // The running clock's next read (its tick): Round 7's readout re-reads on its interval.
+    advance(0)
+    // The same attempt, running from the same start: the thirty seconds spent
+    // finished count, and the cap it runs against is the original one (09:00,
+    // so 05:30 is left).
+    expect(attemptClock('long')).toEqual({ reading: '03:30', words: 'Elapsed', cap: String(LONG_CAP_SECONDS) })
+    expect(lifecycleControls('long')).toEqual(['Pause', 'Finish'])
+    expect(undoOf('long')).toBeNull()
+    // Progress from the log's rounds; the log's entries kept; the answer as
+    // it was before Finish — none — so no rounds are claimed: Round 7 offers
+    // no log while the attempt runs, and the durable draft keeps the rung and
+    // the effort with no answer.
+    expect(livePressed('long')).toEqual(through(4))
+    expect(liveCount('long')).toBe(`4 of ${LONG_ROUNDS} rounds completed`)
+    expect(queryLadderLog('long')).toBeNull()
+    const after = attemptRecord(long.blockId)
+    expect(after.identity).toEqual(before.identity)
+    expect(after.originalCapSeconds).toBe(9 * 60)
+    expect(after.clock).toEqual({ startedAt: before.clock.startedAt, finishedAt: null })
+    expect(after).toMatchObject({ progress: 4, checkpoint: null, endCarried: false, save: { status: 'unsaved' } })
+    expect(after.draft).toMatchObject({ completed: null, highestRung: 4, effort: 'too_hard' })
+    // No answer of another format is stored for it.
+    expect(stored(WORKOUT_FOR_TIME_STORAGE_KEY)).toEqual({})
+
+    // Within the original cap, never past it: running at 08:59, capped at 09:00.
+    advance(329)
+    expect(attemptClock('long')).toMatchObject({ reading: '08:59', words: 'Elapsed' })
+    advance(1)
+    expect(attemptClock('long')).toMatchObject({ reading: '09:00', words: 'Cap reached' })
+    expect(lifecycleControls('long')).toEqual([])
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(4))
+    expect(effortOf('long')).toEqual(['Too hard'])
+    // The cap is not an accidental Finish: it is never undone.
+    expect(undoOf('long')).toBeNull()
+
+    // The four-round attempt, shaped otherwise: every round, Finish, Undo at once.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[3])
+    advance(45)
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+    await user.click(undoOf('short')!)
+    advance(0)
+    expect(attemptClock('short')).toEqual({ reading: '00:45', words: 'Elapsed', cap: String(SHORT_CAP_SECONDS) })
+    expect(livePressed('short')).toEqual(through(SHORT_ROUNDS))
+    expect(queryLadderLog('short')).toBeNull()
+    expect(attemptRecord(short.blockId).draft).toMatchObject({ completed: null, highestRung: SHORT_ROUNDS })
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+
+    // Neither Finish nor Undo completed or left the workout, or wrote a row.
+    expect(double.recorded()).toEqual([])
+    expect(double.completed()).toEqual([])
+    expect(screen.getByRole('button', { name: 'Next section' })).toBeInTheDocument()
+    expect(screen.getByText(LADDER_META.long)).toBeInTheDocument()
+  }, UNDO_TIMEOUT)
+
+  it('AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed', async () => {
+    const user = userEvent.setup()
+    const { double, long, short } = await openLadders()
+
+    // Two rounds checked, paused at 01:40, left paused for ten minutes, then Finish.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(60)
+    await user.click(liveToggles('long')[1])
+    advance(40)
+    await user.click(ladderButton('long', 'Pause'))
+    const paused = attemptRecord(long.blockId).clock
+    expect(paused.pausedAt).toBeDefined()
+    advance(600)
+    await user.click(ladderButton('long', 'Finish'))
+    // Finished where it stood: at the pause.
+    expect(attemptClock('long')).toMatchObject({ reading: '01:40', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(attemptRecord(long.blockId).checkpoint).toEqual({ pausedAt: paused.pausedAt, progress: 2, completed: null })
+
+    // A paused Finish never runs out: an hour later, Undo is still offered.
+    advance(3600)
+    await user.click(undoOf('long')!)
+    expect(attemptClock('long')).toEqual({ reading: '01:40', words: 'Paused', cap: String(LONG_CAP_SECONDS) })
+    expect(lifecycleControls('long')).toEqual(['Resume', 'Finish'])
+    expect(livePressed('long')).toEqual(through(2))
+    expect(queryLadderLog('long')).toBeNull()
+    expect(attemptRecord(long.blockId).draft).toMatchObject({ completed: null, highestRung: 2 })
+    expect(attemptRecord(long.blockId).clock).toEqual(paused)
+    // Still paused: no time passes for it.
+    advance(600)
+    expect(attemptClock('long').reading).toBe('01:40')
+
+    // Resumed from there; more rounds; Finish again.
+    await user.click(ladderButton('long', 'Resume'))
+    advance(60)
+    expect(attemptClock('long')).toMatchObject({ reading: '02:40', words: 'Elapsed', cap: String(LONG_CAP_SECONDS) })
+    await user.click(liveToggles('long')[5])
+    await user.click(ladderButton('long', 'Finish'))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(6))
+
+    // The four-round attempt: every round, Finish, Undo, round four taken
+    // back on the live check-off, Finish again.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[3])
+    advance(20)
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Complete'])
+    await user.click(undoOf('short')!)
+    expect(livePressed('short')).toEqual(through(SHORT_ROUNDS))
+    await user.click(liveToggles('short')[3])
+    expect(livePressed('short')).toEqual(through(3))
+    await user.click(ladderButton('short', 'Finish'))
+    expect(answerOf('short')).toEqual(['Incomplete'])
+    expect(resultPressed('short')).toEqual(through(3))
+
+    // Saved: one row each, with the rounds actually completed through, and nothing else.
+    await saveLadders(user)
+    expect(double.recorded()).toHaveLength(2)
+    expect(ladderRow(double, long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 6 })
+    expect(ladderRow(double, short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 3 })
+    expect(attemptRecord(long.blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved', async () => {
+    const user = userEvent.setup()
+    const first = await openLadders()
+
+    // Finish at 08:20 of a 09:00 cap.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(500)
+    await user.click(liveToggles('long')[6])
+    await user.click(ladderButton('long', 'Finish'))
+    expect(undoOf('long')).not.toBeNull()
+    // Undoing at 08:59 would still resume inside the cap…
+    advance(39)
+    expect(undoOf('long')).not.toBeNull()
+    // …at 09:00 it would not: the action is gone, with nothing pressed.
+    advance(1)
+    expect(undoOf('long')).toBeNull()
+    expect(screen.queryAllByRole('button', { name: RESUME_LADDER })).toEqual([])
+    expect(attemptClock('long')).toMatchObject({ reading: '08:20', words: 'Finished' })
+    expect(lifecycleControls('long')).toEqual([])
+    // The log is the athlete's still.
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    await user.click(resultTile('long', 8))
+    expect(resultPressed('long')).toEqual(through(8))
+
+    // For good: a reopen does not bring it back.
+    first.view.unmount()
+    clock += 60_000
+    const second = await openLadders()
+    expect(undoOf('long')).toBeNull()
+    expect(attemptClock('long')).toMatchObject({ reading: '08:20', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(8))
+
+    // The four-round attempt runs into its cap: never an Undo, before or after.
+    await user.click(ladderButton('short', 'Start ladder'))
+    await user.click(liveToggles('short')[1])
+    expect(undoOf('short')).toBeNull()
+    advance(SHORT_CAP_SECONDS)
+    expect(attemptClock('short')).toMatchObject({ words: 'Cap reached' })
+    expect(undoOf('short')).toBeNull()
+    expect(answerOf('short')).toEqual(['Incomplete'])
+    expect(resultPressed('short')).toEqual(through(2))
+
+    await saveLadders(user)
+    expect(ladderRow(second.double, second.long.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 8 })
+    expect(ladderRow(second.double, second.short.blockId).insert).toEqual({ ...NOTHING_BUT_THE_RUNG, highest_rung: 2 })
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back', async () => {
+    const user = userEvent.setup()
+    const rows: BlockCompletion[] = []
+    let refuse: (completion: BlockCompletion) => boolean = () => true
+    const record = vi.fn(async (completion: BlockCompletion) => {
+      if (refuse(completion)) return err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))
+      rows.push(completion)
+      return ok({} as BlockResultRow)
+    })
+    const first = await openLadders({ blockResults: { record } })
+
+    // Five rounds, Finish at 02:00, the log corrected to six.
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(120)
+    await user.click(liveToggles('long')[4])
+    await user.click(ladderButton('long', 'Finish'))
+    await user.click(resultTile('long', 6))
+
+    // Closed and reopened: the same Finish, its log and its Undo.
+    first.view.unmount()
+    clock += 20_000
+    await openLadders({ blockResults: { record } })
+    expect(undoOf('long')).not.toBeNull()
+    expect(attemptClock('long')).toMatchObject({ reading: '02:00', words: 'Finished' })
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(6))
+
+    // The save fails: nothing is written, and nothing is discarded.
+    await closeLogs(user)
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const failed = await screen.findByRole('dialog', { name: /didn’t save/ })
+    expect(failed).toHaveTextContent('That didn’t save')
+    expect(record).toHaveBeenCalledTimes(1)
+    expect(rows).toEqual([])
+    await user.click(within(failed).getByRole('button', { name: 'Close' }))
+    expect(undoOf('long')).not.toBeNull()
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(6))
+    expect(attemptRecord(first.long.blockId).checkpoint).not.toBeNull()
+
+    // Closed and reopened again after the failure: still offered.
+    cleanup()
+    clock += 10_000
+    const third = await openLadders({ blockResults: { record } })
+    expect(undoOf('long')).not.toBeNull()
+    expect(resultPressed('long')).toEqual(through(6))
+
+    // Undo: the same attempt, running on from its start (02:00 + 30 s closed).
+    await user.click(undoOf('long')!)
+    advance(0)
+    expect(attemptClock('long')).toMatchObject({ reading: '02:30', words: 'Elapsed' })
+    expect(livePressed('long')).toEqual(through(6))
+    await user.click(liveToggles('long')[7])
+    await user.click(ladderButton('long', 'Finish'))
+    expect(answerOf('long')).toEqual(['Incomplete'])
+    expect(resultPressed('long')).toEqual(through(8))
+
+    // Its row saves, the next block's does not: the athlete stays on the
+    // section, and the saved attempt offers no Undo — at once.
+    refuse = (completion) => completion.blockId === third.short.blockId
+    await closeLogs(user)
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const partial = await screen.findByRole('dialog', { name: /didn’t save/ })
+    expect(record).toHaveBeenCalledTimes(3)
+    expect(rows.map((row) => [row.blockId, resultRow(row).highest_rung])).toEqual([[third.long.blockId, 8]])
+    await user.click(within(partial).getByRole('button', { name: 'Close' }))
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    expect(screen.queryAllByRole('button', { name: RESUME_LADDER })).toEqual([])
+    expect(lifecycleControls('long')).toEqual([])
+    expect(attemptRecord(third.long.blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
+
+    // The retry saves the rest: one row each, the first never written twice.
+    refuse = () => false
+    await saveLadders(user)
+    expect(record).toHaveBeenCalledTimes(4)
+    expect(rows.map((row) => [row.blockId, resultRow(row).highest_rung])).toEqual([
+      [third.long.blockId, 8],
+      [third.short.blockId, null],
+    ])
+    // Closed in the same act as the save, before the section was left: no
+    // Undo checkpoint survives in the durable record of either attempt.
+    for (const blockId of [third.long.blockId, third.short.blockId]) {
+      expect(attemptRecord(blockId)).toMatchObject({ checkpoint: null, save: { status: 'saved' } })
+    }
+
+    // Reopened where the saved row cannot be read back: still no Undo,
+    // nothing to choose or start. TASK-048 (AC-R032-02, superseding "no
+    // draft claimed"): each attempt this device saved shows the draft it
+    // saved — the long through 8, the short with no round — never a starting
+    // point; on Round 7 that is its saved log, with no log to answer.
+    third.view.unmount()
+    clock += 60_000
+    await reopenAtCooldown({
+      blockResults: { record },
+      sessions: { asPerformed: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)) },
+    })
+    await closeLogs(user)
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    await screen.findByText(LADDER_META.long)
+    for (const [key, shown] of [['long', ' · 8 rungs'], ['short', null]] as const) {
+      const savedLog = ladderCardOf(key).querySelector<HTMLElement>('[data-timed-saved]')!
+      expect(within(savedLog).getByRole('status')).toHaveTextContent('Log saved')
+      if (shown === null) expect(savedLog.textContent).not.toMatch(/rungs/)
+      else expect(savedLog).toHaveTextContent(shown)
+      expect(undoOf(key)).toBeNull()
+      expect(within(ladderCardOf(key)).queryByRole('group', { name: WORK_COMPLETED })).toBeNull()
+      expect(lifecycleControls(key)).toEqual([])
+      expect(liveToggles(key)).toEqual([])
+    }
+    expect(record).toHaveBeenCalledTimes(4)
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)', async () => {
+    const user = userEvent.setup()
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await openLadders()
+
+    // Never offered before an athlete's Finish: ready, running or paused
+    // (TASK-046: read in the ladder's log, which Round 7 offers once ended).
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+    expect(undoOf('long')).toBeNull()
+    await user.click(ladderButton('long', 'Start ladder'))
+    advance(90)
+    expect(undoOf('long')).toBeNull()
+    await user.click(ladderButton('long', 'Pause'))
+    expect(undoOf('long')).toBeNull()
+    await user.click(ladderButton('long', 'Resume'))
+    await user.click(liveToggles('long')[2])
+    await user.click(ladderButton('long', 'Finish'))
+
+    // One action, in the result group: after Work completed, before Rounds completed.
+    expect(within(logOf('long')).getAllByRole('button', { name: UNDO_FINISH })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: UNDO_FINISH })).toHaveLength(1)
+    const undo = undoOf('long')!
+    const group = answerGroup('long').closest<HTMLElement>('.clr-timed-log__group')!
+    const members = [...group.children]
+    const at = (node: Element) => members.findIndex((member) => member.contains(node))
+    expect([at(answerGroup('long')), at(undo), at(roundsGroup('long')!)]).toEqual([0, 1, 2])
+    expect(members).toHaveLength(3)
+    const wrapper = undo.closest<HTMLElement>('[data-timed-undo]')!
+    expect(wrapper.parentElement).toBe(group)
+    expect(wrapper).toHaveClass('clr-timed-undo')
+    // The count it aligns with follows it, in the rounds.
+    expect(within(roundsGroup('long')!).getByRole('status')).toHaveTextContent(`3 of ${LONG_ROUNDS} rounds completed`)
+
+    // The existing small quiet button: no frame, no glow, no glyph, the
+    // shared control height; its words are its name.
+    expect(undo.tagName).toBe('BUTTON')
+    expect(undo).toHaveAttribute('type', 'button')
+    expect(undo).toHaveClass('clr-btn', 'clr-btn--quiet', 'clr-chamfer--sm')
+    expect(undo).not.toHaveClass('clr-btn--primary')
+    expect(undo.textContent).toBe(UNDO_FINISH)
+    expect(undo.querySelector('svg')).toBeNull()
+    expect(undo.style.minHeight).toBe('var(--control-height)')
+    expect(undo.parentElement!.style.getPropertyValue('--bleed')).toBe('transparent')
+    expect(undo.parentElement).not.toHaveClass('clr-glow')
+
+    // The recipe: left-aligned (Round 7's `.clr-timed-undo` rules), and no
+    // inline inset on the text — the small button keeps its block padding
+    // token and its control height, drops its inline padding, and declares
+    // nothing else: no size, colour, frame or type of its own.
+    expect(rule('.clr-timed-undo')).toMatch(/justify-content:\s*flex-start/)
+    const button = rule('.clr-timed-undo button')
+    expect(button).toMatch(/justify-content:\s*flex-start/)
+    expect(button).toMatch(/text-align:\s*start/)
+    expect(undo.style.padding).toMatch(/^var\(--spacing-200\) 0(px)?$/)
+    for (const declared of [rule('.clr-timed-undo'), button]) {
+      expect(declared).not.toMatch(/\d+px|height|color|background|border|font|letter-spacing|box-shadow|padding-block/)
+    }
+
+    // Keyboard: one tab stop after the answer, before the first round.
+    within(answerGroup('long')).getByRole('radio', { checked: true }).focus()
+    await user.tab()
+    expect(undo).toHaveFocus()
+    await user.tab()
+    expect(resultTile('long', 1)).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(undo).toHaveFocus()
+
+    // Pressed: the attempt is back at once — no confirmation, no dialog —
+    // and the focus moves to the restored lead control.
+    await user.keyboard('{Enter}')
+    expect(confirm).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    expect(lifecycleControls('long')).toEqual(['Pause', 'Finish'])
+    expect(ladderButton('long', 'Pause')).toHaveFocus()
+    expect(screen.queryAllByRole('button', { name: UNDO_FINISH })).toEqual([])
+
+    // Again by Space, from a paused Finish: the focus lands on Resume.
+    await user.click(ladderButton('long', 'Pause'))
+    await user.click(ladderButton('long', 'Finish'))
+    undoOf('long')!.focus()
+    await user.keyboard(' ')
+    expect(ladderButton('long', 'Resume')).toHaveFocus()
+    expect(confirm).not.toHaveBeenCalled()
+  }, UNDO_TIMEOUT)
+
+  it('JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only', async () => {
+    const user = userEvent.setup()
+    const fetch = vi.spyOn(globalThis, 'fetch')
+    for (const rounds of [4, 12] as const) {
+      render(
+        <MemoryRouter initialEntries={[`/gallery/refinements?state=ladder-${rounds}`]}>
+          <GalleryRefinements />
+        </MemoryRouter>,
+      )
+      const state = document.querySelector<HTMLElement>(`[data-refinement-state="ladder-${rounds}"]`)!
+      const card = cardOf('ladder', state)
+      const grid = within(card).getByRole('list', { name: LADDER_ROUNDS_LIST })
+      const openLog = () => {
+        const dialogs = openLogs().filter((dialog) => state.contains(dialog))
+        expect(dialogs.length).toBeLessThanOrEqual(1)
+        return dialogs[0]?.querySelector<HTMLElement>('form.clr-timed-log') ?? null
+      }
+      await user.click(within(card).getByRole('button', { name: 'Start ladder' }))
+      await user.click(within(grid).getAllByRole('button')[1])
+      await user.click(within(card).getByRole('button', { name: 'Finish' }))
+
+      // The route's log, with its Undo between the answer and the rounds.
+      // TASK-046: in the one "Log results" dialog, opened at Finish.
+      let log = openLog()!
+      const undo = within(log).getByRole('button', { name: UNDO_FINISH })
+      const answer = within(log).getByRole('group', { name: WORK_COMPLETED })
+      const tiles = within(log).getByRole('group', { name: ROUNDS_COMPLETED })
+      expect(follows(undo, answer)).toBe(true)
+      expect(follows(tiles, undo)).toBe(true)
+      expect(within(tiles).getByRole('status')).toHaveTextContent(`2 of ${rounds} rounds completed`)
+      expect(undo).toHaveClass('clr-btn--quiet')
+
+      // Undo: running again, the two rounds still checked. TASK-046: Undo
+      // closes the focused log; Round 7 offers no log while the attempt runs.
+      await user.click(undo)
+      expect(openLog()).toBeNull()
+      expect(within(card).queryByRole('button', { name: 'Log results' })).toBeNull()
+      expect(within(card).getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+      expect(within(grid).getAllByRole('button').map((tile) => tile.getAttribute('aria-pressed'))).toEqual(
+        through(rounds).map((n) => String(n <= 2)),
+      )
+      expect(within(card.querySelector<HTMLElement>('[data-ladder-prescription]')!).getByRole('status'))
+        .toHaveTextContent(`2 of ${rounds} rounds completed`)
+      // Finish again: the same two rounds, Incomplete.
+      advance(60)
+      await user.click(within(card).getByRole('button', { name: 'Finish' }))
+      log = openLog()!
+      expect(within(within(log).getByRole('group', { name: WORK_COMPLETED })).getByRole('radio', { name: 'Incomplete' }))
+        .toHaveAttribute('aria-checked', 'true')
+      // The accepted 07:00 cap: offered one second before it, withdrawn at it
+      // with nothing pressed — the attempt's own clock is the only one here.
+      advance(LADDER_CAP_SECONDS - 61)
+      expect(within(log).getByRole('button', { name: UNDO_FINISH })).toBeInTheDocument()
+      advance(1)
+      expect(within(log).queryByRole('button', { name: UNDO_FINISH })).toBeNull()
+      expect(clockWords('ladder', state)).toHaveTextContent('Finished')
+      // Memory only: nothing under any route key.
+      expect(localStorage.length).toBe(0)
+      cleanup()
+    }
+    expect(fetch).not.toHaveBeenCalled()
+  }, UNDO_TIMEOUT)
+
+  it('AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo', async () => {
+    const user = userEvent.setup()
+    const reports: { blockId: string; outcome: BlockOutcome }[] = []
+    const completion: BlockCompletionApi = {
+      reportOutcome: (blockId, outcome) => void reports.push({ blockId, outcome }),
+      isBlockRecorded: () => false,
+      sessionId: 'session-task-014',
+    }
+    const pullUps = { prescription: { exercise_id: 'pull-up', target_kind: 'sequence' as const, target_value: null, target_sequence: [1, 3, 5, 7, 9, 11] } }
+    const legacy = { structureType: 'for_time' as const, repScheme: 'ladder_up' as const, timerType: 'countdown' as const, timerSeconds: 600, exercises: [pullUps] }
+    const snapshot = snapshotFixture({ sections: [{ title: 'Ladder', sectionType: 'conditioning', blocks: [legacy] }] })
+    const block = sessionProgress(snapshot).sections[0].blocks[0]
+
+    // An older build's race record for this block: running two minutes,
+    // with a For Time "Complete" answer beside its clock.
+    const older = JSON.stringify({ [block.blockId]: { startedAt: new Date(clock - 120_000).toISOString(), finishedAt: null, workCompleted: true } })
+    localStorage.setItem(WORKOUT_FOR_TIME_STORAGE_KEY, older)
+    mountLadderBlock(legacy, completion)
+    const last = () => reports.filter((report) => report.blockId === block.blockId).at(-1)?.outcome
+    const grid = () => screen.getByRole('list', { name: LADDER_ROUNDS_LIST })
+    expect(screen.getByRole('timer')).toHaveTextContent('02:00')
+    await user.click(within(grid()).getAllByRole('button')[1])
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    // The carried progress is the answer — not the older record's Complete.
+    const answer = () => within(within(directLog()).getByRole('group', { name: WORK_COMPLETED })).queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)
+    expect(answer()).toEqual(['Incomplete'])
+    expect(last()).toEqual({ highestRung: 2 })
+    await user.click(within(directLog()).getByRole('button', { name: UNDO_FINISH }))
+    // Back before Finish: no answer at all, the older Complete included — Round
+    // 7 offers no log while the attempt runs, and the durable draft holds none.
+    expect(openLogs()).toEqual([])
+    expect(last()).toEqual({})
+    expect(within(grid()).getAllByRole('button').filter((tile) => tile.getAttribute('aria-pressed') === 'true')).toHaveLength(2)
+    expect(stored(WORKOUT_LADDER_STORAGE_KEY)[block.blockId].draft).toMatchObject({ completed: null, highestRung: 2 })
+    // The older record is left exactly as it was.
+    expect(localStorage.getItem(WORKOUT_FOR_TIME_STORAGE_KEY)).toBe(older)
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(answer()).toEqual(['Incomplete'])
+    expect(last()).toEqual({ highestRung: 2 })
+    cleanup()
+    localStorage.clear()
+
+    // For Time's Finish is the athlete's report that the work is done
+    // (TASK-010); it is not the accidental-Finish journey and offers no Undo.
+    await openWorkout()
+    await user.click(button('for_time', START.for_time))
+    advance(90)
+    await user.click(button('for_time', TIMED_FINISH.for_time))
+    // TASK-046: read in the log its card opens.
+    const forTimeLog = openLogs().find((dialog) => flowOf('for_time').contains(dialog))!.querySelector('form.clr-timed-log')!
+    expect(within(forTimeLog as HTMLElement).getByRole('group', { name: WORK_COMPLETED })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button', { name: /undo|resume ladder/i })).toEqual([])
+  }, UNDO_TIMEOUT)
 })
