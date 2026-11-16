@@ -1,0 +1,77 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-105",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-105-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-105/required-cases.json",
+    "sha256": "36d18363b90d528701a8fbd7ccc0fbd6c4f1eb3961cc0b1447f727226f28c33c"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-105-parity.spec.ts",
+      "sha256": "2af377352f3871f79033ac899a913892004c78fcfb06b7cf0c7b308cd8ff0108"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder phone-320: /workout’s ladder matches the accepted gallery state before Start and past the cap, with its log",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder phone-390: /workout’s ladder matches the accepted gallery state before Start and past the cap, with its log",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder-4 phone-320: /workout’s ladder matches the accepted gallery state through Start, rounds checked off, Pause, Finish, its log, Undo finish and Finish again",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder-4 phone-390: /workout’s ladder matches the accepted gallery state through Start, rounds checked off, Pause, Finish, its log, Undo finish and Finish again",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder-12 phone-320: /workout’s ladder matches the accepted gallery state through Start, rounds checked off, Pause, Finish, its log, Undo finish and Finish again",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder-12 phone-390: /workout’s ladder matches the accepted gallery state through Start, rounds checked off, Pause, Finish, its log, Undo finish and Finish again",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder-long phone-320: /workout’s ladder matches the accepted gallery state before Start and past the cap, with its log",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "name": "TASK-AC-FAEE8BA2A650 ladder-long phone-390: /workout’s ladder matches the accepted gallery state before Start and past the cap, with its log",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

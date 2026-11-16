@@ -140,7 +140,35 @@ their criteria (`galleryChanges`).
     no broken word in a live tile.
 - CI pieces: typecheck pass; lint 0 errors, 175 warnings (as base); lint:ds pass;
   `gen-issues --check` pass; `gen:types --check` pass; console grep no match.
-- The required-check receipts, `npm test` and `npm run build` are in "Verification (final)" below.
+
+## Verification (final, through the guard; receipts in `evidence/refinement/*/results/`)
+
+| Check | Result | Why |
+|---|---|---|
+| TASK-105 check-01 | REJECTED, 101/110 | 5 scheduled-ladder cases in `ladder-block.test.tsx`; Review and 3 scheduled cases in `ladder-rungs.test.tsx` |
+| TASK-012 check-01 | REJECTED, 5/9 | The same 4 `ladder-rungs.test.tsx` cases |
+| TASK-012 check-02 | REJECTED, 2/5 | The two "Review then Workout" cases stop at Review's missing grid; touch-and-recovery stops at the scheduled card. The keyboard and gallery cases pass. |
+| TASK-013 check-01 | REJECTED, 7/8 required | JOURNEY-013 "…and a schedule" |
+| TASK-013 check-02 | PASSED, 5/5 | |
+| TASK-014 check-01 | REJECTED | All 7 required TASK-014 cases pass. The pattern `undo\|resume\|cap` also runs the blocked JOURNEY-013 "no cap … schedule" case, so the runner exits 1. |
+| TASK-014 check-02 | PASSED, 5/5 | |
+| TASK-032 check-01 | PASSED, 10/10 | Run with `--no-receipt`: TASK-032's evidence folder is outside the lane |
+| TASK-048 check-01 | REJECTED, 4/6 | The two backend lanes stop at their PRE-001 precondition (no test backend here). Both synthetic lanes, the deterministic clocks and the gallery case pass. |
+| TASK-105 parity | PASSED, 8/8 | |
+
+- CI chain pieces:
+  - typecheck pass;
+  - lint 0 errors, 175 warnings (as base);
+  - lint:ds pass;
+  - `gen-issues --check` and `gen:types --check` pass;
+  - console grep: no match;
+  - `npm run build` pass (one built rule each for the touched selectors);
+  - `npm test` 6,269/6,279. The 10 failures are exactly the out-of-lane cases above.
+- Regression: `e2e/refinement/task-006.spec.ts` (TASK-104's lifecycle journeys over the same flow),
+  run directly so it writes no receipt: 7/7.
+- Side effect to know: TASK-006 check-01 and TASK-104 check-01 run the whole
+  `src/ui/timed-workout-flow.test.tsx`, so the one blocked JOURNEY-013 case rejects them too until
+  the scheduled ladder is wired. Every TASK-006 and TASK-104 case in the file passes.
 
 ## Open assumptions and questions
 

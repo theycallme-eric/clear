@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-014",
   "check": "check-01",
-  "verdict": "passed",
+  "verdict": "rejected",
   "purpose": "delivery",
   "runner": "vitest",
   "runnerVersion": "4.1.11",
@@ -17,12 +17,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-014/required-cases.json",
-    "sha256": "35ee23dd36bf10cbfbedfab61698ce36b3b155de61836a5f126cb8cdd8971aca"
+    "sha256": "869a1b66b93bf2cdb52821cf75f4a0a8a50d2ba4dcbea329e34fd397476d6da3"
   },
   "targets": [
     {
       "path": "src/ui/timed-workout-flow.test.tsx",
-      "sha256": "4130603cb5b89fc6e70ec0bc59e0f4c232e5f70da26ab66f3384ed06b9ec6d71"
+      "sha256": "c41615338ce2d2fa84a95b4b8b8303376ce1246bf3e9ac20968d7b0b4a1347e1"
     }
   ],
   "requiredCases": [
@@ -63,12 +63,14 @@
     }
   ],
   "totals": {
-    "total": 32,
-    "passed": 15,
-    "failed": 0,
-    "skipped": 17,
+    "total": 29,
+    "passed": 13,
+    "failed": 1,
+    "skipped": 15,
     "todo": 0,
-    "executed": 15
+    "executed": 14
   },
-  "problems": []
+  "problems": [
+    "runner exited with code 1"
+  ]
 }
