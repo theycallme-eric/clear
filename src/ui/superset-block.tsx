@@ -27,6 +27,15 @@
  *     sheet with each movement's own fields and effort (`SupersetRoundSheet`)
  *     and starts the round's one rest (REQ-012); its Log round N saves only
  *     the movements the athlete identifies, as one round.
+ *   · **Save confirms, then the rest ends it** (TASK-020: C46, R07; A3
+ *     TASK-106). Under Round 7's logging dialog (owner decision 1) the round
+ *     is entered in `LoggingOverlay`, titled `Log round N`, and an accepted
+ *     round becomes `Round N logged` — each ticked movement's own actuals,
+ *     effort and sync status read back — beside the same running rest. That
+ *     rest ending closes the dialog; Close log ends it early; only the
+ *     block's Rest opens round N + 1. Focus returns to Rest once the dialog
+ *     has closed. Each movement's saved-set Edit opens its correction in the
+ *     same dialog (TASK-044).
  *
  * Everything else is deliberately `StandardBlock`'s: `ExerciseSetLogger` reads
  * the structured prescription and corrects each saved set through the shell's one path,
@@ -37,10 +46,11 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { Button } from '../design-system/index'
-import { SetLoggingConfirmation } from './set-logging-sheet'
+import { LoggingOverlay } from './logging-overlay'
+import { focusIsInSetSheet, setSheetTitle, useSaveConfirmation } from './set-save-confirmation'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import { useSetLogging } from '../state/set-logging'
@@ -107,30 +117,91 @@ function SupersetRound({ block }: BlockRendererProps) {
   const [entry, setEntry] = useState<RoundDraft | null>(null)
   const round = supersetRound(movements.map((exercise) => loggedSets(exercise.exerciseId)))
   const restTimer = useRestTimer()
-  const presentation=useWorkoutExperiencePresentation()
-  const [savedRound,setSavedRound]=useState<number|null>(null)
-  const setSheetOpen=sheet.setOpen
-  useEffect(()=>{if(savedRound===null||restTimer.remainingSeconds>0)return;const id=setTimeout(()=>{setSavedRound(null);setEntry(null);setSheetOpen(false)},0);return()=>clearTimeout(id)},[savedRound,restTimer.remainingSeconds,setSheetOpen])
+  // Round 7 (owner decision 1): the round is entered in the logging dialog.
+  const inDialog = useWorkoutExperiencePresentation()?.loggingOverlay !== undefined
+  // A3 TASK-106: drawn from opening until the native dialog has closed.
+  const [held, setHeld] = useState(false)
+  const [leaving, setLeaving] = useState<{ title: string; confirmed: number | null } | null>(null)
+  const pendingFocus = useRef(false)
+
+  // TASK-020 (C46; R07, R17): Log round N is confirmed beside the round's
+  // running rest, not replaced by round N + 1's form. The rest ending closes
+  // the dialog; Close log ends it early; the block's Rest opens the next.
+  const saved = useSaveConfirmation({
+    open: sheet.open,
+    recorded: (round) =>
+      movements.some((exercise) => loggedSets(exercise.exerciseId).some((set) => set.setNumber === round)),
+    // A block with no round rest has nothing to wait for (A3 TASK-106).
+    restPrescribed: prescribedRestSeconds(block.roundRestSeconds) !== null,
+    onRestEnd: () => {
+      const inSheet = focusIsInSetSheet()
+      setLeaving({ title: overlayTitle, confirmed: confirmedRound })
+      sheet.setOpen(false)
+      if (inSheet) returnFocus()
+    },
+  })
+  const confirmedRound = saved.confirmed
+  const overlayTitle = setSheetTitle({
+    mode: 'new',
+    entryName: `round ${round}`,
+    confirmation: confirmedRound === null ? undefined : { entryName: `round ${confirmedRound}`, reading: null },
+  })
+
+  // While the dialog is open the workout behind it is inert, so Rest takes
+  // focus back only once the native dialog has closed (TASK-044, A3).
+  const returnFocus = () => {
+    if (inDialog) pendingFocus.current = true
+    else logButton.current?.focus()
+  }
+  const afterDialogClose = () => {
+    setHeld(false)
+    setLeaving(null)
+    if (!pendingFocus.current) return
+    pendingFocus.current = false
+    logButton.current?.focus()
+  }
 
   // The block's Rest action (REQ-012): open the round sheet and, when no rest
   // is running, start the block's one rest. Log round N only saves.
   const openRound = () => {
-    // AC-037: reopening during the rest goes to the next round's entry, as the
-    // rest ending would, with the rest still running inside the dialog (A3).
-    if (savedRound !== null) { setSavedRound(null); setEntry(null) }
     const seconds = prescribedRestSeconds(block.roundRestSeconds)
     const closing = movements[movements.length - 1]
     const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
     if (seconds !== null && closing !== undefined && !resting) {
       restTimer.start({ exerciseId: closing.exerciseId, label: `round ${round}`, seconds })
     }
+    // A deliberate Rest is the next entry: any confirmation is over (AC-037:
+    // reopening during the rest goes to the next round, the rest running on).
+    saved.reset()
+    setHeld(true)
+    setLeaving(null)
     sheet.setOpen(true)
   }
 
   const collapse = () => {
+    // An early close ends the confirmation; the rest ending reopens nothing.
+    saved.reset()
+    setLeaving({ title: overlayTitle, confirmed: null })
     sheet.setOpen(false)
-    logButton.current?.focus()
+    returnFocus()
   }
+
+  // While the dialog closes itself it goes on showing the round it confirmed.
+  const shownRound = inDialog && !sheet.open ? leaving?.confirmed ?? null : confirmedRound
+  const roundSheet = (
+    <SupersetRoundSheet
+      movements={movements.map((exercise) => ({
+        exercise,
+        ordinal: supersetOrdinal(exercise.position),
+      }))}
+      round={round}
+      held={entry}
+      onHeld={setEntry}
+      confirmed={shownRound}
+      onSaved={saved.confirm}
+      onCollapse={collapse}
+    />
+  )
 
   return (
     <>
@@ -183,19 +254,20 @@ function SupersetRound({ block }: BlockRendererProps) {
         </Button>
       </ActionGroup>
 
-      {sheet.place(
-        savedRound !== null ? <SetLoggingConfirmation label={movements.every(exercise => loggedSets(exercise.exerciseId).some(set => set.setNumber === savedRound)) ? `Round ${savedRound} logged` : `Round ${savedRound} entries logged`} onCollapse={collapse}/> : <SupersetRoundSheet
-          movements={movements.map((exercise) => ({
-            exercise,
-            ordinal: supersetOrdinal(exercise.position),
-          }))}
-          round={round}
-          held={entry}
-          onLogged={presentation ? ()=>setSavedRound(round) : undefined}
-          onHeld={setEntry}
-          onCollapse={collapse}
-        />,
-      )}
+      {inDialog ? sheet.place(
+        // The logging dialog: its title is the round's one title — `Log round
+        // N`, then `Round N logged` — and its X and Escape close it. The form
+        // is drawn only while open; the round's draft is held here, in `entry`.
+        <LoggingOverlay
+          open={sheet.open}
+          title={sheet.open || leaving === null ? overlayTitle : leaving.title}
+          onClose={collapse}
+          onAfterClose={afterDialogClose}
+        >
+          {sheet.open || shownRound !== null ? roundSheet : null}
+        </LoggingOverlay>,
+        held,
+      ) : sheet.place(roundSheet)}
     </>
   )
 }

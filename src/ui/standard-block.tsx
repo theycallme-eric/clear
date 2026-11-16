@@ -22,6 +22,14 @@
  * shell owns loading and error for the session, and a block with no active
  * prescriptions left is a real, drawable case rather than an empty view —
  * everything in it was swapped out, and it says so.
+ *
+ * A3 TASK-106 (F4; owner decision 1): each movement's entry — the anchor and
+ * other lifts, timed and distance movements, extra sets and saved-set
+ * corrections — opens in Round 7's logging dialog (`LoggingOverlay`), held by
+ * the movement's `ExerciseSetLogger` with its own fields, draft, writer, Save
+ * confirmation and the session's one rest. The old build's per-entry
+ * `focused` prop (TASK-043) is not carried: under the dialog every entry is
+ * held by it, so there is nothing for a block to opt into.
  */
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'

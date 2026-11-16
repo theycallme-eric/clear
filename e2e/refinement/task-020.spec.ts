@@ -33,6 +33,13 @@ import { expect, test as scanned } from '../fixtures'
  * only writes are the set observations the athlete makes and the section's
  * own block result when Next section leaves it, answered here and never
  * forwarded; no model call, no real row.
+ *
+ * A3 TASK-106 (F4; owner decision 1): the set and the round are entered in
+ * Round 7's logging dialog (`src/ui/logging-overlay.tsx`,
+ * `dialog.clr-logging-overlay`) — a centred native modal closed by its framed
+ * X, the rest running inside it — in place of the build's
+ * `dialog.clr-accepted-log`; the confirmation's read-back is the dialog's
+ * `role="status"` (`.clr-set-sheet__saved`). Every assertion is the build's.
  */
 const OWNER = '00000000-0000-4000-8000-000000002001'
 const PLACE = '00000000-0000-4000-8000-000000002011'
@@ -270,11 +277,11 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
 const sheet = (page: Page) => page.locator('section.clr-set-sheet')
 /**
- * TASK-043: a standard block's set entry — the back squat here — is the shared
- * focused logging dialog, not the half-sheet; the superset's round stays on
- * the half-sheet (TASK-044). The open log, while it is open.
+ * TASK-043/044, A3 TASK-106: every entry — the back squat's set and the
+ * superset's round here — is Round 7's logging dialog, not the half-sheet.
+ * The open log, while it is open.
  */
-const logDialog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+const logDialog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
 /** The one movement card, by its heading, on the main screen. */
@@ -338,7 +345,7 @@ async function expectConfirmation(page: Page, title: string, surface: Locator = 
   await expect(surface).toHaveCount(1)
   await expect(surface.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await expect(surface.getByRole('form')).toHaveCount(0)
-  const status = surface.locator('.clr-set-sheet__frame > [role="status"], .clr-set-log > [role="status"]')
+  const status = surface.locator('.clr-set-sheet__frame > [role="status"], [role="status"].clr-set-sheet__saved')
   await expect(status).toBeVisible()
   return status
 }
@@ -391,7 +398,7 @@ test.describe('TASK-020 deliberate Save confirmation and existing rest lifecycle
       await expect(logDialog(page).getByRole('region', { name: 'Rest', exact: true })).toBeVisible()
       expect(await logDialog(page).evaluate((section) => {
         const restCard = section.querySelector('[aria-label="Rest"]')!
-        const saved = section.querySelector('.clr-set-log > [role="status"]')!
+        const saved = section.querySelector('[role="status"].clr-set-sheet__saved')!
         return Boolean(restCard.compareDocumentPosition(saved) & Node.DOCUMENT_POSITION_FOLLOWING)
       })).toBe(true)
       remaining = await expectRestFrom(page, remaining)

@@ -215,30 +215,20 @@ function logRoundButton(round: number): HTMLElement {
   })
 }
 
-/** Every movement's heading, in the order the document lays them out. */
-function movementHeadings(): HTMLElement[] {
+/**
+ * A3 task 1's Round 7 helpers, for the cases it rewrote (kept here): each
+ * movement's heading element, named by its movement alone — Round 7 draws the
+ * equipment inline after the name as the heading's description.
+ */
+function movementHeadingElements(): HTMLElement[] {
   return within(movementList()).getAllByRole('heading')
 }
 
-/**
- * Round 7 draws the equipment inline after the name as the heading's
- * description, so each heading is named by its movement alone.
- */
 function expectNamed(headings: readonly HTMLElement[], names: readonly string[]) {
   expect(headings).toHaveLength(names.length)
   headings.forEach((heading, index) => expect(heading).toHaveAccessibleName(names[index]))
 }
 
-/**
- * Round 7 (decision 1): a logged round's dialog confirms it and, with no rest
- * running, closes itself; the block's Rest then opens the next round.
- */
-async function nextRound(round: number): Promise<HTMLElement> {
-  const rest = screen.getByRole('button', { name: 'Rest' })
-  await waitFor(() => expect(rest).toHaveAttribute('aria-expanded', 'false'))
-  fireEvent.click(rest)
-  return screen.findByRole('form', { name: new RegExp(`^Log round ${round} of `) })
-}
 
 /**
  * The one movement's part of the round sheet, so two movements' fields never
@@ -253,12 +243,16 @@ function formFor(name: string, setNumber = 1) {
 }
 
 describe('a superset keeps its movements in the order the rows prescribe', () => {
+  // A3 TASK-106: kept as A3 task 1 rewrote it for the Round 7 look (movement
+  // identity, wording and frame); the build's body reads the build's own.
   it('labels them A1 and A2 by order_index, not by the order they arrived in', () => {
     mount()
 
-    expectNamed(movementHeadings(), ['A1 romanian deadlift', 'A2 back squat'])
+    expectNamed(movementHeadingElements(), ['A1 romanian deadlift', 'A2 back squat'])
   })
 
+  // A3 TASK-106: kept as A3 task 1 rewrote it for the Round 7 look (movement
+  // identity, wording and frame); the build's body reads the build's own.
   it('states the alternation in words, not only with the connector', () => {
     mount()
 
@@ -382,6 +376,8 @@ describe('every set persists its unit and its exercise and block attribution', (
     })
   })
 
+  // A3 TASK-106: kept as A3 task 1 rewrote it for the Round 7 look (movement
+  // identity, wording and frame); the build's body reads the build's own.
   it('shows each target kind from the structured prescription, never a parsed string', () => {
     mount({
       block: {
@@ -430,6 +426,8 @@ describe('a superset whose movements were swapped out', () => {
     expect(screen.queryByRole('form')).not.toBeInTheDocument()
   })
 
+  // A3 TASK-106: kept as A3 task 1 rewrote it for the Round 7 look (movement
+  // identity, wording and frame); the build's body reads the build's own.
   it('still states the block’s rest and its remaining movement when one survives', () => {
     mount({
       block: {
@@ -448,7 +446,7 @@ describe('a superset whose movements were swapped out', () => {
       },
     })
 
-    expectNamed(movementHeadings(), ['A1 romanian deadlift'])
+    expectNamed(movementHeadingElements(), ['A1 romanian deadlift'])
     // One movement is not an alternation, so the pairing line is not drawn —
     // but the block's rest is still the block's.
     expect(screen.queryByText(/Alternate/)).not.toBeInTheDocument()
@@ -478,6 +476,8 @@ describe('a superset whose movements were swapped out', () => {
 })
 
 describe('the superset draws with the shared block frame', () => {
+  // A3 TASK-106: kept as A3 task 1 rewrote it for the Round 7 look (movement
+  // identity, wording and frame); the build's body reads the build's own.
   it('is one card, with the pair as rows of one list and never a card inside it', () => {
     mount()
 
@@ -499,6 +499,8 @@ describe('the superset draws with the shared block frame', () => {
     ])
   })
 
+  // A3 TASK-106: kept as A3 task 1 rewrote it for the Round 7 look (movement
+  // identity, wording and frame); the build's body reads the build's own.
   it('carries the identity row, the pairing and the rest inside the card, and no completion of its own', () => {
     mount()
 
@@ -512,12 +514,20 @@ describe('the superset draws with the shared block frame', () => {
     expect(inside.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 
-  it('uses the shared peer list without an inner vertical rail', () => {
+  // TASK-001 (C04, R28, R75): the owner rejected the inner grouping rail this
+  // case used to require. The pair is the shared peer list instead: a
+  // separator only between two peers, and no rail on the list, its container
+  // or its rows.
+  it('draws the pair as the shared peer list, with no inner grouping rail', () => {
     mount()
 
-    expect(movementList()).toHaveClass('clr-movement-list')
-    expect(movementList().parentElement!.style.borderLeft).toBe('')
-    for (const row of movementRows()) expect(row.style.borderLeft).toBe('')
+    const list = movementList()
+    expect(list).toHaveClass('clr-movement-list')
+    for (const element of [list, list.parentElement as HTMLElement, ...movementRows()]) {
+      expect(element.style.borderLeft).toBe('')
+      expect(element.style.borderInlineStart).toBe('')
+      expect(element.style.paddingLeft).toBe('')
+    }
   })
 
   it('sets each movement’s fields in one compact row of current element frames', () => {
@@ -572,7 +582,8 @@ describe('set progression follows the round, and each movement keeps its own row
 
     // The round moves on. A1 is prefilled from the set just done; A2 missed
     // round one and stays missing there rather than being filled in.
-    await nextRound(2)
+    // TASK-020 (C46): round 1 is confirmed first; round 2 is opened deliberately.
+    await screen.findByRole('dialog', { name: 'Round 1 logged' })
     const next = formFor('romanian deadlift', 2)
     expect(rowFor('A1 romanian deadlift').getByText('Set 2/3')).toBeInTheDocument()
     expect(next.getByLabelText('Weight')).toHaveValue(60)
@@ -597,7 +608,8 @@ describe('set progression follows the round, and each movement keeps its own row
         await user.type(form.getByLabelText('Weight'), '60')
       }
       await user.click(logRoundButton(round))
-      await nextRound(round + 1)
+      // TASK-020 (C46): confirmed; the next round is opened by the block's Rest.
+      await screen.findByRole('dialog', { name: `Round ${round} logged` })
     }
 
     await waitFor(() => expect(workout.loggedSets()).toHaveLength(4))
@@ -657,7 +669,10 @@ describe('saving, refusing and retrying a set', () => {
 
     // The set is on the screen at once, and said to be saving — not saved.
     const a1 = rowFor('A1 romanian deadlift')
-    await nextRound(2)
+    // TASK-020 (C46): round 1 is confirmed while in flight; round 2 is opened
+    // deliberately, and its action waits for the set still saving.
+    await screen.findByRole('dialog', { name: 'Round 1 logged' })
+    formFor('back squat', 2)
     const busy = logRoundButton(2)
     await waitFor(() => expect(busy).toBeDisabled())
     expect(busy).toHaveAttribute('aria-busy', 'true')
@@ -720,8 +735,10 @@ describe('saving, refusing and retrying a set', () => {
     expect(workout.loggedSets()).toEqual([])
     expect(attempts).toHaveLength(1)
 
-    // Logging is not blocked by it: the round has moved on and opens.
-    await nextRound(2)
+    // Logging is not blocked by it: the round is confirmed as it stands, and
+    // the next deliberate Rest opens round 2 (TASK-020: C46).
+    await screen.findByRole('dialog', { name: 'Round 1 logged' })
+    formFor('back squat', 2)
     expect(logRoundButton(2)).toBeInTheDocument()
 
     // The connection returns, and the next set logged carries the first along.

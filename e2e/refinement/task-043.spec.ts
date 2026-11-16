@@ -36,6 +36,15 @@ import { expect, test as scanned } from '../fixtures'
  * block result when Next section leaves it, answered here and never
  * forwarded; no model call, no real row. The accepted gallery states are
  * memory-only and read nothing over the network.
+ *
+ * A3 TASK-106 (F4; owner decision 1): the entries are Round 7's logging
+ * dialog (`src/ui/logging-overlay.tsx`, `dialog.clr-logging-overlay`, its
+ * header `.clr-logging-overlay__head`) in place of the build's
+ * `dialog.clr-accepted-log`, and the accepted gallery states are Round 7's
+ * (gallery bec4454): each `?state=` section's "Open …" mounts the real
+ * StandardBlock over memory and presses the same Rest or Edit a person would,
+ * with Round 7's sample movements (bench press, bicep curl, plank, farmers
+ * carry). Every route assertion is the build's.
  */
 const OWNER = '00000000-0000-4000-8000-000000004301'
 const PLACE = '00000000-0000-4000-8000-000000004311'
@@ -275,8 +284,8 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-/** The open focused logging dialog (any title). */
-const openLog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+/** The open focused logging dialog (any title): Round 7's (A3 TASK-106). */
+const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
 /** The one movement card, by its heading, on the main screen. */
@@ -305,7 +314,7 @@ async function expectFocusedLog(page: Page, title: string) {
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
   // One title, then one X, in the header.
-  const head = dialog.locator('[data-logging-head]')
+  const head = dialog.locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading', { name: title, exact: true })).toBeVisible()
   const close = head.getByRole('button', { name: 'Close log', exact: true })
   await expect(close).toBeVisible()
@@ -649,21 +658,23 @@ test.describe('TASK-043 standard set logging in the shared focused dialog', () =
       page.on('request', (request) => {
         if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
       })
+      // Round 7's accepted states (bec4454): each section's "Open …" mounts the
+      // real StandardBlock over memory and presses Rest (or the saved row's Edit).
       const states = [
-        { id: 'anchor', movement: 'back squat', open: 'Rest', title: 'Log set 1', fields: ['Weight', 'Reps'] },
-        { id: 'other-lift', movement: 'romanian deadlift', open: 'Rest', title: 'Log set 1', fields: ['Weight', 'Reps'] },
-        { id: 'timed-movement', movement: 'plank', open: 'Rest', title: 'Log set 1', fields: ['Seconds'] },
-        { id: 'distance-movement', movement: 'farmer carry', open: 'Rest', title: 'Log set 1', fields: ['Weight', 'Distance (m)'] },
-        { id: 'extra-set', movement: 'back squat', open: 'Rest', title: 'Log set 4', fields: ['Weight', 'Reps'] },
-        { id: 'set-correction', movement: 'back squat', open: 'Edit set 1', title: 'Edit set 1', fields: ['Weight', 'Reps'] },
+        { id: 'anchor', label: 'Anchor / primary lift', movement: 'bench press', title: 'Log set 1', fields: ['Weight', 'Reps'] },
+        { id: 'other-lift', label: 'Other lift', movement: 'bicep curl', title: 'Log set 1', fields: ['Weight', 'Reps'] },
+        { id: 'timed-movement', label: 'Timed movement', movement: 'plank', title: 'Log set 1', fields: ['Seconds'] },
+        { id: 'distance-movement', label: 'Distance movement', movement: /^farmers? carry$/, title: 'Log set 1', fields: ['Weight', 'Distance (m)'] },
+        { id: 'extra-set', label: 'Extra set', movement: 'bench press', title: 'Log set 4', fields: ['Weight', 'Reps'] },
+        { id: 'set-correction', label: 'Saved-set correction', movement: 'bench press', title: 'Edit set 1', fields: ['Weight', 'Reps'] },
       ] as const
       for (const state of states) {
         await visit(`/gallery/refinements?state=${state.id}`)
         await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
-        const scope = page.locator(`[data-gallery-set-logging="${state.id}"]`)
+        const scope = page.locator(`[data-refinement-state="${state.id}"]`)
         await expect(scope.getByRole('heading', { name: state.movement, exact: true })).toBeVisible()
         if (state.id === 'extra-set') await expect(scope.getByText('Extra set 4', { exact: true })).toBeVisible()
-        await scope.getByRole('button', { name: state.open, exact: true }).click()
+        await scope.getByRole('button', { name: `Open ${state.label}`, exact: true }).click()
         const dialog = page.getByRole('dialog', { name: state.title, exact: true })
         await expect(dialog).toBeVisible()
         expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
@@ -682,7 +693,7 @@ test.describe('TASK-043 standard set logging in the shared focused dialog', () =
       }
       // The anchor's save is answered in memory and confirmed like the route's.
       await visit('/gallery/refinements?state=anchor')
-      await page.locator('[data-gallery-set-logging="anchor"]').getByRole('button', { name: 'Rest', exact: true }).click()
+      await page.locator('[data-refinement-state="anchor"]').getByRole('button', { name: 'Open Anchor / primary lift', exact: true }).click()
       await page.getByRole('button', { name: 'Log set 1', exact: true }).click()
       const saved = page.getByRole('dialog', { name: 'Set 1 logged', exact: true })
       await expect(saved).toBeVisible()

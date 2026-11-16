@@ -1,0 +1,1669 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-106",
+  "family": "F4",
+  "base": "4e65efb18e7f03f4b1198224512fb7851cbe8609",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F4 = src/ui/logging-overlay.test.tsx (24) and its -focus-brackets (3), -focus-kept (2) and -stale-close (1) files (deferred whole files), and the F4 build tests pending in src/ui/set-logging-sheet.test.tsx (21), src/app/sheet-minimize-access.test.tsx (6), src/app/rest-footer-lifecycle.test.tsx (8), src/app/superset-logging.test.tsx (6), src/ui/set-correction.test.tsx (1), src/ui/superset-block.test.tsx (11) and src/ui/set-effort.test.tsx (1); e2e task-019, task-020, task-043 and task-044. The brief adds src/ui/set-logger.test.tsx. Every build test of these files is listed, carried ones included.",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "retired": [],
+    "deferred": [
+      {
+        "what": "9 build tests in src/ui/logging-overlay.test.tsx (TASK-018 LoggingOverlay — contained viewport, scroll and chrome)",
+        "task": "TASK-114",
+        "why": "REQ-018 (C44, C57, C58, C59) is owned by A3 TASK-114, whose approved verification runs these by name in this file (TASK-018 check-01 --testNamePattern \"scroll|outline|viewport\"); they assert the build’s frame recipe (visual-viewport sizing, hidden scrollbars, no bottom inset, opening-focus diagnosis) against Round 7’s overlay, which TASK-114 sweeps and fixes in the shared owner with the gallery in the same commit."
+      },
+      {
+        "what": "7 build tests in src/ui/logging-overlay.test.tsx (TASK-017 movement groups and label/control rhythm)",
+        "task": "TASK-114",
+        "why": "REQ-017 (C05, C42, C47) is owned by A3 TASK-114, whose approved verification runs these by name in this file (TASK-017 check-01 --testNamePattern \"group|spacing|helper\"); they assert the build’s rhythm tokens and its .clr-logging-movement groups, which Round 7 draws with its own .clr-round-movement rules."
+      },
+      {
+        "what": "e2e/refinement/task-019.spec.ts (the ledger’s F4)",
+        "task": "TASK-114",
+        "why": "A3 TASK-114’s approved verification runs it (TASK-019 check-01); it is the cross-family writers’ proof over every logging moment, of which F4 is one."
+      },
+      {
+        "what": "e2e/refinement/task-044.spec.ts (the ledger’s F4)",
+        "task": "TASK-107",
+        "why": "A3 TASK-107’s approved verification runs it (TASK-044 check-01): “e2e task-044 (supersets and circuits) runs here, after TASK-106”."
+      }
+    ],
+    "resolved": []
+  },
+  "summary": {
+    "deferred": 18,
+    "rewritten": 50,
+    "carried": 130,
+    "kept": 1,
+    "added": 20,
+    "superseded": 9
+  },
+  "entries": [
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 scroll: one stationary continuous frame holds the only scrolling region, and the long log’s Notes and Save are inside it",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C57-01 AC-R018-01 scroll: the scrolling region meets the inner lower border — no bottom inset, clipped on the inner chamfer, and no interior line crossing the form",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: opening and reopening never focus the frame or the scroller — the opening focus lands on the X control",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: the diagnosed owners — the browser’s default ring on a focused scroller or dialog, and Foundation’s fallback chamfer ring on the frame — never reach the containers, and the opening focus moves to the X in the same commit as showModal",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: intentional keyboard focus is kept — Tab moves from the X through the controls to Notes and Save, and no control loses its focus indicator",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C59-01 AC-R018-03 scroll: every scrollbar is hidden, overlay scrollbars included, while wheel, touch, keyboard and focus scrolling still work and nothing scrolls sideways",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: the frame’s height is the visible viewport less the gap and safe areas — it follows an on-screen keyboard and is never a half-height cap",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: a short form fits its content with Save in reach, and without a visual viewport the dynamic viewport is the fallback",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > JOURNEY-018 viewport: gallery ladder-long draws the shared frame around the actual TimedResultLog — opened, closed and reopened, scrolling inside, nothing saved",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-018’s contained viewport, scroll and chrome (C44, C57, C58, C59) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-018 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"scroll|outline|viewport\"). It asserts the build’s frame recipe (src/ui/refinements/presentation.css, its visual-viewport variables) against what Round 7’s LoggingOverlay must do; TASK-114 checks and fixes that in the shared owner with the gallery in the same commit. TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: Round 7’s header (.clr-logging-overlay__head: the title, then the X in its emitting bleed), every build assertion kept, the dialog named by its title’s words (Round 7’s aria-label, where the build used aria-labelledby). The wrapped-title example is Round 7’s gallery Workout feedback (?state=workout-feedback), opened by its own “Open …”; the opening focus lands on the X (LoggingOverlay now gives it, as Chromium’s focusing steps do). Consumers are Round 7’s TimedResultLog (embedded, named by the title)."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame starts on the title’s visible top — the header aligns to its start and the title’s line box is trimmed to its capitals, so a wrapped title grows downwards beside the X",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: reads Round 7’s recipe from the cascade (logging-overlay.css, then the more specific workout-r7.css): the head is a flex row aligned to its start, space-between; the X’s bleed does not flex; the title has no margin, a line box of the font size (line-height 1) and min-width 0; nothing offsets either part. Round 7’s recipe does not trim the title’s line box to its capitals (text-box), set it in capitals or break it anywhere (overflow-wrap) — the build asserted those three declarations, which Round 7’s accepted look omits; recorded here for TASK-114’s C41 sweep rather than changed in the gallery-owned recipe by this task."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 AC-R016-01 TASK-AC-F1CC1A37FB0E header: the dialog’s title is the simple form’s one title — the held TimedResultLog drops its own “Log results” heading and is named by the dialog, while inline it keeps its own",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: the held log is Round 7’s TimedResultLog (embedded, accessibleName set to the dialog’s title) over the gallery’s twelve-round ladder block; one level-2 heading (the title), no “Log results” heading, the form named by the title, groups H3, no Result/Movements/Feedback titles. Every assertion kept. Found, not fixed (C40, TASK-114/116): the route’s TimedWorkoutFlow holds its log without passing the title, so there the form keeps Round 7’s default name “Log section results”."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 header: inline in a card the same log keeps its own “Log results” title and stays an unnamed form",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: inline, Round 7’s TimedResultLog keeps its own “Log results” title (.clr-timed-log__title) and is labelled by nothing outside it (no aria-labelledby, no dialog). Round 7 gives the log a default accessible name of its own (“Log section results”), so it is exposed as a named form, where the build’s was unnamed; the case asserts that default rather than “no aria-label”. Recorded for TASK-114 (C40)."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C43-01 AC-R016-01 TASK-AC-F1CC1A37FB0E backdrop: the selected A / Balanced dim, corner vignette and blur sit on the native backdrop only — the foreground stays sharp, nothing darkens further, and there is no rising sheet",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: the selected values are still the reviewed tokens (refinements/tokens.css: blur spacing-100, tint 55%, edge 85%), and Round 7 draws them on the native backdrop (workout-r7.css .clr-logging-overlay[data-backdrop]::backdrop, more specific than Foundation’s .clr-dialog::backdrop, no animation; Foundation’s fade kept); no rule filters, fades or shadows the foreground; the frame keeps --surface-card; the product selects the dialog (no rising sheet; only the unselected sheet variant moves); showModal only. Round 7 writes the values literally rather than through the tokens, and has no -webkit-backdrop-filter duplicate (the build asserted one)."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: Round 7’s TimedResultLog EMOM log as the consumer; every assertion kept. Round 7’s dialog plays the shared exit, so the closed state is awaited after the X and Escape (the consumer is told at once; focus returns once the native dialog has closed)."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: the same consumers (MovementCountdown behind and inside); every assertion kept; the close is awaited through Round 7’s exit."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > TASK-AC-C0A657D4BABE JOURNEY-016 header: gallery ladder-long draws the selected header and backdrop on the shared frame — the contract consumers adopt; Escape closes it and focus returns to its opener",
+      "ledger": "deferred",
+      "disposition": "rewritten",
+      "note": "TASK-016 (A3 owner TASK-114) case, rewritten against Round 7’s LoggingOverlay so TASK-016 check-01 runs on Round 7: Round 7’s ?state=ladder-long: its “Open Long ladder results” runs the real flow past its cap, which opens “Log results” in the shared dialog; the header, the wordless X, the Balanced backdrop, one “Log results” heading and the ladder’s log inside; Escape closes it (awaited through the exit) and focus returns to the opener; nothing fetched. The build’s held log was named “Ladder · 12 rounds”; Round 7’s gallery flow does not name it (see the C40 note above)."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 TASK-AC-9B1E8E32EE3B group: a timed log keeps each complete movement group together — its name, amount and load at the inner field gap — and sets two complete groups slightly further apart than any other section, inline and in the logging frame",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 group: the superset round’s complete movement-entry groups — name and prescription, Performed, weight/unit/reps and effort — each stay one group, and the second sits the shared movement gap further from the first",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the superset round no longer draws the “Tick each movement you performed. A blank field is saved as not recorded.” paragraph or any replacement prose, and Performed still decides what is logged — unticked logs nothing, ticked with a blank field logs it unmeasured",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the removed sentence is gone from every shipped source — no component, gallery state, register entry or spec draws or expects it",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 TASK-AC-0C1431FDDA19 spacing: every choice legend — Work completed, Effort · optional, a superset movement’s Effort and Workout feedback’s feeling — takes the label gap, the same space the log’s labelled count field leaves between its label and control",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 spacing: the ladder log keeps its good Rounds completed heading gap and gives the dynamic count its own breathing room after the last row of tiles, for four and twelve rounds",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > TASK-AC-582934B08D11 JOURNEY-017 group: gallery for_time draws the route’s own For Time logs with the shared contract — the capped race’s two movement groups apart and its legends at the label gap — while no route claims the logging frame yet",
+      "ledger": "deferred (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "Deferred to TASK-114. REQ-017’s movement groups and label/control rhythm (C05, C42, C47) are owned by A3 TASK-114, whose approved verification runs this test by name in this file (TASK-017 check-01: npx vitest run src/ui/logging-overlay.test.tsx --testNamePattern \"group|spacing|helper\"). It asserts the build’s rhythm tokens (refinements/tokens.css) and .clr-logging-movement groups; Round 7 draws its own (.clr-round-movement, workout-r7.css). TASK-115’s end-of-run ledger check requires it carried. Not added here as a failing, skipped or todo test."
+    },
+    {
+      "file": "src/ui/logging-overlay-focus-brackets.test.tsx",
+      "test": "TASK-041 LoggingOverlay hosts the focus brackets while open > moves the one bracket layer into the open log and back to the body when it closes",
+      "ledger": "deferred",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged, against Round 7’s LoggingOverlay (the import path is the only change in the file): it now hosts Foundation’s focus-bracket layer while open (TASK-041)."
+    },
+    {
+      "file": "src/ui/logging-overlay-focus-brackets.test.tsx",
+      "test": "TASK-041 LoggingOverlay hosts the focus brackets while open > hands the layer back to the body when an open log unmounts, so the page keeps its brackets",
+      "ledger": "deferred",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged, against Round 7’s LoggingOverlay (the import path is the only change in the file): it now hosts Foundation’s focus-bracket layer while open (TASK-041)."
+    },
+    {
+      "file": "src/ui/logging-overlay-focus-brackets.test.tsx",
+      "test": "TASK-041 LoggingOverlay hosts the focus brackets while open > does nothing where no bracket layer is mounted",
+      "ledger": "deferred",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged, against Round 7’s LoggingOverlay (the import path is the only change in the file): it now hosts Foundation’s focus-bracket layer while open (TASK-041)."
+    },
+    {
+      "file": "src/ui/logging-overlay-focus-kept.test.tsx",
+      "test": "TASK-019 LoggingOverlay keeps focus inside > moves focus stranded on the page body to the dialog title, outside the Tab order",
+      "ledger": "deferred",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged, against Round 7’s LoggingOverlay (the import path is the only change in the file): stranded focus goes to the dialog’s title (TASK-019)."
+    },
+    {
+      "file": "src/ui/logging-overlay-focus-kept.test.tsx",
+      "test": "TASK-019 LoggingOverlay keeps focus inside > leaves focus the reader moved elsewhere inside the log, and a closed log, alone",
+      "ledger": "deferred",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged, against Round 7’s LoggingOverlay (the import path is the only change in the file): stranded focus goes to the dialog’s title (TASK-019)."
+    },
+    {
+      "file": "src/ui/logging-overlay-stale-close.test.tsx",
+      "test": "TASK-045 LoggingOverlay stale close > ignores a queued close event that arrives after the log is open again, and still hears a real one",
+      "ledger": "deferred",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged, against Round 7’s LoggingOverlay (the import path is the only change in the file): a queued close is ignored once the dialog is open again (TASK-045)."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-025: the card’s top row > holds the secondary section label left and the compact structure badge right",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (owner decision 2: the compact section header [data-movement-group-header] holds the label and badge); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-025: the card’s top row > leaves the movement name as the heading, so the badge never competes with it",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (owner decision 2: the section name heads the block, then the movement, named by its movement alone); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-026: heading, counter, prescription and equipment > puts a subordinate Set X/Y counter in the name row beside the heading and equipment, then prescription",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the name row is Round 7’s MovementIdentity head (the heading’s own row, not the build’s [data-movement-name-row]) and the compact equipment is drawn inline after the name inside it; the counter is in that row and not a heading; order: name, equipment, prescription."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-026: heading, counter, prescription and equipment > moves the counter on as sets are logged",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-027: saved rows and Edit precede Log set, then coaching > orders saved results with their Edit controls, then Log set, then the coaching disclosure",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > draws no entry fields on the card, and opens the entry in the modal focused logging dialog, not the pinned foot (TASK-043)",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the dialog is Round 7’s (.clr-logging-overlay, where the build’s was .clr-accepted-log). The harness draws Round 7’s dialog slot where Workout.tsx does — after the screen, outside the pinned foot (SetLoggingSheetOverlay) — so “nothing in the pinned foot” reads the route’s layout."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > titles the dialog Log set N with its framed Close log X as the top collapse control, then context, fields and one full-width action",
+      "ledger": "build-test-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > collapses with the X (or Escape) and reopens with the draft as it was typed",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > holds one sheet open at a time across movements",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-031: one compact measurement row > puts Weight, Unit and Reps in that order on one row, labelled Reps",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-031: one compact measurement row > asks for Seconds on a timed prescription",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-031: one compact measurement row > omits the load fields for a bodyweight movement",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-031: one compact measurement row > keeps the entered number and unit, converting nothing",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-032: prescribed numbers are suggestions; only Log set records > prefills the prescribed reps as an editable value and records nothing until Log set",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-032: prescribed numbers are suggestions; only Log set records > suggests each ladder rung and the bottom of a range",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-033: the removed copy, with the structured data kept > prints no unit helper, no empty-list sentence, no repeated target and no tempo",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-034: result formatter, sync feedback, and a saved state only on success > shows the logged row in the current formatter, and Saved only once the database has it",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-034: result formatter, sync feedback, and a saved state only on success > never says Saved for a set the database refused",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-034: result formatter, sync feedback, and a saved state only on success > keeps the entry, recoverable, when the shell refuses the set",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-034: result formatter, sync feedback, and a saved state only on success > keeps coaching on demand behind its disclosure",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-035: borders and the countdown > frames the entry with the dialog’s one frame and the X with the action border (TASK-043)",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the dialog’s one stationary frame is Round 7’s — the shared Dialog’s chamfer (.clr-chamfer.clr-chamfer--lg, read as dialog > .clr-bleed > .clr-chamfer) holding the body (.clr-logging-overlay__body), where the build’s was [data-logging-frame].clr-accepted-log__frame holding .clr-set-log; no half-sheet frame; the X is the secondary button with the action border."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-035: borders and the countdown > draws the half-sheet’s scoped accent bar (EXC-06) nowhere in the dialog, without making the entry a card (TASK-043)",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the frame is read as Round 7’s (dialog > .clr-bleed > .clr-chamfer) instead of [data-logging-frame]; no accent bar beside it, no card around the dialog."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-035: borders and the countdown > gives the rest timer card inside the sheet no Phosphor Echo: the sheet is not the background",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the entry’s body is Round 7’s .clr-logging-overlay__body (the build’s .clr-set-log); the rest’s timer card inside it, nothing echoing."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-035: borders and the countdown > draws a running rest with the timer card inside the sheet, without recolouring it",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s frame (not recoloured by the timer) and body; the close is awaited through Round 7’s exit. “The next entry in the same place”: Round 7 removes a closed dialog once its exit has played and draws the next entry’s in the shell’s one dialog slot, so the case asserts the same slot rather than the same dialog element (the build kept one dialog element mounted)."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-028: existing roles and variants, aligned > draws effort with the system choice group and Clear with the quiet small button",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > draws no Edit control when no correction can be saved, and still asks effort",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > places effort between the measurement row and the action, inside the same form",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > records effort only on Log set, and the logged row reads it back",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > keeps a chosen effort through collapse and reopen",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > opens a saved row in the same dialog as Edit set N, ending in Cancel / Save correction",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet stays usable without the shell’s host > draws in place when no host is mounted, so a renderer alone still logs",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the build’s per-entry `focused` prop is retired (under Round 7’s dialog every entry is held by it), so the logger is drawn without it."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-C46-01 Log set N shows its saved confirmation beside the same running rest and no next-set form; at rest end the sheet collapses and resets, and only a deliberate Rest opens set N + 1",
+      "ledger": "build-test-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-01 Save never replaces the entry with another form; an early collapse is kept: the rest ending never reopens the sheet, and Rest opens the next entry on the same rest",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 Add 30s and Skip rest stay the existing rest’s: the extension keeps the confirmation and Skip rest ends it; rest expiry or its final-seconds warning never records another set or closes a draft",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a superset’s Log round N confirms each logged movement’s own actuals and effort beside the round’s one rest; the rest ending collapses without opening round N + 1",
+      "ledger": "build-test-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a Save the shell refuses claims no confirmation: the entry stays on its form, and the rest ending neither collapses nor records it",
+      "ledger": "build-test-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-026: heading, counter, prescription and equipment > puts a subordinate Set X/Y counter beside the heading, then prescription and equipment",
+      "ledger": "integration branch",
+      "disposition": "kept",
+      "note": "The integration branch’s own Round 7 case (A3 task 1), kept beside the build’s rewritten AC-026 case: its accessible-description checks are Round 7’s own."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-C53DC0A896ED no rest prescribed: Log set N is confirmed, then the dialog closes itself once the shell holds the set, and focus returns to the card’s Rest, never the page body",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s own case for TASK-AC-C53DC0A896ED (no rest prescribed). Fails on the base: the dialog was removed while open and focus fell to the page body."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-C53DC0A896ED a superset with no round rest: Log round N closes itself once the shell holds the round, and focus returns to the block’s Rest",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s own case for TASK-AC-C53DC0A896ED (a superset with no round rest)."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB a correction closed with its X or Escape returns focus to its Edit control once the dialog has closed",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s own case for TASK-AC-A7CEAC5DC9DB (TASK-019: a standard block’s correction returns focus to its Edit)."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB the Clear-set confirmation is drawn inside the logging dialog, and focus returns to Rest once both have closed",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s own case for TASK-AC-A7CEAC5DC9DB (TASK-043: the Clear-set confirmation inside the dialog)."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > draws no entry fields on the card, and opens the sheet in the pinned foot",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "the sheet opens from the card and keeps the main screen free of fields > draws no entry fields on the card, and opens the entry in the modal focused logging dialog, not the pinned foot (TASK-043)",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > titles the sheet Log set N with the top collapse chevron, then context, fields and one full-width action",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "the sheet opens from the card and keeps the main screen free of fields > titles the dialog Log set N with its framed Close log X as the top collapse control, then context, fields and one full-width action",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "the sheet opens from the card and keeps the main screen free of fields > collapses with the chevron and reopens with the draft as it was typed",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "the sheet opens from the card and keeps the main screen free of fields > collapses with the X (or Escape) and reopens with the draft as it was typed",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-035: borders and the countdown > frames the sheet with the structural border and the chevron with the action border",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "AC-035: borders and the countdown > frames the entry with the dialog’s one frame and the X with the action border (TASK-043)",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-035: borders and the countdown > joins one accent bar to the frame, without making the sheet a card (B05-07.3, EXC-06)",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "AC-035: borders and the countdown > draws the half-sheet’s scoped accent bar (EXC-06) nowhere in the dialog, without making the entry a card (TASK-043)",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > opens a saved row in the same sheet as Edit set N, ending in Cancel / Save correction",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > opens a saved row in the same dialog as Edit set N, ending in Cancel / Save correction",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > draws one Close log X, in the dialog header beside its title, over an inert workout, and no Minimize or bottom collapse",
+      "ledger": "build-test-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: under Round 7 no half-sheet layer is drawn at all (the build asserted its layer stayed closed: “no second dim”), so the case asserts there is none; the close is awaited through Round 7’s exit before the remaining X count and the footer are read."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > keeps Cancel / Save correction in edit mode, with the same single X",
+      "ledger": "build-test-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Logging access is independent of rest (AC-037) > reopens Log set and Edit from the card while rest runs in the footer after minimizing the sheet",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Logging access is independent of rest (AC-037) > reopens Log set and Edit from the card after the rest is skipped",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Logging access is independent of rest (AC-037) > reopens Log set and Edit from the card after the countdown runs out",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Logging access is independent of rest (AC-037) > reopens logging from the card when the sheet is minimised before any set is logged",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "A minimised draft survives, and hiding the sheet does not pause rest (AC-038) > hands back the unsaved entry on reopen while the rest keeps counting",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "A minimised draft survives, and hiding the sheet does not pause rest (AC-038) > hands back an unsaved correction on reopen through the saved row",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Saving and correcting never start absent or expired rest (B05 AC-037/039) > saves the draft after rest is %s; Edit and its save keep rest absent",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Set-logging sheet — the top chevron is the only minimise control (AC-036) > draws one Minimize control, in the sheet head beside its title, and no bottom Minimize",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > draws one Close log X, in the dialog header beside its title, over an inert workout, and no Minimize or bottom collapse",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/app/sheet-minimize-access.test.tsx",
+      "test": "Set-logging sheet — the top chevron is the only minimise control (AC-036) > keeps Cancel / Save correction in edit mode, with the same single chevron",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > keeps Cancel / Save correction in edit mode, with the same single X",
+      "note": "The base’s case under its pre-TASK-043 name, with A3 task 1’s Round 7 body. The build renamed it when TASK-043 moved the entry into the logging dialog; its successor (by) carries the same assertions and more, and is brought back here with the build’s body. Superseded, not dropped."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — a shared countdown that survives minimise and reopen (AC-054) > moves the running rest from the sheet to the footer and back, with Add 30s and Skip rest",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — a shared countdown that survives minimise and reopen (AC-054) > keeps the rest and its control visible after an extension until the countdown genuinely ends",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — gone once there is no countdown (AC-055) > hides the minimised Rest control when the countdown runs out, and leaves logging reachable",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — gone once there is no countdown (AC-055) > hides the minimised Rest control when the rest is skipped, and leaves logging reachable",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — gone once there is no countdown (AC-055) > stays gone on later foreground returns, rather than reappearing at zero",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — nothing is recorded but an explicit Log set (AC-056) > records no result on expiry, on the prefilled sheet, or on reopening it",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — nothing is recorded but an explicit Log set (AC-056) > records no movement result when the next round’s clock starts or its rest runs out",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — nothing is recorded but an explicit Log set (AC-056) > writes no set when sections advance or are revisited, with or without a running rest",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — the real timer lifecycle (AC-057) > starts no rest on mount: the countdown begins only from the Rest action",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/rest-footer-lifecycle.test.tsx",
+      "test": "Rest footer — the real timer lifecycle (AC-057) > reads the wall clock from the logged set across backgrounding, not a clock of its own",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged (the build’s file, byte for byte); it passes against Round 7’s dialog with the carried confirmation lifecycle."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "one combined Log round (AC-058) > offers the pair one Log round, and no per-movement Log set",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "one combined Log round (AC-058) > enters each movement in its own fields, in its own modality",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "one combined Log round (AC-058) > logs both results in one action, each with its own effort, nothing copied",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > logs nothing from blank fields or prefilled suggestions alone",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > saves an explicitly entered result alone, and leaves the partner missing",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > logs a movement ticked as performed with blank fields as unmeasured, never zero",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > drops an entry the athlete unticks, and keeps the fields as typed",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > saves the selected partner independently of an excluded invalid entry",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > clearing a suggestion does not identify an unmeasured partner",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > clearing the last entered result or effort requires a deliberate unmeasured tick",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "partial rounds, without a both-movements gate (AC-059) > keeps the entry through minimise and reopen",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7’s dialog plays the shared Dialog’s exit before it closes, so the step that closes it (Close log, Escape) waits for the close before the card behind is used or the closed state is read (closeLog / waitFor). Every assertion is the build’s."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "movement countdown ownership through partial rounds > rearms an owning first log at its next prescribed time-sequence rung",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "movement countdown ownership through partial rounds > keeps a running unlogged partner clock, then advances its own gapped log by set number",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "a grouped correction returns keyboard focus to an available control > returns Minimize, Cancel and Save to Edit, and a cleared row to Log round",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the round’s confirmation is a modal over the card, so it is closed (its exit played) before the card’s Edit is used; focus returns to Edit once each close has played (awaited). The clear: the confirmation is drawn inside the logging dialog (asserted) and the two close together, so the held native close is released for both — focus stays put after the confirmation’s and lands on Log round (Rest) after the logging dialog’s."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "shared rest and the global clock (AC-060) > starts the block’s one rest from Rest, runs it through Log round, and keeps the session clock",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "shared rest and the global clock (AC-060) > starts the rest, and no movement clock, before a round is logged",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/app/superset-logging.test.tsx",
+      "test": "a round the shell cannot accept keeps what was entered > refuses with no unit to stamp, starts no further rest, and leaves every field as typed",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-046: Edit reopens the selected actual result > preserves its movement, set number, values, unit and effort in the shared sheet",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Assertions identical to the build’s; only the comment differs (A3 task 1’s Round 7 wording kept: “it is the centred logging dialog”)."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-047: Save correction updates the intended observation; Cancel leaves it > writes the correction to the same row, and only after confirmation calls it saved",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-047: Save correction updates the intended observation; Cancel leaves it > leaves the stored result exactly as it was on Cancel",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-047: Save correction updates the intended observation; Cancel leaves it > shows a refused correction as on this device only, never as saved",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-049: clear the mistaken result after confirmation, then re-enter it > keeps the observation when the confirmation is canceled",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-049: clear the mistaken result after confirmation, then re-enter it > clears only the selected result, moves nothing, and lets the right movement log it explicitly",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-049: clear the mistaken result after confirmation, then re-enter it > keeps ordinary numeric editing beside the clear, and offers no move-to-target flow",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-048: corrections exist only in the current workout, with concise controls > keeps each logged row to its result, status and one Edit — no Remove mistaken entry",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-048: corrections exist only in the current workout, with concise controls > draws no Edit where the shell does not offer corrections",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-048: corrections exist only in the current workout, with concise controls > is offered by the active workout alone; no history editor or restored prose exists",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-correction.test.tsx",
+      "test": "AC-048: corrections exist only in the current workout, with concise controls > offers Edit on the workout screen itself, writing through the shell",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "a superset keeps its movements in the order the rows prescribe > labels them A1 and A2 by order_index, not by the order they arrived in",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (movement headings named by their movement alone, equipment as the description); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "a superset keeps its movements in the order the rows prescribe > states the alternation in words, not only with the connector",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (Round 7’s “One round: A1 → A2 — no rest between movements”); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "a superset keeps its movements in the order the rows prescribe > offers each movement its own set-one entry in the round, named for that movement",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "rest is the block’s, prescribed after both movements > states the block’s rest once, below the pair",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "rest is the block’s, prescribed after both movements > states no per-movement rest, however much the prescriptions carry",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "rest is the block’s, prescribed after both movements > renders no rest line at all when the block prescribes none",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "rest is the block’s, prescribed after both movements > never renders a zero rest as a rest",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "every set persists its unit and its exercise and block attribution > writes the set against the movement performed, in the block it was performed in",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "every set persists its unit and its exercise and block attribution > stamps the profile’s unit on the row rather than a guessed one",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "every set persists its unit and its exercise and block attribution > logs the modality prescribed, in the prescription’s own unit",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "every set persists its unit and its exercise and block attribution > shows each target kind from the structured prescription, never a parsed string",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (Round 7’s prescription readings); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "a superset whose movements were swapped out > says the block has nothing left to perform rather than drawing an empty card",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "a superset whose movements were swapped out > still states the block’s rest and its remaining movement when one survives",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (movement headings named by their movement alone); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "a superset whose movements were swapped out > draws no connector round the one movement left, because there is no pair to link",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "the superset draws with the shared block frame > is one card, with the pair as rows of one list and never a card inside it",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (Round 7’s rows and headings); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "the superset draws with the shared block frame > carries the identity row, the pairing and the rest inside the card, and no completion of its own",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for the Round 7 look (Round 7’s identity row and alternation words); the build’s body reads the build’s own presentation, which Round 7 replaced. Same asserted behaviour. Not this family’s presentation: the body is unchanged from the integration branch."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "the superset draws with the shared block frame > draws the pair as the shared peer list, with no inner grouping rail",
+      "ledger": "build-test-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "the superset draws with the shared block frame > sets each movement’s fields in one compact row of current element frames",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "the superset draws with the shared block frame > gives the pair one Log round, and reports the block as a whole",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "set progression follows the round, and each movement keeps its own rows > moves the pair on to the next round, recording only the movement logged",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "set progression follows the round, and each movement keeps its own rows > logs the whole pair under the round’s one set number",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "set progression follows the round, and each movement keeps its own rows > resumes the pair one round past the highest set either has recorded",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "saving, refusing and retrying a set > holds the round’s action busy and disabled while a set from it is in flight",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "saving, refusing and retrying a set > disables the action for an entry it would refuse, and says why at the field",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "saving, refusing and retrying a set > keeps a refused set on the screen as unsaved, and sends it with the next set logged",
+      "ledger": "build-edit-pending",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "saving, refusing and retrying a set > refuses a set with no unit to stamp, and says so through the shell",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/superset-block.test.tsx",
+      "test": "the superset draws with the shared block frame > uses the shared peer list without an inner vertical rail",
+      "ledger": "integration branch",
+      "disposition": "superseded",
+      "by": "the superset draws with the shared block frame > draws the pair as the shared peer list, with no inner grouping rail",
+      "note": "The base’s case, renamed by the build (TASK-001) and replaced there by the build-only successor (by), brought back here with the build’s body, which passes on Round 7. Superseded, not dropped."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the logger is drawn with the shared frame, and frames nothing itself > draws no card of its own around the movement, its readout or its form",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the logger is drawn with the shared frame, and frames nothing itself > leaves the block’s card the only card, with the coaching panel a ruled group",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the logger is drawn with the shared frame, and frames nothing itself > names the movement in a real heading and the prescription from its columns",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the logger is drawn with the shared frame, and frames nothing itself > prefixes the ordinal a structure gives the movement",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the logger is drawn with the shared frame, and frames nothing itself > sets its two numeric fields and unit choice in one compact row, each a current element frame",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the logger is drawn with the shared frame, and frames nothing itself > asks effort only as three optional choices, never a number, and offers no warmup checkbox",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "rest is stated by whoever owns it > states the movement’s own rest by default",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "rest is stated by whoever owns it > states none where the block owns the rest",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "rest is stated by whoever owns it > never renders a zero rest as a rest",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the readout of sets already recorded > draws no list and no placeholder sentence before a set is logged; the counter says it",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the readout of sets already recorded > lists the sets lowest first, whatever order they arrived in",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the readout of sets already recorded > says where a %s set has got to in words, with a glyph",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "the readout of sets already recorded > prints a zero as a result and leaves an unrecorded field unsaid",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > offers set one of an untouched movement, counted beside its heading",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > offers the lowest set not yet recorded",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > offers an extra set once every prescribed set is recorded",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > prefills the next set’s weight from the last one performed, and its reps from the prescription",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > falls back to the last set performed where the prescription states no number",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > suggests the prescribed reps as an editable value, never as a recorded one",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "set progression > keeps a prefilled blank blank rather than turning it into a zero",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > freezes the displayed unit after typing when the profile refreshes",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > can follow a loaded profile unit while the form is still untouched",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > keeps a %s profile from relabelling an observed %s weight",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > uses the profile unit for a reference with no observed weight",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > explicitly relabels rather than converting entered weight, including clears",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > logs the set against this prescription, with only what was entered",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > logs a cleared set without blocking, recording nothing it was not told",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > logs a partial set with only the field that was entered",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > takes an edited prefill, and a cleared one as not recorded",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > writes a timed prescription’s measure to its own column, asked for in Seconds",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > keeps every field as typed after the set is handed over",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger hands the shell > asks for a unit rather than assuming one when the profile’s is unread",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger refuses to hand over > holds the control busy and disabled while a set is in flight",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger refuses to hand over > refuses a negative weight, and says why at the field",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-logger.test.tsx",
+      "test": "what the logger refuses to hand over > accepts a zero, because a failed attempt is a result",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-039: one optional three-choice effort with the set’s entry > offers too hard / about right / too easy in the same form as reps and load",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-039: one optional three-choice effort with the set’s entry > has no arbitrary-number field and no step after the set",
+      "ledger": "build-edit-pending",
+      "disposition": "rewritten",
+      "note": "Kept as A3 task 1 rewrote it for Round 7 (file untouched by TASK-106): the build’s body reads the half-sheet’s regions (“Set 1 logged” as a region and no dialog after the set), which owner decision 1 replaced with the dialog; task 1’s body asserts the same — the only dialog after Log set is the saved set’s own and it asks nothing — and passes against this task’s confirmation."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-039: one optional three-choice effort with the set’s entry > is optional: a set logs without any answer",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > draws the current glyphs in order and keeps the words visually hidden",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > exposes the selected choice as checked, and only that one",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > maps each face to its stored category, and only to the three categories",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-041: a compact Clear returns the set to unanswered > appears only once answered, and clears back to no selection",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-042: null is unanswered, sets are independent, mood is separate > stores no effort for an unanswered set — never the middle, zero or a guess",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-042: null is unanswered, sets are independent, mood is separate > reads an old record with no effort back without a fabricated face",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-042: null is unanswered, sets are independent, mood is separate > keeps each set’s answer independent through logging, edits and clears",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-042: null is unanswered, sets are independent, mood is separate > leaves the five-choice session feeling a separate question",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "test": "AC-042: null is unanswered, sets are independent, mood is separate > never writes a mood with a set",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "The build’s body, unchanged."
+    },
+    {
+      "file": "e2e/refinement/task-020.spec.ts",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > JOURNEY-020 phone-320: Log set and Log round confirm the saved entry beside the same rest, collapse at its end without opening the next form, keep an early collapse, and open the next entry only from Rest",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the open log is Round 7’s dialog.clr-logging-overlay[open] (the build’s dialog.clr-accepted-log), and the confirmation’s read-back is its [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Every step and assertion is the build’s."
+    },
+    {
+      "file": "e2e/refinement/task-020.spec.ts",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > JOURNEY-020 phone-390: Log set and Log round confirm the saved entry beside the same rest, collapse at its end without opening the next form, keep an early collapse, and open the next entry only from Rest",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the open log is Round 7’s dialog.clr-logging-overlay[open] (the build’s dialog.clr-accepted-log), and the confirmation’s read-back is its [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Every step and assertion is the build’s."
+    },
+    {
+      "file": "e2e/refinement/task-020.spec.ts",
+      "test": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 keyboard, reduced motion and a refused save phone-390: Add 30s keeps the confirmation, its final-seconds warning and Skip rest record nothing, a refused write is confirmed only as held on this device, and a draft is never closed by expiry",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the open log is Round 7’s dialog.clr-logging-overlay[open] (the build’s dialog.clr-accepted-log), and the confirmation’s read-back is its [role=status].clr-set-sheet__saved (the build’s .clr-set-log > [role=status]). Every step and assertion is the build’s."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 anchor and extra set phone-390 touch: Rest opens the modal log with its X over an inert workout, close and Escape keep the draft, Log set saves through the original writer beside the one rest, and the extra set is logged as set 3",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]). Every route step and assertion is the build’s (the superset round opening in the same dialog, as the build’s body already checks)."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 saved-set correction and retry phone-390 keyboard reduced motion: a refused write is held on this device and retried under its own id; Edit opens Edit set N in the log, Cancel and Save correction keep the writer, and Clear set asks with Keep set first",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]). Every route step and assertion is the build’s (the superset round opening in the same dialog, as the build’s body already checks)."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 other lift, timed and distance movement phone-320: each opens the focused log with its own fields and saves through the original writer, while a superset round stays on its half-sheet (TASK-044)",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the open log is Round 7’s dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head (the build’s dialog.clr-accepted-log and [data-logging-head]). Every route step and assertion is the build’s (the superset round opening in the same dialog, as the build’s body already checks)."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states clear phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the accepted states are Round 7’s (gallery bec4454): each [data-refinement-state] section’s “Open …” mounts the real StandardBlock over memory and presses the same Rest or Edit, with Round 7’s sample movements (bench press, bicep curl, plank, farmers carry; Log set 4 for the extra set, Edit set 1 for the correction). The same dialog, title, X, fields, correction controls, Escape and the in-memory save with its confirmation; nothing over the network. The build read its own gallery’s [data-gallery-set-logging] scopes and movements, which Round 7 replaced."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states vapour phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the accepted states are Round 7’s (gallery bec4454): each [data-refinement-state] section’s “Open …” mounts the real StandardBlock over memory and presses the same Rest or Edit, with Round 7’s sample movements (bench press, bicep curl, plank, farmers carry; Log set 4 for the extra set, Edit set 1 for the correction). The same dialog, title, X, fields, correction controls, Escape and the in-memory save with its confirmation; nothing over the network. The build read its own gallery’s [data-gallery-set-logging] scopes and movements, which Round 7 replaced."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states signal phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the accepted states are Round 7’s (gallery bec4454): each [data-refinement-state] section’s “Open …” mounts the real StandardBlock over memory and presses the same Rest or Edit, with Round 7’s sample movements (bench press, bicep curl, plank, farmers carry; Log set 4 for the extra set, Edit set 1 for the correction). The same dialog, title, X, fields, correction controls, Escape and the in-memory save with its confirmation; nothing over the network. The build read its own gallery’s [data-gallery-set-logging] scopes and movements, which Round 7 replaced."
+    },
+    {
+      "file": "e2e/refinement/task-043.spec.ts",
+      "test": "TASK-043 standard set logging in the shared focused dialog > accepted gallery states mono phone-390: anchor, other-lift, timed-movement, distance-movement, extra-set and set-correction open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the accepted states are Round 7’s (gallery bec4454): each [data-refinement-state] section’s “Open …” mounts the real StandardBlock over memory and presses the same Rest or Edit, with Round 7’s sample movements (bench press, bicep curl, plank, farmers carry; Log set 4 for the extra set, Edit set 1 for the correction). The same dialog, title, X, fields, correction controls, Escape and the in-memory save with its confirmation; nothing over the network. The build read its own gallery’s [data-gallery-set-logging] scopes and movements, which Round 7 replaced."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 anchor phone-320: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 anchor phone-390: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 other-lift phone-320: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 other-lift phone-390: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 timed-movement phone-320: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 timed-movement phone-390: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 distance-movement phone-320: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 distance-movement phone-390: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 extra-set phone-320: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 extra-set phone-390: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 set-correction phone-320: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 set-correction phone-390: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 superset phone-320: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 superset phone-390: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "test": "TASK-AC-F3504D32EB11 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-106’s look check (TASK-AC-F3504D32EB11)."
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "(whole spec)",
+      "ledger": "added (F4)",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "reason": "A3 TASK-114’s approved verification runs it (TASK-019 check-01); it proves every logging moment’s writers across families. Not edited here."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "(whole spec)",
+      "ledger": "added (F4)",
+      "disposition": "deferred",
+      "task": "TASK-107",
+      "reason": "A3 TASK-107’s approved verification runs it (TASK-044 check-01: “runs here, after TASK-106”). Not edited here."
+    }
+  ]
+}

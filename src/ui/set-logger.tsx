@@ -85,8 +85,15 @@ import { ExerciseCoaching } from './exercise-coaching'
 import { MovementCountdown } from './movement-countdown'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
-import { SetLoggingConfirmation, SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
+import { LoggingOverlay } from './logging-overlay'
+import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
+import {
+  focusIsInSetSheet,
+  setSheetTitle,
+  useSaveConfirmation,
+  type SetSheetConfirmation,
+} from './set-save-confirmation'
 
 type WeightUnit = Enums<'weight_unit'>
 
@@ -165,12 +172,24 @@ export function ExerciseSetLogger({
   const correctable = onCorrectSet !== undefined || correctSet !== undefined
   const restTimer = useRestTimer()
   const presentation = useWorkoutExperiencePresentation()
-  const [savedEntry,setSavedEntry] = useState<number|null>(null)
+  // Round 7 (owner decision 1): under the presentation's logging dialog every
+  // entry is held by `LoggingOverlay`; without one (a renderer alone) it is
+  // the half-sheet, drawn in place.
+  const inDialog = presentation?.loggingOverlay !== undefined
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
-  const setSheetOpen=sheet.setOpen
   const logButton = useRef<HTMLButtonElement>(null)
   const editButton = useRef<HTMLButtonElement>(null)
   const returnAfterClear = useRef(false)
+  // A3 TASK-106: the dialog stays drawn from opening until the native dialog
+  // has closed — closed, not removed while open — so it plays its exit and
+  // hands focus back before it goes.
+  const [held, setHeld] = useState(openSheetOnMount)
+  // What a dialog closing itself goes on showing on its way out: its title
+  // and, at rest end, the confirmation it held — never the next entry's form.
+  const [leaving, setLeaving] = useState<{ title: string; confirmation?: SetSheetConfirmation } | null>(null)
+  // Where focus goes once the dialog has closed (the workout behind it is
+  // inert until then): the entry action, or a correction's Edit.
+  const pendingFocus = useRef<{ rowRemoved: boolean; toEdit: boolean } | null>(null)
 
   // On mount only (the setter is stable): a later collapse is the athlete's
   // and is kept. Not one-shot, so a strict remount — whose cleanup closes the
@@ -229,8 +248,34 @@ export function ExerciseSetLogger({
       ? null
       : { set: correctedSet, draft: correction }
   const mode = edit === null ? 'new' : 'edit'
-  useEffect(()=>{if(savedEntry===null||restTimer.remainingSeconds>0)return;const id=setTimeout(()=>{setSavedEntry(null);if(mode==='new')setSheetOpen(false)},0);return()=>clearTimeout(id)},[savedEntry,restTimer.remainingSeconds,setSheetOpen,mode])
   const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
+
+  // TASK-020 (C46; R07, R17): an accepted Log set N is confirmed beside the
+  // running rest rather than replaced by set N + 1's form. The rest ending
+  // closes the dialog; Close log ends it early; Rest opens the next entry.
+  const saved = useSaveConfirmation({
+    open: sheet.open,
+    editing: edit !== null,
+    recorded: (entry) => logged.some((set) => set.setNumber === entry),
+    // No rest prescribed and none running: nothing to wait for (A3 TASK-106).
+    restPrescribed: restOnEntry !== null,
+    onRestEnd: () => {
+      const inSheet = focusIsInSetSheet()
+      setLeaving({ title: overlayTitle, confirmation })
+      sheet.setOpen(false)
+      if (inSheet) returnFocus()
+    },
+  })
+  const confirmedSet =
+    edit !== null || saved.confirmed === null
+      ? undefined
+      : logged.find((set) => set.setNumber === saved.confirmed)
+  // The saved set read back from the shell's list: values, effort, sync status.
+  const confirmation: SetSheetConfirmation | undefined =
+    confirmedSet === undefined
+      ? undefined
+      : { entryName: `set ${confirmedSet.setNumber}`, reading: <SavedSetLine set={confirmedSet} /> }
+  const overlayTitle = setSheetTitle({ mode, entryName: `set ${sheetSetNumber}`, confirmation })
   const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
   /**
@@ -241,27 +286,156 @@ export function ExerciseSetLogger({
    */
   const openNew = () => {
     setCorrection(null)
-    // AC-037: logging access is independent of rest. Reopening from the card
-    // goes to the next set's entry, with a running rest still inside the
-    // dialog, rather than back to the previous set's confirmation (A3).
-    setSavedEntry(null)
+    // A deliberate Rest is the next entry: any confirmation is over (AC-037:
+    // logging access is independent of rest, so a running rest carries on
+    // inside the dialog while set N + 1 is entered).
+    saved.reset()
     const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
     if (restOnEntry !== null && !resting) {
       restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restOnEntry })
     }
+    setHeld(true)
+    setLeaving(null)
     sheet.setOpen(true)
   }
 
-  const returnFocus = (rowRemoved = false) => {
-    if (logsSelf) logButton.current?.focus()
+  // TASK-019 (cross-family seam): closing a saved-set correction with the
+  // log's X or Escape returns focus to the Edit that opened it. Any other
+  // return keeps the entry's own action.
+  const returnFocusNow = (rowRemoved = false, toEdit = false) => {
+    if (toEdit && !rowRemoved && editButton.current?.isConnected) editButton.current.focus()
+    else if (logsSelf) logButton.current?.focus()
     else if (!rowRemoved && editButton.current?.isConnected) editButton.current.focus()
     else onReturnToRound?.()
   }
 
-  const collapse = () => {
-    sheet.setOpen(false)
-    returnFocus()
+  // TASK-043, A3 TASK-106: while the logging dialog is open the workout behind
+  // it is inert, so the card's control cannot take focus until the native
+  // dialog has closed — however it closed: its X, Escape, a finished
+  // correction, a cleared set, or the rest ending. The return waits for it.
+  const returnFocus = (rowRemoved = false, toEdit = false) => {
+    if (inDialog) pendingFocus.current = { rowRemoved, toEdit }
+    else returnFocusNow(rowRemoved, toEdit)
   }
+
+  const afterDialogClose = () => {
+    setHeld(false)
+    setLeaving(null)
+    const pending = pendingFocus.current
+    pendingFocus.current = null
+    if (pending !== null) returnFocusNow(pending.rowRemoved, pending.toEdit)
+  }
+
+  const collapse = () => {
+    // An early close ends the confirmation: the rest ending will not reopen
+    // anything, and the next Rest opens the next entry (R07).
+    saved.reset()
+    setLeaving({ title: overlayTitle })
+    sheet.setOpen(false)
+    returnFocus(false, edit !== null)
+  }
+
+  const overlayOpen = sheet.open && (logsSelf || edit !== null)
+  // While the dialog closes itself it goes on showing the confirmation it held.
+  const shownConfirmation = inDialog && !overlayOpen ? leaving?.confirmation : confirmation
+
+  // The entry itself — the new set, or the correction of a saved one — or,
+  // once saved, its confirmation in the form's place.
+  const sheetForm = (
+    <SetSheetForm
+      key={mode}
+      mode={mode}
+      confirmation={shownConfirmation}
+      rest={sheetRest}
+      setNumber={sheetSetNumber}
+      exerciseName={name}
+      context={[title, prescriptionText(prescription), equipment].join(' · ')}
+      draft={edit === null ? entry : edit.draft}
+      onDraft={edit === null ? setDraft : setCorrection}
+      referenceUnit={
+        edit !== null
+          ? edit.set.weightUnit
+          : prefill !== null && prefill.weight !== null ? prefill.weightUnit : undefined
+      }
+      weightUnit={weightUnit}
+      measureLabel={modalityLabel(edit === null ? prescription : {
+        ...prescription,
+        modality: sheetModality,
+        distance_unit: edit.set.distanceUnit,
+      })}
+      modality={sheetModality}
+      showLoad={
+        !unloaded || (edit === null ? (prefill?.weight ?? null) : edit.set.weight) !== null
+      }
+      saving={edit === null && isSaving(exercise.exerciseId)}
+      onSubmit={(performed) => {
+        if (edit !== null) {
+          const corrected = { ...unshownMeasurements(edit.set, sheetModality), ...performed }
+          if (onCorrectSet !== undefined) onCorrectSet(exercise.exerciseId, corrected)
+          else correctSet?.(exercise.exerciseId, edit.set.id, corrected)
+          setCorrection(null)
+          if (!logsSelf) collapse()
+          return
+        }
+        // The save only: a running rest carries on, and none is started. A
+        // set the shell refuses keeps its entry and is never confirmed; an
+        // accepted one is confirmed once the shell's list holds it.
+        if (logSet(exercise.exerciseId, performed)) saved.confirm(sheetSetNumber)
+      }}
+      onCancel={() => {
+        setCorrection(null)
+        // With no new-set entry of its own, a finished correction closes.
+        if (!logsSelf) collapse()
+      }}
+      onClear={edit === null || clearSet === undefined ? undefined : () => setClearing(edit.set)}
+      onCollapse={() => collapse()}
+    />
+  )
+
+  // REQ-013: a set logged against the wrong movement is cleared here, after
+  // confirmation, and logged again on the right one with its own Log set.
+  // Nothing is moved: the result is removed, and only this one. TASK-043: in
+  // the logging dialog the confirmation is drawn inside it, so it opens over
+  // the log in the top layer and in document order alike.
+  const clearDialog = (
+    <AppDialog
+      open={clearing !== null}
+      critical
+      title={clearing === null ? undefined : `Clear set ${clearing.setNumber} of ${name}?`}
+      onClose={() => setClearing(null)}
+      onAfterClose={() => {
+        if (!returnAfterClear.current) return
+        returnAfterClear.current = false
+        // Background controls remain inert until the native dialog closes.
+        returnFocus(true)
+      }}
+      actions={
+        <>
+          <Button variant="secondary" onClick={() => setClearing(null)}>
+            Keep set
+          </Button>
+          <Button
+            variant="critical"
+            onClick={() => {
+              if (clearing !== null) clearSet?.(exercise.exerciseId, clearing.id)
+              setClearing(null)
+              setCorrection(null)
+              if (inDialog) {
+                // The logging dialog closes with it; focus returns once it has.
+                setLeaving({ title: overlayTitle })
+                returnFocus(true)
+              } else returnAfterClear.current = true
+              sheet.setOpen(false)
+            }}
+          >
+            Clear set
+          </Button>
+        </>
+      }
+    >
+      {clearing === null ? null : <p style={{ margin: 0, fontFamily: 'var(--font-data)' }}>{loggedSetText(clearing)}</p>}
+    </AppDialog>
+  )
 
   return (
     <BlockPanel.Movement
@@ -291,6 +465,8 @@ export function ExerciseSetLogger({
                   ? current
                   : editDraft(set, prescription.modality),
               )
+              setHeld(true)
+              setLeaving(null)
               sheet.setOpen(true)
             }
         }
@@ -324,93 +500,23 @@ export function ExerciseSetLogger({
         </ActionGroup>
       ) : null}
 
-      {(logsSelf || edit !== null) && sheet.place(
-        savedEntry !== null && edit === null ? <SetLoggingConfirmation label={`Set ${savedEntry} logged`} onCollapse={collapse}/> : <SetSheetForm
-          key={mode}
-          mode={mode}
-          rest={sheetRest}
-          setNumber={sheetSetNumber}
-          exerciseName={name}
-          context={[title, prescriptionText(prescription), equipment].join(' · ')}
-          draft={edit === null ? entry : edit.draft}
-          onDraft={edit === null ? setDraft : setCorrection}
-          referenceUnit={
-            edit !== null
-              ? edit.set.weightUnit
-              : prefill !== null && prefill.weight !== null ? prefill.weightUnit : undefined
-          }
-          weightUnit={weightUnit}
-          measureLabel={modalityLabel(edit === null ? prescription : {
-            ...prescription,
-            modality: sheetModality,
-            distance_unit: edit.set.distanceUnit,
-          })}
-          modality={sheetModality}
-          showLoad={
-            !unloaded || (edit === null ? (prefill?.weight ?? null) : edit.set.weight) !== null
-          }
-          saving={edit === null && isSaving(exercise.exerciseId)}
-          onSubmit={(performed) => {
-            if (edit !== null) {
-              const corrected = { ...unshownMeasurements(edit.set, sheetModality), ...performed }
-              if (onCorrectSet !== undefined) onCorrectSet(exercise.exerciseId, corrected)
-              else correctSet?.(exercise.exerciseId, edit.set.id, corrected)
-              setCorrection(null)
-              if (!logsSelf) collapse()
-              return
-            }
-            // The save only: a running rest carries on, and none is started.
-            // A refused set keeps its entry and never reads as logged (A3).
-            if(logSet(exercise.exerciseId, performed)&&presentation)setSavedEntry(setNumber)
-          }}
-          onCancel={() => {
-            setCorrection(null)
-            // With no new-set entry of its own, a finished correction closes.
-            if (!logsSelf) collapse()
-          }}
-          onClear={edit === null || clearSet === undefined ? undefined : () => setClearing(edit.set)}
-          onCollapse={() => collapse()}
-        />,
-      )}
+      {inDialog ? sheet.place(
+        // Round 7's logging dialog: its title is the entry's one title, its X
+        // and Escape the entry's one collapse. The form is drawn only while
+        // open; the draft lives here, so closing loses nothing.
+        <LoggingOverlay
+          open={overlayOpen}
+          title={overlayOpen || leaving === null ? overlayTitle : leaving.title}
+          onClose={() => collapse()}
+          onAfterClose={afterDialogClose}
+        >
+          {overlayOpen || shownConfirmation !== undefined ? sheetForm : null}
+          {clearDialog}
+        </LoggingOverlay>,
+        held,
+      ) : (logsSelf || edit !== null) && sheet.place(sheetForm)}
 
-      {/*
-        REQ-013: a set logged against the wrong movement is cleared here, after
-        confirmation, and logged again on the right one with its own Log set.
-        Nothing is moved: the result is removed, and only this one.
-      */}
-      <AppDialog
-        open={clearing !== null}
-        critical
-        title={clearing === null ? undefined : `Clear set ${clearing.setNumber} of ${name}?`}
-        onClose={() => setClearing(null)}
-        onAfterClose={() => {
-          if (!returnAfterClear.current) return
-          returnAfterClear.current = false
-          // Background controls remain inert until the native dialog closes.
-          returnFocus(true)
-        }}
-        actions={
-          <>
-            <Button variant="secondary" onClick={() => setClearing(null)}>
-              Keep set
-            </Button>
-            <Button
-              variant="critical"
-              onClick={() => {
-                if (clearing !== null) clearSet?.(exercise.exerciseId, clearing.id)
-                returnAfterClear.current = true
-                setClearing(null)
-                setCorrection(null)
-                sheet.setOpen(false)
-              }}
-            >
-              Clear set
-            </Button>
-          </>
-        }
-      >
-        {clearing === null ? null : <p style={{ margin: 0, fontFamily: 'var(--font-data)' }}>{loggedSetText(clearing)}</p>}
-      </AppDialog>
+      {inDialog ? null : clearDialog}
 
       {/*
         No swap control here (U37): a movement is swapped in Review, before the
@@ -522,6 +628,32 @@ function SyncBadge({ status }: { status: SetSyncStatus }) {
       </span>
       {badge.label}
     </span>
+  )
+}
+
+/**
+ * TASK-020 (C46): the confirmation's reading of one saved set — the same
+ * formatter, effort reading and sync status as its row on the card, so the
+ * dialog never says more than the shell's list does (EXE-07: a queued or
+ * refused set is never drawn as stored). `name` prefixes a superset round's
+ * movement, whose actuals are each its own.
+ */
+function SavedSetLine({ set, name }: { set: LoggedSet; name?: string }) {
+  return (
+    <p
+      style={{
+        margin: 0,
+        fontFamily: 'var(--font-data)',
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 'var(--spacing-100)',
+      }}
+    >
+      <span>{name === undefined ? loggedSetText(set) : `${name} · ${loggedSetText(set)}`}</span>
+      <SetEffortReading value={set.effort} />
+      <SyncBadge status={set.status} />
+    </p>
   )
 }
 
@@ -660,6 +792,8 @@ interface SetSheetFormProps {
   /** False for an unloaded movement with no load to carry forward. */
   showLoad: boolean
   saving: boolean
+  /** TASK-020: the set just saved, confirmed in the form's place. */
+  confirmation?: SetSheetConfirmation
   onSubmit: (performed: PerformedSet) => void
   onCancel: () => void
   /** Edit mode, where the shell can clear a saved set: arms the confirmation. */
@@ -681,6 +815,7 @@ interface SetSheetFormProps {
  */
 function SetSheetForm({
   mode,
+  confirmation,
   setNumber,
   exerciseName: name,
   context,
@@ -712,6 +847,7 @@ function SetSheetForm({
     <SetLoggingSheet
       mode={mode}
       setNumber={setNumber}
+      confirmation={confirmation}
       formLabel={`${mode === 'edit' ? 'Edit' : 'Log'} set ${setNumber} of ${name}`}
       context={context}
       rest={rest}
@@ -1006,7 +1142,14 @@ export interface SupersetRoundSheetProps {
   /** The entry so far, or `null` before anything was entered. */
   held: RoundDraft | null
   onHeld: (draft: RoundDraft) => void
-  onLogged?:()=>void
+  /**
+   * TASK-020 (C46; R07): the round just saved, confirmed in the form's place
+   * — each logged movement's own actuals and effort, read back — or null for
+   * the entry. The block decides when it ends (`useSaveConfirmation`).
+   */
+  confirmed?: number | null
+  /** Log round N was accepted for `round`: every part the shell took. */
+  onSaved?: (round: number) => void
   onCollapse: () => void
 }
 
@@ -1015,7 +1158,8 @@ export function SupersetRoundSheet({
   round,
   held,
   onHeld: setHeld,
-  onLogged,
+  confirmed = null,
+  onSaved,
   onCollapse,
 }: SupersetRoundSheetProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
@@ -1080,15 +1224,33 @@ export function SupersetRoundSheet({
       if (reading.performed !== null && !logSet(part.exercise.exerciseId, reading.performed)) accepted = false
     }
     if (!accepted) return false
-    onLogged?.()
+    onSaved?.(round)
     return true
   }
+
+  // Each movement the round recorded, under its own name; an unticked one
+  // was not logged and is not mentioned (TASK-020, TASK-044).
+  const savedLines = confirmed === null
+    ? []
+    : parts.flatMap((part) => {
+      const set = loggedSets(part.exercise.exerciseId).find((candidate) => candidate.setNumber === confirmed)
+      return set === undefined ? [] : [{ part, set }]
+    })
+  const confirmation: SetSheetConfirmation | undefined = savedLines.length === 0 || confirmed === null
+    ? undefined
+    : {
+      entryName: `round ${confirmed}`,
+      reading: savedLines.map(({ part, set }) => (
+        <SavedSetLine key={part.exercise.exerciseId} set={set} name={`${part.ordinal} ${part.name}`} />
+      )),
+    }
 
   return (
     <SetLoggingSheet
       mode="new"
       setNumber={round}
       entryName={`round ${round}`}
+      confirmation={confirmation}
       formLabel={`Log round ${round} of ${parts.map((part) => part.name).join(' and ')}`}
       context=""
       measures={readings.map(({ part, entry, reading }) => {

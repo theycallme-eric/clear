@@ -21,6 +21,24 @@
  * It owns no draft and writes nothing. The logger that opens it keeps the
  * entry and decides what a submit means, so collapsing the sheet loses
  * nothing and only an explicit Log set records an observation.
+ *
+ * Round 7 (owner decision 1) draws it in the centred logging dialog
+ * (`LoggingOverlay`), closed with its framed X, with the rest running inside.
+ * A3 TASK-106 (F4) wires the old build's behaviour into that dialog:
+ *
+ *   · **Held by the dialog, it draws its body only** (TASK-043, TASK-044). The
+ *     logger holds the dialog (`LoggingOverlay`), whose title is the entry's
+ *     one title (`setSheetTitle`) and whose X is its one collapse; this draws
+ *     the context, the running rest, the confirmation or the form beneath.
+ *   · **Save confirms, read back** (TASK-020: C46, R07, R17). After an
+ *     accepted Log set N or Log round N the dialog is that entry's
+ *     confirmation — `Set N logged`, the saved result read back from the
+ *     shell's set list with its values, effort face and sync badge
+ *     (`role="status"`), beside the same running rest — instead of the next
+ *     set's form. The logger decides when it ends (`set-save-confirmation.ts`).
+ *   · **Focus lands on the title** (TASK-020, TASK-043). When Save replaces
+ *     the form, and its focused action, with the confirmation, the dialog's
+ *     title takes focus, a programmatic target only.
  */
 import {
   use,
@@ -47,6 +65,8 @@ import {
 } from './set-logging-sheet-context'
 import { RestTimerBar } from './workout-chrome'
 import { LoggingOverlay } from './logging-overlay'
+import { useLoggingOverlayTitle } from './refinements/logging-overlay-context'
+import { setSheetTitle, type SetSheetConfirmation } from './set-save-confirmation'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import './set-logging-sheet.css'
 
@@ -115,7 +135,13 @@ export type SetSheetMode = 'new' | 'edit'
 
 export interface SetLoggingSheetProps {
   mode: SetSheetMode
-  confirmation?: string
+  /**
+   * TASK-020 (C46): the entry just saved, confirmed in the form's place.
+   * Given, the sheet is titled `Set N logged` (`Round N logged`), keeps its
+   * context and the running rest, reads the saved result back, and draws no
+   * form: the next entry waits for a deliberate Rest.
+   */
+  confirmation?: SetSheetConfirmation
   setNumber: number
   /**
    * What the entry is called in the title and on its action, where it is not
@@ -150,6 +176,21 @@ export interface SetLoggingSheetProps {
    */
   onClear?(): void
   onCollapse(): void
+}
+
+/**
+ * Focuses the holding dialog's title, so the reader lands on `Set N logged`
+ * when Save replaces the form — but only when focus has nowhere else to be:
+ * the dialog's own opening focus on its X is left alone. The title is made a
+ * programmatic focus target only (never in the Tab order).
+ */
+function focusDialogTitle(titleId: string) {
+  const active = document.activeElement
+  if (active !== null && active !== document.body && active.isConnected) return
+  const title = document.getElementById(titleId)
+  if (title === null) return
+  if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1')
+  title.focus({ preventScroll: true })
 }
 
 const STRUCTURE_BLEED_STYLE = { '--bleed': 'var(--border-frame-structure)' } as CSSProperties
@@ -190,13 +231,26 @@ export function SetLoggingSheet({
   // the title is already in view, and its region has not been sized yet:
   // scrolling to it there would leave the sheet opened part-way down.
   const hosted = use(SetLoggingSheetHostContext) !== null
+  // Held by the logging dialog, whose title is this entry's (A3 TASK-106).
+  const dialogTitleId = useLoggingOverlayTitle()
+  // A Save replaces the form, and its focused action, with the confirmation:
+  // the title takes focus again so the reader lands on `Set N logged`.
+  const confirmed = confirmation !== undefined
   useEffect(() => {
-    document.getElementById(titleId)?.focus({ preventScroll: hosted })
-  }, [titleId, hosted])
+    if (dialogTitleId !== null) focusDialogTitle(dialogTitleId)
+    else document.getElementById(titleId)?.focus({ preventScroll: hosted })
+  }, [titleId, hosted, confirmed, dialogTitleId])
 
-  const body = <>          {confirmation === undefined && context ? <p style={CONTEXT_STYLE}>{context}</p> : null}
+  const title = setSheetTitle({ mode, entryName, confirmation })
+  const body = <>          {context ? <p style={CONTEXT_STYLE}>{context}</p> : null}
 
           {rest === undefined ? <RestTimerBar /> : rest}
+
+          {confirmation === undefined ? null : (
+            <div role="status" className="clr-stack clr-stack--tight clr-set-sheet__saved">
+              {confirmation.reading}
+            </div>
+          )}
 
           {confirmation === undefined && <form
             aria-label={formLabel}
@@ -230,7 +284,10 @@ export function SetLoggingSheet({
               </ActionGroup>
             )}
           </form>}</>
-  if (proposal) return <LoggingOverlay open title={confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`} onClose={onCollapse}>
+  // The dialog draws the frame, the title and the framed X; this is the body
+  // under them, in the same order the half-sheet draws it.
+  if (dialogTitleId !== null) return <div className="clr-stack clr-stack--tight">{body}</div>
+  if (proposal) return <LoggingOverlay open title={title} onClose={onCollapse}>
     <div className="clr-stack clr-stack--tight">{body}</div>
   </LoggingOverlay>
   return (
@@ -244,7 +301,7 @@ export function SetLoggingSheet({
           <div id={bodyId} className="clr-chamfer clr-chamfer--md clr-chamfer--structure clr-set-sheet__frame">
             <div className="clr-row clr-set-sheet__head">
               <HeadingLevelProvider level={2}><Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`}
+                {title}
               </Heading></HeadingLevelProvider>
               <IconButton label="Minimize" icon={<ChevronDown />} aria-expanded aria-controls={bodyId} onClick={onCollapse} />
             </div>
@@ -262,8 +319,3 @@ export function SetMeasurementRow({ children }: { children: ReactNode }) {
   return <div className="clr-set-sheet__measures">{children}</div>
 }
 
-
-/** Same sheet/frame and actual rest; no next-entry form after a saved set. */
-export function SetLoggingConfirmation({label,onCollapse}:{label:string;onCollapse:()=>void}){
- return <SetLoggingSheet mode="new" setNumber={0} confirmation={label} formLabel={label} context={null} measures={null} onSubmit={()=>false} onCollapse={onCollapse}/>
-}

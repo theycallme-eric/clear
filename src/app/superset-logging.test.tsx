@@ -21,6 +21,13 @@
  *
  * The refused-write path — entered values kept when the shell cannot accept
  * the round — is held at the renderer, where the profile's unit can be absent.
+ *
+ * A3 TASK-106 (F4; owner decision 1): the round and each movement's correction
+ * open in Round 7's logging dialog (`src/ui/logging-overlay.tsx`). It is modal
+ * — the workout behind it is inert — and plays the shared Dialog's exit before
+ * it closes, so a step that uses the card closes the open log first and a
+ * step that closes it waits for the close; focus returns once it has. Every
+ * assertion is otherwise the build's.
  */
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -156,25 +163,6 @@ async function openRound(user: ReturnType<typeof userEvent.setup>, round: number
   return roundForm(round)
 }
 
-/**
- * Round 7 (decision 1): a logged round's dialog confirms it beside the block's
- * running rest and closes once that rest ends — here, by Skip rest. The
- * block's Rest then opens the next round.
- */
-async function nextRound(user: ReturnType<typeof userEvent.setup>, round: number) {
-  await user.click(screen.getByRole('button', { name: 'Skip rest' }))
-  await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Rest' })).toHaveAttribute('aria-expanded', 'false'),
-  )
-  return openRound(user, round)
-}
-
-/** Round 7 (decision 1): logging is a dialog, closed with its Close log. */
-async function closeLog(user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) {
-  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
-  await waitFor(() => expect(dialog).not.toBeInTheDocument())
-}
-
 function movement(form: HTMLElement, label: string) {
   return within(within(form).getByRole('group', { name: label }))
 }
@@ -259,8 +247,11 @@ describe('one combined Log round (AC-058)', () => {
       durationSeconds: 45,
       effort: 'too_easy',
     })
-    // The next round opens with every field and effort fresh.
-    const next = await nextRound(user, 2)
+    // TASK-020 (C46): round 1 is confirmed in the sheet, not replaced by round
+    // 2's form; the next round, opened deliberately, starts every field and
+    // effort fresh.
+    expect(screen.getByRole('dialog', { name: 'Round 1 logged' })).toBeInTheDocument()
+    const next = await openRound(user, 2)
     expect(within(movement(next, 'A1 bench press, set 2').getByRole('group', { name: 'Effort' }))
       .queryByRole('radio', { checked: true })).toBeNull()
     expect(movement(next, 'A1 bench press, set 2').getByRole('checkbox', { name: 'Performed' })).not.toBeChecked()
@@ -308,7 +299,9 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     expect(double.loggedSets().some((entry) => entry.exerciseId === exerciseIdOf(double, 'plank'))).toBe(false)
 
     // The next round keeps the plank's gap at set 1 rather than sliding into it.
-    const next = await nextRound(user, 2)
+    // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately.
+    expect(screen.getByRole('dialog', { name: 'Round 1 logged' })).toBeInTheDocument()
+    const next = await openRound(user, 2)
     await user.click(movement(next, 'A2 plank, set 2').getByRole('checkbox', { name: 'Performed' }))
     await user.click(submit(next, 2))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(2))
@@ -454,8 +447,8 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     const form = await openRound(user, 1)
     await retype(user, movement(form, 'A2 plank, set 1').getByLabelText('Seconds'), '41')
 
-    await closeLog(user, screen.getByRole('dialog', { name: 'Log round 1' }))
-    expect(screen.queryByRole('form', { name: /^Log round/ })).toBeNull()
+    await user.click(within(form.closest('dialog')!).getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(screen.queryByRole('form', { name: /^Log round/ })).toBeNull())
 
     const again = await openRound(user, 1)
     const a2 = movement(again, 'A2 plank, set 1')
@@ -500,7 +493,8 @@ describe('movement countdown ownership through partial rounds', () => {
     expect(timer()).toHaveTextContent('00:25')
     advance(5)
     expect(timer()).toHaveTextContent('00:20')
-    const next = await nextRound(user, 2)
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
+    const next = await openRound(user, 2)
     expect(timer()).toBe(original)
     expect(screen.getAllByRole('region', { name: 'plank countdown' })).toHaveLength(1)
     await retype(user, movement(next, 'A2 plank, set 2').getByLabelText('Seconds'), '18')
@@ -521,10 +515,12 @@ describe('a grouped correction returns keyboard focus to an available control', 
     await retype(user, movement(form, 'A1 bench press, set 1').getByLabelText('Reps'), '7')
     await user.click(submit(form, 1))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
-    // Round 7 (decision 1): the logged round's dialog is closed to reach the card.
-    await closeLog(user, screen.getByRole('dialog', { name: 'Round 1 entries logged' }))
     const row = within(screen.getByRole('heading', { name: 'A1 bench press' }).closest('section')!)
     await row.findByText('Saved')
+    // Round 7: the round's confirmation is a modal over the card; it is
+    // closed (and its exit played) before the card's Edit is used.
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(screen.queryAllByRole('dialog')).toHaveLength(0))
     const edit = row.getByRole('button', { name: 'Edit set 1' })
     const editForm = () => screen.getByRole('form', { name: 'Edit set 1 of bench press' })
     const openEdit = async () => {
@@ -533,16 +529,17 @@ describe('a grouped correction returns keyboard focus to an available control', 
       return within(await screen.findByRole('form', { name: 'Edit set 1 of bench press' }))
     }
 
+    // Round 7: focus returns once the dialog has played its exit and closed.
     await openEdit()
-    await closeLog(user, screen.getByRole('dialog', { name: 'Edit set 1' }))
-    expect(edit).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(edit).toHaveFocus())
     await openEdit()
     await user.click(within(editForm()).getByRole('button', { name: 'Cancel' }))
-    expect(edit).toHaveFocus()
+    await waitFor(() => expect(edit).toHaveFocus())
     const correction = await openEdit()
     await retype(user, correction.getByLabelText('Reps'), '6')
     await user.click(correction.getByRole('button', { name: 'Save correction' }))
-    expect(edit).toHaveFocus()
+    await waitFor(() => expect(edit).toHaveFocus())
     await waitFor(() => expect(double.correctedSets()[0]?.performed.reps).toBe(6))
 
     const clear = await openEdit()
@@ -550,16 +547,27 @@ describe('a grouped correction returns keyboard focus to an available control', 
     const confirmation = await screen.findByRole('dialog', { name: 'Clear set 1 of bench press?' })
     // Hold the native close event: requesting a controlled close still leaves
     // the background inert in a browser until the dialog actually closes.
+    // Round 7: the confirmation is drawn inside the logging dialog, and the
+    // two close together; focus returns once both have actually closed.
     const nativeClose = HTMLDialogElement.prototype.close
-    const close = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(() => {})
+    const held = new Set<HTMLDialogElement>()
+    const close = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (this: HTMLDialogElement) {
+      held.add(this)
+    })
+    const log = confirmation.parentElement!.closest('dialog')!
+    expect(log).toHaveClass('clr-logging-overlay')
     await user.click(within(confirmation).getByRole('button', { name: 'Clear set' }))
     await waitFor(() => expect(double.clearedSets()).toHaveLength(1))
     expect(row.queryByRole('list', { name: 'Logged sets' })).toBeNull()
     const logRound = screen.getByRole('button', { name: 'Rest' })
     expect(logRound).not.toHaveFocus()
-    await waitFor(() => expect(close).toHaveBeenCalledOnce())
+    await waitFor(() => expect(close).toHaveBeenCalled())
+    await waitFor(() => expect([...held]).toEqual(expect.arrayContaining([confirmation, log])))
     expect(confirmation).toHaveAttribute('open')
+    expect(log).toHaveAttribute('open')
     act(() => nativeClose.call(confirmation as HTMLDialogElement))
+    expect(logRound).not.toHaveFocus()
+    act(() => nativeClose.call(log))
     expect(logRound).toHaveFocus()
   })
 })
@@ -594,15 +602,10 @@ describe('shared rest and the global clock (AC-060)', () => {
     expect(screen.getAllByRole('timer', { name: 'Session time' })).toHaveLength(1)
     expect(sessionClock()).toHaveTextContent('10:20')
 
-    // AC-037: logging access is independent of rest. Closing the logged
-    // round's dialog and pressing Rest again opens round 2's entry while the
-    // same rest runs on inside it, neither restarted nor doubled.
-    await closeLog(user, screen.getByRole('dialog'))
-    const next = await openRound(user, 2)
-    expect(restBars()).toHaveLength(1)
-    expect(restTimer()).toHaveTextContent('00:40')
-
     // A partial round still saves as one round, and starts no second rest.
+    // TASK-020 (C46): round 1 is confirmed; round 2 is opened deliberately.
+    expect(screen.getByRole('dialog', { name: 'Round 1 logged' })).toBeInTheDocument()
+    const next = await openRound(user, 2)
     await retype(user, movement(next, 'A2 plank, set 2').getByLabelText('Seconds'), '25')
     await user.click(submit(next, 2))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(3))
