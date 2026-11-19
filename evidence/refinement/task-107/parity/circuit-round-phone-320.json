@@ -1,0 +1,247 @@
+{
+  "schema": "clear-task-107-parity/v1",
+  "task": "TASK-107",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "circuit-round",
+  "label": "Circuit round / take back",
+  "width": 320,
+  "route": "/workout",
+  "drive": "card; Start round 1, 32.72 s on the circuit’s clock, Finish round 1 → Round 1 recorded (read 0.5 s later); Close log → the block with its rest back beside the card (read 0.5 s later) — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-gallery-card.png",
+      "sha256": "2f8dee0476ece6df69766e2a1f5776471d716aaa154d32eec187e83221bec66f"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-route-card.png",
+      "sha256": "47a23a6c4cea3571319e6d4d2c1393624c34534b787c446354e64a8186bde790"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-gallery-open.png",
+      "sha256": "e6a11e34cf503622943283af461183d7c2683479d0cd00b66d16f3c1b6bf92b1"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-route-open.png",
+      "sha256": "9d5689e483bedcaeecc73fc754e8f9c1db195e45dda9883bcf3adbc91956f742"
+    },
+    "gallery-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-gallery-closed.png",
+      "sha256": "4e6d1301edf4d0028b10c633652fdc637374f6bda896d1eb4a3ad008a90a6475"
+    },
+    "route-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-route-closed.png",
+      "sha256": "b8c89e5e275b084c4ffbf76da702f05130604dd3171253aa7690db2bcaae7ef9"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "CONDITIONING",
+        "CIRCUIT",
+        "NO ROUNDS RECORDED",
+        "START ROUND 1",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ],
+      "open": [
+        "ROUND 1 RECORDED",
+        "00:32 round time recorded",
+        "0",
+        "0",
+        ":",
+        "4",
+        "5",
+        "00:45",
+        "TAKE BACK THIS ROUND"
+      ],
+      "closed": [
+        "0",
+        "0",
+        ":",
+        "4",
+        "4",
+        "00:44",
+        "CONDITIONING",
+        "CIRCUIT",
+        "1 OF 3 ROUNDS RECORDED",
+        "REST BETWEEN ROUNDS",
+        "START ROUND 2",
+        "TAKE BACK A ROUND",
+        "ROUND TIMES",
+        "ROUND 1",
+        "00:32",
+        "32 seconds",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ]
+    },
+    "route": {
+      "card": [
+        "CONDITIONING",
+        "CIRCUIT",
+        "NO ROUNDS RECORDED",
+        "START ROUND 1",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ],
+      "open": [
+        "ROUND 1 RECORDED",
+        "00:32 round time recorded",
+        "0",
+        "0",
+        ":",
+        "4",
+        "5",
+        "00:45",
+        "TAKE BACK THIS ROUND"
+      ],
+      "closed": [
+        "0",
+        "0",
+        ":",
+        "4",
+        "4",
+        "00:44",
+        "CONDITIONING",
+        "CIRCUIT",
+        "1 OF 3 ROUNDS RECORDED",
+        "REST BETWEEN ROUNDS",
+        "START ROUND 2",
+        "TAKE BACK A ROUND",
+        "ROUND TIMES",
+        "ROUND 1",
+        "00:32",
+        "32 seconds",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": [],
+    "closed": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 65,
+        "open": 28,
+        "closed": 93
+      },
+      "route": {
+        "card": 65,
+        "open": 28,
+        "closed": 93
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 577
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 271.5
+        },
+        "closed": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 784
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 577
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 271.5
+        },
+        "closed": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 784
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": [],
+      "closed": []
+    }
+  }
+}

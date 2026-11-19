@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-021/required-cases.json",
-    "sha256": "5507393fd235da8e6917d5c40085251d19ba37c7478899d74553d0ff02e77118"
+    "sha256": "cafb105ab35b15b230248b92063219262d436c27402147489b23f80b6efa71cd"
   },
   "targets": [
     {
       "path": "src/ui/circuit-block.test.tsx",
-      "sha256": "d5336a9e0de4924f052ffd3402811310c4d032ae7b7be440f2f75d042e65521d"
+      "sha256": "3be6bb609d8647572ee965cd0df24837615e6a908f049e3fcd5e6fc892fbf5c1"
     }
   ],
   "requiredCases": [
@@ -46,7 +46,7 @@
     },
     {
       "file": "src/ui/circuit-block.test.tsx",
-      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log reads the round and Take back this round with no timer, and stays until closed",
+      "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log shows the round with no timer and then closes itself (owner decision 5), focus on the round clock, Take back a round on the card",
       "status": "passed"
     },
     {
@@ -61,12 +61,12 @@
     }
   ],
   "totals": {
-    "total": 39,
-    "passed": 39,
+    "total": 41,
+    "passed": 41,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 39
+    "executed": 41
   },
   "problems": []
 }

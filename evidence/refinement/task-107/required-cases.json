@@ -1,0 +1,369 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-107",
+  "description": "A3 task 7 (F5): the circuit’s recorded round in Round 7’s dialog, read back from stored history (#730; REQ-021, C48, G13; JOURNEY-021, completion owner). check-01 proves the wiring on the real components: on /workout, CircuitBlock (src/ui/circuit-block.tsx) over the one circuit controller (src/state/circuit.ts, usePersistedCircuit) confirms Finish round N in Round 7’s LoggingOverlay titled Round N recorded, replacing Round 7’s in-memory round clock: the round time is read back from circuit.state.history, the circuit’s rest runs inside the dialog (drawn there instead of beside the card), the dialog closes itself when that rest ends (or the card’s Start round ends it), and with no rest to run (none prescribed, or the last round) the confirmation shows and the dialog then closes itself (owner decision 5, 2026-11-16); Take back this round is takeBackRound and resumes the round’s own clock; the X and Escape change nothing; focus returns to the round clock’s control however it closed; a reload comes back to the card. It runs the three circuit test files whole (the carried TASK-021 cases, AC-061/062/063 and AC-051 included). parity (TASK-AC-2FA21EDA32B4) captures /workout’s circuit round and circuit movement entry beside the accepted gallery states circuit-round and circuit-movement (gallery bec4454) at 320 and 390 with matched data, comparing every visible word and every element box; receipts in evidence/refinement/task-107/parity/, captures in the evidence store under clear-gallery-adoption-v2-20261118/task-107/captures/. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-107 --check check-01 -- npx vitest run src/ui/circuit-block.test.tsx src/app/circuit-rounds.test.tsx src/app/movement-countdown-circuit.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C48-01",
+        "AC-R021-01",
+        "AC-R021-02",
+        "TASK-AC-793C48069668",
+        "TASK-AC-022EA79369E8",
+        "TASK-AC-3A057AEB41D0",
+        "TASK-AC-DA8A9A9CD184",
+        "JOURNEY-021"
+      ],
+      "files": [
+        "src/ui/circuit-block.test.tsx",
+        "src/app/circuit-rounds.test.tsx",
+        "src/app/movement-countdown-circuit.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the complete ordered circuit > shows every movement in prescribed order with its per-round target",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the complete ordered circuit > orders by the prescription, whatever order the rows arrived in",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the complete ordered circuit > never says a rest the block does not prescribe",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the complete ordered circuit > says so when every movement in it was swapped out",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "nothing is compulsory > has no per-movement step and singles out no movement",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "nothing is compulsory > draws no set form until the athlete asks for one",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "nothing is compulsory > offers the round clock as optional, secondary taps: Start, then Finish",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "nothing is compulsory > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > reports no count when no round was recorded",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > infers nothing from time: an untouched circuit long past its prescription has no count",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > infers nothing from a rest that ran out: only the recorded round counts",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > reports the rounds the athlete recorded, and stops at the prescription",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > takes a mistaken round back to no count at all, never an observed zero",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > counts recorded rounds without a prescribed total",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "rounds are observations, never inferred > reports no count at all for a circuit with nothing to perform",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the shared rest > starts once, at a recorded round boundary, with the block’s seconds",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the shared rest > ends on its own when the block’s seconds have passed",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the shared rest > can be ended early with its one control, inside the card",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the shared rest > records the first round after an expired rest on the first tap, including a remount",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "surviving a refresh > comes back to the rounds the athlete recorded",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "surviving a refresh > comes back into the rest it was in, with the time that is left",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "surviving a refresh > starts with nothing recorded when the stored record cannot be used",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "surviving a refresh > still shows the whole circuit after a movement was swapped out",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the circuit draws with the shared block frame > is one card, with the movements as rows of one list and never a card inside it",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the circuit draws with the shared block frame > draws the rest countdown beside the card, never inside it",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the circuit draws with the shared block frame > is still one card when nothing is left to perform",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "optional, compact load entry > opens the set form for the one movement asked for, and closes it again",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "optional, compact load entry > writes the set against its movement and block, and records no round for it",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "optional, compact load entry > holds only the saving movement’s action busy while its set is in flight",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "optional, compact load entry > keeps a refused set as unsaved while a round is recorded, and resends it under the same id",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Finish round N opens Round N recorded: the framed Close log X alone in the header, the round time read back, the circuit rest at the log’s full width and Take back this round",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Take back this round un-records the round, ends its rest, closes the log and resumes the round’s own clock, with focus on Finish round",
+          "criterion": "TASK-AC-022EA79369E8"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 the rest runs on in the log and ends it: at rest end the log closes by itself, records nothing more and the next round’s clock runs; the card’s early Start round ends it too",
+          "criterion": "TASK-AC-022EA79369E8"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Close log and Escape close it without changing anything: the same rest goes on, back on the card, with Start round N and Take back a round",
+          "criterion": "AC-R021-02"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log shows the round with no timer and then closes itself (owner decision 5), focus on the round clock, Take back a round on the card",
+          "criterion": "TASK-AC-022EA79369E8"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-C48-01 round recording, active round time and the round-time history are kept through the log, and a refresh comes back to the card, never to the log",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "TASK-021 the recorded round in the shared focused log > AC-R021-01 one circuit controller: the log’s taps are the circuit’s own Finish round and Take back, written only to the circuit record, with the original scoring",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "A3 TASK-107 the recorded round wired to the circuit controller > TASK-AC-793C48069668 the round time is read back from the stored history, not from the round clock’s last on-screen tick",
+          "criterion": "TASK-AC-793C48069668"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "A3 TASK-107 the recorded round wired to the circuit controller > TASK-AC-3A057AEB41D0 focus returns to the round clock’s control however the log closed — Take back this round, Escape, Close log, the rest ending, and closing itself with no rest — never the page body",
+          "criterion": "TASK-AC-3A057AEB41D0"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one coaching disclosure for the circuit",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-061 — compact numbered rows, optional sheet-based logging > opens the shared half-sheet in one tap where logging is opened, outside the row",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-061 — compact numbered rows, optional sheet-based logging > logs a movement only when the athlete saves it, and records no round for it",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-061 — compact numbered rows, optional sheet-based logging > records every round with no movement logged: circuit logging is never compulsory",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > starts with Start round 1 and no running clock; Start runs it and offers Finish",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > finishes into the shared rest, then starts the next round’s clock when the rest ends",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > starts the next round’s clock from the tap that ends the rest early",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > lets a legacy cached rest expire into its clock and retains elapsed time through reload",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > restores a legacy cache after its rest deadline with the elapsed round time intact",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > stops the clock after the last round",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > keeps the clock controls apart from movement-result logging",
+          "criterion": "AC-R021-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-063 — round history shows durations, never wall-clock times > lists each finished round with its elapsed duration and no Start or End time",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-063 — round history shows durations, never wall-clock times > keeps the stored start and end of every round, across a refresh",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/circuit-rounds.test.tsx",
+          "name": "AC-063 — round history shows durations, never wall-clock times > shows no history before a round is finished",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/movement-countdown-circuit.test.tsx",
+          "name": "AC-051: a circuit movement owns its countdown independently of load entry > offers its clock before any load entry opens, in the owning row without extra frames",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/movement-countdown-circuit.test.tsx",
+          "name": "AC-051: a circuit movement owns its countdown independently of load entry > draws the clock inside the movement card, full width above its pair, above Rest",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/movement-countdown-circuit.test.tsx",
+          "name": "AC-051: a circuit movement owns its countdown independently of load entry > keeps the same running clock through load-entry show/hide and shared-sheet opening",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/movement-countdown-circuit.test.tsx",
+          "name": "AC-051: a circuit movement owns its countdown independently of load entry > keeps pause/reset usable with load entry closed and records nothing at expiry",
+          "criterion": "AC-C48-01"
+        },
+        {
+          "file": "src/app/movement-countdown-circuit.test.tsx",
+          "name": "AC-051: a circuit movement owns its countdown independently of load entry > uses each valid time-sequence target and rearms only after explicit logging",
+          "criterion": "AC-C48-01"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-107 --check parity -- npx playwright test e2e/refinement/task-107-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-2FA21EDA32B4",
+        "TASK-AC-70107ED1D231",
+        "TASK-AC-6DA80CDC04C3",
+        "JOURNEY-021"
+      ],
+      "files": [
+        "e2e/refinement/task-107-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-107-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-2FA21EDA32B4 circuit-round phone-320: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-2FA21EDA32B4"
+        },
+        {
+          "file": "e2e/refinement/task-107-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-2FA21EDA32B4 circuit-round phone-390: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-2FA21EDA32B4"
+        },
+        {
+          "file": "e2e/refinement/task-107-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-2FA21EDA32B4 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-2FA21EDA32B4"
+        },
+        {
+          "file": "e2e/refinement/task-107-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-2FA21EDA32B4 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-2FA21EDA32B4"
+        }
+      ]
+    }
+  }
+}

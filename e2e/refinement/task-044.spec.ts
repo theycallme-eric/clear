@@ -34,6 +34,19 @@ import { expect, test as scanned } from '../fixtures'
  * never logged. Recovery: a refused write is held on this device and retried
  * under its own id; close/reopen and Escape keep the draft.
  *
+ * A3 TASK-107 (Round 7, gallery bec4454): every entry is Round 7's
+ * `LoggingOverlay` (`dialog.clr-logging-overlay`), as A3 TASK-106 wired the
+ * superset and circuit-movement entries and A3 TASK-107 the recorded round.
+ * The case names and what they assert are the old build's; the selectors read
+ * Round 7's dialog: its header (`.clr-logging-overlay__head`), its round groups
+ * (`.clr-round-movement`), the saved read-back (`[role=status]
+ * .clr-set-sheet__saved`), the circuit's rest under Round 7's name for it
+ * ("Rest between rounds"), and each gallery state opened by its own "Open …"
+ * control, whose driver presses the route's control. A circuit movement
+ * prescribes no rest, so its log closes itself after its confirmation (owner
+ * decision 5, 2026-11-16) and the card's saved row reads it back. Each change
+ * is recorded in `evidence/refinement/task-107/test-ledger.json`.
+ *
  * Synthetic and contained: an intercepted session for a fictional user. The
  * only writes are the set observations the athlete makes and a section's own
  * block result when Next section leaves it, answered here and never
@@ -288,8 +301,10 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-/** The open focused logging dialog (any title). */
-const openLog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+/** The open focused logging dialog (any title): Round 7's LoggingOverlay. */
+const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
+/** A saved entry's read-back in the open log (TASK-020, Round 7's sheet body). */
+const savedReading = (dialog: Locator) => dialog.locator('[role="status"].clr-set-sheet__saved')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 /** Every rest countdown on the page: the session's one rest and the circuit's rest. */
 const restTimers = (page: Page) => page.getByRole('timer', { name: 'Time remaining', exact: true })
@@ -337,7 +352,7 @@ async function expectFocusedLog(page: Page, title: string) {
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
   // One title, then one X, in the header.
-  const head = dialog.locator('[data-logging-head]')
+  const head = dialog.locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading', { name: title, exact: true })).toBeVisible()
   const close = head.getByRole('button', { name: 'Close log', exact: true })
   await expect(close).toBeVisible()
@@ -359,9 +374,13 @@ async function expectFocusedLog(page: Page, title: string) {
   expect(backdrop).toMatch(/blur\(/)
   await expect(page.locator('.clr-set-sheet-layer[data-open]')).toHaveCount(0)
   // Inert behind: no control of the workout can take focus while it is open.
+  // (Round 7 draws a log in place, inside the screen's markup: its own
+  // controls are the log's, not the workout behind it.)
   const behind = await page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null
+    const open = document.querySelector('dialog.clr-logging-overlay[open]')!
     const controls = [...document.querySelectorAll<HTMLElement>('main#main button, .clr-workout-footer button')]
+      .filter((control) => !open.contains(control))
     const reachable = controls.filter((control) => {
       control.focus()
       return document.activeElement === control
@@ -415,7 +434,7 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
     // helper paragraph, no generic Notes.
     const bench = form1.getByRole('group', { name: 'A1 bench press, set 1' })
     const pushUp = form1.getByRole('group', { name: 'A2 push up, set 1' })
-    await expect(form1.locator('.clr-logging-movement')).toHaveCount(2)
+    await expect(form1.locator('.clr-round-movement')).toHaveCount(2)
     await expect(bench.getByRole('checkbox', { name: 'Performed' })).not.toBeChecked()
     await expect(bench.getByLabel('Weight')).toBeVisible()
     await expect(bench.getByRole('combobox', { name: 'Unit' })).toBeVisible()
@@ -470,7 +489,7 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
     })
     // The unticked partner is not logged: no zero, no copy, no prefill.
     expect(app.attempts.some((attempt) => attempt.exercise_id === PAIR_PUSH_UP)).toBe(false)
-    const status = dialog.locator('.clr-set-log > [role="status"]')
+    const status = savedReading(dialog)
     await expect(status).toContainText('A1 bench press · Set 1 · 7 reps · 60 kg')
     await expect(status).toContainText('Saved')
     await expect(status).not.toContainText('push up')
@@ -498,8 +517,8 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
     dialog = await expectFocusedLog(page, 'Round 2 logged')
     await expect.poll(() => app.mutations.length).toBe(2)
     expect(app.mutations[1]).toMatchObject({ operation: 'insert', exercise_id: PAIR_PUSH_UP, set_number: 2 })
-    await expect(dialog.locator('.clr-set-log > [role="status"]')).toContainText('A2 push up · Set 2')
-    await expect(dialog.locator('.clr-set-log > [role="status"]')).not.toContainText('bench press')
+    await expect(savedReading(dialog)).toContainText('A2 push up · Set 2')
+    await expect(savedReading(dialog)).not.toContainText('bench press')
     await dialog.getByRole('button', { name: 'Close log' }).tap()
     await expect(openLog(page)).toHaveCount(0)
     await expect(rest).toBeFocused()
@@ -531,7 +550,7 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
     await page.keyboard.press('Enter')
     dialog = await expectFocusedLog(page, 'Round 1 logged')
     await expect(dialog.getByRole('heading', { name: 'Round 1 logged' })).toBeFocused()
-    const status = dialog.locator('.clr-set-log > [role="status"]')
+    const status = savedReading(dialog)
     await expect(status).toContainText('On this device only')
     await expect(status).not.toContainText('Saved')
     expect(app.mutations).toHaveLength(0)
@@ -634,7 +653,8 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
     let dialog = await expectFocusedLog(page, 'Round 1 recorded')
     await expect(dialog.getByRole('button', { name: 'Close log' })).toBeFocused()
     await expect(dialog.getByRole('status')).toContainText('round time recorded')
-    await expect(dialog.getByText('Rest after round 1', { exact: true })).toBeVisible()
+    // Round 7 names the circuit's rest in the log "Rest between rounds".
+    await expect(dialog.getByLabel('Rest between rounds', { exact: true })).toBeVisible()
     // The circuit's own rest, drawn once — in the log while it is open.
     await expect(restTimers(page)).toHaveCount(1)
     await expect(roundRecord(card)).toHaveText('1 of 3 rounds recorded')
@@ -693,17 +713,19 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
 
     // Save: the original writer; a set is not a round.
     await dialog.getByRole('button', { name: 'Log set 1', exact: true }).click()
-    dialog = await expectFocusedLog(page, 'Set 1 logged')
     await expect.poll(() => app.mutations.length).toBe(1)
     expect(app.mutations[0]).toMatchObject({
       operation: 'insert', exercise_id: GOBLET, set_number: 1,
       values: { weight: 16, weight_unit: 'kg', actual_reps: 7 },
     })
-    await expect(dialog.locator('.clr-set-log > [role="status"]')).toContainText('Set 1 · 7 reps · 16 kg')
+    // A circuit movement prescribes no rest: its confirmation shows and the
+    // log then closes itself (owner decision 5, 2026-11-16), rather than its
+    // X; the card's saved row reads the set back.
+    await expect(openLog(page)).toHaveCount(0)
+    await expect(card.getByRole('list', { name: 'Logged sets' })).toContainText('Set 1 · 7 reps · 16 kg')
     await expect(roundRecord(card)).toHaveText('1 of 3 rounds recorded')
     await expect(restTimers(page)).toHaveCount(1)
     await attachScreen(page, 'circuit-movement-set-1-logged-phone-320')
-    await dialog.getByRole('button', { name: 'Close log' }).click()
 
     // Correction of the saved set, in the same log, through the same writer.
     await card.getByRole('button', { name: 'Edit set 1' }).click()
@@ -736,11 +758,14 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
       })
 
       // ── superset: the route's SupersetBlock; Rest opens Log round 1 ──
+      // Round 7's accepted states: each one's own "Open …" control mounts the
+      // route's block on the gallery's memory runtime, and its driver presses
+      // the route's control (here the block's Rest).
       await visit('/gallery/refinements?state=superset')
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
-      const superset = page.locator('[data-gallery-group-logging="superset"]')
+      const superset = page.locator('[data-refinement-state="superset"]')
+      await superset.getByRole('button', { name: 'Open Superset round', exact: true }).click()
       await expect(superset.getByRole('list', { name: 'Movements in this superset' })).toBeVisible()
-      await superset.getByRole('button', { name: 'Rest', exact: true }).click()
       let dialog = page.getByRole('dialog', { name: 'Log round 1', exact: true })
       await expect(dialog).toBeVisible()
       expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
@@ -758,14 +783,15 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
       await dialog.getByRole('button', { name: 'Log round 1', exact: true }).click()
       const saved = page.getByRole('dialog', { name: 'Round 1 logged', exact: true })
       await expect(saved).toBeVisible()
-      await expect(saved.locator('.clr-set-log > [role="status"]')).toContainText('A1 one arm row · Set 1 · 9 reps')
+      await expect(savedReading(saved)).toContainText('A1 one arm row · Set 1 · 9 reps')
       await page.keyboard.press('Escape')
       await expect(saved).toBeHidden()
 
       // ── circuit-round: the route's CircuitBlock; Finish round 1 opens Round 1 recorded ──
       await visit('/gallery/refinements?state=circuit-round')
-      const circuitRound = page.locator('[data-gallery-circuit-round]')
-      await circuitRound.getByRole('button', { name: 'Finish round 1', exact: true }).click()
+      const circuitRound = page.locator('[data-refinement-state="circuit-round"]')
+      // Its driver presses Start round 1, lets 32 seconds pass and presses Finish round 1.
+      await circuitRound.getByRole('button', { name: 'Open Circuit round / take back', exact: true }).click()
       dialog = page.getByRole('dialog', { name: 'Round 1 recorded', exact: true })
       await expect(dialog).toBeVisible()
       expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
@@ -779,8 +805,9 @@ test.describe('TASK-044 superset and circuit logging in the shared focused dialo
 
       // ── circuit-movement: a movement Rest opens its Log set 1 ──
       await visit('/gallery/refinements?state=circuit-movement')
-      const circuitMovement = page.locator('[data-gallery-group-logging="circuit-movement"]')
-      await circuitMovement.getByRole('button', { name: 'Rest for goblet squat', exact: true }).click()
+      const circuitMovement = page.locator('[data-refinement-state="circuit-movement"]')
+      // Its driver presses the first movement's Rest (Rest for goblet squat).
+      await circuitMovement.getByRole('button', { name: 'Open Circuit movement entry', exact: true }).click()
       dialog = page.getByRole('dialog', { name: 'Log set 1', exact: true })
       await expect(dialog).toBeVisible()
       expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)

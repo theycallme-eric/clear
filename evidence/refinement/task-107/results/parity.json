@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-107",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-107-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-107/required-cases.json",
+    "sha256": "979b04e331f62c0ecfaf989fe9fea3951a87779bf8725c791459dc8ea455fe13"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-107-parity.spec.ts",
+      "sha256": "cd5ec32aaac9994eeabf407bde630c668e604a6c262f8a58f63455e0f8b49606"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "name": "TASK-AC-2FA21EDA32B4 circuit-round phone-320: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "name": "TASK-AC-2FA21EDA32B4 circuit-round phone-390: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "name": "TASK-AC-2FA21EDA32B4 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "name": "TASK-AC-2FA21EDA32B4 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}

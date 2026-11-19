@@ -1,0 +1,603 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-107",
+  "family": "F5",
+  "base": "eb6b20afba782ec70991be7371d606f521fb2482",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F5 = src/ui/circuit-block.test.tsx (7 absent, 5 pending), src/app/circuit-rounds.test.tsx (1 absent, 4 pending), src/app/movement-countdown-circuit.test.tsx (2 pending) — 19 waiting — and e2e task-021 (F5); the brief adds e2e task-044 (“runs here, after TASK-106”) and this task’s parity spec. Every build test of the three files is listed, carried ones included; bodies were compared with the build’s (TypeScript parse of each it() call).",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "retired": [],
+    "deferred": [
+      {
+        "what": "Two build bodies in src/ui/circuit-block.test.tsx asserting the format-only badge (“CIRCUIT” and “3 ROUNDS” as separate texts; TASK-003, AC-C08-01)",
+        "task": "TASK-110",
+        "why": "Format-only badges are A3 TASK-110’s work (decision 6). Both cases keep their Round 7 bodies (“CIRCUIT · 3 ROUNDS”), which pass. Plan conflict reported: TASK-110’s checks do not run this file."
+      },
+      {
+        "what": "The per-movement role=\"group\" (data-coaching-movement) of the circuit’s coaching panel, asserted by the build’s AC-061 row case in src/app/circuit-rounds.test.tsx",
+        "task": "TASK-109",
+        "why": "TASK-005’s grouped-coaching markup (GroupExerciseCoaching role=group with aria-labelledby per movement) is A3 TASK-109’s work. The case reads each movement’s labelled section by its heading in Round 7’s panel. Plan conflict reported: TASK-109’s checks do not run this file."
+      },
+      {
+        "what": "e2e/refinement/task-019.spec.ts circuit-round assertions",
+        "task": "TASK-120",
+        "why": "The suite is TASK-120’s (owner decision 1, 2026-11-16, and decision 3, 2026-11-18); the behaviours are proved here by TASK-107’s own checks (entry below)."
+      }
+    ],
+    "helpers": [
+      "src/app/movement-countdown-circuit.test.tsx: its five bodies are the build’s, byte for byte; its movementHeading helper stays Round 7’s (it leaves out headings inside Round 7’s coaching panel, .clr-collapsible__region; the build’s left out [data-coaching-group], TASK-109’s markup). Task 1’s closeLog helper is removed with its two uses.",
+      "src/app/circuit-rounds.test.tsx: task 1’s closeLog helper is removed; the build’s cleanup() import is restored.",
+      "src/ui/circuit-block.test.tsx: added renderRecordedCircuit (product presentation), recordedLog, openLogs, roundClockGroup, leaves (Round 7’s exit), recordingStorage, recordFirstRound (the build’s), and closeOpenLog (X plus exit)."
+    ],
+    "ownerDecisions": "Owner decision 5 (2026-11-16, Eric, chat: “Accept all five”): with no rest prescribed, a save shows its confirmation and the dialog then closes itself; with a prescribed rest that already ended before Save, the confirmation stays until Close. Applied to the circuit round (no rest to run: none prescribed, or the last round) and, as A3 TASK-106 delivered it, to the circuit movement entry."
+  },
+  "summary": {
+    "carried": 42,
+    "kept": 2,
+    "rewritten": 27,
+    "added": 6,
+    "superseded": 1,
+    "deferred": 1
+  },
+  "entries": [
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > shows every movement in prescribed order with its per-round target",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > orders by the prescription, whatever order the rows arrived in",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "kept",
+      "task": "TASK-110",
+      "reason": "Kept at its integration-branch (Round 7, A3 task 1) body, which passes. The build’s body asserts the format-only badge (“CIRCUIT” and “3 ROUNDS” as separate texts; TASK-003, AC-C08-01), which is A3 TASK-110’s work (format badges, decision 6), not this task’s; Round 7’s badge reads “CIRCUIT · 3 ROUNDS” until then. Plan conflict, reported to the controller: TASK-110’s checks do not run this file, so its badge change will need this case updated in a file TASK-107 owns."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > never says a rest the block does not prescribe",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > says so when every movement in it was swapped out",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "nothing is compulsory > has no per-movement step and singles out no movement",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "nothing is compulsory > draws no set form until the athlete asks for one",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "nothing is compulsory > offers the round clock as optional, secondary taps: Start, then Finish",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "nothing is compulsory > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > reports no count when no round was recorded",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > infers nothing from time: an untouched circuit long past its prescription has no count",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > infers nothing from a rest that ran out: only the recorded round counts",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > reports the rounds the athlete recorded, and stops at the prescription",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > takes a mistaken round back to no count at all, never an observed zero",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > counts recorded rounds without a prescribed total",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "rounds are observations, never inferred > reports no count at all for a circuit with nothing to perform",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the shared rest > starts once, at a recorded round boundary, with the block’s seconds",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the shared rest > ends on its own when the block’s seconds have passed",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the shared rest > can be ended early with its one control, inside the card",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the shared rest > records the first round after an expired rest on the first tap, including a remount",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "surviving a refresh > comes back to the rounds the athlete recorded",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "surviving a refresh > comes back into the rest it was in, with the time that is left",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "surviving a refresh > starts with nothing recorded when the stored record cannot be used",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "surviving a refresh > still shows the whole circuit after a movement was swapped out",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the circuit draws with the shared block frame > is one card, with the movements as rows of one list and never a card inside it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "kept",
+      "task": "TASK-110",
+      "reason": "Kept at its integration-branch (Round 7, A3 task 1) body, which passes. The build’s body asserts the format-only badge (“CIRCUIT” and “3 ROUNDS” as separate texts; TASK-003, AC-C08-01), which is A3 TASK-110’s work (format badges, decision 6), not this task’s; Round 7’s badge reads “CIRCUIT · 3 ROUNDS” until then. Plan conflict, reported to the controller: TASK-110’s checks do not run this file, so its badge change will need this case updated in a file TASK-107 owns."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the circuit draws with the shared block frame > draws the rest countdown beside the card, never inside it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the circuit draws with the shared block frame > is still one card when nothing is left to perform",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "optional, compact load entry > opens the set form for the one movement asked for, and closes it again",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "optional, compact load entry > writes the set against its movement and block, and records no round for it",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s body (TASK-020: “Set 1 logged” confirms the set, no set-2 form; a set records no round), with two Round 7 changes. The confirmation is read as it shows, before the logged-set wait. A circuit movement prescribes no rest, so under owner decision 5 (2026-11-16: “Accept all five”) its log closes itself after the confirmation: the test waits for that instead of pressing Close log. Task 1’s nextSet helper wait is replaced by these assertions."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "optional, compact load entry > holds only the saving movement’s action busy while its set is in flight",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s body (set 1 confirmed while in flight; set 2 opened deliberately; each modal log closed with its X before the card behind is used; the busy action re-read and still disabled), with Round 7’s order under owner decision 5: set 2 is opened once set 1’s confirmation has closed itself (nextSet), and each X is followed by Round 7’s 200 ms exit (closeOpenLog)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "optional, compact load entry > keeps a refused set as unsaved while a round is recorded, and resends it under the same id",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Finish round N opens Round N recorded: the framed Close log X alone in the header, the round time read back, the circuit rest at the log’s full width and Take back this round",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). Round 7 draws the log in place, beside the round clock (not portalled): “not inside the card” becomes “not inside the round clock group, whose one status stays the rounds recorded”. The read-back is Round 7’s line “00:32 round time recorded” (the build added a spoken “32 seconds”). The rest is Round 7’s, named “Rest between rounds” (was the build’s “Rest after round 1” label), drawn as Round 7’s full-width log timer .clr-log-timer (was the build’s DeadlineTimer [data-timer-frame=body], TASK-007/TASK-108); still the only rest timer on the page. Take back this round sits in the log’s body (was the build’s .clr-timed-actions row). Every other assertion unchanged."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Take back this round un-records the round, ends its rest, closes the log and resumes the round’s own clock, with focus on Finish round",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). Assertions unchanged."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-R021-02 the rest runs on in the log and ends it: at rest end the log closes by itself, records nothing more and the next round’s clock runs; the card’s early Start round ends it too",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). Assertions unchanged."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-R021-02 Close log and Escape close it without changing anything: the same rest goes on, back on the card, with Start round N and Take back a round",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). Assertions unchanged."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log reads the round and Take back this round with no timer, and stays until closed",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "renamedTo": "TASK-021 the recorded round in the shared focused log > AC-R021-02 with no rest to run — none prescribed, or the last round — the log shows the round with no timer and then closes itself (owner decision 5), focus on the round clock, Take back a round on the card",
+      "reason": "Owner decision 5 (2026-11-16, Eric, chat: “Accept all five”): with no rest prescribed, a save shows its confirmation and the dialog then closes itself; the brief: “Carried circuit tests follow this rule, each change recorded in the test ledger.” The build’s case had the log stay until closed. Rewritten and renamed for the rule: the log shows the round (round time read back, no timer, Take back this round), then closes itself with focus on the round clock’s control; the next round’s clock runs at once; the last round of a no-rest block and the last round of a rested block (none follows it) do the same; Take back a round stays on the card and reopens the last round on its clock. Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). TASK-021’s manifest names the new case."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-C48-01 round recording, active round time and the round-time history are kept through the log, and a refresh comes back to the card, never to the log",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). One wait added for the round-1 log’s exit after its rest ends, before round 2 is finished. Assertions unchanged."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "TASK-021 the recorded round in the shared focused log > AC-R021-01 one circuit controller: the log’s taps are the circuit’s own Finish round and Take back, written only to the circuit record, with the original scoring",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "Rendered under the presentation the product mounts (PRODUCT_PRESENTATION, renderRecordedCircuit): Round 7 confirms a round in its dialog only under the presentation’s logging dialog, as the route always has it. Round 7’s dialog is dialog.clr-logging-overlay (was dialog.clr-accepted-log) with its header .clr-logging-overlay__head (was [data-logging-head]); a close is asserted after Round 7’s shared exit (200 ms, leaves()). Assertions unchanged."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "A3 TASK-107 the recorded round wired to the circuit controller > TASK-AC-793C48069668 the round time is read back from the stored history, not from the round clock’s last on-screen tick",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-AC-793C48069668: the round time is read from circuit.state.history (47.4 s stored between two on-screen ticks reads 00:47, never the last tick’s 00:00). Red on the base (Round 7’s in-memory round clock), green on this change."
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "A3 TASK-107 the recorded round wired to the circuit controller > TASK-AC-3A057AEB41D0 focus returns to the round clock’s control however the log closed — Take back this round, Escape, Close log, the rest ending, and closing itself with no rest — never the page body",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-AC-3A057AEB41D0: focus returns to the round clock’s control after Take back this round, Escape, Close log, the rest ending and the no-rest self-close — never the page body. Red on the base, green on this change."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one coaching disclosure for the circuit",
+      "ledger": "build-test-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s name and body, with Round 7’s reading where Round 7 draws differently: each row heading is read by its accessible name (Round 7 draws the equipment inline after the name as the heading’s description, so textContent adds it). The build’s per-movement coaching role=\"group\" with data-coaching-movement is TASK-005’s grouped-coaching markup, which A3 TASK-109 restores (GroupExerciseCoaching role=group with aria-labelledby per movement): here each movement’s labelled section is read by its heading inside the named region once the disclosure is opened (as A3 task 1’s Round 7 case did). Task 1’s Round 7 assertions (one disclosure, outside the movement list, opens) are kept. Replaces task 1’s Round 7 test “… and one grouped coaching disclosure”, whose assertions are all here."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-061 — compact numbered rows, optional sheet-based logging > opens the shared half-sheet in one tap where logging is opened, outside the row",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s body; dialog.clr-logging-overlay (Round 7) for dialog.clr-accepted-log. Task 1’s Round 7 assertion that the dialog is drawn in the shell’s set-sheet slot is kept."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-061 — compact numbered rows, optional sheet-based logging > logs a movement only when the athlete saves it, and records no round for it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-061 — compact numbered rows, optional sheet-based logging > records every round with no movement logged: circuit logging is never compulsory",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s body (it passes again now that the card’s Start round and the last round’s self-close end the round log). Task 1’s Round 7 assertion that each Finish round opens “Round N recorded” is kept, without closing it by hand."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > starts with Start round 1 and no running clock; Start runs it and offers Finish",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > finishes into the shared rest, then starts the next round’s clock when the rest ends",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s body (it passes again now that the rest is drawn once, in the log). Task 1’s Round 7 assertion that the round log holds the rest (00:30) is kept, without closing it by hand."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > starts the next round’s clock from the tap that ends the rest early",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > lets a legacy cached rest expire into its clock and retains elapsed time through reload",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > restores a legacy cache after its rest deadline with the elapsed round time intact",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > stops the clock after the last round",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-062 — Start, Finish, elapsed round clock, shared rest and the next round’s clock > keeps the clock controls apart from movement-result logging",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-063 — round history shows durations, never wall-clock times > lists each finished round with its elapsed duration and no Start or End time",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-063 — round history shows durations, never wall-clock times > keeps the stored start and end of every round, across a refresh",
+      "ledger": "build-edit-pending (F5)",
+      "disposition": "rewritten",
+      "note": "The build’s body; only its comment changed (Round 7 draws the round log in place, not portalled). Assertions unchanged."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-063 — round history shows durations, never wall-clock times > shows no history before a round is finished",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/movement-countdown-circuit.test.tsx",
+      "test": "AC-051: a circuit movement owns its countdown independently of load entry > offers its clock before any load entry opens, in the owning row without extra frames",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/movement-countdown-circuit.test.tsx",
+      "test": "AC-051: a circuit movement owns its countdown independently of load entry > draws the clock inside the movement card, full width above its pair, above Rest",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/movement-countdown-circuit.test.tsx",
+      "test": "AC-051: a circuit movement owns its countdown independently of load entry > keeps the same running clock through load-entry show/hide and shared-sheet opening",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/movement-countdown-circuit.test.tsx",
+      "test": "AC-051: a circuit movement owns its countdown independently of load entry > keeps pause/reset usable with load entry closed and records nothing at expiry",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/movement-countdown-circuit.test.tsx",
+      "test": "AC-051: a circuit movement owns its countdown independently of load entry > uses each valid time-sequence target and rearms only after explicit logging",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Same body as the build (181e580)."
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one grouped coaching disclosure",
+      "ledger": "Round 7 base test (A3 task 1; not a build test)",
+      "disposition": "superseded",
+      "note": "Its body is merged into the build’s case of the same purpose (“… and one coaching disclosure for the circuit”); every one of its assertions is kept there."
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "test": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 touch phone-390: Finish round opens Round N recorded with its X at the title top and the circuit rest at full width; Take back this round, Close log and the rest ending keep round times, active time and history; an optional actual and the recorded rounds survive a refused save and read back in History",
+      "ledger": "added (F5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] with its header .clr-logging-overlay__head and body .clr-logging-overlay__body (were dialog.clr-accepted-log, [data-logging-head], .clr-accepted-log__body). The inert-behind check leaves out the open log’s own controls (Round 7 draws the log in place, inside main; as A3 TASK-106’s task-019 rewrite does). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was the label “Rest after round N”); the measured timer frame is Round 7’s full-width log timer .clr-log-timer around the public TimerDisplay (was the build’s DeadlineTimer [data-timer-frame=body]); its digits are the timer’s aria-hidden span. Every measurement and tolerance is unchanged (X frame top within 2 px of the title top; timer and Take back at the content edges within 1.5 px; digits centred within 2 px). Where the case holds the page clock still, the clock is run 200 ms through Round 7’s shared exit after Take back this round and after Close log (throughExit). The circuit movement’s log, with no rest prescribed, closes itself after its confirmation (owner decision 5) instead of being closed with its X; the card then reads “1 set logged” as before."
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "test": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 keyboard phone-320 reduced motion Signal: Enter records the round into the log with focus on its X, Tab reaches Take back this round, Escape returns to the round clock, the final seconds stay still in the log, and a reload mid-rest comes back to the card and its rest, never to the log",
+      "ledger": "added (F5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] with its header .clr-logging-overlay__head and body .clr-logging-overlay__body (were dialog.clr-accepted-log, [data-logging-head], .clr-accepted-log__body). The inert-behind check leaves out the open log’s own controls (Round 7 draws the log in place, inside main; as A3 TASK-106’s task-019 rewrite does). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was the label “Rest after round N”); the measured timer frame is Round 7’s full-width log timer .clr-log-timer around the public TimerDisplay (was the build’s DeadlineTimer [data-timer-frame=body]); its digits are the timer’s aria-hidden span. Every measurement and tolerance is unchanged (X frame top within 2 px of the title top; timer and Take back at the content edges within 1.5 px; digits centred within 2 px). The final-seconds warning is read on Round 7’s CountdownDisplay: its log timer wrapper carries the urgent micro pulse (clr-pulse-micro, was data-urgent=true on the build’s timer) and data-loop=still; the one edge cue is hosted by the open log, then by the body once it closes."
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "test": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round clear phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "ledger": "added (F5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] with its header .clr-logging-overlay__head and body .clr-logging-overlay__body (were dialog.clr-accepted-log, [data-logging-head], .clr-accepted-log__body). The inert-behind check leaves out the open log’s own controls (Round 7 draws the log in place, inside main; as A3 TASK-106’s task-019 rewrite does). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was the label “Rest after round N”); the measured timer frame is Round 7’s full-width log timer .clr-log-timer around the public TimerDisplay (was the build’s DeadlineTimer [data-timer-frame=body]); its digits are the timer’s aria-hidden span. Every measurement and tolerance is unchanged (X frame top within 2 px of the title top; timer and Take back at the content edges within 1.5 px; digits centred within 2 px). Round 7’s accepted state is opened by its own control (“Open Circuit round / take back”, scope [data-refinement-state=\"circuit-round\"]), whose driver presses Start round 1 and Finish round 1 itself; the case reads the recorded round (“1 of 3 rounds recorded”) instead of pressing Finish round 1 on a card showing “No rounds recorded”. Everything after is unchanged."
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "test": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round vapour phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "ledger": "added (F5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] with its header .clr-logging-overlay__head and body .clr-logging-overlay__body (were dialog.clr-accepted-log, [data-logging-head], .clr-accepted-log__body). The inert-behind check leaves out the open log’s own controls (Round 7 draws the log in place, inside main; as A3 TASK-106’s task-019 rewrite does). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was the label “Rest after round N”); the measured timer frame is Round 7’s full-width log timer .clr-log-timer around the public TimerDisplay (was the build’s DeadlineTimer [data-timer-frame=body]); its digits are the timer’s aria-hidden span. Every measurement and tolerance is unchanged (X frame top within 2 px of the title top; timer and Take back at the content edges within 1.5 px; digits centred within 2 px). Round 7’s accepted state is opened by its own control (“Open Circuit round / take back”, scope [data-refinement-state=\"circuit-round\"]), whose driver presses Start round 1 and Finish round 1 itself; the case reads the recorded round (“1 of 3 rounds recorded”) instead of pressing Finish round 1 on a card showing “No rounds recorded”. Everything after is unchanged."
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "test": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round signal phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "ledger": "added (F5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] with its header .clr-logging-overlay__head and body .clr-logging-overlay__body (were dialog.clr-accepted-log, [data-logging-head], .clr-accepted-log__body). The inert-behind check leaves out the open log’s own controls (Round 7 draws the log in place, inside main; as A3 TASK-106’s task-019 rewrite does). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was the label “Rest after round N”); the measured timer frame is Round 7’s full-width log timer .clr-log-timer around the public TimerDisplay (was the build’s DeadlineTimer [data-timer-frame=body]); its digits are the timer’s aria-hidden span. Every measurement and tolerance is unchanged (X frame top within 2 px of the title top; timer and Take back at the content edges within 1.5 px; digits centred within 2 px). Round 7’s accepted state is opened by its own control (“Open Circuit round / take back”, scope [data-refinement-state=\"circuit-round\"]), whose driver presses Start round 1 and Finish round 1 itself; the case reads the recorded round (“1 of 3 rounds recorded”) instead of pressing Finish round 1 on a card showing “No rounds recorded”. Everything after is unchanged."
+    },
+    {
+      "file": "e2e/refinement/task-021.spec.ts",
+      "test": "TASK-021 circuit round, Undo and measurement behaviour > accepted gallery state circuit-round mono phone-390: the route's own CircuitBlock records round 1 into the shared log with its X, round time, full-width rest and Take back this round, with nothing read or written over the network",
+      "ledger": "added (F5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open] with its header .clr-logging-overlay__head and body .clr-logging-overlay__body (were dialog.clr-accepted-log, [data-logging-head], .clr-accepted-log__body). The inert-behind check leaves out the open log’s own controls (Round 7 draws the log in place, inside main; as A3 TASK-106’s task-019 rewrite does). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was the label “Rest after round N”); the measured timer frame is Round 7’s full-width log timer .clr-log-timer around the public TimerDisplay (was the build’s DeadlineTimer [data-timer-frame=body]); its digits are the timer’s aria-hidden span. Every measurement and tolerance is unchanged (X frame top within 2 px of the title top; timer and Take back at the content edges within 1.5 px; digits centred within 2 px). Round 7’s accepted state is opened by its own control (“Open Circuit round / take back”, scope [data-refinement-state=\"circuit-round\"]), whose driver presses Start round 1 and Finish round 1 itself; the case reads the recorded round (“1 of 3 rounds recorded”) instead of pressing Finish round 1 on a card showing “No rounds recorded”. Everything after is unchanged."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > JOURNEY-019 superset round phone-390 touch: the block Rest opens Log round N in the modal log over an inert workout beside the block rest, close and Escape keep each movement draft and Performed, Log round saves only Performed movements through the original writer, and the rest ending closes the confirmation",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement)."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > JOURNEY-019 superset correction and retry phone-390 keyboard reduced motion: a refused round write is held on this device and retried under its own id; a movement Edit opens Edit set N in the log, close keeps the correction, Cancel and Save correction keep the writer, and Clear set asks with Keep set first",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement)."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > JOURNEY-019 circuit round, Undo and movement entry phone-320: Finish round opens Round N recorded in the modal log and Take back this round undoes it; a movement Rest opens its Log set N in the same log with its draft kept through close, saves and corrects through the original writer, and records no round and no second rest",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement). The circuit’s rest in the log is found by Round 7’s name for it, “Rest between rounds” (was “Rest after round 1”). The movement’s Log set 1, with no rest prescribed, shows its confirmation and closes itself (owner decision 5, 2026-11-16) instead of being closed with its X; its saved set is read back from the card’s Logged sets list (“Set 1 · 7 reps · 16 kg”, the same words) rather than from the closing dialog."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states clear phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement). Each of Round 7’s accepted states is opened by its own control (scope [data-refinement-state=…]; “Open Superset round”, “Open Circuit round / take back”, “Open Circuit movement entry”), whose driver presses the route’s control (the block’s Rest; Start/Finish round 1; Rest for goblet squat) that the build’s case pressed itself."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states vapour phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement). Each of Round 7’s accepted states is opened by its own control (scope [data-refinement-state=…]; “Open Superset round”, “Open Circuit round / take back”, “Open Circuit movement entry”), whose driver presses the route’s control (the block’s Rest; Start/Finish round 1; Rest for goblet squat) that the build’s case pressed itself."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states signal phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement). Each of Round 7’s accepted states is opened by its own control (scope [data-refinement-state=…]; “Open Superset round”, “Open Circuit round / take back”, “Open Circuit movement entry”), whose driver presses the route’s control (the block’s Rest; Start/Finish round 1; Rest for goblet squat) that the build’s case pressed itself."
+    },
+    {
+      "file": "e2e/refinement/task-044.spec.ts",
+      "test": "TASK-044 superset and circuit logging in the shared focused dialog > accepted gallery states mono phone-390: superset, circuit-round and circuit-movement open the route's own entry in the focused log, with nothing read or written over the network",
+      "ledger": "added (F4; run here by A3 TASK-107: “e2e task-044 runs here, after TASK-106”)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The open log is Round 7’s dialog.clr-logging-overlay[open], header .clr-logging-overlay__head (were dialog.clr-accepted-log, [data-logging-head]); the inert-behind check leaves out the open log’s own controls (Round 7 draws logs in place, inside main). The saved read-back is Round 7’s [role=status].clr-set-sheet__saved (was .clr-set-log > [role=status]); a superset round’s movement groups are .clr-round-movement (were .clr-logging-movement). Each of Round 7’s accepted states is opened by its own control (scope [data-refinement-state=…]; “Open Superset round”, “Open Circuit round / take back”, “Open Circuit movement entry”), whose driver presses the route’s control (the block’s Rest; Start/Finish round 1; Rest for goblet squat) that the build’s case pressed itself."
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "test": "TASK-AC-2FA21EDA32B4 circuit-round phone-320: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-107’s look check (TASK-AC-2FA21EDA32B4)."
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "test": "TASK-AC-2FA21EDA32B4 circuit-round phone-390: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-107’s look check (TASK-AC-2FA21EDA32B4)."
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "test": "TASK-AC-2FA21EDA32B4 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-107’s look check (TASK-AC-2FA21EDA32B4)."
+    },
+    {
+      "file": "e2e/refinement/task-107-parity.spec.ts",
+      "test": "TASK-AC-2FA21EDA32B4 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-107’s look check (TASK-AC-2FA21EDA32B4)."
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "(its circuit-round assertions)",
+      "ledger": "added (F4) — round 06: owned by TASK-120",
+      "disposition": "deferred",
+      "task": "TASK-120",
+      "note": "Not run here (owner TASK-120; controller rule: never run it whole). A3 TASK-106’s reviewer found it fails only at circuit-round assertions the groundwork ledger gives to this task. Each is this task’s behaviour and is proved by this task’s own checks: (1) the circuit’s rest between rounds drawn exactly once, in the open “Round 1 recorded” log, moved off its card (C21) — TASK-021 check-01 “Finish round N opens …” (the only rest timer is the log’s) and check-02 (restTimers count 1 while the log is open); (2) Escape from “Round 1 recorded” returns focus into the round clock — TASK-107 check-01 TASK-AC-3A057AEB41D0 and TASK-021 check-02 keyboard case (Start round 2 focused); (3) the gallery circuit-round state’s X returns focus into the round clock — TASK-107 parity (Close log → Start round 2 focused, both sides) and TASK-021 check-02 gallery cases (Take back → Finish round 1 focused)."
+    }
+  ]
+}

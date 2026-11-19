@@ -6,8 +6,9 @@
  * double: no personal data, no backend. What it holds the screen to:
  *
  *   · compact numbered rows, each with its own accessible logging action, and
- *     one grouped coaching disclosure below them (Round 7); opening logging opens the shared half-sheet,
- *     and none of it is needed to record a round (AC-061);
+ *     the circuit's one bottom coaching disclosure with a labelled section per
+ *     movement (TASK-005, AC-C16-01); opening logging opens the shared
+ *     half-sheet, and none of it is needed to record a round (AC-061);
  *   · an initial Start round 1, then Finish round, with the round's elapsed
  *     clock; the shared rest after a finished round, and the next round's clock
  *     starting when that rest ends — on its own, or from the tap that ends it
@@ -15,7 +16,7 @@
  *   · the round history shows each round's elapsed duration and no wall-clock
  *     start or end, while the stored start and end stay whole (AC-063).
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -131,14 +132,8 @@ const button = (name: string) => screen.getByRole('button', { name })
 const roundTimer = (round: number) => screen.getByRole('timer', { name: `Round ${round} time` })
 const restTimer = () => screen.queryByRole('timer', { name: 'Time remaining' })
 
-/** Round 7 (decision 1): logging is a dialog, closed with its Close log. */
-async function closeLog(user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) {
-  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
-  await waitFor(() => expect(dialog).not.toBeVisible())
-}
-
 describe('AC-061 — compact numbered rows, optional sheet-based logging', () => {
-  it('keeps one compact numbered row per movement, each with logging, and one grouped coaching disclosure', async () => {
+  it('keeps one compact numbered row per movement, each with logging, and one coaching disclosure for the circuit', async () => {
     await shell()
 
     // Round 7 draws the equipment inline after the name as the heading's
@@ -155,27 +150,26 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
         'aria-expanded',
         'false',
       )
-      // Round 7 (R29): grouped work keeps no per-row coaching disclosure.
-      expect(inside.queryByRole('button', { name: /coaching/i })).toBeNull()
+      // AC-C16-01 (TASK-005, R29): no disclosure repeated in each row.
+      expect(inside.queryByRole('button', { name: /^Coaching and notes/ })).toBeNull()
       // Compact: no entry fields and no set form until logging is asked for.
       expect(inside.queryByRole('spinbutton')).toBeNull()
       expect(inside.queryByRole('form')).toBeNull()
     })
-
-    // One grouped Coaching and notes disclosure, outside the rows and closed,
-    // with a labelled section for every movement once it is opened.
-    const list = screen.getByRole('list', { name: 'Movements in this circuit' })
-    const coaching = screen.getAllByRole('button', { name: /^Coaching and notes/ })
-    expect(coaching).toHaveLength(1)
-    // TASK-005 (the build's name): the block's format and movements name it apart.
-    expect(coaching[0]).toHaveAccessibleName(`Coaching and notes — CIRCUIT: ${NAMES.join(', ')}`)
-    expect(coaching[0]).toHaveAttribute('aria-expanded', 'false')
-    expect(list.contains(coaching[0]!)).toBe(false)
-    await userEvent.setup().click(coaching[0]!)
-    expect(coaching[0]).toHaveAttribute('aria-expanded', 'true')
-    for (const name of NAMES) {
-      expect(screen.getByRole('heading', { name })).toBeInTheDocument()
-    }
+    // AC-C16-01: one bottom Coaching and notes disclosure, closed until asked
+    // for, with a labelled section for every movement.
+    const coaching = screen.getByRole('button', { name: `Coaching and notes — CIRCUIT: ${NAMES.join(', ')}` })
+    expect(coaching).toHaveAttribute('aria-expanded', 'false')
+    const region = screen.getByRole('region', { name: `Coaching and notes — CIRCUIT: ${NAMES.join(', ')}` })
+    // Round 7 (A3 task 1): the one disclosure sits outside the movement list.
+    expect(screen.getAllByRole('button', { name: /^Coaching and notes/ })).toHaveLength(1)
+    expect(screen.getByRole('list', { name: 'Movements in this circuit' }).contains(coaching)).toBe(false)
+    // Each movement's labelled section, read by its heading in Round 7's
+    // panel once opened. (The build's role="group" per movement is TASK-005's
+    // grouped-coaching markup, which A3 TASK-109 restores; see the ledger.)
+    await userEvent.setup().click(coaching)
+    expect(coaching).toHaveAttribute('aria-expanded', 'true')
+    for (const name of NAMES) expect(within(region).getByRole('heading', { name })).toBeInTheDocument()
   })
 
   it('opens the shared half-sheet in one tap where logging is opened, outside the row', async () => {
@@ -185,15 +179,15 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     await user.click(button('Rest for push up'))
 
     const form = await screen.findByRole('form', { name: 'Log set 1 of push up' })
-    // Round 7 (decision 1): the entry is the logging dialog, not a sheet.
-    const dialog = screen.getByRole('dialog', { name: 'Log set 1' })
-    expect(dialog).toContainElement(form)
-    // The dialog is the shell's, in its slot — not drawn inside the row.
+    // TASK-044: the entry is the shared focused logging dialog, a native
+    // modal — not drawn inside the row. Round 7: its LoggingOverlay, drawn in
+    // the shell's set-sheet slot rather than portalled to the document.
+    expect(form.closest('dialog.clr-logging-overlay')).not.toBeNull()
     expect(form.closest('[data-set-sheet-slot]')).not.toBeNull()
     expect(rows()[1]!.contains(form)).toBe(false)
     expect(screen.getAllByRole('form', { name: /^Log set/ })).toHaveLength(1)
 
-    await closeLog(user, dialog)
+    await user.click(within(form.closest('dialog')!).getByRole('button', { name: 'Close log' }))
     expect(screen.queryByRole('form', { name: /^Log set/ })).toBeNull()
     expect(double.loggedSets()).toEqual([])
   })
@@ -221,9 +215,10 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     await user.click(button('Start round 1'))
     for (const round of [1, 2, 3]) {
       await user.click(button(`Finish round ${round}`))
-      // Round 7 (decision 1): Finish round confirms the round in a logging
-      // dialog; closing it returns to the card.
-      await closeLog(user, screen.getByRole('dialog', { name: `Round ${round} recorded` }))
+      // Round 7 (A3 task 1; A3 TASK-107): Finish round confirms the round in
+      // its logging dialog; the card's Start round, or the last round having
+      // no rest after it, closes it again.
+      expect(screen.getByRole('dialog', { name: `Round ${round} recorded` })).toBeInTheDocument()
       if (round < 3) await user.click(button(`Start round ${round + 1}`))
     }
 
@@ -261,11 +256,10 @@ describe('AC-062 — Start, Finish, elapsed round clock, shared rest and the nex
     advance(40)
     await user.click(button('Finish round 1'))
 
-    // Round 7 (decision 1): Finish round confirms the round in a logging
-    // dialog that shows the shared rest; closing it returns to the card.
+    // Round 7 (A3 task 1; A3 TASK-107): Finish round confirms the round in a
+    // logging dialog that holds the shared rest, drawn once.
     const recorded = screen.getByRole('dialog', { name: 'Round 1 recorded' })
     expect(within(recorded).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:30')
-    await closeLog(user, recorded)
 
     // The shared rest, and no round clock running through it.
     expect(restTimer()).toHaveTextContent('00:30')
@@ -451,7 +445,9 @@ describe('AC-063 — round history shows durations, never wall-clock times', () 
     ])
 
     // A refresh comes back to the same durations, and the stored times are untouched.
-    document.body.innerHTML = ''
+    // (Unmounted rather than wiped, so React removes everything it mounted,
+    // the circuit's recorded-round dialog included.)
+    cleanup()
     mount(double)
     const history = await screen.findByRole('list', { name: 'Round times' })
     expect(within(history).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
