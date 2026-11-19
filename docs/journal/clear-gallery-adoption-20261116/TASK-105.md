@@ -109,9 +109,12 @@ receipts' `galleryChanges`.
   committed receipts: the `ladder-4` and `ladder-12` captures at 320 and 390 px. No copy of the old
   files was found anywhere under `project-workspaces/`, so they could not be restored. TASK-104's
   receipts in this worktree were restored to their committed state (that file is not this task's).
-  The regenerated receipts, which match the store as it is now, are kept outside the repository for
-  the controller to decide. Prevention: never run another task's parity spec as a regression check
-  without first pointing its captures elsewhere. The TASK-105 spec now writes to its own body folder.
+  Prevention: never run another task's parity spec as a regression check without first pointing its
+  captures elsewhere. The TASK-105 spec now writes to its own body folder.
+  - **Restored by the controller (repair round 1).** The controller reran TASK-104's parity at
+    `4e65efb1`, TASK-104's delivered code, in a throw-away worktree. All 100 stored captures again
+    match TASK-104's committed receipts (100/100 hashes), and its receipts came out byte-identical.
+    This is no longer open.
 - The captures of the earlier body sit in the evidence store under
   `clear-gallery-adoption-v2-20261116/task-105/captures/`. Running the parity spec unchanged would have
   overwritten them under the same names. The spec now writes this body's captures to its own folder.
@@ -122,6 +125,28 @@ Carry-forward checks from earlier reviews, confirmed in round 06:
 - No word of a round tile breaks across lines in the running and paused ladders at 390 px (parity's
   `brokenWords` guard, every moment it reads).
 - Each parity capture scrolls the card's top into view first (`keep`).
+
+## Repair round 1 (2026-11-19)
+
+The round-06 candidate passed the controller's verification: 20 commands, including TASK-048's two
+backend lanes against the disposable test backend. The independent reviewer judged every criterion
+and journey met. The review logged one scope issue, the TASK-104 capture overwrite, which the
+controller has since restored (see "Round 06: failures and corrections"). This round fixes the
+reviewer's three small findings and changes nothing else.
+
+1. **Undo padding wording.** The `galleryChanges` entry in `e2e/refinement/task-105-parity.spec.ts`
+   said the Undo button's inline padding is dropped. The code keeps it: the small button keeps its own
+   `var(--spacing-300)` inset (so its focus frame clears the first letter), and its row gives the inset
+   back outside the box with `margin-inline: calc(var(--spacing-300) * -1)` (`UNDO_TEXT_START` in
+   `src/ui/timed-workout-flow.tsx`). The wording now says so. The parity receipts were regenerated.
+2. **TASK-048 backend lanes in the ledger.** The two entries said "not run here: PRE-001". They now
+   record `passed`, with `resultSource` naming the controller's verification (TASK-048 check-01,
+   PASSED 6/6, log `runner-v2/clear-gallery-adoption-v2-20261118/logs/TASK-105-a1-r0-f88398e6-10df-411b-adbb-8c096988f9f7-verify.log`).
+   I did not run them: this worktree has no test backend.
+3. **This note.** The TASK-104 capture overwrite is recorded as restored by the controller and is no
+   longer open.
+
+Verification (repair round 1): see "Verification (repair round 1)" below.
 
 ## Intended outcome
 
@@ -318,6 +343,10 @@ schedule or a Review card. `src/state/ladder.ts` is not gallery-owned.
 - **A carried assertion conflicts with the accepted gallery.** At 320 px the twelve-round grid is
   592 px tall, and the bound is the 568 px screen. See "Open: the twelve-round grid at 320 px".
 
+## Verification (repair round 1)
+
+- TASK-105 parity, under the host lock, twice in a row on the same tree. Results are filled in below.
+
 ## Verification (round 06, final tree)
 
 Each browser check ran under the host lock (`v2.mjs with-lock`). One attempt waited out a lock held
@@ -353,7 +382,8 @@ above. The table is the rerun after the fix, on the final tree.
   - console grep: no match.
 - Ledger (`evidence/refinement/task-105/test-ledger.json`):
   - 155 entries: 85 carried, 57 rewritten, 13 added, 0 retired, 0 deferred.
-  - 153 passed. 2 are the PRE-001 backend lanes, not run here.
+  - 153 passed. 2 are the PRE-001 backend lanes, not run here. Repair round 1: the controller's
+    verification passed both (see "Repair round 1"), so the ledger now records 155 passed.
   - The earlier `needsDecision` item is moved to `rules.resolved`, citing the owner decision.
 
 ## Verification (lane-widened round, final tree)
@@ -481,8 +511,8 @@ they were run with `--no-receipt`. Browser checks ran in one hold of the host lo
 
 ## Next action
 
-Controller (round 06):
-- rerun the brief's commands with PRE-001 for TASK-048's backend lanes;
+Controller (repair round 1):
+- TASK-048's backend lanes with PRE-001: done in the controller's round-06 verification (passed);
 - diff the gallery-owned files by hand: `src/ui/timed-workout-flow.tsx`, `src/ui/ladder-rungs.tsx`,
   `src/ui/ladder-rungs.css`, `src/ui/timed-result-log.tsx`, `src/ui/set-effort.tsx`,
   `src/ui/block-renderers.tsx`, `src/ui/ladder-block.tsx` and `src/app/Review.tsx`;

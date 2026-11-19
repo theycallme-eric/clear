@@ -17,7 +17,7 @@
     },
     {
       "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
-      "change": "Undo finish · resume ladder keeps its quiet style and control height but drops the small button's inline padding, so its text starts at the rounds-completed count's left edge.",
+      "change": "Undo finish · resume ladder keeps its quiet style, its control height and the small button's own inline padding (`var(--spacing-300)`, so its focus frame clears the first letter); its row gives that padding back outside the box with a negative inline margin (`calc(var(--spacing-300) * -1)`), so its text starts at the rounds-completed count's left edge.",
       "moments": [
         "log after the athlete's Finish"
       ]
