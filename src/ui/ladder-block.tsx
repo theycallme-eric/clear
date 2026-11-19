@@ -50,6 +50,18 @@
  * `highest_rung` is the **rung number**, not the rep target — "which rung was
  * reached" (DATA_MODEL §`block_results`). The screen never says it that way:
  * a rung is identified to the user by its target, per the quickfix spec.
+ *
+ * A3 TASK-105 (F3; TASK-012, TASK-013, TASK-032): on the app's routes, under
+ * the product presentation, every ladder — a scheduled one included — is
+ * Round 7's `TimedWorkoutFlow` (`BlockSlot`), holding the ladder's one durable
+ * attempt; this renderer is drawn only where no presentation is provided.
+ * The schedule's parts are shared with that flow from here rather than drawn
+ * twice — `LadderBlock.ScheduleStatus` (its round and phase in words, its
+ * Start now the flow's top action) and `LadderBlock.IntervalCountdown` (the
+ * countdown to the next start), parts of this renderer rather than components
+ * of their own — with `timingSummary` and the schedule's `PACING_NOTES` line; where
+ * the schedule is and which round is live are `state/ladder.ts`'s
+ * `scheduleView` and `roundMarker`.
  */
 import { useState, type ReactNode } from 'react'
 
@@ -63,9 +75,11 @@ import {
   ladderRoundPlan,
   ladderRungs,
   ladderUnit,
-  scheduledRoundAt,
+  roundMarker,
+  scheduleView,
   type LadderRoundPlan,
   type LadderRung,
+  type ScheduleView,
 } from '../state/ladder'
 import { exerciseName, prescribedTarget, targetText } from '../state/prescription'
 import type { LadderTiming } from '../state/schemas'
@@ -73,7 +87,7 @@ import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
-import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
+import { BlockPanel } from './block-renderers-frame'
 import { LadderRungs } from './ladder-rungs'
 
 /**
@@ -309,34 +323,6 @@ function LadderMovement({
 // Explicit timing — REQ-018 / E03
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Where a schedule is, read off the block's own clock. */
-interface ScheduleView {
-  readonly phase: 'ready' | 'running' | 'complete'
-  /** The round whose start has passed and whose interval has not; null otherwise. */
-  readonly round: number | null
-  /** Seconds until the next start, or until the schedule ends on its last round. */
-  readonly secondsRemaining: number
-}
-
-function scheduleView(
-  timing: Extract<LadderTiming, { mode: 'scheduled_starts' }>,
-  startedAt: string | null,
-  elapsed: number,
-): ScheduleView {
-  if (startedAt === null) {
-    return { phase: 'ready', round: null, secondsRemaining: timing.interval_seconds }
-  }
-
-  const round = scheduledRoundAt(timing, elapsed)
-  if (round === null) return { phase: 'complete', round: null, secondsRemaining: 0 }
-
-  return {
-    phase: 'running',
-    round,
-    secondsRemaining: round * timing.interval_seconds - elapsed,
-  }
-}
-
 /** The last stretch of an interval, where the countdown crosses into its low state. */
 const INTERVAL_LOW_SECONDS = 10
 
@@ -434,7 +420,7 @@ function TimedLadder({
             ))}
           </BlockPanel.MovementList>
 
-          <BlockPanel.Note>{PACING_NOTES[timing.mode]}</BlockPanel.Note>
+          {PACING_NOTES[timing.mode] !== null && <BlockPanel.Note>{PACING_NOTES[timing.mode]}</BlockPanel.Note>}
 
           {live?.phase === 'complete' && (
             // The schedule is over, which is all the clock can say — not a
@@ -476,21 +462,25 @@ export function timingSummary(timing: LadderTiming, blockTimerSeconds: number | 
   }
 }
 
-export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string>> = {
+/**
+ * The one line of pacing a mode needs beyond its timing line, or none.
+ *
+ * TASK-012 (AC-R012-02; R71), carried by A3 TASK-105 (TASK-AC-6FBEFBDA2608;
+ * rehearsal findings 2026-11-18, finding 7): the capped window's paragraph —
+ * "Move through the rounds at your own pace inside the cap. Nothing here moves
+ * on by itself — you say how far you got." — was crossed out and is removed,
+ * as the old build removed it, with nothing written in its place: the timing
+ * line already states the one cap, and the result log asks how far. So no
+ * renderer draws a note for that mode — the format preview (`/settings/formats`)
+ * and this presentation-less block included. The other modes' lines were not
+ * part of that removal and are unchanged.
+ */
+export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string | null>> = {
   scheduled_starts:
     'Each round starts on the clock. Whatever is left of its interval is your rest.',
   for_time:
     'Start each round when you finish the last. Nothing here moves on by itself — you say how far you got.',
-  capped_window:
-    'Move through the rounds at your own pace inside the cap. Nothing here moves on by itself — you say how far you got.',
-}
-
-/** The live round is `Now` and the one after it `Next`; only a schedule has either. */
-function roundMarker(round: LadderRoundPlan, live: ScheduleView | null): BlockMovementMarker {
-  if (live === null) return null
-  if (live.phase === 'ready') return round.number === 1 ? 'next' : null
-  if (live.round === null) return null
-  return round.number === live.round ? 'now' : null
+  capped_window: null,
 }
 
 /**
@@ -539,6 +529,10 @@ function roundTarget(movement: ExerciseProgress, roundNumber: number): string {
  * The schedule's place, inside the block's card: the round out of the total,
  * the phase in words, and — before it runs — the one way in. Not a live region:
  * a number announced every second would make the rest of the screen unusable.
+ *
+ * A3 TASK-105: the route's scheduled ladder (`TimedWorkoutFlow`'s schedule)
+ * draws this same status and offers its way in through the flow's shared top
+ * action slot, so it passes no `onStart`.
  */
 function ScheduleStatus({
   view,
@@ -547,7 +541,7 @@ function ScheduleStatus({
 }: {
   view: ScheduleView
   rounds: number
-  onStart: () => void
+  onStart?: () => void
 }) {
   return (
     <div
@@ -561,7 +555,7 @@ function ScheduleStatus({
       )}
       <BlockPanel.Label>{SCHEDULE_WORDS[view.phase]}</BlockPanel.Label>
 
-      {view.phase === 'ready' && (
+      {view.phase === 'ready' && onStart !== undefined && (
         <Button variant="primary" size="lg" icon={<Play />} onClick={onStart}>
           Start schedule
         </Button>
@@ -596,3 +590,7 @@ function IntervalCountdown({ view }: { view: ScheduleView }) {
     </div>
   )
 }
+
+/** A3 TASK-105: the schedule's own parts, which the route's `TimedWorkoutFlow` schedule draws too. */
+LadderBlock.ScheduleStatus = ScheduleStatus
+LadderBlock.IntervalCountdown = IntervalCountdown

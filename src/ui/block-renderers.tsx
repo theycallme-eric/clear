@@ -105,11 +105,17 @@ export function blockRendererFor(block: BlockProgress): BlockRenderer {
  * named: a capitalised local read as a tag is how a component gets *defined*
  * during render, and `react-hooks/static-components` is right to refuse that
  * shape even when the value behind it is a module constant.
+ *
+ * Under the product presentation a timed block is Round 7's
+ * `TimedWorkoutFlow`. A3 TASK-105 (F3; TASK-012, TASK-013, TASK-032): every
+ * ladder is, a scheduled one (`scheduled_starts`) included — the one durable
+ * attempt, compact prescription and "Log results" dialog every ladder has,
+ * with the schedule's own clock marking its rounds.
  */
 export function BlockSlot({ block }: BlockRendererProps) {
   const presentation = useWorkoutExperiencePresentation()
   const renderer = blockRendererFor(block)
-  if (presentation?.timedWorkflows?.saveResult && explicitLadderTiming(block)?.mode !== 'scheduled_starts') {
+  if (presentation?.timedWorkflows?.saveResult) {
     const format = renderer === LadderBlock ? 'ladder' : renderer === EmomBlock ? 'emom'
       : renderer === AmrapBlock ? 'amrap' : renderer === ForTimeBlock ? 'for_time' : null
     if (format !== null) return <TimedWorkoutFlow block={block} format={format} />

@@ -1,0 +1,418 @@
+{
+  "schema": "clear-task-105-parity/v1",
+  "task": "TASK-105",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "ladder",
+  "width": 320,
+  "route": "/workout",
+  "drive": "the gallery's \"Open Ladder results\" (Start, then its own clock past the cap); the route: Start, then the browser clock past the same cap",
+  "galleryChanges": [
+    {
+      "criterion": "AC-C34-01, TASK-AC-C021DADA60B8",
+      "change": "A ladder whose rounds nobody has marked yet reads \"No rounds marked yet\" (live count and the log's count), not \"0 of N rounds completed\": nothing stated is not zero; an explicit zero still reads \"0 of N\".",
+      "moments": [
+        "running before a round is checked",
+        "log after Finish or the cap with nothing checked"
+      ]
+    },
+    {
+      "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
+      "change": "Undo finish · resume ladder keeps its quiet style, its control height and the small button's own inline padding (`var(--spacing-300)`, so its focus frame clears the first letter); its row gives that padding back outside the box with a negative inline margin (`calc(var(--spacing-300) * -1)`), so its text starts at the rounds-completed count's left edge.",
+      "moments": [
+        "log after the athlete's Finish"
+      ]
+    },
+    {
+      "criterion": "AC-R013-01, AC-R013-03, TASK-AC-C021DADA60B8",
+      "change": "The ladder log asks each movement's next-round amount only once a round is stated (zero included): with nothing stated there is no \"Completed in round 1\" field.",
+      "moments": [
+        "log after Finish or the cap with nothing checked"
+      ]
+    },
+    {
+      "criterion": "AC-R013-01",
+      "change": "A tap inside the live check-off's selection leaves only the rounds before it (the log tiles' rule), where it used to select through it.",
+      "moments": [
+        "interaction only"
+      ]
+    },
+    {
+      "criterion": "JOURNEY-012 (readable wrapping), AC-R013-02",
+      "change": "A live round tile keeps the read-only tile's declared inset (`var(--spacing-200)`) instead of the Chip's wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged.",
+      "moments": [
+        "running",
+        "paused",
+        "undone"
+      ]
+    },
+    {
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "change": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes.",
+      "moments": [
+        "every moment at 320 px (the round grid)"
+      ]
+    },
+    {
+      "criterion": "AC-C33-01, AC-R013-02",
+      "change": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes.",
+      "moments": [
+        "running",
+        "paused",
+        "undone (live tiles; not drawn for the accepted data)"
+      ]
+    },
+    {
+      "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
+      "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
+      "moments": [
+        "every moment (not drawn)"
+      ]
+    }
+  ],
+  "captures": {
+    "gallery-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ready.png",
+      "sha256": "ad7c13a8752402108d456fd79c9e69832505f9c2c4e0f07f009b8524d6658854"
+    },
+    "route-ready": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ready.png",
+      "sha256": "bb6f78ef89c1b9326c4d3c75559883e67f1d386cf565f31b767556bff49e3dc0"
+    },
+    "gallery-log": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-log.png",
+      "sha256": "3cbe1eaa789f371f2fcd1aa9cebd3dc28cd38c20cbe69abec115b2409752458d"
+    },
+    "route-log": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-log.png",
+      "sha256": "dfa58bdbe30ad04a5b902cb3b2f96c1c3de96959c520af6e7c367dbe3c95966a"
+    },
+    "gallery-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ended.png",
+      "sha256": "93cc015d149742885f7b1a6bb419d6d5e282f847339baeae389a7e4883a81a0f"
+    },
+    "route-ended": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ended.png",
+      "sha256": "1057f892b9ec4ed878aa8acc42f9ada35aa8e5968bbce6eaa30f6a9dfb96cb80"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "LADDER",
+        "4 rounds · 07:00 cap",
+        "START LADDER",
+        "PUSH UP · 2 → 8 reps · +2 per round",
+        "BURPEE · 4 reps",
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "COACHING AND NOTES",
+        "— LADDER: PUSH UP, BURPEE",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "ROUNDS COMPLETED",
+        "R1",
+        "2",
+        "REPS",
+        "R2",
+        "4",
+        "REPS",
+        "R3",
+        "6",
+        "REPS",
+        "R4",
+        "8",
+        "REPS",
+        "No rounds marked yet",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "CAP REACHED",
+        "0",
+        "7",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 7 minutes 0 seconds",
+        "CONDITIONING",
+        "LADDER",
+        "4 rounds · 07:00 cap",
+        "PUSH UP · 2 → 8 reps · +2 per round",
+        "BURPEE · 4 reps",
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— LADDER: PUSH UP, BURPEE",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "LADDER",
+        "4 rounds · 07:00 cap",
+        "START LADDER",
+        "PUSH UP · 2 → 8 reps · +2 per round",
+        "BURPEE · 4 reps",
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "COACHING AND NOTES",
+        "— LADDER: PUSH UP, BURPEE",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "ROUNDS COMPLETED",
+        "R1",
+        "2",
+        "REPS",
+        "R2",
+        "4",
+        "REPS",
+        "R3",
+        "6",
+        "REPS",
+        "R4",
+        "8",
+        "REPS",
+        "No rounds marked yet",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "CAP REACHED",
+        "0",
+        "7",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 7 minutes 0 seconds",
+        "CONDITIONING",
+        "LADDER",
+        "4 rounds · 07:00 cap",
+        "PUSH UP · 2 → 8 reps · +2 per round",
+        "BURPEE · 4 reps",
+        "R1",
+        "ROUND 1",
+        "2 × push up",
+        "push up, 2 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R2",
+        "ROUND 2",
+        "4 × push up",
+        "push up, 4 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R3",
+        "ROUND 3",
+        "6 × push up",
+        "push up, 6 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "R4",
+        "ROUND 4",
+        "8 × push up",
+        "push up, 8 reps",
+        "4 × burpee",
+        "burpee, 4 reps",
+        "LOG RESULTS",
+        "COACHING AND NOTES",
+        "— LADDER: PUSH UP, BURPEE",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    }
+  },
+  "readouts": {
+    "gallery": {
+      "ready": null,
+      "log": null,
+      "ended": "07:00"
+    },
+    "route": {
+      "ready": null,
+      "log": null,
+      "ended": "07:00"
+    }
+  },
+  "differences": {
+    "ready": [],
+    "log": [],
+    "ended": []
+  },
+  "gridHeights": {
+    "gallery": {
+      "ready": 176,
+      "log": null,
+      "ended": 176
+    },
+    "route": {
+      "ready": 176,
+      "log": null,
+      "ended": 176
+    }
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 96,
+        "log": 84,
+        "ended": 112
+      },
+      "route": {
+        "ready": 96,
+        "log": 84,
+        "ended": 112
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 507
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 482.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 557
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 507
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 482.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 557
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "ended": []
+    }
+  }
+}

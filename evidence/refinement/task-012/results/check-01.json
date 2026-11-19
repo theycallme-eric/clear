@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-012/required-cases.json",
-    "sha256": "0d322bfc8bd10b71142860f775633b0207c7b172e35f4e7e3287b43781462ea1"
+    "sha256": "01f95394744feb14e55ee2b2388d2fc7efc4a6f96875aad8e7c6e094feffdbee"
   },
   "targets": [
     {
       "path": "src/ui/ladder-rungs.test.tsx",
-      "sha256": "2c7b84eac83d5b71588694369ea45a921f7425ea6fa98ceab436e54a9e0889f9"
+      "sha256": "0fd4c8ae67737314caf10df8d10f7189d5d32e342eb54d10bce67dff69648a0e"
     }
   ],
   "requiredCases": [

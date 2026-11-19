@@ -91,6 +91,7 @@ import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { EquipmentSummary } from '../ui/equipment-summary'
+import { LadderPrescription } from '../ui/ladder-rungs'
 import { MovementGroupHeader, MovementList } from '../ui/movement-presentation'
 import { ReviewExerciseRow } from '../ui/review-exercise-row'
 import { PreparationGuide } from '../ui/preparation-guide'
@@ -642,6 +643,15 @@ function ReviewBlockRows({
           </li>
         ))}
       </MovementList>
+      {/*
+        A3 TASK-105 (TASK-012, C35; JOURNEY-012; TASK-AC-F3CDA21AC50B): a
+        ladder's rounds, read-only, under its unchanged accepted movement rows
+        (R65) — Round 7's own round grid (`LadderPrescription.Rounds`, the one
+        the live ladder draws) over `ladderRounds`, the same `state/ladder.ts`
+        readings, so the athlete reads every round before starting in the
+        words the workout performs.
+      */}
+      {block.ladderRounds !== null && <LadderPrescription.Rounds rounds={block.ladderRounds} />}
       {inRounds && block.roundRest !== null && (
         <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
           <Rest size={16} />

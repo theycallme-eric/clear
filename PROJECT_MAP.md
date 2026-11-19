@@ -336,6 +336,19 @@ A3 TASK-104 added the lifecycle: Pause, Resume and Finish move Round 7's attempt
 stamp beside its start, and a raced ladder's clock now lives inside its durable attempt
 (`clear.workout-ladders`, moved by `ladder-recovery.ts`'s start/pause/resume/finish/undo) rather
 than under the For Time key, whose older ladder clocks are adopted on the first action.
+A3 TASK-105 gave a raced ladder's whole attempt one owner on that route: `TimedWorkoutFlow` holds
+it through `usePersistedLadder` (`adoptLegacyClock: 'on-first-change'`), so the clock, the live
+check-off (Round 7's `LadderPrescription` in `src/ui/ladder-rungs.tsx`, over the shared
+`state/ladder.ts` readings Review's `ladderRounds` also holds), the draft (`TimedResultLog` with
+`LadderCompletion`, `SetEffortChoice` and notes in the one "Log results" `LoggingOverlay`), the
+Undo checkpoint and the save authority (`onBlockRecorded`, `onBlockSaveFailed`, `reopenBlock`,
+`recordedResult`) are one record; `timed-attempt-records.ts` no longer writes ladders. A scheduled
+ladder (`scheduled_starts`) is the same flow's schedule: `BlockSlot` sends every ladder there under the
+product presentation, the attempt has no cap, its own clock marks each round (`scheduleView`,
+`roundMarker` in `state/ladder.ts`), and `ladder-block.tsx` lends it its status and interval countdown
+(`LadderBlock.ScheduleStatus`, `LadderBlock.IntervalCountdown`); `LadderBlock` itself now draws only
+where no presentation is provided. Review draws each ladder's `ladderRounds` under its movement rows
+with the live grid (`LadderPrescription.Rounds`).
 
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and

@@ -48,17 +48,33 @@ function isSetEffort(value: string): value is SetEffort {
   return SET_EFFORT_CHOICES.some((choice) => choice.value === value)
 }
 
-export interface SetEffortChoiceProps {
-  /** The set being entered or corrected — it names the Clear control. */
-  readonly setNumber?: number
-  readonly scopeLabel?: string
-  readonly legend?: string
-  /** The set's answer, or `null` for unanswered. */
+/**
+ * A3 TASK-105 (F3; TASK-010, TASK-048): the build's two rules for this owner,
+ * carried onto Round 7. The Clear control is always named — a caller gives the
+ * set it acts on or, where there is no set, the scope (`this section`), never
+ * neither — and a saved answer can be shown `disabled`: its face kept, the
+ * choices no longer offered and no Clear drawn.
+ */
+export type SetEffortChoiceProps = {
+  /** The answer, or `null` for unanswered. */
   readonly value: SetEffort | null
   readonly onChange: (next: SetEffort | null) => void
-}
+  /** The question's legend; the sheet's established `Effort` unless the caller's context names it. */
+  readonly legend?: string
+  /**
+   * TASK-048: a saved answer keeps its face and is no longer offered — the
+   * choices take the shared disabled role and no Clear is drawn. Offered
+   * unless set.
+   */
+  readonly disabled?: boolean
+} & (
+  /** The set being entered or corrected — it names the Clear control. */
+  | { readonly setNumber: number; readonly scopeLabel?: never }
+  /** TASK-010: what else the Clear acts on, when there is no set — `this section`. */
+  | { readonly scopeLabel: string; readonly setNumber?: never }
+)
 
-export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange }: SetEffortChoiceProps) {
+export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange, disabled = false }: SetEffortChoiceProps) {
   const rowRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -74,6 +90,7 @@ export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEG
               <span className="a11y-hidden">{label}</span>
             </>
           ),
+          ...(disabled ? { disabled: true } : {}),
         }))}
         value={value ?? undefined}
         onChange={(next) => {
@@ -81,7 +98,7 @@ export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEG
           if (chosen !== undefined && isSetEffort(chosen)) onChange(chosen)
         }}
       />
-      {value !== null && (
+      {value !== null && !disabled && (
         <div className="clr-set-effort__clear">
           <Button
             type="button"

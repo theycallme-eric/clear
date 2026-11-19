@@ -15,13 +15,48 @@
  *     difference that produces the appearance (a list versus a set of radios,
  *     and the co-located CSS that draws them), because jsdom loads no
  *     stylesheets.
+ *
+ * TASK-012 (C35; R70, R71, R72, R94, R95, R117) supersedes how the pattern is
+ * *shown*: every ladder now states it through the compact prescription — one
+ * concise line per movement, then each rung as a round tile with every
+ * movement's work in it, the fixed companion included — instead of the
+ * read-only rung row, the "Each rung" caption, the movement rows with their
+ * "between each rung" note and the timed list's "— same every round" suffix.
+ * The rung row is drawn only once answered. Each superseded assertion below
+ * says so where it changed; its focused proof is `src/ui/ladder-rungs.test.tsx`.
+ *
+ * TASK-013 (C33, C34, C36; AC-R013-01; R77, R88, R89, R92, R99, R118)
+ * supersedes how the rung reached is *asked and read*: the "How far did you
+ * get?" radio row and the "Ladder" reached row are gone, and the result log's
+ * "Rounds completed" asks it instead — rep-first tiles, one toggle per rung,
+ * named `Round 3: 9 reps` (position and target both said), the selected prefix
+ * pressed and counted (`3 of 5 rounds completed`), with no tick. Selecting the
+ * top rung is Complete. The ladder's answer now lives in TASK-032's durable
+ * attempt (`localStorage`), so each case starts from empty storage. Its focused
+ * proof is TASK-013's in `src/ui/timed-workout-flow.test.tsx`.
+ *
+ * A3 TASK-105 (F3, #728) carries these cases onto Round 7. On the route the
+ * shell dispatches a raced ladder — legacy, `for_time` or `capped_window` — to
+ * Round 7's `TimedWorkoutFlow` (the product presentation's timed workflows), so
+ * every mount here is that dispatch: `BlockSlot` under `PRODUCT_PRESENTATION`.
+ * Its compact prescription is Round 7's `LadderPrescription` (the grid
+ * `Prescribed ladder rounds`, one summary line per movement, the meta line
+ * `N rounds · MM:SS cap`) and its log is Round 7's `TimedResultLog` in the one
+ * "Log results" dialog, which Round 7 offers once the attempt has ended — so a
+ * case that answers the ladder first ends the attempt (Start ladder, Finish),
+ * which starts the log at the drawn Incomplete (TASK-010). A scheduled ladder
+ * is the same flow's schedule (the durable attempt with no cap, its rounds
+ * marked by its own clock, Start schedule its one action, its end opening the
+ * same log), as every ladder on the route is. Each case keeps the build's
+ * name and asserted behaviour; the test ledger
+ * (`evidence/refinement/task-105/test-ledger.json`) says what each read changed.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   BlockCompletionContext,
@@ -29,7 +64,6 @@ import {
   type BlockOutcome,
 } from '../state/block-completion'
 import type { LadderTiming } from '../state/schemas'
-import type { ShellStorage } from '../state/workout-persistence'
 import { sessionProgress, type BlockProgress } from '../state/workout-progress'
 import type { Enums } from '../data/database.types'
 import {
@@ -37,13 +71,20 @@ import {
   type BlockFixture,
   type ExerciseFixture,
 } from '../test/workout-double'
+import { renderApp, signedIn } from '../test/render'
+import { FORMAT_PREVIEW_ROUTE, FORMAT_PREVIEW_TITLE, PREVIEW_LADDERS } from '../app/FormatPreview'
 import { BlockSlot } from './block-renderers'
-import { LadderBlock } from './ladder-block'
+import { PACING_NOTES, timingSummary } from './ladder-block'
+import { PRODUCT_PRESENTATION } from './product-presentation'
+import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
 
 const css = readFileSync(join(process.cwd(), 'src/ui/ladder-rungs.css'), 'utf8')
 
 /** The declarations alone — a comment may say `48px`; a rule may not. */
 const declarations = css.replaceAll(/\/\*[\s\S]*?\*\//g, '')
+
+/** Round 7's name for a ladder's round grid (`LadderPrescription`). */
+const ROUNDS_LIST = 'Prescribed ladder rounds'
 
 /** A movement whose target is a sequence: rungs in an int array, never a string. */
 function sequence(
@@ -66,6 +107,17 @@ interface Mounted {
   block: BlockProgress
   reportOutcome: ReturnType<typeof vi.fn<(id: string, outcome: BlockOutcome) => void>>
   container: HTMLElement
+}
+
+/** The route's dispatch: `BlockSlot` under the product presentation, so the registry decides the renderer. */
+function dispatch(block: BlockProgress, completion: BlockCompletionApi) {
+  return render(
+    <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+      <BlockCompletionContext value={completion}>
+        <BlockSlot block={block} />
+      </BlockCompletionContext>
+    </WorkoutExperiencePresentationProvider>,
+  )
 }
 
 function mount(
@@ -100,39 +152,129 @@ function mount(
     isBlockRecorded: () => options.recorded === true,
   }
 
-  const { container } = render(
-    <BlockCompletionContext value={completion}>
-      {/* Dispatched rather than named: the registry decides the renderer. */}
-      <BlockSlot block={blockProgress} />
-    </BlockCompletionContext>,
-  )
+  const { container } = dispatch(blockProgress, completion)
 
   return { block: blockProgress, reportOutcome, container }
 }
 
-/** The rungs, as the row presents them to someone who cannot see it. */
-function rungNames(): string[] {
-  const items = screen
-    .getByRole('list', { name: 'Ladder' })
-    .querySelectorAll('[role="listitem"] .a11y-hidden')
-
-  return Array.from(items, (item) => item.textContent ?? '')
+/**
+ * TASK-012 (C35): each round of the compact prescription, as it reads on
+ * screen — every movement's work in that round, in prescribed order.
+ */
+function roundWork(): string[][] {
+  return Array.from(
+    screen.getByRole('list', { name: ROUNDS_LIST }).querySelectorAll(':scope > li'),
+    (tile) => Array.from(tile.querySelectorAll('[data-ladder-entry] > [aria-hidden="true"]'), (entry) => entry.textContent ?? ''),
+  )
 }
 
-/** Says the block ended the way the user says it did. */
-async function declare(user: ReturnType<typeof userEvent.setup>, label: string) {
+/** TASK-012 (C35): the concise summary, one line per movement (Round 7: name · progression · load). */
+function movementLines(): string[] {
+  return Array.from(document.querySelectorAll('[data-ladder-movement]'), (line) => (line.textContent ?? '').replace(/\s+/g, ' ').trim())
+}
+
+/**
+ * The headings of the ladder's card and of its open log's title. Left out:
+ * the coaching disclosure's region (TASK-005's per-movement notes) and the
+ * log's own form, where Round 7 heads each movement's entry fields (TASK-015's
+ * load and next-round amount) by its name — neither is a row of the ladder's
+ * work, which is what must not be a headed movement row.
+ */
+function workHeadings(): string[] {
+  return screen
+    .getAllByRole('heading')
+    .filter((heading) => heading.closest('[role="region"], form.clr-timed-log') === null)
+    .map((heading) => heading.textContent ?? '')
+}
+
+/** The ladder's open "Log results" dialogs. */
+function openDialogs(): HTMLDialogElement[] {
+  return [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].filter((dialog) => dialog.querySelector('form.clr-timed-log') !== null)
+}
+
+/**
+ * Round 7 offers the ladder's log once its attempt has ended: Start ladder,
+ * then Finish with nothing tracked, which starts the log at the drawn
+ * Incomplete with no round (TASK-010) — never every rung.
+ */
+async function endAttempt(user: ReturnType<typeof userEvent.setup>) {
+  if (screen.queryByRole('button', { name: 'Start ladder' }) !== null) {
+    await user.click(screen.getByRole('button', { name: 'Start ladder' }))
+  }
+  if (screen.queryByRole('button', { name: 'Finish' }) !== null) {
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+  }
+}
+
+/**
+ * Says the block ended the way the user says it did. TASK-010 (C29; R78, R87):
+ * the answers are now the shared log's Complete and Incomplete, in one row,
+ * replacing "Finished the ladder" and "Hit the time cap" / "Fell behind the
+ * schedule"; what each records is unchanged.
+ */
+async function declare(user: ReturnType<typeof userEvent.setup>, label: 'Complete' | 'Incomplete') {
+  await endAttempt(user)
+  openLog()
   await user.click(screen.getByRole('radio', { name: label }))
 }
+
+/**
+ * TASK-046 (C45; R100): the ladder's card offers one "Log results" action and
+ * its result log opens in the shared focused dialog. Opens it (once), so the
+ * log's answers, rounds and effort can be read and operated.
+ */
+function openLog() {
+  if (openDialogs().length > 0) return
+  const opener = screen.queryByRole('button', { name: 'Log results' }) ?? screen.queryByRole('button', { name: 'Edit log' })
+  if (opener !== null) fireEvent.click(opener)
+}
+
+/**
+ * TASK-013 (C33, C34; R88, R99): the result log's rounds completed — the
+ * rep-first tiles that replaced the "How far did you get?" radios, each named
+ * by its round and its target.
+ */
+function roundsCompleted(): HTMLElement {
+  openLog()
+  return screen.getByRole('group', { name: 'Rounds completed' })
+}
+
+function roundTile(name: string): HTMLElement {
+  return within(roundsCompleted()).getByRole('button', { name })
+}
+
+/** The rungs pressed, by number: the completed prefix. */
+function pressedRungs(): number[] {
+  return within(roundsCompleted())
+    .getAllByRole('button')
+    .filter((tile) => tile.getAttribute('aria-pressed') === 'true')
+    .map((tile) => Number(tile.dataset.ladderRung))
+}
+
+function roundsCount(): string {
+  return within(roundsCompleted()).getByRole('status').textContent ?? ''
+}
+
+// TASK-013: the ladder's answer is durable (TASK-032's attempt in
+// `localStorage`), so no case may inherit another's.
+afterEach(() => {
+  vi.restoreAllMocks()
+  localStorage.clear()
+})
 
 describe('the ladder is rendered from the int array, and shown once', () => {
   it('renders one rung per entry of target_sequence, in order', () => {
     mount()
 
-    // `15-12-9-6-3` as five rungs, each named by the target it asks for.
-    expect(rungNames()).toEqual(['15 reps', '12 reps', '9 reps', '6 reps', '3 reps'])
+    // `15-12-9-6-3` as five rungs. TASK-012 (C35, R72): each is a round of the
+    // compact prescription, its target in the ×/· notation.
+    expect(roundWork()).toEqual([
+      ['15 × kettlebell swing'], ['12 × kettlebell swing'], ['9 × kettlebell swing'],
+      ['6 × kettlebell swing'], ['3 × kettlebell swing'],
+    ])
   })
 
-  it('states the rep scheme at the block, never on a movement line', () => {
+  it('states the rep scheme at the block, never on a movement line', async () => {
     mount({
       structureType: 'for_time',
       repScheme: 'pyramid',
@@ -142,15 +284,25 @@ describe('the ladder is rendered from the int array, and shown once', () => {
       ],
     })
 
-    // One row of rungs for two movements — not one row each.
-    expect(screen.getAllByRole('list', { name: 'Ladder' })).toHaveLength(1)
-    expect(screen.getByText('Ladder')).toBeInTheDocument()
-    // And no movement line repeats the pattern the way the old card did.
-    expect(screen.queryByText(/2-4-6-4-2/)).not.toBeInTheDocument()
+    // One set of rounds for two movements — not one each. TASK-012 (C35,
+    // R94): each movement states its own concise progression once, beside its
+    // name — here a pyramid, which is its actual sequence, not a step it does
+    // not have — and the rounds carry both movements; no read-only rung row
+    // repeats the pattern while the ladder is performed.
+    expect(screen.getAllByRole('list', { name: ROUNDS_LIST })).toHaveLength(1)
+    expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
+    expect(movementLines()).toEqual(['push up · 2-4-6-4-2 reps', 'sit up · 2-4-6-4-2 reps'])
+    expect(roundWork()[2]).toEqual(['6 × push up', '6 × sit up'])
     expect(screen.queryByText(/5 rungs/)).not.toBeInTheDocument()
-    expect(
-      screen.getAllByRole('heading').map((heading) => heading.textContent),
-    ).toEqual(['push up', 'sit up'])
+    // TASK-010 (C29, C30): the shared result log's one title. TASK-012: the
+    // movements are named in the summary's lines, not as headings of rows —
+    // Round 7's headings are the card's group title and the log's title.
+    // TASK-046: that title is the focused log's, opened from the card.
+    await endAttempt(userEvent.setup())
+    openLog()
+    const headings = workHeadings()
+    expect(headings).toContain('Log results')
+    expect(headings.filter((name) => /push up|sit up/i.test(name ?? ''))).toEqual([])
   })
 
   it('says what is performed at each rung when the movements share it', () => {
@@ -163,16 +315,21 @@ describe('the ladder is rendered from the int array, and shown once', () => {
       ],
     })
 
-    expect(screen.getByText('Each rung')).toBeInTheDocument()
+    // TASK-012 (C35, R95): each round's tile says it — both movements at that
+    // rung — so the "Each rung" caption is no longer drawn.
+    expect(roundWork()).toEqual([['10 × push up', '10 × sit up'], ['8 × push up', '8 × sit up'], ['6 × push up', '6 × sit up']])
+    expect(screen.queryByText('Each rung')).not.toBeInTheDocument()
   })
 
   it('omits the each-rung line for a single movement, which implies it', () => {
     mount()
 
     expect(screen.queryByText('Each rung')).not.toBeInTheDocument()
+    // TASK-012 (C35): one movement, one entry in each round.
+    expect(roundWork().every((round) => round.length === 1)).toBe(true)
   })
 
-  it('shows an inverse pair’s two numbers on the rung they share', () => {
+  it('shows an inverse pair’s two numbers on the rung they share', async () => {
     mount({
       structureType: 'for_time',
       repScheme: 'inverse',
@@ -182,10 +339,19 @@ describe('the ladder is rendered from the int array, and shown once', () => {
       ],
     })
 
-    expect(rungNames()).toEqual(['10 / 1 reps', '9 / 2 reps', '8 / 3 reps'])
+    // TASK-012 (C35): each round names both movements at their own target.
+    expect(roundWork()).toEqual([['10 × pull up', '1 × burpee'], ['9 × pull up', '2 × burpee'], ['8 × pull up', '3 × burpee']])
+    // The rung the athlete is asked about still carries both numbers.
+    // TASK-013 (C33, R88): as a rep-first tile, named by round and target.
+    await declare(userEvent.setup(), 'Incomplete')
+    expect(
+      within(roundsCompleted())
+        .getAllByRole('button')
+        .map((tile) => tile.getAttribute('aria-label')),
+    ).toEqual(['Round 1: 10 / 1 reps', 'Round 2: 9 / 2 reps', 'Round 3: 8 / 3 reps'])
   })
 
-  it('states a fixed-interval companion as an annotation, not as a movement', () => {
+  it('states a fixed-interval companion as an annotation, not as a movement', async () => {
     mount({
       structureType: 'for_time',
       repScheme: 'ladder_fixed_interval',
@@ -202,36 +368,64 @@ describe('the ladder is rendered from the int array, and shown once', () => {
       ],
     })
 
-    expect(screen.getByText('4 reps burpee between each rung')).toBeInTheDocument()
-    // The companion is an annotation under the ladder's movement, not a card
-    // of its own — one heading, not two.
-    expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual(['push up'])
+    // TASK-012 (C35, R70, R72): the companion's fixed target is said once in
+    // its summary line and in every round beside the rung's work — replacing
+    // "4 reps burpee between each rung". Still no card of its own: no heading
+    // names a movement (TASK-010's log title is the log's).
+    expect(movementLines()).toEqual(['push up · 2 → 8 reps · +2 per round', 'burpee · 4 reps'])
+    expect(roundWork()).toEqual([
+      ['2 × push up', '4 × burpee'], ['4 × push up', '4 × burpee'],
+      ['6 × push up', '4 × burpee'], ['8 × push up', '4 × burpee'],
+    ])
+    expect(screen.queryByText(/between each rung/)).not.toBeInTheDocument()
+    await endAttempt(userEvent.setup())
+    openLog()
+    const headings = workHeadings()
+    expect(headings).toContain('Log results')
+    expect(headings.filter((name) => /push up|burpee/i.test(name ?? ''))).toEqual([])
   })
 })
 
 describe('read-only and interactive rungs are different things', () => {
-  it('offers nothing to tap while the block is being performed', () => {
+  it('offers nothing to tap while the block is being performed', async () => {
     mount()
 
-    expect(screen.getByRole('list', { name: 'Ladder' })).toBeInTheDocument()
-    // The only radios on the screen are the two endings; no rung is a control.
+    // TASK-012 (C35, R95): the pattern is the compact prescription's, and the
+    // read-only rung row is not drawn beside it until the ladder is answered.
+    expect(screen.getByRole('list', { name: ROUNDS_LIST })).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
+    expect(within(screen.getByRole('list', { name: ROUNDS_LIST })).queryAllByRole('button')).toEqual([])
+    // The only radios on the screen are the result log's (TASK-010: C29, C30):
+    // the two answers and the three effort faces. No rung is a control.
+    // TASK-046: none on the card itself; the log is opened from its action,
+    // which Round 7 offers once the attempt has ended — the answer then at the
+    // drawn Incomplete starting point and no effort chosen.
+    expect(screen.queryAllByRole('radio')).toEqual([])
+    await endAttempt(userEvent.setup())
+    openLog()
     expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual([
-      'Finished the ladder',
-      'Hit the time cap',
+      'Complete',
+      'Incomplete',
+      'Too hard',
+      'About right',
+      'Too easy',
     ])
+    expect(screen.queryAllByRole('radio', { checked: true }).map((radio) => radio.textContent)).toEqual(['Incomplete'])
   })
 
   it('turns the same rungs into a choice once the cap is declared', async () => {
     const user = userEvent.setup()
     mount()
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
-    const group = screen.getByRole('group', { name: 'How far did you get?' })
+    // TASK-013 (C33, C34; R88): the result log's rep-first tiles, each a
+    // toggle named by its round and its target.
     expect(
-      within(group)
-        .getAllByRole('radio')
-        .map((radio) => radio.getAttribute('aria-label')),
-    ).toEqual(['15 reps', '12 reps', '9 reps', '6 reps', '3 reps'])
+      within(roundsCompleted())
+        .getAllByRole('button')
+        .map((tile) => tile.getAttribute('aria-label')),
+    ).toEqual(['Round 1: 15 reps', 'Round 2: 12 reps', 'Round 3: 9 reps', 'Round 4: 6 reps', 'Round 5: 3 reps'])
+    expect(pressedRungs()).toEqual([])
 
     // One row, two modes: the read-only display is not left behind it.
     expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
@@ -252,33 +446,31 @@ describe('read-only and interactive rungs are different things', () => {
   it('marks the chosen rung and the rungs climbed below it', async () => {
     const user = userEvent.setup()
     mount()
-    await declare(user, 'Hit the time cap')
-    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+    await declare(user, 'Incomplete')
+    await user.click(roundTile('Round 3: 9 reps'))
 
-    const states = Array.from(
-      screen
-        .getByRole('group', { name: 'How far did you get?' })
-        .querySelectorAll('.clr-rung'),
-      (rung) => rung.getAttribute('data-state'),
-    )
-
-    expect(states).toEqual(['reached', 'reached', 'selected', 'unreached', 'unreached'])
+    // TASK-013 (C34, AC-R013-01): the chosen rung and every rung before it
+    // are the pressed prefix; the rest are not.
+    expect(within(roundsCompleted()).getAllByRole('button').map((tile) => tile.getAttribute('aria-pressed')))
+      .toEqual(['true', 'true', 'true', 'false', 'false'])
     // And the choice is stated in words, so the fill is never the only cue.
-    expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
+    expect(roundsCount()).toBe('3 of 5 rounds completed')
   })
 
   it('reselects cleanly when the user changes their mind', async () => {
     const user = userEvent.setup()
     mount()
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
-    await user.click(screen.getByRole('radio', { name: '12 reps' }))
-    expect(screen.getByRole('radio', { name: '12 reps' })).toBeChecked()
+    // TASK-013 (C34, AC-R013-01): a tile states the prefix through it.
+    await user.click(roundTile('Round 2: 12 reps'))
+    expect(pressedRungs()).toEqual([1, 2])
 
-    await user.click(screen.getByRole('radio', { name: '3 reps' }))
-    expect(screen.getByRole('radio', { name: '3 reps' })).toBeChecked()
-    expect(screen.getByRole('radio', { name: '12 reps' })).not.toBeChecked()
-    expect(screen.getByText('Reached rung 5 of 5 — 3 reps')).toBeInTheDocument()
+    // The top rung is every rung: the ladder is Complete.
+    await user.click(roundTile('Round 5: 3 reps'))
+    expect(pressedRungs()).toEqual([1, 2, 3, 4, 5])
+    expect(screen.getByRole('radio', { name: 'Complete' })).toHaveAttribute('aria-checked', 'true')
+    expect(roundsCount()).toBe('5 of 5 rounds completed')
   })
 
   it('tells two rungs with the same target apart by position, not by name', async () => {
@@ -288,15 +480,16 @@ describe('read-only and interactive rungs are different things', () => {
       repScheme: 'pyramid',
       exercises: [sequence('push-up', [2, 4, 6, 4, 2])],
     })
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
     // A pyramid climbs past 4 twice. The two are different rungs, and the
-    // second one is the one further up.
-    const fours = screen.getAllByRole('radio', { name: '4 reps' })
-    expect(fours).toHaveLength(2)
+    // second one is the one further up. TASK-013 (R88): each tile's name says
+    // its round as well as its target, so the two never share a name.
+    const fours = within(roundsCompleted()).getAllByRole('button', { name: /: 4 reps$/ })
+    expect(fours.map((tile) => tile.getAttribute('aria-label'))).toEqual(['Round 2: 4 reps', 'Round 4: 4 reps'])
 
     await user.click(fours[1])
-    expect(screen.getByText('Reached rung 4 of 5 — 4 reps')).toBeInTheDocument()
+    expect(roundsCount()).toBe('4 of 5 rounds completed')
   })
 })
 
@@ -305,8 +498,8 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
-    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+    await declare(user, 'Incomplete')
+    await user.click(roundTile('Round 3: 9 reps'))
 
     // The rung *number*, which is what `block_results.highest_rung` means —
     // rung 3 of the ladder, whose target happens to be 9.
@@ -319,14 +512,16 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Finished the ladder')
+    await declare(user, 'Complete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
     })
-    // Finishing fills the pattern without turning it into a control.
-    expect(screen.getByText('Reached rung 5 of 5 — 3 reps')).toBeInTheDocument()
-    expect(screen.getByRole('list', { name: 'Ladder' })).toBeInTheDocument()
+    // Every rung reads as climbed. TASK-013 (C36; R69): in the editable log,
+    // so the athlete can still correct it — the reached reading is the count.
+    expect(pressedRungs()).toEqual([1, 2, 3, 4, 5])
+    expect(roundsCount()).toBe('5 of 5 rounds completed')
+    expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
   })
 
   it('records no rung at all when the user says nothing', () => {
@@ -341,7 +536,7 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
+    await declare(user, 'Incomplete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
@@ -350,9 +545,9 @@ describe('the rung reached is what the block’s row records', () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
-    await user.click(screen.getByRole('radio', { name: '6 reps' }))
-    await declare(user, 'Finished the ladder')
+    await declare(user, 'Incomplete')
+    await user.click(roundTile('Round 4: 6 reps'))
+    await declare(user, 'Complete')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
@@ -383,8 +578,10 @@ describe('a ladder block the rows do not describe as one', () => {
     expect(screen.queryByRole('list', { name: 'Ladder' })).not.toBeInTheDocument()
     // The movement is still named, and the block still completes — with no
     // ending to declare, because there are no rungs to have reached.
-    expect(screen.getByRole('heading', { name: 'burpee' })).toBeInTheDocument()
-    expect(screen.queryByText('How did this block end?')).not.toBeInTheDocument()
+    // TASK-012 (C35): named in the compact prescription's summary, no rounds.
+    expect(movementLines()).toEqual(['burpee · 8 reps'])
+    expect(screen.queryByRole('list', { name: ROUNDS_LIST })).not.toBeInTheDocument()
+    expect(screen.queryByText('Work completed')).not.toBeInTheDocument()
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
@@ -415,10 +612,16 @@ describe('a ladder block is one card of the shared frame', () => {
       ],
     })
 
+    const card = () => container.querySelector('[data-movement-group-header]')!.closest<HTMLElement>('.clr-card')!
     expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(card().querySelectorAll('.clr-card')).toHaveLength(0)
 
-    await declare(user, 'Hit the time cap')
-    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+    // Answered (on Round 7, once its race has run): still one card for the
+    // block, with no card inside it. The race clock is drawn beside the card,
+    // as the shared timer's own frame — never inside it.
+    await declare(user, 'Incomplete')
+    expect(card().querySelectorAll('.clr-card')).toHaveLength(0)
+    expect([...container.querySelectorAll('.clr-card')].filter((other) => other !== card() && other.querySelector('[role="timer"]') === null)).toEqual([])
   })
 
   it('lists its movements as rows in prescribed order, each headed by its name', () => {
@@ -429,17 +632,18 @@ describe('a ladder block is one card of the shared frame', () => {
       ],
     })
 
-    const list = screen.getByRole('list', { name: 'Movements in this ladder' })
-    const rows = within(list).getAllByRole('listitem')
+    const summary = document.querySelector<HTMLElement>('.clr-ladder-prescription__summary')!
+    const rows = [...summary.querySelectorAll<HTMLElement>('[data-ladder-movement]')]
 
+    // TASK-012 (C35): one concise summary line per movement, in prescribed
+    // order, led by its name — the compact prescription's, not a headed row.
     expect(rows).toHaveLength(2)
-    expect(within(rows[0]).getByRole('heading', { name: 'thruster' })).toBeInTheDocument()
-    expect(within(rows[1]).getByRole('heading', { name: 'pull up' })).toBeInTheDocument()
+    expect(rows.map((row) => row.querySelector('strong')?.textContent)).toEqual(['thruster', 'pull up'])
     // A ladder tracks no position among its movements, so none is marked live.
-    expect(list.querySelector('[aria-current]')).toBeNull()
+    expect(summary.querySelector('[aria-current]')).toBeNull()
   })
 
-  it('captions the rungs and the movements with the same group label', () => {
+  it('captions the rungs and the movements with the same group label', async () => {
     mount({
       exercises: [
         sequence('thruster', [21, 15, 9]),
@@ -447,17 +651,17 @@ describe('a ladder block is one card of the shared frame', () => {
       ],
     })
 
-    // The block's own group label carries the frame's label style inline; the
-    // rung row's caption carries the same tokens from its co-located CSS.
-    const eachRung = screen.getByText('Each rung')
-    expect(eachRung.style.color).toBe('var(--text-card-label)')
-    expect(eachRung.style.fontSize).toBe('var(--label-xs-size)')
-
-    expect(screen.getByText('Ladder')).toHaveClass('clr-rungs__legend')
-    const legend = /\.clr-rungs__legend\s*\{([^}]*)\}/.exec(declarations)?.[1] ?? ''
-    expect(legend).toContain('color: var(--text-card-label)')
-    expect(legend).toContain('font-size: var(--label-xs-size)')
-    expect(legend).toContain('font-family: var(--font-data)')
+    // TASK-012 (C35, R95): no "Each rung" caption — every round says what is
+    // in it — and the rung row, with its caption, is drawn once answered.
+    expect(screen.queryByText('Each rung')).not.toBeInTheDocument()
+    await declare(userEvent.setup(), 'Complete')
+    // TASK-013 (C33): the rungs are the result log's "Rounds completed", whose
+    // legend wears the same DS label face as the log's other questions.
+    const rounds = roundsCompleted().querySelector('legend')!
+    expect(rounds).toHaveTextContent('Rounds completed')
+    expect(rounds).toHaveClass('label')
+    openLog()
+    expect(screen.getByRole('group', { name: 'Work completed' }).querySelector('legend')).toHaveClass('label')
   })
 
   it('says it is saved inside the card, below the ending it asks for', () => {
@@ -467,21 +671,28 @@ describe('a ladder block is one card of the shared frame', () => {
     const saved = within(card).getAllByText('Block saved')
     expect(saved).toHaveLength(1)
 
-    const ending = screen.getByRole('group', { name: 'How did this block end?' })
-    expect(card).toContainElement(ending)
+    // TASK-046: the ending is asked in the log the card's own action opens;
+    // that action is in the card, above the saved line. On Round 7 a saved
+    // ladder's action is its saved log's "Edit log".
+    const opener = within(card).getByRole('button', { name: 'Edit log' })
+    expect(card).toContainElement(opener)
     expect(
-      ending.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      opener.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
+    openLog()
+    const ending = screen.getByRole('group', { name: 'Work completed' })
+    expect(ending.closest('dialog')).not.toBeNull()
   })
 
   it('keeps the rung choice live after the cap is declared, and reports it', async () => {
     const user = userEvent.setup()
     const { block, reportOutcome } = mount()
 
-    await declare(user, 'Hit the time cap')
-    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+    await declare(user, 'Incomplete')
+    await user.click(roundTile('Round 3: 9 reps'))
 
-    expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
+    // TASK-013 (C34): the count says it.
+    expect(roundsCount()).toBe('3 of 5 rounds completed')
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 3,
@@ -496,9 +707,7 @@ describe('a ladder block is one card of the shared frame', () => {
     })
 
     expect(screen.getByText(/every movement in it was swapped\s+out/)).toBeInTheDocument()
-    expect(
-      screen.queryByRole('list', { name: 'Movements in this ladder' }),
-    ).not.toBeInTheDocument()
+    expect(document.querySelector('[data-ladder-movement]')).toBeNull()
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 })
@@ -512,7 +721,13 @@ describe('the ladder states its structure identity like every other block', () =
       exercises: [sequence('kettlebell-swing', [15, 12, 9])],
     })
 
-    expect(screen.getByText('FOR TIME · 8 MIN CAP · LADDER DOWN')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01, G03): the badge names the shape the ladder renderer
+    // performs, LADDER; its rounds and cap are read on the line below it
+    // (Round 7's meta line), and its scheme — falling three a round — on the
+    // movement's one summary line.
+    expect(screen.getByText('LADDER')).toBeInTheDocument()
+    expect(screen.getByText('3 rounds · 08:00 cap')).toBeInTheDocument()
+    expect(movementLines()).toEqual(['kettlebell swing · 15 → 9 reps · −3 per round'])
     expect(screen.getByText('1 movement')).toBeInTheDocument()
   })
 
@@ -524,23 +739,16 @@ describe('the ladder states its structure identity like every other block', () =
       exercises: [sequence('plank', [60, 45, 30], { modality })],
     })
 
-    expect(rungNames()).toEqual(['60 sec', '45 sec', '30 sec'])
+    // TASK-012 (C35, R72): the unit is the meaning of a timed rung, so the
+    // round and the progression keep `sec`.
+    expect(roundWork()).toEqual([['60 sec plank'], ['45 sec plank'], ['30 sec plank']])
+    expect(movementLines()).toEqual(['plank · 60 → 30 sec · −15 per round'])
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REQ-018 / E03 (TASK-033) — explicit timing, drawn as precomputed rounds
 // ─────────────────────────────────────────────────────────────────────────────
-
-/** `localStorage`, in memory, so one test cannot see another's schedule. */
-function memoryStorage(): ShellStorage {
-  const values = new Map<string, string>()
-  return {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => void values.set(key, value),
-    removeItem: (key) => void values.delete(key),
-  }
-}
 
 const SCHEDULE_START = Date.parse('2026-10-22T10:00:00.000Z')
 
@@ -551,12 +759,14 @@ interface TimedMount extends Mounted {
 /**
  * A timed ladder, as the shell would hand it over. The shared snapshot double
  * carries no `ladder_timing` column, so the stored value is set on the block
- * the progress model reads — exactly the one fact the renderer keys on.
+ * the progress model reads — exactly the one fact the renderer keys on. With
+ * `kept`, the completion seam names a workout, so the route's own storage
+ * (`localStorage`) keeps its attempt; the wall clock is `Date.now`.
  */
 function mountTimed(
   timing: LadderTiming,
   block: BlockFixture,
-  options: { storage?: ShellStorage; now?: () => number } = {},
+  options: { kept?: boolean } = {},
 ): TimedMount {
   const snapshot = snapshotFixture({
     sections: [{ title: 'Conditioning', sectionType: 'conditioning', blocks: [block] }],
@@ -567,36 +777,34 @@ function mountTimed(
   }
 
   const reportOutcome = vi.fn<(id: string, outcome: BlockOutcome) => void>()
-  const completion: BlockCompletionApi = { reportOutcome, isBlockRecorded: () => false }
+  const completion: BlockCompletionApi = {
+    reportOutcome,
+    isBlockRecorded: () => false,
+    ...(options.kept === true ? { sessionId: 'session-ladder-block' } : {}),
+  }
 
-  const { container, unmount } = render(
-    <BlockCompletionContext value={completion}>
-      {options.storage === undefined ? (
-        // Dispatched rather than named: the registry decides the renderer.
-        <BlockSlot block={blockProgress} />
-      ) : (
-        <LadderBlock
-          block={blockProgress}
-          storage={options.storage}
-          now={options.now ?? (() => SCHEDULE_START)}
-        />
-      )}
-    </BlockCompletionContext>,
-  )
+  const { container, unmount } = dispatch(blockProgress, completion)
 
   return { block: blockProgress, reportOutcome, container, unmount }
 }
 
 /** Each round row of the timed ladder. */
 function roundRows(): HTMLElement[] {
-  return within(screen.getByRole('list', { name: 'Rounds in this ladder' })).getAllByRole('listitem')
+  return within(screen.getByRole('list', { name: ROUNDS_LIST })).getAllByRole('listitem')
 }
 
-/** Nothing on the screen asks for a set, a number or an exertion. */
+/**
+ * Nothing on the screen asks for a set, a number or an exertion. TASK-015
+ * (C37) and TASK-047 (REQ-031): an open ladder log also holds each movement's
+ * optional actual load and next-round amount and the block's optional notes —
+ * the block's own fields, not a set entry — so those are the only fields
+ * allowed.
+ */
 function expectNoSetEntry() {
-  expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+  const movementField = (field: HTMLElement) => /^(Weight used|Completed in round \d+)$/.test((field as HTMLInputElement).labels?.[0]?.textContent ?? '')
+  expect(screen.queryAllByRole('spinbutton').filter((field) => !movementField(field))).toEqual([])
   expect(screen.queryByRole('slider')).not.toBeInTheDocument()
-  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  expect(screen.queryAllByRole('textbox').filter((field) => (field as HTMLTextAreaElement).labels?.[0]?.textContent !== 'Notes · optional')).toEqual([])
   expect(screen.queryByText(/\bRPE\b|exertion/i)).not.toBeInTheDocument()
 }
 
@@ -658,12 +866,16 @@ describe('a scheduled ladder shows every round precomputed — no mental arithme
       expect(rows).toHaveLength(schedule.rounds)
       rows.forEach((row, index) => {
         const round = within(row)
-        expect(round.getByRole('heading', { name: `Round ${index + 1}` })).toBeInTheDocument()
+        // TASK-012 (C35, R95): each round is a compact tile, R1 onward.
+        expect(round.getByText(`R${index + 1}`)).toBeInTheDocument()
+        expect(round.getByText(`Round ${index + 1}`)).toHaveClass('a11y-hidden')
         expect(round.getByText(`Starts at ${formatClock(index * schedule.interval)}`)).toBeInTheDocument()
-        // The rung target for *this* round, already looked up.
-        expect(round.getByText(`${schedule.sequence[index]} reps thruster`)).toBeInTheDocument()
-        // The fixed companion work, stated in full on every round.
-        expect(round.getByText(`${schedule.companion} reps burpee — same every round`)).toBeInTheDocument()
+        // The rung target for *this* round, already looked up (R72: ×/·).
+        expect(round.getByText(`${schedule.sequence[index]} × thruster`)).toBeInTheDocument()
+        // The fixed companion work, stated in full on every round — without
+        // the rejected "— same every round" suffix (R70, AC-R012-02).
+        expect(round.getByText(`${schedule.companion} × burpee`)).toBeInTheDocument()
+        expect(round.queryByText(/same every round/)).not.toBeInTheDocument()
       })
       expectNoSetEntry()
     },
@@ -680,16 +892,16 @@ describe('a scheduled ladder shows every round precomputed — no mental arithme
       },
     )
 
-    expect(within(roundRows()[1]).getByText('6 reps each side lunge')).toBeInTheDocument()
+    // TASK-012 (R72): the ×/· notation keeps each side.
+    expect(within(roundRows()[1]).getByText('6 × lunge each side')).toBeInTheDocument()
   })
 })
 
 describe('a scheduled ladder runs on its own clock, restored from wall-clock time', () => {
   it('marks the live round from the stored start, survives a remount, and records nothing the clock produced', async () => {
     const user = userEvent.setup()
-    const storage = memoryStorage()
     let wall = SCHEDULE_START
-    const now = () => wall
+    vi.spyOn(Date, 'now').mockImplementation(() => wall)
     const setWall = (value: number) => {
       wall = value
     }
@@ -701,7 +913,7 @@ describe('a scheduled ladder runs on its own clock, restored from wall-clock tim
       cap_seconds: null,
     }
 
-    const first = mountTimed(timing, scheduledBlock(schedule), { storage, now })
+    const first = mountTimed(timing, scheduledBlock(schedule), { kept: true })
 
     // Ready: the schedule is stated, round 1 is next, one control starts it.
     expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
@@ -724,20 +936,25 @@ describe('a scheduled ladder runs on its own clock, restored from wall-clock tim
     // A refresh: the same storage, a later wall clock. The schedule is read
     // back from the stored start, not restarted.
     wall = SCHEDULE_START + (schedule.interval * 3 + 20) * 1000
-    const second = mountTimed(timing, scheduledBlock(schedule), { storage, now })
+    const second = mountTimed(timing, scheduledBlock(schedule), { kept: true })
     expect(screen.getByText(`ROUND 4 OF ${schedule.rounds}`)).toBeInTheDocument()
     expect(roundRows()[3]).toHaveAttribute('aria-current', 'step')
     expect(screen.queryByRole('button', { name: 'Start schedule' })).not.toBeInTheDocument()
 
     // Past the last interval: complete, nothing live, and no rung claimed.
+    // TASK-010 (AC-R010-01): a schedule run out starts the log at Incomplete,
+    // never at every rung — the clock is not work performed.
     moveClockTo(setWall, SCHEDULE_START + (schedule.rounds * schedule.interval + 5) * 1000)
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
     for (const row of roundRows()) expect(row).not.toHaveAttribute('aria-current')
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, {})
+    openLog()
+    expect(screen.getByRole('radio', { name: 'Incomplete' })).toHaveAttribute('aria-checked', 'true')
 
-    // Falling behind is the athlete's to say, and is what records a rung.
-    await declare(user, 'Fell behind the schedule')
-    await user.click(screen.getByRole('radio', { name: `${schedule.sequence[2]} reps` }))
+    // How far is the athlete's to say, and is what records a rung. TASK-013
+    // (C33, C34): on the log's rep-first tile for that round.
+    await user.click(screen.getByRole('radio', { name: 'Incomplete' }))
+    await user.click(roundTile(`Round 3: ${schedule.sequence[2]} reps`))
     expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, { highestRung: 3 })
   })
 })
@@ -746,9 +963,9 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
   it.each([
     { rounds: 3, rungs: [21, 15, 9], cap: 600 },
     { rounds: 6, rungs: [2, 4, 6, 8, 10, 12], cap: 1500 },
-  ])('$rounds rounds: no live round and no schedule, however long passes', ({ rounds, rungs, cap }) => {
-    const storage = memoryStorage()
+  ])('$rounds rounds: no live round and no schedule, however long passes', async ({ rounds, rungs, cap }) => {
     let wall = SCHEDULE_START
+    vi.spyOn(Date, 'now').mockImplementation(() => wall)
     const mounted = mountTimed(
       { mode: 'for_time', rounds, interval_seconds: null, cap_seconds: null },
       {
@@ -758,15 +975,15 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
         timerSeconds: cap,
         exercises: [sequence('wall-ball', rungs)],
       },
-      { storage, now: () => wall },
+      { kept: true },
     )
 
-    expect(
-      screen.getByText(`${rounds} rounds · for time, at your pace · ${formatClock(cap)} cap`),
-    ).toBeInTheDocument()
+    // Round 7's meta line: the rounds, and the one cap the race runs against.
+    expect(screen.getByText(`${rounds} rounds · ${formatClock(cap)} cap`)).toBeInTheDocument()
     expect(roundRows()).toHaveLength(rounds)
     roundRows().forEach((row, index) => {
-      expect(within(row).getByText(`${rungs[index]} reps wall ball`)).toBeInTheDocument()
+      // TASK-012 (R72): the ×/· notation.
+      expect(within(row).getByText(`${rungs[index]} × wall ball`)).toBeInTheDocument()
       expect(within(row).queryByText(/^Starts at/)).not.toBeInTheDocument()
     })
 
@@ -778,10 +995,31 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
       expect(within(row).queryByText(/^(Now|Next)$/)).not.toBeInTheDocument()
     }
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /start/i })).not.toBeInTheDocument()
-    expect(storage.getItem('clear.workout-for-time')).toBeNull()
+    // TASK-006 (AC-R006-01, C18; R66, R67): a For Time ladder offers its own
+    // Start in its top slot — superseding "no Start at all". Until it is
+    // pressed no clock runs and nothing is stored.
+    expect(screen.getAllByRole('button', { name: /start/i }).map((button) => button.textContent)).toEqual(['Start ladder'])
+    // TASK-013: the ladder's attempt has its own durable record; nothing is
+    // written under either key before Start.
+    expect(localStorage.getItem('clear.workout-for-time')).toBeNull()
+    expect(localStorage.getItem('clear.workout-ladders')).toBeNull()
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
     expectNoSetEntry()
+
+    // Once its clock runs, it is still never a schedule: elapsed time marks no
+    // round live and records no progress.
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Start ladder' }))
+    moveClockTo((value) => {
+      wall = value
+    }, SCHEDULE_START + cap * 1500)
+    expect(screen.getByRole('timer', { name: 'Ladder time' })).toBeInTheDocument()
+    for (const row of roundRows()) {
+      expect(row).not.toHaveAttribute('aria-current')
+      expect(within(row).queryByText(/^(Now|Next)$/)).not.toBeInTheDocument()
+      // TASK-013 (C34): the round is the athlete's to check off; time checks none.
+      expect(within(row).getByRole('button')).toHaveAttribute('aria-pressed', 'false')
+    }
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 
   it('records progress only once the athlete declares it', async () => {
@@ -797,7 +1035,7 @@ describe('free-paced For Time never infers progress from elapsed time', () => {
     )
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
-    await declare(user, 'Finished the ladder')
+    await declare(user, 'Complete')
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { highestRung: 4 })
   })
 })
@@ -806,7 +1044,7 @@ describe('a capped window shows its one cap', () => {
   it.each([
     { structureType: 'amrap' as const, rounds: 9, cap: 720 },
     { structureType: 'for_time' as const, rounds: 3, cap: 420 },
-  ])('$rounds rounds inside $structureType: the cap is stated, and no round runs on the clock', ({ structureType, rounds, cap }) => {
+  ])('$rounds rounds inside $structureType: the cap is stated, and no round runs on the clock', async ({ structureType, rounds, cap }) => {
     const rungs = Array.from({ length: rounds }, (_, index) => (index + 1) * 2)
     mountTimed(
       { mode: 'capped_window', rounds, interval_seconds: null, cap_seconds: cap },
@@ -828,17 +1066,85 @@ describe('a capped window shows its one cap', () => {
       },
     )
 
-    expect(
-      screen.getByText(`${rounds} rounds · ${formatClock(cap)} cap on the whole ladder`),
-    ).toBeInTheDocument()
+    // Round 7's meta line: the rounds and the one cap on the whole ladder.
+    expect(screen.getByText(`${rounds} rounds · ${formatClock(cap)} cap`)).toBeInTheDocument()
     const rows = roundRows()
     expect(rows).toHaveLength(rounds)
     const last = within(rows[rounds - 1])
-    expect(last.getByText(`${rungs[rounds - 1]} reps kettlebell swing`)).toBeInTheDocument()
-    expect(last.getByText('5 reps push up — same every round')).toBeInTheDocument()
+    // TASK-012 (R70, R72; AC-R012-02): the ×/· notation, and the companion's
+    // target in every round without "— same every round".
+    expect(last.getByText(`${rungs[rounds - 1]} × kettlebell swing`)).toBeInTheDocument()
+    expect(last.getByText('5 × push up')).toBeInTheDocument()
+    expect(screen.queryByText(/same every round/)).not.toBeInTheDocument()
+    // R71: the capped window's "Move through the rounds…" paragraph is gone.
+    expect(screen.queryByText(/Move through the rounds/)).not.toBeInTheDocument()
     for (const row of rows) expect(row).not.toHaveAttribute('aria-current')
-    expect(screen.getByRole('radio', { name: 'Hit the time cap' })).toBeInTheDocument()
+    await endAttempt(userEvent.setup())
+    openLog()
+    expect(screen.getByRole('radio', { name: 'Incomplete' })).toBeInTheDocument()
     expectNoSetEntry()
+  })
+})
+
+/**
+ * A3 TASK-105 round 06 (TASK-AC-6FBEFBDA2608; AC-R012-02, R71; rehearsal
+ * findings 2026-11-18, finding 7): the capped window's "Move through the
+ * rounds…" paragraph is removed everywhere the product draws it, as the old
+ * build removed it — `PACING_NOTES.capped_window` is `null`, so the format
+ * preview Settings links to (`/settings/formats`) and the presentation-less
+ * `LadderBlock` both draw no note for that mode, with nothing in its place.
+ * The other two modes keep their one pacing line, unchanged.
+ */
+describe('a capped window draws no pacing paragraph anywhere the product draws a ladder', () => {
+  it('TASK-AC-6FBEFBDA2608: PACING_NOTES.capped_window is null, so the format preview and the legacy block draw no note for it', async () => {
+    expect(PACING_NOTES.capped_window).toBeNull()
+    expect(PACING_NOTES.scheduled_starts).toBe(
+      'Each round starts on the clock. Whatever is left of its interval is your rest.',
+    )
+    expect(PACING_NOTES.for_time).toBe(
+      'Start each round when you finish the last. Nothing here moves on by itself — you say how far you got.',
+    )
+
+    // The format preview, on its real route: its capped window states its
+    // timing, movement and rung reached, and no pacing paragraph; the free-
+    // paced ladder beside it keeps its line, so the preview still draws one
+    // where a mode has it.
+    const preview = renderApp([FORMAT_PREVIEW_ROUTE], signedIn())
+    expect(await screen.findByRole('heading', { level: 1, name: FORMAT_PREVIEW_TITLE })).toBeVisible()
+    const capped = PREVIEW_LADDERS.find((ladder) => ladder.timing.mode === 'capped_window')!
+    const free = PREVIEW_LADDERS.find((ladder) => ladder.timing.mode === 'for_time')!
+    const cappedRegion = screen.getByRole('region', { name: capped.heading })
+    expect(within(cappedRegion).getByText(timingSummary(capped.timing, capped.columns.timer_seconds))).toBeVisible()
+    expect(cappedRegion.textContent).not.toMatch(/Move through the rounds|at your own pace inside the cap|Nothing here moves on by itself/)
+    expect(within(screen.getByRole('region', { name: free.heading })).getByText(PACING_NOTES.for_time!)).toBeVisible()
+    expect(screen.getByRole('main').textContent).not.toMatch(/Move through the rounds/)
+    preview.unmount()
+
+    // The presentation-less `LadderBlock` (no route reaches it; tests and
+    // specimens do): its capped window states its cap and draws no note.
+    const snapshot = snapshotFixture({
+      sections: [{
+        title: 'Conditioning',
+        sectionType: 'conditioning',
+        blocks: [{
+          structureType: 'amrap',
+          repScheme: 'ladder_fixed_interval',
+          timerSeconds: 600,
+          exercises: [sequence('kettlebell-swing', [2, 4, 6, 8, 10])],
+        }],
+      }],
+    })
+    const block: BlockProgress = {
+      ...sessionProgress(snapshot).sections[0].blocks[0],
+      ladderTiming: { mode: 'capped_window', rounds: 5, interval_seconds: null, cap_seconds: 600 },
+    }
+    const { container } = render(
+      <BlockCompletionContext value={{ reportOutcome: vi.fn(), isBlockRecorded: () => false }}>
+        <BlockSlot block={block} />
+      </BlockCompletionContext>,
+    )
+    expect(screen.getByText(timingSummary(block.ladderTiming!, 600))).toBeInTheDocument()
+    expect(container.textContent).not.toMatch(/Move through the rounds|at your own pace inside the cap|Nothing here moves on by itself/)
   })
 })
 
@@ -846,7 +1152,16 @@ describe('legacy ladders are unchanged by explicit timing', () => {
   it('a ladder with no timing keeps its movement list and draws no rounds', () => {
     mount()
 
-    expect(screen.getByRole('list', { name: 'Movements in this ladder' })).toBeInTheDocument()
-    expect(screen.queryByRole('list', { name: 'Rounds in this ladder' })).not.toBeInTheDocument()
+    expect(document.querySelector('.clr-ladder-prescription__summary')).not.toBeNull()
+    expect(movementLines()).toEqual(['kettlebell swing · 15 → 3 reps · −3 per round'])
+    // TASK-012 (C35): every ladder now states its rounds compactly — with no
+    // timing, its rounds are its own rungs — but explicit timing still adds
+    // nothing here: its meta line is its own rungs and the block's cap (Round
+    // 7's), with no pacing note and no schedule.
+    expect(roundWork()).toHaveLength(5)
+    expect(screen.getByText('5 rounds · 08:00 cap')).toBeInTheDocument()
+    expect(screen.queryByText(/for time, at your pace|on the whole ladder|a new round every/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Start each round|Each round starts on the clock/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Starts at/)).not.toBeInTheDocument()
   })
 })

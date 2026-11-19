@@ -17,12 +17,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-013/required-cases.json",
-    "sha256": "55b39552db8b4a3230ddeac533c21fcb9dbfb4a1a798a333d734dac8054d7ee7"
+    "sha256": "8c8bc3ec0fefe2a4d646bd6f48f96e7a2051b3049c5466f13846c6cd7bd73040"
   },
   "targets": [
     {
       "path": "src/ui/timed-workout-flow.test.tsx",
-      "sha256": "4130603cb5b89fc6e70ec0bc59e0f4c232e5f70da26ab66f3384ed06b9ec6d71"
+      "sha256": "c41615338ce2d2fa84a95b4b8b8303376ce1246bf3e9ac20968d7b0b4a1347e1"
     }
   ],
   "requiredCases": [
@@ -68,12 +68,12 @@
     }
   ],
   "totals": {
-    "total": 32,
-    "passed": 11,
+    "total": 29,
+    "passed": 12,
     "failed": 0,
-    "skipped": 21,
+    "skipped": 17,
     "todo": 0,
-    "executed": 11
+    "executed": 12
   },
   "problems": []
 }
