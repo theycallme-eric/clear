@@ -17,12 +17,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-020/required-cases.json",
-    "sha256": "34ffb89ea69d10e5065da62ed6643412b9da3551831c0cfca4864dd160212038"
+    "sha256": "b77c3297d2d76c8e8501b685934a177b35ba476d546d941b5eb87bc364a395e0"
   },
   "targets": [
     {
       "path": "src/ui/set-logging-sheet.test.tsx",
-      "sha256": "a180cfcd7b3fc40f26bdd2b1e19ee52dab7613da601af7833b4bc1e33353b60e"
+      "sha256": "a69d3224ddacb7491c8516951659b419a7a556592d88bec3f09834d21858c14e"
     }
   ],
   "requiredCases": [
@@ -53,12 +53,12 @@
     }
   ],
   "totals": {
-    "total": 36,
-    "passed": 17,
+    "total": 43,
+    "passed": 19,
     "failed": 0,
-    "skipped": 19,
+    "skipped": 24,
     "todo": 0,
-    "executed": 17
+    "executed": 19
   },
   "problems": []
 }

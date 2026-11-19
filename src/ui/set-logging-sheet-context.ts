@@ -9,6 +9,16 @@
  *
  * Collapsing a sheet only hides it. The draft it was holding belongs to the
  * logger that opened it, so a collapse and a reopen lose nothing.
+ *
+ * A3 TASK-106 (F4; owner decision 1): under Round 7's logging dialog every
+ * entry — a set, an extra set, a correction, a superset round, a circuit
+ * movement — is held by the one `LoggingOverlay`, so there is no per-entry
+ * placement. The old build's TASK-043 `focused` placement (a portal to the
+ * document body for the families that had adopted its dialog) is retired
+ * with that reason, not carried. What the dialog needs from this seam is one
+ * thing the half-sheet did not: to stay drawn while it closes, so the native
+ * dialog plays its exit, closes itself and hands focus back before it goes.
+ * `place(sheet, true)` keeps it drawn in the same slot for that long.
  */
 import { createContext, use, useCallback, useLayoutEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
@@ -35,8 +45,11 @@ export function useSetLoggingSheetOpen(): boolean {
 export interface SetLoggingSheetPlacement {
   readonly open: boolean
   setOpen(open: boolean): void
-  /** Draws the sheet where it belongs: the shell's slot, or in place. */
-  place(sheet: ReactNode): ReactNode
+  /**
+   * Draws the sheet where it belongs: the shell's slot, or in place. `keep`
+   * draws it while closed too — the logging dialog through its exit (A3).
+   */
+  place(sheet: ReactNode, keep?: boolean): ReactNode
 }
 
 export function useSetLoggingSheetPlacement(key: string): SetLoggingSheetPlacement {
@@ -64,7 +77,7 @@ export function useSetLoggingSheetPlacement(key: string): SetLoggingSheetPlaceme
   )
 
   if (host === null) {
-    return { open: localOpen, setOpen, place: (sheet) => (localOpen ? sheet : null) }
+    return { open: localOpen, setOpen, place: (sheet, keep = false) => (localOpen || keep ? sheet : null) }
   }
 
   const open = host.openKey === key
@@ -72,6 +85,6 @@ export function useSetLoggingSheetPlacement(key: string): SetLoggingSheetPlaceme
   return {
     open,
     setOpen,
-    place: (sheet) => (open && container !== null ? createPortal(sheet, container) : null),
+    place: (sheet, keep = false) => ((open || keep) && container !== null ? createPortal(sheet, container) : null),
   }
 }

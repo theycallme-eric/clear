@@ -22,7 +22,7 @@ import {
 import { isSetObservationMutation, type SetObservationAck, type SetObservationMutation } from '../../src/state/set-observation-mutation'
 import { makePrescription, makeWorkoutBlock } from '../../src/test/factories'
 import { FORMAT_EMOM, formatBadgesSnapshot } from '../../src/test/format-badges-fixture'
-import { ACTUALS_AMRAP_BLOCK, ACTUALS_AMRAP_WORK_LIST, ACTUALS_FOR_TIME_BLOCK, ACTUALS_FOR_TIME_WORK_LIST } from '../../src/test/timed-actuals-fixture'
+import { ACTUALS_AMRAP_BLOCK, ACTUALS_FOR_TIME_BLOCK } from '../../src/test/timed-actuals-fixture'
 import { fixtureLocation, onboardedProfile } from '../../src/test/user-data-double'
 import { definitionFixture } from '../../src/test/workout-double'
 import { installDeterministicCapture } from '../design-0143/fixtures'
@@ -32,6 +32,26 @@ import { expect, test as scanned } from '../fixtures'
  * TASK-041 (#667; REQ-016, REQ-017, REQ-018; completion owner of JOURNEY-016,
  * JOURNEY-017 and JOURNEY-018) — the adopted dialog and form rhythm verified
  * in the actual route consumers.
+ *
+ * A3 TASK-106 (F4; owner decision 1): rewritten for Round 7's controls, every
+ * asserted behaviour and measurement kept. Every moment's log is Round 7's
+ * `LoggingOverlay` (`src/ui/logging-overlay.tsx`): the dialog
+ * `dialog.clr-logging-overlay`, its frame the shared Dialog's chamfer
+ * (`:scope > .clr-bleed > .clr-chamfer`), its scroller
+ * `.clr-logging-overlay__scroll`, its header `.clr-logging-overlay__head` and
+ * its body `.clr-logging-overlay__body`, in place of the build's
+ * `dialog.clr-accepted-log` and its `data-logging-*` parts. Round 7's words and
+ * parts are used where it names things differently: a set's read-back is the
+ * set sheet's `role="status"` (`.clr-set-sheet__saved`); a complete movement
+ * group in a log is a superset round's `.clr-round-movement` or a timed log's
+ * titled `.clr-timed-log__group`; a card's movement is `.clr-movement-identity`;
+ * the movement note's dialog is "Movement note", its field named by the
+ * movement; a timed card is Round 7's `TimedWorkoutFlow`
+ * (`.clr-timed-flow[data-timed-format]`, "Start FOR TIME"), whose log opens
+ * itself when the attempt ends and is then reopened from the card's own Log
+ * results; the ladder's live rounds are "Complete round N" in "Prescribed
+ * ladder rounds" (TASK-105); the accepted gallery states are Round 7's
+ * (`[data-refinement-state]`, gallery bec4454).
  */
 const OWNER = '00000000-0000-4000-8000-000000004101'
 const PLACE = '00000000-0000-4000-8000-000000004111'
@@ -44,8 +64,10 @@ const CORS = {
 /** The accepted gallery reference every geometry claim is read against. */
 const ACCEPTED_REFERENCE = 'eded158cfd928d382c9a9409e2c372270312741d'
 const LOG_RESULTS = 'Log results'
-const LADDER_LIST = 'Movements in this ladder'
-const EMOM_LIST = 'Movements in this EMOM'
+/** Round 7's movement-note dialog title (ExerciseCoaching); its field is named by the movement. */
+const NOTE_TITLE = 'Movement note'
+/** Round 7's live ladder rounds (TASK-013, carried by TASK-105). */
+const LADDER_ROUNDS = 'Prescribed ladder rounds'
 const LONG_NAME = LONG_MOVEMENT_ID.replaceAll('-', ' ')
 
 const e2e = readE2eEnv()
@@ -112,6 +134,9 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
 })
 
 test.describe.configure({ mode: 'default' })
+// A3 TASK-106: every action waits at most 30 s. A control that never appears
+// fails the case where it is looked for, not at the case's own time limit.
+test.use({ actionTimeout: 30_000 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // One session: every /workout logging consumer, long forms included
@@ -393,7 +418,7 @@ const EXACT = 0.5
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
 /** The open focused logging dialog (any title). */
-const openLog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 function movement(page: Page, name: string): Locator {
   return content(page).locator('section').filter({ has: page.getByRole('heading', { name, exact: true }) }).last()
@@ -401,13 +426,27 @@ function movement(page: Page, name: string): Locator {
 function cardOf(page: Page, list: string): Locator {
   return content(page).locator('.clr-card').filter({ has: page.getByRole('list', { name: list, exact: true }) }).last()
 }
-function timedCard(page: Page, list: string): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({ has: page.getByRole('list', { name: list, exact: true }) })
+/**
+ * A timed block on the live workout: Round 7's `TimedWorkoutFlow`, by its
+ * format; it holds the block's clock, card, actions, Log results and coaching.
+ */
+function timedCard(page: Page, format: 'emom' | 'amrap' | 'for_time' | 'ladder'): Locator {
+  return content(page).locator(`.clr-timed-flow[data-timed-format="${format}"]`)
 }
-const timedOpener = (card: Locator) => card.locator('[data-timed-log-opener]').getByRole('button', { name: LOG_RESULTS, exact: true })
+/** The card's own Log results, offered once the attempt has ended (Round 7). */
+const timedOpener = (card: Locator) => card.getByRole('button', { name: LOG_RESULTS, exact: true })
+/**
+ * Round 7's timed log opens itself as the attempt ends; it is closed here, and
+ * the card's own Log results is the opener from then on.
+ */
+async function closeEndedLog(page: Page) {
+  await expect(openLog(page)).toHaveCount(1)
+  await page.keyboard.press('Escape')
+  await expect(openLog(page)).toHaveCount(0)
+}
 const roundClock = (card: Locator) => card.getByRole('group', { name: 'Round clock', exact: true })
-/** The stack beside a timed card: its block clock. */
-const clockOf = (card: Locator) => card.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " clr-stack ")][1]').getByRole('timer').first()
+/** The block's clock: Round 7's timer frame above its card. */
+const clockOf = (card: Locator) => card.getByRole('timer').first()
 /** The removed superset helper, matched by its words (never quoted verbatim: TASK-017's sweep forbids the sentences anywhere). */
 const HELPER_WORDS = /tick\s+each\s+movement|blank\s+field\s+is\s+saved/i
 
@@ -486,10 +525,10 @@ async function readFrame(page: Page) {
       const rect = node.getBoundingClientRect()
       return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height }
     }
-    const frame = dialog.querySelector<HTMLElement>('[data-logging-frame]')!
-    const scroll = dialog.querySelector<HTMLElement>('[data-logging-scroll]')!
-    const body = dialog.querySelector<HTMLElement>('.clr-accepted-log__body')!
-    const head = dialog.querySelector('[data-logging-head]')!
+    const frame = dialog.querySelector<HTMLElement>(':scope > .clr-bleed > .clr-chamfer')!
+    const scroll = dialog.querySelector<HTMLElement>('.clr-logging-overlay__scroll')!
+    const body = dialog.querySelector<HTMLElement>('.clr-logging-overlay__body')!
+    const head = dialog.querySelector('.clr-logging-overlay__head')!
     const title = head.querySelector('h2')!
     const close = head.querySelector('button')!
     const style = (node: Element, pseudo?: string) => getComputedStyle(node, pseudo)
@@ -626,7 +665,7 @@ async function paintTop(page: Page, target: Locator, hide: 'colour' | 'opacity',
 
 /** The title's visible top and the X frame's visible top, read the same way. */
 async function visibleTops(page: Page) {
-  const head = openLog(page).locator('[data-logging-head]')
+  const head = openLog(page).locator('.clr-logging-overlay__head')
   return {
     title: await paintTop(page, head.locator('h2'), 'colour'),
     // The X's framed stroke and emission are painted by the button and the bleed round it.
@@ -647,7 +686,7 @@ async function expectHeader(page: Page, frame: Frame, label: string) {
   expect(Math.abs(tops.x - tops.title), `${label}: the X frame's visible top on the title's visible top (title ${tops.title}, X ${tops.x})`).toBeLessThanOrEqual(1)
   expect(frame.title.right, `${label}: the title never runs under the X`).toBeLessThanOrEqual(frame.close.left + EXACT)
   expect(frame.close.right, `${label}: the X inside the frame`).toBeLessThanOrEqual(frame.scroll.right + EXACT)
-  const head = openLog(page).locator('[data-logging-head]')
+  const head = openLog(page).locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading')).toHaveCount(1)
   await expect(head.getByText(/close/i)).toHaveCount(0)
   // The X is the log's only close control (a form's own "Save and close" submit is a save, not a close).
@@ -710,7 +749,7 @@ function expectFrame(frame: Frame, tokens: Tokens, kind: 'long' | 'short', label
 async function expectInertBehind(page: Page, label: string) {
   const reached = await page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null
-    const open = document.querySelector('dialog.clr-accepted-log[open]')!
+    const open = document.querySelector('dialog.clr-logging-overlay[open]')!
     const controls = [...document.querySelectorAll<HTMLElement>(
       'main#main button, main#main input, main#main textarea, main#main select, .clr-workout-footer button')]
       .filter((control) => !open.contains(control))
@@ -719,7 +758,7 @@ async function expectInertBehind(page: Page, label: string) {
       return document.activeElement === control
     }).map((control) => control.getAttribute('aria-label') ?? control.textContent ?? control.tagName)
     active?.focus({ preventScroll: true })
-    const dialog = document.querySelector('dialog.clr-accepted-log[open]')!
+    const dialog = document.querySelector('dialog.clr-logging-overlay[open]')!
     const hits = controls.filter((control) => {
       const rect = control.getBoundingClientRect()
       if (rect.width === 0 || rect.bottom < 0 || rect.top > innerHeight) return false
@@ -755,7 +794,7 @@ async function inspect(page: Page, tokens: Tokens, moment: string, title: string
   await expect(dialog).toBeVisible()
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal')), `${moment}: native modal`).toBe(true)
-  const head = dialog.locator('[data-logging-head]')
+  const head = dialog.locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await expect(dialog.getByRole('heading', { name: title, exact: true })).toHaveCount(1)
   if (options.focusX ?? true) await expect(head.getByRole('button', { name: 'Close log', exact: true })).toBeFocused()
@@ -834,11 +873,11 @@ async function expandCoaching(page: Page, name: RegExp) {
 
 /** The last control of an open log (its Save, Notes or final choice): what a long form must still reach. */
 const lastControl = (dialog: Locator) =>
-  dialog.locator('[data-logging-scroll] :is(button, input:not([type="hidden"]), textarea, select)').last()
+  dialog.locator('.clr-logging-overlay__scroll :is(button, input:not([type="hidden"]), textarea, select)').last()
 
 /** Scrolls the open log's region by a real gesture of the named kind. */
 async function scrollLog(page: Page, how: 'wheel' | 'touch', distance: number) {
-  const box = (await openLog(page).locator('[data-logging-scroll]').boundingBox())!
+  const box = (await openLog(page).locator('.clr-logging-overlay__scroll').boundingBox())!
   const x = Math.round(box.x + box.width / 2)
   const y = Math.round(box.y + box.height / 2)
   if (how === 'wheel') {
@@ -858,7 +897,7 @@ async function scrollLog(page: Page, how: 'wheel' | 'touch', distance: number) {
  */
 async function cutAtLowerBorder(page: Page) {
   return openLog(page).evaluate((dialog) => {
-    const scroll = dialog.querySelector<HTMLElement>('[data-logging-scroll]')!
+    const scroll = dialog.querySelector<HTMLElement>('.clr-logging-overlay__scroll')!
     const edge = scroll.getBoundingClientRect().bottom
     const controls = [...scroll.querySelectorAll<HTMLElement>('input, textarea, select, button, .clr-check__box, [role="radio"]')]
       .filter((node) => node.getBoundingClientRect().height > 0)
@@ -920,7 +959,7 @@ async function expectBracketsOn(page: Page, control: Locator, label: string) {
     const rect = node.getBoundingClientRect()
     const box = layer.getBoundingClientRect()
     return {
-      host: layer.parentElement === document.querySelector('dialog.clr-accepted-log[open]') ? 'open log' : layer.parentElement?.tagName,
+      host: layer.parentElement === document.querySelector('dialog.clr-logging-overlay[open]') ? 'open log' : layer.parentElement?.tagName,
       layers: document.querySelectorAll('.clr-focus-brackets').length,
       opacity: getComputedStyle(layer).opacity,
       surrounds: box.left < rect.left && box.top < rect.top && box.right > rect.right && box.bottom > rect.bottom,
@@ -948,9 +987,9 @@ async function tabToLast(page: Page, last: Locator, label: string) {
   for (let press = 0; press < 80; press += 1) {
     await page.keyboard.press('Tab')
     const stop = await page.evaluate(() => {
-      const dialog = document.querySelector('dialog.clr-accepted-log[open]')!
+      const dialog = document.querySelector('dialog.clr-logging-overlay[open]')!
       const active = document.activeElement as HTMLElement
-      const scroll = dialog.querySelector('[data-logging-scroll]')!.getBoundingClientRect()
+      const scroll = dialog.querySelector('.clr-logging-overlay__scroll')!.getBoundingClientRect()
       const rect = active.getBoundingClientRect()
       return {
         name: active.getAttribute('aria-label') ?? (active as HTMLInputElement).labels?.[0]?.textContent?.trim() ?? active.textContent?.trim().slice(0, 30) ?? active.tagName,
@@ -973,7 +1012,7 @@ async function tabToLast(page: Page, last: Locator, label: string) {
 /** Complete movement groups in an open log and the gaps around and inside them. */
 async function readGroups(dialog: Locator) {
   return dialog.evaluate((node) => {
-    const groups = [...node.querySelectorAll<HTMLElement>('.clr-logging-movement')]
+    const groups = [...node.querySelectorAll<HTMLElement>('.clr-round-movement, .clr-timed-log__group:has(> .clr-timed-log__group-title)')]
     return groups.map((group, index) => {
       const rect = group.getBoundingClientRect()
       const children = [...group.children].filter((child) => child.getBoundingClientRect().height > 0)
@@ -1056,14 +1095,14 @@ async function readCardPeers(list: Locator) {
   return list.evaluate((ol) => {
     const items = [...ol.children] as HTMLElement[]
     return items.map((item, index) => {
-      const identity = item.querySelector('[data-movement-identity]')!
+      const identity = item.querySelector('.clr-movement-identity')!
       const nameRow = identity.querySelector(':scope > [data-movement-name-row]')!.getBoundingClientRect()
       const detail = identity.querySelector(':scope > [data-movement-detail]')!.getBoundingClientRect()
       const previous = items[index - 1]
       const previousEnd = previous === undefined ? null
         : Math.max(...[...previous.children].map((child) => child.getBoundingClientRect().bottom))
       return {
-        name: identity.querySelector('[data-movement-name]')?.textContent ?? '',
+        name: identity.querySelector('.clr-movement-identity__name')?.textContent ?? '',
         tier: detail.top - nameRow.bottom,
         between: previousEnd === null ? null : identity.getBoundingClientRect().top - previousEnd,
       }
@@ -1098,8 +1137,8 @@ const TEXT_CONTRAST = 4.5
  */
 async function expectDialogTextContrast(page: Page, skin: Skin) {
   const targets = await openLog(page).evaluate((dialog) => {
-    const scroll = dialog.querySelector('[data-logging-scroll]')!.getBoundingClientRect()
-    const nodes = [...dialog.querySelectorAll<HTMLElement>('[data-logging-head] h2, legend, label, p, .clr-set-log > [role="status"]')]
+    const scroll = dialog.querySelector('.clr-logging-overlay__scroll')!.getBoundingClientRect()
+    const nodes = [...dialog.querySelectorAll<HTMLElement>('.clr-logging-overlay__head h2, legend, label, p, [role="status"].clr-set-sheet__saved')]
     return nodes.flatMap((node, index) => {
       const own = [...node.childNodes].filter((child) => child.nodeType === Node.TEXT_NODE && (child.textContent ?? '').trim() !== '')
       if (own.length === 0) return []
@@ -1209,17 +1248,17 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await expandCoaching(page, /^Coaching and notes — back squat$/)
     const addNote = squat.getByRole('button', { name: 'Add note — back squat', exact: true })
     await tapOpen(addNote)
-    log = await at('movement-note', 'Notes — back squat')
+    log = await at('movement-note', NOTE_TITLE)
     await expect(log.dialog.getByRole('region', { name: 'Rest', exact: true })).toHaveCount(0)
     const behind = await restRemaining(page)
     await page.clock.runFor(3_000)
     expect(await restRemaining(page), 'the rest behind the note keeps counting').toBe(behind - 3)
-    await log.dialog.getByRole('textbox', { name: 'Notes — back squat' }).fill('Brace first')
+    await log.dialog.getByRole('textbox', { name: 'back squat', exact: true }).fill('Brace first')
     const editNote = squat.getByRole('button', { name: 'Edit note — back squat', exact: true })
     await closeByEscape(page, editNote)
     await tapOpen(editNote)
-    log = await at('movement-note-reopened', 'Notes — back squat', { shot: false })
-    await expect(log.dialog.getByRole('textbox', { name: 'Notes — back squat' })).toHaveValue('Brace first')
+    log = await at('movement-note-reopened', NOTE_TITLE, { shot: false })
+    await expect(log.dialog.getByRole('textbox', { name: 'back squat', exact: true })).toHaveValue('Brace first')
     await closeByX(page, editNote)
 
     // ── Other lift, timed movement, distance movement ──
@@ -1267,7 +1306,7 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await expandCoaching(page, /^Coaching and notes — SUPERSET/)
     const addLong = page.getByRole('button', { name: `Add note — ${LONG_NAME}`, exact: true })
     await tapOpen(addLong)
-    log = await at('movement-note-wrapped', `Notes — ${LONG_NAME}`)
+    log = await at('movement-note-wrapped', NOTE_TITLE)
     expect(log.frame.titleLines, 'the long note title wraps on a phone').toBeGreaterThan(1)
     await closeByX(page, addLong)
 
@@ -1287,10 +1326,10 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
 
     // ── The timed section ──
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true }).first()).toBeVisible()
 
     // Ladder: its race clock keeps running behind its own open log.
-    const ladder = timedCard(page, LADDER_LIST)
+    const ladder = timedCard(page, 'ladder')
     const ladderOpener = timedOpener(ladder)
     await tapOpen(ladder.getByRole('button', { name: 'Start ladder', exact: true }))
     await page.clock.runFor(40_000)
@@ -1302,17 +1341,19 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     const ran = Math.abs(seconds(await clockOf(ladder).textContent()) - race)
     // Ten seconds behind the log (whole-second readout: 10, or 11 across a tick boundary).
     expect(ran >= 10 && ran <= 11, `the ladder clock ran on behind its log (${ran}s)`).toBe(true)
-    await tapOpen(ladder.getByRole('list', { name: 'Rounds in this ladder', exact: true }).getByRole('button', { name: /^Round 1\b/ }))
+    await tapOpen(ladder.getByRole('list', { name: LADDER_ROUNDS, exact: true }).getByRole('button', { name: 'Complete round 1', exact: true }))
     await tapOpen(ladder.getByRole('button', { name: 'Finish', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(ladderOpener)
     await at('ladder', LOG_RESULTS)
     await closeByEscape(page, ladderOpener)
 
     // AMRAP, For Time and EMOM, each at its end.
-    const amrap = timedCard(page, ACTUALS_AMRAP_WORK_LIST)
+    const amrap = timedCard(page, 'amrap')
     await tapOpen(amrap.getByRole('button', { name: 'Start AMRAP', exact: true }))
     await page.clock.runFor(60_000)
     await tapOpen(amrap.getByRole('button', { name: 'Finish early', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(timedOpener(amrap))
     log = await at('amrap', LOG_RESULTS)
     await log.dialog.getByRole('button', { name: 'Increase rounds completed', exact: true }).tap()
@@ -1322,17 +1363,19 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await expect(log.dialog.getByRole('status', { name: 'Rounds completed', exact: true })).toHaveText('1')
     await closeByEscape(page, timedOpener(amrap))
 
-    const forTime = timedCard(page, ACTUALS_FOR_TIME_WORK_LIST)
-    await tapOpen(forTime.getByRole('button', { name: 'Start For Time', exact: true }))
+    const forTime = timedCard(page, 'for_time')
+    await tapOpen(forTime.getByRole('button', { name: 'Start FOR TIME', exact: true }))
     await page.clock.runFor(90_000)
     await tapOpen(forTime.getByRole('button', { name: 'Finish', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(timedOpener(forTime))
     await at('for_time', LOG_RESULTS)
     await closeByX(page, timedOpener(forTime))
 
-    const emom = timedCard(page, EMOM_LIST)
+    const emom = timedCard(page, 'emom')
     await tapOpen(emom.getByRole('button', { name: 'Start EMOM', exact: true }))
     await page.clock.runFor(10 * 60_000 + 2_000)
+    await closeEndedLog(page)
     await tapOpen(timedOpener(emom))
     await at('emom', LOG_RESULTS)
     await closeByX(page, timedOpener(emom))
@@ -1362,17 +1405,17 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await press(trigger)
     const addLong = page.getByRole('button', { name: `Add note — ${LONG_NAME}`, exact: true })
     await press(addLong)
-    let log = await inspect(page, tokens, 'movement-note-wrapped', `Notes — ${LONG_NAME}`, { route: '/workout' })
+    let log = await inspect(page, tokens, 'movement-note-wrapped', NOTE_TITLE, { route: '/workout' })
     readings.push(log.reading)
     expect(log.frame.titleLines, 'the title wraps over several lines at 320').toBeGreaterThanOrEqual(3)
     expect(log.frame.activeVisible, 'opened by keyboard, the X shows keyboard focus').toBe(true)
     await expectBracketsOn(page, log.dialog.getByRole('button', { name: 'Close log' }), 'wrapped note X')
-    await log.dialog.getByRole('textbox', { name: `Notes — ${LONG_NAME}` }).fill('Short steps')
+    await log.dialog.getByRole('textbox', { name: LONG_NAME, exact: true }).fill('Short steps')
     const editLong = page.getByRole('button', { name: `Edit note — ${LONG_NAME}`, exact: true })
     await closeByEscape(page, editLong)
     await page.keyboard.press('Enter')
-    log = await inspect(page, tokens, 'movement-note-wrapped-reopened', `Notes — ${LONG_NAME}`, { route: '/workout', shot: false })
-    await expect(log.dialog.getByRole('textbox', { name: `Notes — ${LONG_NAME}` })).toHaveValue('Short steps')
+    log = await inspect(page, tokens, 'movement-note-wrapped-reopened', NOTE_TITLE, { route: '/workout', shot: false })
+    await expect(log.dialog.getByRole('textbox', { name: LONG_NAME, exact: true })).toHaveValue('Short steps')
     await closeByEscape(page, editLong)
 
     // ── Workout feedback on /summary ──
@@ -1478,7 +1521,7 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     // No instruction took the helper's place: every paragraph is a movement's own line or the rest's.
     const prose = await dialog.evaluate((node) => [...node.querySelectorAll('p')].map((paragraph) => ({
       text: paragraph.textContent?.trim() ?? '',
-      owner: paragraph.closest('.clr-logging-movement') !== null ? 'movement'
+      owner: paragraph.closest('.clr-round-movement, .clr-timed-log__group:has(> .clr-timed-log__group-title)') !== null ? 'movement'
         : paragraph.closest('[role="region"], [role="timer"], .clr-countdown, [data-rest]') !== null || /^Rest\b/.test(paragraph.textContent?.trim() ?? '') ? 'rest' : 'form',
     })))
     report['superset round paragraphs'] = prose
@@ -1510,13 +1553,14 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
 
     // ── Timed logs ──
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true }).first()).toBeVisible()
     await expect(page.getByText(HELPER_WORDS)).toHaveCount(0)
 
-    const forTime = timedCard(page, ACTUALS_FOR_TIME_WORK_LIST)
-    await tapOpen(forTime.getByRole('button', { name: 'Start For Time', exact: true }))
+    const forTime = timedCard(page, 'for_time')
+    await tapOpen(forTime.getByRole('button', { name: 'Start FOR TIME', exact: true }))
     await page.clock.runFor(90_000)
     await tapOpen(forTime.getByRole('button', { name: 'Finish', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(timedOpener(forTime))
     dialog = page.getByRole('dialog', { name: LOG_RESULTS, exact: true })
     await dialog.getByRole('group', { name: 'Work completed', exact: true }).getByRole('radio', { name: 'Incomplete', exact: true }).tap()
@@ -1529,10 +1573,11 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await attachShot(page, 'for-time-groups')
     await closeByX(page, timedOpener(forTime))
 
-    const amrap = timedCard(page, ACTUALS_AMRAP_WORK_LIST)
+    const amrap = timedCard(page, 'amrap')
     await tapOpen(amrap.getByRole('button', { name: 'Start AMRAP', exact: true }))
     await page.clock.runFor(60_000)
     await tapOpen(amrap.getByRole('button', { name: 'Finish early', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(timedOpener(amrap))
     dialog = page.getByRole('dialog', { name: LOG_RESULTS, exact: true })
     await dialog.getByRole('button', { name: 'Increase rounds completed', exact: true }).tap()
@@ -1545,12 +1590,13 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await closeByX(page, timedOpener(amrap))
 
     // The twelve-round ladder: the good heading gap kept, the count stood apart.
-    const ladder = timedCard(page, LADDER_LIST)
+    const ladder = timedCard(page, 'ladder')
     await tapOpen(ladder.getByRole('button', { name: 'Start ladder', exact: true }))
     await page.clock.runFor(30_000)
-    const rounds = ladder.getByRole('list', { name: 'Rounds in this ladder', exact: true })
-    for (const round of [1, 2, 3]) await tapOpen(rounds.getByRole('button', { name: new RegExp(`^Round ${round}\\b`) }))
+    const rounds = ladder.getByRole('list', { name: LADDER_ROUNDS, exact: true })
+    for (const round of [1, 2, 3]) await tapOpen(rounds.getByRole('button', { name: `Complete round ${round}`, exact: true }))
     await tapOpen(ladder.getByRole('button', { name: 'Finish', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(timedOpener(ladder))
     dialog = page.getByRole('dialog', { name: LOG_RESULTS, exact: true })
     gaps = await readLabelGaps(dialog)
@@ -1599,7 +1645,7 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     expect(log.reading.kind).toBe('long')
     report.superset = await expectContainedScroll(page, tokens, 'wheel', log.dialog.getByRole('button', { name: 'Log round 1', exact: true }), 'superset 320 wheel')
     // A tap on blank space inside the frame focuses the dialog itself: still no outline (P02).
-    const frameBox = (await openLog(page).locator('[data-logging-frame]').boundingBox())!
+    const frameBox = (await openLog(page).locator(':scope > .clr-bleed > .clr-chamfer').boundingBox())!
     await page.touchscreen.tap(frameBox.x + 6, frameBox.y + frameBox.height / 2)
     frame = await readFrame(page)
     expectFrame(frame, tokens, 'long', 'superset after a blank tap')
@@ -1610,17 +1656,18 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await expandCoaching(page, /^Coaching and notes — back squat$/)
     const addNote = movement(page, 'back squat').getByRole('button', { name: 'Add note — back squat', exact: true })
     await tapOpen(addNote)
-    log = await inspect(page, tokens, 'note-320', 'Notes — back squat', { route: '/workout' })
+    log = await inspect(page, tokens, 'note-320', NOTE_TITLE, { route: '/workout' })
     expect(log.reading.kind, 'an ordinary short form does not scroll').toBe('short')
     await closeByX(page, addNote)
 
     // The twelve-round ladder (R128, R129): touch reaches its Notes.
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true })).toBeVisible()
-    const ladder = timedCard(page, LADDER_LIST)
+    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true }).first()).toBeVisible()
+    const ladder = timedCard(page, 'ladder')
     await tapOpen(ladder.getByRole('button', { name: 'Start ladder', exact: true }))
     await page.clock.runFor(20_000)
     await tapOpen(ladder.getByRole('button', { name: 'Finish', exact: true }))
+    await closeEndedLog(page)
     await tapOpen(timedOpener(ladder))
     log = await inspect(page, tokens, 'ladder-12-320', LOG_RESULTS, { route: '/workout' })
     expect(log.reading.kind).toBe('long')
@@ -1703,7 +1750,7 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
       await expandCoaching(page, /^Coaching and notes — back squat$/)
       const addNote = movement(page, 'back squat').getByRole('button', { name: 'Add note — back squat', exact: true })
       await tapOpen(addNote)
-      const note = await inspect(page, tokens, `note-${at}`, 'Notes — back squat', { route: '/workout' })
+      const note = await inspect(page, tokens, `note-${at}`, NOTE_TITLE, { route: '/workout' })
       expect(note.reading.kind).toBe('short')
       await closeByX(page, addNote)
       report[at] = { superset: log.reading, stops, keyboard: keyboard.frame, note: note.reading }
@@ -1721,38 +1768,54 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
-    const states: readonly { id: string; scope: string; open: string; before?: string; title: string; focusX?: boolean; long?: boolean }[] = [
-      { id: 'anchor', scope: '[data-gallery-set-logging="anchor"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'other-lift', scope: '[data-gallery-set-logging="other-lift"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'timed-movement', scope: '[data-gallery-set-logging="timed-movement"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'distance-movement', scope: '[data-gallery-set-logging="distance-movement"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'extra-set', scope: '[data-gallery-set-logging="extra-set"]', open: 'Rest', title: 'Log set 4' },
-      { id: 'set-correction', scope: '[data-gallery-set-logging="set-correction"]', open: 'Edit set 1', title: 'Edit set 1' },
-      { id: 'superset', scope: '[data-gallery-group-logging="superset"]', open: 'Rest', title: 'Log round 1' },
-      { id: 'circuit-round', scope: '[data-gallery-circuit-round]', open: 'Finish round 1', title: 'Round 1 recorded' },
-      { id: 'circuit-movement', scope: '[data-gallery-group-logging="circuit-movement"]', open: 'Rest for goblet squat', title: 'Log set 1' },
-      { id: 'movement-note', scope: '[data-gallery-logging-moment="standard"]', before: 'Coaching and notes — back squat', open: 'Add note — back squat', title: 'Notes — back squat' },
-      { id: 'workout-feedback', scope: '[data-gallery-logging-moment="fresh"]', open: 'Log workout feedback', title: 'Workout feedback' },
-      { id: 'rest-day', scope: '[data-gallery-logging-moment="unmarked"]', open: 'Mark Rest Day', title: 'Log rest day', focusX: false },
-      { id: 'emom', scope: '[data-gallery-emom="complete"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'amrap', scope: '[data-gallery-amrap="early"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'for_time', scope: '[data-gallery-race="for-time-cap"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'ladder', scope: '[data-gallery-race="ladder-finish"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'ladder-long', scope: '[data-gallery-ladder-long]', open: 'Open long ladder results', title: 'Ladder · 12 rounds', long: true },
-      { id: 'ladder-long', scope: '[data-gallery-race="ladder-cap"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'urgency', scope: '[data-gallery-deadline-warning]', open: 'Open log over the warning', title: 'Log set' },
+    // Round 7's accepted states (gallery bec4454): each `?state=` section
+    // mounts the real component over memory. The route's own control is
+    // pressed here, as the build pressed it. A timed state's log is offered
+    // only once its attempt has ended (Round 7's TimedWorkoutFlow): its "Open …"
+    // (`ready`) starts the real flow and runs it past its cap, whose log opens
+    // itself; that one is closed and the card's own Log results is the opener
+    // read here, as on the route. Round 7's ladder-long state is the route's
+    // own twelve-round ladder (TimedWorkoutFlow); the build's separate provider
+    // specimen of it has no Round 7 counterpart, so both build readings are
+    // this one state. The urgency demonstration is read with the build's words.
+    const states: readonly { id: string; open: string; before?: readonly string[]; ready?: string; title: string; focusX?: boolean; long?: boolean }[] = [
+      { id: 'anchor', open: 'Rest', title: 'Log set 1' },
+      { id: 'other-lift', open: 'Rest', title: 'Log set 1' },
+      { id: 'timed-movement', open: 'Rest', title: 'Log set 1' },
+      { id: 'distance-movement', open: 'Rest', title: 'Log set 1' },
+      { id: 'extra-set', open: 'Rest', title: 'Log set 4' },
+      { id: 'set-correction', open: 'Edit set 1', title: 'Edit set 1' },
+      { id: 'superset', open: 'Rest', title: 'Log round 1' },
+      { id: 'circuit-round', before: ['Start round 1'], open: 'Finish round 1', title: 'Round 1 recorded' },
+      { id: 'circuit-movement', open: 'Rest for goblet squat', title: 'Log set 1' },
+      { id: 'movement-note', before: [/^Coaching and notes/.source], open: 'Add note — one arm row', title: NOTE_TITLE },
+      { id: 'workout-feedback', open: 'Log workout feedback', title: 'Workout feedback' },
+      { id: 'rest-day', open: 'Mark Rest Day', title: 'Log rest day', focusX: false },
+      { id: 'emom', ready: 'Open EMOM results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'amrap', ready: 'Open AMRAP results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'for_time', ready: 'Open For Time results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'ladder', ready: 'Open Ladder results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'ladder-long', ready: 'Open Long ladder results', open: LOG_RESULTS, title: LOG_RESULTS, long: true },
+      { id: 'urgency', open: 'Open log over the warning', title: 'Log set' },
     ]
     let tokens: Tokens | null = null
     const readings: Inspected[] = []
     for (const state of states) {
       await visit(`/gallery/refinements?state=${state.id}`)
       tokens ??= await readTokens(page)
-      const scope = page.locator(state.scope).first()
-      if (state.before !== undefined) await scope.getByRole('button', { name: state.before, exact: true }).click()
+      const scope = page.locator(`[data-refinement-state="${state.id}"]`)
+      for (const before of state.before ?? []) {
+        await scope.getByRole('button', { name: before.startsWith('^') ? new RegExp(before) : before, exact: !before.startsWith('^') }).first().click()
+      }
+      if (state.ready !== undefined) {
+        await scope.getByRole('button', { name: state.ready, exact: true }).click()
+        await expect(page.getByRole('dialog', { name: state.title, exact: true })).toBeVisible()
+        await closeEndedLog(page)
+      }
       const opener = scope.getByRole('button', { name: state.open, exact: true })
       await opener.evaluate((node) => node.scrollIntoView({ block: 'center' }))
       await opener.click()
-      const moment = `gallery-${state.id}${state.scope.includes('ladder-cap') ? '-route' : ''}`
+      const moment = `gallery-${state.id}`
       const log = await inspect(page, tokens, moment, state.title, { route: `/gallery/refinements?state=${state.id}`, focusX: state.focusX })
       readings.push(log.reading)
       // R104: no visible Close word or text close button anywhere in the log, the urgency demonstration included.

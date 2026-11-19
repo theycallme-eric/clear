@@ -1,0 +1,996 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-106",
+  "description": "A3 task 6 (F4): set logging in Round 7’s dialog (owner decision 1: a centred dialog with Close, rest running inside), with saved read-back and focus return (REQ-020; C46; JOURNEY-020, completion owner). check-01 proves the wiring on the real components and the real /workout route: /workout’s set, extra-set, correction, superset-round and circuit-movement entries are held by Round 7’s LoggingOverlay (src/ui/logging-overlay.tsx) through ExerciseSetLogger, SupersetRoundSheet, SupersetBlock and SetLoggingSheet; useSaveConfirmation (src/ui/set-save-confirmation.ts) confirms an accepted Log set N / Log round N only once the shell’s set list holds it — the saved result read back with its values, effort face and sync badge in role=status, a superset’s each ticked movement under its own name — beside the same running rest, never the next form; a refused save keeps its form; the rest ending (run out or skipped) closes the dialog and resets the confirmation, an early Close ends it, and only a deliberate Rest opens the next entry (AC-037: on the same running rest); an entry with no rest prescribed is confirmed and then closes itself once recorded; Save moves focus to the dialog title; focus returns to the card’s logging control (or a correction’s Edit for its X or Escape) only once the native dialog has closed; the Clear-set confirmation is drawn inside the dialog. The build’s LoggingOverlay cases are rewritten against Round 7’s dialog (TASK-016’s eight; TASK-019 focus kept inside, TASK-041 focus brackets, TASK-045 stale close carried unchanged); TASK-017 and TASK-018 cases are deferred to TASK-114 (see test-ledger.json). parity is the look check: each route this task wires beside its accepted gallery state (bec4454: anchor, other-lift, timed-movement, distance-movement, extra-set, set-correction, superset, circuit-movement) with matched data at 320 and 390 px — the card, the opened dialog and, for anchor and superset, the saved confirmation — compared in words and in layout (every element’s box within 2 px, each card’s top scrolled into view first); every visible difference must be labelled with the criterion that intends it; receipts in evidence/refinement/task-106/parity/, captures in the evidence store. The route journeys are e2e/refinement/task-020.spec.ts (TASK-020 check-02) and task-043.spec.ts (TASK-043 check-01), rewritten for Round 7 and run under their own manifests. Round 06 (A3, body clear-gallery-adoption-v2-20261118; owner decisions 2026-11-16, “Accept all five”): REQ-016 and REQ-019 (AC-R016-03, AC-C45-01, JOURNEY-016, JOURNEY-019) and the task-041 and task-019 suites are proved at TASK-114 and TASK-120, not here; this task keeps those behaviours for its own dialogs, so the carried cases that check them stay required in check-01 under this task’s own criteria (decision 1). Decision 5: with no rest prescribed, a save shows its confirmation and the dialog then closes itself; with a prescribed rest that already ended before Save, the confirmation stays until Close. src/ui/logging-overlay.test.tsx belongs to TASK-114 (owner decision 3, 2026-11-18); TASK-106 runs it whole because TASK-114’s cases do not exist yet, and adds only its own (TASK-016’s eight). Round 06 repair round 2 (2026-11-19): a close the consumer asked for is finished as the native dialog closes, not when the browser’s queued close event arrives; the added TASK-AC-C53DC0A896ED case reproduces that late event (task-043’s keyboard correction case had opened Log set 2 instead of Edit set 1).",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-106 --check check-01 -- npx vitest run src/ui/logging-overlay.test.tsx src/ui/logging-overlay-focus-brackets.test.tsx src/ui/logging-overlay-focus-kept.test.tsx src/ui/logging-overlay-stale-close.test.tsx src/ui/set-logging-sheet.test.tsx src/app/sheet-minimize-access.test.tsx src/app/rest-footer-lifecycle.test.tsx src/app/superset-logging.test.tsx src/ui/set-correction.test.tsx src/ui/superset-block.test.tsx src/ui/set-logger.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C46-01",
+        "AC-R020-01",
+        "AC-R020-02",
+        "TASK-AC-8A16F03271D0",
+        "TASK-AC-20C6E9E8B952",
+        "TASK-AC-A7CEAC5DC9DB",
+        "TASK-AC-C53DC0A896ED",
+        "TASK-AC-7F2E2420539A",
+        "TASK-AC-9FC2F492606D",
+        "JOURNEY-020"
+      ],
+      "files": [
+        "src/ui/logging-overlay.test.tsx",
+        "src/ui/logging-overlay-focus-brackets.test.tsx",
+        "src/ui/logging-overlay-focus-kept.test.tsx",
+        "src/ui/logging-overlay-stale-close.test.tsx",
+        "src/ui/set-logging-sheet.test.tsx",
+        "src/app/sheet-minimize-access.test.tsx",
+        "src/app/rest-footer-lifecycle.test.tsx",
+        "src/app/superset-logging.test.tsx",
+        "src/ui/set-correction.test.tsx",
+        "src/ui/superset-block.test.tsx",
+        "src/ui/set-logger.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+          "criterion": "TASK-AC-9FC2F492606D"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame starts on the title’s visible top — the header aligns to its start and the title’s line box is trimmed to its capitals, so a wrapped title grows downwards beside the X",
+          "criterion": "TASK-AC-9FC2F492606D"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 AC-R016-01 TASK-AC-F1CC1A37FB0E header: the dialog’s title is the simple form’s one title — the held TimedResultLog drops its own “Log results” heading and is named by the dialog, while inline it keeps its own",
+          "criterion": "TASK-AC-9FC2F492606D"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 header: inline in a card the same log keeps its own “Log results” title and stays an unnamed form",
+          "criterion": "TASK-AC-9FC2F492606D"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C43-01 AC-R016-01 TASK-AC-F1CC1A37FB0E backdrop: the selected A / Balanced dim, corner vignette and blur sit on the native backdrop only — the foreground stays sharp, nothing darkens further, and there is no rising sheet",
+          "criterion": "TASK-AC-9FC2F492606D"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
+          "criterion": "TASK-AC-C53DC0A896ED"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
+          "criterion": "AC-C46-01"
+        },
+        {
+          "file": "src/ui/logging-overlay.test.tsx",
+          "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > TASK-AC-C0A657D4BABE JOURNEY-016 header: gallery ladder-long draws the selected header and backdrop on the shared frame — the contract consumers adopt; Escape closes it and focus returns to its opener",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/logging-overlay-focus-brackets.test.tsx",
+          "name": "TASK-041 LoggingOverlay hosts the focus brackets while open > moves the one bracket layer into the open log and back to the body when it closes",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/logging-overlay-focus-brackets.test.tsx",
+          "name": "TASK-041 LoggingOverlay hosts the focus brackets while open > hands the layer back to the body when an open log unmounts, so the page keeps its brackets",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/logging-overlay-focus-brackets.test.tsx",
+          "name": "TASK-041 LoggingOverlay hosts the focus brackets while open > does nothing where no bracket layer is mounted",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/logging-overlay-focus-kept.test.tsx",
+          "name": "TASK-019 LoggingOverlay keeps focus inside > moves focus stranded on the page body to the dialog title, outside the Tab order",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/logging-overlay-focus-kept.test.tsx",
+          "name": "TASK-019 LoggingOverlay keeps focus inside > leaves focus the reader moved elsewhere inside the log, and a closed log, alone",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/logging-overlay-stale-close.test.tsx",
+          "name": "TASK-045 LoggingOverlay stale close > ignores a queued close event that arrives after the log is open again, and still hears a real one",
+          "criterion": "TASK-AC-9FC2F492606D"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-025: the card’s top row > holds the secondary section label left and the compact structure badge right",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-025: the card’s top row > leaves the movement name as the heading, so the badge never competes with it",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-026: heading, counter, prescription and equipment > puts a subordinate Set X/Y counter in the name row beside the heading and equipment, then prescription",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-026: heading, counter, prescription and equipment > puts a subordinate Set X/Y counter beside the heading, then prescription and equipment",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-026: heading, counter, prescription and equipment > moves the counter on as sets are logged",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-027: saved rows and Edit precede Log set, then coaching > orders saved results with their Edit controls, then Log set, then the coaching disclosure",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "the sheet opens from the card and keeps the main screen free of fields > draws no entry fields on the card, and opens the entry in the modal focused logging dialog, not the pinned foot (TASK-043)",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "the sheet opens from the card and keeps the main screen free of fields > titles the dialog Log set N with its framed Close log X as the top collapse control, then context, fields and one full-width action",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "the sheet opens from the card and keeps the main screen free of fields > collapses with the X (or Escape) and reopens with the draft as it was typed",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "the sheet opens from the card and keeps the main screen free of fields > holds one sheet open at a time across movements",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-031: one compact measurement row > puts Weight, Unit and Reps in that order on one row, labelled Reps",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-031: one compact measurement row > asks for Seconds on a timed prescription",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-031: one compact measurement row > omits the load fields for a bodyweight movement",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-031: one compact measurement row > keeps the entered number and unit, converting nothing",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-032: prescribed numbers are suggestions; only Log set records > prefills the prescribed reps as an editable value and records nothing until Log set",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-032: prescribed numbers are suggestions; only Log set records > suggests each ladder rung and the bottom of a range",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-033: the removed copy, with the structured data kept > prints no unit helper, no empty-list sentence, no repeated target and no tempo",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-034: result formatter, sync feedback, and a saved state only on success > shows the logged row in the current formatter, and Saved only once the database has it",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-034: result formatter, sync feedback, and a saved state only on success > never says Saved for a set the database refused",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-034: result formatter, sync feedback, and a saved state only on success > keeps the entry, recoverable, when the shell refuses the set",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-034: result formatter, sync feedback, and a saved state only on success > keeps coaching on demand behind its disclosure",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-035: borders and the countdown > frames the entry with the dialog’s one frame and the X with the action border (TASK-043)",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-035: borders and the countdown > draws the half-sheet’s scoped accent bar (EXC-06) nowhere in the dialog, without making the entry a card (TASK-043)",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-035: borders and the countdown > gives the rest timer card inside the sheet no Phosphor Echo: the sheet is not the background",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-035: borders and the countdown > draws a running rest with the timer card inside the sheet, without recolouring it",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-028: existing roles and variants, aligned > draws effort with the system choice group and Clear with the quiet small button",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > draws no Edit control when no correction can be saved, and still asks effort",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > places effort between the measurement row and the action, inside the same form",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > records effort only on Log set, and the logged row reads it back",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > keeps a chosen effort through collapse and reopen",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "AC-029 / AC-030: one sheet for new entry and edit, effort in both > opens a saved row in the same dialog as Edit set N, ending in Cancel / Save correction",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "the sheet stays usable without the shell’s host > draws in place when no host is mounted, so a renderer alone still logs",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-C46-01 Log set N shows its saved confirmation beside the same running rest and no next-set form; at rest end the sheet collapses and resets, and only a deliberate Rest opens set N + 1",
+          "criterion": "AC-C46-01"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-01 Save never replaces the entry with another form; an early collapse is kept: the rest ending never reopens the sheet, and Rest opens the next entry on the same rest",
+          "criterion": "AC-R020-01"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 Add 30s and Skip rest stay the existing rest’s: the extension keeps the confirmation and Skip rest ends it; rest expiry or its final-seconds warning never records another set or closes a draft",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a superset’s Log round N confirms each logged movement’s own actuals and effort beside the round’s one rest; the rest ending collapses without opening round N + 1",
+          "criterion": "TASK-AC-20C6E9E8B952"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "TASK-020 deliberate Save confirmation and existing rest lifecycle > AC-R020-02 a Save the shell refuses claims no confirmation: the entry stays on its form, and the rest ending neither collapses nor records it",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-C53DC0A896ED no rest prescribed: Log set N is confirmed, then the dialog closes itself once the shell holds the set, and focus returns to the card’s Rest, never the page body",
+          "criterion": "TASK-AC-C53DC0A896ED"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-C53DC0A896ED a superset with no round rest: Log round N closes itself once the shell holds the round, and focus returns to the block’s Rest",
+          "criterion": "TASK-AC-C53DC0A896ED"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB a correction closed with its X or Escape returns focus to its Edit control once the dialog has closed",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB the Clear-set confirmation is drawn inside the logging dialog, and focus returns to Rest once both have closed",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-A7CEAC5DC9DB a long entry opened by keyboard takes its opening focus on the X, never on the dialog’s scrolling region",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/ui/set-logging-sheet.test.tsx",
+          "name": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-C53DC0A896ED an Edit made while the log’s close is still being reported opens Edit set N: the late close event neither takes focus off Edit nor opens the next set (keyboard, reduced motion)",
+          "criterion": "TASK-AC-C53DC0A896ED"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > draws one Close log X, in the dialog header beside its title, over an inert workout, and no Minimize or bottom collapse",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043) > keeps Cancel / Save correction in edit mode, with the same single X",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Logging access is independent of rest (AC-037) > reopens Log set and Edit from the card while rest runs in the footer after minimizing the sheet",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Logging access is independent of rest (AC-037) > reopens Log set and Edit from the card after the rest is skipped",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Logging access is independent of rest (AC-037) > reopens Log set and Edit from the card after the countdown runs out",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Logging access is independent of rest (AC-037) > reopens logging from the card when the sheet is minimised before any set is logged",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "A minimised draft survives, and hiding the sheet does not pause rest (AC-038) > hands back the unsaved entry on reopen while the rest keeps counting",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "A minimised draft survives, and hiding the sheet does not pause rest (AC-038) > hands back an unsaved correction on reopen through the saved row",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Saving and correcting never start absent or expired rest (B05 AC-037/039) > saves the draft after rest is skipped; Edit and its save keep rest absent",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/sheet-minimize-access.test.tsx",
+          "name": "Saving and correcting never start absent or expired rest (B05 AC-037/039) > saves the draft after rest is expired; Edit and its save keep rest absent",
+          "criterion": "TASK-AC-7F2E2420539A"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — a shared countdown that survives minimise and reopen (AC-054) > moves the running rest from the sheet to the footer and back, with Add 30s and Skip rest",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — a shared countdown that survives minimise and reopen (AC-054) > keeps the rest and its control visible after an extension until the countdown genuinely ends",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — gone once there is no countdown (AC-055) > hides the minimised Rest control when the countdown runs out, and leaves logging reachable",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — gone once there is no countdown (AC-055) > hides the minimised Rest control when the rest is skipped, and leaves logging reachable",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — gone once there is no countdown (AC-055) > stays gone on later foreground returns, rather than reappearing at zero",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — nothing is recorded but an explicit Log set (AC-056) > records no result on expiry, on the prefilled sheet, or on reopening it",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — nothing is recorded but an explicit Log set (AC-056) > records no movement result when the next round’s clock starts or its rest runs out",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — nothing is recorded but an explicit Log set (AC-056) > writes no set when sections advance or are revisited, with or without a running rest",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — the real timer lifecycle (AC-057) > starts no rest on mount: the countdown begins only from the Rest action",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/rest-footer-lifecycle.test.tsx",
+          "name": "Rest footer — the real timer lifecycle (AC-057) > reads the wall clock from the logged set across backgrounding, not a clock of its own",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "one combined Log round (AC-058) > offers the pair one Log round, and no per-movement Log set",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "one combined Log round (AC-058) > enters each movement in its own fields, in its own modality",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "one combined Log round (AC-058) > logs both results in one action, each with its own effort, nothing copied",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > logs nothing from blank fields or prefilled suggestions alone",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > saves an explicitly entered result alone, and leaves the partner missing",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > logs a movement ticked as performed with blank fields as unmeasured, never zero",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > drops an entry the athlete unticks, and keeps the fields as typed",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > saves the selected partner independently of an excluded invalid entry",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > clearing a suggestion does not identify an unmeasured partner",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > clearing the last entered result or effort requires a deliberate unmeasured tick",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "partial rounds, without a both-movements gate (AC-059) > keeps the entry through minimise and reopen",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "movement countdown ownership through partial rounds > rearms an owning first log at its next prescribed time-sequence rung",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "movement countdown ownership through partial rounds > keeps a running unlogged partner clock, then advances its own gapped log by set number",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "a grouped correction returns keyboard focus to an available control > returns Minimize, Cancel and Save to Edit, and a cleared row to Log round",
+          "criterion": "TASK-AC-A7CEAC5DC9DB"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "shared rest and the global clock (AC-060) > starts the block’s one rest from Rest, runs it through Log round, and keeps the session clock",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "shared rest and the global clock (AC-060) > starts the rest, and no movement clock, before a round is logged",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/app/superset-logging.test.tsx",
+          "name": "a round the shell cannot accept keeps what was entered > refuses with no unit to stamp, starts no further rest, and leaves every field as typed",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-046: Edit reopens the selected actual result > preserves its movement, set number, values, unit and effort in the shared sheet",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-047: Save correction updates the intended observation; Cancel leaves it > writes the correction to the same row, and only after confirmation calls it saved",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-047: Save correction updates the intended observation; Cancel leaves it > leaves the stored result exactly as it was on Cancel",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-047: Save correction updates the intended observation; Cancel leaves it > shows a refused correction as on this device only, never as saved",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-049: clear the mistaken result after confirmation, then re-enter it > keeps the observation when the confirmation is canceled",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-049: clear the mistaken result after confirmation, then re-enter it > clears only the selected result, moves nothing, and lets the right movement log it explicitly",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-049: clear the mistaken result after confirmation, then re-enter it > keeps ordinary numeric editing beside the clear, and offers no move-to-target flow",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-048: corrections exist only in the current workout, with concise controls > keeps each logged row to its result, status and one Edit — no Remove mistaken entry",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-048: corrections exist only in the current workout, with concise controls > draws no Edit where the shell does not offer corrections",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-048: corrections exist only in the current workout, with concise controls > is offered by the active workout alone; no history editor or restored prose exists",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-correction.test.tsx",
+          "name": "AC-048: corrections exist only in the current workout, with concise controls > offers Edit on the workout screen itself, writing through the shell",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "a superset keeps its movements in the order the rows prescribe > labels them A1 and A2 by order_index, not by the order they arrived in",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "a superset keeps its movements in the order the rows prescribe > states the alternation in words, not only with the connector",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "a superset keeps its movements in the order the rows prescribe > offers each movement its own set-one entry in the round, named for that movement",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "rest is the block’s, prescribed after both movements > states the block’s rest once, below the pair",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "rest is the block’s, prescribed after both movements > states no per-movement rest, however much the prescriptions carry",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "rest is the block’s, prescribed after both movements > renders no rest line at all when the block prescribes none",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "rest is the block’s, prescribed after both movements > never renders a zero rest as a rest",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "every set persists its unit and its exercise and block attribution > writes the set against the movement performed, in the block it was performed in",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "every set persists its unit and its exercise and block attribution > stamps the profile’s unit on the row rather than a guessed one",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "every set persists its unit and its exercise and block attribution > logs the modality prescribed, in the prescription’s own unit",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "every set persists its unit and its exercise and block attribution > shows each target kind from the structured prescription, never a parsed string",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "a superset whose movements were swapped out > says the block has nothing left to perform rather than drawing an empty card",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "a superset whose movements were swapped out > still states the block’s rest and its remaining movement when one survives",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "a superset whose movements were swapped out > draws no connector round the one movement left, because there is no pair to link",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "the superset draws with the shared block frame > is one card, with the pair as rows of one list and never a card inside it",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "the superset draws with the shared block frame > carries the identity row, the pairing and the rest inside the card, and no completion of its own",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "the superset draws with the shared block frame > draws the pair as the shared peer list, with no inner grouping rail",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "the superset draws with the shared block frame > sets each movement’s fields in one compact row of current element frames",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "the superset draws with the shared block frame > gives the pair one Log round, and reports the block as a whole",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "set progression follows the round, and each movement keeps its own rows > moves the pair on to the next round, recording only the movement logged",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "set progression follows the round, and each movement keeps its own rows > logs the whole pair under the round’s one set number",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "set progression follows the round, and each movement keeps its own rows > resumes the pair one round past the highest set either has recorded",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "saving, refusing and retrying a set > holds the round’s action busy and disabled while a set from it is in flight",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "saving, refusing and retrying a set > disables the action for an entry it would refuse, and says why at the field",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "saving, refusing and retrying a set > keeps a refused set on the screen as unsaved, and sends it with the next set logged",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/superset-block.test.tsx",
+          "name": "saving, refusing and retrying a set > refuses a set with no unit to stamp, and says so through the shell",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the logger is drawn with the shared frame, and frames nothing itself > draws no card of its own around the movement, its readout or its form",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the logger is drawn with the shared frame, and frames nothing itself > leaves the block’s card the only card, with the coaching panel a ruled group",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the logger is drawn with the shared frame, and frames nothing itself > names the movement in a real heading and the prescription from its columns",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the logger is drawn with the shared frame, and frames nothing itself > prefixes the ordinal a structure gives the movement",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the logger is drawn with the shared frame, and frames nothing itself > sets its two numeric fields and unit choice in one compact row, each a current element frame",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the logger is drawn with the shared frame, and frames nothing itself > asks effort only as three optional choices, never a number, and offers no warmup checkbox",
+          "criterion": "TASK-AC-8A16F03271D0"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "rest is stated by whoever owns it > states the movement’s own rest by default",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "rest is stated by whoever owns it > states none where the block owns the rest",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "rest is stated by whoever owns it > never renders a zero rest as a rest",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the readout of sets already recorded > draws no list and no placeholder sentence before a set is logged; the counter says it",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the readout of sets already recorded > lists the sets lowest first, whatever order they arrived in",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the readout of sets already recorded > says where a logged set has got to in words, with a glyph",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the readout of sets already recorded > says where a syncing set has got to in words, with a glyph",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the readout of sets already recorded > says where a failed set has got to in words, with a glyph",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "the readout of sets already recorded > prints a zero as a result and leaves an unrecorded field unsaid",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > offers set one of an untouched movement, counted beside its heading",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > offers the lowest set not yet recorded",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > offers an extra set once every prescribed set is recorded",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > prefills the next set’s weight from the last one performed, and its reps from the prescription",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > falls back to the last set performed where the prescription states no number",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > suggests the prescribed reps as an editable value, never as a recorded one",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "set progression > keeps a prefilled blank blank rather than turning it into a zero",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > freezes the displayed unit after typing when the profile refreshes",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > can follow a loaded profile unit while the form is still untouched",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > keeps a kg profile from relabelling an observed lb weight",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > keeps a lb profile from relabelling an observed kg weight",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > uses the profile unit for a reference with no observed weight",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > explicitly relabels rather than converting entered weight, including clears",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > logs the set against this prescription, with only what was entered",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > logs a cleared set without blocking, recording nothing it was not told",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > logs a partial set with only the field that was entered",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > takes an edited prefill, and a cleared one as not recorded",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > writes a timed prescription’s measure to its own column, asked for in Seconds",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > keeps every field as typed after the set is handed over",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger hands the shell > asks for a unit rather than assuming one when the profile’s is unread",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger refuses to hand over > holds the control busy and disabled while a set is in flight",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger refuses to hand over > refuses a negative weight, and says why at the field",
+          "criterion": "AC-R020-02"
+        },
+        {
+          "file": "src/ui/set-logger.test.tsx",
+          "name": "what the logger refuses to hand over > accepts a zero, because a failed attempt is a result",
+          "criterion": "AC-R020-02"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-106 --check parity -- npx playwright test e2e/refinement/task-106-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-F3504D32EB11",
+        "TASK-AC-A47AFCC1F1CD",
+        "TASK-AC-EFB0DB480A73",
+        "JOURNEY-020"
+      ],
+      "files": [
+        "e2e/refinement/task-106-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 anchor phone-320: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 anchor phone-390: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 other-lift phone-320: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 other-lift phone-390: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 timed-movement phone-320: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 timed-movement phone-390: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 distance-movement phone-320: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 distance-movement phone-390: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 extra-set phone-320: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 extra-set phone-390: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 set-correction phone-320: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 set-correction phone-390: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 superset phone-320: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 superset phone-390: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        },
+        {
+          "file": "e2e/refinement/task-106-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-F3504D32EB11 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+          "criterion": "TASK-AC-F3504D32EB11"
+        }
+      ]
+    }
+  }
+}

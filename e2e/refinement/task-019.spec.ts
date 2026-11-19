@@ -20,14 +20,7 @@ import {
 import { isSetObservationMutation, type SetObservationAck, type SetObservationMutation } from '../../src/state/set-observation-mutation'
 import { makePrescription, makeWorkoutBlock } from '../../src/test/factories'
 import { FORMAT_EMOM, formatBadgesSnapshot } from '../../src/test/format-badges-fixture'
-import {
-  ACTUALS_AMRAP_BLOCK,
-  ACTUALS_AMRAP_WORK_LIST,
-  ACTUALS_FOR_TIME_BLOCK,
-  ACTUALS_FOR_TIME_WORK_LIST,
-  ACTUALS_LADDER_BLOCK,
-  ACTUALS_LADDER_WORK_LIST,
-} from '../../src/test/timed-actuals-fixture'
+import { ACTUALS_AMRAP_BLOCK, ACTUALS_FOR_TIME_BLOCK, ACTUALS_LADDER_BLOCK } from '../../src/test/timed-actuals-fixture'
 import { fixtureLocation, onboardedProfile } from '../../src/test/user-data-double'
 import { definitionFixture } from '../../src/test/workout-double'
 import { installDeterministicCapture } from '../design-0143/fixtures'
@@ -73,6 +66,24 @@ import { expect, test as scanned } from '../fixtures'
  * answer the fixtures; the writes the journey makes are answered here, never
  * forwarded; no model call, no real row. The accepted gallery states
  * (reference eded158cfd928d382c9a9409e2c372270312741d) are memory-only.
+ *
+ * A3 TASK-106 (F4; owner decision 1): rewritten for Round 7's controls, every
+ * asserted behaviour kept. Every moment's log is Round 7's `LoggingOverlay`
+ * (`src/ui/logging-overlay.tsx`, `dialog.clr-logging-overlay`, its header
+ * `.clr-logging-overlay__head`) in place of the build's
+ * `dialog.clr-accepted-log`; a set's or a round's confirmation reads back in
+ * the dialog's `role="status"` (`.clr-set-sheet__saved`). Round 7's words are
+ * used where it names things differently: the movement note's dialog is
+ * "Movement note" and its field is named by the movement (Round 7's
+ * ExerciseCoaching, so a long name wraps in the field, not the title); a timed
+ * card is Round 7's `TimedWorkoutFlow` (`.clr-timed-flow[data-timed-format]`,
+ * "Start FOR TIME", the block's own label), whose log opens itself when the
+ * attempt ends and whose "Save log" is the block's one writer (TASK-103's
+ * accepted change; the section's forward action then finds it saved); the
+ * accepted gallery states are Round 7's (gallery bec4454:
+ * `[data-refinement-state]`, each state's "Open …" mounting the real component
+ * over memory and pressing the same controls a person would, so "Open …" is the
+ * control that opened the log).
  */
 const OWNER = '00000000-0000-4000-8000-000000001901'
 const PLACE = '00000000-0000-4000-8000-000000001911'
@@ -86,8 +97,11 @@ const SQUAT_REST = 90
 const PAIR_REST = 45
 const CIRCUIT_REST = 40
 const LOG_RESULTS = 'Log results'
-const EMOM_LIST = 'Movements in this EMOM'
-const UNDO_FINISH = 'Undo finish · Resume ladder'
+/** Round 7's Undo finish (TASK-014, carried by TASK-105) and the ladder's live rounds. */
+const UNDO_FINISH = 'Undo finish · resume ladder'
+const LADDER_ROUNDS = 'Prescribed ladder rounds'
+/** Round 7's movement-note dialog title (ExerciseCoaching); its field is named by the movement. */
+const NOTE_TITLE = 'Movement note'
 
 const e2e = readE2eEnv()
 const SYNTHETIC_ORIGIN_NEEDED = !e2e.usesExternalTarget && (e2e.url === null || e2e.anonKey === null)
@@ -153,6 +167,9 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
 })
 
 test.describe.configure({ mode: 'default' })
+// A3 TASK-106: every action waits at most 30 s. A control that never appears
+// fails the case where it is looked for, not at the case's own time limit.
+test.use({ actionTimeout: 30_000 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // One cross-family session: every /workout moment in two sections
@@ -492,8 +509,10 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-/** The open focused logging dialog (any title). */
-const openLog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+/** The open focused logging dialog (any title): Round 7's (A3 TASK-106). */
+const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
+/** A set's or a round's saved read-back in the open log (Round 7's set sheet). */
+const savedLine = (dialog: Locator) => dialog.locator('[role="status"].clr-set-sheet__saved')
 /** The session's one rest, wherever it is drawn (footer or open log). */
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 /** Every countdown named as a rest's remaining time on the page. */
@@ -507,14 +526,19 @@ function movement(page: Page, name: string): Locator {
 function cardOf(page: Page, list: string): Locator {
   return content(page).locator('.clr-card').filter({ has: page.getByRole('list', { name: list, exact: true }) }).last()
 }
-/** A timed card (the live workout card) by its work list. */
-function timedCard(page: Page, list: string): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({ has: page.getByRole('list', { name: list, exact: true }) })
+/**
+ * A timed block on the live workout: Round 7's `TimedWorkoutFlow`, by its
+ * format (`emom`, `amrap`, `for_time`, `ladder`); it holds the block's clock,
+ * card, actions, Log results and coaching.
+ */
+function timedCard(page: Page, format: 'emom' | 'amrap' | 'for_time' | 'ladder'): Locator {
+  return content(page).locator(`.clr-timed-flow[data-timed-format="${format}"]`)
 }
-const timedOpener = (card: Locator) => card.locator('[data-timed-log-opener]').getByRole('button', { name: LOG_RESULTS, exact: true })
+/** The card's own Log results, offered once the attempt has ended (Round 7). */
+const timedOpener = (card: Locator) => card.getByRole('button', { name: LOG_RESULTS, exact: true })
 const roundClock = (card: Locator) => card.getByRole('group', { name: 'Round clock', exact: true })
-/** The stack beside a timed card: its block clock. */
-const clockOf = (card: Locator) => card.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " clr-stack ")][1]').getByRole('timer').first()
+/** The block's clock: Round 7's timer frame above its card. */
+const clockOf = (card: Locator) => card.getByRole('timer').first()
 
 function seconds(text: string | null): number {
   const digits = /(\d\d):(\d\d)/.exec(text ?? '')
@@ -549,7 +573,7 @@ async function expectFocusedLog(page: Page, title: string, { focusX = true }: { 
   await expect(dialog).toBeVisible()
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
-  const head = dialog.locator('[data-logging-head]')
+  const head = dialog.locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading', { name: title, exact: true })).toBeVisible()
   // One title: the header holds one heading, and nothing else in the log
   // repeats it (a timed log's movement groups keep their own lower headings).
@@ -581,10 +605,14 @@ async function expectFocusedLog(page: Page, title: string, { focusX = true }: { 
   expect(chrome.bleed && chrome.glyph).toBe(true)
   expect(chrome.backdrop).toMatch(/blur\(/)
   // Inert behind: no control of the screen can take focus while it is open.
+  // (Round 7 draws a log in place, inside the screen's markup: its own
+  // controls are the log's, not the screen behind it.)
   const behind = await page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null
+    const open = document.querySelector('dialog.clr-logging-overlay[open]')!
     const controls = [...document.querySelectorAll<HTMLElement>(
       'main#main button, main#main input, main#main textarea, main#main select, .clr-workout-footer button')]
+      .filter((control) => !open.contains(control))
     const reachable = controls.filter((control) => {
       control.focus()
       return document.activeElement === control
@@ -698,8 +726,8 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await expect.poll(() => app.mutations.length).toBe(1)
     expect(app.mutations[0]).toMatchObject({ operation: 'insert', exercise_id: SQUAT, set_number: 1,
       values: { weight: 100, actual_reps: 4, effort: 'about_right' } })
-    await expect(log.dialog.locator('.clr-set-log > [role="status"]')).toContainText('Set 1 · 4 reps · 100 kg')
-    await expect(log.dialog.locator('.clr-set-log > [role="status"]')).toContainText('Saved')
+    await expect(savedLine(log.dialog)).toContainText('Set 1 · 4 reps · 100 kg')
+    await expect(savedLine(log.dialog)).toContainText('Saved')
     await expect(restBars(page)).toHaveCount(1)
     await closeByX(page, squatRest, 'tap')
     await expect(restBars(page)).toHaveCount(1)
@@ -710,9 +738,9 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await squat.getByRole('button', { name: 'Coaching and notes — back squat', exact: true }).tap()
     const addNote = squat.getByRole('button', { name: 'Add note — back squat', exact: true })
     await addNote.tap()
-    log = await expectFocusedLog(page, 'Notes — back squat')
+    log = await expectFocusedLog(page, NOTE_TITLE)
     chromes.note = log.chrome
-    await expect(log.dialog.getByRole('textbox', { name: 'Notes — back squat' })).toHaveValue('')
+    await expect(log.dialog.getByRole('textbox', { name: 'back squat', exact: true })).toHaveValue('')
     await expect(log.dialog.getByLabel('Weight')).toHaveCount(0)
     await expect(log.dialog.getByRole('group', { name: 'Effort' })).toHaveCount(0)
     // The note does not draw or own the rest: still one, behind it, counting.
@@ -720,14 +748,14 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await expect(log.dialog.getByRole('region', { name: 'Rest', exact: true })).toHaveCount(0)
     await page.clock.runFor(3_000)
     expect(await restRemaining(page)).toBeLessThan(running)
-    await log.dialog.getByRole('textbox', { name: 'Notes — back squat' }).fill('Brace before the descent')
+    await log.dialog.getByRole('textbox', { name: 'back squat', exact: true }).fill('Brace before the descent')
     const editNote = squat.getByRole('button', { name: 'Edit note — back squat', exact: true })
     await log.dialog.getByRole('button', { name: 'Close log', exact: true }).tap()
     await expect(openLog(page)).toHaveCount(0)
     await expect(editNote).toBeFocused()
     await editNote.tap()
-    log = await expectFocusedLog(page, 'Notes — back squat')
-    await expect(log.dialog.getByRole('textbox', { name: 'Notes — back squat' })).toHaveValue('Brace before the descent')
+    log = await expectFocusedLog(page, NOTE_TITLE)
+    await expect(log.dialog.getByRole('textbox', { name: 'back squat', exact: true })).toHaveValue('Brace before the descent')
     await log.dialog.getByRole('button', { name: 'Save note — back squat', exact: true }).tap()
     await expect(log.dialog.getByRole('status').filter({ hasText: 'Note saved' })).toHaveCount(1)
     await closeByEscape(page, editNote)
@@ -883,7 +911,8 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     log = await expectFocusedLog(page, 'Round 1 recorded')
     chromes['circuit-round'] = log.chrome
     await expect(log.dialog.getByRole('status')).toContainText('round time recorded')
-    await expect(log.dialog.getByText('Rest after round 1', { exact: true })).toBeVisible()
+    // The rest after round 1 runs in the log: Round 7 names it "Rest between rounds".
+    await expect(log.dialog.getByLabel('Rest between rounds', { exact: true })).toBeVisible()
     await expect(log.dialog.getByRole('button', { name: 'Take back this round', exact: true })).toBeVisible()
     // Its fields are the round's own: no guessed movement actuals.
     await expect(log.dialog.getByRole('textbox')).toHaveCount(0)
@@ -977,7 +1006,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await press(log.dialog.getByLabel('Reps'))
     log = await expectFocusedLog(page, 'Set 1 logged', { focusX: false })
     await expect(log.dialog.getByRole('heading', { name: 'Set 1 logged', exact: true })).toBeFocused()
-    const setStatus = log.dialog.locator('.clr-set-log > [role="status"]')
+    const setStatus = savedLine(log.dialog)
     await expect(setStatus).toContainText('On this device only')
     await expect(setStatus).not.toContainText('Saved')
     expect(app.mutations).toHaveLength(0)
@@ -1006,21 +1035,21 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await press(squat.getByRole('button', { name: 'Coaching and notes — back squat', exact: true }))
     const addNote = squat.getByRole('button', { name: 'Add note — back squat', exact: true })
     await press(addNote)
-    log = await expectFocusedLog(page, 'Notes — back squat')
+    log = await expectFocusedLog(page, NOTE_TITLE)
     await expectHardCut(log.dialog)
     await tabStaysInside(log.dialog)
-    await log.dialog.getByRole('textbox', { name: 'Notes — back squat' }).fill('Knees out')
+    await log.dialog.getByRole('textbox', { name: 'back squat', exact: true }).fill('Knees out')
     app.refuseNext('workout_exercises')
     await press(log.dialog.getByRole('button', { name: 'Save note — back squat', exact: true }))
     await expect(log.dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
-    await expect(log.dialog.getByRole('textbox', { name: /^Notes — back squat/ })).toHaveValue('Knees out')
-    await expectFocusKept(page, log.dialog, 'Notes — back squat')
+    await expect(log.dialog.getByRole('textbox', { name: /^back squat/ })).toHaveValue('Knees out')
+    await expectFocusKept(page, log.dialog, NOTE_TITLE)
     const editNote = squat.getByRole('button', { name: 'Edit note — back squat', exact: true })
     await closeByEscape(page, editNote)
     await expect(squat.getByRole('status').filter({ hasText: 'Not saved' })).toHaveCount(1)
     await page.keyboard.press('Enter')
-    log = await expectFocusedLog(page, 'Notes — back squat')
-    await expect(log.dialog.getByRole('textbox', { name: /^Notes — back squat/ })).toHaveValue('Knees out')
+    log = await expectFocusedLog(page, NOTE_TITLE)
+    await expect(log.dialog.getByRole('textbox', { name: /^back squat/ })).toHaveValue('Knees out')
     await press(log.dialog.getByRole('button', { name: 'Save note — back squat', exact: true }))
     await expect(log.dialog.getByRole('status').filter({ hasText: 'Note saved' })).toHaveCount(1)
     await closeByEscape(page, editNote)
@@ -1041,7 +1070,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     app.refuseNext('mutate_set_observation')
     await press(log.dialog.getByRole('button', { name: 'Log round 1', exact: true }))
     log = await expectFocusedLog(page, 'Round 1 logged', { focusX: false })
-    const roundStatus = log.dialog.locator('.clr-set-log > [role="status"]')
+    const roundStatus = savedLine(log.dialog)
     await expect(roundStatus).toContainText('On this device only')
     await page.evaluate(() => window.dispatchEvent(new Event('online')))
     await expect(roundStatus).toContainText('Saved')
@@ -1072,7 +1101,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     app.refuseNext('mutate_set_observation')
     await press(log.dialog.getByRole('button', { name: 'Log set 1', exact: true }))
     log = await expectFocusedLog(page, 'Set 1 logged', { focusX: false })
-    const entryStatus = log.dialog.locator('.clr-set-log > [role="status"]')
+    const entryStatus = savedLine(log.dialog)
     await expect(entryStatus).toContainText('On this device only')
     await page.evaluate(() => window.dispatchEvent(new Event('online')))
     await expect(entryStatus).toContainText('Saved')
@@ -1094,7 +1123,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await expect(roundClock(circuit).getByRole('status')).toHaveText('1 of 2 rounds recorded')
     await expect(squat.getByRole('list', { name: 'Logged sets' }).getByRole('listitem')).toHaveCount(1)
     await press(page.getByRole('button', { name: 'Next section', exact: true }))
-    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true }).first()).toBeVisible()
     const blockWrites = app.writes.filter((write) => write.table === 'block_results')
     expect(blockWrites.filter((write) => !write.stored)).toHaveLength(1)
     const [standardId, supersetId, circuitId] = app.blockIds[0]
@@ -1121,7 +1150,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await expectFocusedLog(page, 'Log set 1')
     await closeByX(page, squatRest, 'tap')
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Conditioning', exact: true }).first()).toBeVisible()
     await expect.poll(() => app.writes.filter((write) => write.table === 'block_results').length).toBe(3)
     const [emomId, amrapId, forTimeId, ladderId] = app.blockIds[1]
     const sessionRests = await restBars(page).count()
@@ -1129,7 +1158,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
 
     // ── AMRAP: its clock runs on behind another family's log (a movement
     // note) and stays still behind it while paused ──
-    const amrap = timedCard(page, ACTUALS_AMRAP_WORK_LIST)
+    const amrap = timedCard(page, 'amrap')
     await amrap.getByRole('button', { name: 'Start AMRAP', exact: true }).tap()
     await page.clock.runFor(60_000)
     const coaching = amrap.getByRole('button', { name: /^Coaching and notes/ }).first()
@@ -1138,10 +1167,10 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     const addNote = amrap.getByRole('button', { name: 'Add note — kettlebell swing', exact: true })
     let before = seconds(await clockOf(amrap).textContent())
     await addNote.tap()
-    let log = await expectFocusedLog(page, 'Notes — kettlebell swing')
+    let log = await expectFocusedLog(page, NOTE_TITLE)
     chromes.note = log.chrome
     await page.clock.runFor(10_000)
-    await log.dialog.getByRole('textbox', { name: 'Notes — kettlebell swing' }).fill('Hinge, not squat')
+    await log.dialog.getByRole('textbox', { name: 'kettlebell swing', exact: true }).fill('Hinge, not squat')
     const editNote = amrap.getByRole('button', { name: 'Edit note — kettlebell swing', exact: true })
     await log.dialog.getByRole('button', { name: 'Close log', exact: true }).tap()
     await expect(openLog(page)).toHaveCount(0)
@@ -1150,8 +1179,8 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await amrap.getByRole('button', { name: 'Pause', exact: true }).tap()
     before = seconds(await clockOf(amrap).textContent())
     await editNote.tap()
-    log = await expectFocusedLog(page, 'Notes — kettlebell swing')
-    await expect(log.dialog.getByRole('textbox', { name: 'Notes — kettlebell swing' })).toHaveValue('Hinge, not squat')
+    log = await expectFocusedLog(page, NOTE_TITLE)
+    await expect(log.dialog.getByRole('textbox', { name: 'kettlebell swing', exact: true })).toHaveValue('Hinge, not squat')
     await page.clock.runFor(15_000)
     await log.dialog.getByRole('button', { name: 'Save note — kettlebell swing', exact: true }).tap()
     await expect(log.dialog.getByRole('status').filter({ hasText: 'Note saved' })).toHaveCount(1)
@@ -1160,11 +1189,17 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await amrap.getByRole('button', { name: 'Resume', exact: true }).tap()
     await page.clock.runFor(20_000)
     await amrap.getByRole('button', { name: 'Finish early', exact: true }).tap()
+    // Round 7: the log opens itself as the attempt ends; the card's own Log
+    // results is the opener from then on.
+    await expectFocusedLog(page, LOG_RESULTS)
+    await page.keyboard.press('Escape')
+    await expect(openLog(page)).toHaveCount(0)
     const amrapOpener = timedOpener(amrap)
     await amrapOpener.tap()
     log = await expectFocusedLog(page, LOG_RESULTS)
     chromes.amrap = log.chrome
-    await expect(log.dialog.locator('form.clr-timed-log')).toHaveAttribute('data-timed-format', 'amrap')
+    // The open log is the AMRAP's own (Round 7 holds it inside its block).
+    await expect(amrap.locator('dialog[open] form.clr-timed-log')).toHaveCount(1)
     // No rest of another family is drawn in a timed log.
     await expect(log.dialog.getByRole('region', { name: 'Rest', exact: true })).toHaveCount(0)
     expect(await restBars(page).count()).toBeLessThanOrEqual(1)
@@ -1177,10 +1212,13 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await closeByEscape(page, amrapOpener)
 
     // ── For Time: Finish under the cap, corrected to Incomplete with effort ──
-    const forTime = timedCard(page, ACTUALS_FOR_TIME_WORK_LIST)
-    await forTime.getByRole('button', { name: 'Start For Time', exact: true }).tap()
+    const forTime = timedCard(page, 'for_time')
+    await forTime.getByRole('button', { name: 'Start FOR TIME', exact: true }).tap()
     await page.clock.runFor(90_000)
     await forTime.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await expectFocusedLog(page, LOG_RESULTS)
+    await page.keyboard.press('Escape')
+    await expect(openLog(page)).toHaveCount(0)
     const forTimeOpener = timedOpener(forTime)
     await forTimeOpener.tap()
     log = await expectFocusedLog(page, LOG_RESULTS)
@@ -1197,7 +1235,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
 
     // ── Ladder: its race clock runs on behind its own open log; Undo finish
     // closes the log and resumes ──
-    const ladder = timedCard(page, ACTUALS_LADDER_WORK_LIST)
+    const ladder = timedCard(page, 'ladder')
     const ladderOpener = timedOpener(ladder)
     await ladder.getByRole('button', { name: 'Start ladder', exact: true }).tap()
     await page.clock.runFor(40_000)
@@ -1208,7 +1246,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await page.clock.runFor(30_000)
     await closeByX(page, ladderOpener, 'tap')
     expect(Math.abs(seconds(await clockOf(ladder).textContent()) - before)).toBe(30)
-    await ladder.getByRole('list', { name: ACTUALS_LADDER_WORK_LIST, exact: true }).getByRole('button', { name: /^Round 1\b/ }).tap()
+    await ladder.getByRole('list', { name: LADDER_ROUNDS, exact: true }).getByRole('button', { name: 'Complete round 1', exact: true }).tap()
     await ladder.getByRole('button', { name: 'Finish', exact: true }).tap()
     await ladderOpener.tap()
     log = await expectFocusedLog(page, LOG_RESULTS)
@@ -1224,12 +1262,17 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     await closeByEscape(page, ladderOpener)
 
     // ── EMOM: no log while it runs; Log results at the end, counter-free ──
-    const emom = timedCard(page, EMOM_LIST)
+    const emom = timedCard(page, 'emom')
     await emom.scrollIntoViewIfNeeded()
-    await expect(emom.locator('[data-timed-log-opener]')).toHaveCount(0)
+    await expect(timedOpener(emom)).toHaveCount(0)
     await emom.getByRole('button', { name: 'Start EMOM', exact: true }).tap()
+    await expect(timedOpener(emom)).toHaveCount(0)
     await page.clock.runFor(10 * 60_000 + 2_000)
-    await expect(emom.getByText('COMPLETE', { exact: true })).toBeVisible()
+    // Round 7's clock says the window is complete; its log opens itself.
+    await expect(clockOf(emom)).toContainText('Time complete')
+    await expectFocusedLog(page, LOG_RESULTS)
+    await page.keyboard.press('Escape')
+    await expect(openLog(page)).toHaveCount(0)
     const emomOpener = timedOpener(emom)
     await emomOpener.tap()
     log = await expectFocusedLog(page, LOG_RESULTS)
@@ -1252,27 +1295,30 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     // ── One chrome across the timed families and the note ──
     expect([...new Set(Object.values(chromes).map((chrome) => JSON.stringify(chrome)))], JSON.stringify(chromes, null, 2)).toHaveLength(1)
 
-    // ── The section's forward action is the one writer; a refused write
-    // keeps every log's entries ──
+    // ── The block's one writer (Round 7: each log's Save log, TASK-103); a
+    // refused write keeps every log's entries, and the retry writes it once ──
     const blockWritesBefore = app.writes.filter((write) => write.table === 'block_results').length
     app.refuseNext('block_results')
-    await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    const failed = page.getByRole('dialog', { name: /didn’t save/ })
-    await expect(failed).toBeVisible()
-    await failed.getByRole('button', { name: 'Close', exact: true }).tap()
-    await expect(failed).toHaveCount(0)
+    await amrapOpener.tap()
+    log = await expectFocusedLog(page, LOG_RESULTS)
+    await log.dialog.getByRole('button', { name: 'Save log', exact: true }).tap()
+    await expect(log.dialog.getByRole('alert')).toHaveText('Your log didn’t save. Try again.')
+    await page.keyboard.press('Escape')
+    await expect(openLog(page)).toHaveCount(0)
     for (const [opener, check] of [
       [amrapOpener, async (dialog: Locator) => expect(dialog.getByRole('status', { name: 'Rounds completed', exact: true })).toHaveText('1')],
       [forTimeOpener, async (dialog: Locator) => expect(await chosen(dialog.getByRole('group', { name: 'Work completed', exact: true }))).toEqual(['Incomplete'])],
       [emomOpener, async (dialog: Locator) => expect(dialog.getByRole('textbox', { name: 'Notes · optional', exact: true })).toHaveValue('Swings unbroken')],
+      [ladderOpener, async (dialog: Locator) => expect(dialog.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('status')).toHaveText(/^1 of 4 rounds completed/)],
     ] as const) {
       await opener.tap()
       log = await expectFocusedLog(page, LOG_RESULTS)
       await check(log.dialog)
-      await closeByX(page, opener, 'tap')
+      await log.dialog.getByRole('button', { name: 'Save log', exact: true }).tap()
+      await expect(openLog(page)).toHaveCount(0)
     }
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: 'Cooldown', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Cooldown', exact: true }).first()).toBeVisible()
 
     const timedWrites = app.writes.filter((write) => write.table === 'block_results').slice(blockWritesBefore)
     expect(timedWrites.filter((write) => !write.stored)).toHaveLength(1)
@@ -1395,30 +1441,46 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
-    const states: readonly { id: string; scope: string; open: string; before?: string; title: string; focusX?: boolean }[] = [
-      { id: 'anchor', scope: '[data-gallery-set-logging="anchor"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'other-lift', scope: '[data-gallery-set-logging="other-lift"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'timed-movement', scope: '[data-gallery-set-logging="timed-movement"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'distance-movement', scope: '[data-gallery-set-logging="distance-movement"]', open: 'Rest', title: 'Log set 1' },
-      { id: 'extra-set', scope: '[data-gallery-set-logging="extra-set"]', open: 'Rest', title: 'Log set 4' },
-      { id: 'set-correction', scope: '[data-gallery-set-logging="set-correction"]', open: 'Edit set 1', title: 'Edit set 1' },
-      { id: 'superset', scope: '[data-gallery-group-logging="superset"]', open: 'Rest', title: 'Log round 1' },
-      { id: 'circuit-round', scope: '[data-gallery-circuit-round]', open: 'Finish round 1', title: 'Round 1 recorded' },
-      { id: 'circuit-movement', scope: '[data-gallery-group-logging="circuit-movement"]', open: 'Rest for goblet squat', title: 'Log set 1' },
-      { id: 'movement-note', scope: '[data-gallery-logging-moment="standard"]', before: 'Coaching and notes — back squat', open: 'Add note — back squat', title: 'Notes — back squat' },
-      { id: 'workout-feedback', scope: '[data-gallery-logging-moment="fresh"]', open: 'Log workout feedback', title: 'Workout feedback' },
-      { id: 'rest-day', scope: '[data-gallery-logging-moment="unmarked"]', open: 'Mark Rest Day', title: 'Log rest day', focusX: false },
-      { id: 'emom', scope: '[data-gallery-emom="complete"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'amrap', scope: '[data-gallery-amrap="early"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'for_time', scope: '[data-gallery-race="for-time-cap"]', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'ladder', scope: '[data-gallery-race="ladder-finish"]', open: LOG_RESULTS, title: LOG_RESULTS },
+    // Round 7's accepted states (gallery bec4454): each `?state=` section
+    // mounts the real component over memory. The route's own control is
+    // pressed here, as the build pressed it (Rest, Edit set 1, Finish round 1,
+    // Rest for …, Add note, Log workout feedback, Mark Rest Day). A timed
+    // state's log is offered only once its attempt has ended (Round 7's
+    // TimedWorkoutFlow): its "Open …" (`ready`) starts the real flow and runs
+    // it past its cap, whose log opens itself; that one is closed, and the
+    // card's own Log results is the opener read here, as on the route.
+    const states: readonly { id: string; open: string; before?: readonly string[]; ready?: string; title: string; focusX?: boolean }[] = [
+      { id: 'anchor', open: 'Rest', title: 'Log set 1' },
+      { id: 'other-lift', open: 'Rest', title: 'Log set 1' },
+      { id: 'timed-movement', open: 'Rest', title: 'Log set 1' },
+      { id: 'distance-movement', open: 'Rest', title: 'Log set 1' },
+      { id: 'extra-set', open: 'Rest', title: 'Log set 4' },
+      { id: 'set-correction', open: 'Edit set 1', title: 'Edit set 1' },
+      { id: 'superset', open: 'Rest', title: 'Log round 1' },
+      { id: 'circuit-round', before: ['Start round 1'], open: 'Finish round 1', title: 'Round 1 recorded' },
+      { id: 'circuit-movement', open: 'Rest for goblet squat', title: 'Log set 1' },
+      { id: 'movement-note', before: [/^Coaching and notes/.source], open: 'Add note — one arm row', title: 'Movement note' },
+      { id: 'workout-feedback', open: 'Log workout feedback', title: 'Workout feedback' },
+      { id: 'rest-day', open: 'Mark Rest Day', title: 'Log rest day', focusX: false },
+      { id: 'emom', ready: 'Open EMOM results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'amrap', ready: 'Open AMRAP results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'for_time', ready: 'Open For Time results', open: LOG_RESULTS, title: LOG_RESULTS },
+      { id: 'ladder', ready: 'Open Ladder results', open: LOG_RESULTS, title: LOG_RESULTS },
     ]
     expect(states).toHaveLength(16)
     const chromes: Record<string, Chrome> = {}
     for (const state of states) {
       await visit(`/gallery/refinements?state=${state.id}`)
-      const scope = page.locator(state.scope).first()
-      if (state.before !== undefined) await scope.getByRole('button', { name: state.before, exact: true }).click()
+      const scope = page.locator(`[data-refinement-state="${state.id}"]`)
+      for (const before of state.before ?? []) {
+        await scope.getByRole('button', { name: before.startsWith('^') ? new RegExp(before) : before, exact: !before.startsWith('^') }).first().click()
+      }
+      if (state.ready !== undefined) {
+        await scope.getByRole('button', { name: state.ready, exact: true }).click()
+        await expect(page.getByRole('dialog', { name: state.title, exact: true })).toBeVisible()
+        await page.keyboard.press('Escape')
+        await expect(openLog(page)).toHaveCount(0)
+      }
       const opener = scope.getByRole('button', { name: state.open, exact: true })
       await opener.click()
       const log = await expectFocusedLog(page, state.title, { focusX: state.focusX ?? true })
@@ -1431,6 +1493,7 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
       // The X returns focus to the opener — or, where opening replaces it,
       // to its successor: the circuit round's Finish gives way to the round
       // clock's next control, a circuit movement's row entry to its Rest.
+      // (Round 7's gallery lays one state per page: the scope is the state.)
       if (state.id === 'circuit-round') {
         expect(await scope.getByRole('group', { name: 'Round clock', exact: true }).evaluate((node) => node.contains(document.activeElement))).toBe(true)
       } else if (state.id === 'circuit-movement') {

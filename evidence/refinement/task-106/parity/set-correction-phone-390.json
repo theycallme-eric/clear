@@ -1,0 +1,155 @@
+{
+  "schema": "clear-task-106-parity/v1",
+  "task": "TASK-106",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "set-correction",
+  "label": "Saved-set correction",
+  "width": 390,
+  "route": "/workout",
+  "drive": "card; Edit set 1 → Edit set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-390-gallery-card.png",
+      "sha256": "70885fefd867556df574e16c8565dd7360c2ac9ae6cf061552d80abd17af1b51"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-390-route-card.png",
+      "sha256": "f52cd47da3c9cc57c8446076c82fb20a4851b44bac27b26e41f1f2016fdb9691"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-390-gallery-open.png",
+      "sha256": "5776e6887e41c396b2d9e22b81ed21073d060d92db4d790edc75ca23fd71ecae"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-390-route-open.png",
+      "sha256": "f7542dd09b5ba61408cdff41222baa589e789be4d3ce84dff3c31c66194d9c20"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "PRIMARY LIFT",
+        "STANDARD",
+        "BENCH PRESSbarbell",
+        "Set 2/3",
+        "3 × 5 reps",
+        "95 lb",
+        "Rest 180s",
+        "Set 1 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "REST",
+        "COACHING AND NOTES — BENCH PRESS",
+        "ADD NOTE — BENCH PRESS"
+      ],
+      "open": [
+        "EDIT SET 1",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "CLEAR",
+        "CLEAR SET",
+        "CANCEL",
+        "SAVE CORRECTION"
+      ]
+    },
+    "route": {
+      "card": [
+        "PRIMARY LIFT",
+        "STANDARD",
+        "BENCH PRESSbarbell",
+        "Set 2/3",
+        "3 × 5 reps",
+        "95 lb",
+        "Rest 180s",
+        "Set 1 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "REST",
+        "COACHING AND NOTES — BENCH PRESS",
+        "ADD NOTE — BENCH PRESS"
+      ],
+      "open": [
+        "EDIT SET 1",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "CLEAR",
+        "CLEAR SET",
+        "CANCEL",
+        "SAVE CORRECTION"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words; the section label read as one name (Accessories / Accessory)",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 56,
+        "open": 79
+      },
+      "route": {
+        "card": 56,
+        "open": 79
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 369
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 456
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 369
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 456
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": []
+    }
+  }
+}

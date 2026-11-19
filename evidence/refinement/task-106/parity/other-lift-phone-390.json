@@ -1,0 +1,194 @@
+{
+  "schema": "clear-task-106-parity/v1",
+  "task": "TASK-106",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "other-lift",
+  "label": "Other lift",
+  "width": 390,
+  "route": "/workout",
+  "drive": "card; Rest → Log set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-gallery-card.png",
+      "sha256": "1f48e3e0ef77980f330a6e225863ed9f7ebd9c6ac8241e706157f46541bcc629"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-route-card.png",
+      "sha256": "11f29312e5f44836e3e25fe3abb169405349b26d2fd073df707c672123d9b523"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-gallery-open.png",
+      "sha256": "0d6ac9d8ec9d5d4137b8750d44bda1daa9d772c2094454056b4940ae10969134"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-route-open.png",
+      "sha256": "bf1621836c50510b8f2c0ac355ade4542ddfad797767482f70d72ed27c934f52"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "ACCESSORIES",
+        "STANDARD",
+        "BICEP CURLdumbbell",
+        "Set 1/3",
+        "3 × 10 reps",
+        "25 lb",
+        "Rest 60s",
+        "REST",
+        "COACHING AND NOTES — BICEP CURL",
+        "ADD NOTE — BICEP CURL"
+      ],
+      "open": [
+        "LOG SET 1",
+        "BICEP CURL · 3 × 10 REPS · DUMBBELL",
+        "REST AFTER BICEP CURL",
+        "0",
+        "1",
+        ":",
+        "0",
+        "0",
+        "1 minute 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ]
+    },
+    "route": {
+      "card": [
+        "ACCESSORY",
+        "STANDARD",
+        "BICEP CURLdumbbell",
+        "Set 1/3",
+        "3 × 10 reps",
+        "25 lb",
+        "Rest 60s",
+        "REST",
+        "COACHING AND NOTES — BICEP CURL",
+        "ADD NOTE — BICEP CURL"
+      ],
+      "open": [
+        "LOG SET 1",
+        "BICEP CURL · 3 × 10 REPS · DUMBBELL",
+        "REST AFTER BICEP CURL",
+        "0",
+        "1",
+        ":",
+        "0",
+        "0",
+        "1 minute 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ]
+    }
+  },
+  "differences": {
+    "card": [
+      {
+        "side": "gallery only",
+        "text": "ACCESSORIES",
+        "criterion": "TASK-AC-EFB0DB480A73",
+        "reason": "The gallery scene labels its accessory sections with a sample string (“Accessories”); the product labels a section by its type (“Accessory”), from the session row (real data only)."
+      },
+      {
+        "side": "route only",
+        "text": "ACCESSORY",
+        "criterion": "TASK-AC-EFB0DB480A73",
+        "reason": "The gallery scene labels its accessory sections with a sample string (“Accessories”); the product labels a section by its type (“Accessory”), from the session row (real data only)."
+      }
+    ],
+    "open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words; the section label read as one name (Accessories / Accessory)",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 39,
+        "open": 100
+      },
+      "route": {
+        "card": 39,
+        "open": 100
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 293
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 477
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 293
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 477
+        }
+      }
+    },
+    "differences": {
+      "card": [
+        {
+          "key": "h.clr-movement-group-header__title|accessory#0",
+          "gallery": {
+            "key": "h.clr-movement-group-header__title|accessory#0",
+            "x": 22,
+            "y": 12,
+            "width": 147,
+            "height": 28
+          },
+          "route": {
+            "key": "h.clr-movement-group-header__title|accessory#0",
+            "x": 22,
+            "y": 12,
+            "width": 126.2,
+            "height": 28
+          },
+          "criterion": "TASK-AC-EFB0DB480A73",
+          "reason": "The section label’s own box is as wide as its word: the gallery’s sample “Accessories” against the product’s “Accessory” (real data only)."
+        }
+      ],
+      "open": []
+    }
+  }
+}

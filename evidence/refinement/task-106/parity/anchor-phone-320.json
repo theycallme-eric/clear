@@ -1,0 +1,217 @@
+{
+  "schema": "clear-task-106-parity/v1",
+  "task": "TASK-106",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "anchor",
+  "label": "Anchor / primary lift",
+  "width": 320,
+  "route": "/workout",
+  "drive": "card; Rest → Log set 1; Log set 1 → Set 1 logged — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-card.png",
+      "sha256": "490575b56a436475523818e84a3d2545fbdd78f118611bb37902f3492f566d9c"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-card.png",
+      "sha256": "fb85deca1a4abbf738301b04976b6efebcf8ad1519016847c7f45a23a84f3de3"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-open.png",
+      "sha256": "cd2f1861dfad57c71011508374c93cb1a7e7f7c7c7dc1b97b000c4f02cd8d730"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-open.png",
+      "sha256": "58e7169c3daccd98d1e059f07991eeb22e2b2044ca2b651fbc37be7f02abf1e5"
+    },
+    "gallery-saved": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-saved.png",
+      "sha256": "ae5b5ba0042370f9a3eb61917c8828b2310447cfee242ad1faec159d01ab97da"
+    },
+    "route-saved": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-saved.png",
+      "sha256": "e6fcfbe62fdddd909184762c2e6eb2f4510960ce5a22d943d562a6a2ac51544d"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "PRIMARY LIFT",
+        "STANDARD",
+        "BENCH PRESSbarbell",
+        "Set 1/3",
+        "3 × 5 reps",
+        "95 lb",
+        "Rest 180s",
+        "REST",
+        "COACHING AND NOTES — BENCH PRESS",
+        "ADD NOTE — BENCH PRESS"
+      ],
+      "open": [
+        "LOG SET 1",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "REST AFTER BENCH PRESS",
+        "0",
+        "3",
+        ":",
+        "0",
+        "0",
+        "3 minutes 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ],
+      "saved": [
+        "SET 1 LOGGED",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "REST AFTER BENCH PRESS",
+        "0",
+        "2",
+        ":",
+        "5",
+        "8",
+        "2 minutes 58 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "Set 1 · 5 reps",
+        "Saved"
+      ]
+    },
+    "route": {
+      "card": [
+        "PRIMARY LIFT",
+        "STANDARD",
+        "BENCH PRESSbarbell",
+        "Set 1/3",
+        "3 × 5 reps",
+        "95 lb",
+        "Rest 180s",
+        "REST",
+        "COACHING AND NOTES — BENCH PRESS",
+        "ADD NOTE — BENCH PRESS"
+      ],
+      "open": [
+        "LOG SET 1",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "REST AFTER BENCH PRESS",
+        "0",
+        "3",
+        ":",
+        "0",
+        "0",
+        "3 minutes 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ],
+      "saved": [
+        "SET 1 LOGGED",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "REST AFTER BENCH PRESS",
+        "0",
+        "2",
+        ":",
+        "5",
+        "8",
+        "2 minutes 58 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "Set 1 · 5 reps",
+        "Saved"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": [],
+    "saved": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words; the section label read as one name (Accessories / Accessory)",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 39,
+        "open": 100,
+        "saved": 50
+      },
+      "route": {
+        "card": 39,
+        "open": 100,
+        "saved": 50
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 301
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 537
+        },
+        "saved": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 369
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 301
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 537
+        },
+        "saved": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 369
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": [],
+      "saved": []
+    }
+  }
+}

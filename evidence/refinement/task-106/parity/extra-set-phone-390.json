@@ -1,0 +1,179 @@
+{
+  "schema": "clear-task-106-parity/v1",
+  "task": "TASK-106",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "extra-set",
+  "label": "Extra set",
+  "width": 390,
+  "route": "/workout",
+  "drive": "card; Rest → Log set 4 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-390-gallery-card.png",
+      "sha256": "f87c8c2218a95a467fa1fcb04c689b5e7c6dcabb97d3ec23727475a01b766365"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-390-route-card.png",
+      "sha256": "1a785168e4303bf96f81744d2a785588c209872c98afa9f7d33ddf8df583987e"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-390-gallery-open.png",
+      "sha256": "64d9fba7a575ac7b98f8131e699406d38789f0cdb18d4b2befd853915f580040"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-390-route-open.png",
+      "sha256": "ce049058c604bb1ca707594da939ed16f4d45d6af59bc67f311d2cee67331353"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "PRIMARY LIFT",
+        "STANDARD",
+        "BENCH PRESSbarbell",
+        "Extra set 4",
+        "3 × 5 reps",
+        "95 lb",
+        "Rest 180s",
+        "Set 1 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "Set 2 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "Set 3 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "REST",
+        "COACHING AND NOTES — BENCH PRESS",
+        "ADD NOTE — BENCH PRESS"
+      ],
+      "open": [
+        "LOG SET 4",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "REST AFTER BENCH PRESS",
+        "0",
+        "3",
+        ":",
+        "0",
+        "0",
+        "3 minutes 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 4"
+      ]
+    },
+    "route": {
+      "card": [
+        "PRIMARY LIFT",
+        "STANDARD",
+        "BENCH PRESSbarbell",
+        "Extra set 4",
+        "3 × 5 reps",
+        "95 lb",
+        "Rest 180s",
+        "Set 1 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "Set 2 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "Set 3 · 5 reps · 95 lb",
+        "Saved",
+        "EDIT",
+        "REST",
+        "COACHING AND NOTES — BENCH PRESS",
+        "ADD NOTE — BENCH PRESS"
+      ],
+      "open": [
+        "LOG SET 4",
+        "BENCH PRESS · 3 × 5 REPS · BARBELL",
+        "REST AFTER BENCH PRESS",
+        "0",
+        "3",
+        ":",
+        "0",
+        "0",
+        "3 minutes 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 4"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words; the section label read as one name (Accessories / Accessory)",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 76,
+        "open": 100
+      },
+      "route": {
+        "card": 76,
+        "open": 100
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 457
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 477
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 457
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 477
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": []
+    }
+  }
+}

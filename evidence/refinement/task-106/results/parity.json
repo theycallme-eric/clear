@@ -1,0 +1,133 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-106",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-106-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-106/required-cases.json",
+    "sha256": "f2dcb1929cbe76259b87b82cbb183282e30d7e7266b241bcd291d6ac2ec9ca80"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-106-parity.spec.ts",
+      "sha256": "1bae6c6a4e89e639b4fc24fbf45719d0fb9daa5fc7e9f371bcf916e1f5cf29e0"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 anchor phone-320: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 anchor phone-390: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 other-lift phone-320: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 other-lift phone-390: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 timed-movement phone-320: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 timed-movement phone-390: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 distance-movement phone-320: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 distance-movement phone-390: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 extra-set phone-320: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 extra-set phone-390: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 set-correction phone-320: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 set-correction phone-390: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 superset phone-320: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 superset phone-390: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-106-parity.spec.ts",
+      "name": "TASK-AC-F3504D32EB11 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 16
+  },
+  "problems": []
+}

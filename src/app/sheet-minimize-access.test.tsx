@@ -25,10 +25,23 @@
  * gap found: reopening a minimised correction through its own saved row's Edit
  * started over from the stored result; `set-logger.tsx` now hands it back.
  *
- * Round 7 (owner decision 1, 2026-11-13): the sheet is drawn as the centred
- * logging dialog, and its one dismiss control is the dialog's Close rather
- * than a Minimize chevron. A saved set's dialog shows the running rest; the
- * card's Rest and Edit are still the way back into logging once it is closed.
+ * TASK-043 (REQ-019; C45; R100) replaces the presentation for this family: a
+ * standard block's entry opens in the shared focused logging dialog — a
+ * native modal over an inert workout, with one backdrop — and its one collapse
+ * control is the dialog's framed X, "Close log" (Escape is the same), where
+ * the half-sheet had its top Minimize chevron. Everything else here is
+ * unchanged: the card's Rest and Edit are the only ways back in, the footer's
+ * rest offers only Add 30s and Skip rest, the draft and correction survive a
+ * collapse, and the rest keeps counting. Because the workout behind an open
+ * modal is inert, a step that used the card while the log was open now closes
+ * the log first.
+ *
+ * A3 TASK-106 (F4; owner decision 1) brings these cases back on Round 7's
+ * logging dialog (`src/ui/logging-overlay.tsx`), which the route draws for
+ * every entry. Round 7's dialog plays the shared Dialog's exit before it
+ * closes, so a step that closes it waits for the close (`closeLog`), and
+ * under Round 7 no half-sheet layer is drawn at all. Every assertion is
+ * otherwise the build's.
  */
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -106,16 +119,23 @@ function openSheet(): HTMLElement | null {
   return screen.queryByRole('form', { name: /^(Log|Edit) set \d+ of back squat$/ })
 }
 
-/** The logging dialog's whole frame: title, Close, context, rest and form. */
-function sheetDialog(): HTMLElement {
-  return screen.getByRole('dialog', { name: /^(Log|Edit) set \d+$|^Set \d+ logged$/ })
+/** TASK-043: the open entry's whole dialog: title, X, context, rest and form. */
+function sheetSection(): HTMLElement {
+  return screen.getByRole('dialog', { name: /^(Log|Edit) set \d+$/ })
 }
 
-/** The dialog's one Close: the dialog leaves, and the card is back. */
+/** The dialog's framed X, the entry's one collapse (TASK-043; was Minimize). */
+const CLOSE_LOG = { name: 'Close log' } as const
+/** Any collapse control: the X, or a half-sheet chevron that must not be here. */
+const ANY_COLLAPSE = { name: /^close log$|minimi[sz]e/i } as const
+
+/**
+ * Close log, then Round 7's exit: when this returns the dialog has closed and
+ * the workout behind it is no longer inert (A3 TASK-106).
+ */
 async function closeLog(user: ReturnType<typeof userEvent.setup>) {
-  const dialog = sheetDialog()
-  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
-  await waitFor(() => expect(dialog).not.toBeInTheDocument())
+  await user.click(screen.getByRole('button', CLOSE_LOG))
+  await waitFor(() => expect(screen.queryAllByRole('dialog')).toHaveLength(0))
 }
 
 function restTimer(): HTMLElement {
@@ -124,12 +144,12 @@ function restTimer(): HTMLElement {
   })
 }
 
-/** Opens the sheet from the card, logs set 1, and closes the dialog. */
+/** Opens the sheet from the card, logs set 1, and minimises the sheet. */
 async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
-  // Round 7: the saved set's dialog shows the running rest.
+  // TASK-020 (C46): the saved set's confirmation, not set 2's form.
   await screen.findByRole('dialog', { name: 'Set 1 logged' })
   await closeLog(user)
   expect(openSheet()).toBeNull()
@@ -154,32 +174,44 @@ async function expectCardReopensLogging(user: ReturnType<typeof userEvent.setup>
   expect(openSheet()).toBeNull()
 }
 
-describe('Set-logging sheet — the top chevron is the only minimise control (AC-036)', () => {
-  it('draws one Minimize control, in the sheet head beside its title, and no bottom Minimize', async () => {
+describe('Set-logging dialog — the framed X is the only collapse control (AC-036, TASK-043)', () => {
+  it('draws one Close log X, in the dialog header beside its title, over an inert workout, and no Minimize or bottom collapse', async () => {
     const user = userEvent.setup()
     await shell()
+    const footer = document.querySelector('.clr-workout-footer__content')
+    expect(footer).not.toHaveAttribute('inert')
     fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
 
-    // Round 7 (decision 1): the one dismiss control is the dialog's Close.
-    const sheet = sheetDialog()
-    const minimise = screen.getAllByRole('button', { name: /close log|minimi[sz]e/i })
-    expect(minimise).toHaveLength(1)
-    expect(minimise[0]).toHaveAccessibleName('Close log')
-    // The Close sits in the head with the title, above the form.
+    const sheet = sheetSection()
+    expect((sheet as HTMLDialogElement).open).toBe(true)
+    const minimise = screen.getAllByRole('button', ANY_COLLAPSE)
+    expect(minimise).toEqual([within(sheet).getByRole('button', CLOSE_LOG)])
+    // The X sits in the header with the title, above the form.
     const head = within(sheet).getByRole('heading', { name: 'Log set 1' }).parentElement
     expect(head).not.toBeNull()
     expect(head).toContainElement(minimise[0])
-    // Nothing in the form or below it is a second way to close.
+    // The open state is the card's Rest's, as it was the chevron's.
+    expect(within(movementCard()).getByRole('button', { name: 'Rest' })).toHaveAttribute('aria-expanded', 'true')
+    // Modal: the footer behind it leaves the focus order, and the half-sheet
+    // layer stays closed, so the dialog's backdrop is the only one.
+    expect(footer).toHaveAttribute('inert')
+    // Round 7: no half-sheet layer is drawn under the dialog at all.
+    expect(document.querySelector('.clr-set-sheet-layer')).toBeNull()
+    expect(document.querySelector('.clr-set-sheet-layer__backdrop')).toBeNull()
+    // Nothing in the form or below it is a second way to minimise.
     const form = screen.getByRole('form', { name: 'Log set 1 of back squat' })
-    expect(within(form).queryByRole('button', { name: /close|minimi[sz]e|hide|collapse/i })).toBeNull()
+    expect(within(form).queryByRole('button', { name: /minimi[sz]e|hide|collapse|close/i })).toBeNull()
     expect(within(form).getAllByRole('button').map((b) => b.textContent)).toContain('Log set 1')
 
     await user.click(minimise[0])
-    await waitFor(() => expect(openSheet()).toBeNull())
-    expect(screen.queryAllByRole('button', { name: /close log|minimi[sz]e/i })).toEqual([])
+    // Round 7: the dialog leaves through the shared Dialog's exit, then closes.
+    await waitFor(() => expect(screen.queryAllByRole('dialog')).toHaveLength(0))
+    expect(openSheet()).toBeNull()
+    expect(screen.queryAllByRole('button', ANY_COLLAPSE)).toEqual([])
+    expect(footer).not.toHaveAttribute('inert')
   })
 
-  it('keeps Cancel / Save correction in edit mode, with the same single chevron', async () => {
+  it('keeps Cancel / Save correction in edit mode, with the same single X', async () => {
     const user = userEvent.setup()
     await shell()
     await logAndMinimise(user)
@@ -188,8 +220,10 @@ describe('Set-logging sheet — the top chevron is the only minimise control (AC
     const form = within(screen.getByRole('form', { name: 'Edit set 1 of back squat' }))
     expect(form.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
     expect(form.getByRole('button', { name: 'Save correction' })).toBeInTheDocument()
-    expect(form.queryByRole('button', { name: /close|minimi[sz]e/i })).toBeNull()
-    expect(screen.getAllByRole('button', { name: /close log|minimi[sz]e/i })).toHaveLength(1)
+    expect(form.queryByRole('button', ANY_COLLAPSE)).toBeNull()
+    expect(screen.getAllByRole('button', ANY_COLLAPSE)).toEqual([
+      within(sheetSection()).getByRole('button', CLOSE_LOG),
+    ])
   })
 })
 
@@ -263,23 +297,17 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
         name: 'Log set 1',
       }),
     )
-    // Round 7: the saved set's dialog shows the running rest.
-    const done = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    // TASK-020 (C46): Log set confirms set 1 beside the same rest.
+    await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    const recorded = double.loggedSets().length
     // Log set saved; it did not restart the rest.
     expect(restTimer()).toHaveTextContent('01:30')
-    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
-    const recorded = double.loggedSets().length
 
-    // AC-037: logging is independent of rest. Closing the confirmation and
-    // tapping the card opens set 2 during the same rest, which keeps running.
+    // Set 2 is opened deliberately, on the rest already running (TASK-043:
+    // the modal log is closed first; the workout behind it is inert).
     await closeLog(user)
-    await waitFor(() => expect(done).not.toBeInTheDocument())
-    advance(10)
-    returnToForeground()
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
-    // The same rest, ten seconds on: opening set 2 neither restarts nor stops it.
-    expect(restTimer()).toHaveTextContent('01:20')
-
+    expect(restTimer()).toHaveTextContent('01:30')
     const form = within(screen.getByRole('form', { name: 'Log set 2 of back squat' }))
     await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '6')
@@ -289,14 +317,14 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
     // Hidden, the rest runs on — read off the wall clock, not paused.
     advance(25)
     returnToForeground()
-    expect(restTimer()).toHaveTextContent('00:55')
+    expect(restTimer()).toHaveTextContent('01:05')
 
     advance(15)
     returnToForeground()
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     const reopened = within(screen.getByRole('form', { name: 'Log set 2 of back squat' }))
     expect(reopened.getByLabelText(/^Reps/)).toHaveValue(6)
-    expect(restTimer()).toHaveTextContent('00:40')
+    expect(restTimer()).toHaveTextContent('00:50')
     // Collapse and reopen record nothing.
     expect(double.loggedSets()).toHaveLength(recorded)
   })
@@ -341,12 +369,13 @@ describe('Saving and correcting never start absent or expired rest (B05 AC-037/0
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     expect(double.loggedSets()).toEqual([])
     await user.click(entry.getByRole('button', { name: 'Log set 1' }))
-    // Round 7: with no rest to show, the saved set's dialog closes by itself.
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: /set \d+/i })).toBeNull())
+    // TASK-020 (C46): confirmed, with no rest to wait for, until Close log.
+    await screen.findByRole('dialog', { name: 'Set 1 logged' })
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
     const stored = double.loggedSets()[0]
     expect(stored).toMatchObject({ weightUnit: 'lb', performed: { setNumber: 1, weight: 135, reps: 5, effort: 'too_hard' } })
+    await closeLog(user)
 
     const openEdit = () => user.click(within(movementCard()).getByRole('button', { name: 'Edit set 1' }))
     await openEdit()

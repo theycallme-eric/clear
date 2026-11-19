@@ -1,0 +1,167 @@
+{
+  "schema": "clear-task-106-parity/v1",
+  "task": "TASK-106",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "timed-movement",
+  "label": "Timed movement",
+  "width": 390,
+  "route": "/workout",
+  "drive": "card; Rest → Log set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-gallery-card.png",
+      "sha256": "276a41bbff138b5bfa1d237bf2bdc10a1eb811cd123411a70d105d286854cd0e"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-route-card.png",
+      "sha256": "c128b4b362af1c0eaf35072e33e48bfdbea4ba5617d41a8e1649e1df4fbe8114"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-gallery-open.png",
+      "sha256": "bc254e68aaf2217f4405dff928a0f0cbedd31d08433de14a57a4c1d78556ffce"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-route-open.png",
+      "sha256": "ed393edf607f26746c857df0ae85748890ff66a3a864a7e86366bd671678c153"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "CONDITIONING",
+        "STANDARD",
+        "PLANKbodyweight",
+        "Set 1/3",
+        "3 × 30 sec",
+        "Rest 60s",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "30 seconds left",
+        "START",
+        "RESET",
+        "REST",
+        "COACHING AND NOTES — PLANK",
+        "ADD NOTE — PLANK"
+      ],
+      "open": [
+        "LOG SET 1",
+        "PLANK · 3 × 30 SEC · BODYWEIGHT",
+        "REST AFTER PLANK",
+        "0",
+        "1",
+        ":",
+        "0",
+        "0",
+        "1 minute 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "SECONDS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ]
+    },
+    "route": {
+      "card": [
+        "CONDITIONING",
+        "STANDARD",
+        "PLANKbodyweight",
+        "Set 1/3",
+        "3 × 30 sec",
+        "Rest 60s",
+        "0",
+        "0",
+        ":",
+        "3",
+        "0",
+        "30 seconds left",
+        "START",
+        "RESET",
+        "REST",
+        "COACHING AND NOTES — PLANK",
+        "ADD NOTE — PLANK"
+      ],
+      "open": [
+        "LOG SET 1",
+        "PLANK · 3 × 30 SEC · BODYWEIGHT",
+        "REST AFTER PLANK",
+        "0",
+        "1",
+        ":",
+        "0",
+        "0",
+        "1 minute 0 seconds left",
+        "ADD 30S",
+        "SKIP REST",
+        "SECONDS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words; the section label read as one name (Accessories / Accessory)",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 59,
+        "open": 87
+      },
+      "route": {
+        "card": 59,
+        "open": 87
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 397
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 477
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 397
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 477
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": []
+    }
+  }
+}

@@ -9,9 +9,8 @@
  *
  * What it holds the screen to:
  *
- *   · the session's one rest is shared: the open set dialog draws it (Round 7:
- *     a centred dialog closed with its X, where the sheet was minimised), and
- *     once it is closed the footer draws that same countdown, still running,
+ *   · the session's one rest is shared: the open sheet draws it, and once the
+ *     sheet is minimised the footer draws that same countdown, still running,
  *     with Add 30s and Skip rest;
  *   · once there is no countdown — run out or skipped — the footer's temporary
  *     Rest control is gone, never `Rest complete · 00:00`, and the movement's
@@ -25,6 +24,14 @@
  * rest (`FooterRest` → `RestTimerBar`) already draws nothing once the
  * countdown has ended or been skipped. These tests pin that behaviour; none of
  * them was written to fail first.
+ *
+ * TASK-043 (REQ-019; C45; R100): a standard block's entry is now the shared
+ * focused logging dialog rather than the half-sheet. The presentation
+ * expectations follow it — the open entry is a modal dialog named by its
+ * title, and it is collapsed by its framed "Close log" X where the sheet had
+ * Minimize — while the rest lifecycle pinned here is unchanged: the open
+ * dialog draws the one rest, the footer draws that same countdown once the
+ * log is closed, and nothing but an explicit Log set records a result.
  */
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -125,27 +132,14 @@ function sheet(): HTMLElement | null {
   return screen.queryByRole('form', { name: /^(Log|Edit) set \d+ of back squat$/ })
 }
 
-/** Round 7's set-logging dialogs that are open (a closed `<dialog>` keeps its markup). */
-function openSetDialogs(): HTMLDialogElement[] {
-  return Array.from(document.querySelectorAll<HTMLDialogElement>('dialog.clr-logging-overlay[open]'))
-}
-
-/** Round 7: the set dialog is closed with its X ("Close log"), not minimised. */
-async function closeLog(user: ReturnType<typeof userEvent.setup>) {
-  const [dialog, ...others] = openSetDialogs()
-  if (dialog === undefined || others.length > 0) throw new Error('not one open set dialog')
-  await user.click(within(dialog).getByRole('button', { name: 'Close log' }))
-  await waitFor(() => expect(dialog.open).toBe(false))
-}
-
-/** Opens the set dialog from the card, logs one set, and closes the dialog. */
-async function logAndClose(user: ReturnType<typeof userEvent.setup>) {
+/** Opens the sheet from the card, logs one set, and minimises the sheet. */
+async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
-  // Round 7: the dialog confirms the logged set beside its running rest.
+  // TASK-020 (C46): the saved set's confirmation, not set 2's form.
   await screen.findByRole('dialog', { name: 'Set 1 logged' })
-  await closeLog(user)
+  await user.click(screen.getByRole('button', { name: 'Close log' }))
   expect(sheet()).toBeNull()
 }
 
@@ -189,18 +183,18 @@ describe('Rest footer — a shared countdown that survives minimise and reopen (
         name: 'Log set 1',
       }),
     )
-    // Drawn once, inside the open dialog (Round 7: rest runs inside it).
+    // Drawn once, inside the open log (TASK-043: the focused dialog).
     expect(restBars()).toHaveLength(1)
-    expect(restBars()[0].closest('dialog')).not.toBeNull()
+    expect(within(screen.getByRole('dialog', { name: 'Set 1 logged' })).getByRole('region', { name: 'Rest' }))
+      .toBe(restBars()[0])
     expect(restTimer()).toHaveTextContent('01:30')
 
     advance(20)
     returnToForeground()
-    await closeLog(user)
+    await user.click(screen.getByRole('button', { name: 'Close log' }))
 
     // The same rest, still running, now the footer's.
     expect(restBars()).toHaveLength(1)
-    expect(restBars()[0].closest('footer')).not.toBeNull()
     expect(restTimer()).toHaveTextContent('01:10')
     const bar = within(restBars()[0])
     expect(bar.getByRole('button', { name: 'Add 30s' })).toBeInTheDocument()
@@ -210,9 +204,8 @@ describe('Rest footer — a shared countdown that survives minimise and reopen (
     returnToForeground()
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
 
-    // Reopened: not restarted, and still one countdown, back in the dialog.
+    // Reopened: not restarted, and still one countdown.
     expect(restBars()).toHaveLength(1)
-    expect(restBars()[0].closest('dialog')).not.toBeNull()
     expect(restTimer()).toHaveTextContent('01:00')
 
     await user.click(screen.getByRole('button', { name: 'Add 30s' }))
@@ -222,7 +215,7 @@ describe('Rest footer — a shared countdown that survives minimise and reopen (
   it('keeps the rest and its control visible after an extension until the countdown genuinely ends', async () => {
     const user = userEvent.setup()
     await shell()
-    await logAndClose(user)
+    await logAndMinimise(user)
 
     advance(80)
     returnToForeground()
@@ -244,7 +237,7 @@ describe('Rest footer — gone once there is no countdown (AC-055)', () => {
   it('hides the minimised Rest control when the countdown runs out, and leaves logging reachable', async () => {
     const user = userEvent.setup()
     const double = await shell()
-    await logAndClose(user)
+    await logAndMinimise(user)
     expect(restBars()).toHaveLength(1)
 
     advance(90)
@@ -261,7 +254,7 @@ describe('Rest footer — gone once there is no countdown (AC-055)', () => {
   it('hides the minimised Rest control when the rest is skipped, and leaves logging reachable', async () => {
     const user = userEvent.setup()
     const double = await shell()
-    await logAndClose(user)
+    await logAndMinimise(user)
 
     advance(15)
     returnToForeground()
@@ -277,7 +270,7 @@ describe('Rest footer — gone once there is no countdown (AC-055)', () => {
   it('stays gone on later foreground returns, rather than reappearing at zero', async () => {
     const user = userEvent.setup()
     await shell()
-    await logAndClose(user)
+    await logAndMinimise(user)
 
     advance(300)
     returnToForeground()
@@ -292,7 +285,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     const user = userEvent.setup()
     const double = await shell()
 
-    // Prefill: the dialog opens with the prescription filled, and writes nothing.
+    // Prefill: the sheet opens with the prescription filled, and writes nothing.
     fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(double.loggedSets()).toEqual([])
 
@@ -303,28 +296,21 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     )
     expect(double.loggedSets()).toHaveLength(1)
 
-    // Round 7: the logged set is confirmed beside its rest, with no set-2 form;
-    // expiry closes that confirmation and records nothing.
-    await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    // TASK-020 (C46): set 1 is confirmed, and no set-2 form is opened.
+    expect(screen.getByRole('dialog', { name: 'Set 1 logged' })).toBeInTheDocument()
+    expect(sheet()).toBeNull()
+
+    // Expiry collapses the confirmation and records no set 2.
     advance(90)
     returnToForeground()
     expectNoFinishedRest()
-    await waitFor(() => expect(openSetDialogs()).toEqual([]))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Set 1 logged' })).toBeNull())
+    expect(sheet()).toBeNull()
     expect(double.loggedSets()).toHaveLength(1)
 
-    // Expiry with the prefilled set-2 dialog open records no set 2. Its Rest
-    // starts set 2's own prescribed rest, which is left to run out.
+    // Reopening it deliberately draws the prefilled set 2 and records nothing.
     await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
-    expect(double.loggedSets()).toHaveLength(1)
-    advance(90)
-    returnToForeground()
-    expectNoFinishedRest()
-    expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
-    expect(double.loggedSets()).toHaveLength(1)
-
-    await closeLog(user)
-    await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(double.loggedSets()).toHaveLength(1)
   })
 
@@ -358,7 +344,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
   it('writes no set when sections advance or are revisited, with or without a running rest', async () => {
     const user = userEvent.setup()
     const double = await shell()
-    await logAndClose(user)
+    await logAndMinimise(user)
     expect(double.loggedSets()).toHaveLength(1)
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
@@ -391,7 +377,7 @@ describe('Rest footer — the real timer lifecycle (AC-057)', () => {
   it('reads the wall clock from the logged set across backgrounding, not a clock of its own', async () => {
     const user = userEvent.setup()
     await shell()
-    await logAndClose(user)
+    await logAndMinimise(user)
 
     // Backgrounded with no ticks at all: the first paint back is already right.
     advance(61)

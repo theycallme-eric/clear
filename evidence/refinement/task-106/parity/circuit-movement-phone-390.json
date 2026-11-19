@@ -1,0 +1,161 @@
+{
+  "schema": "clear-task-106-parity/v1",
+  "task": "TASK-106",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "circuit-movement",
+  "label": "Circuit movement entry",
+  "width": 390,
+  "route": "/workout",
+  "drive": "card; Rest for goblet squat → Log set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-gallery-card.png",
+      "sha256": "4a18b8bb3d6c55156b8c6133dd7e32db15cc2d699c4f34ea78d35c9dfdbe8252"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-route-card.png",
+      "sha256": "e8951cbdbb59964f1c5703d786aedd542ce338917505640dc5c706eeef2daea8"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-gallery-open.png",
+      "sha256": "dd0df2d33a58561f0063d983834306454ecb91c9de8a5e6a9d931ed09f4e44d7"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-route-open.png",
+      "sha256": "a490b2175502a37a012e959f210e759f804eb5568966f1954419eed597a8ab83"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "CONDITIONING",
+        "CIRCUIT",
+        "NO ROUNDS RECORDED",
+        "START ROUND 1",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ],
+      "open": [
+        "LOG SET 1",
+        "1. GOBLET SQUAT · 1 × 8 REPS · KETTLEBELL",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ]
+    },
+    "route": {
+      "card": [
+        "CONDITIONING",
+        "CIRCUIT",
+        "NO ROUNDS RECORDED",
+        "START ROUND 1",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ],
+      "open": [
+        "LOG SET 1",
+        "1. GOBLET SQUAT · 1 × 8 REPS · KETTLEBELL",
+        "WEIGHT",
+        "UNIT",
+        "kg",
+        "lb",
+        "REPS",
+        "EFFORT",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "LOG SET 1"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words; the section label read as one name (Accessories / Accessory)",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 65,
+        "open": 71
+      },
+      "route": {
+        "card": 65,
+        "open": 71
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 577
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 348
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 577
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 348
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": []
+    }
+  }
+}
