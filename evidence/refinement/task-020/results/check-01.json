@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/set-logging-sheet.test.tsx",
-      "sha256": "5a7e72ec744d65770a43a470b0dbb4f2d503e7f26c66084f77b4ba5ab4ea8ef1"
+      "sha256": "c4f9d9763e979d8cbeaf574777d8ab3563e39000e74e6dd3efa3e9b9432a2038"
     }
   ],
   "requiredCases": [

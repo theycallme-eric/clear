@@ -13,6 +13,12 @@ Lane note: TASK-105 ran in parallel. `PROJECT_MAP.md` is TASK-105's, so the map 
 
 ## Status
 
+Round 06 (2026-11-18, body `clear-gallery-adoption-v2-20261118`, attempt 1, same base `4e65efb1`): the
+round-05 branch (`d75bd1ff`) was fast-forwarded into this worktree and checked against the round-06
+brief. Round 06 moved the task-019 and task-041 suites (and AC-C45-01, AC-R016-03) to TASK-120 and
+TASK-114, and settled the no-rest question (owner decision 5, 2026-11-16). No product code changed in
+round 06; see "Round 06". The history below is round 05's (body `clear-gallery-adoption-v2-20261116`).
+
 Attempt 1 (2026-11-16) implemented and committed on the worker branch (`2794e3dd`). Controller
 verification round 0 failed on TASK-041 check-01 (timed out; JOURNEY-017 waited 6.1 minutes per try
 on a build-only selector) and never reached TASK-019 check-01. Repair round 1 (same day, same
@@ -134,6 +140,64 @@ through `LoggingOverlay.onAfterClose`.
   and then flagged the gallery's sample section label and load; the clock is now stepped until the
   driver has pressed, both sides read 500 ms later, and the sample words are labelled
   (TASK-AC-EFB0DB480A73) and read as one name in the layout keys so every element is still compared.
+
+## Round 06 (2026-11-18, body `clear-gallery-adoption-v2-20261118`)
+
+Input: the round-06 brief (TASK-106 now proves REQ-020 and JOURNEY-020 only; its checks no longer
+include TASK-019 or TASK-041 check-01) and the controller's resume notes. The round-05 worker
+branch (`d75bd1ff`, on `4e65efb1`) was fetched from the round-05 repository and fast-forwarded in;
+its history is kept.
+
+Checked every round-06 criterion against the code; no product code changed. Changes:
+
+- **No-rest rule (owner decision 5, 2026-11-16).** The code already follows it
+  (`src/ui/set-save-confirmation.ts`: saved with none running and none prescribed, the confirmation
+  ends once recorded and the dialog closes itself, still drawing the confirmation through its exit;
+  a prescribed rest already over at Save keeps it until Close). The two
+  `TASK-AC-C53DC0A896ED` cases in `src/ui/set-logging-sheet.test.tsx` now also assert the decision's
+  "the confirmation shows": the dialog is titled `Set 1 logged` / `Round 1 logged` with the saved
+  result in `role="status"` and no next form, before it closes itself. Names unchanged; nothing
+  weakened. Red when the closing dialog drops its confirmation (a temporary one-line mutation of
+  `set-logger.tsx`, reverted: "Unable to find an accessible element with the role status"), green
+  on the code. "Rest already ended" stays covered by the AC-R020-02 case and the B05 cases.
+- **Required cases** (`evidence/refinement/task-106/required-cases.json`): AC-R016-03 and AC-C45-01
+  removed from check-01's criteria; their 53 cases (still required: this task keeps those
+  behaviours for its own dialogs) mapped to this task's criteria by what they check — corrections
+  and the logger's frame to TASK-AC-8A16F03271D0, the logger's actuals/effort/rest ownership to
+  AC-R020-02, the X/Escape focus return to TASK-AC-C53DC0A896ED, the rest counting inside the open
+  log to AC-C46-01, the draft kept on reopen during rest to TASK-AC-7F2E2420539A. Description
+  updated for round 06. Case names and the command are unchanged.
+- **Test ledger** (`evidence/refinement/task-106/test-ledger.json`): the 5 task-019 and 10 task-041
+  entries are now `deferred` to TASK-120 and TASK-114 (their Round 7 rewrites kept, the groundwork
+  label kept, the round-05 `blockedOnThisCandidate` kept as history); `rules.deferred` and
+  `rules.resolved` record decision 1; the strengthened cases are noted. Summary: 32 deferred,
+  50 rewritten, 130 carried, 1 kept, 21 added, 9 superseded (243 entries).
+- `src/ui/logging-overlay.test.tsx` belongs to TASK-114 (owner decision 3, 2026-11-18); TASK-106
+  runs it whole before TASK-114's cases exist (the owner-confirmed exception) and adds nothing
+  beyond its own eight TASK-016 cases. The task-019/task-041 specs and their evidence folders were
+  not touched in round 06.
+
+Verification (this worktree, final tree, 2026-11-18; `npm ci` first):
+
+- TASK-106 check-01: PASSED, 169 executed, 169 passed, 0 skipped.
+- TASK-020 check-01: PASSED, 19 executed by the name filter (23 outside it), 0 failed.
+- TASK-016 check-01: PASSED, 8/8 (receipt unchanged).
+- Host lock (`v2.mjs with-lock`): TASK-020 check-02 PASSED 3/3; TASK-043 check-01 PASSED 7/7;
+  TASK-106 parity PASSED 16/16 (its first try hit the 120 s lock timeout while TASK-105's checks
+  held the lock, then four more busy waits; environment waiting, no repair). Words and layout
+  unchanged in every parity receipt; three 390 px gallery screenshots changed hash (pixels only).
+  The parity spec writes captures under the round-05 body's store folder
+  (`clear-gallery-adoption-v2-20261116/task-106/captures`, hard-coded, as task-103/104/113 do), so
+  this run replaced round 05's task-106 captures there.
+- `src/ui/circuit-block.test.tsx` (TASK-107's, run for decision 5's circuit rule): 32/32.
+- CI chain (the brief's one command): exit 0 — typecheck pass; lint 0 errors, 175 warnings (as
+  base); lint:ds pass; gen-issues --check pass (71 requirements, 136 edges); gen:types --check
+  current; `npm test` 6,284/6,284 in 268 files (`capture-source-lineage` passed first time); build
+  pass; console grep no match.
+- `verify-delivery-evidence.mjs --mode final --body clear-refinement-20261103 --tasks
+  TASK-106,TASK-020,TASK-043,TASK-016`: PASSED, current passing receipts for all four.
+- No `.skip`, `.only` or `.todo` added against `4e65efb1` (grep of the src and e2e diff: 0).
+- Not run: TASK-019 and TASK-041 check-01 (round 06: TASK-120 and TASK-114); real phones.
 
 ## Repair round 1 (2026-11-16)
 
@@ -260,25 +324,32 @@ Browser checks under the host lock (`v2.mjs with-lock`), receipts written by `ru
   to fail the same way on the base [inferred: not rerun on the base].
 - Not run: real phones; the design-0143 e2e suites (pre-UAT per the groundwork ledger).
 
-## Open assumptions and questions
+## Open
 
-- **Ordering (controller and owner).** TASK-019 and TASK-041 check-01 run every logging moment,
-  including families other A3 tasks wire later (TASK-105 ladder, TASK-107 circuit round, TASK-111
-  rest day, TASK-112/110 Review cards, TASK-114 dialog geometry and rhythm). TASK-106 cannot pass
-  them alone; see "Repair round 1" for each case's blocker.
-- **Movement-note title (owner decision).** Round 7's note dialog is titled "Movement note" and
-  never wraps; task-041 (kept as written) asserts the long note title wraps. Either the note title
-  names the movement again (TASK-109) or the assertion is retired with the owner's reason.
+Settled in round 06 (no longer open):
+
+- **Ordering of TASK-019 and TASK-041 check-01** — settled by owner decision 1 (2026-11-16): both
+  suites are proved at TASK-120 (task-019) and TASK-114 (task-041; TASK-120 reruns it), not here.
+  Their Round 7 rewrites (repair round 1) stay in the tree for those tasks; what the round-05
+  candidate still lacked is in the ledger's `blockedOnThisCandidate` and "Repair round 1" above.
+- **No rest prescribed** — settled by owner decision 5 (2026-11-16) and implemented as decided: with
+  no rest prescribed, a save shows its confirmation and the dialog then closes itself; with a
+  prescribed rest that already ended before Save, the confirmation stays until Close. TASK-107's
+  circuit-block suite already follows this rule (32/32 on this tree).
+- **Movement-note title** — owner decision 4 (2026-11-16) keeps Round 7's fixed "Movement note"
+  title, with the movement's name labelling the note field. The note dialog belongs to TASK-109;
+  TASK-106 does not change it. Per the round-06 plan, TASK-114 and TASK-120 rewrite the carried
+  assertions that expect a wrapping note title, with that owner reason, in their test ledgers.
+
+Still open or assumed:
+
 - **Circuit movement rest.** Restored the build's rule (the entry shows the session's rest; the
   circuit's rest stays on its card); Round 7 had drawn the circuit's rest instead. [inferred: no
   owner decision chose Round 7's version; the inventory lists only the dialog for F4.]
-- **No rest prescribed (owner question).** The brief's TASK-AC-C53DC0A896ED says the dialog closes
-  itself when "rest ended or skipped, or no rest prescribed". The carried TASK-020 rule (check-01's
-  AC-R020-02 case, the B05 case, TASK-107's circuit cases) keeps a confirmation saved with no rest
-  running until Close. Implemented: no rest prescribed (and none running) → confirmed, then closes
-  itself once recorded, focus to the card's control; a rest prescribed but already over at Save →
-  confirmation until Close. The build's circuit-block cases (TASK-107) expect `Set 1 logged` to stay
-  for a circuit movement (no rest of its own); under this reading they need the owner's decision.
+- **Reduced motion and the no-rest confirmation.** The confirmation is drawn through the dialog's
+  exit (200 ms); with reduced motion the shared Dialog closes with a hard cut, so the confirmation
+  is drawn for one commit, as Round 7's own one-tick confirmation did. The card's saved row reads the
+  set back either way. [inferred: not measured in a browser with reduced motion in round 06.]
 - "A refused or queued save keeps the form": read as the shell refusing the set (not in its list).
   A set the network refuses is queued in the list and confirmed with "On this device only" (TASK-020
   check-02's own case name: "a refused write is confirmed only as held on this device").
@@ -293,8 +364,9 @@ Browser checks under the host lock (`v2.mjs with-lock`), receipts written by `ru
 
 ## Next action
 
-Controller: run the brief's commands; diff the gallery-owned files (round 0's list plus
-`src/ui/circuit-block.tsx` and the second `logging-overlay.tsx` change); review the parity receipts
-and the test ledger; decide the ordering of TASK-019/TASK-041 check-01 (they need TASK-105, TASK-107,
-TASK-111, TASK-112/110 and TASK-114 behaviour, listed above); take the no-rest question and the
-note-title question to the owner.
+Controller (round 06): run the brief's commands on this candidate; diff the gallery-owned files by
+hand (unchanged since round 05: `src/ui/logging-overlay.tsx`, `src/ui/set-logging-sheet.tsx`,
+`src/ui/set-logging-sheet-context.ts`, `src/ui/set-logger.tsx`, `src/ui/superset-block.tsx`,
+`src/ui/standard-block.tsx` (comment only) and `src/ui/circuit-block.tsx`); review the parity
+receipts and the test ledger. TASK-114 and TASK-120 take over the task-041 and task-019 rewrites
+already in the tree. No owner question is open for this task.

@@ -1126,6 +1126,12 @@ describe('A3 TASK-106 set logging in the Round 7 dialog: focus return and the di
     await openSheet(user)
     expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+
+    // Owner decision 5 (2026-11-16): the confirmation shows — the saved set
+    // read back, never set 2's form — and then the dialog closes itself.
+    const confirmed = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+    expect(within(confirmed).getByRole('status')).toHaveTextContent('Set 1 · 8 reps')
+    expect(screen.queryByRole('form', { name: 'Log set 2 of back squat' })).toBeNull()
     await waitFor(() => expect(attempts).toHaveLength(1))
 
     // Nothing to wait for: the dialog leaves through its exit and closes.
@@ -1157,6 +1163,12 @@ describe('A3 TASK-106 set logging in the Round 7 dialog: focus return and the di
     const round = within(screen.getByRole('form', { name: 'Log round 1 of bench press and barbell row' }))
     await user.click(within(round.getByRole('group', { name: 'A1 bench press, set 1' })).getByRole('checkbox', { name: 'Performed' }))
     await user.click(round.getByRole('button', { name: 'Log round 1' }))
+
+    // Owner decision 5 (2026-11-16): the round's confirmation shows, naming the
+    // movement logged, never round 2's form — then the dialog closes itself.
+    const confirmed = await screen.findByRole('dialog', { name: 'Round 1 logged' })
+    expect(within(confirmed).getByRole('status')).toHaveTextContent(/bench press/i)
+    expect(screen.queryByRole('form', { name: 'Log round 2 of bench press and barbell row' })).toBeNull()
     await waitFor(() => expect(attempts).toHaveLength(1))
 
     await waitFor(() => expect(openSheets()).toHaveLength(0))

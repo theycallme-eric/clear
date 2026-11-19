@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-106",
-  "description": "A3 task 6 (F4): set logging in Round 7’s dialog (owner decision 1: a centred dialog with Close, rest running inside), with saved read-back and focus return (REQ-020, REQ-016, REQ-019; C45, C46; JOURNEY-020, completion owner). check-01 proves the wiring on the real components and the real /workout route: /workout’s set, extra-set, correction, superset-round and circuit-movement entries are held by Round 7’s LoggingOverlay (src/ui/logging-overlay.tsx) through ExerciseSetLogger, SupersetRoundSheet, SupersetBlock and SetLoggingSheet; useSaveConfirmation (src/ui/set-save-confirmation.ts) confirms an accepted Log set N / Log round N only once the shell’s set list holds it — the saved result read back with its values, effort face and sync badge in role=status, a superset’s each ticked movement under its own name — beside the same running rest, never the next form; a refused save keeps its form; the rest ending (run out or skipped) closes the dialog and resets the confirmation, an early Close ends it, and only a deliberate Rest opens the next entry (AC-037: on the same running rest); an entry with no rest prescribed is confirmed and then closes itself once recorded; Save moves focus to the dialog title; focus returns to the card’s logging control (or a correction’s Edit for its X or Escape) only once the native dialog has closed; the Clear-set confirmation is drawn inside the dialog. The build’s LoggingOverlay cases are rewritten against Round 7’s dialog (TASK-016’s eight; TASK-019 focus kept inside, TASK-041 focus brackets, TASK-045 stale close carried unchanged); TASK-017 and TASK-018 cases are deferred to TASK-114 (see test-ledger.json). parity is the look check: each route this task wires beside its accepted gallery state (bec4454: anchor, other-lift, timed-movement, distance-movement, extra-set, set-correction, superset, circuit-movement) with matched data at 320 and 390 px — the card, the opened dialog and, for anchor and superset, the saved confirmation — compared in words and in layout (every element’s box within 2 px, each card’s top scrolled into view first); every visible difference must be labelled with the criterion that intends it; receipts in evidence/refinement/task-106/parity/, captures in the evidence store. The route journeys are e2e/refinement/task-020.spec.ts (TASK-020 check-02) and task-043.spec.ts (TASK-043 check-01), rewritten for Round 7 and run under their own manifests.",
+  "description": "A3 task 6 (F4): set logging in Round 7’s dialog (owner decision 1: a centred dialog with Close, rest running inside), with saved read-back and focus return (REQ-020; C46; JOURNEY-020, completion owner). check-01 proves the wiring on the real components and the real /workout route: /workout’s set, extra-set, correction, superset-round and circuit-movement entries are held by Round 7’s LoggingOverlay (src/ui/logging-overlay.tsx) through ExerciseSetLogger, SupersetRoundSheet, SupersetBlock and SetLoggingSheet; useSaveConfirmation (src/ui/set-save-confirmation.ts) confirms an accepted Log set N / Log round N only once the shell’s set list holds it — the saved result read back with its values, effort face and sync badge in role=status, a superset’s each ticked movement under its own name — beside the same running rest, never the next form; a refused save keeps its form; the rest ending (run out or skipped) closes the dialog and resets the confirmation, an early Close ends it, and only a deliberate Rest opens the next entry (AC-037: on the same running rest); an entry with no rest prescribed is confirmed and then closes itself once recorded; Save moves focus to the dialog title; focus returns to the card’s logging control (or a correction’s Edit for its X or Escape) only once the native dialog has closed; the Clear-set confirmation is drawn inside the dialog. The build’s LoggingOverlay cases are rewritten against Round 7’s dialog (TASK-016’s eight; TASK-019 focus kept inside, TASK-041 focus brackets, TASK-045 stale close carried unchanged); TASK-017 and TASK-018 cases are deferred to TASK-114 (see test-ledger.json). parity is the look check: each route this task wires beside its accepted gallery state (bec4454: anchor, other-lift, timed-movement, distance-movement, extra-set, set-correction, superset, circuit-movement) with matched data at 320 and 390 px — the card, the opened dialog and, for anchor and superset, the saved confirmation — compared in words and in layout (every element’s box within 2 px, each card’s top scrolled into view first); every visible difference must be labelled with the criterion that intends it; receipts in evidence/refinement/task-106/parity/, captures in the evidence store. The route journeys are e2e/refinement/task-020.spec.ts (TASK-020 check-02) and task-043.spec.ts (TASK-043 check-01), rewritten for Round 7 and run under their own manifests. Round 06 (A3, body clear-gallery-adoption-v2-20261118; owner decisions 2026-11-16, “Accept all five”): REQ-016 and REQ-019 (AC-R016-03, AC-C45-01, JOURNEY-016, JOURNEY-019) and the task-041 and task-019 suites are proved at TASK-114 and TASK-120, not here; this task keeps those behaviours for its own dialogs, so the carried cases that check them stay required in check-01 under this task’s own criteria (decision 1). Decision 5: with no rest prescribed, a save shows its confirmation and the dialog then closes itself; with a prescribed rest that already ended before Save, the confirmation stays until Close. src/ui/logging-overlay.test.tsx belongs to TASK-114 (owner decision 3, 2026-11-18); TASK-106 runs it whole because TASK-114’s cases do not exist yet, and adds only its own (TASK-016’s eight).",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -11,8 +11,6 @@
         "AC-C46-01",
         "AC-R020-01",
         "AC-R020-02",
-        "AC-R016-03",
-        "AC-C45-01",
         "TASK-AC-8A16F03271D0",
         "TASK-AC-20C6E9E8B952",
         "TASK-AC-A7CEAC5DC9DB",
@@ -63,12 +61,12 @@
         {
           "file": "src/ui/logging-overlay.test.tsx",
           "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
-          "criterion": "AC-R016-03"
+          "criterion": "TASK-AC-C53DC0A896ED"
         },
         {
           "file": "src/ui/logging-overlay.test.tsx",
           "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
-          "criterion": "AC-R016-03"
+          "criterion": "AC-C46-01"
         },
         {
           "file": "src/ui/logging-overlay.test.tsx",
@@ -348,12 +346,12 @@
         {
           "file": "src/app/sheet-minimize-access.test.tsx",
           "name": "A minimised draft survives, and hiding the sheet does not pause rest (AC-038) > hands back the unsaved entry on reopen while the rest keeps counting",
-          "criterion": "AC-R016-03"
+          "criterion": "TASK-AC-7F2E2420539A"
         },
         {
           "file": "src/app/sheet-minimize-access.test.tsx",
           "name": "A minimised draft survives, and hiding the sheet does not pause rest (AC-038) > hands back an unsaved correction on reopen through the saved row",
-          "criterion": "AC-R016-03"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/app/sheet-minimize-access.test.tsx",
@@ -503,57 +501,57 @@
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-046: Edit reopens the selected actual result > preserves its movement, set number, values, unit and effort in the shared sheet",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-047: Save correction updates the intended observation; Cancel leaves it > writes the correction to the same row, and only after confirmation calls it saved",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-047: Save correction updates the intended observation; Cancel leaves it > leaves the stored result exactly as it was on Cancel",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-047: Save correction updates the intended observation; Cancel leaves it > shows a refused correction as on this device only, never as saved",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-049: clear the mistaken result after confirmation, then re-enter it > keeps the observation when the confirmation is canceled",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-049: clear the mistaken result after confirmation, then re-enter it > clears only the selected result, moves nothing, and lets the right movement log it explicitly",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-049: clear the mistaken result after confirmation, then re-enter it > keeps ordinary numeric editing beside the clear, and offers no move-to-target flow",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-048: corrections exist only in the current workout, with concise controls > keeps each logged row to its result, status and one Edit — no Remove mistaken entry",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-048: corrections exist only in the current workout, with concise controls > draws no Edit where the shell does not offer corrections",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-048: corrections exist only in the current workout, with concise controls > is offered by the active workout alone; no history editor or restored prose exists",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-correction.test.tsx",
           "name": "AC-048: corrections exist only in the current workout, with concise controls > offers Edit on the workout screen itself, writing through the shell",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/superset-block.test.tsx",
@@ -688,192 +686,192 @@
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the logger is drawn with the shared frame, and frames nothing itself > draws no card of its own around the movement, its readout or its form",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the logger is drawn with the shared frame, and frames nothing itself > leaves the block’s card the only card, with the coaching panel a ruled group",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the logger is drawn with the shared frame, and frames nothing itself > names the movement in a real heading and the prescription from its columns",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the logger is drawn with the shared frame, and frames nothing itself > prefixes the ordinal a structure gives the movement",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the logger is drawn with the shared frame, and frames nothing itself > sets its two numeric fields and unit choice in one compact row, each a current element frame",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the logger is drawn with the shared frame, and frames nothing itself > asks effort only as three optional choices, never a number, and offers no warmup checkbox",
-          "criterion": "AC-C45-01"
+          "criterion": "TASK-AC-8A16F03271D0"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "rest is stated by whoever owns it > states the movement’s own rest by default",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "rest is stated by whoever owns it > states none where the block owns the rest",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "rest is stated by whoever owns it > never renders a zero rest as a rest",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the readout of sets already recorded > draws no list and no placeholder sentence before a set is logged; the counter says it",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the readout of sets already recorded > lists the sets lowest first, whatever order they arrived in",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the readout of sets already recorded > says where a logged set has got to in words, with a glyph",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the readout of sets already recorded > says where a syncing set has got to in words, with a glyph",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the readout of sets already recorded > says where a failed set has got to in words, with a glyph",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "the readout of sets already recorded > prints a zero as a result and leaves an unrecorded field unsaid",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > offers set one of an untouched movement, counted beside its heading",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > offers the lowest set not yet recorded",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > offers an extra set once every prescribed set is recorded",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > prefills the next set’s weight from the last one performed, and its reps from the prescription",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > falls back to the last set performed where the prescription states no number",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > suggests the prescribed reps as an editable value, never as a recorded one",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "set progression > keeps a prefilled blank blank rather than turning it into a zero",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > freezes the displayed unit after typing when the profile refreshes",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > can follow a loaded profile unit while the form is still untouched",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > keeps a kg profile from relabelling an observed lb weight",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > keeps a lb profile from relabelling an observed kg weight",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > uses the profile unit for a reference with no observed weight",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > explicitly relabels rather than converting entered weight, including clears",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > logs the set against this prescription, with only what was entered",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > logs a cleared set without blocking, recording nothing it was not told",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > logs a partial set with only the field that was entered",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > takes an edited prefill, and a cleared one as not recorded",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > writes a timed prescription’s measure to its own column, asked for in Seconds",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > keeps every field as typed after the set is handed over",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger hands the shell > asks for a unit rather than assuming one when the profile’s is unread",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger refuses to hand over > holds the control busy and disabled while a set is in flight",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger refuses to hand over > refuses a negative weight, and says why at the field",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         },
         {
           "file": "src/ui/set-logger.test.tsx",
           "name": "what the logger refuses to hand over > accepts a zero, because a failed attempt is a result",
-          "criterion": "AC-C45-01"
+          "criterion": "AC-R020-02"
         }
       ]
     },
