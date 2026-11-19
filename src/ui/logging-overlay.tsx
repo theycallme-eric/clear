@@ -23,6 +23,16 @@
  *     better, such as a correction's Edit, takes focus there), and focus left
  *     stranded on the page or in the closed dialog then goes to the opener.
  *     Nothing is focused while the workout behind is still inert.
+ *   · **…as it closes, never later.** The browser closes the dialog at once
+ *     (it leaves the top layer, the workout stops being inert, focus goes back
+ *     to the opener) but reports it with a queued `close` event. A close the
+ *     consumer asked for is therefore finished when the dialog's `open`
+ *     attribute goes, in the same task, so nothing the athlete does next —
+ *     Tab to Edit, then Enter — can come before it and be overridden by it
+ *     (A3 TASK-106 repair: the late return took focus off Edit, so Enter
+ *     opened the next set). Each close is finished once; the queued event
+ *     then finds nothing owed. A close the consumer did not ask for still
+ *     waits for the event, which reports the dismissal first.
  *   · **Focus is never stranded inside it** (TASK-019). When the focused
  *     control goes away under the reader while the log is open, focus moves
  *     to the dialog's title, a programmatic target outside the Tab order.
@@ -81,12 +91,17 @@ export function LoggingOverlay({ open, title, onClose, onAfterClose, children, v
   /**
    * Runs once the native dialog has closed and the workout behind it is no
    * longer inert — the consumer's moment to return focus where it belongs.
+   * Once per close, in the task that closed it when the consumer asked for it.
    */
   onAfterClose?: () => void
   variant?: 'dialog' | 'sheet'; backdrop?: 'balanced' | 'dark' | 'soft'; closeDisabled?: boolean
 }) {
   const host = useRef<HTMLDivElement>(null)
   const opener = useRef<HTMLElement | null>(null)
+  // The consumer's `open`, as last committed: false once it asked to close.
+  const wanted = useRef(open)
+  // The after-close work this opening owes: owed when it opens, done once.
+  const owed = useRef(false)
   const titleId = useId()
   const presentation = useWorkoutExperiencePresentation()
   const appearance = variant ?? presentation?.loggingOverlay ?? 'dialog'
@@ -95,8 +110,12 @@ export function LoggingOverlay({ open, title, onClose, onAfterClose, children, v
   // Before the dialog opens (layout effects run ahead of the dialog's own
   // `showModal`), remember the control that opened it.
   useLayoutEffect(() => {
+    wanted.current = open
     const dialog = dialogOf()
-    if (open && dialog !== null && !dialog.open) opener.current = openerOf(dialog)
+    if (open && dialog !== null && !dialog.open) {
+      opener.current = openerOf(dialog)
+      owed.current = true
+    }
   }, [open])
 
   // Once it is open, its focus belongs to a control: the X, unless focus is
@@ -152,12 +171,28 @@ export function LoggingOverlay({ open, title, onClose, onAfterClose, children, v
 
   const afterClose = useCallback(() => {
     const dialog = dialogOf()
-    if (dialog?.open) return
+    if (dialog?.open || !owed.current) return
+    owed.current = false
     onAfterClose?.()
     const target = opener.current
     opener.current = null
     if (dialog !== null && stranded(dialog) && target?.isConnected) target.focus()
   }, [onAfterClose])
+
+  // A3 TASK-106 repair: a close the consumer asked for is finished as the
+  // native dialog closes (its `open` attribute goes, observed in the same
+  // task), not when the browser's queued `close` event arrives later.
+  const finish = useRef(afterClose)
+  useLayoutEffect(() => { finish.current = afterClose }, [afterClose])
+  useLayoutEffect(() => {
+    const dialog = host.current?.querySelector('dialog')
+    if (dialog == null) return
+    const observer = new MutationObserver(() => {
+      if (!dialog.open && !wanted.current) finish.current()
+    })
+    observer.observe(dialog, { attributes: true, attributeFilter: ['open'] })
+    return () => observer.disconnect()
+  }, [])
 
   return <div ref={host} style={{ display: 'contents' }}>
     <AppDialog open={open} onClose={reportClose} onAfterClose={afterClose} aria-label={title}

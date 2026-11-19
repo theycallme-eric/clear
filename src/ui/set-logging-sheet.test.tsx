@@ -1259,4 +1259,100 @@ describe('A3 TASK-106 set logging in the Round 7 dialog: focus return and the di
       spy.mockRestore()
     }
   })
+
+  it('TASK-AC-C53DC0A896ED an Edit made while the log’s close is still being reported opens Edit set N: the late close event neither takes focus off Edit nor opens the next set (keyboard, reduced motion)', { timeout: 20_000 }, async () => {
+    // Chromium closes a dialog at once — it leaves the top layer, the workout
+    // behind stops being inert and focus goes back to the control that opened
+    // it — but reports the close later, with a queued `close` event. A reader
+    // fast enough (or a phone busy enough) reaches Edit set 1 in between:
+    // task-043's keyboard correction case after the rebase on 497863a3, where
+    // the late event moved focus to Rest and Enter opened Log set 2. The
+    // browser's order is reproduced here: the shim's close hands focus back to
+    // the control focused at showModal and holds its event until delivered.
+    const reportable: HTMLDialogElement[] = []
+    const openedFrom = new Map<HTMLDialogElement, Element | null>()
+    const showModal = HTMLDialogElement.prototype.showModal
+    const opening = vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (this: HTMLDialogElement) {
+      openedFrom.set(this, document.activeElement)
+      showModal.call(this)
+    })
+    const closing = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (this: HTMLDialogElement) {
+      if (!this.open) return
+      this.open = false
+      const back = openedFrom.get(this)
+      if (back instanceof HTMLElement && back.isConnected) back.focus()
+      reportable.push(this)
+    })
+    /** The browser's queued `close` events, delivered now. */
+    const reportCloses = () => act(() => {
+      for (const dialog of reportable.splice(0)) dialog.dispatchEvent(new Event('close'))
+    })
+    // task-043's case runs under reduced motion: the dialog closes with no exit.
+    const media = window.matchMedia
+    const reduced = vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      ...media(query), matches: query.includes('prefers-reduced-motion: reduce'),
+    }))
+    try {
+      const user = userEvent.setup()
+      const clock = wallClock()
+      const { attempts } = mount({ corrections: true, now: clock.now, prescription: { rest_seconds: 60 } })
+      const rest = main().getByRole('button', { name: 'Rest' })
+
+      // Set 1 by keyboard, confirmed beside its running rest.
+      rest.focus()
+      await user.keyboard('{Enter}')
+      await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+      const first = await screen.findByRole('dialog', { name: 'Set 1 logged' })
+      await waitFor(() => expect(attempts).toHaveLength(1))
+      const edit = await main().findByRole('button', { name: 'Edit set 1' })
+
+      // Escape: closed at once, focus back on Rest; its close event is queued.
+      await act(async () => {
+        first.dispatchEvent(new Event('cancel', { cancelable: true }))
+      })
+      expect(screen.queryByRole('dialog', { name: 'Set 1 logged' })).toBeNull()
+      expect(rest).toHaveFocus()
+
+      // 1. Edit is focused before the close is reported, and pressed after it.
+      edit.focus()
+      reportCloses()
+      expect(edit).toHaveFocus()
+      await user.keyboard('{Enter}')
+      const correction = screen.getByRole('dialog', { name: 'Edit set 1' })
+      expect(within(correction).getByRole('form', { name: 'Edit set 1 of back squat' })).toBeInTheDocument()
+      expect(screen.queryByRole('dialog', { name: 'Log set 2' })).toBeNull()
+
+      // Close log: focus returns to Edit, and stays there once reported.
+      await user.click(within(correction).getByRole('button', CLOSE_LOG))
+      expect(screen.queryAllByRole('dialog')).toHaveLength(0)
+      expect(edit).toHaveFocus()
+      reportCloses()
+      expect(edit).toHaveFocus()
+
+      // Set 2, on the same rest, confirmed; then Escape again.
+      await user.click(rest)
+      await user.click(form(2).getByRole('button', { name: 'Log set 2' }))
+      const second = await screen.findByRole('dialog', { name: 'Set 2 logged' })
+      await waitFor(() => expect(attempts).toHaveLength(2))
+      await act(async () => {
+        second.dispatchEvent(new Event('cancel', { cancelable: true }))
+      })
+      expect(screen.queryByRole('dialog', { name: 'Set 2 logged' })).toBeNull()
+
+      // 2. Edit is pressed before the close is reported: the late event is
+      // not a close of the correction it opened.
+      main().getByRole('button', { name: 'Edit set 1' }).focus()
+      await user.keyboard('{Enter}')
+      reportCloses()
+      const reopened = screen.getByRole('dialog', { name: 'Edit set 1' })
+      expect(reopened).toContainElement(document.activeElement as HTMLElement)
+      expect(within(reopened).getByRole('form', { name: 'Edit set 1 of back squat' })).toBeInTheDocument()
+      expect(screen.queryByRole('dialog', { name: 'Log set 3' })).toBeNull()
+      expect(attempts).toHaveLength(2)
+    } finally {
+      reduced.mockRestore()
+      closing.mockRestore()
+      opening.mockRestore()
+    }
+  })
 })

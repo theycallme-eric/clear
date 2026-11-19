@@ -18,7 +18,10 @@ round-05 branch (`d75bd1ff`) was fast-forwarded into this worktree and checked a
 brief. Round 06 moved the task-019 and task-041 suites (and AC-C45-01, AC-R016-03) to TASK-120 and
 TASK-114, and settled the no-rest question (owner decision 5, 2026-11-16). No product code changed in
 round 06; see "Round 06". Repair round 1 (2026-11-19) made the parity captures reproducible run to run
-(V2's second-run check); see "Round 06 repair round 1". The history below is round 05's (body
+(V2's second-run check); see "Round 06 repair round 1". The independent review then accepted the
+candidate (`6ce8ff54`); after TASK-105 landed, V2 rebased it onto `497863a3` and TASK-043 check-01
+failed once there. Repair round 2 (2026-11-19) fixed the product race behind it in
+`src/ui/logging-overlay.tsx`; see "Round 06 repair round 2". The history below is round 05's (body
 `clear-gallery-adoption-v2-20261116`).
 
 Attempt 1 (2026-11-16) implemented and committed on the worker branch (`2794e3dd`). Controller
@@ -112,7 +115,8 @@ Tests and specs:
 Gallery-owned files changed (for the controller's hand diff): `src/ui/logging-overlay.tsx`,
 `src/ui/set-logging-sheet.tsx`, `src/ui/set-logging-sheet-context.ts`, `src/ui/set-logger.tsx`,
 `src/ui/superset-block.tsx`, `src/ui/standard-block.tsx` (comment); repair round 1 adds
-`src/ui/circuit-block.tsx` and a second change to `src/ui/logging-overlay.tsx`. All are named by the objective
+`src/ui/circuit-block.tsx` and a second change to `src/ui/logging-overlay.tsx`; round 06 repair round 2 a
+third change to `src/ui/logging-overlay.tsx` (when the after-close work runs; no look change). All are named by the objective
 (TASK-AC-8A16F03271D0, TASK-AC-20C6E9E8B952, TASK-AC-A7CEAC5DC9DB, TASK-AC-C53DC0A896ED). No CSS
 changed. The parity check found zero unlabelled text or layout differences on the eight states.
 
@@ -142,6 +146,75 @@ through `LoggingOverlay.onAfterClose`.
   and then flagged the gallery's sample section label and load; the clock is now stepped until the
   driver has pressed, both sides read 500 ms later, and the sample words are labelled
   (TASK-AC-EFB0DB480A73) and read as one name in the layout keys so every element is still compared.
+
+## Round 06 repair round 2 (2026-11-19): a late close event no longer overrides the next request
+
+Input: V2's re-verification after the rebase onto `497863a3` (HEAD `2f45b7b1`;
+`logs/TASK-106-a1-r1-…-verify.log`). TASK-043 check-01 failed one case, "JOURNEY-019 saved-set correction
+and retry phone-390 keyboard reduced motion", and passed it on Playwright's retry; it had passed in both
+earlier verifications. After Escape closed "Set 1 logged" (rest running), `edit.focus()` and Enter were
+expected to open "Edit set 1"; the open dialog was "Log set 2", with the card's Rest `[expanded]`.
+
+Cause (product, this task's own focus return; not the spec, not TASK-105). Chromium closes a dialog at
+once: it leaves the top layer, the workout stops being inert and focus goes back to the control focused at
+`showModal` (Rest). It reports the close later, with a queued `close` event. `LoggingOverlay` ran its
+after-close work only from that event (`src/ui/logging-overlay.tsx`, `afterClose` via `AppDialog`'s
+`close` listener, `src/ui/app-dialog.tsx:38-42`). For the logger that is `afterDialogClose`
+(`src/ui/set-logger.tsx:321-327`), which applies the pending focus return set by `collapse()` and moves
+focus to Rest (`returnFocusNow`, line 307). The trace showed Escape done at 8291.5 ms, `edit.focus()` at
+8301.0 ms and Enter at 8306.9 ms, all inside one frame. When the queued event landed between the focus and
+the Enter, it took focus off Edit and Enter pressed Rest, so `openNew` opened Log set 2 on the running rest.
+The window is one frame, so whether it is hit depends on machine load. `src/ui/superset-block.tsx`
+(`afterDialogClose`, line 156) has the same pattern. TASK-105's `set-effort.tsx` change (prop types and a
+`disabled` face) has no part in it.
+
+Fix (`src/ui/logging-overlay.tsx`, gallery-owned; behaviour only, no markup, CSS or look change): a close
+the consumer asked for (its `open` already false) is finished as the native dialog closes. A
+`MutationObserver` sees the dialog's `open` attribute go and runs `afterClose` in the same task, before any
+later input. Each opening owes one after-close (`owed`, set when it opens), so the queued `close` event then
+finds nothing to do; a reopened dialog still ignores it (TASK-045). A close the consumer did not ask for
+still waits for the event, which reports the dismissal (`onClose`) before `onAfterClose`, as before. The
+TASK-043 spec, its assertions and its timing are unchanged.
+
+New test (red before green): `src/ui/set-logging-sheet.test.tsx` "A3 TASK-106 … > TASK-AC-C53DC0A896ED an
+Edit made while the log's close is still being reported opens Edit set N: the late close event neither
+takes focus off Edit nor opens the next set (keyboard, reduced motion)". It reproduces the browser's order
+in jsdom: `close()` hands focus back to the control focused at `showModal` and holds its `close` event until
+the test delivers it, under reduced motion with the rest running. It covers both moments: Edit focused
+before the event and pressed after it (the browser failure), and Edit pressed before it. On the unfixed
+overlay it fails at "focus on Edit after the late event" (focus was on Rest). A temporary copy without that
+assertion ended with "Log set 2" open (deleted). It passes with the fix. Recorded in `required-cases.json`
+(check-01, TASK-AC-C53DC0A896ED; 169 required) and `test-ledger.json` (added; summary 22 added).
+
+Verification (this worktree, 2026-11-19):
+
+- TASK-106 check-01 (`run-required-check`): PASSED, 170 executed, 170 passed, 0 skipped (receipt
+  rewritten). It runs the whole of `set-logging-sheet.test.tsx` and `logging-overlay.test.tsx`, so every
+  TASK-020 check-01 and TASK-016 check-01 case passed in it.
+- Host lock (`v2.mjs with-lock`), the failing case `--repeat-each=15` (retries 0 locally, 7 workers):
+  **15/15 passed** on the fix. Baseline: the same command on the unfixed overlay also passed 15/15, so at
+  this machine load the repeat run alone does not show the race.
+- Deterministic browser probe (host lock; a temporary copy of `task-043.spec.ts`, deleted with its
+  results): a capture listener on each dialog held Chromium's own `close` event across Escape and released
+  it after `edit.focus()`, with the rest of the case unchanged. Unfixed overlay: 5/5 failed exactly as the
+  verify did ("Edit set 1" not found; "Log set 2" open; Rest `[expanded]`). Fix: 5/5 passed, each with one
+  held event delivered. A first probe version held the event at `window`. On the fix it saw no event: the
+  dialog had already been removed when the event fired, and a detached element's event never passes
+  through `window`. It was moved onto the element.
+- Whole `task-043.spec.ts` under the lock (plain, no receipt): 7/7 passed.
+- `npm run typecheck` pass; `npm run lint` 0 errors, 175 warnings (as base); `npm run lint:ds` pass;
+  `gen-issues --check` pass (71 requirements, 136 edges); `gen:types --check` current; `npm test`
+  6,310/6,310 in 269 files; `npm run build` pass; console grep no match.
+- `verify-delivery-evidence.mjs --mode final --body clear-refinement-20261103 --tasks TASK-106`: check-01
+  current; **parity reported stale** ("required-case manifest changed after the run"). The parity receipt
+  binds the SHA-256 of the whole `required-cases.json`, which this round changed by adding a check-01
+  case. No parity case or capture changed; parity was not run (controller's rule).
+- Not run: TASK-020 check-01 and TASK-016 check-01 through `run-required-check` (receipts in those tasks'
+  folders), and `task-020.spec.ts` (TASK-020 check-02) in the browser. The tool's permission check
+  blocked both under the controller's "other tasks' checks" rule. The two unit checks' cases ran inside
+  TASK-106 check-01; the browser spec did not run on this candidate.
+- `evidence/refinement/task-043/results/check-01.json` holds V2's REJECTED receipt from the failed
+  verify; left uncommitted for the controller.
 
 ## Round 06 repair round 1 (2026-11-19): parity captures made reproducible
 
@@ -410,6 +483,11 @@ Settled in round 06 (no longer open):
 
 Still open or assumed:
 
+- **The late close event on other engines (repair round 2).** The fix watches the dialog's `open`
+  attribute, which every engine removes inside `close()`, so it does not depend on when an engine sends
+  its `close` event. Exercised only in jsdom (with the browser's order reproduced) and Chromium; WebKit
+  and real phones were not run [inferred: same result].
+
 - **Circuit movement rest.** Restored the build's rule (the entry shows the session's rest; the
   circuit's rest stays on its card); Round 7 had drawn the circuit's rest instead. [inferred: no
   owner decision chose Round 7's version; the inventory lists only the dialog for F4.]
@@ -431,10 +509,14 @@ Still open or assumed:
 
 ## Next action
 
-Controller (round 06, after repair round 1): rerun `V2 verify`; the parity receipts and captures now
-come out byte-identical on a second run (proof in "Round 06 repair round 1"). Then, as before: run the
+Controller (round 06, after repair round 2): rerun `V2 verify` on this candidate. Its TASK-106 parity run
+rewrites the parity receipt, which is stale only because `required-cases.json` gained the check-01
+regression case (no parity case changed). It also rewrites TASK-020/TASK-016/TASK-043 receipts and runs
+`task-020.spec.ts`, which was not run on this candidate here (see "Round 06 repair round 2"). Review the
+third `src/ui/logging-overlay.tsx` change by hand. Repair round 1's note still holds: the parity receipts and
+captures come out byte-identical on a second run. Then, as before: run the
 brief's commands on this candidate; diff the gallery-owned files by
-hand (unchanged since round 05: `src/ui/logging-overlay.tsx`, `src/ui/set-logging-sheet.tsx`,
+hand (unchanged since round 05 apart from the overlay: `src/ui/logging-overlay.tsx`, `src/ui/set-logging-sheet.tsx`,
 `src/ui/set-logging-sheet-context.ts`, `src/ui/set-logger.tsx`, `src/ui/superset-block.tsx`,
 `src/ui/standard-block.tsx` (comment only) and `src/ui/circuit-block.tsx`); review the parity
 receipts and the test ledger. TASK-114 and TASK-120 take over the task-041 and task-019 rewrites

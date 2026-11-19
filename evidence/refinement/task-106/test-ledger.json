@@ -54,7 +54,7 @@
     "rewritten": 50,
     "carried": 130,
     "kept": 1,
-    "added": 21,
+    "added": 22,
     "superseded": 9
   },
   "entries": [
@@ -577,6 +577,13 @@
       "ledger": "new (repair round 1)",
       "disposition": "added",
       "note": "Red before green: fails on round 0’s LoggingOverlay (focus left on the scroller), passes with the fix. Found by task-019’s keyboard case at 320 px. In TASK-106 check-01."
+    },
+    {
+      "file": "src/ui/set-logging-sheet.test.tsx",
+      "test": "A3 TASK-106 set logging in the Round 7 dialog: focus return and the dialog closing itself > TASK-AC-C53DC0A896ED an Edit made while the log’s close is still being reported opens Edit set N: the late close event neither takes focus off Edit nor opens the next set (keyboard, reduced motion)",
+      "ledger": "new (round 06 repair round 2)",
+      "disposition": "added",
+      "note": "TASK-106’s own regression case for TASK-AC-C53DC0A896ED (Close log’s focus return). Found by TASK-043 check-01 after the rebase on 497863a3 (JOURNEY-019 saved-set correction, phone-390, keyboard, reduced motion; failed once, passed on retry): Chromium closes the dialog at once but reports it with a queued close event; when that event came after Edit set 1 had focus, the logger’s pending focus return moved focus to Rest and Enter opened Log set 2. The case reproduces the browser’s order (close() hands focus back and holds its event until delivered) for both moments: Edit focused before the event and pressed after it, and Edit pressed before it. Red before green: fails on the round-06 LoggingOverlay (focus on Rest after the late event), passes with the fix in src/ui/logging-overlay.tsx. In TASK-106 check-01."
     },
     {
       "file": "src/ui/set-logging-sheet.test.tsx",
