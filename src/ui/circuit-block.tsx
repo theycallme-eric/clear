@@ -41,8 +41,33 @@
  * card, the identity row and the single completion are `BlockPanel`'s, the
  * movements are rows of its list, and the rest countdown goes to its `timer`
  * slot — `TimerDisplay` is already a card, and is never put inside another.
+ *
+ * A3 TASK-107 (REQ-021; C48, G13; R18; JOURNEY-021) — the recorded round in
+ * Round 7's dialog (`LoggingOverlay`, the presentation's logging dialog;
+ * gallery state `circuit-round`), wired to this one circuit controller in
+ * place of Round 7's in-memory round clock:
+ *
+ *   · **Finish round N opens `Round N recorded`.** Round 7's dialog: the title
+ *     and its icon-only Close log X, then the round time read back from the
+ *     stored history (`circuit.state.history`; a round whose clock never ran
+ *     says only that it was recorded), the circuit's own rest between rounds
+ *     at the dialog's full width, and Take back this round.
+ *   · **One controller, one clock.** The dialog holds no clock and no record:
+ *     its rest is `circuit.ts`'s rest, read from the same stamp and drawn in
+ *     the dialog instead of beside the card while the dialog holds it (one
+ *     clock, drawn once); Take back this round is `takeBackRound`, the card's
+ *     Take back a round, and the round re-opened resumes its own clock.
+ *   · **The rest decides how long it stays.** A round recorded into a rest
+ *     closes when that rest ends — run out, or ended from the card's Start
+ *     round — and records nothing more. With no rest to run (none prescribed,
+ *     or the last round) the confirmation shows and the dialog then closes
+ *     itself (owner decision 5, 2026-11-16). The X and Escape close it without
+ *     changing anything; the rest goes on, back on the card.
+ *   · **Focus returns to the round clock's control** once the dialog has
+ *     closed, however it closed. Not persisted: a reload comes back to the
+ *     card, never to the dialog.
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { LoggingOverlay } from './logging-overlay'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
@@ -116,13 +141,54 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   const resting = shape.size > 0 && view.phase === 'rest'
   const urgent = resting && view.restRemaining <= 10
 
+  // A3 TASK-107: the round Finish round just recorded, while its dialog shows
+  // it (open, or leaving through its exit). Only under the presentation's
+  // logging dialog, as Round 7 had it; never persisted.
+  const confirms = useWorkoutExperiencePresentation()?.loggingOverlay !== undefined
+  const [recorded, setRecorded] = useState<RecordedRound | null>(null)
+  const recordedOpen =
+    recorded !== null &&
+    !recorded.closed &&
+    // Taken back: there is nothing to confirm.
+    view.roundsCompleted >= recorded.round &&
+    // Recorded into a rest: the dialog lasts as long as that rest.
+    (!recorded.rested || resting)
+  // The round time, read back from the stored history.
+  const recordedTiming =
+    recorded === null
+      ? undefined
+      : [...(circuit.state.history ?? [])].reverse().find((timing) => timing.round === recorded.round)
+
+  // Owner decision 5 (2026-11-16): with no rest to run, the confirmation shows
+  // and the dialog then closes itself, on the frame after it opened.
+  useEffect(() => {
+    if (recorded === null || recorded.rested || recorded.closed) return
+    const frame = requestAnimationFrame(() => {
+      setRecorded((current) => (current === recorded ? { ...current, closed: true } : current))
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [recorded])
+
+  // Focus returns to the round clock's own control once the dialog has closed.
+  const roundClockGroup = useRef<HTMLDivElement>(null)
+
+  const finish = () => {
+    const next = finishRound(circuit.state, shape, now())
+    if (next === circuit.state) return
+    circuit.advanceTo(next)
+    if (confirms) setRecorded({ round: view.round, rested: next.restStartedAt !== null, closed: false })
+  }
+  const takeBack = () => circuit.advanceTo(takeBackRound(circuit.state, shape))
+
   return (
     <BlockPanel
       block={block}
       // The round boundary's one countdown: the shipped `TimerDisplay`, a real
-      // deadline with urgency in its last seconds, beside the card.
+      // deadline with urgency in its last seconds, beside the card. While the
+      // recorded round's dialog holds this same rest (A3 TASK-107), the card
+      // does not draw it a second time.
       timer={
-        resting ? (
+        resting && recorded === null ? (
           <div
             style={{ display: 'flex', flexDirection: 'column' }}
             data-urgent={urgent ? 'true' : 'false'}
@@ -149,15 +215,32 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
             the work below scrolls without taking the clock with it.
           */}
           <RoundRecord
+            groupRef={roundClockGroup}
             view={view}
             roundClock={roundClock}
             onStartRound={() => circuit.advanceTo(startRound(circuit.state, shape, now()))}
-            onFinishRound={() =>
-              circuit.advanceTo(finishRound(circuit.state, shape, now()))
-            }
+            onFinishRound={finish}
             onEndRest={() => circuit.advanceTo(endRest(circuit.state, shape, now()))}
-            onTakeBack={() => circuit.advanceTo(takeBackRound(circuit.state, shape))}
+            onTakeBack={takeBack}
           />
+
+          {/* Drawn in place (Round 7), beside the round clock rather than in
+              its group, so the group's one status stays the rounds recorded. */}
+          {confirms && (
+            <RecordedRoundLog
+              open={recordedOpen}
+              recorded={recorded}
+              fallbackRound={view.round}
+              timing={recordedTiming}
+              view={view}
+              onClose={() => setRecorded((current) => (current === null ? null : { ...current, closed: true }))}
+              onAfterClose={() => {
+                setRecorded(null)
+                returnFocusToRoundClock(roundClockGroup.current)
+              }}
+              onTakeBack={takeBack}
+            />
+          )}
 
           <RoundHistory history={circuit.state.history ?? []} />
 
@@ -213,6 +296,7 @@ function roundsRecordedText(view: CircuitView): string {
  * controls, kept apart from each movement's own optional logging.
  */
 function RoundRecord({
+  groupRef,
   view,
   roundClock,
   onStartRound,
@@ -220,6 +304,8 @@ function RoundRecord({
   onEndRest,
   onTakeBack,
 }: {
+  /** The group, so focus can come back to its control (A3 TASK-107). */
+  groupRef: RefObject<HTMLDivElement | null>
   view: CircuitView
   /** The running round's elapsed seconds; null when no round clock runs. */
   roundClock: number | null
@@ -228,10 +314,9 @@ function RoundRecord({
   onEndRest: () => void
   onTakeBack: () => void
 }) {
-  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
-  const [recorded, setRecorded] = useState<{round:number; seconds:number|null}|null>(null)
   return (
     <div
+      ref={groupRef}
       role="group"
       aria-label="Round clock"
       className="clr-stack--tight"
@@ -257,7 +342,7 @@ function RoundRecord({
       {view.phase === 'work' && roundClock !== null && (
         <>
           <RoundElapsed round={view.round} seconds={roundClock} />
-          <Button variant="secondary" size="lg" icon={<Check />} onClick={() => { if (proposal) setRecorded({round:view.round,seconds:roundClock}); onFinishRound() }}>
+          <Button variant="secondary" size="lg" icon={<Check />} onClick={onFinishRound}>
             Finish round {view.round}
           </Button>
         </>
@@ -267,11 +352,6 @@ function RoundRecord({
         <BlockPanel.Note>Every prescribed round is recorded.</BlockPanel.Note>
       )}
 
-      {proposal && <LoggingOverlay open={recorded !== null} title={`Round ${recorded?.round ?? ''} recorded`} onClose={() => setRecorded(null)}>
-        <p role="status">{recorded?.seconds === null ? 'Round recorded' : `${formatElapsed(recorded?.seconds ?? 0)} round time recorded`}</p>
-        {view.phase === 'rest' && <div aria-label="Rest between rounds"><CountdownDisplay seconds={view.restRemaining} /></div>}
-        <Button variant="secondary" onClick={() => { onTakeBack(); setRecorded(null) }}>Take back this round</Button>
-      </LoggingOverlay>}
       {view.roundsCompleted > 0 && (
         <TextAction onClick={onTakeBack}>Take back a round</TextAction>
       )}
@@ -319,6 +399,74 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
         ))}
       </ol>
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The recorded round (A3 TASK-107)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The round Finish round just recorded, while its dialog shows it. */
+interface RecordedRound {
+  readonly round: number
+  /** A rest between rounds began with it: the dialog lasts as long as that rest. */
+  readonly rested: boolean
+  /** Closed by its X or Escape, or done with no rest to wait for: leaving. */
+  readonly closed: boolean
+}
+
+/**
+ * Once the dialog has closed, focus goes back to the round clock's own
+ * control — whatever it now is: Start round N in a rest, Finish round N while
+ * a round's clock runs, Take back a round once every round is recorded.
+ */
+function returnFocusToRoundClock(group: HTMLElement | null) {
+  if (group === null || !group.isConnected) return
+  group.querySelector<HTMLButtonElement>('button')?.focus()
+}
+
+/**
+ * `Round N recorded`: Round 7's dialog (gallery state `circuit-round`). Its
+ * header is the overlay's — the title and the icon-only X. Under it the round
+ * time read back from the stored history, the circuit's own rest while one
+ * runs, and Take back this round. Its body stays drawn while it leaves.
+ */
+function RecordedRoundLog({
+  open,
+  recorded,
+  fallbackRound,
+  timing,
+  view,
+  onClose,
+  onAfterClose,
+  onTakeBack,
+}: {
+  open: boolean
+  recorded: RecordedRound | null
+  /** The title while nothing is recorded (the dialog is closed then). */
+  fallbackRound: number
+  timing: RoundTiming | undefined
+  view: CircuitView
+  onClose: () => void
+  onAfterClose: () => void
+  onTakeBack: () => void
+}) {
+  const seconds = timing === undefined ? null : roundDuration(timing)
+  return (
+    <LoggingOverlay
+      open={open}
+      title={`Round ${recorded?.round ?? fallbackRound} recorded`}
+      onClose={onClose}
+      onAfterClose={onAfterClose}
+    >
+      {recorded === null ? null : (
+        <>
+          <p role="status">{seconds === null ? 'Round recorded' : `${formatElapsed(seconds)} round time recorded`}</p>
+          {view.phase === 'rest' && <div aria-label="Rest between rounds"><CountdownDisplay seconds={view.restRemaining} /></div>}
+          <Button variant="secondary" onClick={onTakeBack}>Take back this round</Button>
+        </>
+      )}
+    </LoggingOverlay>
   )
 }
 

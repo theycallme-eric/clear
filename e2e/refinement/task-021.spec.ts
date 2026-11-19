@@ -42,6 +42,18 @@ import { expect, test as scanned } from '../fixtures'
  * X, a reload mid-rest comes back to the card and its rest (never the log), a
  * refused save keeps everything and its retry saves the same count.
  *
+ * A3 TASK-107 (Round 7, gallery bec4454): the log is Round 7's
+ * `LoggingOverlay` (`dialog.clr-logging-overlay`), wired to the one circuit
+ * controller. The case names and what they assert are the old build's; the
+ * selectors read Round 7's dialog: its header (`.clr-logging-overlay__head`),
+ * body (`.clr-logging-overlay__body`), the rest under Round 7's name for it
+ * ("Rest between rounds") as Round 7's full-width log timer (`.clr-log-timer`
+ * around the public `TimerDisplay`), and the gallery state opened by its own
+ * "Open …" control, whose driver presses Start round 1 and Finish round 1. A
+ * circuit movement prescribes no rest, so its log closes itself after its
+ * confirmation (owner decision 5, 2026-11-16). Each change is recorded in
+ * `evidence/refinement/task-107/test-ledger.json`.
+ *
  * Synthetic and contained: an intercepted session for a fictional user. The
  * only writes are the set observation the athlete makes and the section's own
  * block results when Next section leaves it, answered here and never
@@ -304,8 +316,8 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-/** The open focused logging dialog (any title). */
-const openLog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+/** The open focused logging dialog (any title): Round 7's LoggingOverlay. */
+const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
 const restTimers = (page: Page) => page.getByRole('timer', { name: 'Time remaining', exact: true })
 
 /** The circuit's one card. */
@@ -378,14 +390,15 @@ interface RecordedGeometry {
 async function readRecordedLog(dialog: Locator): Promise<RecordedGeometry> {
   return dialog.evaluate((node) => {
     const rect = (element: Element) => element.getBoundingClientRect()
-    const title = node.querySelector('[data-logging-head] h1, [data-logging-head] h2, [data-logging-head] h3')!
-    const close = node.querySelector('[data-logging-head] button[aria-label="Close log"]')!
-    const body = node.querySelector('.clr-accepted-log__body')!
+    const title = node.querySelector('.clr-logging-overlay__head h1, .clr-logging-overlay__head h2, .clr-logging-overlay__head h3')!
+    const close = node.querySelector('.clr-logging-overlay__head button[aria-label="Close log"]')!
+    const body = node.querySelector('.clr-logging-overlay__body')!
     const style = getComputedStyle(body)
     const bodyBox = rect(body)
-    const frame = node.querySelector('[data-timer-frame="body"]')
+    // Round 7's log timer: the public TimerDisplay at the log's full width.
+    const frame = node.querySelector('.clr-log-timer')
     const timerBody = frame?.querySelector('[role="timer"]') ?? null
-    const digits = timerBody?.querySelector(':scope > span[aria-hidden="true"]:not(.clr-accepted-timer__caption)') ?? null
+    const digits = timerBody?.querySelector(':scope > span[aria-hidden="true"]') ?? null
     const takeBack = [...node.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Take back this round')!
     const lineHeight = parseFloat(getComputedStyle(title).lineHeight) || parseFloat(getComputedStyle(title).fontSize) * 1.2
     return {
@@ -420,7 +433,7 @@ async function expectRecordedLog(page: Page, round: number, options: { roundTime
   await expect(dialog).toBeVisible()
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
-  const head = dialog.locator('[data-logging-head]')
+  const head = dialog.locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await expect(dialog.getByRole('heading')).toHaveCount(1)
   await expect(head.getByRole('button', { name: 'Close log', exact: true })).toBeVisible()
@@ -429,9 +442,13 @@ async function expectRecordedLog(page: Page, round: number, options: { roundTime
   // The Balanced backdrop on the native backdrop only.
   expect(await dialog.evaluate((node) => getComputedStyle(node, '::backdrop').backdropFilter)).toMatch(/blur\(/)
   // Inert behind: no control of the workout can take focus while it is open.
+  // (Round 7 draws a log in place, inside the screen's markup: its own
+  // controls are the log's, not the workout behind it.)
   const behind = await page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null
+    const open = document.querySelector('dialog.clr-logging-overlay[open]')!
     const controls = [...document.querySelectorAll<HTMLElement>('main#main button, .clr-workout-footer button')]
+      .filter((control) => !open.contains(control))
     const reachable = controls.filter((control) => {
       control.focus()
       return document.activeElement === control
@@ -452,7 +469,8 @@ async function expectRecordedLog(page: Page, round: number, options: { roundTime
   // No half-sheet, and the rest drawn once — in the log while it is open.
   await expect(page.locator('section.clr-set-sheet')).toHaveCount(0)
   if (options.resting) {
-    await expect(dialog.getByText(`Rest after round ${round}`, { exact: true })).toBeVisible()
+    // Round 7 names the circuit's rest in the log "Rest between rounds".
+    await expect(dialog.getByLabel('Rest between rounds', { exact: true })).toBeVisible()
     await expect(restTimers(page)).toHaveCount(1)
     await expect(dialog.getByRole('timer', { name: 'Time remaining', exact: true })).toBeVisible()
   } else {
@@ -474,6 +492,15 @@ async function expectRecordedLog(page: Page, round: number, options: { roundTime
   expect(Math.abs(geometry.takeBack.left - geometry.body.left)).toBeLessThanOrEqual(TOLERANCE)
   expect(Math.abs(geometry.takeBack.right - geometry.body.right)).toBeLessThanOrEqual(TOLERANCE)
   return { dialog, geometry }
+}
+
+/**
+ * Round 7's dialog leaves through the shared Dialog's exit: 200 ms on the
+ * page's own timers. Where a case holds its clock still, the clock is run
+ * through the exit (reduced motion closes at once; a flowing clock needs none).
+ */
+async function throughExit(page: Page) {
+  await page.clock.runFor(200)
 }
 
 /** Seconds of the one rest left, read from wherever it is drawn. */
@@ -545,6 +572,7 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
 
     // ── Take back this round: no count, no rest, round 1's own clock resumed ──
     await dialog.getByRole('button', { name: 'Take back this round', exact: true }).tap()
+    await throughExit(page)
     await expect(openLog(page)).toHaveCount(0)
     await expect(roundRecord(card)).toHaveText('No rounds recorded')
     await expect(restTimers(page)).toHaveCount(0)
@@ -559,6 +587,7 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
     await finish1.tap()
     ;({ dialog } = await expectRecordedLog(page, 1, { roundTime: '00:45', resting: true }))
     await dialog.getByRole('button', { name: 'Close log', exact: true }).tap()
+    await throughExit(page)
     await expect(openLog(page)).toHaveCount(0)
     const startRound2 = roundClock(card).getByRole('button', { name: 'Start round 2', exact: true })
     await expect(startRound2).toBeFocused()
@@ -593,7 +622,7 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
     await page.clock.resume()
     await card.getByRole('button', { name: 'Rest for goblet squat', exact: true }).tap()
     // TASK-044: the circuit's movement entry is the focused logging dialog (was the half-sheet).
-    const sheet = page.locator('dialog.clr-accepted-log[open]')
+    const sheet = page.locator('dialog.clr-logging-overlay[open]')
     const form = sheet.getByRole('form', { name: 'Log set 1 of goblet squat', exact: true })
     await form.getByLabel('Weight').fill('16')
     await form.getByLabel('Reps').fill('8')
@@ -603,7 +632,10 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
       operation: 'insert', exercise_id: EXERCISE_ID.get('goblet-squat'), set_number: 1,
       values: { weight: 16, actual_reps: 8 },
     })
-    await sheet.getByRole('button', { name: 'Close log', exact: true }).tap()
+    // A circuit movement prescribes no rest: its confirmation shows, then the
+    // log closes itself (owner decision 5, 2026-11-16), rather than its X.
+    // The card's saved row reads the set back (below).
+    await expect(openLog(page)).toHaveCount(0)
     await card.getByRole('button', { name: 'Hide load entry for goblet squat', exact: true }).tap()
     await expect(card.getByText('1 set logged', { exact: true })).toBeVisible()
     // Logging an actual records no round.
@@ -669,11 +701,15 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
     // motion, its one edge above the log.
     await page.clock.runFor((ROUND_REST - SCAN_SECONDS - 3) * 1000)
     expect(await restLeft(page)).toBe(3)
-    const logTimer = openLog(page).getByRole('timer', { name: 'Time remaining', exact: true })
-    await expect(logTimer).toHaveAttribute('data-urgent', 'true')
+    // Round 7's CountdownDisplay carries the shared urgency on its log
+    // timer: urgent (its micro pulse class) and, under reduced motion, still.
+    const logTimer = openLog(page).locator('.clr-log-timer').filter({
+      has: page.getByRole('timer', { name: 'Time remaining', exact: true }),
+    })
+    await expect(logTimer).toHaveClass(/\bclr-pulse-micro\b/)
     await expect(logTimer).toHaveAttribute('data-loop', 'still')
     await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)
-    expect(await page.locator('[data-countdown-edge]').evaluate((edge) => edge.parentElement?.matches('dialog.clr-accepted-log[open]'))).toBe(true)
+    expect(await page.locator('[data-countdown-edge]').evaluate((edge) => edge.parentElement?.matches('dialog.clr-logging-overlay[open]'))).toBe(true)
     await attachScreen(page, 'round-1-final-seconds-reduced-motion-phone-320')
 
     // Escape is the X: nothing changes, focus returns to the round clock, and
@@ -731,14 +767,15 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
       })
       await visit('/gallery/refinements?state=circuit-round')
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
-      const scope = page.locator('[data-gallery-circuit-round]')
+      // Round 7's accepted state: its own "Open …" control mounts the route's
+      // CircuitBlock on the gallery's memory runtime, and its driver presses
+      // Start round 1, lets 32 seconds pass and presses Finish round 1.
+      const scope = page.locator('[data-refinement-state="circuit-round"]')
+      await scope.getByRole('button', { name: 'Open Circuit round / take back', exact: true }).click()
       const card = circuitCard(scope)
       await expect(card).toBeVisible()
-      await expect(roundRecord(card)).toHaveText('No rounds recorded')
-      await expect(page.getByRole('timer', { name: 'Round 1 time', exact: true })).toBeVisible()
-
-      await roundClock(card).getByRole('button', { name: 'Finish round 1', exact: true }).click()
       const { dialog } = await expectRecordedLog(page, 1, { roundTime: '00:', resting: true })
+      await expect(roundRecord(card)).toHaveText('1 of 3 rounds recorded')
       const seconds = Number(/00:(\d\d)/.exec((await dialog.getByRole('status').textContent()) ?? '')?.[1])
       expect(seconds).toBeGreaterThanOrEqual(32)
       await noHorizontalOverflow(page)
