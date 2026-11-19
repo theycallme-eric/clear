@@ -40,7 +40,37 @@ import { expect, test as scanned } from '../fixtures'
  * synthetic reads. The only writes the app attempts are Start's two session
  * calls, answered here and never forwarded; no set or block result is logged,
  * no model is called and no real account or row exists to mutate.
+ *
+ * A3 TASK-105 (F3, #728) carries this spec onto Round 7: on `/workout` a raced
+ * ladder is Round 7's `TimedWorkoutFlow`, whose `LadderPrescription` reads the
+ * shared `state/ladder.ts` readings (the grid `Prescribed ladder rounds`, one
+ * summary line per movement — `push up · 2 → 24 reps · +2 per round` — and the
+ * meta line `12 rounds · 07:00 cap`), and its log is offered once the attempt
+ * has ended; a scheduled ladder is the same flow's schedule (each round's start
+ * and its live round on its tile, Start schedule, no cap); Review's cards are
+ * Round 7's `ReviewSectionCard`, each ladder's rounds drawn under its movement
+ * rows by the same round grid (`LadderRounds`). Each case keeps the build's name and asserted
+ * behaviour, read from Round 7's markup and words.
  */
+/**
+ * Round 7's summary lines and meta lines for the three ladders, from the
+ * fixture's own data (the build's lines named the equipment beside the
+ * movement; Round 7's accepted summary does not).
+ */
+const SUMMARY: Readonly<Record<CompactLadderKey, readonly string[]>> = {
+  accepted: ['push up · 2 → 24 reps · +2 per round', 'burpee · 4 reps'],
+  loaded: ['kettlebell swing · 15 → 3 reps · −3 per round · 24 kg', 'row · 250 m'],
+  scheduled: ['plank · 20-30-40-50-40-30-20 sec', 'walking lunge · 8 reps each side · 12 kg'],
+}
+const TIMING: Readonly<Record<CompactLadderKey, string>> = {
+  accepted: '12 rounds · 07:00 cap',
+  loaded: '5 rounds · 10:00 cap',
+  scheduled: EXPECTED.scheduled.timing,
+}
+/** Round 7's name for a ladder's round grid (`LadderPrescription`). */
+const ROUNDS_LIST = 'Prescribed ladder rounds'
+/** A block's card, on Review or on the workout: the card holding its group header. */
+const CARD = '.clr-card:has([data-movement-group-header])'
 const OWNER = '00000000-0000-4000-8000-000000001201'
 const PLACE = '00000000-0000-4000-8000-000000001211'
 const CORS = {
@@ -228,19 +258,19 @@ async function openReview(page: Page, visit: (path: string) => Promise<void>, ac
   await visit('/review')
   await expect(page).toHaveURL(/\/review$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(acceptance.workout.title)
-  await expect(page.locator('[data-workout-card="review"]')).toHaveCount(COMPACT_LADDER_KEYS.length)
+  await expect(page.locator(`[data-review-section] ${CARD}`)).toHaveCount(COMPACT_LADDER_KEYS.length)
   await settle(page)
 }
 
 async function startWorkout(page: Page, start: (button: Locator) => Promise<void>) {
   await start(page.getByRole('button', { name: 'Start workout' }))
   await expect(page).toHaveURL(/\/workout$/)
-  await expect(page.locator('[data-workout-card="workout"]')).toHaveCount(COMPACT_LADDER_KEYS.length)
+  await expect(page.locator(`main ${CARD}`)).toHaveCount(COMPACT_LADDER_KEYS.length)
   await settle(page)
 }
 
 const card = (page: Page, context: Context, key: CompactLadderKey) =>
-  page.locator(`[data-workout-card="${context}"]`).nth(COMPACT_LADDER_KEYS.indexOf(key))
+  page.locator(context === 'review' ? `[data-review-section] ${CARD}` : `main ${CARD}`).nth(COMPACT_LADDER_KEYS.indexOf(key))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Reading the screen
@@ -271,17 +301,17 @@ async function readGrid(scope: Locator): Promise<GridReading> {
       const rect = node.getBoundingClientRect()
       return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height }
     }
-    const grid = card.querySelector('ol[aria-label="Rounds in this ladder"]')
+    const grid = card.querySelector('ol[aria-label="Prescribed ladder rounds"]')
     if (grid === null) throw new Error('No round grid in this card')
     const tiles = [...grid.querySelectorAll(':scope > li')].map((tile) => {
       const frame = tile.querySelector('.clr-ladder-prescription__round')!
-      const label = tile.querySelector('.clr-ladder-prescription__label')!
+      const label = tile.querySelector('.label')!
       return {
         label: label.querySelector('[aria-hidden="true"]')?.textContent ?? '',
         entries: [...tile.querySelectorAll('[data-ladder-entry] > [aria-hidden="true"]')].map((entry) => entry.textContent ?? ''),
         box: box(tile),
         labelTop: label.getBoundingClientRect().top,
-        clipped: [frame, ...frame.querySelectorAll('[data-ladder-entry], .clr-ladder-prescription__label, .clr-ladder-prescription__detail')]
+        clipped: [frame, ...frame.querySelectorAll('[data-ladder-entry], .label, .clr-ladder-prescription__detail')]
           .some((node) => node.scrollWidth > node.clientWidth + 1),
         focusable: tile.querySelectorAll('button, input, a, select, textarea, [tabindex]').length,
       }
@@ -339,9 +369,13 @@ async function noHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 }
 
-/** Text the approved criteria removed, nowhere on the screen. */
-async function expectRemovedCopyAbsent(page: Page) {
-  const text = (await page.locator('main').textContent()) ?? ''
+/**
+ * Text the approved criteria removed, nowhere on the screen — or, on the
+ * gallery page (whose requirement-coverage panel quotes the criteria), nowhere
+ * in the state drawn.
+ */
+async function expectRemovedCopyAbsent(page: Page, scope: Locator = page.locator('main')) {
+  const text = (await scope.textContent()) ?? ''
   expect(text).not.toMatch(/same every round/i)
   expect(text).not.toMatch(/Move through the rounds/)
   expect(text).not.toMatch(/between each rung/)
@@ -396,9 +430,9 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
         // The same words as Review, round for round (AC-R012-01).
         expect(words(live)).toEqual(words(review[key]))
         // The concise overall progression, one line per movement (C35).
-        expect(live.summary, `${key} summary`).toEqual(EXPECTED[key].movements)
+        expect(live.summary, `${key} summary`).toEqual(SUMMARY[key])
         // The round count and the cap, from the block's own timing.
-        await expect(scope.getByText(EXPECTED[key].timing, { exact: true })).toBeVisible()
+        await expect(scope.getByText(TIMING[key], { exact: true })).toBeVisible()
         // No read-only rung row repeats the rounds before an answer (R95).
         await expect(scope.getByRole('list', { name: 'Ladder', exact: true })).toHaveCount(0)
         await expect(scope.locator('.clr-rail')).toHaveCount(0)
@@ -406,7 +440,7 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
       // The long ladder's Start stays at its top (R66), above its prescription.
       const accepted = card(page, 'workout', 'accepted')
       const start = (await accepted.getByRole('button', { name: 'Start ladder', exact: true }).boundingBox())!
-      const summary = (await accepted.getByRole('list', { name: 'Movements in this ladder', exact: true }).boundingBox())!
+      const summary = (await accepted.locator('.clr-ladder-prescription__summary').boundingBox())!
       expect(start.y + start.height).toBeLessThanOrEqual(summary.y + TOLERANCE)
       // Compact: twelve rounds fit within one screen's height (R117), where the
       // long per-round list they replace ran past it.
@@ -434,16 +468,16 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
 
     const accepted = card(page, 'workout', 'accepted')
     const before = await readGrid(accepted)
-    // Tab from the ladder's Start: focus moves on past the prescription to
-    // the result log, never into a tile.
+    // Tab from the ladder's Start: focus moves on past the prescription,
+    // never into a tile. Round 7 offers the result log once the attempt has
+    // ended, so before Start the next stop after the prescription is the
+    // card's own next control, its Coaching and notes disclosure.
     const startLadder = accepted.getByRole('button', { name: 'Start ladder', exact: true })
     await startLadder.focus()
     await page.keyboard.press('Tab')
     const inPrescription = () => page.evaluate(() => document.activeElement?.closest('[data-ladder-prescription]') !== null)
     expect(await inPrescription()).toBe(false)
-    // TASK-046: the result log's place on the card is its "Log results"
-    // action, so that is the next stop after the prescription.
-    await expect(accepted.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })).toBeFocused()
+    await expect(accepted.getByRole('button', { name: /^Coaching and notes/ })).toBeFocused()
 
     // Keyboard lifecycle on the top slot (TASK-006): the prescription holds.
     await startLadder.focus()
@@ -462,10 +496,9 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
     // Answered: Incomplete with no rung (TASK-010), so how far is asked — and
     // the prescription is unchanged beside it. TASK-013 (C33, C34) moved the
     // question into the result log as its rep-first "Rounds completed" tiles.
-    // TASK-046: in the log its card's "Log results" opens, by keyboard.
-    await accepted.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true }).focus()
-    await page.keyboard.press('Enter')
-    const howFar = page.locator('dialog.clr-accepted-log[open]').getByRole('group', { name: 'Rounds completed', exact: true })
+    // TASK-046: in the one "Log results" dialog, which Round 7 opens by
+    // itself at Finish (its card's "Log results" opens it again).
+    const howFar = page.locator('dialog[open]').getByRole('group', { name: 'Rounds completed', exact: true })
     await expect(howFar.getByRole('button')).toHaveCount(12)
     const after = await readGrid(accepted)
     expect(words(after)).toEqual(words(before))
@@ -499,7 +532,7 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
 
     // A tile is the prescription, not a control: a tap changes nothing.
     const loaded = card(page, 'workout', 'loaded')
-    await loaded.locator('ol[aria-label="Rounds in this ladder"] > li').nth(2).tap()
+    await loaded.locator('ol[aria-label="Prescribed ladder rounds"] > li').nth(2).tap()
     expect(words(await readGrid(loaded))).toEqual(before.loaded)
     await expect(loaded.getByRole('radio', { checked: true })).toHaveCount(0)
 
@@ -509,16 +542,16 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
     await scheduled.getByRole('button', { name: 'Start schedule', exact: true }).tap()
     await expect(scheduled.locator('[data-ladder-marker="now"]')).toHaveCount(1)
     await page.reload()
-    await expect(page.locator('[data-workout-card="workout"]')).toHaveCount(COMPACT_LADDER_KEYS.length)
+    await expect(page.locator(`main ${CARD}`)).toHaveCount(COMPACT_LADDER_KEYS.length)
     await settle(page)
     for (const key of COMPACT_LADDER_KEYS) {
       const reading = await readGrid(card(page, 'workout', key))
       expect(words(reading), key).toEqual(before[key])
-      expect(reading.summary, key).toEqual(EXPECTED[key].movements)
+      expect(reading.summary, key).toEqual(SUMMARY[key])
     }
     // Still running after the reopen, read back from their own stored clocks.
     await expect(card(page, 'workout', 'loaded').getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
-    const live = card(page, 'workout', 'scheduled').locator('ol[aria-label="Rounds in this ladder"] > li[aria-current="step"]')
+    const live = card(page, 'workout', 'scheduled').locator(`ol[aria-label="${ROUNDS_LIST}"] > li[aria-current="step"]`)
     await expect(live).toHaveCount(1)
     await expect(live.locator('[data-ladder-marker]')).toHaveText('Now')
     await expect(card(page, 'workout', 'scheduled').getByText('Starts at 01:15', { exact: true })).toBeVisible()
@@ -539,16 +572,16 @@ test.describe('TASK-012 compact truthful ladder prescription', () => {
     for (const rounds of [4, 12] as const) {
       await visit(`/gallery/refinements?state=ladder-${rounds}`)
       const state = page.locator(`[data-refinement-state="ladder-${rounds}"]`)
-      const scope = state.locator('[data-workout-card="workout"]')
+      const scope = state.locator(CARD)
       const reading = await readGrid(scope)
       const reps = Array.from({ length: rounds }, (_, index) => (index + 1) * 2)
-      expect(reading.summary).toEqual([`push up bodyweight · 2 → ${reps.at(-1)} reps · +2 per round`, 'burpee bodyweight · 4 reps'])
+      expect(reading.summary).toEqual([`push up · 2 → ${reps.at(-1)} reps · +2 per round`, 'burpee · 4 reps'])
       expect(words(reading)).toEqual(reps.map((count, index) => [`R${index + 1}`, `${count} × push up`, '4 × burpee']))
       expect(reading.columns).toBeGreaterThan(1)
       expect(reading.gridScroll.scrollWidth).toBeLessThanOrEqual(reading.gridScroll.clientWidth + TOLERANCE)
       expect(reading.tiles.every((tile) => !tile.clipped && tile.focusable === 0)).toBe(true)
-      await expect(scope.getByText(`${rounds} rounds · 07:00 cap on the whole ladder`, { exact: true })).toBeVisible()
-      await expectRemovedCopyAbsent(page)
+      await expect(scope.getByText(`${rounds} rounds · 07:00 cap`, { exact: true })).toBeVisible()
+      await expectRemovedCopyAbsent(page, state)
       await noHorizontalOverflow(page)
       await test.info().attach(`gallery-ladder-${rounds}-phone-320.png`, { body: await scope.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     }

@@ -853,6 +853,15 @@ export interface PersistedLadderOptions {
   readonly storage?: ShellStorage | null
   readonly now?: () => number
   readonly mintId?: () => string
+  /**
+   * When a ladder clock an older build kept under the For Time key is written
+   * into this record: `at-once` (TASK-032's default) on mount, under the
+   * attempt id minted then; `on-first-change` (A3 TASK-104's rule for the
+   * route's `TimedWorkoutFlow`) by the first action that changes the attempt —
+   * a Start, Pause, check-off or Finish — so merely opening the workout writes
+   * nothing. Either way the For Time record is left as it was.
+   */
+  readonly adoptLegacyClock?: 'at-once' | 'on-first-change'
 }
 
 export interface PersistedLadder {
@@ -913,6 +922,7 @@ export function usePersistedLadder({
   storage = defaultShellStorage(),
   now = Date.now,
   mintId = () => crypto.randomUUID(),
+  adoptLegacyClock = 'at-once',
 }: PersistedLadderOptions): PersistedLadder {
   const [state, setState] = useState<LadderHookState>(() => ({
     ...restoreLadderAttempt(storage, { sessionId, blockId, capSeconds, rungCount, mintId }),
@@ -947,8 +957,9 @@ export function usePersistedLadder({
     [],
   )
 
-  // A legacy clock is adopted once, under a stable attempt id.
-  const adopted = state.source === 'legacy-clock' ? state.attempt : null
+  // A legacy clock is adopted once, under a stable attempt id: now, or (for
+  // `on-first-change`) by the first write `apply` makes.
+  const adopted = state.source === 'legacy-clock' && adoptLegacyClock === 'at-once' ? state.attempt : null
   useEffect(() => {
     if (adopted === null) return
     const stored = latest.current.storage

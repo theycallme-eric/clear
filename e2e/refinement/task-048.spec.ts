@@ -11,12 +11,10 @@ import { formatBadgesSnapshot } from '../../src/test/format-badges-fixture'
 import {
   MAIN_CAP_SECONDS,
   MAIN_RUNGS,
-  MAIN_TIMING_LINE,
   RECOVERY_COOLDOWN_TITLE,
   RECOVERY_SYNTHETIC_CATALOG,
   SECOND_CAP_SECONDS,
   SECOND_RUNGS,
-  SECOND_TIMING_LINE,
   ladderRecoveryAcceptance,
   recoveryName,
   type RecoveryCatalog,
@@ -92,6 +90,23 @@ import { backend } from '../support/backend'
  * Every Playwright clock reading is the browser's own fake clock
  * (`page.clock`): held for exact arithmetic, released before reloads, saves
  * and scans, and read against the stored start after a reload.
+ *
+ * A3 TASK-105 (F3, #728) carries this spec onto Round 7: the route's ladders
+ * are Round 7's `TimedWorkoutFlow` holding the ladder's one durable attempt
+ * (`usePersistedLadder`), its log the one "Log results" `LoggingOverlay`.
+ * Each case keeps the build's name and asserted behaviour, read from Round 7's
+ * markup and words: the grid `Prescribed ladder rounds`, the meta line that
+ * tells the ladders apart (`4 rounds · 06:00 cap`), the clock's caption
+ * (`Elapsed` for the build's "Racing the clock"), and the quiet `Undo finish ·
+ * resume ladder`. Two Round 7 differences change where a step is read, not
+ * what it proves: Round 7 offers the log once the attempt has ended (and
+ * opens it there by itself), so the effort and notes are entered after the
+ * accidental Finish — still before the reloads, the Undo, the refused save and
+ * the retry that must keep them — and a running or paused ladder is shown to
+ * keep its progress and its durable record, with no log to claim an answer;
+ * and a saved ladder shows its saved log (`Log saved` with the row's rungs,
+ * effort, notes and each movement's actuals read back, "Edit log" for a
+ * correction) in place of the build's disabled form.
  */
 
 const e2e = readE2eEnv()
@@ -107,9 +122,14 @@ const CORS = {
 /** The synthetic lane's entry on the browser clock; the session has run one minute. */
 const ENTRY = Date.parse('2026-11-11T09:00:00.000Z')
 
-const UNDO_FINISH = 'Undo finish · Resume ladder'
+const UNDO_FINISH = 'Undo finish · resume ladder'
 const SAVE_FAILED = 'Your log didn’t save. Try again.'
-const ROUNDS_LIST = 'Rounds in this ladder'
+/** Round 7's name for a ladder's round grid (`LadderPrescription`). */
+const ROUNDS_LIST = 'Prescribed ladder rounds'
+const clockText = (total: number) => `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+/** Round 7's meta lines: each ladder's rounds and its one cap — what tells the two cards apart. */
+const MAIN_TIMING_LINE = `${MAIN_RUNGS.length} rounds · ${clockText(MAIN_CAP_SECONDS)} cap`
+const SECOND_TIMING_LINE = `${SECOND_RUNGS.length} rounds · ${clockText(SECOND_CAP_SECONDS)} cap`
 
 function freePort() {
   return new Promise<number>((settle, fail) => {
@@ -628,17 +648,17 @@ function reading(totalSeconds: number): string {
 const TIMING_LINES: Readonly<Record<LadderName, string>> = { main: MAIN_TIMING_LINE, second: SECOND_TIMING_LINE }
 const RUNGS: Readonly<Record<LadderName, readonly number[]>> = { main: MAIN_RUNGS, second: SECOND_RUNGS }
 
+/** One ladder's Round 7 flow — its card, its clock and its log — told apart by its meta line. */
 function cardOf(page: Page, name: LadderName): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({ has: page.getByText(TIMING_LINES[name], { exact: true }) })
+  return page.locator('.clr-timed-flow[data-timed-format="ladder"]').filter({ has: page.getByText(TIMING_LINES[name], { exact: true }) })
 }
 
-/** The block's clock beside its card: its reading and its phase in words. */
+/** The block's clock: its digits and its phase in words (Round 7's timer caption). */
 async function clockOf(page: Page, name: LadderName): Promise<{ reading: string; words: string }> {
-  const stack = page.locator('main .clr-stack').filter({ has: cardOf(page, name) }).last()
-  const clock = stack.locator('.clr-card').filter({ has: page.getByRole('timer') }).first()
-  const text = (await clock.getByRole('timer').first().textContent()) ?? ''
-  const words = (await clock.getByRole('status').first().textContent()) ?? ''
-  return { reading: /\d{2}:\d{2}/.exec(text)?.[0] ?? '', words }
+  return cardOf(page, name).getByRole('timer').first().evaluate((timer) => ({
+    reading: [...timer.children].map((part) => part.textContent ?? '').find((text) => /^\d{2}:\d{2}$/.test(text)) ?? '',
+    words: timer.firstElementChild?.textContent ?? '',
+  }))
 }
 
 async function expectClock(page: Page, name: LadderName, expected: { reading: string; words: string }) {
@@ -662,7 +682,7 @@ async function attemptOf(page: Page, blockId: string): Promise<StoredAttempt> {
 /** Running from the stored start: the browser's now less that start, to the tick. */
 async function expectRunningFrom(page: Page, name: LadderName, startedAt: string, label: string): Promise<number> {
   const { reading: shown, words } = await clockOf(page, name)
-  expect(words, label).toBe('Racing the clock')
+  expect(words, label).toBe('Elapsed')
   const now = await page.evaluate(() => Date.now())
   const expected = Math.floor((now - Date.parse(startedAt)) / 1000)
   expect(seconds(shown), `${label}: ${shown}`).toBeGreaterThanOrEqual(expected - 1)
@@ -687,18 +707,24 @@ async function lifecycle(card: Locator): Promise<string[]> {
   return card.getByRole('button', { name: /^(Start ladder|Pause|Resume|Finish)$/ }).allTextContents()
 }
 
+/** The card's "Log results" action: offered once the attempt has ended and while its result is unsaved. */
 function openerOf(card: Locator): Locator {
-  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+  return card.getByRole('button', { name: 'Log results', exact: true })
 }
 
 function openLogForm(page: Page): Locator {
-  return page.locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+  return page.locator('dialog[open] form.clr-timed-log')
 }
 
 async function closeLog(page: Page) {
-  const open = page.locator('dialog.clr-accepted-log[open]')
+  const open = page.locator('dialog[open]').filter({ has: page.locator('form.clr-timed-log') })
   if ((await open.count()) === 0) return
   await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  // Round 7's dialog (the design system's) leaves after its 200 ms exit unless
+  // motion is reduced. When it has not left by itself, the browser clock is
+  // held: run that clock by the exit (never when no clock is held).
+  await open.first().waitFor({ state: 'detached', timeout: 1_000 }).catch(() => undefined)
+  if ((await open.count()) > 0) await page.clock.runFor(200)
   await expect(open).toHaveCount(0)
 }
 
@@ -714,6 +740,9 @@ async function press(locator: Locator, how: How) {
 
 async function openLog(card: Locator, how: How): Promise<Locator> {
   const page = card.page()
+  // Round 7 opens the log by itself at Finish and at the cap: wait a moment for it.
+  await card.locator('dialog[open] form.clr-timed-log').waitFor({ state: 'attached', timeout: 1_000 }).catch(() => undefined)
+  if ((await card.locator('dialog[open] form.clr-timed-log').count()) > 0) return openLogForm(page)
   await closeLog(page)
   await press(openerOf(card), how)
   await expect(openLogForm(page)).toBeVisible()
@@ -755,7 +784,7 @@ async function chooseEffort(log: Locator, word: string, how: How) {
 
 /** The unit a typed load is stated in, as the field shows it. */
 async function loadUnit(log: Locator, name: string): Promise<string> {
-  const unit = await log.locator('[data-timed-movement]').filter({ has: log.page().getByRole('heading', { name, exact: true }) })
+  const unit = await log.locator('.clr-timed-log__group').filter({ has: log.page().getByRole('heading', { name, exact: true }) })
     .locator('.clr-field__unit').last().textContent()
   expect(unit ?? '').toMatch(/^(kg|lb)$/)
   return unit!
@@ -817,24 +846,34 @@ async function reload(page: Page) {
   await expect(ladders).toBeVisible()
 }
 
-/** A saved ladder: no Undo, no lifecycle, no live check-off, "Block saved". */
+/** A saved ladder: no Undo, no lifecycle, no live check-off, no log to answer, "Block saved" and its saved log. */
 async function expectSavedCard(card: Locator) {
   await expect(card.getByText('Block saved')).toBeVisible()
+  await expect(card.locator('[data-timed-saved]').getByRole('status')).toHaveText('Log saved')
   expect(await lifecycle(card)).toEqual([])
   await expect(card.getByRole('list', { name: ROUNDS_LIST, exact: true }).getByRole('button')).toHaveCount(0)
+  await expect(card.getByRole('button', { name: /^Undo finish|^Resume ladder$/ })).toHaveCount(0)
+  await expect(openerOf(card)).toHaveCount(0)
+  await expect(card.getByRole('alert')).toHaveCount(0)
 }
 
-/** Every field of a saved log is shown and none is offered. */
-async function expectSavedLog(log: Locator) {
-  await expect(undoOf(log)).toHaveCount(0)
-  await expect(failureOf(log)).toHaveCount(0)
-  for (const radio of await completionOf(log).getByRole('radio').all()) await expect(radio).toBeDisabled()
-  for (const radio of await effortOf(log).getByRole('radio').all()) await expect(radio).toBeDisabled()
-  if ((await roundsOf(log).count()) > 0) {
-    for (const tile of await roundsOf(log).getByRole('button').all()) await expect(tile).toBeDisabled()
-  }
-  for (const field of await log.getByRole('spinbutton').all()) await expect(field).toBeDisabled()
-  if ((await notesOf(log).count()) > 0) await expect(notesOf(log)).toBeDisabled()
+/**
+ * What a saved ladder's saved log reads back (Round 7's `Log saved` panel):
+ * the rungs completed through, the effort, the notes and each movement's
+ * recorded actuals — the saved row's, ahead of any local echo (TASK-048).
+ */
+interface SavedShown { rungs: number | null; effort: string | null; notes: string; movements: string[] }
+
+async function savedShown(card: Locator): Promise<SavedShown> {
+  return card.locator('[data-timed-saved]').evaluate((panel) => {
+    const lines = [...panel.querySelectorAll(':scope > p')].map((line) => (line.textContent ?? '').replace(/\s+/g, ' ').trim())
+    const rungs = /· (\d+) rungs/.exec(lines.find((line) => /active time/.test(line)) ?? '')?.[1]
+    const effort = lines.find((line) => line.startsWith('Effort: '))?.slice('Effort: '.length) ?? null
+    const movements = [...panel.querySelectorAll(':scope > p.clr-timed-meta')].map((line) => (line.textContent ?? '').replace(/\s+/g, ' ').trim())
+      .filter((line) => !/active time|^Effort: /.test(line))
+    const notes = [...panel.querySelectorAll(':scope > p:not(.clr-timed-meta)')].map((line) => line.textContent ?? '').at(-1) ?? ''
+    return { rungs: rungs === undefined ? null : Number(rungs), effort, notes, movements }
+  })
 }
 
 const blockColumns = (row: Row | undefined) => row === undefined ? undefined : {
@@ -894,15 +933,13 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
   await press(main.getByRole('button', { name: 'Pause', exact: true }), how)
   await expectClock(page, 'main', { reading: '01:00', words: 'Paused' })
 
-  // The current draft before Finish: the effort and the notes.
-  let log = await openLog(main, how)
-  await chooseEffort(log, 'Too hard', how)
-  await notesOf(log).fill(NOTES_MAIN)
-  await closeLog(page)
+  // The current draft before Finish: its ordered progress. Round 7 offers the
+  // log once the attempt has ended, so nothing is answered yet.
+  await expect(openerOf(main)).toHaveCount(0)
   let stored = await attemptOf(page, world.blocks.main)
   expect(stored.originalCapSeconds).toBe(MAIN_CAP_SECONDS)
   expect(stored.progress).toBe(2)
-  expect(stored.draft).toMatchObject({ completed: null, effort: 'too_hard', notes: NOTES_MAIN })
+  expect(stored.draft).toBeNull()
   const attemptId = stored.identity.attemptId
   await pass(page, 120)
   await expectClock(page, 'main', { reading: '01:00', words: 'Paused' })
@@ -914,9 +951,8 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
   expect(await lifecycle(main)).toEqual(['Resume', 'Finish'])
   expect(await livePressed(main)).toEqual([1, 2])
   await expect(liveCount(main)).toHaveText('2 of 4 rounds completed')
-  log = await openLog(main, how)
-  expect(await shownDraft(log)).toEqual({ answer: [], rounds: null, effort: ['Too hard'], notes: NOTES_MAIN })
-  await closeLog(page)
+  await expect(openerOf(main)).toHaveCount(0)
+  expect(await attemptOf(page, world.blocks.main)).toMatchObject({ progress: 2, draft: null })
   // Paused for ten minutes more: no time passes on the ladder.
   await pass(page, 600)
   await expectClock(page, 'main', { reading: '01:00', words: 'Paused' })
@@ -925,11 +961,15 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
   // Resumed: 01:00 → 01:30; round 3 checked; the accidental Finish.
   await press(main.getByRole('button', { name: 'Resume', exact: true }), how)
   await pass(page, 30)
-  await expectClock(page, 'main', { reading: '01:30', words: 'Racing the clock' })
+  await expectClock(page, 'main', { reading: '01:30', words: 'Elapsed' })
   await press(liveTile(main, 3), how)
   await press(main.getByRole('button', { name: 'Finish', exact: true }), how)
   await expectClock(page, 'main', { reading: '01:30', words: 'Finished' })
-  log = await openLog(main, how)
+  let log = await openLog(main, how)
+  // The checked rounds imported; the effort and the notes entered now.
+  expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2, 3], effort: [], notes: '' })
+  await chooseEffort(log, 'Too hard', how)
+  await notesOf(log).fill(NOTES_MAIN)
   expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2, 3], effort: ['Too hard'], notes: NOTES_MAIN })
   await expect(undoOf(log)).toBeVisible()
   // The next round's partials and the actual load: never the plan's.
@@ -942,6 +982,7 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
   await closeLog(page)
   stored = await attemptOf(page, world.blocks.main)
   expect(stored.checkpoint).toEqual({ pausedAt: null, progress: 3, completed: null })
+  expect(stored.draft).toMatchObject({ completed: false, highestRung: 3, effort: 'too_hard', notes: NOTES_MAIN })
   expect(stored.draft?.movements).toEqual({ [loadedId]: { amount: '5', weight: '18' }, [bodyweightId]: { amount: '0', weight: '' } })
   const finishedAt = stored.clock.finishedAt
   expect(finishedAt).not.toBeNull()
@@ -964,7 +1005,7 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
   // finished counts and none is granted; the original cap stays.
   const before = await attemptOf(page, world.blocks.main)
   await press(undoOf(log), how)
-  await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
   const undone = await attemptOf(page, world.blocks.main)
   expect(undone.clock.startedAt).toBe(before.clock.startedAt)
   expect(undone.clock.finishedAt).toBeNull()
@@ -976,10 +1017,10 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
   expect(resumedAt).toBeLessThan(MAIN_CAP_SECONDS)
   expect(await lifecycle(main)).toEqual(['Pause', 'Finish'])
   expect(await livePressed(main)).toEqual([1, 2, 3])
-  log = await openLog(main, how)
-  // The answer is back to before Finish (none); the entries stay.
-  expect(await shownDraft(log)).toEqual({ answer: [], rounds: null, effort: ['Too hard'], notes: NOTES_MAIN })
-  await closeLog(page)
+  // The answer is back to before Finish (none, and no log claims one while
+  // the attempt runs); the entries stay.
+  await expect(openerOf(main)).toHaveCount(0)
+  expect(undone.draft).toMatchObject({ completed: null, highestRung: 3, effort: 'too_hard', notes: NOTES_MAIN })
   expect(undone.draft?.movements).toEqual({ [loadedId]: { amount: '5', weight: '18' }, [bodyweightId]: { amount: '0', weight: '' } })
 
   // Finish again at the same round: the entries come back with it.
@@ -1043,30 +1084,20 @@ async function journeyRecovery(page: Page, world: World, visit: (path: string) =
     round_number: 4, actual_reps: 0, weight: null,
   })
 
-  // Back to the saved section: the saved result, not a draft or nothing.
+  // Back to the saved section: the saved result, not a draft or nothing —
+  // Round 7's saved log: through 3, the effort, the notes and each actual.
   const writes = sent.length
+  const savedMain: SavedShown = { rungs: 3, effort: 'Too hard', notes: NOTES_MAIN, movements: [`${loaded} · 5 reps · 18 ${unit}`, `${bodyweight} · 0 reps`] }
   await page.getByRole('button', { name: 'Previous', exact: true }).click()
   await expect(page.getByText(MAIN_TIMING_LINE, { exact: true })).toBeVisible()
   await expectSavedCard(cardOf(page, 'main'))
-  log = await openLog(cardOf(page, 'main'), how)
-  expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2, 3], effort: ['Too hard'], notes: NOTES_MAIN })
-  await expect(amountOf(log, 4, loaded)).toHaveValue('5')
-  await expect(amountOf(log, 4, bodyweight)).toHaveValue('0')
-  await expect(weightOf(log, loaded)).toHaveValue('18')
-  await expectSavedLog(log)
-  await closeLog(page)
+  expect(await savedShown(cardOf(page, 'main'))).toEqual(savedMain)
 
   // Reloaded: the saved row is read back from the server as the authority.
   await reload(page)
   const reread = cardOf(page, 'main')
   await expectSavedCard(reread)
-  log = await openLog(reread, how)
-  expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2, 3], effort: ['Too hard'], notes: NOTES_MAIN })
-  await expect(amountOf(log, 4, loaded)).toHaveValue('5')
-  await expect(amountOf(log, 4, bodyweight)).toHaveValue('0')
-  await expect(weightOf(log, loaded)).toHaveValue('18')
-  await expectSavedLog(log)
-  await closeLog(page)
+  expect(await savedShown(reread)).toEqual(savedMain)
   expect(sent.length).toBe(writes)
   expect(await world.blockRows()).toHaveLength(2)
   expect(await world.movementRows()).toHaveLength(2)
@@ -1169,12 +1200,10 @@ async function journeyPartial(page: Page, world: World, visit: (path: string) =>
   expect(await trail(sent, 'block_results', world.blocks.second)).toEqual(['POST 503'])
 
   // The just-saved main ladder shows what it saved, with no Undo, while the
-  // later block's save has failed.
+  // later block's save has failed: Round 7's saved log, Complete through 4.
+  const savedMain: SavedShown = { rungs: 4, effort: 'About right', notes: '', movements: [`${loaded} · 20 ${unit}`] }
   await expectSavedCard(main)
-  log = await openLog(main, how)
-  expect(await shownDraft(log)).toEqual({ answer: ['Complete'], rounds: [1, 2, 3, 4], effort: ['About right'], notes: '' })
-  await expect(weightOf(log, loaded)).toHaveValue('20')
-  await expectSavedLog(log)
+  expect(await savedShown(main)).toEqual(savedMain)
   // The second keeps its draft and its Undo, and says it did not save.
   log = await openLog(second, how)
   await expect(failureOf(log)).toHaveText(SAVE_FAILED)
@@ -1205,17 +1234,13 @@ async function journeyPartial(page: Page, world: World, visit: (path: string) =>
   const writes = sent.length
   await reload(page)
   for (const [name, expected] of [
-    ['main', { answer: ['Complete'], rounds: [1, 2, 3, 4], effort: ['About right'], notes: '' }],
-    ['second', { answer: ['Incomplete'], rounds: [1], effort: [], notes: '' }],
+    ['main', savedMain],
+    ['second', { rungs: 1, effort: null, notes: '', movements: [`${bodyweight} · 4 reps`] }],
   ] as const) {
     const card = cardOf(page, name)
     await expectSavedCard(card)
-    log = await openLog(card, how)
-    expect(await shownDraft(log)).toEqual(expected)
-    await expectSavedLog(log)
+    expect(await savedShown(card)).toEqual(expected)
   }
-  await expect(amountOf(log, 2, bodyweight)).toHaveValue('4')
-  await closeLog(page)
   expect(sent.length).toBe(writes)
   world.assertContained()
 }
@@ -1303,9 +1328,10 @@ test.describe('TASK-048 visible ladder recovery and accidental-Finish restoratio
     await pass(page, 30)
     await second.getByRole('button', { name: 'Pause', exact: true }).tap()
     await expectClock(page, 'second', { reading: '01:00', words: 'Paused' })
-    log = await openLog(second, 'tap')
-    await chooseEffort(log, 'Too easy', 'tap')
-    await closeLog(page)
+    // Round 7 offers the log once the attempt has ended: the paused ladder's
+    // draft is its progress, kept in its durable record.
+    await expect(openerOf(second)).toHaveCount(0)
+    expect(await attemptOf(page, world.blocks.second)).toMatchObject({ progress: 1, draft: null })
 
     // The tab is closed; two hours later it is opened again. (The fake clock
     // is the browser context's: it runs on while no tab is open, and the
@@ -1327,9 +1353,7 @@ test.describe('TASK-048 visible ladder recovery and accidental-Finish restoratio
     await expectClock(tab, 'second', { reading: '01:00', words: 'Paused' })
     expect(await lifecycle(second)).toEqual(['Resume', 'Finish'])
     expect(await livePressed(second)).toEqual([1])
-    log = await openLog(second, 'tap')
-    expect(await chosen(effortOf(log))).toEqual(['Too easy'])
-    await closeLog(tab)
+    expect(await attemptOf(tab, world.blocks.second)).toMatchObject({ progress: 1, draft: null })
     // The expired Finish stays frozen, its Undo gone for good, its edit kept.
     await expectClock(tab, 'main', { reading: reading(MAIN_CAP_SECONDS - 10), words: 'Finished' })
     log = await openLog(main, 'tap')
@@ -1362,9 +1386,12 @@ test.describe('TASK-048 visible ladder recovery and accidental-Finish restoratio
     expect(await lifecycle(second)).toEqual([])
     expect((await attemptOf(tab, world.blocks.second)).clock.startedAt).toBe(startedSecond)
     log = await openLog(second, 'tap')
-    expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2], effort: ['Too easy'], notes: '' })
+    expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2], effort: [], notes: '' })
     await expect(undoOf(log)).toHaveCount(0)
+    // The capped attempt's log is the athlete's: an effort, kept in the draft.
+    await chooseEffort(log, 'Too easy', 'tap')
     await closeLog(tab)
+    expect((await attemptOf(tab, world.blocks.second)).draft).toMatchObject({ completed: false, highestRung: 2, effort: 'too_easy' })
     await pass(tab, 60)
     await expectClock(tab, 'second', { reading: reading(SECOND_CAP_SECONDS), words: 'Cap reached' })
 
@@ -1412,24 +1439,26 @@ test.describe('TASK-048 visible ladder recovery and accidental-Finish restoratio
       await root.getByRole('button', { name: 'Start ladder', exact: true }).tap()
       await liveTile(root, 2).tap()
       await expect(liveCount(root)).toHaveText(new RegExp(`^2 of ${state === 'ladder-4' ? 4 : 12} rounds completed$`))
-      // Before Finish: an effort and notes, kept through close and reopen.
+      // Round 7 offers the log once the attempt has ended. Finish: the checked
+      // rounds imported; an effort and notes, kept through close and reopen.
+      await expect(openerOf(root)).toHaveCount(0)
+      await root.getByRole('button', { name: 'Finish', exact: true }).tap()
       let log = await openLog(root, 'tap')
+      expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2], effort: [], notes: '' })
       await chooseEffort(log, 'Too easy', 'tap')
       await notesOf(log).fill(`Gallery ${state} note.`)
       await closeLog(page)
       log = await openLog(root, 'tap')
-      expect(await shownDraft(log)).toEqual({ answer: [], rounds: null, effort: ['Too easy'], notes: `Gallery ${state} note.` })
-      await closeLog(page)
-      // Finish, then Undo: the draft is kept through both.
+      expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2], effort: ['Too easy'], notes: `Gallery ${state} note.` })
+      // Undo, then Finish again: the draft is kept through both.
+      await undoOf(log).tap()
+      await expect(page.locator('dialog[open]')).toHaveCount(0)
+      expect(await lifecycle(root)).toEqual(['Pause', 'Finish'])
+      expect(await livePressed(root)).toEqual([1, 2])
+      await expect(openerOf(root)).toHaveCount(0)
       await root.getByRole('button', { name: 'Finish', exact: true }).tap()
       log = await openLog(root, 'tap')
       expect(await shownDraft(log)).toEqual({ answer: ['Incomplete'], rounds: [1, 2], effort: ['Too easy'], notes: `Gallery ${state} note.` })
-      await undoOf(log).tap()
-      await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
-      expect(await lifecycle(root)).toEqual(['Pause', 'Finish'])
-      expect(await livePressed(root)).toEqual([1, 2])
-      log = await openLog(root, 'tap')
-      expect(await shownDraft(log)).toEqual({ answer: [], rounds: null, effort: ['Too easy'], notes: `Gallery ${state} note.` })
       await expect(failureOf(log)).toHaveCount(0)
       await closeLog(page)
       expect(await page.evaluate(() => Object.keys(localStorage).sort())).toEqual(storedBefore)

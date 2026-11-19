@@ -145,8 +145,16 @@
 .clr-ladder-completion__status { margin: var(--spacing-200) 0 0; font-size: var(--label-xs-size); color: var(--text-secondary); }
 .clr-ladder-prescription { display:flex; flex-direction:column; gap:var(--spacing-300); }
 .clr-ladder-prescription__summary { display:flex; flex-direction:column; gap:var(--spacing-200); }
-.clr-ladder-prescription__summary p { margin:0; font-size:var(--label-xs-size); font-family:var(--font-data); }
+/* A3 TASK-105 (JOURNEY-012, AC-R013-02): a summary line wraps inside the card
+   like a round tile does — a long name breaks rather than overflowing. */
+.clr-ladder-prescription__summary p { margin:0; font-size:var(--label-xs-size); font-family:var(--font-data); overflow-wrap:anywhere; }
 .clr-ladder-prescription__summary strong { text-transform:uppercase; }
 .clr-ladder-prescription__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(calc(var(--control-height) * 2),1fr)); gap:var(--spacing-200); margin:0; padding:0; list-style:none; }
 .clr-ladder-prescription__grid li { display:flex; flex-direction:column; gap:var(--spacing-100); padding:var(--spacing-200); font-family:var(--font-data); font-size:var(--label-xs-size); min-width:0; }
 .clr-ladder-prescription__grid li > span { overflow-wrap:anywhere; }
+/* A3 TASK-105 (JOURNEY-012): a schedule's round keeps its label and its live
+   marker (Now / Next) on one line, so every tile's round label stays level
+   with its row's, and states its own start beneath; both wrap inside the tile.
+   A round with no schedule draws neither. */
+.clr-ladder-prescription__head { display:flex; flex-wrap:wrap; align-items:baseline; column-gap:var(--spacing-200); max-width:100%; }
+.clr-ladder-prescription__detail { max-width:100%; overflow-wrap:anywhere; }

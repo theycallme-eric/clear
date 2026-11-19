@@ -8,16 +8,14 @@ import { readE2eEnv } from '../../scripts/e2e/env.mjs'
 import { sessionSnapshotSchema, type SessionSnapshot } from '../../src/state/schemas'
 import {
   HANDOFF_COOLDOWN_TITLE,
-  LADDER_ROUNDS_LIST,
+  LONG_CAP_SECONDS,
   LONG_ROUNDS,
   LONG_TARGETS,
-  LONG_TIMING_LINE,
   LONG_UNIT,
   ROUNDS_COMPLETED,
   SHORT_CAP_SECONDS,
   SHORT_ROUNDS,
   SHORT_TARGETS,
-  SHORT_TIMING_LINE,
   SHORT_UNIT,
   WORK_COMPLETED,
   ladderHandoffAcceptance,
@@ -57,6 +55,19 @@ import { expect, test as scanned } from '../fixtures'
  * would, never forwarded; one may be refused on purpose. This is the app's
  * own write contract on a synthetic origin, not backend persistence proof
  * (`e2e/design-0143/workout-ladder.spec.ts` is the ladder's backend lane).
+ *
+ * A3 TASK-105 (F3, #728) carries this spec onto Round 7: the route's ladders
+ * are Round 7's `TimedWorkoutFlow` over the ladder's durable attempt, and the
+ * Undo is its log's quiet completion action, whose row gives the small
+ * button's own inset back outside its box. Each case keeps the build's name
+ * and asserted behaviour, read from Round 7's markup and words: the grid
+ * `Prescribed ladder rounds`, the meta line that tells the ladders apart, the
+ * clock's caption (`Elapsed` where the build said "Racing the clock",
+ * `Paused`, `Finished`, `Cap reached`), the card's own "Log results" action
+ * and the log Round 7 opens by itself at Finish, no log while the attempt runs
+ * (so none to claim an answer after an Undo), a saved ladder's saved log
+ * (`Log saved`, its rungs read back) in place of a disabled form, and the
+ * quiet `Undo finish · resume ladder`.
  */
 const OWNER = '00000000-0000-4000-8000-000000001401'
 const PLACE = '00000000-0000-4000-8000-000000001411'
@@ -68,8 +79,15 @@ const CORS = {
 /** The browser's clock at entry; the session has run for one minute. */
 const ENTRY = Date.parse('2026-11-10T09:00:00.000Z')
 
-/** The accepted quiet action's words (reference `GalleryLadderFlow`), which are also its name. */
-const UNDO_FINISH = 'Undo finish · Resume ladder'
+/** Round 7's quiet action's words (the accepted gallery's `TimedWorkoutFlow`), which are also its name. */
+const UNDO_FINISH = 'Undo finish · resume ladder'
+
+/** Round 7's name for a ladder's round grid (`LadderPrescription`). */
+const LADDER_ROUNDS_LIST = 'Prescribed ladder rounds'
+const clockText = (total: number) => `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+/** Round 7's meta lines: each ladder's rounds and its one cap — what tells the two cards apart. */
+const LONG_TIMING_LINE = `${LONG_ROUNDS} rounds · ${clockText(LONG_CAP_SECONDS)} cap`
+const SHORT_TIMING_LINE = `${SHORT_ROUNDS} rounds · ${clockText(SHORT_CAP_SECONDS)} cap`
 
 const e2e = readE2eEnv()
 const SYNTHETIC_ORIGIN_NEEDED = !e2e.usesExternalTarget && (e2e.url === null || e2e.anonKey === null)
@@ -322,7 +340,7 @@ async function attemptOf(page: Page, blockId: string): Promise<StoredAttempt> {
  */
 async function expectRunningFrom(page: Page, key: LadderKey, startedAt: string, label: string): Promise<number> {
   const { reading, words } = await clockOf(page, key)
-  expect(words, label).toBe('Racing the clock')
+  expect(words, label).toBe('Elapsed')
   const now = await page.evaluate(() => Date.now())
   const expected = Math.floor((now - Date.parse(startedAt)) / 1000)
   expect(seconds(reading), `${label}: ${reading}`).toBeGreaterThanOrEqual(expected - 1)
@@ -335,18 +353,18 @@ const TIMING_LINES: Readonly<Record<LadderKey, string>> = { long: LONG_TIMING_LI
 const TARGETS: Readonly<Record<LadderKey, readonly number[]>> = { long: LONG_TARGETS, short: SHORT_TARGETS }
 const UNITS: Readonly<Record<LadderKey, string>> = { long: LONG_UNIT, short: SHORT_UNIT }
 
+/** One ladder's Round 7 flow — its card, its clock and its log — told apart by its meta line. */
 function cardOf(scope: Page | Locator, key: LadderKey): Locator {
   const page = 'page' in scope ? scope.page() : scope
-  return scope.locator('[data-workout-card="workout"]').filter({ has: page.getByText(TIMING_LINES[key], { exact: true }) })
+  return scope.locator('.clr-timed-flow[data-timed-format="ladder"]').filter({ has: page.getByText(TIMING_LINES[key], { exact: true }) })
 }
 
-/** The block's clock: its reading and its phase in words, beside its card. */
+/** The block's clock: its digits and its phase in words (Round 7's timer caption). */
 async function clockOf(page: Page, key: LadderKey): Promise<{ reading: string; words: string }> {
-  const stack = page.locator('main .clr-stack').filter({ has: cardOf(page, key) }).last()
-  const clock = stack.locator('.clr-card').filter({ has: page.getByRole('timer') }).first()
-  const text = (await clock.getByRole('timer').first().textContent()) ?? ''
-  const words = (await clock.getByRole('status').first().textContent()) ?? ''
-  return { reading: /\d{2}:\d{2}/.exec(text)?.[0] ?? '', words }
+  return cardOf(page, key).getByRole('timer').first().evaluate((timer) => ({
+    reading: [...timer.children].map((part) => part.textContent ?? '').find((text) => /^\d{2}:\d{2}$/.test(text)) ?? '',
+    words: timer.firstElementChild?.textContent ?? '',
+  }))
 }
 
 function liveTile(card: Locator, round: number): Locator {
@@ -358,24 +376,27 @@ function liveCount(card: Locator): Locator {
 }
 
 /**
- * TASK-046 (C45; R100): each ladder's card holds one "Log results" action
- * where its log was; the log — the same form, with its quiet Undo — opens in
- * the shared focused dialog titled "Log results". One log is open at a time,
- * over a workout that is inert while it is open, and Undo finish closes it
- * as it resumes the attempt.
+ * TASK-046 (C45; R100): once its attempt has ended, each ladder's card holds
+ * one "Log results" action; the log — the same form, with its quiet Undo — is
+ * Round 7's one `LoggingOverlay` titled "Log results", which also opens by
+ * itself at Finish and at the cap. One log is open at a time, over a workout
+ * that is inert while it is open, and Undo finish closes it as it resumes the
+ * attempt.
  */
 function openerOf(card: Locator): Locator {
-  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+  return card.getByRole('button', { name: 'Log results', exact: true })
 }
 
-/** The open log's form. */
+/** The card's open log's form. */
 function logOf(card: Locator): Locator {
-  return card.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+  return card.locator('dialog[open] form.clr-timed-log')
 }
 
-/** Opens the card's log by touch (closing any other first) and returns it. */
+/** Opens the card's log by touch (closing any other first) unless it is open, and returns it. */
 async function openLog(card: Locator): Promise<Locator> {
-  if ((await openerOf(card).getAttribute('aria-expanded')) !== 'true') {
+  // Round 7 opens the log by itself at Finish and at the cap: wait a moment for it.
+  await logOf(card).waitFor({ state: 'attached', timeout: 1_000 }).catch(() => undefined)
+  if ((await logOf(card).count()) === 0) {
     await closeLog(card.page())
     await openerOf(card).tap()
   }
@@ -383,8 +404,10 @@ async function openLog(card: Locator): Promise<Locator> {
   return logOf(card)
 }
 
-/** Opens the card's log by keyboard: the action focused, then Enter. */
+/** Opens the card's log by keyboard: the action focused, then Enter — unless Round 7 already opened it. */
 async function openLogByKeyboard(card: Locator): Promise<Locator> {
+  await logOf(card).waitFor({ state: 'attached', timeout: 1_000 }).catch(() => undefined)
+  if ((await logOf(card).count()) > 0) return logOf(card)
   await openerOf(card).focus()
   await card.page().keyboard.press('Enter')
   await expect(logOf(card)).toBeVisible()
@@ -393,9 +416,14 @@ async function openLogByKeyboard(card: Locator): Promise<Locator> {
 
 /** Closes the open log with its framed X. */
 async function closeLog(page: Page) {
-  const open = page.locator('dialog.clr-accepted-log[open]')
+  const open = page.locator('dialog[open]').filter({ has: page.locator('form.clr-timed-log') })
   if ((await open.count()) === 0) return
   await open.getByRole('button', { name: 'Close log', exact: true }).click()
+  // Round 7's dialog (the design system's) leaves after its 200 ms exit unless
+  // motion is reduced. When it has not left by itself, the browser clock is
+  // held: run that clock by the exit (never when no clock is held).
+  await open.first().waitFor({ state: 'detached', timeout: 1_000 }).catch(() => undefined)
+  if ((await open.count()) > 0) await page.clock.runFor(200)
   await expect(open).toHaveCount(0)
 }
 
@@ -594,7 +622,7 @@ async function attachLog(page: Page, card: Locator, name: string) {
     await settle(page)
     await test.info().attach(`${name}.png`, { body: await card.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     // TASK-046: the log itself is in the open focused dialog.
-    const open = page.locator('dialog.clr-accepted-log[open] [data-logging-frame]')
+    const open = page.locator('dialog[open]').filter({ has: page.locator('form.clr-timed-log') })
     if ((await open.count()) > 0) await test.info().attach(`${name}-log.png`, { body: await open.screenshot({ caret: 'hide' }), contentType: 'image/png' })
   } finally {
     await page.setViewportSize(viewport)
@@ -653,17 +681,17 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       await pass(page, 30)
       await undoOf(long).tap()
       // TASK-046: Undo closes the log in the same act.
-      await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
+      await expect(page.locator('dialog[open]')).toHaveCount(0)
       await expect(undoOf(long)).toHaveCount(0)
-      expect(await clockOf(page, 'long')).toEqual({ reading: '02:30', words: 'Racing the clock' })
+      expect(await clockOf(page, 'long')).toEqual({ reading: '02:30', words: 'Elapsed' })
       expect(await lifecycle(long)).toEqual(['Pause', 'Finish'])
       expect(await pressed(long.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }))).toEqual(through(3))
       await expect(liveCount(long)).toHaveText(`3 of ${LONG_ROUNDS} rounds completed`)
-      await openLog(long)
-      expect(await chosen(completionOf(long))).toEqual([])
-      await expect(roundsOf(long)).toHaveCount(0)
+      // The answer as it was before Finish — none: Round 7 offers no log while
+      // the attempt runs, so no answer, no rounds and no Undo are claimed.
+      await expect(openerOf(long)).toHaveCount(0)
+      await expect(logOf(long)).toHaveCount(0)
       await expect(undoOf(long)).toHaveCount(0)
-      await closeLog(page)
       expect(app.posts).toEqual([])
 
       // More rounds, Finish again: a two-digit count, the same alignment.
@@ -784,7 +812,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     expect(dialogs).toBe(0)
     await expect(page.getByRole('dialog')).toHaveCount(0)
     await expect(page.getByRole('alertdialog')).toHaveCount(0)
-    expect(await clockOf(page, 'long')).toEqual({ reading: '00:45', words: 'Racing the clock' })
+    expect(await clockOf(page, 'long')).toEqual({ reading: '00:45', words: 'Elapsed' })
 
     // Paused, finished, undone by Space: the focus is on Resume.
     await page.keyboard.press('Enter')
@@ -907,7 +935,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     // Undo: running on from the start it was stored with — the time spent
     // finished and closed counts (at least 02:00 + 20 s), none is granted.
     await undoOf(long).tap()
-    await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
+    await expect(page.locator('dialog[open]')).toHaveCount(0)
     await expect(undoOf(long)).toHaveCount(0)
     const resumed = await attemptOf(page, app.longBlockId)
     expect(resumed.clock).toEqual({ startedAt: finished.clock.startedAt, finishedAt: null })
@@ -933,7 +961,8 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     // A reload that cannot read the saved rows back: still no Undo, nothing
     // to start or choose. TASK-048 (AC-R032-02, superseding "no draft
     // claimed"): each attempt this device saved shows the draft it saved —
-    // Incomplete through 8 and through 2 — disabled, never a starting point.
+    // through 8 and through 2 — never a starting point. On Round 7 that is the
+    // ladder's saved log (`Log saved`, its rungs), with no log to answer.
     app.lane.performedReadable = false
     await reopen(page, false)
     await page.getByRole('button', { name: 'Previous', exact: true }).tap()
@@ -942,11 +971,12 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
     for (const [key, rung] of [['long', 8], ['short', 2]] as const) {
       const card = cardOf(page, key)
       expect(await lifecycle(card), key).toEqual([])
-      await openLog(card)
-      await expect(undoOf(card)).toHaveCount(0)
-      expect(await chosen(completionOf(card)), key).toEqual(['Incomplete'])
-      expect(await pressed(roundsOf(card)), key).toEqual(through(rung))
-      for (const radio of await completionOf(card).getByRole('radio').all()) await expect(radio).toBeDisabled()
+      const savedLog = card.locator('[data-timed-saved]')
+      await expect(savedLog.getByRole('status')).toHaveText('Log saved')
+      await expect(savedLog).toContainText(` · ${rung} rungs`)
+      await expect(openerOf(card)).toHaveCount(0)
+      await expect(card.getByRole('button', { name: /^Undo finish|^Resume ladder$/ })).toHaveCount(0)
+      await expect(card.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }).getByRole('button')).toHaveCount(0)
     }
     await checkJourneyA11y(page)
     expect(app.posts).toHaveLength(3)
@@ -965,7 +995,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
       for (const rounds of [4, 12] as const) {
         await visit(`/gallery/refinements?state=ladder-${rounds}`)
         const state = page.locator(`[data-refinement-state="ladder-${rounds}"]`)
-        const card = state.locator('[data-workout-card="workout"]')
+        const card = state.locator('.clr-timed-flow')
         await card.getByRole('button', { name: 'Start ladder', exact: true }).tap()
         await liveTile(card, 2).tap()
         await card.getByRole('button', { name: 'Finish', exact: true }).tap()
@@ -980,7 +1010,7 @@ test.describe('TASK-014 accidental Finish recovery with an aligned quiet Undo', 
         await attachLog(page, card, `gallery-ladder-${rounds}-undo-${name}`)
 
         await undoOf(card).tap()
-        await expect(page.locator('dialog.clr-accepted-log[open]')).toHaveCount(0)
+        await expect(page.locator('dialog[open]')).toHaveCount(0)
         await expect(undoOf(card)).toHaveCount(0)
         expect(await lifecycle(card)).toEqual(['Pause', 'Finish'])
         expect(await pressed(card.getByRole('list', { name: LADDER_ROUNDS_LIST, exact: true }))).toEqual(through(2))

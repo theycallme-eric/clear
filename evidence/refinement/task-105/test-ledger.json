@@ -1,0 +1,1271 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-105",
+  "family": "F3 (5a: durable ladder)",
+  "base": "caa3dcceb887baeed287c25a34908569662bba9a",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F3 = src/ui/ladder-block.test.tsx (35 definitions, 39 tests), src/ui/ladder-rungs.test.tsx (9), and the carried state tests the brief names; evidence/refinement/task-104/test-ledger.json deferred the 15 TASK-013/TASK-014 tests of src/ui/timed-workout-flow.test.tsx here; the brief names e2e/refinement/task-012/013/014/048.spec.ts and the new task-105-parity.spec.ts.",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "retired": [],
+    "deferred": [],
+    "blocked": [],
+    "needsDecision": [
+      {
+        "what": "e2e/refinement/task-012.spec.ts › JOURNEY-012 phone-320: Review then Workout … (one assertion: twelve rounds within one 320 × 568 screen, R117)",
+        "why": "Round 7’s accepted grid at 320 px is two columns of inset tiles, so the twelve-round grid is 592 px tall; the accepted gallery state ladder-12 draws the same (parity within 2 px). Passing needs a change to the accepted presentation that no TASK-105 criterion names, or the owner’s word that the build’s bound does not apply to Round 7 at 320 px. The test is unchanged: not skipped, not weakened.",
+        "options": [
+          "Change the accepted ladder grid at 320 px (for example a smaller tile inset or a third column), recorded as a gallery change with its criterion",
+          "Keep the accepted look and retire or rewrite this one bound with the owner’s approval"
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "carried": 85,
+    "rewritten": 57,
+    "retired": 0,
+    "deferred": 0,
+    "added": 12,
+    "failingBlocked": 0,
+    "failing": 1
+  },
+  "entries": [
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The route’s ladders are Round 7’s TimedWorkoutFlow (meta line `12 rounds · 09:00 cap` tells the cards apart; list `Prescribed ladder rounds`). Each toggle is named by Round 7’s `Complete round 3` (pinned by the gallery’s own test) and describes its work in words through `aria-describedby` (`kettlebell swing, 9 reps row, 200 m`), so R88’s “position and target both said” is read as name + description. The glyph rule is read from Round 7’s stylesheets (`.clr-ladder-prescription__round > svg` in workout-r7.css, `.clr-ladder-completion__tile > svg` in ladder-rungs.css). Everything else (prefix rule, counts, keyboard, durable record, For Time record untouched, Finish ends the check-off) is the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The partial round is read from Round 7’s `Completed in round N` field labels (Round 7 has no “Any partial work belongs to round N” line); the prefix rule, tile sequence, durable draft and saved row are the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. “Before the end nothing is imported” is read as: Round 7 offers no log until the attempt ends, and the durable attempt holds no draft (`draft: null`, `endCarried: false`). Partial round read from `Completed in round N`. The rest is the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The cap reading uses Round 7’s timer digits and caption (`15:00`, `Cap reached`); the partial round its field labels. The rest is the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Round 7’s rep-first tile names its third row `clr-ladder-completion__target` (holding the unit). Level rows (R93) are read as Round 7’s recipe: the round row `nowrap`, the number and unit rows each one unbroken token, each row’s fixed line height; the browser proof (task-013.spec.ts) measures level rows. The cascade is read from Round 7’s ladder-rungs.css and workout-r7.css. The timed ladder’s unit is the shared `ladderUnit` (`sec`), which Round 7’s log now uses.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Clocks read from Round 7’s timer. The saved section is read as Round 7’s saved log (`Log saved`, `· 8 rungs`, `· 2 rungs`, `Effort: Too hard`) with no open answer, no live check-off, no lifecycle and no Undo, in place of the build’s disabled form; the build’s “saved result read back, never a starting point” is the same.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour for all three (direct mounts through BlockSlot under the product presentation, the route’s localStorage in place of an injected memory storage). The schedule is the route’s TimedWorkoutFlow in its schedule mode (A3 TASK-105 widened lane: src/ui/block-renderers.tsx sends every ladder there): its start stamp in the same durable record (`clear.workout-ladders`, `originalCapSeconds: null`), no check-off (its own clock marks the live round), Start schedule its one action, and its end opening the one “Log results” dialog at Incomplete with no round; the rung the athlete states is kept across a remount.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the accepted gallery states draw Round 7’s TimedWorkoutFlow (list `Prescribed ladder rounds`), its log in the one “Log results” dialog opened at Finish.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The clock is read from Round 7’s timer (caption `Elapsed` for the build’s “Racing the clock”); the original cap from `data-cap-seconds` (Round 7 draws no “Cap in mm:ss” line) and proved by the 08:59 running / 09:00 capped step. “The answer returns to before Finish” is read as: no log while the attempt runs, and the durable draft back at `completed: null` with its rung and effort. The build’s readout was right at once after Undo; Round 7’s lagged one tick, now fixed (no extra clock read in the test).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (clock read from Round 7’s timer and `data-cap-seconds`; no log while the attempt is paused).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour; also checks the card’s `Resume ladder` action is withdrawn with the in-log Undo.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The failure dialog is found by its name (`That didn’t save`). The final reopen reads Round 7’s saved logs (`Log saved` · 8 rungs; no rungs for the never-answered short ladder) with no answer group, lifecycle, check-off or Undo, in place of the build’s disabled form.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Round 7’s words `Undo finish · resume ladder`; the recipe is read from Round 7: `.clr-timed-undo` rules in timed-workout.css, the small button’s own inline inset token (`var(--spacing-300)`) kept and given back outside its box by its row (`margin-inline: calc(var(--spacing-300) * -1)`, inline), nothing else declared. Group order, keyboard order, no confirmation and focus to the lead control are the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour; after Undo Round 7 offers no log while running, so “the log open again without Undo or rounds” is read as no open log and no “Log results” action.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timed-workout-flow.test.tsx",
+      "test": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo",
+      "ledger": "deferred (TASK-104 → TASK-105)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (direct mount through BlockSlot under the product presentation, older record in the route’s localStorage; after Undo no log while running and the durable draft holds no answer).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder is rendered from the int array, and shown once > renders one rung per entry of target_sequence, in order",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder is rendered from the int array, and shown once > states the rep scheme at the block, never on a movement line",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7 summary lines carry no equipment word (`push up · 2-4-6-4-2 reps`). “The only heading is the log’s” is read as: the log’s title is `Log results`, and no heading of the ladder’s work names a movement (Round 7’s card title and coaching region, and the log’s per-movement entry groups, are not rows of the work).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder is rendered from the int array, and shown once > says what is performed at each rung when the movements share it",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder is rendered from the int array, and shown once > omits the each-rung line for a single movement, which implies it",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder is rendered from the int array, and shown once > shows an inverse pair’s two numbers on the rung they share",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder is rendered from the int array, and shown once > states a fixed-interval companion as an annotation, not as a movement",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7 summary lines carry no equipment word; the heading check reads as above.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "read-only and interactive rungs are different things > offers nothing to tap while the block is being performed",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7 offers the log once the attempt has ended, so the log’s radios are read after Start and Finish: the five radios, with only the drawn Incomplete starting point checked (the build read them before an answer, none checked).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "read-only and interactive rungs are different things > turns the same rungs into a choice once the cap is declared",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "read-only and interactive rungs are different things > draws the two states differently, and a chosen rung with more than colour",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "read-only and interactive rungs are different things > marks the chosen rung and the rungs climbed below it",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "read-only and interactive rungs are different things > reselects cleanly when the user changes their mind",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "read-only and interactive rungs are different things > tells two rungs with the same target apart by position, not by name",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the rung reached is what the block’s row records > supplies the chosen rung as highest_rung when the cap was hit",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the rung reached is what the block’s row records > records the top rung when the ladder was finished",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the rung reached is what the block’s row records > records no rung at all when the user says nothing",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the rung reached is what the block’s row records > records no rung when the cap was hit and no rung was chosen",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the rung reached is what the block’s row records > forgets the rung when the user changes the ending to finished",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the rung reached is what the block’s row records > says a saved block is saved, and offers no completion of its own (REQ-013)",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block the rows do not describe as one > says so rather than drawing an empty rail, and still completes",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block the rows do not describe as one > says the block has nothing left when every movement was swapped out",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block is one card of the shared frame > draws one card, with no card inside it, whichever mode the rungs are in",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Answered on Round 7 the race has run, so its clock is drawn beside the card as the shared timer’s own frame; the check is that the block’s card holds no card and no other card is drawn.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block is one card of the shared frame > lists its movements as rows in prescribed order, each headed by its name",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7’s summary is `[data-ladder-movement]` lines with the name in `strong`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block is one card of the shared frame > captions the rungs and the movements with the same group label",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block is one card of the shared frame > says it is saved inside the card, below the ending it asks for",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7’s saved ladder shows its saved log with “Edit log”, the card’s action above “Block saved”; that opens the log in the dialog.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block is one card of the shared frame > keeps the rung choice live after the cap is declared, and reports it",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a ladder block is one card of the shared frame > says an emptied block is empty, and still reports to the shell",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7 summary lines (`[data-ladder-movement]`) absent.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder states its structure identity like every other block > names the structure, its cap and its scheme, and the block’s size",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7’s identity: the `LADDER` badge, the meta line `3 rounds · 08:00 cap` and the scheme in the movement’s summary line (`15 → 9 reps · −3 per round`), in place of the build’s `8 MIN CAP · LADDER DOWN` line.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "the ladder states its structure identity like every other block > counts rungs in the modality prescribed, not in reps by default",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7 summary line `plank · 60 → 30 sec · −15 per round`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a scheduled ladder shows every round precomputed — no mental arithmetic > $rounds rounds every $interval s: each round names its start, its rung target and the fixed companion work",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so every ladder — a scheduled one included — is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended. A scheduled ladder’s tiles (`LadderPrescription` with the schedule’s round context) state each round’s start (`Starts at 02:30`), the rung target and the fixed companion in the ×/· notation, with no “— same every round” suffix; the meta line is the schedule’s timing line (`timingSummary`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a scheduled ladder shows every round precomputed — no mental arithmetic > states a per-side rung as per side, in the round it belongs to",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The scheduled ladder is the route’s TimedWorkoutFlow schedule; its tile reads `6 × lunge each side` through the shared `ladderRoundReadings`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a scheduled ladder runs on its own clock, restored from wall-clock time > marks the live round from the stored start, survives a remount, and records nothing the clock produced",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The schedule is the route’s TimedWorkoutFlow schedule over the ladder’s durable attempt (no cap): `Start schedule` is the flow’s top action; the status words are the schedule’s own (`LadderBlock.ScheduleStatus`: NOT STARTED, ROUND N OF M, COMPLETE); the live round is its tile’s `Now` marker with `aria-current=\"step\"` (`Next` on round 1 before Start); the countdown is the schedule’s `Time remaining` (`LadderBlock.IntervalCountdown`); a remount reads the start stamp back; the schedule’s end opens the one log at Incomplete (TASK-010) and the rung is stated on the log’s rep-first tile (`Round 3: 10 reps`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "free-paced For Time never infers progress from elapsed time > $rounds rounds: no live round and no schedule, however long passes",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "free-paced For Time never infers progress from elapsed time > records progress only once the athlete declares it",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a capped window shows its one cap > $rounds rounds inside $structureType: the cap is stated, and no round runs on the clock",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "legacy ladders are unchanged by explicit timing > a ladder with no timing keeps its movement list and draws no rounds",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7’s meta line states the rungs and the block’s cap for every ladder (`5 rounds · 08:00 cap`); no timing line of a mode, no pacing note, no schedule.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > AC-C35-01 the accepted twelve-round ladder on /workout states its concise progression once, then every round’s push up and fixed burpee as a compact tile after its Start — with no rung row repeating it",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Owner and words are Round 7’s: LadderPrescription over the shared `state/ladder.ts` readings, grid `Prescribed ladder rounds`, round label `.label`, summary lines without the equipment word, meta lines `12 rounds · 07:00 cap`, the log once the attempt has ended; direct mounts through BlockSlot under the product presentation with the route’s localStorage. Order on the card read after Start and Finish for the log (Round 7 offers it once ended). Grid recipe read from Round 7’s stylesheets; the summary line’s readable wrapping (`overflow-wrap: anywhere`) is now declared by ladder-rungs.css.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > AC-R012-01 every name, sequence, load and unit, round count and cap is read from each ladder’s own data — a loaded descending ladder with a distance companion and a scheduled pyramid with no cap — never from the accepted screenshot",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Owner and words are Round 7’s: LadderPrescription over the shared `state/ladder.ts` readings, grid `Prescribed ladder rounds`, round label `.label`, summary lines without the equipment word, meta lines `12 rounds · 07:00 cap` (a schedule’s own timing line), the log once the attempt has ended; Review then Workout on the real routes. The accepted, loaded and scheduled ladders all read from their own data (the schedule through TimedWorkoutFlow’s schedule mode). The build also read compact equipment beside each summary name (R132); Round 7’s accepted summary has none.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > AC-R012-01 Review states every round of each ladder in the same words the workout performs, read-only, under its unchanged accepted movement rows",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s. Round 7’s /review draws each ladder’s rounds under its unchanged movement rows with the live ladder’s own round grid (`LadderPrescription.Rounds`) over `ladderRounds` in src/state/review.ts (TASK-AC-F3CDA21AC50B), so each tile reads exactly as the workout’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > AC-R012-02 no “same every round” suffix, no “Move through the rounds” paragraph and no “reps” between a quantity and its movement: the ×/· notation keeps the order, every target and each movement’s identity, the fixed companion in every round",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Owner and words are Round 7’s: LadderPrescription over the shared `state/ladder.ts` readings, grid `Prescribed ladder rounds`, round label `.label`, summary lines without the equipment word, the log once the attempt has ended. Round 7’s raced ladders draw no pacing paragraph (the build kept the free-paced mode’s “Start each round when you finish the last…” line, which Round 7’s flow has never drawn); the schedule keeps its one pacing line. No “same every round”, “Move through the rounds” or “between each rung” on /review or /workout.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > JOURNEY-012 recovery: Start, Pause and the cap keep the prescription unchanged; the rung question and the reached reading appear only once answered; nothing is recorded but the declared answer",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Owner and words are Round 7’s: LadderPrescription over the shared `state/ladder.ts` readings, grid `Prescribed ladder rounds`, round label `.label`, summary lines without the equipment word, meta lines `12 rounds · 07:00 cap`, the log once the attempt has ended; direct mounts through BlockSlot under the product presentation with the route’s localStorage. The cap is reached on the browser-less wall clock (Date.now) the flow reads; the log opens by itself at the cap.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a scheduled ladder’s tiles keep each start and mark the live round from its own clock through Start, a close and reopen and the end of the schedule",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The scheduled ladder is the route’s TimedWorkoutFlow schedule over the durable attempt: each tile states its start (`.clr-ladder-prescription__detail`) and the live round’s marker (`[data-ladder-marker]`, `aria-current=\"step\"` on its tile) read from the stored start stamp, through Start, a remount and the end of the schedule, with no rung claimed.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > JOURNEY-012 a ladder with no explicit timing, an inverse pair and a malformed ladder are stated through the same owner: their rounds are their rungs, and absent rungs keep their existing meaning",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Owner and words are Round 7’s: LadderPrescription over the shared `state/ladder.ts` readings, grid `Prescribed ladder rounds`, round label `.label`, summary lines without the equipment word, meta lines `12 rounds · 07:00 cap`, the log once the attempt has ended; direct mounts through BlockSlot under the product presentation with the route’s localStorage. Round 7’s identity (`LADDER` badge, `4 rounds · 08:00 cap`) for the build’s `8 MIN CAP · LADDER · FIXED INTERVAL` line; the load with no profile read is its number alone (`40`), never a guessed unit.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > JOURNEY-012 the readings come from the columns: rising, falling, uneven, timed, distance, per-side and inverse ladders, and the round count the timing gives",
+      "ledger": "deferred (F3)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s (pure readings of src/state/ladder.ts).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-rungs.test.tsx",
+      "test": "TASK-012 compact truthful ladder prescription > JOURNEY-012 gallery ladder-4 and ladder-12 draw the actual consumer’s compact prescription, from the gallery’s own data, with no network and no route storage",
+      "ledger": "deferred (F3)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. Owner and words are Round 7’s: LadderPrescription over the shared `state/ladder.ts` readings, grid `Prescribed ladder rounds`, round label `.label`, summary lines without the equipment word, meta lines `12 rounds · 07:00 cap`, the log once the attempt has ended; direct mounts through BlockSlot under the product presentation with the route’s localStorage. Round 7’s summary lines and meta line.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/ladder-save-authority.test.tsx",
+      "test": "TASK-048 the shell says how a saved row is known, keeps it, and tells a failed save > AC-R032-02 saved for this device’s answered insert with the row kept; known for a row already there, with none kept; a failed save told to its block only",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/ladder-save-authority.test.tsx",
+      "test": "TASK-048 the shell says how a saved row is known, keeps it, and tells a failed save > AC-R032-02 the performed read is known, with the row and each recorded movement kept by its workout exercise; a movement with no row is absent",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/ladder-save-authority.test.tsx",
+      "test": "TASK-048 the shell says how a saved row is known, keeps it, and tells a failed save > AC-R032-03 a renderer whose own richer save failed reopens a known block in the same act: it stays outstanding, the shell’s progress is not told, and the retry restates the row once",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/ladder-save-authority.test.tsx",
+      "test": "TASK-048 a saved ladder row read back (ladderDraftFromRow) > AC-R032-02 the top rung is Complete, a lower rung or zero Incomplete through it, and no rung no answer; the category, notes and each recorded movement as saved",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-381E586395ED ordered progress, the current draft, the Finish checkpoint and the original cap round-trip through the workout-persistence owner under the attempt’s session, block and attempt identity",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-381E586395ED a stale snapshot never attaches to another workout, block or attempt, and an unreadable or unknown-version record restores nothing",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-381E586395ED a ladder clock already in a browser under the For Time key is adopted once — running, paused or finished — and older records keep restoring exactly as before",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA close and reopen while running counts the time away, while paused counts none, and Resume keeps the original cap and the window left",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA a clock that reached its cap while closed comes back expired: no Pause, Resume, check-off or Finish, and tracked progress carries into the log once",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA Undo after Finish resumes as though Finish never happened: a running clock keeps the time spent finished, a paused one stays paused, progress and the draft come back, and the answer given to the ended attempt is undone",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA Undo is unavailable once the original cap has passed, and an accidental Finish keeps its time instead of resuming past the cap",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA a failed save keeps the draft and Undo for the retry; a successful save removes Undo, freezes the draft and the clock and survives a reload; a row the server reports is authoritative over any local draft",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-406D2CE971AA through the shell’s one block writer: a refused save writes nothing, the retry after a reload writes the durable draft exactly once, and an answer lost in transit is read back as saved with no duplicate row",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-ladder-recovery.test.ts",
+      "test": "TASK-032 durable ladder draft and clock recovery > AC-A168ED4B8418 exposes the state and recovery interfaces TASK-013, TASK-014, TASK-046 and TASK-048 consume, documented with each task’s obligation, and claims no JOURNEY-032 completion",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the sample the criterion is stated against > is schema-valid, so what it proves about rendering is about real content",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the sample the criterion is stated against > contains every structure type",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the sample the criterion is stated against > contains every rep scheme",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the sample the criterion is stated against > contains every target kind, modality and load guidance",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > states the intensity as its value on the scale it was chosen on, without \"of 10\"",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > states the effective intensity, not the one that was asked for",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > reads the anchor out of the enum rather than reciting it",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > names the goal the workout was composed for",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > has a word for a profile that never answered the goal question",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > names every goal the database admits",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > carries an adjustment reason when a clamp moved something",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the header IA.md §4 asks for > says nothing about an adjustment that did not happen",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the duration is the effective target and only that > shows the number generation was asked to hit",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the duration is the effective target and only that > never surfaces the computed plausibility estimate or Claude’s own",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the duration is the effective target and only that > shows the effective target rather than the requested one when they differ",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > keeps every section, in the order it will be performed, under its type’s label",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > never lets a custom section title name, or change, a section (REQ-011)",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > counts the movements it holds, per section and in total",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > names each structure with the vocabulary the workout screen performs it in",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > carries the one number that changes what the user is about to do",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > names a rep scheme that carries information and stays quiet about `fixed`",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > states a sequence as its rungs rather than as a set count times a number",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > states a range with an en dash, so it cannot be read as a ladder",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > states a per-side target as a suffix rather than a doubled number",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > states a distance in the unit the prescription named",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > humanises the slug the payload carries for a movement and its equipment",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "the workout, as the briefing reads it > carries block notes and tempo exactly as written",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "grouping, order and shared rest (REQ-011) > groups every structure but a standard one",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "grouping, order and shared rest (REQ-011) > keeps each group’s movements in their prescribed order",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "grouping, order and shared rest (REQ-011) > counts the rounds of a superset and a circuit, and of nothing timed",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "grouping, order and shared rest (REQ-011) > states no superset round count its members disagree about",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "grouping, order and shared rest (REQ-011) > states the shared rest on the group rather than on a movement",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "tempo (REQ-011) > collects every prescribed tempo into the section’s optional detail, in order",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "tempo (REQ-011) > discards no tempo, however many movements repeat it",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "no generated overview or section introduction (REQ-010) > carries neither string from a legacy workout, at any depth",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "no generated overview or section introduction (REQ-010) > briefs a null-prose workout exactly as the legacy one",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "no generated overview or section introduction (REQ-010) > keeps every section, block, label and prescription of a legacy workout",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "rest > states the rest between sets when there is any",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "rest > never renders an absent or zero rest as a rest",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "rest > states the rest between rounds separately, because it is a different rest",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "load guidance > answers in the guidance’s own terms",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "load guidance > says nothing where the guidance says nothing",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "load guidance > states an absolute load in the profile’s unit",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "load guidance > states an absolute load without a unit rather than in a guessed one",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "load guidance > has an answer for every guidance the database admits",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "load guidance > reaches the briefing with the unit it was given",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "keys > are unique across the whole briefing, because composed rows have no ids",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/review.test.ts",
+      "test": "keys > survive two blocks in one section holding the same movement",
+      "ledger": "carried (task 2)",
+      "disposition": "carried",
+      "note": "File byte-identical to the build’s; passes unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "test": "JOURNEY-012 phone-320: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round.",
+      "result": "failed",
+      "reason": "Every assertion of this case passes except one, carried unchanged from the build: “Compact: twelve rounds fit within one screen’s height (R117)” — `expect(twelve.grid.height).toBeLessThan(viewport.height)` at 320 × 568. Round 7’s accepted grid at 320 px is two columns (the accepted `minmax(calc(var(--control-height) * 2), 1fr)` recipe, pinned by AC-C35-01 in ladder-rungs.test.tsx, over the accepted inset tiles TASK-103 restored), so twelve rounds are six rows: 592 px. The accepted gallery state ladder-12 draws the same grid at 320 px (TASK-105 parity ladder-12 phone-320 matches every element box within 2 px), and at 390 × 844 the case passes. Meeting the 568 px bound needs a change to the accepted gallery presentation (for example a smaller tile inset or a third column at 320 px), which no criterion of this task names; weakening the bound is not allowed. A diagnostic copy with only this check made soft (run once, deleted, not committed) reported it as the only failure. Needs the owner’s or controller’s decision; not skipped, not weakened."
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "test": "JOURNEY-012 phone-390: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "test": "JOURNEY-012 keyboard and reduced motion phone-390: no tile is a focus stop; Start, Pause, Resume and Finish by keyboard leave the prescription unchanged, and the rung question appears only once the ladder is answered",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "test": "JOURNEY-012 touch and recovery phone-320: a tapped tile does nothing, and a close and reopen while the ladders run keeps every prescription as it was",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-012.spec.ts",
+      "test": "JOURNEY-012 gallery ladder-4 and ladder-12 phone-320: the accepted states draw the actual consumer’s compact prescription with no network",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "test": "JOURNEY-013 phone-320 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "test": "JOURNEY-013 phone-390 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "test": "JOURNEY-013 keyboard phone-390 reduced motion: rounds are checked off and corrected by keyboard, the count is announced, Finish with nothing more imports only what was checked, and nothing moves beyond the hard cut",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "test": "JOURNEY-013 recovery phone-390: a reload keeps checked progress and the pause, and keeps the edited log after Finish; the save records the edit once",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-013.spec.ts",
+      "test": "JOURNEY-013 gallery ladder-4 and ladder-12 phone-320: the actual ladder renderer checks rounds off live and hands them to its rep-first log, over memory only",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "test": "JOURNEY-014 phone-320 touch: the quiet Undo's text starts at the rounds-completed count's left edge for one- and two-digit ladders, and Undo returns the same attempt running or paused within its original cap; Finish again and the save records one truthful row each",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): as task-013.spec.ts, plus the clock’s caption (`Elapsed` for “Racing the clock”), no log while the attempt runs after an Undo, Round 7’s saved logs in place of the disabled form, and closing a log while the browser clock is held runs that clock by the design-system dialog’s 200 ms exit. The Range-based text-start alignment, focus frame and quiet-style checks are the build’s, unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "test": "JOURNEY-014 phone-390 touch: the quiet Undo's text starts at the rounds-completed count's left edge for one- and two-digit ladders, and Undo returns the same attempt running or paused within its original cap; Finish again and the save records one truthful row each",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): as task-013.spec.ts, plus the clock’s caption (`Elapsed` for “Racing the clock”), no log while the attempt runs after an Undo, Round 7’s saved logs in place of the disabled form, and closing a log while the browser clock is held runs that clock by the design-system dialog’s 200 ms exit. The Range-based text-start alignment, focus frame and quiet-style checks are the build’s, unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "test": "JOURNEY-014 keyboard phone-390 reduced motion: the Undo is one tab stop between the answer and the first round, shows its focus, needs no confirmation, and hands the focus back to the restored Pause or Resume",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): as task-013.spec.ts, plus the clock’s caption (`Elapsed` for “Racing the clock”), no log while the attempt runs after an Undo, Round 7’s saved logs in place of the disabled form, and closing a log while the browser clock is held runs that clock by the design-system dialog’s 200 ms exit. The Range-based text-start alignment, focus frame and quiet-style checks are the build’s, unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "test": "JOURNEY-014 recovery phone-390: the original cap withdraws Undo unprompted; a reload and a failed save keep it and the draft; a successful save ends it for good, even when a reload cannot read the row back",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): as task-013.spec.ts, plus the clock’s caption (`Elapsed` for “Racing the clock”), no log while the attempt runs after an Undo, Round 7’s saved logs in place of the disabled form, and closing a log while the browser clock is held runs that clock by the design-system dialog’s 200 ms exit. The Range-based text-start alignment, focus frame and quiet-style checks are the build’s, unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-014.spec.ts",
+      "test": "JOURNEY-014 gallery ladder-4 and ladder-12 at phone-320 and phone-390: the actual ladder renderer draws the aligned quiet Undo and brings the same attempt back, over memory only",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): as task-013.spec.ts, plus the clock’s caption (`Elapsed` for “Racing the clock”), no log while the attempt runs after an Undo, Round 7’s saved logs in place of the disabled form, and closing a log while the browser clock is held runs that clock by the design-system dialog’s 200 ms exit. The Range-based text-start alignment, focus frame and quiet-style checks are the build’s, unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "test": "JOURNEY-032 backend lane touch phone-390",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): Round 7 offers the log once the attempt has ended, so the effort and notes are entered after the accidental Finish (still before the reloads, the Undo, the refused save and the retry that must keep them) and a running or paused ladder is shown keeping its progress and durable record; a saved ladder is read from Round 7’s saved log (`Log saved`, its rungs, effort, notes and each movement’s actuals) in place of the disabled form. The backend lanes (PRE-001) were not run here: no test backend in this worktree; they stop at their explicit precondition.",
+      "result": "not run here: PRE-001",
+      "reason": "The backend lane stops at its explicit PRE-001 precondition in this worktree (no disposable test backend; `.env.runner.local` is placed only by the controller’s verification). It fails rather than skips, so the controller’s run proves it."
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "test": "JOURNEY-032 backend lane keyboard phone-320 reduced motion",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): Round 7 offers the log once the attempt has ended, so the effort and notes are entered after the accidental Finish (still before the reloads, the Undo, the refused save and the retry that must keep them) and a running or paused ladder is shown keeping its progress and durable record; a saved ladder is read from Round 7’s saved log (`Log saved`, its rungs, effort, notes and each movement’s actuals) in place of the disabled form. The backend lanes (PRE-001) were not run here: no test backend in this worktree; they stop at their explicit precondition.",
+      "result": "not run here: PRE-001",
+      "reason": "The backend lane stops at its explicit PRE-001 precondition in this worktree (no disposable test backend; `.env.runner.local` is placed only by the controller’s verification). It fails rather than skips, so the controller’s run proves it."
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "test": "JOURNEY-032 synthetic lane touch phone-390",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): Round 7 offers the log once the attempt has ended, so the effort and notes are entered after the accidental Finish (still before the reloads, the Undo, the refused save and the retry that must keep them) and a running or paused ladder is shown keeping its progress and durable record; a saved ladder is read from Round 7’s saved log (`Log saved`, its rungs, effort, notes and each movement’s actuals) in place of the disabled form. The backend lanes (PRE-001) were not run here: no test backend in this worktree; they stop at their explicit precondition.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "test": "JOURNEY-032 synthetic lane keyboard phone-320 reduced motion",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): Round 7 offers the log once the attempt has ended, so the effort and notes are entered after the accidental Finish (still before the reloads, the Undo, the refused save and the retry that must keep them) and a running or paused ladder is shown keeping its progress and durable record; a saved ladder is read from Round 7’s saved log (`Log saved`, its rungs, effort, notes and each movement’s actuals) in place of the disabled form. The backend lanes (PRE-001) were not run here: no test backend in this worktree; they stop at their explicit precondition.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "test": "AC-R032-02 deterministic clocks phone-390",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): Round 7 offers the log once the attempt has ended, so the effort and notes are entered after the accidental Finish (still before the reloads, the Undo, the refused save and the retry that must keep them) and a running or paused ladder is shown keeping its progress and durable record; a saved ladder is read from Round 7’s saved log (`Log saved`, its rungs, effort, notes and each movement’s actuals) in place of the disabled form. The backend lanes (PRE-001) were not run here: no test backend in this worktree; they stop at their explicit precondition.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-048.spec.ts",
+      "test": "AC-R032-01 gallery ladder-4 and ladder-12 phone-390",
+      "ledger": "carried e2e (F3; expected to pass after F3)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7 (same asserted behaviour): Round 7 offers the log once the attempt has ended, so the effort and notes are entered after the accidental Finish (still before the reloads, the Undo, the refused save and the retry that must keep them) and a running or paused ladder is shown keeping its progress and durable record; a saved ladder is read from Round 7’s saved log (`Log saved`, its rungs, effort, notes and each movement’s actuals) in place of the disabled form. The backend lanes (PRE-001) were not run here: no test backend in this worktree; they stop at their explicit precondition.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder phone-320",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder phone-390",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder-4 phone-320",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder-4 phone-390",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder-12 phone-320",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder-12 phone-390",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder-long phone-320",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 ladder-long phone-390",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 review phone-320",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "Look check for /review, the other route this task wires (TASK-AC-F3CDA21AC50B): each ladder’s rounds on /review (the ladder-4 and ladder-12 blocks, handed to the real route through the existing Review hand-off) beside the round grid those accepted states draw before Start, compared in words and in layout (every element’s box within 2 px). No accepted state draws a Review card, so the grid is the compared part; each whole Review card is captured too. Receipt: evidence/refinement/task-105/parity/review-phone-320.json.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 review phone-390",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "Look check for /review, the other route this task wires (TASK-AC-F3CDA21AC50B): each ladder’s rounds on /review (the ladder-4 and ladder-12 blocks, handed to the real route through the existing Review hand-off) beside the round grid those accepted states draw before Start, compared in words and in layout (every element’s box within 2 px). No accepted state draws a Review card, so the grid is the compared part; each whole Review card is captured too. Receipt: evidence/refinement/task-105/parity/review-phone-390.json.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 scheduled phone-320",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "Look-check captures for /workout’s scheduled ladder, which no accepted gallery state draws (disposition non-applicable in its receipt): before Start, running (round 2 live), its log at the end of the schedule, and ended — read against the fixture’s own data (timing line, every round’s start, NOT STARTED / ROUND 2 OF 7 / COMPLETE, No rounds marked yet, no Undo, no removed copy, no broken word). Receipt: evidence/refinement/task-105/parity/scheduled-phone-320.json.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-105-parity.spec.ts",
+      "test": "TASK-AC-FAEE8BA2A650 scheduled phone-390",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "Look-check captures for /workout’s scheduled ladder, which no accepted gallery state draws (disposition non-applicable in its receipt): before Start, running (round 2 live), its log at the end of the schedule, and ended — read against the fixture’s own data (timing line, every round’s start, NOT STARTED / ROUND 2 OF 7 / COMPLETE, No rounds marked yet, no Undo, no removed copy, no broken word). Receipt: evidence/refinement/task-105/parity/scheduled-phone-390.json.",
+      "result": "passed"
+    }
+  ]
+}
