@@ -51,6 +51,12 @@ import { expect, test as scanned } from '../fixtures'
  *     round 1 — the confirmation this task wires (TASK-020: the saved result
  *     read back with its effort and sync status, beside the same rest).
  *
+ * The page behind an open dialog shows through its backdrop, so it is held
+ * where the card was read (`holdPageScroll`); an open dialog's X is painted
+ * afresh just before it is captured (`repaint`); and a part is captured once
+ * it holds still (`steadyScreenshot`): every capture of the same code is then
+ * the same image, run after run.
+ *
  * Every visible word of each moment is read from both sides, and so is the
  * layout: every rendered element's box is measured and compared with its
  * counterpart within `LAYOUT_TOLERANCE_PX` (TASK-103's method). Each card's
@@ -371,19 +377,84 @@ function label(side: Difference['side'], text: string, intended: readonly Intend
   return { side, text, criterion: rule?.criterion ?? null, reason: rule?.reason ?? null }
 }
 
+/**
+ * The Runner body these captures belong to: each body keeps its own folder in
+ * the evidence store, so a later body never overwrites an earlier one's images.
+ */
+const CAPTURE_BODY = 'clear-gallery-adoption-v2-20261118'
+
 /** Captures go beside the Runner's evidence store, outside Git; else into test-results. */
 function captureDir(): { dir: string; identity: string } {
   const store = resolveObjectStore({ cwd: REPO_ROOT })
   if (store.problem === undefined && store.dir !== null) {
-    const dir = join(store.dir, 'clear-gallery-adoption-v2-20261116', 'task-106', 'captures')
-    return { dir, identity: 'store:clear-gallery-adoption-v2-20261116/task-106/captures' }
+    const dir = join(store.dir, CAPTURE_BODY, 'task-106', 'captures')
+    return { dir, identity: `store:${CAPTURE_BODY}/task-106/captures` }
   }
   const dir = join(REPO_ROOT, 'test-results', 'task-106-parity')
   return { dir, identity: `repo:${relative(REPO_ROOT, dir)}` }
 }
 
+/**
+ * Renders one frame (a screenshot always renders one): the browser dispatches
+ * pending scroll events and records paint only when a frame is rendered.
+ */
+async function renderFrame(page: Page) {
+  await page.screenshot({ clip: { x: 0, y: 0, width: 1, height: 1 } })
+}
+
+/**
+ * Paints the open dialog's X afresh before the dialog is captured. The
+ * browser reuses recorded paint until something invalidates it, and a dialog
+ * that opened while its arrival was still settling could keep the X's
+ * chamfer as first recorded: one edge pixel at the corner where its two
+ * clip-path polygons meet (and that pixel's glow) came out one of two ways in
+ * identical runs, so the capture's hash changed with no change to the page.
+ * Hiding the X for one rendered frame drops its recorded paint; shown again,
+ * it is recorded from the settled dialog. Only the X is hidden (the dialog's
+ * opaque frame stays over the page behind), and focus goes back where it
+ * was. Words and boxes are read before this.
+ */
+async function repaint(target: Locator) {
+  const isOpenLog = await target.evaluate((element) => element.matches('dialog.clr-logging-overlay[open]'))
+  const close = target.locator('.clr-logging-overlay__head button[aria-label="Close log"]')
+  if (!isOpenLog || await close.count() !== 1) return
+  const page = target.page()
+  const focused = await page.evaluateHandle(() => document.activeElement)
+  const visibility = await close.evaluate((button) => {
+    const style = ((button.closest('.clr-bleed') ?? button) as HTMLElement).style
+    const before = style.visibility
+    style.visibility = 'hidden'
+    return before
+  })
+  await renderFrame(page)
+  await close.evaluate((button, before) => { ((button.closest('.clr-bleed') ?? button) as HTMLElement).style.visibility = before }, visibility)
+  await focused.evaluate((element) => {
+    if (element instanceof HTMLElement && element.isConnected && element !== document.activeElement) element.focus({ preventScroll: true })
+  })
+  await focused.dispose()
+}
+
+/**
+ * The part's image once it holds still: screenshots 100 ms apart until two in
+ * a row are byte-identical, so nothing is captured mid-change. A part that
+ * never holds still fails the case rather than record an image the next run
+ * would not reproduce.
+ */
+async function steadyScreenshot(target: Locator): Promise<Buffer> {
+  const shot = () => target.screenshot({ caret: 'hide', animations: 'disabled' })
+  let previous = await shot()
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    await target.page().waitForTimeout(100)
+    const next = await shot()
+    if (next.equals(previous)) return next
+    previous = next
+  }
+  throw new Error('The captured part never held still for two screenshots in a row.')
+}
+
 async function keep(target: Locator, name: string) {
-  const bytes = await target.screenshot({ caret: 'hide', animations: 'disabled' })
+  await repaint(target)
+  const bytes = await steadyScreenshot(target)
   await test.info().attach(`${name}.png`, { body: bytes, contentType: 'image/png' })
   const { dir, identity } = captureDir()
   mkdirSync(dir, { recursive: true })
@@ -565,42 +636,90 @@ interface Reading {
 const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
 
 /**
+ * The page behind an open dialog shows through its backdrop, so its scroll
+ * position is part of every dialog capture: the document's, and each page
+ * ScrollRegion's outside a dialog (whose drawn scrollbar follows it), in
+ * document order, as [top, left] pairs.
+ */
+async function pageScroll(page: Page): Promise<number[]> {
+  return page.evaluate(() => [document.scrollingElement, ...document.querySelectorAll('.clr-scroll-region__scroller')]
+    .filter((element): element is Element => element !== null && element.closest('dialog') === null)
+    .flatMap((element) => [element.scrollTop, element.scrollLeft]))
+}
+
+/**
+ * Puts the page behind the dialog back where its card was read. Opening a
+ * gallery state can scroll it on its own: pressing the scene's "Open …"
+ * control briefly shortens the page by 12 px while the card sits at the end
+ * of its scroll range, and whether the browser lays out during that dip (and
+ * clamps the scroll) depends on frame timing, so the page behind was left at
+ * one of two places and the captures' hashes changed between identical runs.
+ * The page may still be short when the dialog appears, so the positions are
+ * set again until they hold (polled in real time; the page grows back on its
+ * own render). A frame is rendered after each try, so the scroll event a move
+ * raises (and the 420 ms timer that settles the ScrollRegion's streak) comes
+ * before the held clock moves on: the streak has settled by the time the
+ * moment is read, rather than staying lit on a clock that no longer moves.
+ */
+async function holdPageScroll(page: Page, held: readonly number[]) {
+  await expect.poll(async () => {
+    await page.evaluate((positions) => {
+      const scrollers = [document.scrollingElement, ...document.querySelectorAll('.clr-scroll-region__scroller')]
+        .filter((element): element is Element => element !== null && element.closest('dialog') === null)
+      scrollers.forEach((element, index) => {
+        element.scrollTop = positions[index * 2] ?? element.scrollTop
+        element.scrollLeft = positions[index * 2 + 1] ?? element.scrollLeft
+      })
+    }, held)
+    await renderFrame(page)
+    return pageScroll(page)
+  }, { message: 'the page behind the dialog goes back where its card was read', timeout: 10_000 }).toEqual(held)
+}
+
+/**
  * One side, read alike: the card before anything opens; the dialog its
  * control opens; and, where the state reaches Save, its confirmation. The
- * browser's clock is held between steps and moved exactly.
+ * browser's clock is held between steps and moved exactly, and the page
+ * behind the dialog is held where the card was read.
  */
 async function drive(page: Page, card: Locator, open: () => Promise<void>, state: State, side: string): Promise<Partial<Record<Moment, Reading>>> {
   const shape = STATES[state]
-  const read = async (target: Locator, name: string): Promise<Reading> => {
+  const read = async (target: Locator, name: string, behind?: readonly number[]): Promise<Reading> => {
     await expect(target).toBeVisible()
     await target.evaluate((element) => element.scrollIntoView({ block: 'start' }))
     await settle(page)
+    if (behind !== undefined) {
+      expect(await pageScroll(page), `${name}: the page behind the dialog is held where its card was read`).toEqual(behind)
+    }
     return { lines: await linesOf(target), boxes: await boxesOf(target), capture: await keep(target, name) }
   }
   const readings: Partial<Record<Moment, Reading>> = {}
   await settle(page)
   readings.card = await read(card, `${side}-card`)
+  const behind = await pageScroll(page)
 
   // The control is pressed (the rest it starts, if any, starts now); both
   // sides then read the same half second later.
   await open()
+  await holdPageScroll(page, behind)
   await page.clock.runFor(500)
   const dialog = page.getByRole('dialog', { name: shape.title, exact: true })
   await expect(dialog).toBeVisible({ timeout: 15_000 })
   await expect(openLog(page)).toHaveCount(1)
-  readings.open = await read(openLog(page), `${side}-open`)
+  readings.open = await read(openLog(page), `${side}-open`, behind)
 
   if (shape.saved !== undefined) {
     for (const group of shape.saved.tick ?? []) {
       await openLog(page).getByRole('group', { name: group }).getByRole('checkbox', { name: 'Performed' }).check()
     }
     await openLog(page).getByRole('button', { name: shape.saved.action, exact: true }).click()
+    await holdPageScroll(page, behind)
     await page.clock.runFor(1_500)
     await expect(page.getByRole('dialog', { name: shape.saved.title, exact: true })).toBeVisible()
     const status = openLog(page).locator('[role="status"].clr-set-sheet__saved')
     await expect(status).toBeVisible()
     await expect(status).toContainText('Saved')
-    readings.saved = await read(openLog(page), `${side}-saved`)
+    readings.saved = await read(openLog(page), `${side}-saved`, behind)
   }
   return readings
 }
@@ -648,7 +767,7 @@ for (const state of Object.keys(STATES) as State[]) {
       const part = (boxes: readonly Box[]) => boxes.find((box) => box.key === '(part)#0') ?? null
       writeReceipt(`${state}-${name}`, {
         state, label: shape.label, width: viewport.width, route: '/workout',
-        drive: `card; ${shape.control} → ${shape.title}${shape.saved ? `; ${shape.saved.action} → ${shape.saved.title}` : ''} — on the browser clock, held between steps`,
+        drive: `card; ${shape.control} → ${shape.title}${shape.saved ? `; ${shape.saved.action} → ${shape.saved.title}` : ''} — on the browser clock, held between steps; the page behind the dialog held where the card was read`,
         captures: Object.fromEntries(moments.flatMap((moment) => [[`gallery-${moment}`, gallery[moment]!.capture], [`route-${moment}`, route[moment]!.capture]])),
         lines: {
           gallery: Object.fromEntries(moments.map((moment) => [moment, gallery[moment]!.lines])),

@@ -6,22 +6,22 @@
   "label": "Other lift",
   "width": 320,
   "route": "/workout",
-  "drive": "card; Rest → Log set 1 — on the browser clock, held between steps",
+  "drive": "card; Rest → Log set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
   "captures": {
     "gallery-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/other-lift-phone-320-gallery-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-320-gallery-card.png",
       "sha256": "3bfb654ce5758c876624a173363a2ce1fabc63ae5c81892b7cfd59da2e7e329f"
     },
     "route-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/other-lift-phone-320-route-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-320-route-card.png",
       "sha256": "f0039babd7e957b269e68c5a1ed16cceece0970fc13d0a82c41f311863778a87"
     },
     "gallery-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/other-lift-phone-320-gallery-open.png",
-      "sha256": "34bc7af567ac04ce712f5585735444ce82e54d59dabcd13e98bacb020581c174"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-320-gallery-open.png",
+      "sha256": "580c6625f84114dca28381da23778330d3b3eabb1cb46300333fa366eb5a193e"
     },
     "route-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/other-lift-phone-320-route-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-320-route-open.png",
       "sha256": "7c0abcd48466c31531822f77dd628d42a13be798ffef4af387e26023da75b5f7"
     }
   },

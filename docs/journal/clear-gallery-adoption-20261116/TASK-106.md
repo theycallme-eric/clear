@@ -17,7 +17,9 @@ Round 06 (2026-11-18, body `clear-gallery-adoption-v2-20261118`, attempt 1, same
 round-05 branch (`d75bd1ff`) was fast-forwarded into this worktree and checked against the round-06
 brief. Round 06 moved the task-019 and task-041 suites (and AC-C45-01, AC-R016-03) to TASK-120 and
 TASK-114, and settled the no-rest question (owner decision 5, 2026-11-16). No product code changed in
-round 06; see "Round 06". The history below is round 05's (body `clear-gallery-adoption-v2-20261116`).
+round 06; see "Round 06". Repair round 1 (2026-11-19) made the parity captures reproducible run to run
+(V2's second-run check); see "Round 06 repair round 1". The history below is round 05's (body
+`clear-gallery-adoption-v2-20261116`).
 
 Attempt 1 (2026-11-16) implemented and committed on the worker branch (`2794e3dd`). Controller
 verification round 0 failed on TASK-041 check-01 (timed out; JOURNEY-017 waited 6.1 minutes per try
@@ -140,6 +142,71 @@ through `LoggingOverlay.onAfterClose`.
   and then flagged the gallery's sample section label and load; the clock is now stepped until the
   driver has pressed, both sides read 500 ms later, and the sample words are labelled
   (TASK-AC-EFB0DB480A73) and read as one name in the layout keys so every element is still compared.
+
+## Round 06 repair round 1 (2026-11-19): parity captures made reproducible
+
+Input: the controller's `V2 verify` passed every check but rejected the candidate because "verification
+commands change the candidate": a second identical run of TASK-106 parity changed the SHA-256 of a
+gallery-side `gallery-open` capture (anchor-390 in run 1, committed by V2 as `f9767b74`; other-lift-390
+and set-correction-320 in the next verify, `9be4d9e6` and one uncommitted). Route captures never moved.
+The uncommitted receipt change was discarded; V2's two commits were kept.
+
+Cause, found by capturing the same states repeatedly (scratch probes in the spec, all removed) and
+comparing pixels. There were two independent causes; a third appeared only once the first was fixed:
+
+1. **The page behind the dialog was at one of two scroll positions.** An open dialog's capture box
+   includes its margins, where the gallery page shows through the backdrop (its state list, the card's
+   Rest bar, the ScrollRegion's drawn scrollbar). Pressing the gallery scene's "Open …" control
+   briefly shortens the gallery page by 12 px (scrollHeight 1854 → 1842 → 1854 at anchor-390) while the
+   card sits at the end of its scroll range; whether Chromium lays out during that dip and clamps the
+   scroll (1044 → 1032) depends on frame timing. Hash and scroll position matched one-to-one
+   (anchor-390: `d04c5cc233` at 1044, `a72b455e33` at 1032).
+2. **One edge pixel of the X was painted two ways.** With the page held still, anchor/other-lift/
+   distance-390 gallery-open still split on 127 px at the X's bottom-right chamfer: one device pixel
+   where its two clip-path polygons meet (dark teal 32,80,102 or the border's 4,165,236) plus its glow.
+   Every box (full precision), scroll position, computed style of the X and its pseudo-elements, focus
+   and hover state, and the page behind that point (dialog hidden) were identical between variants;
+   `--disable-gpu`, forcing a new layer (`will-change`) and an opacity toggle did not change it; hiding
+   the part for one rendered frame did. So the variant is in the browser's recorded paint of the X,
+   kept from the dialog's arrival [inferred: Chromium's paint cache; not traced into the browser].
+3. **The gallery ScrollRegion's streak stayed lit.** With the scroll held, distance-movement-320 and
+   superset-320 gallery-open split on a faint full-width strip in the dialog's bottom margin, exactly
+   when the gallery ScrollRegion had `data-scrolling` at capture (20 of 20 runs matched). A scroll event is
+   dispatched at the next rendered frame, so the hold's scroll event came after the held clock had
+   advanced and its 420 ms settle timer never fired.
+
+Fix (`e2e/refinement/task-106-parity.spec.ts` only; no product or gallery-owned file changed; no
+comparison, tolerance, label or receipt field loosened or dropped):
+
+- `holdPageScroll`: after the dialog opens and after Save, the page behind is put back where its card
+  was read, polled until it holds (the page grows back on its own render: set-correction-320 was still
+  12 px short when first tried), with a frame rendered after each try so any scroll event and its
+  streak timer come before the clock advances. A new assertion in `read` fails the case if the page
+  behind is not where the card was read when a dialog moment is captured.
+- `repaint`: before an open dialog is captured (after its words and boxes are read), the X (its
+  `.clr-bleed`) is hidden for one rendered frame and shown again, then focus goes back where it was.
+  Hiding the whole dialog was tried first and rejected: it exposed the page behind and made new
+  variants (1 px and 25,000 px strips) in other states.
+- `steadyScreenshot`: a part is captured once two screenshots 100 ms apart are byte-identical; one that
+  never holds still fails the case.
+- Captures go to this body's store folder, `clear-gallery-adoption-v2-20261118/task-106/captures/`
+  (`CAPTURE_BODY`, as TASK-105's spec does), so this body no longer overwrites round 05's images. Each
+  receipt's `drive` names the hold.
+
+Proof (host lock, `v2.mjs with-lock`):
+
+- Stress, with a temporary copy-only probe: all 16 cases × `--repeat-each=4` → 64 passed and all 72
+  captures one image each (twice: before and after the polling hold). Before the fix the same method
+  showed 2–3 variants for anchor-390 and other-lift-390 (1 in 4 to 7 in 16 runs) and the 320 strips.
+- `run-required-check TASK-106 parity` run 1: PASSED 16/16, receipts rewritten (words, layout
+  differences and labels identical to the committed receipts; only capture paths/hashes and `drive`
+  changed). Staged, then run 2: PASSED 16/16 with **no unstaged change under `evidence/`**.
+- `npm run typecheck`: pass. `npx eslint e2e/refinement/task-106-parity.spec.ts`: pass.
+- Not run (coordinator's rule 5): any other task's parity spec.
+
+Runner note for the controller: V2's two candidate commits carry an unexpanded message template,
+`${taskId}: candidate a${t.attempt} r${round}` and `Agent Runner V2 body ${ctx.body.bodyId}` (not
+fixed here; a Runner-side issue).
 
 ## Round 06 (2026-11-18, body `clear-gallery-adoption-v2-20261118`)
 
@@ -364,7 +431,9 @@ Still open or assumed:
 
 ## Next action
 
-Controller (round 06): run the brief's commands on this candidate; diff the gallery-owned files by
+Controller (round 06, after repair round 1): rerun `V2 verify`; the parity receipts and captures now
+come out byte-identical on a second run (proof in "Round 06 repair round 1"). Then, as before: run the
+brief's commands on this candidate; diff the gallery-owned files by
 hand (unchanged since round 05: `src/ui/logging-overlay.tsx`, `src/ui/set-logging-sheet.tsx`,
 `src/ui/set-logging-sheet-context.ts`, `src/ui/set-logger.tsx`, `src/ui/superset-block.tsx`,
 `src/ui/standard-block.tsx` (comment only) and `src/ui/circuit-block.tsx`); review the parity

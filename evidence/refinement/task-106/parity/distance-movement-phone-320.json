@@ -6,22 +6,22 @@
   "label": "Distance movement",
   "width": 320,
   "route": "/workout",
-  "drive": "card; Rest → Log set 1 — on the browser clock, held between steps",
+  "drive": "card; Rest → Log set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
   "captures": {
     "gallery-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/distance-movement-phone-320-gallery-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-card.png",
       "sha256": "8093cd26125fad549d82d9647428f708af164c581b71ac6e15cdecf9281744ff"
     },
     "route-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/distance-movement-phone-320-route-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-card.png",
       "sha256": "05f702d5d229cf84dddf2b48419ec745068051ca85b91b734a7135ac948e038e"
     },
     "gallery-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/distance-movement-phone-320-gallery-open.png",
-      "sha256": "9545c3bce209aa465734dfaee8f9c00cb6debda4a1e8a2074892b33a3190773a"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-open.png",
+      "sha256": "99690b26d59e7dab8b910a951263f0d0d07eae288442f519eca6b71627e01ae1"
     },
     "route-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/distance-movement-phone-320-route-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-open.png",
       "sha256": "98d3a0782c07b93dc65c2e5f3a3070a411cde1fe7c24b5011058d294120bfa47"
     }
   },

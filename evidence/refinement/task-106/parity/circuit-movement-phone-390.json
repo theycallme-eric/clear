@@ -6,22 +6,22 @@
   "label": "Circuit movement entry",
   "width": 390,
   "route": "/workout",
-  "drive": "card; Rest for goblet squat → Log set 1 — on the browser clock, held between steps",
+  "drive": "card; Rest for goblet squat → Log set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
   "captures": {
     "gallery-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/circuit-movement-phone-390-gallery-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-gallery-card.png",
       "sha256": "4a18b8bb3d6c55156b8c6133dd7e32db15cc2d699c4f34ea78d35c9dfdbe8252"
     },
     "route-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/circuit-movement-phone-390-route-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-route-card.png",
       "sha256": "e8951cbdbb59964f1c5703d786aedd542ce338917505640dc5c706eeef2daea8"
     },
     "gallery-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/circuit-movement-phone-390-gallery-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-gallery-open.png",
       "sha256": "dd0df2d33a58561f0063d983834306454ecb91c9de8a5e6a9d931ed09f4e44d7"
     },
     "route-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/circuit-movement-phone-390-route-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-390-route-open.png",
       "sha256": "a490b2175502a37a012e959f210e759f804eb5568966f1954419eed597a8ab83"
     }
   },

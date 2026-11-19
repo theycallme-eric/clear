@@ -6,30 +6,30 @@
   "label": "Anchor / primary lift",
   "width": 320,
   "route": "/workout",
-  "drive": "card; Rest → Log set 1; Log set 1 → Set 1 logged — on the browser clock, held between steps",
+  "drive": "card; Rest → Log set 1; Log set 1 → Set 1 logged — on the browser clock, held between steps; the page behind the dialog held where the card was read",
   "captures": {
     "gallery-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/anchor-phone-320-gallery-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-card.png",
       "sha256": "490575b56a436475523818e84a3d2545fbdd78f118611bb37902f3492f566d9c"
     },
     "route-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/anchor-phone-320-route-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-card.png",
       "sha256": "fb85deca1a4abbf738301b04976b6efebcf8ad1519016847c7f45a23a84f3de3"
     },
     "gallery-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/anchor-phone-320-gallery-open.png",
-      "sha256": "eaf373d1cb568a506aec1f0b85af1fc279a401b4035f6e574a5815573b8b23ed"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-open.png",
+      "sha256": "cd2f1861dfad57c71011508374c93cb1a7e7f7c7c7dc1b97b000c4f02cd8d730"
     },
     "route-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/anchor-phone-320-route-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-open.png",
       "sha256": "58e7169c3daccd98d1e059f07991eeb22e2b2044ca2b651fbc37be7f02abf1e5"
     },
     "gallery-saved": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/anchor-phone-320-gallery-saved.png",
-      "sha256": "685e239d2a953f51624d66a273e5e0b2d03e2cd5ebf6a33aea84b2272dfbdf5f"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-saved.png",
+      "sha256": "ae5b5ba0042370f9a3eb61917c8828b2310447cfee242ad1faec159d01ab97da"
     },
     "route-saved": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/anchor-phone-320-route-saved.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-saved.png",
       "sha256": "e6fcfbe62fdddd909184762c2e6eb2f4510960ce5a22d943d562a6a2ac51544d"
     }
   },

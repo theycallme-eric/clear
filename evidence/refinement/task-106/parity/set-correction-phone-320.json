@@ -6,22 +6,22 @@
   "label": "Saved-set correction",
   "width": 320,
   "route": "/workout",
-  "drive": "card; Edit set 1 → Edit set 1 — on the browser clock, held between steps",
+  "drive": "card; Edit set 1 → Edit set 1 — on the browser clock, held between steps; the page behind the dialog held where the card was read",
   "captures": {
     "gallery-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/set-correction-phone-320-gallery-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-card.png",
       "sha256": "b745b35bcff2ae866d0332e0a3ebb31d4621d2cb9ee98ca651d6d7623b26424d"
     },
     "route-card": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/set-correction-phone-320-route-card.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-card.png",
       "sha256": "2a6f4b7d74c86748c5ad9b13109927af5a13bcdfee01cd1ad91da378e1ed211e"
     },
     "gallery-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/set-correction-phone-320-gallery-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-open.png",
       "sha256": "73d393fa7126ddad95d73cd9ff658197801d6a76aa3c3944b3ec57fe4b9d1d37"
     },
     "route-open": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-106/captures/set-correction-phone-320-route-open.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-open.png",
       "sha256": "6c1f8f57a6f4d76d6d39169b490da2d4f088e09e35e3c660bb9cf06cb2600efd"
     }
   },
