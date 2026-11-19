@@ -146,6 +146,23 @@ reviewer's three small findings and changes nothing else.
 3. **This note.** The TASK-104 capture overwrite is recorded as restored by the controller and is no
    longer open.
 
+One more change, beyond the three findings, so that the requested two-run proof could pass:
+
+- **The first two-run proof failed on one hash.** The first two parity runs were made on commit
+  `1e0d2827`: run 1 before that commit, run 2 after it. Run 2 changed one capture hash, the
+  scheduled ladder's log at 390 px (`scheduled-phone-390-route-log`). Every other receipt line was
+  identical.
+  - A pixel comparison found the cause: 4 pixels, each one colour unit apart, all in the dialog box's
+    transparent top padding (`padding-block: var(--spacing-500)`). That area shows the backdrop's
+    blur of the page behind (`backdrop-filter`).
+  - The same case run alone three times gave the committed hash each time. So the noise is
+    intermittent, and its source is the blurred backdrop, not the log.
+  - Fix in `e2e/refinement/task-105-parity.spec.ts` (`readLog`): the log capture is now the dialog's
+    frame (`dialog[open] > .clr-bleed`), not the padded dialog box. Words, element boxes and every
+    comparison are unchanged. Only the log captures' hashes changed.
+  - No other file changed. The isolated runs wrote receipts, which were restored from git before the
+    proof.
+
 Verification (repair round 1): see "Verification (repair round 1)" below.
 
 ## Intended outcome
@@ -345,7 +362,22 @@ schedule or a Review card. `src/state/ladder.ts` is not gallery-owned.
 
 ## Verification (repair round 1)
 
-- TASK-105 parity, under the host lock, twice in a row on the same tree. Results are filled in below.
+All runs below were under the host lock (`v2.mjs with-lock`).
+
+- Through `1e0d2827` (the three findings):
+  - TASK-105 parity run 1 passed, 12/12. Each receipt changed only in the corrected Undo line, and
+    `results/parity.json` only in the spec's hash. Committed as `1e0d2827`.
+  - Run 2 passed, 12/12, but changed one hash (`scheduled-phone-390.json`, `route-log`). Not stable;
+    see above.
+- Diagnosis: three isolated runs of `scheduled phone-390` gave identical captures. A pixel diff of
+  the odd capture found 4 pixels one unit apart, all in the backdrop padding.
+- Through `541ab576` (frame capture):
+  - Parity run 1 passed, 12/12. Only the 18 log captures' hashes and the spec's hash changed.
+    Committed as `541ab576`.
+  - Parity run 2 passed, 12/12. Afterwards `git status` is clean: no change under `evidence/` and
+    none anywhere else.
+- `npx tsc --noEmit` and `eslint` on the parity spec: clean.
+- No other task's parity spec was run.
 
 ## Verification (round 06, final tree)
 
