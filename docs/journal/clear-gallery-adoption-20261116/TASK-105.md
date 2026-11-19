@@ -6,6 +6,10 @@ material only: the old build `build/clear-refinement-2026-11-04` (`181e580`). Th
 task-owned progress note; it satisfies the shared daily journal rule for this body. Only TASK-105
 writes it.
 
+Round 06 (2026-11-18) continues this work in body `clear-gallery-adoption-v2-20261118`, attempt 1,
+branch `v2/clear-gallery-adoption-v2-20261118/task-105-a1`, base `4e65efb1` (TASK-113 merged). The
+earlier branch (`3f128bdd`) was merged in unchanged, with its history kept. See "Round 06" below.
+
 Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`); the issue body
 names `clear-gallery-adoption-20261113`. The brief's path is used, as TASK-103 and TASK-104 did.
 
@@ -23,12 +27,101 @@ top of the first three commits (`4dd6c8de`, `72531f84`, `95704d55`):
    `scheduled_starts`): `BlockSlot` sends every ladder to `TimedWorkoutFlow`, which has a schedule
    mode over the same durable attempt.
 
-Every inherited test that the blocked files held back now passes. One carried browser assertion
-still fails, for a different reason: see "Open: the twelve-round grid at 320 px" below. It needs a
-decision, not code.
+Every inherited test that the blocked files held back now passes. In the lane-widened round one
+carried browser assertion still failed: twelve rounds within one 320 × 568 screen. The owner decided
+it on 2026-11-16 (Decision 2), and round 06 makes it pass (see "Round 06").
 
 The first round's status, kept for the record: everything inside the first lane was done and
 proved, and the two parts above needed files outside it.
+
+## Round 06 (2026-11-18)
+
+Two things were left. Both are now done.
+
+1. **The twelve-round grid at 320 px** (TASK-AC-30138C4A2AFF; owner decision 2026-11-16, Decision 2:
+   "Accept all five"). The earlier "Open" question is closed by that decision.
+   - `src/ui/ladder-rungs.css` (gallery-owned): at a narrow phone width, `@media (max-width: 22.5rem)`,
+     a round tile's inset (`.clr-ladder-prescription__grid li`) is `var(--spacing-100)` instead of
+     `var(--spacing-200)`. The column rule, gap, frame, the frame's own inset and type are unchanged.
+     At 390 px nothing changes.
+   - Measured on the gallery's `ladder-12` state at 320 × 568: the grid before Start is 544 px (was
+     592); while running it is 568 px (was 680, because some live tiles no longer wrap). At 390 × 844
+     it is 464 px, as before.
+   - The gallery's `ladder-12` (and `ladder-4`, `ladder-long`) states draw the same live component and
+     stylesheet, so they change in the same commit and still match the route.
+   - TASK-012 check-02's bound is unchanged.
+   - The wider tile at 320 px exposed a latent defect, fixed in the same file (see "Round 06: failures
+     and corrections"): a live round's toggle now fills its grid cell and starts its words at its top
+     (`li > .clr-bleed { flex:1 1 auto }`, `justify-content:flex-start` on the live round), as a
+     read-only round does. This is for AC-C33-01 and AC-R013-02. It draws nothing new for the accepted
+     states, whose rows hold alike words.
+2. **The capped window's pacing paragraph** (TASK-AC-6FBEFBDA2608; AC-R012-02, R71; rehearsal
+   findings 2026-11-18, finding 7).
+   - `src/ui/ladder-block.tsx` (gallery-owned): `PACING_NOTES.capped_window` is `null`, as in the old
+     build. The type is now `string | null`. The presentation-less `LadderBlock` draws its note only
+     when there is one.
+   - `src/app/FormatPreview.tsx` already skips a `null` note, so `/settings/formats` draws none for the
+     capped window. It was not edited. The carried FormatPreview case "shows every ladder timing mode
+     with its rungs, read-only" now takes its removed branch. It was not edited either.
+   - New required case in `src/ui/ladder-block.test.tsx` (TASK-105 check-01): "a capped window draws
+     no pacing paragraph anywhere the product draws a ladder > TASK-AC-6FBEFBDA2608: …". It asserts the
+     `null`, the other two lines unchanged, the format preview on its real route (no paragraph in
+     "Capped window"; "For time" keeps its line), and the presentation-less block. It failed before
+     the change and passes after it.
+
+Other round-06 changes:
+- `e2e/refinement/task-105-parity.spec.ts`:
+  - Each receipt keeps every moment's round-grid height (`gridHeights`).
+  - For each twelve-round state (`ladder-12`, `ladder-long`), before Start, the grid must be shorter
+    than the screen at both widths on both sides, and the two sides within 2 px (`expectTwelveFit`).
+  - `galleryChanges` lists the narrow-width tile inset with TASK-AC-30138C4A2AFF.
+  - Captures now go to this body's folder in the evidence store (`CAPTURE_BODY`,
+    `clear-gallery-adoption-v2-20261118/task-105/captures/`), so this run does not overwrite the
+    captures the earlier body's receipts hash.
+- `evidence/refinement/task-105/required-cases.json`: the new check-01 case; TASK-AC-6FBEFBDA2608
+  added to check-01's criteria and TASK-AC-30138C4A2AFF to parity's; the description says what each
+  proves.
+- `evidence/refinement/task-105/test-ledger.json`: see "Verification (round 06)".
+
+Gallery-owned files changed in round 06: `src/ui/ladder-rungs.css` and `src/ui/ladder-block.tsx`.
+Each change is named by a criterion above, and each `ladder-rungs.css` change is listed in the parity
+receipts' `galleryChanges`.
+
+### Round 06: failures and corrections
+
+- **TASK-013 check-02 failed at 320 px after the first grid change.** Case "JOURNEY-013 phone-320
+  touch", assertion "short live @phone-320: tiles level" (16 px apart). Cause: the four-round timed
+  ladder's live tiles (`5 sec plank`, `10 sec plank`, …) sized to their words, not to their grid cell.
+  Before, every tile's words wrapped to two lines at 320 px, so the row was level by coincidence. With
+  the 8 px wider tile, `5 sec plank` fits one line and `10 sec plank` does not. Read-only tiles were
+  already level: their frame has `height:100%`. The Chip-based live toggle sat inside a content-sized
+  `.clr-bleed`.
+  - First fix: `.clr-bleed` grows to fill its cell. The tiles were then level, but the round labels
+    were not (8 px apart): the Chip centres its words vertically.
+  - Second fix: the live round's words start at its top (`justify-content:flex-start`), as a read-only
+    round's do. The case then passed at 320 and 390. This was diagnosed with a throw-away copy of the
+    spec that logged each tile's box. The copy was deleted and is not committed.
+- **My regression run overwrote TASK-104's stored ladder captures.** As a regression check for the
+  shared stylesheet, I ran `task-104-parity.spec.ts` with `--no-receipt`. `--no-receipt` stops only
+  the guard's receipt. The spec still writes its own parity receipts and captures. It overwrote all
+  100 captures under `clear-gallery-adoption-v2-20261116/task-104/captures/` in the evidence store
+  (2026-11-19, 00:20–00:23). 60 came out byte-identical. 40 now differ from the hashes in TASK-104's
+  committed receipts: the `ladder-4` and `ladder-12` captures at 320 and 390 px. No copy of the old
+  files was found anywhere under `project-workspaces/`, so they could not be restored. TASK-104's
+  receipts in this worktree were restored to their committed state (that file is not this task's).
+  The regenerated receipts, which match the store as it is now, are kept outside the repository for
+  the controller to decide. Prevention: never run another task's parity spec as a regression check
+  without first pointing its captures elsewhere. The TASK-105 spec now writes to its own body folder.
+- The captures of the earlier body sit in the evidence store under
+  `clear-gallery-adoption-v2-20261116/task-105/captures/`. Running the parity spec unchanged would have
+  overwritten them under the same names. The spec now writes this body's captures to its own folder.
+
+Carry-forward checks from earlier reviews, confirmed in round 06:
+- The 15 TASK-013/TASK-014 tests in `src/ui/timed-workout-flow.test.tsx` are rewritten, not deferred
+  (ledger `rules.deferred` is empty). TASK-013 check-01 and TASK-014 check-01 pass.
+- No word of a round tile breaks across lines in the running and paused ladders at 390 px (parity's
+  `brokenWords` guard, every moment it reads).
+- Each parity capture scrolls the card's top into view first (`keep`).
 
 ## Intended outcome
 
@@ -225,6 +318,44 @@ schedule or a Review card. `src/state/ladder.ts` is not gallery-owned.
 - **A carried assertion conflicts with the accepted gallery.** At 320 px the twelve-round grid is
   592 px tall, and the bound is the 568 px screen. See "Open: the twelve-round grid at 320 px".
 
+## Verification (round 06, final tree)
+
+Each browser check ran under the host lock (`v2.mjs with-lock`). One attempt waited out a lock held
+by another task (environment waiting), then ran. The first round-06 run found the TASK-013 failure
+above. The table is the rerun after the fix, on the final tree.
+
+| Check | Result | Notes |
+|---|---|---|
+| TASK-105 check-01 | PASSED, 111/111 | Was 110; the new TASK-AC-6FBEFBDA2608 case |
+| TASK-012 check-01 | PASSED, 9/9 | |
+| TASK-012 check-02 | PASSED, 5/5 | Was 4/5. The 320 × 568 twelve-round bound passes, unchanged |
+| TASK-013 check-01 | PASSED, 12/12 run | |
+| TASK-013 check-02 | PASSED, 5/5 | The first round-06 run failed at 320 px (see corrections) |
+| TASK-014 check-01 | PASSED, 14/14 run | |
+| TASK-014 check-02 | PASSED, 5/5 | |
+| TASK-032 check-01 | PASSED, 10/10 | |
+| TASK-048 check-01 | REJECTED, 4/6 | Only the two backend lanes, which stop at PRE-001 (no test backend here). Both synthetic lanes, the deterministic clocks and the gallery case pass |
+| TASK-105 parity | PASSED, 12/12 | Zero text and layout differences on every receipt. Twelve-round grids before Start: 544 px at 320 and 464 px at 390, gallery and route alike |
+| TASK-006 check-02 | PASSED, 7/7 | Regression, `--no-receipt` |
+| TASK-104 parity | PASSED, 10/10 | Regression, `--no-receipt`; see the capture overwrite above |
+
+- `FormatPreview.test.tsx` (not this task's file): 12/12, run directly.
+- `gen-issues --check` passed (71 requirements, 136 edges). `gen:types --check`: current. Console
+  grep: no match.
+- The brief's whole CI chain, run once as one command on the final tree, exits 0:
+  - typecheck pass;
+  - lint 0 errors, 175 warnings (as base);
+  - lint:ds pass;
+  - `gen-issues --check` pass;
+  - `gen:types --check` current;
+  - `npm test` 265 files, 6,284/6,284 tests;
+  - `npm run build` pass;
+  - console grep: no match.
+- Ledger (`evidence/refinement/task-105/test-ledger.json`):
+  - 155 entries: 85 carried, 57 rewritten, 13 added, 0 retired, 0 deferred.
+  - 153 passed. 2 are the PRE-001 backend lanes, not run here.
+  - The earlier `needsDecision` item is moved to `rules.resolved`, citing the owner decision.
+
 ## Verification (lane-widened round, final tree)
 
 Receipts are in `evidence/refinement/*/results/`. TASK-006 and TASK-104 are outside the lane, so
@@ -315,20 +446,6 @@ they were run with `--no-receipt`. Browser checks ran in one hold of the host lo
 
 ## Open assumptions and questions
 
-- **Open: the twelve-round grid at 320 px (needs a decision).** `task-012.spec.ts` carries the
-  build's bound "twelve rounds fit within one screen's height (R117)" unchanged:
-  `grid.height < viewport.height` at 320 × 568.
-  - Round 7's accepted grid at 320 px is two columns, so twelve rounds make six rows and 592 px.
-    The column rule is the accepted `minmax(calc(var(--control-height) * 2), 1fr)`, pinned by
-    AC-C35-01's unit case. The tiles keep the inset TASK-103 restored as the accepted look.
-  - The accepted state `ladder-12` draws the same grid: TASK-105's parity at 320 matches every
-    element box within 2 px. At 390 × 844 the bound holds.
-  - No TASK-105 criterion names a change to the accepted grid, and the bound may not be weakened.
-    So the case is left failing and recorded in the ledger (`rules.needsDecision`).
-  - Options:
-    1. change the accepted grid at narrow widths (a smaller tile inset or a third column) as a
-       recorded gallery change;
-    2. keep the accepted look and retire or rewrite this one bound with the owner's word.
 - **Parked for UAT (scheduled ladder, no gallery state).**
   - The interval countdown is the schedule's existing one (`LadderBlock.IntervalCountdown`, the
     design-system `TimerDisplay`), not Round 7's full-width timer frame.
@@ -337,12 +454,13 @@ they were run with `--no-receipt`. Browser checks ran in one hold of the host lo
   - The end note still says "Say how the block ended below"; below it is the "Log results" action.
   - All of this is unchanged schedule behaviour, now inside Round 7's card. Whole-card captures are
     in the evidence store (`scheduled-phone-*-route-*-whole.png`).
-- **The legacy `LadderBlock` is unchanged.** It still draws the "— same every round" list for a
-  schedule and the capped window's "Move through the rounds" paragraph. No route reaches it: under
-  the product presentation every ladder is `TimedWorkoutFlow`. It is kept for presentation-less
-  mounts.
-- `src/app/FormatPreview.tsx` (Settings) still prints the legacy `PACING_NOTES` line for each mode.
-  That is outside this task's screens and lane, and was not changed.
+- **The legacy `LadderBlock` is otherwise unchanged.** It still draws the "— same every round" list
+  for a schedule. Since round 06 it no longer draws the capped window's "Move through the rounds"
+  paragraph. No route reaches it: under the product presentation every ladder is `TimedWorkoutFlow`.
+  It is kept for presentation-less mounts.
+- `src/app/FormatPreview.tsx` (Settings, `/settings/formats`) prints `PACING_NOTES` for the scheduled
+  and free-paced modes, and since round 06 nothing for the capped window (finding 7). It was not
+  edited.
 - Round 7 offers the ladder's log once the attempt has ended. The build let an athlete answer, give
   an effort or write notes before Start or while paused; Round 7's accepted flow does not. The
   inherited tests now enter them after Finish, still before the reloads, Undo and saves that must
@@ -363,10 +481,11 @@ they were run with `--no-receipt`. Browser checks ran in one hold of the host lo
 
 ## Next action
 
-Controller:
-- decide the 320 px twelve-round bound (see Open);
+Controller (round 06):
 - rerun the brief's commands with PRE-001 for TASK-048's backend lanes;
 - diff the gallery-owned files by hand: `src/ui/timed-workout-flow.tsx`, `src/ui/ladder-rungs.tsx`,
   `src/ui/ladder-rungs.css`, `src/ui/timed-result-log.tsx`, `src/ui/set-effort.tsx`,
   `src/ui/block-renderers.tsx`, `src/ui/ladder-block.tsx` and `src/app/Review.tsx`;
-- look at the new `review-*` and `scheduled-*` captures in the evidence store.
+- look at the round-06 captures in the evidence store, under
+  `clear-gallery-adoption-v2-20261118/task-105/captures/`, especially the 320 px ladder-12 and
+  ladder-long ones (the tightened grid).

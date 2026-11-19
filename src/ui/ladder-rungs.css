@@ -152,6 +152,25 @@
 .clr-ladder-prescription__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(calc(var(--control-height) * 2),1fr)); gap:var(--spacing-200); margin:0; padding:0; list-style:none; }
 .clr-ladder-prescription__grid li { display:flex; flex-direction:column; gap:var(--spacing-100); padding:var(--spacing-200); font-family:var(--font-data); font-size:var(--label-xs-size); min-width:0; }
 .clr-ladder-prescription__grid li > span { overflow-wrap:anywhere; }
+/* A3 TASK-105 (TASK-AC-30138C4A2AFF; owner decision 2026-11-16, Decision 2):
+   at a narrow phone's width the grid has two columns, and twelve rounds stood
+   taller than one 320×568 screen. There the tile's inset is tightened from
+   spacing-200 to spacing-100, so a twelve-round ladder fits one screen. The
+   column rule, the gap, the frame, its own inset and its type are unchanged,
+   and wider screens draw the accepted grid as before. Every consumer of the
+   grid (Review, the live ladder, the gallery's ladder states) shares it. */
+@media (max-width: 22.5rem) {
+  .clr-ladder-prescription__grid li { padding:var(--spacing-100); }
+}
+/* A3 TASK-105 (AC-C33-01, AC-R013-02): a live round's toggle fills its grid
+   cell, as a read-only round's frame does (its `height:100%`), and its words
+   start at its top as a read-only round's do, rather than the Chip's centre.
+   So a row's tiles and their round labels stay level whatever each one's
+   words: a one-digit target that fits one line beside a two-digit one that
+   wraps (`5 sec plank`, `10 sec plank`). A row whose tiles hold alike words —
+   every accepted state's — draws nothing new. */
+.clr-ladder-prescription__grid li > .clr-bleed { flex:1 1 auto; }
+.clr-ladder-prescription__grid li > .clr-bleed > .clr-ladder-prescription__round { justify-content:flex-start; }
 /* A3 TASK-105 (JOURNEY-012): a schedule's round keeps its label and its live
    marker (Now / Next) on one line, so every tile's round label stays level
    with its row's, and states its own start beneath; both wrap inside the tile.

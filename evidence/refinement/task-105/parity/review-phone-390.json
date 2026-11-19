@@ -8,11 +8,11 @@
   "drive": "none: /review is read before Start; the gallery states are read before Start",
   "routeCards": {
     "route-card-ladder-4": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-390-route-card-ladder-4.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-390-route-card-ladder-4.png",
       "sha256": "74eaf61d36b572b68778f6914660d5c07dc6aa4b6a37471cc7660485bfb95b2e"
     },
     "route-card-ladder-12": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-390-route-card-ladder-12.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-390-route-card-ladder-12.png",
       "sha256": "f2d558437adf8da7bd559201ecf65c006abed51005b0a3ce23a9f4427cd976ac"
     }
   },
@@ -56,6 +56,22 @@
       ]
     },
     {
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "change": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes.",
+      "moments": [
+        "every moment at 320 px (the round grid)"
+      ]
+    },
+    {
+      "criterion": "AC-C33-01, AC-R013-02",
+      "change": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes.",
+      "moments": [
+        "running",
+        "paused",
+        "undone (live tiles; not drawn for the accepted data)"
+      ]
+    },
+    {
       "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
       "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
       "moments": [
@@ -65,19 +81,19 @@
   ],
   "captures": {
     "gallery-ladder-4": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-390-gallery-ladder-4.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-390-gallery-ladder-4.png",
       "sha256": "fbe0d69da23ceb33b875ec1b368165bb8b1fd58ec841cd52898c21d5e5f5af5a"
     },
     "route-ladder-4": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-390-route-ladder-4.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-390-route-ladder-4.png",
       "sha256": "540f97e345f5a23a102bad50a391f879454ce05a4f9625c212af5377fac38ecc"
     },
     "gallery-ladder-12": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-390-gallery-ladder-12.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-390-gallery-ladder-12.png",
       "sha256": "b349fb49845349738f3c3c37e1c3db143899ad3796d738eba80e95f5bb37a9d4"
     },
     "route-ladder-12": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/review-phone-390-route-ladder-12.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-390-route-ladder-12.png",
       "sha256": "8a98edaf0b92e646803a6c6872274f8e756655d1a71b05b36d678e738381022c"
     }
   },
@@ -300,6 +316,16 @@
   "differences": {
     "ladder-4": [],
     "ladder-12": []
+  },
+  "gridHeights": {
+    "gallery": {
+      "ladder-4": 228,
+      "ladder-12": 464
+    },
+    "route": {
+      "ladder-4": 228,
+      "ladder-12": 464
+    }
   },
   "layout": {
     "method": "element boxes",

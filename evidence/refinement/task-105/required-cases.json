@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-105",
-  "description": "A3 task 5a (F3): the durable ladder, live rung progress and Undo finish on Round 7’s owners (REQ-012, REQ-013, REQ-014, REQ-032; JOURNEY-012/013/014/032 completion owner; the ladder cases of JOURNEY-010/015/019/031). check-01 runs the inherited ladder tests carried onto Round 7: src/ui/ladder-block.test.tsx (the build’s 39, mounted as the route dispatches a ladder — BlockSlot under the product presentation, Round 7’s TimedWorkoutFlow for every ladder, its schedule mode for a scheduled one), src/ui/ladder-rungs.test.tsx (the build’s nine TASK-012 cases on Round 7’s LadderPrescription over the shared readings in src/state/ladder.ts, on the real /review and /workout routes), and the carried state owners’ tests (src/state/ladder-save-authority.test.tsx, src/state/refinement-ladder-recovery.test.ts, src/state/review.test.ts). The TASK-013/TASK-014 cases in src/ui/timed-workout-flow.test.tsx run under TASK-013 and TASK-014 check-01, and the browser journeys under TASK-012/013/014/048 check-02/01. parity is the look check (TASK-AC-FAEE8BA2A650): /workout’s ladder beside each accepted gallery state (bec4454: ladder, ladder-4, ladder-12, ladder-long) with matched data at 320 and 390 px — the live ladders driven alike on the browser clock through ready, rounds checked off, paused, Finish with its log and quiet Undo, Undo finish and Finish again; the results moments before Start and past the cap with their log — compared in words and in layout (every element’s box within 2 px), each card’s top scrolled into view before capture, and no word of a round tile broken across lines; every visible difference must be labelled with the criterion that intends it, and each receipt lists this task’s intended changes to the gallery state against bec4454 (galleryChanges). /review, the other route this task wires (TASK-AC-F3CDA21AC50B), is compared the same way: each ladder’s rounds on /review (the grid Review draws under its movement rows) beside the round grid the accepted ladder-4 and ladder-12 states draw before Start, over the same blocks. A scheduled ladder on /workout has no accepted gallery state (bec4454 draws none): its ready, running, log and ended moments are captured for the look check with that disposition (non-applicable) in its receipt, and its words are read against its own data.",
+  "description": "A3 task 5a (F3): the durable ladder, live rung progress and Undo finish on Round 7’s owners (REQ-012, REQ-013, REQ-014, REQ-032; JOURNEY-012/013/014/032 completion owner; the ladder cases of JOURNEY-010/015/019/031). check-01 runs the inherited ladder tests carried onto Round 7: src/ui/ladder-block.test.tsx (the build’s 39, mounted as the route dispatches a ladder — BlockSlot under the product presentation, Round 7’s TimedWorkoutFlow for every ladder, its schedule mode for a scheduled one), src/ui/ladder-rungs.test.tsx (the build’s nine TASK-012 cases on Round 7’s LadderPrescription over the shared readings in src/state/ladder.ts, on the real /review and /workout routes), and the carried state owners’ tests (src/state/ladder-save-authority.test.tsx, src/state/refinement-ladder-recovery.test.ts, src/state/review.test.ts). The TASK-013/TASK-014 cases in src/ui/timed-workout-flow.test.tsx run under TASK-013 and TASK-014 check-01, and the browser journeys under TASK-012/013/014/048 check-02/01. parity is the look check (TASK-AC-FAEE8BA2A650): /workout’s ladder beside each accepted gallery state (bec4454: ladder, ladder-4, ladder-12, ladder-long) with matched data at 320 and 390 px — the live ladders driven alike on the browser clock through ready, rounds checked off, paused, Finish with its log and quiet Undo, Undo finish and Finish again; the results moments before Start and past the cap with their log — compared in words and in layout (every element’s box within 2 px), each card’s top scrolled into view before capture, and no word of a round tile broken across lines; every visible difference must be labelled with the criterion that intends it, and each receipt lists this task’s intended changes to the gallery state against bec4454 (galleryChanges). /review, the other route this task wires (TASK-AC-F3CDA21AC50B), is compared the same way: each ladder’s rounds on /review (the grid Review draws under its movement rows) beside the round grid the accepted ladder-4 and ladder-12 states draw before Start, over the same blocks. A scheduled ladder on /workout has no accepted gallery state (bec4454 draws none): its ready, running, log and ended moments are captured for the look check with that disposition (non-applicable) in its receipt, and its words are read against its own data. Round 06 (2026-11-18) adds one required check-01 case for TASK-AC-6FBEFBDA2608 (AC-R012-02, R71; rehearsal finding 7): PACING_NOTES.capped_window in src/ui/ladder-block.tsx is null, as in the old build, so the format preview at /settings/formats and the presentation-less LadderBlock draw no capped-window pacing paragraph. parity also proves TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2): before Start each twelve-round state's grid (ladder-12, ladder-long) is shorter than the screen at 320×568 and 390×844 on the gallery and the route alike, the two within 2 px, with every moment's grid height kept in its receipt (gridHeights); the narrow-width tile inset that makes it fit is listed in galleryChanges.",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -11,6 +11,7 @@
         "AC-C35-01",
         "AC-R012-01",
         "AC-R012-02",
+        "TASK-AC-6FBEFBDA2608",
         "AC-C33-01",
         "AC-C34-01",
         "AC-C36-01",
@@ -192,6 +193,10 @@
         {
           "file": "src/ui/ladder-block.test.tsx",
           "name": "legacy ladders are unchanged by explicit timing > a ladder with no timing keeps its movement list and draws no rounds"
+        },
+        {
+          "file": "src/ui/ladder-block.test.tsx",
+          "name": "a capped window draws no pacing paragraph anywhere the product draws a ladder > TASK-AC-6FBEFBDA2608: PACING_NOTES.capped_window is null, so the format preview and the legacy block draw no note for it"
         },
         {
           "file": "src/ui/ladder-rungs.test.tsx",
@@ -493,7 +498,8 @@
         "JOURNEY-012",
         "JOURNEY-013",
         "JOURNEY-014",
-        "TASK-AC-F3CDA21AC50B"
+        "TASK-AC-F3CDA21AC50B",
+        "TASK-AC-30138C4A2AFF"
       ],
       "files": [
         "e2e/refinement/task-105-parity.spec.ts"

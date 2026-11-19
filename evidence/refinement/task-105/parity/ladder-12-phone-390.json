@@ -46,6 +46,22 @@
       ]
     },
     {
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "change": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes.",
+      "moments": [
+        "every moment at 320 px (the round grid)"
+      ]
+    },
+    {
+      "criterion": "AC-C33-01, AC-R013-02",
+      "change": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes.",
+      "moments": [
+        "running",
+        "paused",
+        "undone (live tiles; not drawn for the accepted data)"
+      ]
+    },
+    {
       "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
       "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
       "moments": [
@@ -55,51 +71,51 @@
   ],
   "captures": {
     "gallery-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-gallery-ready.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-gallery-ready.png",
       "sha256": "0791705d6d3833d28c5f01ec187d8b4544b1dd7dc84cb90b3397ff43836ae4bc"
     },
     "route-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-route-ready.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-route-ready.png",
       "sha256": "9693f476bc1d89175959a4348cc709051e1c1f2cfed54e176d765716e91db58c"
     },
     "gallery-running": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-gallery-running.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-gallery-running.png",
       "sha256": "69fc135d8d3b5489c9559a442e13337ff9346e0e6cfd33f6805a8d23c60462c0"
     },
     "route-running": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-route-running.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-route-running.png",
       "sha256": "79b5331d72929e8091619ff7cdfd24a54750b598b6f4401fa8f26809cbf2cd8a"
     },
     "gallery-paused": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-gallery-paused.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-gallery-paused.png",
       "sha256": "4422732d6fb89f60e3d1d529e81f22cffce48898ba3bd96055c295431d4270bb"
     },
     "route-paused": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-route-paused.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-route-paused.png",
       "sha256": "4ad96e8c06ec674010a04125517294996509c75057a9c00d558627657c4bba2b"
     },
     "gallery-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-gallery-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-gallery-log.png",
       "sha256": "e8a11b97361820072fc50199f71f9386852801a9b46b1bf69eef5d9ab9b453fb"
     },
     "route-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-route-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-route-log.png",
       "sha256": "9b03b5004cd80363e3877565c0b1085af7bd4eb07b0bfd1557ca20f444aaf0fe"
     },
     "gallery-undone": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-gallery-undone.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-gallery-undone.png",
       "sha256": "7afebdb5e1f8fbcf4cdd59df8fce3938d7fb2410950c94e944579a8b5ff8c73e"
     },
     "route-undone": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-route-undone.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-route-undone.png",
       "sha256": "ff41b3ff703241c6e3a885f469375449fac57631b4d6f437cf2a9f603fb80c68"
     },
     "gallery-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-gallery-ended.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-gallery-ended.png",
       "sha256": "a17e112b3848fecfc8555a3492a06e28f1d9d4b58aedba9312fe80963b041a66"
     },
     "route-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-390-route-ended.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-390-route-ended.png",
       "sha256": "2bd2d8b83fdf98457817d49caaf752f0b2c09e1cc1d2e000c6e836187dcc4c6c"
     }
   },
@@ -1176,6 +1192,24 @@
     "log": [],
     "undone": [],
     "ended": []
+  },
+  "gridHeights": {
+    "gallery": {
+      "ready": 464,
+      "running": 536,
+      "paused": 536,
+      "log": null,
+      "undone": 536,
+      "ended": 464
+    },
+    "route": {
+      "ready": 464,
+      "running": 536,
+      "paused": 536,
+      "log": null,
+      "undone": 536,
+      "ended": 464
+    }
   },
   "layout": {
     "method": "element boxes",

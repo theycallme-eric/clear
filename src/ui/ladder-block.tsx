@@ -420,7 +420,7 @@ function TimedLadder({
             ))}
           </BlockPanel.MovementList>
 
-          <BlockPanel.Note>{PACING_NOTES[timing.mode]}</BlockPanel.Note>
+          {PACING_NOTES[timing.mode] !== null && <BlockPanel.Note>{PACING_NOTES[timing.mode]}</BlockPanel.Note>}
 
           {live?.phase === 'complete' && (
             // The schedule is over, which is all the clock can say — not a
@@ -462,13 +462,25 @@ export function timingSummary(timing: LadderTiming, blockTimerSeconds: number | 
   }
 }
 
-export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string>> = {
+/**
+ * The one line of pacing a mode needs beyond its timing line, or none.
+ *
+ * TASK-012 (AC-R012-02; R71), carried by A3 TASK-105 (TASK-AC-6FBEFBDA2608;
+ * rehearsal findings 2026-11-18, finding 7): the capped window's paragraph —
+ * "Move through the rounds at your own pace inside the cap. Nothing here moves
+ * on by itself — you say how far you got." — was crossed out and is removed,
+ * as the old build removed it, with nothing written in its place: the timing
+ * line already states the one cap, and the result log asks how far. So no
+ * renderer draws a note for that mode — the format preview (`/settings/formats`)
+ * and this presentation-less block included. The other modes' lines were not
+ * part of that removal and are unchanged.
+ */
+export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string | null>> = {
   scheduled_starts:
     'Each round starts on the clock. Whatever is left of its interval is your rest.',
   for_time:
     'Start each round when you finish the last. Nothing here moves on by itself — you say how far you got.',
-  capped_window:
-    'Move through the rounds at your own pace inside the cap. Nothing here moves on by itself — you say how far you got.',
+  capped_window: null,
 }
 
 /**

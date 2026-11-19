@@ -46,6 +46,22 @@
       ]
     },
     {
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "change": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes.",
+      "moments": [
+        "every moment at 320 px (the round grid)"
+      ]
+    },
+    {
+      "criterion": "AC-C33-01, AC-R013-02",
+      "change": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes.",
+      "moments": [
+        "running",
+        "paused",
+        "undone (live tiles; not drawn for the accepted data)"
+      ]
+    },
+    {
       "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
       "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
       "moments": [
@@ -55,52 +71,52 @@
   ],
   "captures": {
     "gallery-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-gallery-ready.png",
-      "sha256": "6b76c6d7997687bb465f8aa8aafdf7e13a264de95fa60663c39a87d71237829d"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-ready.png",
+      "sha256": "f4a22e4151d93e704736f64a8da89d13ac179e448b63045214d9684a3c3fb73c"
     },
     "route-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-route-ready.png",
-      "sha256": "0cecaa81cb5a3c5b0524adf9668fdca942bd2bb94f0b092791825553519762c0"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-ready.png",
+      "sha256": "09dec0da874c1f283416f1443ace2471b0603a27fd34d2a0467a6f0c60ae3f61"
     },
     "gallery-running": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-gallery-running.png",
-      "sha256": "43480d93c9db3085ffe0b6c539571f87c146e5881bbceb78053a4fd9c6259ca8"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-running.png",
+      "sha256": "2e4db1fd5fce917d73263e2e9d0cd1e93878a2c4cea3008d03f5a612b307b622"
     },
     "route-running": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-route-running.png",
-      "sha256": "0c9d13a6ac1e392ba8a723b705b785b2bba2d77526ee423b0b2954afb960915f"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-running.png",
+      "sha256": "cc174f90524910ddfe964bfd8cfa7d6613c248b4307b55710c55217d221efba0"
     },
     "gallery-paused": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-gallery-paused.png",
-      "sha256": "5dc8efddc868cb34b2ce70843a42e9571cba5cf09ab9fdfa802e08adcf956219"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-paused.png",
+      "sha256": "23f38f8687e84d0d4afaa4f78d9675e6762e547efb8f4dc58ebbf1f2b11c7806"
     },
     "route-paused": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-route-paused.png",
-      "sha256": "3d128329fe46ed937f601b1855f7c93150ee010601f50cc2ee3ff3e2b97ac28a"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-paused.png",
+      "sha256": "4f8eed1bbbba8b4ded77b2f5d5e496029263f39779a9f95a592ee14d0100002f"
     },
     "gallery-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-gallery-log.png",
-      "sha256": "cdab1eb57143da957d9546fee5b725f72bee8bcd091113e4d65cd06f9929a75b"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-log.png",
+      "sha256": "fab1d903a75ddbb48b1e0fdd9bc4944ad6708b605096db39a6ac854fe1ef6fe9"
     },
     "route-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-route-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-log.png",
       "sha256": "e90bc4abab62677aed39a5d7d788b2daead487e12ffca21dc4db56c75ff3ce62"
     },
     "gallery-undone": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-gallery-undone.png",
-      "sha256": "67a5c666d2f9fbbb4a72e74722ab410bac3d94efed9fc50b7d71968692723306"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-undone.png",
+      "sha256": "fc1d818cecfb81d3d7fe72bf19fff56f4506b8a019811c8293ce22feae580e3a"
     },
     "route-undone": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-route-undone.png",
-      "sha256": "d63d986e2f5745d84c46fc3c84359b4261555d9ac554f7b280732d96a5077fb4"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-undone.png",
+      "sha256": "07003653e73c1797d59c2582b2eb803d3ef2a5efc5183efb7bbf2040a619647d"
     },
     "gallery-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-gallery-ended.png",
-      "sha256": "670abed35a0b9c7c8d57189d6f56031fe84055f9fa92ba3b66a2225911874a2d"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-ended.png",
+      "sha256": "581edec3a6deea629962401633a1196125b034855b38657eab1e13829cbb4d6d"
     },
     "route-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-12-phone-320-route-ended.png",
-      "sha256": "b6d3dc3cc47072dc73c2af60927b9702be913fcdfe5b75d0363de520d5dcce7d"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-ended.png",
+      "sha256": "65e4fcdb42456d4c61b81faa17b59b57177e0c57ea4120874a19ec21af51897f"
     }
   },
   "lines": {
@@ -1177,6 +1193,24 @@
     "undone": [],
     "ended": []
   },
+  "gridHeights": {
+    "gallery": {
+      "ready": 544,
+      "running": 568,
+      "paused": 568,
+      "log": null,
+      "undone": 568,
+      "ended": 544
+    },
+    "route": {
+      "ready": 544,
+      "running": 568,
+      "paused": 568,
+      "log": null,
+      "undone": 568,
+      "ended": 544
+    }
+  },
   "layout": {
     "method": "element boxes",
     "tolerancePx": 2,
@@ -1205,21 +1239,21 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 923
+          "height": 875
         },
         "running": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 1115
+          "height": 1003
         },
         "paused": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 1115
+          "height": 1003
         },
         "log": {
           "key": "(part)#0",
@@ -1233,14 +1267,14 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 1115
+          "height": 1003
         },
         "ended": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 991
+          "height": 943
         }
       },
       "route": {
@@ -1249,21 +1283,21 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 923
+          "height": 875
         },
         "running": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 1115
+          "height": 1003
         },
         "paused": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 1115
+          "height": 1003
         },
         "log": {
           "key": "(part)#0",
@@ -1277,14 +1311,14 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 1115
+          "height": 1003
         },
         "ended": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 991
+          "height": 943
         }
       }
     },

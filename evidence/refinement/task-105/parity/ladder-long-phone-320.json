@@ -46,6 +46,22 @@
       ]
     },
     {
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "change": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes.",
+      "moments": [
+        "every moment at 320 px (the round grid)"
+      ]
+    },
+    {
+      "criterion": "AC-C33-01, AC-R013-02",
+      "change": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes.",
+      "moments": [
+        "running",
+        "paused",
+        "undone (live tiles; not drawn for the accepted data)"
+      ]
+    },
+    {
       "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
       "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
       "moments": [
@@ -55,28 +71,28 @@
   ],
   "captures": {
     "gallery-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-long-phone-320-gallery-ready.png",
-      "sha256": "515f060aa0ef6a22e0b688ced2510045372332dae85aa263b3522df9c6d5896a"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-320-gallery-ready.png",
+      "sha256": "28ce97c9b9acb8f6ac6c483cd273d39aff45d40fd169f018d2ff02bcb8dd8f7d"
     },
     "route-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-long-phone-320-route-ready.png",
-      "sha256": "b4a778d20ae688d6fbc77e15d0c4f3fe3ee7d61104250605bdca0be2aa4bd600"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-320-route-ready.png",
+      "sha256": "13460dea452a1aab2fcf7ee7656665c604d67dbee2c66d9b92d659ba59ef2944"
     },
     "gallery-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-long-phone-320-gallery-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-320-gallery-log.png",
       "sha256": "4d3775c7f6fdc1f46e594010d244a9001a3faf3b96767d45cdcdab7698d97197"
     },
     "route-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-long-phone-320-route-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-320-route-log.png",
       "sha256": "97ee0ba6fc91aeb05f86a4c7fcf2780face8ef0fd1ee74262fd1dfb29b8e1dd7"
     },
     "gallery-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-long-phone-320-gallery-ended.png",
-      "sha256": "95348b124d1de3438c80d9306320aeacba1be20eb352558311c3bb761d2ea99a"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-320-gallery-ended.png",
+      "sha256": "aced7c74725973bfa3046a60cd60509ffe390577284d7e6700cc47f0d3090c89"
     },
     "route-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-long-phone-320-route-ended.png",
-      "sha256": "799d1f8b24536c06a007c948eb5b72d5913a94915ecc97d99bc6d6c5776c78e6"
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-320-route-ended.png",
+      "sha256": "e627ccf1da96d2757da26fe3bb69f8b2bd7cf1779aad4b9d19106d529498993f"
     }
   },
   "lines": {
@@ -558,6 +574,18 @@
     "log": [],
     "ended": []
   },
+  "gridHeights": {
+    "gallery": {
+      "ready": 544,
+      "log": null,
+      "ended": 544
+    },
+    "route": {
+      "ready": 544,
+      "log": null,
+      "ended": 544
+    }
+  },
   "layout": {
     "method": "element boxes",
     "tolerancePx": 2,
@@ -580,7 +608,7 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 923
+          "height": 875
         },
         "log": {
           "key": "(part)#0",
@@ -594,7 +622,7 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 973
+          "height": 925
         }
       },
       "route": {
@@ -603,7 +631,7 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 923
+          "height": 875
         },
         "log": {
           "key": "(part)#0",
@@ -617,7 +645,7 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 973
+          "height": 925
         }
       }
     },

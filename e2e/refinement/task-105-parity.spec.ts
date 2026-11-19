@@ -57,6 +57,12 @@ import { expect, test as scanned } from '../fixtures'
  * evidence store (outside Git), recording each capture's SHA-256 in the
  * receipt. Synthetic and contained: nothing is written to any backend.
  *
+ * Owner decision 2026-11-16 (TASK-AC-30138C4A2AFF): before Start a
+ * twelve-round grid fits one screen at each width, 320×568 included, on the
+ * accepted state and on the route alike, and each receipt keeps every
+ * moment's grid height (`gridHeights`). The narrow-width tightening that makes
+ * it fit is one of this task's gallery changes, so it shows on both sides.
+ *
  * `/review` is the other route this task wires (TASK-AC-F3CDA21AC50B): each
  * ladder's rounds under its accepted movement rows, drawn by the same round
  * grid (`LadderRounds`) the live ladder draws. No accepted state draws a
@@ -205,12 +211,19 @@ function label(side: Difference['side'], text: string, intended: readonly Intend
   return { side, text, criterion: rule?.criterion ?? null, reason: rule?.reason ?? null }
 }
 
+/**
+ * The Runner body these captures belong to. Each body keeps its own folder in
+ * the evidence store, so a later body's run never overwrites the captures an
+ * earlier body's receipts hash (round 06 continues the 20261116 body's work).
+ */
+const CAPTURE_BODY = 'clear-gallery-adoption-v2-20261118'
+
 /** Captures go beside the Runner's evidence store, outside Git; else into test-results. */
 function captureDir(): { dir: string; identity: string } {
   const store = resolveObjectStore({ cwd: REPO_ROOT })
   if (store.problem === undefined && store.dir !== null) {
-    const dir = join(store.dir, 'clear-gallery-adoption-v2-20261116', 'task-105', 'captures')
-    return { dir, identity: 'store:clear-gallery-adoption-v2-20261116/task-105/captures' }
+    const dir = join(store.dir, CAPTURE_BODY, 'task-105', 'captures')
+    return { dir, identity: `store:${CAPTURE_BODY}/task-105/captures` }
   }
   const dir = join(REPO_ROOT, 'test-results', 'task-105-parity')
   return { dir, identity: `repo:${relative(REPO_ROOT, dir)}` }
@@ -395,6 +408,16 @@ const GALLERY_CHANGES = [
     criterion: 'JOURNEY-012 (readable wrapping), AC-R013-02',
     change: 'A live round tile keeps the read-only tile\'s declared inset (`var(--spacing-200)`) instead of the Chip\'s wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged.',
     moments: ['running', 'paused', 'undone'],
+  },
+  {
+    criterion: 'TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)',
+    change: 'At a narrow phone width (22.5rem and below; here 320 px) a round tile\'s inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame\'s own inset and type are unchanged; at 390 nothing changes.',
+    moments: ['every moment at 320 px (the round grid)'],
+  },
+  {
+    criterion: 'AC-C33-01, AC-R013-02',
+    change: 'A live round\'s toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row\'s tiles and round labels stay level when one tile\'s words fit one line and its neighbour\'s wrap (a one- and a two-digit timed rung at 320 px). The accepted states\' rows hold alike words, so nothing drawn changes.',
+    moments: ['running', 'paused', 'undone (live tiles; not drawn for the accepted data)'],
   },
   {
     criterion: 'AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B',
@@ -585,6 +608,16 @@ interface Reading {
   readonly capture: { file: string; sha256: string }
   /** The ladder clock's digits as drawn (`TimerDigits` draws each digit apart); null before Start. */
   readonly readout: string | null
+  /** The round grid's drawn height in CSS px (TASK-AC-30138C4A2AFF), or null where the part draws none. */
+  readonly gridHeight: number | null
+}
+
+/** The height of the part's round grid (the part itself when it is the grid), or null. */
+async function gridHeightOf(target: Locator): Promise<number | null> {
+  return target.evaluate((element, selector) => {
+    const grid = element.matches(selector) ? element : element.querySelector(selector)
+    return grid === null ? null : grid.getBoundingClientRect().height
+  }, 'ol[aria-label="Prescribed ladder rounds"]')
 }
 
 /** The ladder clock's readout: the timer's one child whose words are its digits. */
@@ -598,7 +631,7 @@ async function readoutOf(card: Locator): Promise<string | null> {
 async function read(target: Locator, name: string): Promise<Reading> {
   await expect(target).toBeVisible()
   await settle(target.page())
-  return { lines: await linesOf(target), boxes: await boxesOf(target), capture: await keep(target, name), readout: await readoutOf(target) }
+  return { lines: await linesOf(target), boxes: await boxesOf(target), capture: await keep(target, name), readout: await readoutOf(target), gridHeight: await gridHeightOf(target) }
 }
 
 /** The open "Log results" dialog: its form's words and boxes, and the dialog as drawn. */
@@ -606,7 +639,7 @@ async function readLog(page: Page, name: string): Promise<Reading> {
   const log = page.locator('dialog[open] form.clr-timed-log')
   await expect(log).toBeVisible({ timeout: 15_000 })
   await settle(page)
-  return { lines: await linesOf(log), boxes: await boxesOf(log), capture: await keep(page.locator('dialog[open]'), name), readout: null }
+  return { lines: await linesOf(log), boxes: await boxesOf(log), capture: await keep(page.locator('dialog[open]'), name), readout: null, gridHeight: null }
 }
 
 /**
@@ -713,11 +746,28 @@ function expectCapped(reading: Record<CappedMoment, Reading>, state: GalleryStat
   expect(reading.log.lines.some((line) => /Undo finish/i.test(line)), `${label} log: no Undo at the cap`).toBe(false)
 }
 
+/**
+ * TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2): before Start a
+ * twelve-round grid fits one screen at each width — 320×568 included — on the
+ * gallery state and on the route alike, and the two are drawn the same height
+ * (the gallery's `ladder-12` matches the route). The bound is TASK-012
+ * check-02's, unchanged: the grid is shorter than the screen.
+ */
+function expectTwelveFit(gallery: Reading, route: Reading, rounds: number, viewport: { width: number; height: number }, label: string) {
+  if (rounds !== 12) return
+  for (const [side, reading] of [['gallery', gallery], ['route', route]] as const) {
+    expect(reading.gridHeight, `${side} ${label}: a round grid is drawn`).not.toBeNull()
+    expect(reading.gridHeight!, `${side} ${label}: twelve rounds fit one ${viewport.width}×${viewport.height} screen`).toBeLessThan(viewport.height)
+  }
+  expect(Math.abs(gallery.gridHeight! - route.gridHeight!), `${label}: the gallery's grid is the route's height`).toBeLessThanOrEqual(LAYOUT_TOLERANCE_PX)
+}
+
 function receiptOf<M extends string>(
   state: string, width: number, drive: string, moments: readonly M[],
   gallery: Record<M, Reading>, route: Record<M, Reading>,
   where: { readonly route: string; readonly file: string; readonly extra?: Record<string, unknown> } = { route: '/workout', file: `${state}-phone-${width}` },
 ) {
+  const heights = (reading: Record<M, Reading>) => Object.fromEntries(moments.map((moment) => [moment, reading[moment].gridHeight]))
   const differences = Object.fromEntries(moments.map((moment) => [moment, compare(gallery[moment].lines, route[moment].lines, LADDER_INTENDED)])) as Record<M, Difference[]>
   const layout = Object.fromEntries(moments.map((moment) => [moment, compareLayout(gallery[moment].boxes, route[moment].boxes, LADDER_LAYOUT_INTENDED)])) as Record<M, LayoutDifference[]>
   const part = (boxes: readonly Box[]) => boxes.find((box) => box.key === '(part)#0') ?? null
@@ -734,6 +784,7 @@ function receiptOf<M extends string>(
       route: Object.fromEntries(moments.map((moment) => [moment, route[moment].readout])),
     },
     differences,
+    gridHeights: { gallery: heights(gallery), route: heights(route) },
     layout: {
       method: 'element boxes',
       tolerancePx: LAYOUT_TOLERANCE_PX,
@@ -782,6 +833,7 @@ for (const state of STATES) {
           'Start; 30 s; round 2 checked off; Pause; 60 s; Finish; 1 s; Undo finish · resume ladder; Finish; 1 s; Close log — on the browser clock, held between steps',
           LIVE_MOMENTS, gallery, route)
         for (const [side, reading] of [['gallery', gallery], ['route', route]] as const) expectLive(reading, rounds, `${side} ${state} @${name}`)
+        expectTwelveFit(gallery.ready, route.ready, rounds, viewport, `${state} @${name}`)
         for (const moment of LIVE_MOMENTS) expectAllIntended(differences[moment], `${state} ${moment} @${name}`)
         for (const moment of LIVE_MOMENTS) expectLayoutIntended(layout[moment], `${state} ${moment} layout @${name}`)
         app.assertContained()
@@ -818,6 +870,7 @@ for (const state of STATES) {
         `the gallery's "${open}" (Start, then its own clock past the cap); the route: Start, then the browser clock past the same cap`,
         CAPPED_MOMENTS, gallery, route)
       for (const [side, reading] of [['gallery', gallery], ['route', route]] as const) expectCapped(reading, state, `${side} ${state} @${name}`)
+      expectTwelveFit(gallery.ready, route.ready, rounds, viewport, `${state} @${name}`)
       expect(rounds).toBe(ROUNDS[state])
       for (const moment of CAPPED_MOMENTS) expectAllIntended(differences[moment], `${state} ${moment} @${name}`)
       for (const moment of CAPPED_MOMENTS) expectLayoutIntended(layout[moment], `${state} ${moment} layout @${name}`)

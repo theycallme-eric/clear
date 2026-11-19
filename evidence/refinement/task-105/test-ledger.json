@@ -11,14 +11,10 @@
     "retired": [],
     "deferred": [],
     "blocked": [],
-    "needsDecision": [
+    "resolved": [
       {
         "what": "e2e/refinement/task-012.spec.ts › JOURNEY-012 phone-320: Review then Workout … (one assertion: twelve rounds within one 320 × 568 screen, R117)",
-        "why": "Round 7’s accepted grid at 320 px is two columns of inset tiles, so the twelve-round grid is 592 px tall; the accepted gallery state ladder-12 draws the same (parity within 2 px). Passing needs a change to the accepted presentation that no TASK-105 criterion names, or the owner’s word that the build’s bound does not apply to Round 7 at 320 px. The test is unchanged: not skipped, not weakened.",
-        "options": [
-          "Change the accepted ladder grid at 320 px (for example a smaller tile inset or a third column), recorded as a gallery change with its criterion",
-          "Keep the accepted look and retire or rewrite this one bound with the owner’s approval"
-        ]
+        "how": "Owner decision 2026-11-16 (Eric, chat: “Accept all five”; Decision 2, “a twelve-round ladder fits one 320 px screen”), carried as TASK-AC-30138C4A2AFF in round 06. src/ui/ladder-rungs.css tightens the shared round grid at a narrow phone width (@media (max-width: 22.5rem)): a round tile’s inset is var(--spacing-100) instead of var(--spacing-200); the column rule (pinned by AC-C35-01), gap, frame, the frame’s own inset and type are unchanged, and 390 px is unchanged. The twelve-round grid at 320 × 568 is 544 px before Start (was 592). The gallery’s ladder-12 and ladder-long states draw the same component and stylesheet, so they changed in the same commit and still match the route (TASK-105 parity, within 2 px). The TASK-012 check-02 bound is unchanged and passes."
       }
     ]
   },
@@ -27,9 +23,9 @@
     "rewritten": 57,
     "retired": 0,
     "deferred": 0,
-    "added": 12,
+    "added": 13,
     "failingBlocked": 0,
-    "failing": 1
+    "failing": 0
   },
   "entries": [
     {
@@ -430,6 +426,14 @@
       "ledger": "deferred (F3)",
       "disposition": "rewritten",
       "note": "Round 7 look, same asserted behaviour. The file’s harness reads Round 7: every mount is the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION, so a raced ladder is Round 7’s TimedWorkoutFlow), the grid is `Prescribed ladder rounds`, the summary is Round 7’s `[data-ladder-movement]` lines, and `declare` ends the attempt first (Start ladder, Finish) because Round 7 offers the log once the attempt has ended — Finish with nothing tracked starts it at the drawn Incomplete (TASK-010). Round 7’s meta line states the rungs and the block’s cap for every ladder (`5 rounds · 08:00 cap`); no timing line of a mode, no pacing note, no schedule.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "test": "a capped window draws no pacing paragraph anywhere the product draws a ladder > TASK-AC-6FBEFBDA2608: PACING_NOTES.capped_window is null, so the format preview and the legacy block draw no note for it",
+      "ledger": "new (round 06)",
+      "disposition": "added",
+      "note": "TASK-AC-6FBEFBDA2608 (AC-R012-02, R71; rehearsal findings 2026-11-18, finding 7): asserts PACING_NOTES.capped_window is null as in the old build, the scheduled and free-paced lines unchanged, the format preview on its real route (/settings/formats) drawing no paragraph in its Capped window region while For time keeps its line, and the presentation-less LadderBlock drawing none. Failed before the change, passes after it. The FormatPreview case “shows every ladder timing mode with its rungs, read-only” (src/app/FormatPreview.test.tsx, not this task’s file) is not edited and now takes its removed branch.",
       "result": "passed"
     },
     {
@@ -1005,9 +1009,8 @@
       "test": "JOURNEY-012 phone-320: Review then Workout state each ladder’s concise progression and every round’s movement targets in a compact wrapping grid, from its own data",
       "ledger": "carried e2e (F3; expected to pass after F3)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round.",
-      "result": "failed",
-      "reason": "Every assertion of this case passes except one, carried unchanged from the build: “Compact: twelve rounds fit within one screen’s height (R117)” — `expect(twelve.grid.height).toBeLessThan(viewport.height)` at 320 × 568. Round 7’s accepted grid at 320 px is two columns (the accepted `minmax(calc(var(--control-height) * 2), 1fr)` recipe, pinned by AC-C35-01 in ladder-rungs.test.tsx, over the accepted inset tiles TASK-103 restored), so twelve rounds are six rows: 592 px. The accepted gallery state ladder-12 draws the same grid at 320 px (TASK-105 parity ladder-12 phone-320 matches every element box within 2 px), and at 390 × 844 the case passes. Meeting the 568 px bound needs a change to the accepted gallery presentation (for example a smaller tile inset or a third column at 320 px), which no criterion of this task names; weakening the bound is not allowed. A diagnostic copy with only this check made soft (run once, deleted, not committed) reported it as the only failure. Needs the owner’s or controller’s decision; not skipped, not weakened."
+      "note": "Rewritten for Round 7 (same asserted behaviour): cards found as Round 7’s cards holding a group header; grid `Prescribed ladder rounds`, round label `.label`; Round 7 summary and meta lines (a schedule’s own timing line); the keyboard case’s next stop after the prescription is the card’s Coaching and notes disclosure (Round 7 offers the log once the attempt ends) and the log is the one dialog Round 7 opens at Finish. Review draws each ladder’s rounds under its movement rows with the live grid (`LadderPrescription.Rounds` over `ladderRounds`), and a scheduled ladder is TimedWorkoutFlow’s schedule (each tile’s start and `Now` marker, Start schedule) — both wired in the lane-widened round. Round 06: the one assertion that failed in the lane-widened round (twelve rounds within one 320 × 568 screen, R117) is unchanged and passes, after the owner-decided narrow-width tightening of the shared grid (rules.resolved; TASK-AC-30138C4A2AFF).",
+      "result": "passed"
     },
     {
       "file": "e2e/refinement/task-012.spec.ts",
@@ -1046,7 +1049,7 @@
       "test": "JOURNEY-013 phone-320 touch: rounds checked off live carry into the editable end log at the cap and at Finish, as level rep-first wrapping tiles, and the save records only the rounds completed",
       "ledger": "carried e2e (F3; expected to pass after F3)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`.",
+      "note": "Rewritten for Round 7 (same asserted behaviour): the ladder is `.clr-timed-flow` told apart by its meta line; grid `Prescribed ladder rounds`; the log is the one dialog Round 7 opens by itself at Finish and at the cap (the card’s “Log results” reopens it); the partial round read from `Completed in round N`; tile label `.label`; Undo words `Undo finish · resume ladder`. Round 06: unchanged; it failed once after the narrow-width tile inset (the four-round timed ladder’s live tiles sized to their words, level only by coincidence) and passes after the live toggle was made to fill its cell and start its words at its top (src/ui/ladder-rungs.css; AC-C33-01, AC-R013-02).",
       "result": "passed"
     },
     {
@@ -1208,7 +1211,7 @@
       "test": "TASK-AC-FAEE8BA2A650 ladder-12 phone-320",
       "ledger": "new",
       "disposition": "added",
-      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650). Round 06: also proves TASK-AC-30138C4A2AFF — before Start the twelve-round grid is shorter than the screen on the gallery state and the route alike, the two within 2 px (expectTwelveFit); every moment’s grid height is kept in the receipt (gridHeights).",
       "result": "passed"
     },
     {
@@ -1216,7 +1219,7 @@
       "test": "TASK-AC-FAEE8BA2A650 ladder-12 phone-390",
       "ledger": "new",
       "disposition": "added",
-      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650). Round 06: also proves TASK-AC-30138C4A2AFF — before Start the twelve-round grid is shorter than the screen on the gallery state and the route alike, the two within 2 px (expectTwelveFit); every moment’s grid height is kept in the receipt (gridHeights).",
       "result": "passed"
     },
     {
@@ -1224,7 +1227,7 @@
       "test": "TASK-AC-FAEE8BA2A650 ladder-long phone-320",
       "ledger": "new",
       "disposition": "added",
-      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650). Round 06: also proves TASK-AC-30138C4A2AFF — before Start the twelve-round grid is shorter than the screen on the gallery state and the route alike, the two within 2 px (expectTwelveFit); every moment’s grid height is kept in the receipt (gridHeights).",
       "result": "passed"
     },
     {
@@ -1232,7 +1235,7 @@
       "test": "TASK-AC-FAEE8BA2A650 ladder-long phone-390",
       "ledger": "new",
       "disposition": "added",
-      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650).",
+      "note": "TASK-105’s look check (TASK-AC-FAEE8BA2A650). Round 06: also proves TASK-AC-30138C4A2AFF — before Start the twelve-round grid is shorter than the screen on the gallery state and the route alike, the two within 2 px (expectTwelveFit); every moment’s grid height is kept in the receipt (gridHeights).",
       "result": "passed"
     },
     {

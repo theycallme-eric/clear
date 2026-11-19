@@ -71,7 +71,10 @@ import {
   type BlockFixture,
   type ExerciseFixture,
 } from '../test/workout-double'
+import { renderApp, signedIn } from '../test/render'
+import { FORMAT_PREVIEW_ROUTE, FORMAT_PREVIEW_TITLE, PREVIEW_LADDERS } from '../app/FormatPreview'
 import { BlockSlot } from './block-renderers'
+import { PACING_NOTES, timingSummary } from './ladder-block'
 import { PRODUCT_PRESENTATION } from './product-presentation'
 import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
 
@@ -1080,6 +1083,68 @@ describe('a capped window shows its one cap', () => {
     openLog()
     expect(screen.getByRole('radio', { name: 'Incomplete' })).toBeInTheDocument()
     expectNoSetEntry()
+  })
+})
+
+/**
+ * A3 TASK-105 round 06 (TASK-AC-6FBEFBDA2608; AC-R012-02, R71; rehearsal
+ * findings 2026-11-18, finding 7): the capped window's "Move through the
+ * rounds…" paragraph is removed everywhere the product draws it, as the old
+ * build removed it — `PACING_NOTES.capped_window` is `null`, so the format
+ * preview Settings links to (`/settings/formats`) and the presentation-less
+ * `LadderBlock` both draw no note for that mode, with nothing in its place.
+ * The other two modes keep their one pacing line, unchanged.
+ */
+describe('a capped window draws no pacing paragraph anywhere the product draws a ladder', () => {
+  it('TASK-AC-6FBEFBDA2608: PACING_NOTES.capped_window is null, so the format preview and the legacy block draw no note for it', async () => {
+    expect(PACING_NOTES.capped_window).toBeNull()
+    expect(PACING_NOTES.scheduled_starts).toBe(
+      'Each round starts on the clock. Whatever is left of its interval is your rest.',
+    )
+    expect(PACING_NOTES.for_time).toBe(
+      'Start each round when you finish the last. Nothing here moves on by itself — you say how far you got.',
+    )
+
+    // The format preview, on its real route: its capped window states its
+    // timing, movement and rung reached, and no pacing paragraph; the free-
+    // paced ladder beside it keeps its line, so the preview still draws one
+    // where a mode has it.
+    const preview = renderApp([FORMAT_PREVIEW_ROUTE], signedIn())
+    expect(await screen.findByRole('heading', { level: 1, name: FORMAT_PREVIEW_TITLE })).toBeVisible()
+    const capped = PREVIEW_LADDERS.find((ladder) => ladder.timing.mode === 'capped_window')!
+    const free = PREVIEW_LADDERS.find((ladder) => ladder.timing.mode === 'for_time')!
+    const cappedRegion = screen.getByRole('region', { name: capped.heading })
+    expect(within(cappedRegion).getByText(timingSummary(capped.timing, capped.columns.timer_seconds))).toBeVisible()
+    expect(cappedRegion.textContent).not.toMatch(/Move through the rounds|at your own pace inside the cap|Nothing here moves on by itself/)
+    expect(within(screen.getByRole('region', { name: free.heading })).getByText(PACING_NOTES.for_time!)).toBeVisible()
+    expect(screen.getByRole('main').textContent).not.toMatch(/Move through the rounds/)
+    preview.unmount()
+
+    // The presentation-less `LadderBlock` (no route reaches it; tests and
+    // specimens do): its capped window states its cap and draws no note.
+    const snapshot = snapshotFixture({
+      sections: [{
+        title: 'Conditioning',
+        sectionType: 'conditioning',
+        blocks: [{
+          structureType: 'amrap',
+          repScheme: 'ladder_fixed_interval',
+          timerSeconds: 600,
+          exercises: [sequence('kettlebell-swing', [2, 4, 6, 8, 10])],
+        }],
+      }],
+    })
+    const block: BlockProgress = {
+      ...sessionProgress(snapshot).sections[0].blocks[0],
+      ladderTiming: { mode: 'capped_window', rounds: 5, interval_seconds: null, cap_seconds: 600 },
+    }
+    const { container } = render(
+      <BlockCompletionContext value={{ reportOutcome: vi.fn(), isBlockRecorded: () => false }}>
+        <BlockSlot block={block} />
+      </BlockCompletionContext>,
+    )
+    expect(screen.getByText(timingSummary(block.ladderTiming!, 600))).toBeInTheDocument()
+    expect(container.textContent).not.toMatch(/Move through the rounds|at your own pace inside the cap|Nothing here moves on by itself/)
   })
 })
 

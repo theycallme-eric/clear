@@ -46,6 +46,22 @@
       ]
     },
     {
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "change": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes.",
+      "moments": [
+        "every moment at 320 px (the round grid)"
+      ]
+    },
+    {
+      "criterion": "AC-C33-01, AC-R013-02",
+      "change": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes.",
+      "moments": [
+        "running",
+        "paused",
+        "undone (live tiles; not drawn for the accepted data)"
+      ]
+    },
+    {
       "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
       "change": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder.",
       "moments": [
@@ -55,27 +71,27 @@
   ],
   "captures": {
     "gallery-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-phone-390-gallery-ready.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-390-gallery-ready.png",
       "sha256": "edc97a806e60a6de8222830a89c4f70514b1d2772c19cc13563e2df84bafb563"
     },
     "route-ready": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-phone-390-route-ready.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-390-route-ready.png",
       "sha256": "8b91e5704661b71bb67847376e7777af2bed19d19fb31790afc727f7a54b01de"
     },
     "gallery-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-phone-390-gallery-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-390-gallery-log.png",
       "sha256": "a9824f22c643fba29c864686d0411f515f589c62a33b7c427d73ad5495954209"
     },
     "route-log": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-phone-390-route-log.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-390-route-log.png",
       "sha256": "b2410c27eb379a4bb3692377914155e3bf974c55fd51f68fd8406a43bd5995a4"
     },
     "gallery-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-phone-390-gallery-ended.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-390-gallery-ended.png",
       "sha256": "1564163bbab3a67dd0000962138741b251bd3559633e5c3c054bb4c4443d9f11"
     },
     "route-ended": {
-      "file": "store:clear-gallery-adoption-v2-20261116/task-105/captures/ladder-phone-390-route-ended.png",
+      "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-390-route-ended.png",
       "sha256": "dd941ad0bf65216d2faba3cd87b58a134da9d414921b7cd635fc071af75d801b"
     }
   },
@@ -317,6 +333,18 @@
     "ready": [],
     "log": [],
     "ended": []
+  },
+  "gridHeights": {
+    "gallery": {
+      "ready": 228,
+      "log": null,
+      "ended": 228
+    },
+    "route": {
+      "ready": 228,
+      "log": null,
+      "ended": 228
+    }
   },
   "layout": {
     "method": "element boxes",

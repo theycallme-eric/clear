@@ -19,12 +19,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-105/required-cases.json",
-    "sha256": "978f752d56aab19dc343ccc9ce526523de9929c362eb4ba569f77f62200df7e4"
+    "sha256": "8a2dba392e70eaae564d6802f76e94b9c814703d90138fd410465c96970d017e"
   },
   "targets": [
     {
       "path": "src/ui/ladder-block.test.tsx",
-      "sha256": "69826e46bc3468d2373cccee77032338b215934b21a347e55a4aa84c69550472"
+      "sha256": "9e034f85bc770d5246214582b1d493937d2f811be3aac81973fed2287e06424a"
     },
     {
       "path": "src/ui/ladder-rungs.test.tsx",
@@ -237,6 +237,11 @@
     {
       "file": "src/ui/ladder-block.test.tsx",
       "name": "legacy ladders are unchanged by explicit timing > a ladder with no timing keeps its movement list and draws no rounds",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/ladder-block.test.tsx",
+      "name": "a capped window draws no pacing paragraph anywhere the product draws a ladder > TASK-AC-6FBEFBDA2608: PACING_NOTES.capped_window is null, so the format preview and the legacy block draw no note for it",
       "status": "passed"
     },
     {
@@ -596,12 +601,12 @@
     }
   ],
   "totals": {
-    "total": 110,
-    "passed": 110,
+    "total": 111,
+    "passed": 111,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 110
+    "executed": 111
   },
   "problems": []
 }
