@@ -27,8 +27,23 @@
  * from here behind that owner's back. TASK-104's rule for an older ladder
  * clock under the For Time key is kept by that owner (`adoptLegacyClock:
  * 'on-first-change'`): adopted by the first action, the For Time record left
- * as it was. The richer per-format entries (`movements`, `workCompleted`) are
- * TASK-116's. Anything such a record already holds is kept on every write.
+ * as it was. Anything such a record already holds is kept on every write.
+ *
+ * A3 TASK-116 (F3; TASK-010, TASK-048) keeps two more facts here, each on the
+ * record it belongs to:
+ *
+ *   · a For Time race's **answer** to "Work completed" (`workCompleted`,
+ *     TASK-010's field, `answerForTime`): written only when the athlete
+ *     answers, so the clock's starting point — Finish under the cap at
+ *     Complete, the cap at Incomplete — is drawn and never stored, and a
+ *     reload brings back a correction rather than the starting point;
+ *   · an AMRAP's or For Time's **failed save** (`saveFailed`): set when a save
+ *     of the attempt's log is refused, cleared once one lands, so the log says
+ *     `Your log didn’t save. Try again.` after a reload too (TASK-048's save
+ *     authority, as the ladder's durable attempt keeps it).
+ *
+ * The per-movement entries (`movements`) are kept on every write and are
+ * TASK-117's to fill.
  *
  * No React here, and the storage is injected: outside the workout shell (the
  * gallery, a bare mount) the caller passes `null` and nothing is stored.
@@ -40,7 +55,7 @@ import {
   type AmrapState,
 } from './amrap'
 import { clampEmomState, type EmomState } from './emom'
-import { clampForTimeState, type ForTimeState } from './for-time'
+import { answerForTime, clampForTimeState, type ForTimeState } from './for-time'
 import {
   activeSeconds,
   timedAttemptClock,
@@ -74,6 +89,10 @@ export interface RestoredTimedAttempt {
   readonly attempt: TimedAttempt
   /** The AMRAP's counts; null for every other format. */
   readonly counts: TimedCounts | null
+  /** A3 TASK-116: a For Time race's answer to "Work completed" once given; null before, and for every other format. */
+  readonly answer: boolean | null
+  /** A3 TASK-116: a save of this attempt's log failed and none has landed since (AMRAP and For Time). */
+  readonly saveFailed: boolean
 }
 
 /**
@@ -117,17 +136,25 @@ export function readTimedAttempt(
       return {
         attempt: timedAttemptFromClock({ startedAt: state.startedAt, pausedAt: state.pausedAt, finishedAt }),
         counts: { roundsCompleted: state.roundsCompleted, partialRoundReps: state.partialRoundReps },
+        answer: null,
+        saveFailed: state.saveFailed === true,
       }
     }
     case 'emom': {
       const stored = readEmomState(storage, block.blockId)
       if (stored === null) return null
-      return { attempt: timedAttemptFromClock(clampEmomState(stored)), counts: null }
+      return { attempt: timedAttemptFromClock(clampEmomState(stored)), counts: null, answer: null, saveFailed: false }
     }
     case 'for_time': {
       const stored = readForTimeState(storage, block.blockId)
       if (stored === null) return null
-      return { attempt: timedAttemptFromClock(clampForTimeState(stored)), counts: null }
+      const state = clampForTimeState(stored)
+      return {
+        attempt: timedAttemptFromClock(state),
+        counts: null,
+        answer: typeof state.workCompleted === 'boolean' ? state.workCompleted : null,
+        saveFailed: state.saveFailed === true,
+      }
     }
   }
 }
@@ -174,6 +201,7 @@ export function writeTimedAttempt(
         roundsCompleted: kept.roundsCompleted,
         partialRoundReps: kept.partialRoundReps,
         ...(previous.movements === undefined ? {} : { movements: previous.movements }),
+        ...(previous.saveFailed === true ? { saveFailed: true } : {}),
       }
       writeAmrapState(storage, block.blockId, next)
       return
@@ -190,6 +218,7 @@ export function writeTimedAttempt(
         finishedAt,
         ...(typeof previous?.workCompleted === 'boolean' ? { workCompleted: previous.workCompleted } : {}),
         ...(previous?.movements === undefined ? {} : { movements: previous.movements }),
+        ...(previous?.saveFailed === true ? { saveFailed: true } : {}),
       }
       writeForTimeState(storage, block.blockId, next)
       return
@@ -207,4 +236,53 @@ export function writeTimedCounts(storage: ShellStorage | null, block: BlockProgr
     roundsCompleted: counts.roundsCompleted,
     partialRoundReps: counts.partialRoundReps,
   })
+}
+
+/**
+ * A3 TASK-116 (TASK-010, C29, AC-R010-01): the athlete's answer to "Work
+ * completed", written onto the For Time race it judges (`answerForTime`), so
+ * a reload brings back the answer given — never the clock's starting point
+ * over a correction. A race that never started has nothing to answer.
+ */
+export function writeForTimeAnswer(storage: ShellStorage | null, block: BlockProgress, workCompleted: boolean): void {
+  if (storage === null) return
+  const previous = readForTimeState(storage, block.blockId)
+  if (previous === null || previous.startedAt === null || previous.workCompleted === workCompleted) return
+  writeForTimeState(storage, block.blockId, answerForTime(previous, workCompleted))
+}
+
+/** A record with the flag set, or without it at all (absent, never `false`). */
+function withSaveFailed<T extends { readonly saveFailed?: boolean }>(record: T, failed: boolean): T {
+  const next = { ...record }
+  if (failed) return { ...next, saveFailed: true }
+  delete (next as { saveFailed?: boolean }).saveFailed
+  return next
+}
+
+/** The formats whose log keeps a failed save on its record (A3 TASK-116); a ladder's is its durable attempt's. */
+export type TimedSaveFormat = 'amrap' | 'for_time'
+
+/**
+ * A3 TASK-116 (TASK-AC-8FF68F3F5241): notes on the attempt's own record that a
+ * save of its log failed (`true`) or that one has since landed (`false`),
+ * keeping every other field. Written only when it changes, so a record whose
+ * save never failed is never rewritten; an attempt that never started has
+ * nothing to note.
+ */
+export function writeTimedSaveFailed(
+  storage: ShellStorage | null,
+  format: TimedSaveFormat,
+  block: BlockProgress,
+  failed: boolean,
+): void {
+  if (storage === null) return
+  if (format === 'amrap') {
+    const previous = readAmrapState(storage, block.blockId)
+    if (previous === null || previous.startedAt === null || (previous.saveFailed === true) === failed) return
+    writeAmrapState(storage, block.blockId, withSaveFailed(previous, failed))
+    return
+  }
+  const previous = readForTimeState(storage, block.blockId)
+  if (previous === null || previous.startedAt === null || (previous.saveFailed === true) === failed) return
+  writeForTimeState(storage, block.blockId, withSaveFailed(previous, failed))
 }

@@ -53,17 +53,24 @@ const TIMED_LOG_SAVE_FAILED = 'Your log didn’t save. Try again.'
  * block keeps beyond this form — a ladder's durable attempt notes it, so it is
  * said again after a reload or a refused forward-action save — until a save
  * succeeds. The form's own failure (a Save log refused while it is open) is
- * said in the same words; either way there is one alert.
+ * said in the same words; either way there is one alert. A3 TASK-116 keeps an
+ * AMRAP's and a For Time's the same way, on their own records.
+ *
+ * A3 TASK-116 (TASK-010, C29; R78): `askCompletion` is false when the block's
+ * record cannot hold the answer — a For Time with no cap (no cap, no claim) —
+ * so "Work completed" is not asked. Asked otherwise, for For Time and ladder.
+ * A For Time's partial amounts belong to a race answered Incomplete, never to
+ * one nobody answered.
  */
 export function TimedResultLog({ block, format, finished, weightUnit, onSave, initial,
   value, onDraftChange, completionAction, hierarchy = 'simple', rungEmphasis = 'reps', accessibleName = 'Log section results', embedded = false,
-  saveFailed = false,
+  saveFailed = false, askCompletion = true,
 }: {
   block: BlockProgress; format: TimedFormat; finished: boolean; weightUnit: Enums<'weight_unit'> | null
   onSave: (result: TimedResultDraft) => Promise<void>; initial?: TimedResultDraft
   value?: TimedResultDraft; onDraftChange?: (next: TimedResultDraft) => void; completionAction?: ReactNode
   hierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; accessibleName?: string; embedded?: boolean
-  saveFailed?: boolean
+  saveFailed?: boolean; askCompletion?: boolean
 }) {
   const rungs = ladderRungs(block.exercises)
   const [localDraft, setLocalDraft] = useState<TimedResultDraft>(() => initial ?? initialTimedResultDraft(format, finished, rungs.length))
@@ -101,7 +108,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
   const measurements = block.exercises.flatMap(exercise => {
     const p = exercise.prescription
     const loaded = p.equipment_used !== 'bodyweight' && p.load_type !== 'bodyweight' && p.equipment_used !== 'none'
-    const amount = format === 'amrap' || (format === 'for_time' && !draft.completed)
+    const amount = format === 'amrap' || (format === 'for_time' && draft.completed === false)
       || (format === 'ladder' && !draft.completed && hasNextRung)
     if (!loaded && !amount) return []
     const name = exerciseName(p.exercise_id)
@@ -127,7 +134,7 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
     })}>
       {!embedded && <Heading className="clr-timed-log__title">Log results</Heading>}
       <ResultGroup title={hierarchy === 'grouped' && format !== 'emom' ? 'Result' : undefined}>
-        {(format === 'ladder' || format === 'for_time') && <ChoiceGroup className="clr-timed-completion" legend="Work completed"
+        {(format === 'ladder' || format === 'for_time') && askCompletion && <ChoiceGroup className="clr-timed-completion" legend="Work completed"
           value={draft.completed ? 'complete' : 'partial'}
           options={[{ value: 'complete', label: 'Complete' }, { value: 'partial', label: 'Incomplete' }]}
           onChange={next => {

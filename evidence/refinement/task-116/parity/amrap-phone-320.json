@@ -1,0 +1,351 @@
+{
+  "schema": "clear-task-116-parity/v1",
+  "task": "TASK-116",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "amrap",
+  "width": 320,
+  "route": "/workout",
+  "captures": {
+    "galleryReady": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-gallery-ready.png",
+      "sha256": "d4d4f8ae3336d1214b2864427705f0edec0f5dff0971debc652eeee362932c02"
+    },
+    "routeReady": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-route-ready.png",
+      "sha256": "36d321cab22451d54b3b7417d90dd608df373186fc1f6dee1d5f1e8dd2a54319"
+    },
+    "galleryLog": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-gallery-log.png",
+      "sha256": "8fa90e251118c60b82ebe00694487cad3ed8b75a95b21c5313c533e00e3b8ad6"
+    },
+    "routeLog": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-route-log.png",
+      "sha256": "b040ed34c9bef113bd9768a9fd3ced451a06f76f3d31a6b7faa6d215b9797672"
+    },
+    "galleryAnswered": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-gallery-answered.png",
+      "sha256": "970d4dcfcdac288cce6892046c549b0044ba0d16b0dcec70d3ce234a156cb82a"
+    },
+    "routeAnswered": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-route-answered.png",
+      "sha256": "a91c8fe5e698e6d82d4911ce47615fd27cbc0b73e866152771fbadedc3ff6e95"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "START AMRAP",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "ROUNDS COMPLETED",
+        "—",
+        "REPS INTO THE NEXT ROUND",
+        "—",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "answered": [
+        "ROUNDS COMPLETED",
+        "3",
+        "REPS INTO THE NEXT ROUND",
+        "0",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "CLEAR",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "ROUNDS COMPLETED",
+        "—",
+        "REPS INTO THE NEXT ROUND",
+        "—",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "START AMRAP",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "ROUNDS COMPLETED",
+        "—",
+        "REPS INTO THE NEXT ROUND",
+        "—",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "answered": [
+        "ROUNDS COMPLETED",
+        "3",
+        "REPS INTO THE NEXT ROUND",
+        "0",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "CLEAR",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "02 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "ROUNDS COMPLETED",
+        "—",
+        "REPS INTO THE NEXT ROUND",
+        "—",
+        "BURPEE",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "KB SWING",
+        "COMPLETED IN NEXT ROUND",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
+        "BURPEE",
+        "ADD NOTE — BURPEE",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ]
+    }
+  },
+  "differences": {
+    "ready": [],
+    "log": [],
+    "answered": [],
+    "ended": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 65,
+        "log": 91,
+        "answered": 94,
+        "ended": 81
+      },
+      "route": {
+        "ready": 65,
+        "log": 91,
+        "answered": 94,
+        "ended": 81
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 788.5
+        },
+        "answered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 788.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 463
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 788.5
+        },
+        "answered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 788.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 463
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "answered": [],
+      "ended": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "TASK-AC-85F76FF493AB",
+      "change": "`askCompletion`: a For Time with no cap is not asked \"Work completed\"; a For Time's amounts belong to a race answered Incomplete, never to one nobody answered."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "AC-R010-01",
+      "change": "For Time starts where the race ended and keeps only the athlete's answer (`workCompleted`); with no cap nothing is asked or claimed."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-8FF68F3F5241",
+      "change": "AMRAP and For Time save authority: a refused save is kept on the attempt's record and said after a reload; a known row whose richer save failed reopens the block."
+    }
+  ]
+}

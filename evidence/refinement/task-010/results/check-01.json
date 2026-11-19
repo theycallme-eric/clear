@@ -12,17 +12,17 @@
     "run",
     "src/ui/timed-result-log.test.tsx",
     "--testNamePattern",
-    "completion|effort",
+    "^TASK-010 ",
     "--passWithNoTests=false"
   ],
   "manifest": {
     "path": "evidence/refinement/task-010/required-cases.json",
-    "sha256": "7630d75e8f2d2f5585faed776b7fdae708703374b6788a2947d2a524d833cef8"
+    "sha256": "51cbc0c413e3682901cda1c7d9e8ec1dd2b0f602bad66f6ed418d64c1bd75412"
   },
   "targets": [
     {
       "path": "src/ui/timed-result-log.test.tsx",
-      "sha256": "d94add1cc74e10aaa27af32c3aa2fd3c53b0a5f4c26bcfc6ae987fd4dcad7f15"
+      "sha256": "8069b0fd65fad5d70b8b2510711070960f0a45c2c26e360f9fe62a0a7f347cb8"
     }
   ],
   "requiredCases": [
@@ -70,15 +70,20 @@
       "file": "src/ui/timed-result-log.test.tsx",
       "name": "TASK-010 completion choices and existing effort faces > JOURNEY-010 the accepted for_time and ladder gallery states draw the route’s own logs: completion at the route’s starting point, the existing effort faces unanswered, live over memory only",
       "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-010 completion choices and existing effort faces > TASK-AC-8FF68F3F5241 For Time save authority: Work completed is asked only with a cap (TASK-AC-85F76FF493AB), the answer and a refused save survive close, reopen and a reload until a save lands, the saved row wins over the local echo, and a known row whose richer save failed reopens the block (TASK-AC-ABFEF4069683)",
+      "status": "passed"
     }
   ],
   "totals": {
-    "total": 23,
-    "passed": 11,
+    "total": 19,
+    "passed": 10,
     "failed": 0,
-    "skipped": 12,
+    "skipped": 9,
     "todo": 0,
-    "executed": 11
+    "executed": 10
   },
   "problems": []
 }

@@ -1,0 +1,73 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-116",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-116-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-116/required-cases.json",
+    "sha256": "539fb3a0ba58acc3b89567652f2c6f314b232d70041a156e7b37a9980dff1a36"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-116-parity.spec.ts",
+      "sha256": "355834f539a7d4a797bd09ee000235ed337a16db72b3baf53cad787cedad3df9"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-116-parity.spec.ts",
+      "name": "TASK-AC-4FE4C4B37830 amrap phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-116-parity.spec.ts",
+      "name": "TASK-AC-4FE4C4B37830 amrap phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-116-parity.spec.ts",
+      "name": "TASK-AC-4FE4C4B37830 for_time phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-116-parity.spec.ts",
+      "name": "TASK-AC-4FE4C4B37830 for_time phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-116-parity.spec.ts",
+      "name": "TASK-AC-4FE4C4B37830 ladder phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-116-parity.spec.ts",
+      "name": "TASK-AC-4FE4C4B37830 ladder phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 6
+  },
+  "problems": []
+}

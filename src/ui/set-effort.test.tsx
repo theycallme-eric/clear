@@ -10,6 +10,13 @@
  * Round 7 (owner decision 1, 2026-11-13): the sheet is the centred logging
  * dialog. A saved set's dialog shows its running rest; once that rest is over
  * the card's Rest opens the next set.
+ *
+ * A3 TASK-116 (F3; TASK-010, C30, AC-R010-02) owns this file whole. The timed
+ * results log asks a block's optional effort with this same control, and its
+ * last case pins the owner's two carried rules (A3 TASK-105 brought them onto
+ * Round 7): the compact Clear is always named for what it clears — a set, or
+ * the timed log's scope — and a saved answer can be shown disabled, its face
+ * kept, nothing offered and no Clear.
  */
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -26,7 +33,7 @@ import { sessionProgress } from '../state/workout-progress'
 import { AppProviders } from '../test/render'
 import { createWorkoutDouble, FIXTURE_SESSION_ID, snapshotFixture } from '../test/workout-double'
 import { FeelingRow } from './feeling-row'
-import { SET_EFFORT_CHOICES, SetEffortReading } from './set-effort'
+import { SET_EFFORT_CHOICES, SetEffortChoice, SetEffortReading } from './set-effort'
 import { ExerciseSetLogger } from './set-logger'
 import { SetLoggingSheetHost, SetLoggingSheetSlot } from './set-logging-sheet'
 
@@ -316,5 +323,33 @@ describe('AC-042: null is unanswered, sets are independent, mood is separate', (
     await openSheet(user)
     await logSet(user, 1, 'Too easy')
     expect(Object.keys(attempts[0].performed).sort()).toEqual(['effort', 'reps', 'setNumber'])
+  })
+})
+
+describe('TASK-010 the same three faces for a timed log: a Clear always named, and a saved answer shown disabled', () => {
+  it('names the Clear for the set or the scope it clears, and shows a saved answer disabled with its face kept and no Clear', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+
+    // A timed log has no set: the Clear names the log's scope instead.
+    const { rerender } = render(<SetEffortChoice scopeLabel="this section" legend="Effort · optional" value="too_hard" onChange={onChange} />)
+    const effort = screen.getByRole('group', { name: 'Effort · optional' })
+    expect(within(effort).getAllByRole('radio').map((radio) => radio.textContent)).toEqual(SET_EFFORT_CHOICES.map(({ label }) => label))
+    await user.click(screen.getByRole('button', { name: 'Clear effort for this section' }))
+    expect(onChange).toHaveBeenLastCalledWith(null)
+    rerender(<SetEffortChoice setNumber={3} value="about_right" onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'Clear effort for set 3' })).toBeInTheDocument()
+
+    // Saved: the face stays checked, no face is offered and nothing clears it.
+    onChange.mockClear()
+    rerender(<SetEffortChoice scopeLabel="this section" legend="Effort · optional" value="about_right" onChange={onChange} disabled />)
+    const saved = screen.getByRole('group', { name: 'Effort · optional' })
+    const radios = within(saved).getAllByRole('radio')
+    expect(radios.map((radio) => radio.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false'])
+    for (const radio of radios) expect(radio).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /^Clear effort/ })).toBeNull()
+    await user.click(radios[0])
+    expect(onChange).not.toHaveBeenCalled()
+    expect(within(saved).getByRole('radio', { checked: true })).toHaveTextContent('About right')
   })
 })

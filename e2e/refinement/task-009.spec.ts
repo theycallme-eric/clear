@@ -9,7 +9,6 @@ import { sessionSnapshotSchema, type SessionSnapshot } from '../../src/state/sch
 import {
   AMRAP_COUNTS,
   AMRAP_WINDOW_SECONDS,
-  AMRAP_WORK_LIST,
   COOLDOWN_SECTION_TITLE,
   amrapResultAcceptance,
   amrapResultSnapshot,
@@ -41,7 +40,23 @@ import { expect, test as scanned } from '../fixtures'
  * the one History read answers that recorded row back. This is the app's own
  * write and read contract on a synthetic origin, not backend persistence proof
  * (`e2e/design-0143/workout-amrap.spec.ts` is the backend lane).
+ *
+ * A3 TASK-116 (F3, #739) carries this spec onto Round 7's owners, the ones
+ * `/workout` draws: `TimedWorkoutFlow` with its one "Log results"
+ * `LoggingOverlay`, and inside it `TimedResultLog` and `QuantitySelector`. Each
+ * case keeps its name and its asserted behaviour, read from Round 7's
+ * controls, words and geometry (`evidence/refinement/task-116/test-ledger.json`
+ * says what each read changed): the work list `Movements in this AMRAP`, the
+ * window on the meta line (`8 MIN`), the clock's own captions (`Finished`,
+ * `Time complete`) over the window left, a blank count drawn as a dash named
+ * "not recorded", the dialog's head above the log, and the accepted gallery's
+ * one AMRAP attempt run past its cap (`?state=amrap&open=1`) beside the same
+ * state finished early by its own controls. A3 TASK-116 adds one read for its
+ * save authority (TASK-AC-8FF68F3F5241): after the refused save and a reload,
+ * the log still says `Your log didn’t save. Try again.`
  */
+/** The list Round 7's AMRAP names its work by (`TimedWorkoutFlow`). */
+const AMRAP_WORK_LIST = 'Movements in this AMRAP'
 const OWNER = '00000000-0000-4000-8000-000000000901'
 const PLACE = '00000000-0000-4000-8000-000000000911'
 const ROW_ID = '00000000-0000-4000-8000-000000000921'
@@ -233,8 +248,9 @@ async function pass(page: Page, seconds: number) {
   await page.clock.runFor(seconds * 1000)
 }
 
+/** The AMRAP's Round 7 flow: its clock, its card, its actions and its log dialog. */
 function cardOf(page: Page): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({
+  return page.locator('.clr-timed-flow').filter({
     has: page.getByRole('list', { name: AMRAP_WORK_LIST, exact: true }),
   })
 }
@@ -245,30 +261,52 @@ function cardOf(page: Page): Locator {
  * focused dialog titled "Log results" (the dialog's title is its one title).
  */
 function openerOf(scope: Locator): Locator {
-  return scope.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+  return scope.locator('.clr-timed-actions').getByRole('button', { name: 'Log results', exact: true })
 }
 
 /** The AMRAP's log: the open focused dialog's one form, named by its title "Log results". */
 function logOf(scope: Locator): Locator {
-  return scope.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+  return scope.locator('dialog.clr-logging-overlay[open] form.clr-timed-log')
 }
 
 /** Opens the AMRAP's log from its card (unless it is open) and returns it. */
 async function openLog(scope: Locator): Promise<Locator> {
-  const opener = openerOf(scope)
-  if ((await opener.getAttribute('aria-expanded')) !== 'true') await opener.click()
   const log = logOf(scope)
+  if ((await log.count()) === 0) await openerOf(scope).click()
   await expect(log).toBeVisible()
   await expect(scope.page().getByRole('dialog', { name: 'Log results', exact: true })).toBeVisible()
   return log
 }
 
+/** The open timed log dialogs: Round 7's "Log results" `LoggingOverlay`. */
+function openLogDialogs(page: Page): Locator {
+  return page.locator('dialog.clr-logging-overlay[open]').filter({ has: page.locator('form.clr-timed-log') })
+}
+
 /** Closes the open log with its framed X: the workout behind it is inert while it is open. */
 async function closeLog(page: Page) {
-  const open = page.locator('dialog.clr-accepted-log[open]')
+  const open = openLogDialogs(page)
   if ((await open.count()) === 0) return
   await open.getByRole('button', { name: 'Close log', exact: true }).click()
   await expect(open).toHaveCount(0)
+}
+
+/**
+ * Round 7 opens the log by itself a moment after the attempt ends; on the
+ * gallery's real clock, wait briefly for it so a later step does not race it.
+ * A log it does not open is opened from the card's action instead.
+ */
+async function ownOpening(log: Locator) {
+  try {
+    await expect(log).toBeVisible({ timeout: 3_000 })
+  } catch {
+    // Not opened by itself: the next step opens it from the card's action.
+  }
+}
+
+/** The block's clock (Round 7's `TimerFrame`): its spoken caption and reading. */
+function clockOf(scope: Locator): Locator {
+  return scope.getByRole('timer', { name: 'AMRAP time', exact: true })
 }
 
 /** One History reading — its label and its value — by the label's exact words. */
@@ -287,8 +325,15 @@ function countOf(scope: Locator, label: string) {
   }
 }
 
+/** What a count shows: `blank` (Round 7 draws a dash, named "not recorded"), or its number. */
 async function shown(scope: Locator, label: string): Promise<string> {
-  return (await countOf(scope, label).value.getAttribute('data-quantity-value')) ?? ''
+  const value = countOf(scope, label).value
+  if ((await value.getAttribute('data-empty')) !== null) {
+    await expect(value).toHaveText('—')
+    await expect(value).toHaveAttribute('aria-label', `${label}: not recorded`)
+    return 'blank'
+  }
+  return (await value.textContent()) ?? ''
 }
 
 /** Every control the rejected reset/toggle design offered (C28, R57). */
@@ -315,12 +360,15 @@ interface CountGeometry {
   valueSize: number
   valueColor: string
   valueClipped: boolean
+  /** Round 7 draws a blank count's dash in the disabled role (`[data-empty]`). */
+  blank: boolean
   /** The framed actions' own frame (the chamfer's border ring) and the skin's interaction role. */
   actionFrames: string[]
   disabledFrame: string
   interaction: string
   disabledRole: string
   timerRole: string
+  disabledText: string
 }
 
 interface LogGeometry {
@@ -345,7 +393,7 @@ interface LogGeometry {
 
 /** The AMRAP's card and its open log, read from the browser. */
 async function readLog(scope: Locator): Promise<LogGeometry> {
-  return scope.locator('[data-workout-card="workout"]').first().evaluate((card, listName) => {
+  return scope.locator('.clr-timed-flow').first().evaluate((card, listName) => {
     const box = (node: Element): Box => {
       const rect = node.getBoundingClientRect()
       return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height }
@@ -358,16 +406,20 @@ async function readLog(scope: Locator): Promise<LogGeometry> {
       element.remove()
       return color
     }
-    const form = document.querySelector('dialog.clr-accepted-log[open] form.clr-timed-log')!
+    const form = card.querySelector('dialog.clr-logging-overlay[open] form.clr-timed-log')!
     const dialog = form.closest('dialog')!
     const formStyle = getComputedStyle(form)
     const list = [...card.querySelectorAll('ol, ul')].find((node) => node.getAttribute('aria-label') === listName)!
-    const work = [...card.querySelectorAll('[data-movement-identity]')].filter((node) => !form.contains(node))
+    const work = [...card.querySelectorAll('.clr-movement-identity')].filter((node) => !form.contains(node))
+    const opener = [...card.querySelectorAll('.clr-timed-actions')].find((row) => [...row.querySelectorAll('button')].some((button) => button.textContent === 'Log results'))!
+    // TASK-015's per-movement groups are each titled by their movement; the others are untitled.
+    const groups = [...form.querySelectorAll('.clr-timed-log__group')]
+    const titled = (group: Element) => group.querySelector(':scope > .clr-timed-log__group-title') !== null
     return {
       card: box(card),
-      opener: box(card.querySelector('[data-timed-log-opener]')!),
+      opener: box(opener),
       form: box(form),
-      held: form.closest('[data-logging-frame]') !== null,
+      held: form.closest('.clr-logging-overlay') !== null,
       formRuleWidth: parseFloat(formStyle.borderTopWidth),
       formContent: {
         left: form.getBoundingClientRect().left + parseFloat(formStyle.paddingLeft),
@@ -375,17 +427,15 @@ async function readLog(scope: Locator): Promise<LogGeometry> {
       },
       workBottom: Math.max(...work.map((node) => node.getBoundingClientRect().bottom)),
       listBottom: list.getBoundingClientRect().bottom,
-      title: box(dialog.querySelector('.clr-accepted-log__title')!),
+      title: box(dialog.querySelector('.clr-logging-overlay__title')!),
       // TASK-015 (C37) added per-movement groups after the counts; the result
-      // group is the one that is not a movement's (TASK-046 owns this repair).
-      // TASK-047 (REQ-031; R80) adds the closing feedback group (effort and
-      // notes, no count); the result group is the one holding the counts.
-      groups: [...form.querySelectorAll('.clr-timed-log__group:not(.clr-timed-log__group--movement)')]
-        .filter((group) => group.querySelector('[data-quantity-field]') !== null).map(box),
-      movementGroups: [...form.querySelectorAll('.clr-timed-log__group--movement')].map(box),
-      feedbackGroups: [...form.querySelectorAll('.clr-timed-log__group:not(.clr-timed-log__group--movement)')]
-        .filter((group) => group.querySelector('[data-quantity-field]') === null).map(box),
-      counts: [...form.querySelectorAll('[data-quantity-field]')].map((field) => {
+      // group is the one that is not a movement's. TASK-047 (REQ-031; R80)
+      // adds the closing feedback group (effort and notes, no count); the
+      // result group is the one holding the counts.
+      groups: groups.filter((group) => !titled(group) && group.querySelector('.clr-quantity') !== null).map(box),
+      movementGroups: groups.filter(titled).map(box),
+      feedbackGroups: groups.filter((group) => !titled(group) && group.querySelector('.clr-quantity') === null).map(box),
+      counts: [...form.querySelectorAll('.clr-timed-field')].filter((field) => field.querySelector('.clr-quantity') !== null).map((field) => {
         const label = field.querySelector('.label')!
         const frame = field.querySelector('.clr-quantity')!
         const [minus, plus] = [...frame.querySelectorAll('button')]
@@ -403,11 +453,13 @@ async function readLog(scope: Locator): Promise<LogGeometry> {
           valueSize: parseFloat(getComputedStyle(value).fontSize),
           valueColor: getComputedStyle(value).color,
           valueClipped: value.scrollWidth > value.clientWidth + 1,
+          blank: value.hasAttribute('data-empty'),
           actionFrames: [minus, plus].filter((button) => !button.disabled).map((button) => getComputedStyle(button, '::after').backgroundColor),
           disabledFrame: [minus, plus].filter((button) => button.disabled).map((button) => getComputedStyle(button, '::after').backgroundColor)[0] ?? '',
           interaction: probe('--interaction-500'),
           disabledRole: probe('--border-disabled'),
           timerRole: probe('--text-timer'),
+          disabledText: probe('--text-disabled'),
         }
       }),
     }
@@ -419,7 +471,6 @@ const TOLERANCE = 1
 const CONTROL = 40
 const ROOMY = 12
 const FIELD_GAP = 16
-const GROUP_GAP = 24
 
 /** C25–C27 read from the browser: the work first, one grouped log, one wide frame per count. */
 function expectLogContract(geometry: LogGeometry, label: string) {
@@ -445,7 +496,8 @@ function expectLogContract(geometry: LogGeometry, label: string) {
   }
   expect(geometry.counts.map((count) => count.label), `${label}: rounds, then the partial round`).toEqual([...AMRAP_COUNTS])
   const [group] = geometry.groups
-  expect(group.top - geometry.title.bottom, `${label}: the title stands apart from its group`).toBeGreaterThanOrEqual(GROUP_GAP - TOLERANCE)
+  // Round 7's dialog head stands its title apart from the log by the head's own gap.
+  expect(group.top - geometry.title.bottom, `${label}: the title stands apart from its group`).toBeGreaterThanOrEqual(FIELD_GAP - TOLERANCE)
   const [rounds, partial] = geometry.counts
   expect(partial.labelBox.top - rounds.frame.bottom, `${label}: the two counts sit together`).toBeLessThanOrEqual(FIELD_GAP + TOLERANCE)
   expect(partial.labelBox.top - rounds.frame.bottom).toBeGreaterThanOrEqual(FIELD_GAP - TOLERANCE)
@@ -478,8 +530,14 @@ function expectLogContract(geometry: LogGeometry, label: string) {
       expect(Math.abs(middle - (count.frame.top + count.frame.height / 2)), `${name}: one row`).toBeLessThanOrEqual(TOLERANCE)
     }
     // A distinct value: the timer role, larger than its label, never clipped.
-    expect(count.valueColor, `${name}: the value in the timer role`).toBe(count.timerRole)
-    expect(count.valueColor, `${name}: the value distinct from its label`).not.toBe(count.labelColor)
+    // Round 7's accepted blank is a dash in the disabled role, so a count that
+    // is not recorded never looks like one that is.
+    if (count.blank) {
+      expect(count.valueColor, `${name}: a blank in the disabled role`).toBe(count.disabledText)
+    } else {
+      expect(count.valueColor, `${name}: the value in the timer role`).toBe(count.timerRole)
+      expect(count.valueColor, `${name}: the value distinct from its label`).not.toBe(count.labelColor)
+    }
     expect(count.valueSize, `${name}: the value larger than its label`).toBeGreaterThan(count.labelSize)
     expect(count.valueClipped, `${name}: the value fits`).toBe(false)
     // Framed actions in the interaction role (pink in Signal).
@@ -535,8 +593,9 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await openWorkout(page, visit)
     const card = cardOf(page)
 
-    // Ready: the prescription to read, and no score asked for.
-    await expect(card.getByText('As many rounds as possible in 08:00.', { exact: true })).toBeVisible()
+    // Ready: the prescription to read, and no score asked for. Round 7 states
+    // the window on the card's meta line, beside the format badge.
+    await expect(card.getByText('8 MIN', { exact: true })).toBeVisible()
     await expect(card.getByRole('list', { name: AMRAP_WORK_LIST, exact: true }).getByRole('listitem')).toHaveCount(2)
     await expect(openerOf(card)).toHaveCount(0)
     await expect(logOf(card)).toHaveCount(0)
@@ -548,16 +607,21 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await expect(openerOf(card)).toHaveCount(0)
     await expect(logOf(card)).toHaveCount(0)
     await card.getByRole('button', { name: 'Pause', exact: true }).tap()
-    await expect(card.getByText('Paused', { exact: true })).toBeVisible()
+    await expect(clockOf(card)).toContainText('Paused')
     await expect(openerOf(card)).toHaveCount(0)
     await expect(logOf(card)).toHaveCount(0)
     await card.getByRole('button', { name: 'Resume', exact: true }).tap()
     await pass(page, 65)
     await card.getByRole('button', { name: 'Finish early', exact: true }).tap()
-    await expect(card.getByText('01:35 on the clock')).toBeVisible()
+    // Round 7's clock settles on the window left: 06:25 of 08:00, after 01:35 of work.
+    await expect(clockOf(card)).toContainText('Finished. 6 minutes 25 seconds')
 
     // Ended: the work, then one log whose counts are blank — stopping records nothing.
-    // TASK-046: the card's "Log results" action opens it in the focused dialog.
+    // TASK-046: the card's "Log results" action opens it in the focused dialog
+    // (Round 7 opens it once as the attempt ends — the held clock is run a
+    // moment so that settles — and closed, the action reopens it).
+    await pass(page, 1)
+    await closeLog(page)
     await expect(openerOf(card)).toBeVisible()
     await openerOf(card).tap()
     await expect(logOf(card)).toBeVisible()
@@ -567,9 +631,8 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await expectNoResetControls(logOf(card))
     for (const label of AMRAP_COUNTS) {
       const count = countOf(logOf(card), label)
-      await expect(count.value).toHaveAttribute('data-quantity-value', 'blank')
+      expect(await shown(logOf(card), label)).toBe('blank')
       await expect(count.value).toContainText('—')
-      await expect(count.value).toContainText('Not recorded')
       await expect(count.minus).toBeDisabled()
     }
     const stored = () => page.evaluate((blockId) => JSON.parse(localStorage.getItem('clear.workout-amraps') ?? '{}')[blockId], app.amrapBlockId)
@@ -587,7 +650,7 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await expect(rounds.minus).toBeEnabled()
     for (let tap = 0; tap < 3; tap += 1) await rounds.minus.tap()
     await expect(rounds.value).toHaveText('0')
-    await expect(rounds.value).toHaveAttribute('data-quantity-value', '0')
+    expect(await shown(logOf(card), 'Rounds completed')).toBe('0')
     await expect(rounds.minus).toBeDisabled()
     // The partial round was never touched: still blank, not zero.
     expect(await shown(logOf(card), 'Reps into the next round')).toBe('blank')
@@ -601,7 +664,7 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await page.reload()
     await expect(page.getByRole('list', { name: AMRAP_WORK_LIST, exact: true })).toBeVisible()
     await settle(page)
-    await expect(card.getByText('01:35 on the clock')).toBeVisible()
+    await expect(clockOf(card)).toContainText('Finished. 6 minutes 25 seconds')
     await openLog(card)
     expect(await shown(logOf(card), 'Rounds completed')).toBe('0')
     expect(await shown(logOf(card), 'Reps into the next round')).toBe('blank')
@@ -623,6 +686,16 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await openLog(card)
     expect(await shown(logOf(card), 'Rounds completed')).toBe('0')
     expect(await shown(logOf(card), 'Reps into the next round')).toBe('blank')
+    // A3 TASK-116 (TASK-AC-8FF68F3F5241): the refusal is kept on the attempt,
+    // so the log says so — and still says so after a reload.
+    await expect(logOf(card).getByRole('alert')).toHaveText('Your log didn’t save. Try again.')
+    await page.reload()
+    await expect(page.getByRole('list', { name: AMRAP_WORK_LIST, exact: true })).toBeVisible()
+    await settle(page)
+    await openLog(card)
+    await expect(logOf(card).getByRole('alert')).toHaveText('Your log didn’t save. Try again.')
+    expect(await shown(logOf(card), 'Rounds completed')).toBe('0')
+    expect(await shown(logOf(card), 'Reps into the next round')).toBe('blank')
     await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     await expect(page.getByRole('heading', { name: COOLDOWN_SECTION_TITLE, exact: true })).toBeVisible()
@@ -636,6 +709,8 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
       minutes_completed: null, highest_rung: null, perceived_effort: null, notes: null,
     }
     for (const body of app.saves) expect(resultColumns(body)).toEqual(expected)
+    // The save landed: the attempt's failure is gone from its record.
+    expect(await stored()).not.toHaveProperty('saveFailed')
 
     // History reads that row back: Rounds 0, and no partial round reading.
     await visit(`/history/${app.sessionId}`)
@@ -658,10 +733,16 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     await expect(card.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
     await pass(page, AMRAP_WINDOW_SECONDS + 5)
 
-    // The cap ended it: the time, "Cap reached", and both counts blank.
-    await expect(card.getByText('Cap reached', { exact: true })).toBeVisible()
-    await expect(card.getByText('08:00 on the clock')).toBeVisible()
+    // The cap ended it: Round 7's `Time complete` with no window left, and both counts blank.
+    await expect(clockOf(card)).toContainText('Time complete. 0 seconds')
     // TASK-046: the card's "Log results" action, by keyboard, opens the log.
+    // Round 7 may also have opened it by itself as the window closed: the held
+    // clock is run a moment so that settles, and Escape closes it first.
+    await pass(page, 1)
+    if ((await logOf(card).count()) > 0) {
+      await page.keyboard.press('Escape')
+      await expect(logOf(card)).toHaveCount(0)
+    }
     await openerOf(card).focus()
     await page.keyboard.press('Enter')
     await expect(logOf(card)).toBeVisible()
@@ -736,38 +817,51 @@ test.describe('TASK-009 AMRAP prescription and concise scoring controls', () => 
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
-    await visit('/gallery/refinements?state=amrap')
-    const state = page.locator('[data-refinement-state="amrap"]')
-    await expect(state.getByRole('heading', { name: 'AMRAP results', exact: true })).toBeVisible()
 
+    // Round 7's accepted state is one attempt, which its own "Open …" drive
+    // runs past the cap; the same state finished early by its own controls is
+    // the second. Both are the route's `TimedWorkoutFlow` over the gallery's AMRAP.
     for (const [attempt, values] of [['cap', ['blank', 'blank']], ['early', ['3', '0']]] as const) {
-      const scope = state.locator(`[data-gallery-amrap="${attempt}"]`)
+      await visit(attempt === 'cap' ? '/gallery/refinements?state=amrap&open=1' : '/gallery/refinements?state=amrap')
+      const state = page.locator('[data-refinement-state="amrap"]')
+      await expect(state.getByRole('heading', { name: 'AMRAP results', exact: true })).toBeVisible()
+      const scope = cardOf(page)
+      if (attempt === 'cap') {
+        await expect(logOf(scope)).toBeVisible({ timeout: 15_000 })
+        await expect(clockOf(scope)).toContainText('Time complete')
+      } else {
+        await scope.getByRole('button', { name: 'Start AMRAP', exact: true }).tap()
+        await scope.getByRole('button', { name: 'Finish early', exact: true }).tap()
+        await expect(clockOf(scope)).toContainText('Finished')
+        await ownOpening(logOf(scope))
+        const log = await openLog(scope)
+        for (let tap = 0; tap < 3; tap += 1) await countOf(log, 'Rounds completed').plus.tap()
+        await countOf(log, 'Reps into the next round').plus.tap()
+        await countOf(log, 'Reps into the next round').minus.tap()
+      }
       // TASK-046: the route's own "Log results" action opens the log.
+      await closeLog(page)
       await openLog(scope)
       await settle(page)
-      expectLogContract(await readLog(scope), `gallery ${attempt}`)
+      expectLogContract(await readLog(state), `gallery ${attempt}`)
       await expectNoResetControls(scope)
       await expectNoResetControls(logOf(scope))
       for (const [index, label] of AMRAP_COUNTS.entries()) expect(await shown(logOf(scope), label)).toBe(values[index])
       await test.info().attach(`gallery-amrap-${attempt}-signal-phone-390.png`, { body: await scope.screenshot({ caret: 'hide' }), contentType: 'image/png' })
       await test.info().attach(`gallery-amrap-${attempt}-log-signal-phone-390.png`, { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+
+      // Live over memory only.
+      if (attempt === 'cap') {
+        const cap = countOf(logOf(scope), 'Rounds completed')
+        await cap.plus.tap()
+        await expect(cap.value).toHaveText('1')
+      } else {
+        await expect(countOf(logOf(scope), 'Reps into the next round').minus).toBeDisabled()
+      }
+      await noHorizontalOverflow(page)
+      await checkJourneyA11y(page)
       await closeLog(page)
     }
-    await expect(state.locator('[data-gallery-amrap="cap"]').getByText('Cap reached', { exact: true })).toBeVisible()
-    await expect(state.locator('[data-gallery-amrap="early"]').getByText('05:23 on the clock')).toBeVisible()
-
-    // Live over memory only.
-    const capScope = state.locator('[data-gallery-amrap="cap"]')
-    await openLog(capScope)
-    const cap = countOf(logOf(capScope), 'Rounds completed')
-    await cap.plus.tap()
-    await expect(cap.value).toHaveText('1')
-    await closeLog(page)
-    const earlyScope = state.locator('[data-gallery-amrap="early"]')
-    await openLog(earlyScope)
-    await expect(countOf(logOf(earlyScope), 'Reps into the next round').minus).toBeDisabled()
-    await noHorizontalOverflow(page)
-    await checkJourneyA11y(page)
     expect(await page.evaluate(() => localStorage.getItem('clear.workout-amraps'))).toBeNull()
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })

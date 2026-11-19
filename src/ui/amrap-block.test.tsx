@@ -12,10 +12,22 @@
  *     comparable;
  *   · the window and the result survive a refresh and a walk to another
  *     section and back.
+ *
+ * A3 TASK-116 (F3; TASK-009, C27, C28): TASK-009 supersedes how the result is
+ * entered, not what it means. The build replaced four of the cases below with
+ * TASK-009 cases (their names cite TASK-009); A3 TASK-116 carries those four
+ * here, in place of the base cases they superseded (recorded as superseded in
+ * `evidence/refinement/task-116/test-ledger.json`). On Round 7 the AMRAP that
+ * `/workout` draws is `TimedWorkoutFlow` (`BlockSlot` under the product
+ * presentation), its result in the "Log results" dialog as two framed
+ * `QuantitySelector` counts, so the four cases mount the AMRAP that way
+ * (`renderRouteAmrap`); every other case here is the base's, over
+ * `AmrapBlock`, and is TASK-110's. Blank is still `null`, an entered zero still
+ * `0`; tapping down stops at zero and nothing clears a count back to blank.
  */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import {
   BlockCompletionContext,
@@ -33,6 +45,9 @@ import {
 } from '../state/workout-persistence'
 import { fixtureId, snapshotFixture, type BlockFixture } from '../test/workout-double'
 import { AmrapBlock } from './amrap-block'
+import { BlockSlot } from './block-renderers'
+import { PRODUCT_PRESENTATION } from './product-presentation'
+import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
 
 /** A moment the window can be measured from, and a clock the test moves. */
 const START = Date.parse('2026-09-24T10:00:00.000Z')
@@ -90,6 +105,72 @@ function renderAmrap(
       />
     </BlockCompletionContext>,
   )
+}
+
+/**
+ * A3 TASK-116 (TASK-009): the AMRAP as `/workout` draws it — `BlockSlot` under
+ * the product presentation, so Round 7's `TimedWorkoutFlow` with its "Log
+ * results" dialog — over the same completion seam and the test's clock. A
+ * seam that names no session keeps nothing in storage.
+ */
+function renderRouteAmrap(block: BlockProgress, api: BlockCompletionApi) {
+  vi.spyOn(Date, 'now').mockImplementation(() => clock)
+  onTestFinished(() => {
+    vi.restoreAllMocks()
+  })
+  return render(
+    <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+      <BlockCompletionContext value={api}>
+        <BlockSlot block={block} />
+      </BlockCompletionContext>
+    </WorkoutExperiencePresentationProvider>,
+  )
+}
+
+/**
+ * TASK-046 (C45; R100): once the window has closed, the card offers one "Log
+ * results" action and the result is entered in the shared focused dialog it
+ * opens. Opens it, when it is not already open, so the counts can be read.
+ */
+function openRouteLog() {
+  const open = [...document.querySelectorAll('dialog[open]')].some((dialog) => dialog.querySelector('form.clr-timed-log') !== null)
+  if (!open) within(document.querySelector<HTMLElement>('.clr-timed-actions')!).getByRole('button', { name: 'Log results' }).click()
+}
+
+/** The count a framed selector is showing: `blank` (a dash, not recorded), or its number (TASK-009, C27, C28). */
+function routeShown(label: string): string {
+  openRouteLog()
+  const value = screen.getByRole('group', { name: label }).querySelector('output')!
+  if (value.hasAttribute('data-empty')) {
+    expect(value).toHaveTextContent(/^—$/)
+    expect(value).toHaveAccessibleName(`${label}: not recorded`)
+    return 'blank'
+  }
+  return value.textContent ?? ''
+}
+
+/**
+ * Records `count` rounds on the framed selector. TASK-009 (C28): there is no
+ * Record rounds toggle — the count takes the first tap from blank — so an
+ * explicit zero is one round up and one back down.
+ */
+async function recordRouteRounds(user: ReturnType<typeof userEvent.setup>, count: number) {
+  openRouteLog()
+  if (count === 0) {
+    await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
+    await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
+    return
+  }
+  for (let round = 0; round < count; round += 1) {
+    await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
+  }
+}
+
+/** Records an observed partial round of zero reps (TASK-009, C28: no Partial round toggle). */
+async function recordRouteZeroPartial(user: ReturnType<typeof userEvent.setup>) {
+  openRouteLog()
+  await user.click(screen.getByRole('button', { name: 'Increase reps into the next round' }))
+  await user.click(screen.getByRole('button', { name: 'Decrease reps into the next round' }))
 }
 
 /** The count the rounds stepper is showing. */
@@ -303,19 +384,20 @@ describe('recording rounds afterwards', () => {
     expect(screen.getByRole('button', { name: 'Take back a round' })).toBeDisabled()
   })
 
-  it('holds an entered zero as a zero, and clearing it goes back to blank', async () => {
+  // TASK-009 (C28, R57) supersedes "clearing it goes back to blank": Clear
+  // rounds is removed with nothing in its place. Tapping down stops at an
+  // explicit zero, which stays a zero — never a blank.
+  it('holds an entered zero as a zero, and no control clears it back to blank (TASK-009, C28)', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
     await start(user)
     await finish(user)
 
-    await recordRounds(user, 0)
-    expect(rounds()).toBe('0')
-    expect(screen.queryByText(/No rounds recorded/)).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Clear rounds' }))
-    expect(screen.getByText(/No rounds recorded/)).toBeInTheDocument()
-    expect(screen.queryByRole('group', { name: 'Rounds completed' })).not.toBeInTheDocument()
+    await recordRouteRounds(user, 0)
+    expect(routeShown('Rounds completed')).toBe('0')
+    expect(screen.queryByRole('button', { name: /clear|reset|no partial round/i })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
+    expect(routeShown('Rounds completed')).toBe('0')
   })
 })
 
@@ -334,23 +416,21 @@ describe('the partial round', () => {
     expect(screen.getByRole('button', { name: 'Partial round' })).toBeInTheDocument()
   })
 
-  it('distinguishes a partial round of zero reps from no partial round at all', async () => {
+  // TASK-009 (C28, R57) supersedes "it can be given up again": No partial
+  // round is removed with nothing in its place. Blank and zero stay distinct.
+  it('distinguishes a partial round of zero reps from no partial round at all (TASK-009, C28)', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
     await start(user)
     await finish(user)
 
-    await user.click(screen.getByRole('button', { name: 'Partial round' }))
+    // Blank first: nobody has said how far into the next round they were.
+    expect(routeShown('Reps into the next round')).toBe('blank')
 
-    // Opened, and holding a real zero — the buzzer landed on the boundary. The
-    // sentence that said otherwise is gone (DATA-01d).
-    const reps = screen.getByRole('group', { name: 'Reps into the next round' })
-    expect(within(reps).getByRole('status')).toHaveTextContent('0')
-    expect(screen.queryByText('No partial round recorded.')).not.toBeInTheDocument()
-
-    // And it can be given up again, which is absence rather than a zero.
-    await user.click(screen.getByRole('button', { name: 'No partial round' }))
-    expect(screen.getByText('No partial round recorded.')).toBeInTheDocument()
+    // A real zero — the buzzer landed on the boundary (DATA-01d).
+    await recordRouteZeroPartial(user)
+    expect(routeShown('Reps into the next round')).toBe('0')
+    expect(screen.queryByRole('button', { name: 'No partial round' })).not.toBeInTheDocument()
   })
 
   it('counts the reps up and down without leaving the card', async () => {
@@ -430,19 +510,26 @@ describe('what it supplies to the shell', () => {
     })
   })
 
-  it('reports a cleared result as blank again', async () => {
+  // TASK-009 (C28, R57) supersedes "reports a cleared result as blank again":
+  // nothing clears a count now. A result tapped back down reports the zero it
+  // shows, and the untouched partial round is still reported as absent.
+  it('reports a result tapped back down as an explicit zero, never as blank again (TASK-009, C28)', async () => {
     const user = userEvent.setup()
     const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
-    renderAmrap(block, fakeStorage(), api)
+    renderRouteAmrap(block, api)
 
     await start(user)
     clock = START + 300_000
     await finish(user)
-    await recordRounds(user, 2)
-    await user.click(screen.getByRole('button', { name: 'Clear rounds' }))
+    await recordRouteRounds(user, 2)
+    await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
+    await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
 
-    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 300 })
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
+      elapsedSeconds: 300,
+      roundsCompleted: 0,
+    })
   })
 
   it('supplies nothing at all for an AMRAP that was never started', () => {
@@ -671,18 +758,28 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect(screen.queryByText('Cap reached')).not.toBeInTheDocument()
   })
 
-  it('makes the optional result toggles frameless text actions', async () => {
-    const { user } = await resumeAt(60_000)
+  // TASK-009 (C27, C28; R56, R57, R79) supersedes the optional result's
+  // frameless text-action toggles: each count is one framed selector with
+  // framed minus and plus actions, and no text action remains.
+  it('draws the optional result as framed counts with framed actions, and no text action remains (TASK-009, C27, C28)', async () => {
+    const user = userEvent.setup()
+    clock = START
+    const { container } = renderRouteAmrap(amrapBlock(), completionDouble().api)
+    await start(user)
+    clock = START + 60_000
     await finish(user)
+    openRouteLog()
 
-    for (const name of ['Record rounds', 'Partial round']) {
-      const open = screen.getByRole('button', { name })
-      expect(open).toHaveClass('clr-text-action')
-      expect(open).not.toHaveClass('clr-btn')
-      await user.click(open)
+    for (const name of ['Rounds completed', 'Reps into the next round']) {
+      const frame = screen.getByRole('group', { name })
+      expect(frame).toHaveClass('clr-quantity', 'clr-chamfer')
+      for (const action of within(frame).getAllByRole('button')) {
+        expect(action).toHaveClass('clr-btn', 'clr-chamfer')
+        expect(action).not.toHaveClass('clr-text-action')
+      }
     }
-    expect(screen.getByRole('button', { name: 'Clear rounds' })).toHaveClass('clr-text-action')
-    expect(screen.getByRole('button', { name: 'No partial round' })).toHaveClass('clr-text-action')
+    expect(container.querySelectorAll('.clr-text-action')).toHaveLength(0)
+    expect(screen.queryByRole('button', { name: /record rounds|partial round|clear rounds/i })).not.toBeInTheDocument()
   })
 
   it('says a saved block is saved, and still shows the result for editing', async () => {

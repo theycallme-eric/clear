@@ -76,6 +76,35 @@
  * which starts the log at Incomplete with no round (TASK-010). Its log is the
  * same "Log results" dialog, and only `highest_rung` is recorded.
  *
+ * A3 TASK-116 (F3; TASK-009, TASK-010, TASK-047, TASK-048) wires the AMRAP's
+ * and For Time's results through the same "Log results" dialog:
+ *
+ *   · **AMRAP scoring** (C25–C28): after the work, `TimedResultLog`'s one
+ *     result group of two framed `QuantitySelector` counts — rounds, then reps
+ *     into the next round — each blank until tapped, the minus stopping at an
+ *     explicit zero, nothing clearing a value; the counts are kept on the
+ *     AMRAP's record as they change, blank as `null` and zero as `0`;
+ *   · **For Time completion** (C29; R78, R124): "Work completed" — Complete
+ *     beside Incomplete — is asked only when the race has a cap. It starts
+ *     where the race ended (Finish under the cap at Complete, the cap at
+ *     Incomplete; `forTimeCompletion`), and only the athlete's answer is
+ *     stored (`workCompleted`, `writeForTimeAnswer`), so a reload brings back
+ *     a correction, never the starting point over it; the answer is what
+ *     `completed_under_cap` records. With no cap nothing is asked or claimed;
+ *   · **effort and notes** (C30; R80): the existing three faces
+ *     (`SetEffortChoice`, optional, `null` unanswered) and the notes close the
+ *     log; the face is saved as the block's categorical `effort` through the
+ *     shell's one completion path, never as a number;
+ *   · **save authority** (TASK-AC-8FF68F3F5241, as TASK-105 holds it for the
+ *     ladder): the saved row is read back ahead of any local echo; a refused
+ *     save — Save log, or the section's forward action — is kept on the
+ *     attempt's own record (`writeTimedSaveFailed`), so `Your log didn’t save.
+ *     Try again.` is said again after a reload until a save lands; and a row
+ *     the shell learns of (`known`) while this attempt's own richer save (its
+ *     face or a typed entry) had failed reopens the block (`reopenBlock`), so
+ *     the forward action restates it. The draft — counts, answer, face, notes
+ *     — survives closing and reopening the log and a failed save.
+ *
  * Neither Finish nor Undo completes or leaves the workout. In the gallery the
  * same attempt lives in memory only.
  */
@@ -90,7 +119,7 @@ import { exerciseName, modalityLabel, targetText } from '../state/prescription'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { SetLoggingContext } from '../state/set-logging'
 import { activeSeconds, EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptFromClock, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
-import { readTimedAttempt, recordTimedAction, writeTimedCounts } from '../state/timed-attempt-records'
+import { readTimedAttempt, recordTimedAction, writeForTimeAnswer, writeTimedCounts, writeTimedSaveFailed } from '../state/timed-attempt-records'
 import { finishLabel, type TimedLifecyclePhase } from '../state/timed-lifecycle'
 import { defaultShellStorage, usePersistedLadder } from '../state/workout-persistence'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
@@ -170,6 +199,11 @@ function richerDraft(draft: LadderDraft | null): boolean {
   return draft.effort !== null || Object.values(draft.movements).some((entry) => !movementEntryBlank(entry))
 }
 
+/** A3 TASK-116: the same question of an AMRAP's or For Time's log draft. */
+function richerLogDraft(draft: TimedResultDraft): boolean {
+  return draft.effort !== null || Object.values(draft.measurements).some((entry) => !movementEntryBlank(entry))
+}
+
 /** `now` defaults to the wall clock; the gallery passes its own to show capped and final-second states. */
 export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: BlockProgress; format: TimedFormat; now?: () => number }) {
   const presentation = useWorkoutExperiencePresentation()
@@ -200,6 +234,11 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   })
   const cap = isLadder ? ladder.attempt.originalCapSeconds : timing?.mode === 'capped_window' ? timing.cap_seconds : block.timerSeconds
   const [restored] = useState(() => recordFormat === null ? null : readTimedAttempt(scope, recordFormat, block))
+  // A3 TASK-116: an AMRAP's and a For Time's save authority, kept on their own records.
+  const savesOnRecord = format === 'amrap' || format === 'for_time'
+  // A3 TASK-116 (TASK-010): a For Time race's answer to "Work completed", once the athlete gives it.
+  const [answer, setAnswer] = useState<boolean | null>(() => restored?.answer ?? null)
+  const [recordSaveFailed, setRecordSaveFailed] = useState(() => restored?.saveFailed ?? false)
   const [ownAttempt, setOwnAttempt] = useState<TimedAttempt>(restored?.attempt ?? EMPTY_TIMED_ATTEMPT)
   const attempt = isLadder ? timedAttemptFromClock(ladder.attempt.clock) : ownAttempt
   const [receipt, setReceipt] = useState<TimedResultReceipt | null>(null)
@@ -227,10 +266,26 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     setOwnAttempt(next)
     if (recordFormat !== null) recordTimedAction(scope, recordFormat, block, next)
   }
-  /** The log's draft; an AMRAP's counts are kept on its record, as the shipped AMRAP kept them. */
+  /**
+   * The log's draft; an AMRAP's counts are kept on its record, as the shipped
+   * AMRAP kept them, and a For Time's answer on its race once the athlete
+   * gives one (A3 TASK-116) — a correction of a saved log keeps neither until
+   * it saves.
+   */
   const changeDraft = (next: TimedResultDraft) => {
+    const shown = resultDraft ?? startDraft
     setResultDraft(next)
     if (format === 'amrap') writeTimedCounts(storage, block, { roundsCompleted: next.count, partialRoundReps: next.partialReps ?? null })
+    if (format === 'for_time' && !editing && typeof next.completed === 'boolean' && next.completed !== shown.completed) {
+      setAnswer(next.completed)
+      writeForTimeAnswer(storage, block, next.completed)
+    }
+  }
+  /** A3 TASK-116: a refused save of an AMRAP's or For Time's log, or one that has since landed, noted on its record. */
+  const noteSaveFailed = (failed: boolean) => {
+    if (format !== 'amrap' && format !== 'for_time') return
+    setRecordSaveFailed(failed)
+    writeTimedSaveFailed(storage, format, block, failed)
   }
   const adjustedStart = attempt.startedAt === null ? null : new Date(attempt.startedAt + attempt.pausedMs).toISOString()
   const elapsed = activeSeconds(attempt, now())
@@ -271,6 +326,13 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const showLog = (ended || ladderClosed) && (saved === null || editing)
   const shape = emomShape(block)
   const minute = emomView({ startedAt: adjustedStart, workDoneMinute: null }, shape, view.elapsed)
+  // A3 TASK-116 (TASK-010; `forTimeCompletion`): a race with a cap, once ended,
+  // starts where it ended — Finish under the cap at Complete, the cap at
+  // Incomplete — and the athlete's own answer wins; with no cap, no claim.
+  const askCompletion = format !== 'for_time' || cap !== null
+  const startDraft: TimedResultDraft = format === 'for_time'
+    ? { ...initialTimedResultDraft('for_time', false, 0), completed: !ended || cap === null ? null : answer ?? view.phase === 'finished' }
+    : initialTimedResultDraft(format, view.phase === 'finished', rungs.length)
   /** The ladder's log draft: the durable draft while unsaved, the correction while a saved log is edited. */
   const ladderShown = logDraftOfLadder(ladderView.draft, ended && ladderView.editable)
   const ladderDraftChange = (next: TimedResultDraft) => {
@@ -315,6 +377,27 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     return onBlockSaveFailed?.(block.blockId, () => saveFailed(latestLadder.current.identity.attemptId))
   }, [isLadder, block.blockId, onBlockSaveFailed, saveFailed])
 
+  // A3 TASK-116 (TASK-AC-8FF68F3F5241): the shell's word on an AMRAP's or For Time's row, and on a refused
+  // save, kept on its record in the same act — a known row while this attempt's own richer save had
+  // failed reopens the block, as the ladder's does.
+  const latestLog = useRef({ draft: startDraft, failed: recordSaveFailed, note: noteSaveFailed })
+  useEffect(() => { latestLog.current = { draft: resultDraft ?? startDraft, failed: recordSaveFailed, note: noteSaveFailed } })
+  useEffect(() => {
+    if (!savesOnRecord) return undefined
+    return onBlockRecorded?.(block.blockId, (source: BlockRecordedSource) => {
+      const current = latestLog.current
+      if (source === 'known' && current.failed && reopenBlock !== undefined && richerLogDraft(current.draft)) {
+        reopenBlock(block.blockId)
+        return
+      }
+      current.note(false)
+    })
+  }, [savesOnRecord, block.blockId, onBlockRecorded, reopenBlock])
+  useEffect(() => {
+    if (!savesOnRecord) return undefined
+    return onBlockSaveFailed?.(block.blockId, () => latestLog.current.note(true))
+  }, [savesOnRecord, block.blockId, onBlockSaveFailed])
+
   // Undo finish: the control the athlete left the attempt by is gone; the attempt's lead control takes the focus.
   useEffect(() => {
     if (refocusLead.current && leadRef.current !== null) {
@@ -334,7 +417,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   // saved log, or else the draft so far — so the section's forward action saves
   // what the athlete entered even when Save log was never pressed (TASK-015).
   const draftNow = isLadder ? (editing && resultDraft !== null ? resultDraft : ladderShown)
-    : resultDraft ?? initialTimedResultDraft(format, view.phase === 'finished', rungs.length)
+    : resultDraft ?? startDraft
   const reported = saved !== null && !editing ? saved.result : draftNow
   const outcome = timedShellOutcome(format, block, reported, clock)
   const timed = timedShellReport(format, block, reported, saved?.weightUnit ?? weightUnit, ended, recorded)
@@ -378,9 +461,10 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
     finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
     completionAction={canUndoFinish ? <div className="clr-timed-undo" data-timed-undo="" style={UNDO_TEXT_START}>
       <Button type="button" variant="quiet" size="sm" onClick={undoFinish}>Undo finish · resume ladder</Button></div> : undefined}
-    saveFailed={isLadder && !editing && ladderView.saveFailed}
+    saveFailed={!editing && (isLadder ? ladderView.saveFailed : savesOnRecord && recordSaveFailed)}
+    askCompletion={askCompletion}
     initial={saved?.result}
-    value={isLadder ? (editing && resultDraft !== null ? resultDraft : ladderShown) : resultDraft ?? undefined}
+    value={isLadder ? (editing && resultDraft !== null ? resultDraft : ladderShown) : resultDraft ?? startDraft}
     onDraftChange={isLadder && !editing ? ladderDraftChange : changeDraft} onSave={async result => {
       const saveResult = options?.saveResult
       if (!saveResult) throw new Error('No result adapter configured')
@@ -388,13 +472,17 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
         elapsedSeconds, capReached: view.phase === 'capped' }
       // A ladder's own save is kept on its attempt: refused, the draft and Undo stay for the retry; answered, the attempt closes.
       const durable = isLadder && !editing
+      // A3 TASK-116: an AMRAP's or For Time's own save is kept on its record the same way.
+      const onRecord = savesOnRecord && !editing
       try {
         await saveResult(next, { block, shell: completion })
       } catch (error) {
         if (durable) saveFailed()
+        if (onRecord) noteSaveFailed(true)
         throw error
       }
       if (durable) saveSucceeded()
+      if (onRecord) noteSaveFailed(false)
       setReceipt(next); setEditing(false); setLogOpen(false)
     }} />
 
