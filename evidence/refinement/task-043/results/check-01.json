@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-043",
   "check": "check-01",
-  "verdict": "passed",
+  "verdict": "rejected",
   "purpose": "delivery",
   "runner": "playwright",
   "runnerVersion": "1.63.0",
@@ -34,7 +34,7 @@
       "file": "e2e/refinement/task-043.spec.ts",
       "name": "TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 saved-set correction and retry phone-390 keyboard reduced motion: a refused write is held on this device and retried under its own id; Edit opens Edit set N in the log, Cancel and Save correction keep the writer, and Clear set asks with Keep set first",
       "project": "mobile",
-      "status": "passed"
+      "status": "failed"
     },
     {
       "file": "e2e/refinement/task-043.spec.ts",
@@ -69,11 +69,13 @@
   ],
   "totals": {
     "total": 7,
-    "passed": 7,
-    "failed": 0,
+    "passed": 6,
+    "failed": 1,
     "skipped": 0,
     "todo": 0,
     "executed": 7
   },
-  "problems": []
+  "problems": [
+    "required case was failed: e2e/refinement/task-043.spec.ts > TASK-043 standard set logging in the shared focused dialog > JOURNEY-019 saved-set correction and retry phone-390 keyboard reduced motion: a refused write is held on this device and retried under its own id; Edit opens Edit set N in the log, Cancel and Save correction keep the writer, and Clear set asks with Keep set first [mobile]"
+  ]
 }
