@@ -634,12 +634,19 @@ async function read(target: Locator, name: string): Promise<Reading> {
   return { lines: await linesOf(target), boxes: await boxesOf(target), capture: await keep(target, name), readout: await readoutOf(target), gridHeight: await gridHeightOf(target) }
 }
 
-/** The open "Log results" dialog: its form's words and boxes, and the dialog as drawn. */
+/**
+ * The open "Log results" dialog: its form's words and boxes, and the dialog's
+ * frame as drawn. The capture is the frame (`dialog > .clr-bleed`), not the
+ * dialog's box: the box's transparent padding shows the blurred page behind
+ * (the backdrop's `backdrop-filter`), whose raster varied by one colour unit in
+ * a few pixels between two otherwise identical runs, so a receipt's hash would
+ * not be reproducible.
+ */
 async function readLog(page: Page, name: string): Promise<Reading> {
   const log = page.locator('dialog[open] form.clr-timed-log')
   await expect(log).toBeVisible({ timeout: 15_000 })
   await settle(page)
-  return { lines: await linesOf(log), boxes: await boxesOf(log), capture: await keep(page.locator('dialog[open]'), name), readout: null, gridHeight: null }
+  return { lines: await linesOf(log), boxes: await boxesOf(log), capture: await keep(page.locator('dialog[open] > .clr-bleed'), name), readout: null, gridHeight: null }
 }
 
 /**
