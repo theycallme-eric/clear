@@ -104,7 +104,42 @@ TASK-046 helper; the carried cases use local Round 7 helpers), `PROJECT_MAP.md` 
 
 ## Verification
 
-See the final table below (filled in at the end of the session).
+All browser runs were under the host lock (`v2.mjs with-lock`). No other task's parity spec was run.
+
+Run 1 (final sources, through the guard; receipts written, then committed as `15617ffd`):
+
+| Check | Result |
+|---|---|
+| TASK-116 check-01 (`set-effort.test.tsx` whole) | PASSED, 13/13 |
+| TASK-116 check-02 (`amrap-block.test.tsx`, `TASK-009`) | PASSED, 4 executed of 45 (41 filtered out) |
+| TASK-009 check-01 (`timed-result-log.test.tsx`, `^TASK-009 `) | PASSED, 9 executed of 19 |
+| TASK-009 check-02 (`task-009.spec.ts`) | PASSED, 3/3 |
+| TASK-010 check-01 (`timed-result-log.test.tsx`, `^TASK-010 `) | PASSED, 10 executed of 19 |
+| TASK-010 check-02 (`task-010.spec.ts`) | PASSED, 3/3 |
+| TASK-116 parity (`task-116-parity.spec.ts`) | PASSED, 6/6; zero text and zero layout differences on all four moments of every case |
+
+The brief's whole CI chain, as one command on the run-1 tree, exits 0: typecheck pass; lint 0 errors, 175 warnings
+(as at base); lint:ds pass; `gen-issues --check` (71 requirements, 136 edges); `gen:types --check` current; `npm test`
+270 files, 6,330/6,330 tests; `npm run build` pass; console grep no match.
+
+Earlier, before the receipts: the neighbouring suites the product change touches (`timed-workout-flow`,
+`timed-flow-save`, `for-time`, `amrap`, `workout-persistence`, the gallery's own test, `for-time-block`,
+`amrap-block`, `Workout`, `session-detail-timed-actuals`) passed 353/353; at base, before any product change, the new
+`timed-result-log.test.tsx` failed 5 of 19, each on the work above.
+
+Two-run proof: see "Verification (run 2)" below.
+
+### Verification (run 2)
+
+On the committed tree (`15617ffd`) all seven checks were run again, the same commands through the guard. The first
+attempt at the browser checks waited out the host lock held by another run (environment waiting, retried; no defect).
+
+- TASK-116 check-01 13/13, check-02 4/4, TASK-009 check-01 9/9, TASK-010 check-01 10/10, TASK-009 check-02 3/3,
+  TASK-010 check-02 3/3, TASK-116 parity 6/6: all PASSED again.
+- Afterwards `git status` showed no change under `evidence/`, `e2e/` or `src/`: every receipt (`results/*.json`) and
+  every parity receipt (`parity/*.json`) came out byte-identical.
+- The 36 parity captures in the evidence store (`clear-gallery-adoption-v2-20261118/task-116/captures/`) hash
+  identically to run 1 (36/36, `shasum -a 256`).
 
 ## Open
 
