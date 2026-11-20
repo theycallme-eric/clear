@@ -24,7 +24,7 @@
   "targets": [
     {
       "path": "src/ui/timed-workout-flow.test.tsx",
-      "sha256": "f8c8ac8fac37647d918a403630b931190032440dae5505a56b59ccdcd9c17ccb"
+      "sha256": "94f81611c0d72365c4cd7a9e1ce9807527b497e6a77022d6e8f88b1fcf9cc108"
     },
     {
       "path": "src/state/timed-lifecycle.test.ts",
@@ -32,7 +32,7 @@
     },
     {
       "path": "src/ui/amrap-block.test.tsx",
-      "sha256": "ecc4a74955af68aefd7786bfef82ee43a0d715c74f1c889a82b881d7c176d84d"
+      "sha256": "9ebd6bd3bc4c8b5d9c1a2dd802957582979b7362d64990d67cd84363f5fe19ba"
     },
     {
       "path": "src/ui/emom-block.test.tsx",
@@ -416,12 +416,12 @@
     }
   ],
   "totals": {
-    "total": 147,
-    "passed": 147,
+    "total": 171,
+    "passed": 171,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 147
+    "executed": 171
   },
   "problems": []
 }

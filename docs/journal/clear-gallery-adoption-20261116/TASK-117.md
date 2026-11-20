@@ -10,7 +10,7 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 
 ## Status
 
-Attempt 1 implemented; every required check passed through the guard (see "Verification"). Nothing pushed.
+Attempt 1 implemented and committed; every required check passed through the guard twice, receipts and captures byte-stable (see "Verification"). Nothing pushed.
 
 ## Intended outcome
 
@@ -110,6 +110,27 @@ The brief's CI chain as one command exits 0: typecheck pass; lint 0 errors, 175 
 `gen-issues --check` (71 requirements, 136 edges); `gen:types --check` current; `npm test` 271 files, 6,368/6,368;
 `npm run build` pass; console grep no match. The parity spec had also run once directly before the guard run (8/8).
 TASK-009's and TASK-010's receipts came out byte-identical to the committed ones.
+
+### Verification (run 2, 2026-11-20, on the committed tree `d99a47e3`)
+
+The same nine checks, the same commands through the guard (browser ones under the host lock): TASK-117 check-01
+81/81, TASK-011 check-01 12 executed, TASK-015 check-01 16 executed, TASK-009 check-02 3/3, TASK-010 check-02 3/3,
+TASK-011 check-02 3/3, TASK-015 check-02 3/3, TASK-046 check-01 6/6, TASK-117 parity 8/8 — all PASSED again.
+
+- Afterwards `git status` showed no change: every `results/*.json` and every `parity/*.json` receipt came out
+  byte-identical to the committed ones.
+- The 48 parity captures in the evidence store (`clear-gallery-adoption-v2-20261120/task-117/captures/`) hash
+  identically to run 1 (48/48, `shasum -a 256`).
+
+### Other tasks' checks on files this task changed
+
+Their receipts hash the target files this task changed, so each was re-run once through the guard and its receipt
+refreshed (nothing else in those folders changed): TASK-030 check-02 13/13; TASK-009 check-01 9 executed; TASK-010
+check-01 10 executed; TASK-006 check-01 38/38; TASK-013 check-01 13 executed; TASK-014 check-01 17 executed; TASK-104
+check-01 171/171 — all PASSED. `verify-delivery-evidence.mjs --mode final` for TASK-117, 011, 015, 046, 009, 010, 030,
+006, 013, 014 and 104: current passing receipts. (`--all-tasks` still reports receipts for other tasks that were stale
+or failing before this task — logging-overlay, review-screen, Generate, workout-chrome and load-guidance targets, and
+TASK-019's and TASK-041's later-task cases; none is a file this task changed.)
 
 ## Open
 
