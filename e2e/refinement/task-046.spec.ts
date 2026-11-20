@@ -358,10 +358,11 @@ async function expectFocusedLog(page: Page, format: 'emom' | 'amrap' | 'for_time
   await expect(close).toBeFocused()
   expect((await close.textContent())?.trim()).toBe('')
   expect(await close.evaluate((node) => ({
-    framed: ['clr-chamfer', 'clr-btn'].every((name) => node.classList.contains(name)),
+    framed: ['clr-chamfer', 'clr-btn', 'clr-hit'].every((name) => node.classList.contains(name)),
     quiet: node.classList.contains('clr-btn--quiet'),
+    bleed: node.parentElement?.classList.contains('clr-bleed') ?? false,
     glyph: node.querySelector('svg') !== null,
-  }))).toEqual({ framed: true, quiet: false, glyph: true })
+  }))).toEqual({ framed: true, quiet: false, bleed: true, glyph: true })
   expect(await dialog.evaluate((node) => getComputedStyle(node, '::backdrop').backdropFilter)).toMatch(/blur\(/)
   // The family's one form: the block's own flow holds it; Round 7's accepted
   // name (R7-3); no heading of its own.

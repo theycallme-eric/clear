@@ -700,7 +700,7 @@ test.describe('TASK-011 EMOM schedule and end logging without a completion count
     await settle(page)
     expectLogContract(await readLog(page), 'early @phone-320')
     reached = false
-    for (let press = 0; press < 12 && !reached; press += 1) {
+    for (let press = 0; press < 5 && !reached; press += 1) {
       await page.keyboard.press('Tab')
       reached = await notesOf(page).evaluate((field) => field === document.activeElement)
     }

@@ -11,6 +11,7 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 ## Status
 
 Attempt 1 implemented and committed; every required check passed through the guard twice, receipts and captures byte-stable (see "Verification"). Nothing pushed.
+Repair 1 (2026-11-20) restored two inherited e2e reads the review found weakened and corrected the ledger; see "Repair 1".
 
 ## Intended outcome
 
@@ -131,6 +132,45 @@ check-01 171/171 — all PASSED. `verify-delivery-evidence.mjs --mode final` for
 006, 013, 014 and 104: current passing receipts. (`--all-tasks` still reports receipts for other tasks that were stale
 or failing before this task — logging-overlay, review-screen, Generate, workout-chrome and load-guidance targets, and
 TASK-019's and TASK-041's later-task cases; none is a file this task changed.)
+
+## Repair 1 (2026-11-20, review `TASK-117-a1-d3ac491f3038`)
+
+Failure: the review rejected TASK-AC-41FE9AC96A94 ("no matcher is weakened"). Attempt 1 had weakened two inherited
+e2e reads with no ledger reason, and the ledger's `rules.matchersWeakened: false` was therefore wrong:
+
+- `e2e/refinement/task-046.spec.ts`, `expectFocusedLog` (every TASK-046 case): the Close log X's `clr-hit` class (the
+  shared 44 px hit area) and its `.clr-bleed` parent were dropped. Round 7 still draws both: `LoggingOverlay` uses the
+  design-system `IconButton`, which adds `clr-hit` and wraps the button in `span.clr-bleed`
+  (`src/ui/logging-overlay.test.tsx` asserts the same).
+- `e2e/refinement/task-011.spec.ts`, JOURNEY-011 keyboard phone-320: the Tab bound from the log's X to the notes was
+  raised from the build's 5 to 12.
+
+Correction (test files and evidence only; no product change):
+
+- `task-046.spec.ts` lines 361-365: the X read is back exactly as the build asserted it —
+  `{framed (clr-chamfer, clr-btn, clr-hit), quiet: false, bleed: true, glyph: true}`.
+- `task-011.spec.ts` line 703: the bound is back to the build's `press < 5`. Round 7 reaches the notes in 3 Tabs
+  (`Weight · kb swing`, the effort faces' one roving radio stop, the notes), measured once with a temporary probe
+  (bound 40, logging each focused element) that was removed before the guarded runs.
+- `evidence/refinement/task-117/test-ledger.json`: the task-046 entries (40-45) say the X is read as the build read
+  it, with `clr-hit` and `.clr-bleed`; the task-011 keyboard entry (35) records the unchanged 5-Tab bound and Round 7's
+  3; `rules.resolved` records both restorations; `rules.matchersWeakened: false` is now accurate. Counts unchanged.
+- Not changed: the R7-3 form-name retirements in `timed-result-dialog.test.tsx` and `task-046.spec.ts` (the owner is
+  deciding their scope), the parity spec and its receipts, and every product file.
+
+Verification (through the guard, browser runs under the host lock
+`node /Users/eric/Projects/support-tooling/agent-runner-v2/bin/v2.mjs with-lock -- …`):
+
+| Check | Run 1 | Run 2 |
+|---|---|---|
+| TASK-046 check-01 (`task-046.spec.ts --project=mobile`) | PASSED, 6/6 executed and passed | PASSED, 6/6 |
+| TASK-011 check-02 (`task-011.spec.ts --project=mobile`) | PASSED, 3/3 executed and passed | PASSED, 3/3 |
+
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0, 0 errors, 175 warnings (as at base).
+- Receipts refreshed: `evidence/refinement/task-046/results/check-01.json` and
+  `evidence/refinement/task-011/results/check-02.json`; after run 2 each differs from the committed receipt only in
+  the spec's target hash (the receipts carry no timestamp). No other receipt hashes these two specs (`evidence/refinement/task-042/source-map.json`
+  names task-011's command and path only).
 
 ## Open
 
