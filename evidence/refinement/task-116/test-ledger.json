@@ -4,7 +4,7 @@
   "family": "F3 (5b-1: AMRAP scoring, timed completion choices and effort)",
   "base": "eb6b20afba782ec70991be7371d606f521fb2482",
   "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
-  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace), as the brief places it (owner decisions of 2026-11-18, decision 3; TASK-AC-A585091AA2A2, TASK-AC-3DBA941FE56F): src/ui/timed-result-log.test.tsx created with only the build’s TASK-009 (8) and TASK-010 (9) describe blocks; src/ui/set-effort.test.tsx owned whole; the four TASK-009 blank/zero cases of src/ui/amrap-block.test.tsx (TASK-110 owns that file); e2e/refinement/task-009.spec.ts and task-010.spec.ts; the new task-116-parity.spec.ts.",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace), as the brief places it (owner decisions of 2026-11-18, decision 3; round-07 decision R7-1; TASK-AC-A585091AA2A2 and TASK-AC-E929B618AB5A, the round-07 placement criterion that replaced round 06’s TASK-AC-3DBA941FE56F): src/ui/timed-result-log.test.tsx created with only the build’s TASK-009 (8) and TASK-010 (9) describe blocks; src/ui/set-effort.test.tsx owned whole; the four TASK-009 blank/zero cases of src/ui/amrap-block.test.tsx (TASK-110 owns that file); e2e/refinement/task-009.spec.ts and task-010.spec.ts; the new task-116-parity.spec.ts.",
   "rules": {
     "skipOnlyTodoAdded": false,
     "matchersWeakened": false,
@@ -13,18 +13,44 @@
       {
         "what": "src/ui/timed-result-log.test.tsx TASK-015 describe block (6 tests)",
         "to": "TASK-117",
-        "why": "The brief: TASK-117 adds that block and then owns the whole file."
+        "why": "The brief: TASK-117 adds that block after TASK-116’s blocks and then owns the whole file (round 07 unchanged; TASK-117’s one-owner criterion)."
       },
       {
-        "what": "AC-C26-01’s build assertions that the dialog’s form has no name of its own, and that only the loaded movement draws a group before rounds are recorded",
+        "what": "AC-C26-01’s build assertion that only the loaded movement draws a group before rounds are recorded (the exact per-movement group list, `kb swing` only)",
         "to": "TASK-117",
-        "why": "TASK-046 and TASK-015 behaviour (TASK-046/015 → TASK-117). Round 7’s accepted TimedResultLog names its form, and draws an amount for every AMRAP movement until TASK-015’s gating lands."
+        "why": "TASK-015 behaviour. Round 07 places it with TASK-117 (round-07 scan finding S5; TASK-117’s round-07 placement criterion, item 2): TASK-117 restores the exact list in this file’s AC-C26-01 case together with TASK-015’s gating, which offers no per-movement amount until rounds are recorded. Until that gating lands, Round 7’s accepted TimedResultLog draws an amount for every AMRAP movement."
+      },
+      {
+        "what": "AC-C26-01’s build assertion that the dialog’s form has no name of its own (TASK-046)",
+        "to": "TASK-117",
+        "why": "Retired by TASK-117 under round-07 decision R7-3 (TASK-117’s round-07 placement criterion, item 3): Round 7’s accepted TimedResultLog (gallery bec4454) names its form `Log section results`, so the assertion is retired with that reason in TASK-117’s test ledger and the accepted name stays. TASK-115’s UAT list names the retirement for Eric to confirm."
       }
     ],
     "notInherited": [
       {
-        "what": "src/ui/amrap-block.test.tsx build-edited bodies that also cite TASK-009: “ends on its own when the block’s seconds have passed, and only then offers the result” (TASK-009, TASK-046), “shows the elapsed time when the user finishes early, not the cap”, “takes a round back, and never counts below zero”, “is asked for after the window and nowhere before it”, “supplies an entered zero as a zero”, “labels each group inside the card it belongs to” (TASK-009, TASK-046), “does not call an early finish a cap”, “comes back into the completion state when the buzzer went while it was away”, and the absent “leaves urgency to the timer’s own shared warning, with nothing added around it” (TASK-008, TASK-009); and src/app/Workout.test.tsx “retries a failed entered set with its original identity and saves once before continuing” (TASK-009, TASK-046)",
-        "why": "Not restored here. The brief names only the four TASK-009 blank/zero cases of this file as inherited and says this task runs only its own cases there; TASK-AC-3DBA941FE56F places a restored body with the task that builds what it asserts, and several of these cite TASK-046 too. Their base bodies still pass on AmrapBlock, which no route draws now. Two (“shows the elapsed time…”, “does not call an early finish a cap”) assert the build’s “05:23 on the clock”, which Round 7’s accepted clock (the window left) does not draw. Reported to the controller as a placement question; not decided here."
+        "what": "src/ui/amrap-block.test.tsx build-edited bodies “takes a round back, and never counts below zero”, “is asked for after the window and nowhere before it”, “supplies an entered zero as a zero” and “labels each group inside the card it belongs to” (TASK-009, TASK-046)",
+        "to": "TASK-110",
+        "why": "Round-07 decision R7-1 (TASK-AC-E929B618AB5A): TASK-116 restores only its four TASK-009 blank and zero cases in this file. TASK-110 owns amrap-block, runs it whole once every task its bodies cite has landed, and restores, ports onto the route’s dispatch or retires as superseded (R7-2) every other remaining build-edited body there; these four are among the 33 bodies its criteria list. Their base bodies still pass on AmrapBlock, which no route draws now."
+      },
+      {
+        "what": "src/ui/amrap-block.test.tsx build-edited bodies “ends on its own when the block’s seconds have passed, and only then offers the result” (TASK-009, TASK-046), “shows the elapsed time when the user finishes early, not the cap” and “comes back into the completion state when the buzzer went while it was away”",
+        "to": "TASK-110",
+        "why": "Round-07 decisions R7-1 and R7-3: TASK-110’s criteria name the three. Their old build’s `NN:NN on the clock` readout assertion (for example “05:23 on the clock”) is retired, because Round 7’s accepted AMRAP clock shows the window left; the rest of each body is ported or retired under R7-2. TASK-115’s UAT list names the retirements."
+      },
+      {
+        "what": "src/ui/amrap-block.test.tsx “does not call an early finish a cap”",
+        "to": "TASK-110",
+        "why": "Round-07 decision R7-1: TASK-110 owns the file and runs it whole. The groundwork ledger records this body as carried, not as a body to restore (round-07 scan), so it stays as it is at base; it still asserts the old clock readout over AmrapBlock, which the route does not draw, and round-07 decision R7-3 has TASK-115’s UAT list name it for Eric to confirm."
+      },
+      {
+        "what": "src/ui/amrap-block.test.tsx “leaves urgency to the timer’s own shared warning, with nothing added around it” (TASK-008, TASK-009), absent at base",
+        "to": "TASK-108",
+        "why": "Round-07 decision R7-1: TASK-108 restores the bodies that assert its own work (TASK-007/008/027), and its criteria name “the urgency case in src/ui/amrap-block.test.tsx” (TASK-008; C22, C23, C61), ported onto the route’s dispatch or retired as superseded under R7-2. TASK-110, the file’s owner, then runs it whole."
+      },
+      {
+        "what": "src/app/Workout.test.tsx “retries a failed entered set with its original identity and saves once before continuing” (TASK-009, TASK-046)",
+        "to": "TASK-110",
+        "why": "Round-07 decision R7-1: TASK-116 restores no body in this file. TASK-110 owns Workout.test.tsx, runs it whole once every task its bodies cite has landed, and restores, ports or retires every remaining build-edited body there. The groundwork ledger records this body as carried, not as a body to restore (round-07 scan)."
       }
     ],
     "blocked": []
@@ -53,7 +79,7 @@
       "test": "TASK-009 AMRAP prescription and concise scoring controls > AC-C26-01 AMRAP rounds and the partial round are one result group under the simple log hierarchy: one Log results title, labels before their counts, no Result, Movements or Feedback group titles",
       "ledger": "deferred (F3; groundwork ledger) → TASK-116",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour. The case keeps the build’s name and is read on Round 7’s owners — TimedWorkoutFlow with its one “Log results” LoggingOverlay drawn inside the flow, TimedResultLog, QuantitySelector and SetEffortChoice — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The dialog is drawn inside the flow (lifted to the top layer), so “never inline” is read as: no form outside an open dialog and one form in it. The format is read from the flow (`data-timed-format`). Round 7’s TimedResultLog names its form `Log section results` (the accepted owner), so the build’s TASK-046 assertion that the dialog’s form has no name of its own is not carried here (TASK-046 → TASK-117). The exact per-movement group list (`kb swing` only) is TASK-015’s gating (no amount until rounds are recorded), which Round 7 does not yet do; it is TASK-117’s (TASK-015 → TASK-117): this case asserts every group title is one of the block’s movement names and no Result/Movements/Feedback title appears. The title is `.clr-logging-overlay__title` at the card’s section-heading level; fields are `.clr-timed-field`, the label names its output (`for`) and the frame carries the label’s words (Round 7) in place of `aria-labelledby`; the rhythm rules are read from src/styles/timed-workout.css; Enter (submit) is prevented, as the build asserted.",
+      "note": "Round 7 look, same asserted behaviour. The case keeps the build’s name and is read on Round 7’s owners — TimedWorkoutFlow with its one “Log results” LoggingOverlay drawn inside the flow, TimedResultLog, QuantitySelector and SetEffortChoice — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The dialog is drawn inside the flow (lifted to the top layer), so “never inline” is read as: no form outside an open dialog and one form in it. The format is read from the flow (`data-timed-format`). Round 7’s TimedResultLog names its form `Log section results` (the accepted owner), so the build’s TASK-046 assertion that the dialog’s form has no name of its own is not carried here: TASK-117 retires it under round-07 decision R7-3, and the accepted name stays. The exact per-movement group list (`kb swing` only) is TASK-015’s gating (no amount until rounds are recorded), which Round 7 does not yet do; TASK-117 restores that list in this case with TASK-015’s gating (round-07 scan finding S5). Until then this case asserts every group title is one of the block’s movement names and no Result/Movements/Feedback title appears. The title is `.clr-logging-overlay__title` at the card’s section-heading level; fields are `.clr-timed-field`, the label names its output (`for`) and the frame carries the label’s words (Round 7) in place of `aria-labelledby`; the rhythm rules are read from src/styles/timed-workout.css; Enter (submit) is prevented, as the build asserted.",
       "result": "passed"
     },
     {

@@ -5,13 +5,20 @@ integration branch `build/clear-gallery-adoption-2026-11-13`, base `eb6b20af` (T
 material only: the old build `build/clear-refinement-2026-11-04` (`181e580`). This is the task-owned progress note; it
 satisfies the shared daily journal rule for this body. Only TASK-116 writes it.
 
+Round 07: body `clear-gallery-adoption-v2-20261120`, attempt 1, branch `v2/clear-gallery-adoption-v2-20261120/task-116-a1`,
+base `779b3436` (TASK-107 merged). The round-06 work came in by fast-forward (round-07 decision R7-4); see "Round 07".
+
 Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`); the issue body names
 `clear-gallery-adoption-20261113`. The brief's path is used, as TASK-103 to TASK-106 did.
 
 ## Status
 
-Attempt 1 implemented, every required check passed in this worktree, two-run proof done (see "Verification").
-One placement question is open for the controller (see "Open"). Nothing pushed.
+Round 06: attempt 1 implemented, every required check passed, two-run proof done (see "Verification"); accepted as
+it stands (Eric, chat, 2026-11-19: "Yes, accept both").
+
+Round 07: the accepted work merged unchanged; only this task's placement records were brought in line with round 07,
+and every required check was run again on the merged tree (see "Round 07"). Round 07 places every body the round-06
+placement question listed, so no placement question is open. Nothing pushed.
 
 ## Intended outcome
 
@@ -141,20 +148,90 @@ attempt at the browser checks waited out the host lock held by another run (envi
 - The 36 parity captures in the evidence store (`clear-gallery-adoption-v2-20261118/task-116/captures/`) hash
   identically to run 1 (36/36, `shasum -a 256`).
 
+## Round 07 (body `clear-gallery-adoption-v2-20261120`, attempt 1, 2026-11-20)
+
+**Merge.** The accepted round-06 branch `v2/clear-gallery-adoption-v2-20261118/task-116-a1` was fetched from the
+round-06 body's clone at `aa9ec055` and fast-forwarded onto `779b3436` with `git merge --ff-only`. The work now sits
+as `6ad160af` and `aa9ec055` on `779b3436`; round 06's work commit `15617ffd` was on `eb6b20af`. Nothing this task
+changes or inherits differs between `eb6b20af` and `779b3436`, checked with `git diff --stat` on its product, test and
+spec files.
+
+**Criteria.** Round 07 changed only the shared placement criterion (TASK-AC-E929B618AB5A, decision R7-1). Under it,
+TASK-116 restores only its four TASK-009 blank and zero cases in `src/ui/amrap-block.test.tsx`. The branch matches:
+
+- it changes exactly those four cases, ported onto the route by `renderRouteAmrap`;
+- it changes no case in `emom-block`, `for-time-block` or `Workout.test.tsx`.
+
+Every other criterion's text is round 06's, so the delivered work stands.
+
+**Records changed.** No product code and no test assertion changed.
+
+- `evidence/refinement/task-116/test-ledger.json`:
+  - `source` names round 07's placement criterion and decision R7-1.
+  - `rules.deferred` splits the AC-C26-01 entry in two. The exact per-movement group list goes to TASK-117, which
+    restores it with TASK-015's gating (scan finding S5). The TASK-046 assertion that the form has no name of its own
+    is retired by TASK-117 under R7-3.
+  - `rules.notInherited` names a receiver for every body round 06 left as a plan question: TASK-110 for the
+    amrap-block bodies and the Workout.test.tsx body, and TASK-108 for the urgency body. Open item 1 below gives the
+    full list.
+  - The AC-C26-01 entry's note says the same.
+  - The summary counts are unchanged.
+- This note: the status, Open items 1 and 5, this section and the next action.
+
+**Verification on the merged tree** (2026-11-20). Every browser run was under the host lock
+(`node …/agent-runner-v2/bin/v2.mjs with-lock -- <command>`). No other task's parity spec was run.
+
+| Check | Result |
+|---|---|
+| `npm ci` | exit 0 |
+| TASK-116 check-01 (`set-effort.test.tsx` whole) | PASSED, 13/13 |
+| TASK-116 check-02 (`amrap-block.test.tsx`, `TASK-009`) | PASSED, 4 executed of 45 (41 filtered out) |
+| TASK-009 check-01 (`timed-result-log.test.tsx`, `^TASK-009 `) | PASSED, 9 executed of 19 |
+| TASK-010 check-01 (`timed-result-log.test.tsx`, `^TASK-010 `) | PASSED, 10 executed of 19 |
+| TASK-009 check-02 (`task-009.spec.ts`) | PASSED, 3/3 |
+| TASK-010 check-02 (`task-010.spec.ts`) | PASSED, 3/3 |
+| TASK-116 parity, run 1 | PASSED, 6/6 |
+| TASK-116 parity, run 2 | PASSED, 6/6 |
+| CI chain (one command) | exit 0 |
+
+Notes on the results:
+
+- **Receipts.** After every check, `git status` showed no change under `evidence/`, `e2e/` or `src/`. Every
+  `results/*.json` and every `parity/*.json` receipt came out byte-identical to the committed ones.
+- **Parity.** Every receipt records 0 text and 0 layout differences.
+- **Captures.** The 36 captures in `evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/` (the folder
+  the spec already uses) hash the same before run 1, after run 1 and after run 2 (36/36, `shasum -a 256`).
+- **CI chain.** Typecheck passed. Lint had 0 errors and 175 warnings, the same as at base. lint:ds passed.
+  `gen-issues --check` found 71 requirements and 136 edges. `gen:types --check` found the types current. `npm test`
+  passed 270 files and 6,339/6,339 tests (TASK-107 added tests since round 06's 6,330). `npm run build` passed. The
+  console grep found no match.
+
+**Failures and corrections** (environment only):
+
+- The suggested lock command passed the body path as an argument. The installed `v2.mjs with-lock` takes only
+  `-- <command>` because the lock is host-wide, so it was run in that form.
+- The first try at parity run 2 timed out waiting for the host lock, which another run was holding. This was
+  environment waiting, not a defect. The retry got the lock at once and passed.
+
 ## Open
 
-1. **Placement of other TASK-009-citing build bodies (plan question, not decided here).** Beyond the four blank/zero
-   cases the brief names, the build edited more bodies of `src/ui/amrap-block.test.tsx` whose comments cite TASK-009:
-   “ends on its own when the block’s seconds have passed…” (TASK-009, TASK-046), “shows the elapsed time when the user
-   finishes early, not the cap”, “takes a round back, and never counts below zero”, “is asked for after the window and
-   nowhere before it”, “supplies an entered zero as a zero”, “labels each group inside the card it belongs to”
-   (TASK-009, TASK-046), “does not call an early finish a cap”, “comes back into the completion state when the buzzer
-   went while it was away”, and the absent “leaves urgency to the timer’s own shared warning…” (TASK-008, TASK-009);
-   and `src/app/Workout.test.tsx` “retries a failed entered set with its original identity and saves once before
-   continuing” (TASK-009, TASK-046). TASK-AC-3DBA941FE56F places a restored body with the task that builds what it
-   asserts, but the brief enumerates only the four and says this task runs only its own cases in that file. Their base
-   bodies still pass on `AmrapBlock`, which no route draws now; two of them assert the build's “05:23 on the clock”,
-   which Round 7's accepted clock (the window left) does not draw. Recorded in the ledger (`rules.notInherited`).
+1. **Placement of other TASK-009-citing build bodies: placed by round 07 (no longer open).** Round 06 left this as a
+   plan question: beyond the four blank/zero cases, the build edited more bodies of `src/ui/amrap-block.test.tsx` that
+   cite TASK-009, and one of `src/app/Workout.test.tsx`. Round 07's placement criterion (TASK-AC-E929B618AB5A,
+   decision R7-1, replacing round 06's TASK-AC-3DBA941FE56F) keeps TASK-116 to its four TASK-009 cases in amrap-block
+   and places the rest. Each receiver is in the ledger's `rules.notInherited`:
+   - **TASK-110** (owns amrap-block and Workout.test.tsx and runs them whole):
+     - “takes a round back, and never counts below zero”, “is asked for after the window and nowhere before it”,
+       “supplies an entered zero as a zero” and “labels each group inside the card it belongs to”. These are among the
+       33 bodies its criteria list; each is ported onto the route's dispatch or retired as superseded (R7-2).
+     - “ends on its own when the block’s seconds have passed…”, “shows the elapsed time when the user finishes early,
+       not the cap” and “comes back into the completion state when the buzzer went while it was away”. Their
+       `NN:NN on the clock` readout is retired under R7-3; the rest of each body is ported or retired under R7-2.
+     - “does not call an early finish a cap”, carried as it is at base. TASK-115's UAT list names it (R7-3).
+     - Workout.test.tsx “retries a failed entered set with its original identity and saves once before continuing”.
+   - **TASK-108**: the absent “leaves urgency to the timer’s own shared warning…” (TASK-008, TASK-009). R7-1 has
+     TASK-108 restore the bodies that assert its own work (TASK-007/008/027), and its criteria name “the urgency case
+     in src/ui/amrap-block.test.tsx”.
 2. **A disabled saved effort has no Round 7 surface** (as TASK-105 noted). `SetEffortChoice`'s `disabled` face and its
    always-named Clear are proved at component level (set-effort.test.tsx). Round 7 reads a saved timed log back as
    “Log saved” with “Effort: About right” in words and offers “Edit log”, not the build's disabled form; that read-back
@@ -163,11 +240,20 @@ attempt at the browser checks waited out the host lock held by another run (envi
    reload (the build's TASK-010 asserted the For Time's face is not stored). Counts and the For Time answer are stored.
 4. Round 7 shows the AMRAP's clock as the window left after Finish early (`Finished`, 06:25), where the build said
    “01:35 on the clock”; the elapsed time is what is saved (`elapsed_seconds 95`).
-5. Per-movement gating (an AMRAP's amounts only after a rounds count; the exact movement-group list) is TASK-015's,
-   carried by TASK-117.
+5. Per-movement gating (an AMRAP's amounts only after a rounds count; the exact movement-group list) is TASK-015's.
+   Round 07 places both of the AC-C26-01 assertions not carried in `src/ui/timed-result-log.test.tsx` with TASK-117
+   (its round-07 placement criterion):
+   - The exact per-movement group list comes back in that case with TASK-015's gating (scan finding S5).
+   - The build's TASK-046 assertion that the form has no name of its own is retired by TASK-117 under decision R7-3.
+     Round 7's accepted `TimedResultLog` names its form “Log section results”, and that name stays.
 
 ## Next action
 
-Controller: verify the candidate; hand-diff `src/ui/timed-workout-flow.tsx` and `src/ui/timed-result-log.tsx` against
-the allowance; look at the captures under `evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/`; take
-Open item 1 to the owner if a placement decision is needed.
+Controller (round 07):
+
+- Verify the candidate.
+- Hand-diff the gallery-owned files against the allowance: `src/ui/timed-workout-flow.tsx`, `src/ui/timed-result-log.tsx`
+  and the `src/ui/amrap-block.test.tsx` cases. They are unchanged since round 06's accepted hand-diff.
+- Look at the captures under `evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/`.
+- No owner decision is pending from this task. TASK-108, TASK-110, TASK-115 and TASK-117 carry the placements in Open
+  items 1 and 5.
