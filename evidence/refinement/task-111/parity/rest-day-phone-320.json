@@ -1,0 +1,212 @@
+{
+  "schema": "clear-task-111-parity/v1",
+  "task": "TASK-111",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "rest-day",
+  "label": "Rest day / reason change",
+  "width": 320,
+  "route": "/",
+  "drive": "card; Mark Rest Day → Log rest day; Reason Injured, Close log, Mark Rest Day → Log rest day again — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "parts": {
+    "card": "the rest-day control’s own stack (its trigger group), on both sides",
+    "context": "gallery: the scene’s card; route: Home’s “Rest day” region",
+    "open": "the open dialog",
+    "reopened": "the open dialog, after an entry, its X and the opener again"
+  },
+  "captures": {
+    "gallery-context": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-context.png",
+      "sha256": "4ae1a8b77c9c95e64562d999ad6b45265b0dc540c13a7b37c87d6b91c8de95e5"
+    },
+    "route-context": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-context.png",
+      "sha256": "6456322b36a31fbbe3ac6ce8b77e0f0783e6dc318c54da9bc08d77955f7194c5"
+    },
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-card.png",
+      "sha256": "a7d5ab750722b7cae68d85e90017c6955430fb08f11bec98d3c3f468ef700f62"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-card.png",
+      "sha256": "9da66d35d05038820ae2c2f5670bd1b25550d96a7779e07e40564bab134d76d5"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-open.png",
+      "sha256": "96d1f2e97dcccb96c8d6fbfe6cdced08e96a69c8916f16046ec3c2567b7a5d70"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-open.png",
+      "sha256": "bd0860174af179219363ad28e51478934cbf0ed430793cd6fafb6edaaa057bea"
+    },
+    "gallery-reopened": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-reopened.png",
+      "sha256": "8fc24028b46285bc082b8935faa73f7605a858353620d7678a76e478bc70ca45"
+    },
+    "route-reopened": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-reopened.png",
+      "sha256": "bd0860174af179219363ad28e51478934cbf0ed430793cd6fafb6edaaa057bea"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "context": [
+        "REST DAY",
+        "MARK REST DAY"
+      ],
+      "card": [
+        "MARK REST DAY"
+      ],
+      "open": [
+        "LOG REST DAY",
+        "REASON",
+        "Rest day",
+        "Injured",
+        "Unwell",
+        "Away",
+        "Keeps your streak, up to 6 days in a row.",
+        "SAVE REST DAY",
+        "CANCEL"
+      ],
+      "reopened": [
+        "LOG REST DAY",
+        "REASON",
+        "Rest day",
+        "Injured",
+        "Unwell",
+        "Away",
+        "Keeps your streak, up to 6 days in a row.",
+        "SAVE REST DAY",
+        "CANCEL"
+      ]
+    },
+    "route": {
+      "context": [
+        "REST DAY",
+        "MARK REST DAY"
+      ],
+      "card": [
+        "MARK REST DAY"
+      ],
+      "open": [
+        "LOG REST DAY",
+        "REASON",
+        "Rest day",
+        "Injured",
+        "Unwell",
+        "Away",
+        "Keeps your streak, up to 6 days in a row.",
+        "SAVE REST DAY",
+        "CANCEL"
+      ],
+      "reopened": [
+        "LOG REST DAY",
+        "REASON",
+        "Rest day",
+        "Injured",
+        "Unwell",
+        "Away",
+        "Keeps your streak, up to 6 days in a row.",
+        "SAVE REST DAY",
+        "CANCEL"
+      ]
+    }
+  },
+  "differences": {
+    "context": [],
+    "card": [],
+    "open": [],
+    "reopened": []
+  },
+  "focus": {
+    "open": {
+      "gallery": "Close log",
+      "route": "Reason",
+      "criterion": "AC-GAL-05",
+      "reason": "The rest day keeps its own keyboard state: opening moves focus to its native Reason picker (U25, carried; the route’s own focus rule), where the gallery’s composed state, which has no such rule, opens on the X. The picker’s frame is drawn focused on the route.",
+      "same": false
+    },
+    "reopened": {
+      "gallery": "Close log",
+      "route": "Reason",
+      "criterion": "AC-GAL-05",
+      "reason": "The rest day keeps its own keyboard state: opening moves focus to its native Reason picker (U25, carried; the route’s own focus rule), where the gallery’s composed state, which has no such rule, opens on the X. The picker’s frame is drawn focused on the route.",
+      "same": false
+    }
+  },
+  "frame": {
+    "gallery": "a card of its own (.clr-card)",
+    "route": "the ruled “Rest day” sub-group of This week (.clr-stack--tight)",
+    "criterion": "TASK-AC-579280C10CDC",
+    "reason": "Home’s rest day is wired in place: Home draws the control as the ruled “Rest day” sub-group of its This week card (Home’s existing hierarchy, REQ-018/REQ-009: a card never holds another card), while the gallery scene, which has no week card, draws the same control in a card of its own. The control’s own stack and the dialog are compared box by box; the surroundings by their words."
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 7,
+        "open": 27,
+        "reopened": 27
+      },
+      "route": {
+        "card": 7,
+        "open": 27,
+        "reopened": 27
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 44
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 309.5
+        },
+        "reopened": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 309.5
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 44
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 309.5
+        },
+        "reopened": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 309.5
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": [],
+      "reopened": []
+    }
+  }
+}

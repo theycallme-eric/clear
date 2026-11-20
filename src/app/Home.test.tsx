@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createError, err, ErrorCode, ok } from '../state/errors'
 import { favoriteRunsQueryKey } from '../state/favorite-queries'
 import { QueryClient } from '../state/query'
-import type { Profile, WorkoutSessionRow } from '../state/schemas'
+import type { Profile, RestDayRow, WorkoutSessionRow } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import {
   fixtureLocation,
@@ -40,6 +40,9 @@ import {
 } from './Home'
 import { createTestRouter } from './router'
 import { REMOVE_FAVORITE_CONFIRM, REMOVE_FAVORITE_LABEL } from '../ui/favorite-list'
+import { WorkoutExperiencePresentationProvider } from '../ui/workout-experience-presentation'
+import type { RestDayClient } from '../data/rest-days'
+import type { RestDayMark } from '../state/schemas'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -377,7 +380,10 @@ describe('Home', () => {
     expect(trigger.querySelector('svg')).not.toBeNull()
 
     await user.click(trigger)
-    const picker = within(rest).getByRole('combobox', { name: 'Reason' })
+    // TASK-045: the editor is the focused logging dialog "Log rest day".
+    const log = screen.getByRole('dialog', { name: 'Log rest day' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    const picker = within(log).getByRole('combobox', { name: 'Reason' })
     expect(picker).toHaveFocus()
     expect(document.getElementById(trigger.getAttribute('aria-controls')!)).toContainElement(picker)
     // The chosen reason's effect is the helper, wired to the picker.
@@ -386,8 +392,8 @@ describe('Home', () => {
     expect(picker).toHaveAccessibleDescription('Pauses your streak for as long as it lasts.')
 
     // Save and Cancel are equal framed cells in one responsive group.
-    const save = within(rest).getByRole('button', { name: 'Save rest day' })
-    const cancel = within(rest).getByRole('button', { name: 'Cancel' })
+    const save = within(log).getByRole('button', { name: 'Save rest day' })
+    const cancel = within(log).getByRole('button', { name: 'Cancel' })
     expect(save.closest('.clr-action-group')).toHaveClass('clr-action-group--paired')
     // Cancel is framed like Save, not a bare quiet label beside a framed button.
     expect(cancel).not.toHaveClass('clr-btn--quiet')
@@ -639,14 +645,16 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
     expect(mark.closest('.clr-action-group')).not.toBeNull()
     await user.click(mark)
 
-    const save = within(rest).getByRole('button', { name: 'Save rest day' })
-    const cancel = within(rest).getByRole('button', { name: 'Cancel' })
+    // TASK-045: the reason and its actions are in the focused logging dialog.
+    const log = screen.getByRole('dialog', { name: 'Log rest day' })
+    const save = within(log).getByRole('button', { name: 'Save rest day' })
+    const cancel = within(log).getByRole('button', { name: 'Cancel' })
     const group = save.closest('.clr-action-group')
     expect(group).not.toBeNull()
     expect(group).toContainElement(cancel)
     // The reason and its actions are one label/control group.
     expect(group!.parentElement).toHaveClass('clr-stack', 'clr-stack--tight')
-    expect(group!.parentElement).toContainElement(within(rest).getByLabelText('Reason'))
+    expect(group!.parentElement).toContainElement(within(log).getByLabelText('Reason'))
   })
 
   it('U08: each Home empty state is one statement, with no standing explanation', async () => {
@@ -982,5 +990,208 @@ describe('Home’s one next-workout entry (REQ-007, U20)', () => {
     await openGenerate(user)
     expect(minutes()).toHaveValue(45)
     expect(generation.calls).toEqual([])
+  })
+})
+
+/**
+ * A3 TASK-111 (#734; adoption inventory F9, owner decision 3): Home's rest day
+ * — marking a day and changing its reason — is chosen only in Round 7's "Log
+ * rest day" LoggingOverlay (`src/ui/logging-overlay.tsx`), over the existing
+ * writer (`mark_rest_day`, note null). Round 7 had drawn it only while its
+ * presentation was mounted and kept the old inline editor behind that gate;
+ * the gate is gone. The trigger stays in its card (expanded while the dialog
+ * is open), the dialog cannot close while the mark is in flight, and a
+ * refused mark keeps its alert and the chosen reason inside the dialog for
+ * the retry. The X and Escape keep Cancel's meaning: nothing is kept, and the
+ * next open starts from the saved reason.
+ */
+describe('A3 TASK-111 (F9) — the rest day in the Round 7 dialog', () => {
+  type Answer = Awaited<ReturnType<RestDayClient['mark']>>
+
+  /** Each mark waits for the test: `refuse` answers a failure, `accept` stores it. */
+  function heldRestDays(initial: readonly RestDayRow[] = []) {
+    const store = createFakeRestDayClient(initial)
+    const attempts: RestDayMark[] = []
+    const pending: { refuse: () => void; accept: () => Promise<void> }[] = []
+    const client: RestDayClient = {
+      recent: (userId) => store.recent(userId),
+      mark: (mark) => new Promise<Answer>((settle) => {
+        attempts.push(mark)
+        pending.push({
+          refuse: () => settle(err(createError(ErrorCode.NETWORK_OFFLINE))),
+          accept: async () => settle(await store.mark(mark)),
+        })
+      }),
+    }
+    return { client, attempts, pending, store }
+  }
+
+  function todayMark(reason: RestDayRow['reason']): RestDayRow {
+    return {
+      id: 'a0000002-0000-4000-8000-000000000000', user_id: FIXTURE_USER_ID, day: suggestionDay(),
+      reason, note: null, created_at: '2026-09-26T12:00:00.000Z', updated_at: '2026-09-26T12:00:00.000Z',
+    }
+  }
+
+  const logOf = () => screen.getByRole('dialog', { name: 'Log rest day' }) as HTMLDialogElement
+  const closeOf = (dialog: HTMLElement) => within(dialog).getByRole('button', { name: 'Close log' })
+  /** Controls in the Rest day region that are not the dialog's. */
+  const outside = (region: HTMLElement) => [...region.querySelectorAll('button, select, input, textarea')]
+    .filter((control) => !control.closest('dialog'))
+
+  it('TASK-AC-579280C10CDC Home keeps no inline rest-day editor: with no Round 7 logging presentation mounted, Mark Rest Day stays in its card, expanded, and opens Log rest day in the LoggingOverlay with the Reason picker focused; Save rest day marks today through the existing writer with no note and focus returns to Change reason', async () => {
+    const user = userEvent.setup()
+    const restDays = createFakeRestDayClient()
+    render(
+      <AppProviders {...signedIn({ restDays })}>
+        <WorkoutExperiencePresentationProvider value={{ focusAction: 'text' }}>
+          <RouterProvider router={createTestRouter(['/'])} />
+        </WorkoutExperiencePresentationProvider>
+      </AppProviders>,
+    )
+
+    const rest = await screen.findByRole('region', { name: 'Rest day' })
+    const trigger = within(rest).getByRole('button', { name: 'Mark Rest Day' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await user.click(trigger)
+
+    const log = logOf()
+    expect(log).toHaveClass('clr-logging-overlay')
+    expect(log.open).toBe(true)
+    expect(closeOf(log).textContent?.trim()).toBe('')
+    expect(trigger).toBeInTheDocument()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    const picker = within(log).getByRole('combobox', { name: 'Reason' })
+    expect(picker).toHaveFocus()
+    // The reason and its actions are the dialog's; the card keeps only its trigger.
+    expect(outside(rest)).toEqual([trigger])
+    expect(within(log).getByRole('button', { name: 'Save rest day' })).toBeInTheDocument()
+    expect(within(log).getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
+    expect(await within(rest).findByText('Today: Rest day.')).toBeInTheDocument()
+    expect(within(rest).getByRole('status')).toHaveTextContent('Rest day saved.')
+    expect(screen.queryByRole('dialog', { name: 'Log rest day' })).toBeNull()
+    await waitFor(() => expect(within(rest).getByRole('button', { name: 'Change reason' })).toHaveFocus())
+    expect(restDays.markCalls).toEqual([{ day: suggestionDay(), reason: 'rest', note: null }])
+  })
+
+  it('TASK-AC-49B5381CB1E9 Log rest day cannot close while the mark is in flight — its X and Cancel are disabled and Escape is refused; a refused mark keeps its alert, the chosen reason and focus inside the dialog, and the retry marks the day once more', async () => {
+    const user = userEvent.setup()
+    const held = heldRestDays()
+    renderApp(['/'], signedIn({ restDays: held.client }))
+
+    const rest = await screen.findByRole('region', { name: 'Rest day' })
+    await user.click(within(rest).getByRole('button', { name: 'Mark Rest Day' }))
+    const log = logOf()
+    await user.selectOptions(within(log).getByRole('combobox', { name: 'Reason' }), 'injury')
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
+
+    // In flight: busy, and nothing closes the dialog.
+    await waitFor(() => expect(held.pending).toHaveLength(1))
+    expect(within(log).getByRole('button', { name: 'Save rest day' })).toHaveAttribute('aria-busy', 'true')
+    expect(closeOf(log)).toBeDisabled()
+    expect(within(log).getByRole('button', { name: 'Cancel' })).toBeDisabled()
+    const cancel = new Event('cancel', { cancelable: true })
+    act(() => void fireEvent(log, cancel))
+    expect(cancel.defaultPrevented).toBe(true)
+    fireEvent.keyDown(within(log).getByRole('combobox', { name: 'Reason' }), { key: 'Escape' })
+    expect(logOf()).toBe(log)
+    expect(log.open).toBe(true)
+
+    // Refused: the alert is the dialog's, never the card's behind it.
+    await act(async () => held.pending[0].refuse())
+    expect(await within(log).findByRole('alert')).toHaveTextContent('The rest day wasn’t saved. Try again.')
+    expect([...rest.querySelectorAll('[role="alert"]')].filter((node) => !log.contains(node))).toEqual([])
+    expect(within(log).getByRole('combobox', { name: 'Reason' })).toHaveValue('injury')
+    expect(log.contains(document.activeElement)).toBe(true)
+    expect(log.open).toBe(true)
+    expect(within(rest).queryByText(/^Today:/)).toBeNull()
+
+    // The retry: once more through the same writer; the dialog closes on the mark.
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
+    await waitFor(() => expect(held.pending).toHaveLength(2))
+    await act(async () => held.pending[1].accept())
+    expect(await within(rest).findByText('Today: Injured.')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Log rest day' })).toBeNull()
+    expect(held.attempts).toEqual([
+      { day: suggestionDay(), reason: 'injury', note: null },
+      { day: suggestionDay(), reason: 'injury', note: null },
+    ])
+    await waitFor(() => expect(within(rest).getByRole('button', { name: 'Change reason' })).toHaveFocus())
+  })
+
+  it('TASK-AC-49B5381CB1E9 Change reason reopens Log rest day at the saved reason; the X discards an unsaved change, a refused change keeps its alert and the new reason in the dialog, and the retry saves it', async () => {
+    const user = userEvent.setup()
+    const held = heldRestDays([todayMark('sick')])
+    renderApp(['/'], signedIn({ restDays: held.client }))
+
+    const rest = await screen.findByRole('region', { name: 'Rest day' })
+    expect(await within(rest).findByText('Today: Unwell.')).toBeInTheDocument()
+    const change = within(rest).getByRole('button', { name: 'Change reason' })
+    await user.click(change)
+    let log = logOf()
+    expect(within(log).getByRole('combobox', { name: 'Reason' })).toHaveValue('sick')
+    await user.selectOptions(within(log).getByRole('combobox', { name: 'Reason' }), 'vacation')
+
+    // The X is Cancel: the change is discarded and focus is back on Change reason.
+    await user.click(closeOf(log))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Log rest day' })).toBeNull())
+    await waitFor(() => expect(change).toHaveFocus())
+    expect(held.attempts).toEqual([])
+    await user.click(change)
+    log = logOf()
+    expect(within(log).getByRole('combobox', { name: 'Reason' })).toHaveValue('sick')
+
+    // A refused change keeps the new reason and its alert in the dialog.
+    await user.selectOptions(within(log).getByRole('combobox', { name: 'Reason' }), 'vacation')
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
+    await waitFor(() => expect(held.pending).toHaveLength(1))
+    await act(async () => held.pending[0].refuse())
+    expect(await within(log).findByRole('alert')).toHaveTextContent('The rest day wasn’t saved. Try again.')
+    expect(within(log).getByRole('combobox', { name: 'Reason' })).toHaveValue('vacation')
+    expect(within(rest).getByText('Today: Unwell.')).toBeInTheDocument()
+
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
+    await waitFor(() => expect(held.pending).toHaveLength(2))
+    await act(async () => held.pending[1].accept())
+    expect(await within(rest).findByText('Today: Away.')).toBeInTheDocument()
+    expect(held.attempts).toEqual([
+      { day: suggestionDay(), reason: 'vacation', note: null },
+      { day: suggestionDay(), reason: 'vacation', note: null },
+    ])
+  })
+
+  it('AC-GAL-05 the rest day keeps its own field and writer in the dialog: the native Reason picker offers exactly the four existing reasons with their effect helper, no Notes field or invented reason, Escape keeps Cancel’s meaning, and the writer sends note null', async () => {
+    const user = userEvent.setup()
+    const restDays = createFakeRestDayClient()
+    renderApp(['/'], signedIn({ restDays }))
+
+    const rest = await screen.findByRole('region', { name: 'Rest day' })
+    const trigger = within(rest).getByRole('button', { name: 'Mark Rest Day' })
+    await user.click(trigger)
+    let log = logOf()
+    const picker = within(log).getByRole('combobox', { name: 'Reason' })
+    expect(picker.tagName).toBe('SELECT')
+    expect([...picker.querySelectorAll('option')].map((option) => option.textContent))
+      .toEqual(['Rest day', 'Injured', 'Unwell', 'Away'])
+    expect(picker).toHaveAccessibleDescription(/Keeps your streak/)
+    expect(within(log).queryByRole('textbox')).toBeNull()
+    expect(within(log).queryByText(/note/i)).toBeNull()
+
+    // Escape: nothing kept, focus back on the trigger, the next open at the saved reason.
+    await user.selectOptions(picker, 'sick')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: 'Log rest day' })).toBeNull()
+    await waitFor(() => expect(trigger).toHaveFocus())
+    await user.keyboard('{Enter}')
+    log = logOf()
+    expect(within(log).getByRole('combobox', { name: 'Reason' })).toHaveValue('rest')
+    expect(restDays.markCalls).toEqual([])
+
+    await user.selectOptions(within(log).getByRole('combobox', { name: 'Reason' }), 'vacation')
+    await user.click(within(log).getByRole('button', { name: 'Save rest day' }))
+    expect(await within(rest).findByText('Today: Away.')).toBeInTheDocument()
+    expect(restDays.markCalls).toEqual([{ day: suggestionDay(), reason: 'vacation', note: null }])
   })
 })

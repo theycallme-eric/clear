@@ -1,0 +1,668 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-111",
+  "description": "A3 task 11 (F9; #734): rest-day and workout-feedback dialogs with drafts kept (owner decision 3). check-01 proves the wiring on the real route tree: /summary's Debrief card holds only its 'Log workout feedback' opener, and the feeling (FeelingRow, the session's mood, never an effort), the optional notes and Save and close are only in Round 7's 'Workout feedback' LoggingOverlay (src/ui/logging-overlay.tsx), over the existing saveDebrief writer (blank notes and no feeling written as null); Home's rest day (Mark Rest Day / Change reason) opens Round 7's 'Log rest day' LoggingOverlay with the existing native Reason (the four existing reasons, its effect helper, no Notes field) over mark_rest_day with note null, the trigger kept in its card and expanded while the dialog is open. The presentation gate Round 7 had put around both (the old inline form and pinned Save and close behind it) is gone: with no Round 7 logging presentation mounted, both still open their dialogs (TASK-AC-579280C10CDC). The feedback draft survives the X, Escape and reopen (the closed overlay keeps the same form mounted); neither dialog closes while its save is in flight (X disabled, Escape refused; the rest day's Cancel disabled); a refused save or reason change keeps its alert, the draft or the chosen reason and focus inside the dialog, and the retry writes once more through the same writer (TASK-AC-49B5381CB1E9). The feedback form submits through useInvalidFocus: a note over 2,000 characters is refused and Notes takes focus (TASK-AC-4F3A94603641). The build's (181e580) bodies of the 21 F9 tests named by the task 2 groundwork ledger are carried or rewritten for Round 7; one is deferred (see test-ledger.json). AC-GAL-05 mapping for this task's two of the 16 logging contexts: workout feedback = five-value session feeling (mood, categorical, optional/null, distinct from set/block effort) + optional session notes (null when blank) -> saveDebrief (workout_sessions.mood, session_notes); rest day / reason change = native Reason (rest, injury, sick, vacation; no note, no new reason) -> mark_rest_day (p_note null); both on the shared LoggingOverlay in the four skins the overlay already serves (no skin-specific code here). parity is the look check (TASK-AC-75169419438B): each route this task wires beside its accepted gallery state (bec4454: workout-feedback, rest-day) with matched data at 320 and 390 px, reduced motion: the opener, the open dialog and the dialog reopened after an entry and its X, compared word by word and box by box (2 px), with the dialog's focused control recorded; intended differences are labelled with their criterion IDs in each receipt (the rest-day control's surroundings: TASK-AC-579280C10CDC; the rest day's opening focus on its Reason picker: AC-GAL-05). Synthetic and contained; nothing is written.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-111 --check check-01 -- npx vitest run src/app/Summary.test.tsx src/app/Home.test.tsx src/app/action-glow.test.tsx src/app/home-screen.test.tsx src/ui/formFocus.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-GAL-05",
+        "TASK-AC-579280C10CDC",
+        "TASK-AC-49B5381CB1E9",
+        "TASK-AC-4F3A94603641",
+        "TASK-AC-CE42362E34DD",
+        "JOURNEY-016",
+        "JOURNEY-019"
+      ],
+      "files": [
+        "src/app/Summary.test.tsx",
+        "src/app/Home.test.tsx",
+        "src/app/action-glow.test.tsx",
+        "src/app/home-screen.test.tsx",
+        "src/ui/formFocus.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — only a completed session reaches it > waits for the session rather than rendering an empty debrief",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — only a completed session reaches it > sends a visitor with nothing to debrief Home rather than showing an empty shell",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — only a completed session reaches it > offers a retry when the session read fails",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > acknowledges the session briefly and goes straight to the debrief",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > puts each key number in its own small card, its label the heading inside",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > U41: draws the duration and the streak side by side at one enlarged size",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > U41: a duration nothing could measure keeps its card, as a dash with words",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > keeps the debrief fields in one card, labels inside, and the action pinned",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > U43: the feeling is one row of five numbers, its words in the accessible names only",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > U43: the feeling works from the keyboard as one radio group",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > U43: no answer is allowed, and a chosen or restored feeling can be cleared back to none",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > U43: the feeling is saved as the session’s mood and never as an effort value",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > keeps completion associated with the scrolling form",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > persists the mood and notes to the session row, then returns Home",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > writes an unwritten note as null rather than as an empty string",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > opens on what was already saved",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > re-renders a failed save in place, with the retry, and replays no entrance",
+          "criterion": "TASK-AC-49B5381CB1E9"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the debrief > has nothing on it that does not work — no disabled control, no “coming soon”",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > shows SES-01’s count and Home’s week, ticks before a broken run included",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > U41: a marked rest day keeps its reason, as it does on Home",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > U12: rest days take the info role and trained days the completed role, each with its own glyph",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > says a streak that has not reached today runs through yesterday",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > waits for the streak inside its own card, beside the duration",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > states an honest empty streak and an empty week, still drawn",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > offers the week’s own retry when its read fails, and keeps the streak",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the streak and the week > costs the streak display, not the debrief, when the streak read fails",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the title and its one favorite label (U42) > heads the result card with the session title, above every card label",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the title and its one favorite label (U42) > wraps a long title inside its card rather than truncating it",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — the title and its one favorite label (U42) > says “favorite” once before saving and once after",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — save as favorite, then Done > saves the session as a favorite in one tap, and Home’s favorites tab has it",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — save as favorite, then Done > reports a failed favorite save on Summary, and does not block Done",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — undoing a favorite (U22) > undoes a favorite just saved, behind the Favorites tab’s confirm",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — undoing a favorite (U22) > removes a favorite saved earlier, and cancelling keeps it",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — undoing a favorite (U22) > sends one delete while one is in flight, and reports a failure in place",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — undoing a favorite (U22) > settles a deferred Summary delete against newer Home removal and Session Detail save",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "Summary — undoing a favorite (U22) > settles a deferred save without resurrecting a favorite removed on Home",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-579280C10CDC /summary keeps no inline debrief form: with no Round 7 logging presentation mounted, the Debrief card still holds only Log workout feedback, no pinned Save and close is drawn, and the feeling, notes and Save and close are only in the Workout feedback LoggingOverlay, which saves through saveDebrief and leaves for Home",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-49B5381CB1E9 the feedback draft survives the X, Escape and reopen: the closed LoggingOverlay keeps the same form mounted, the feeling and notes come back as they were left, focus returns to Log workout feedback, and nothing is written",
+          "criterion": "TASK-AC-49B5381CB1E9"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-49B5381CB1E9 Workout feedback cannot close while Save and close is in flight — its X is disabled and Escape is refused; a refused save keeps its alert, the feeling and the notes inside the dialog on /summary, and the retry writes once more through saveDebrief and leaves for Home",
+          "criterion": "TASK-AC-49B5381CB1E9"
+        },
+        {
+          "file": "src/app/Summary.test.tsx",
+          "name": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-4F3A94603641 the feedback form submits through useInvalidFocus: a note over 2,000 characters is refused in the Workout feedback dialog, the Notes field is marked invalid and takes focus as the first invalid field, nothing is sent, and the dialog and draft stay",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > shows the empty daily entry point and hides Quick Start entirely",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > renders recent history, and the primary action opens Generate without generating",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > opens History from the Recent panel as a client-side navigation",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > renders Favorites as one list frame and restores one directly into Review",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > drops deleted progression on actual Review Back → Home remove → Forward",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U21: the existing full favorites list and retained tab > lists all 0 favorites without inventing a preview cap",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U21: the existing full favorites list and retained tab > lists all 1 favorites without inventing a preview cap",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U21: the existing full favorites list and retained tab > lists all 7 favorites without inventing a preview cap",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U21: the existing full favorites list and retained tab > the full-list destination opens directly on Favorites with every saved row",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U21: the existing full favorites list and retained tab > returning from Review really restores the selected full-list tab",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U21: the existing full favorites list and retained tab > switching back to Favorites still shows the complete list",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > REQ-004: a recent workout puts its title first, then status and date, then metrics",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > opens a recent workout into its Session Detail rather than Not Found",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > marks today with a reason and redraws the week from the saved row",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U25: the trigger is a disclosure with short copy, and the picker gets focus",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U25: Cancel and Escape discard the choice and hand focus back to the trigger",
+          "criterion": "TASK-AC-49B5381CB1E9"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U25: a keyboard save announces itself and returns focus to Change reason",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U12: a rest day takes the info role with its Rest mark, distinct from a trained day",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home > U12: a trained day keeps the completed role with its tick",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > heads every group inside its own barred card, and never nests a card",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > keeps the streak, the week and the rest-day sub-group contained in the week card",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U06: keeps the streak count with its unit",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U19: first use is one clear piece of guidance, and the week repeats no count",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U19: a populated week keeps the streak and the strip, with no second count",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U07: in-card actions share the card width as one compact group",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U08: each Home empty state is one statement, with no standing explanation",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > arrives as one staggered set, once, and not again for an inline update",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > is in its final state at once under reduced motion",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > uses the public TextAction for the quiet way into History, and frames the rest",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > keeps the tabs, and adds nothing from the package’s worked example",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > states the last request once, a plain suggested focus, and one primary action",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > first workout: clear guidance, and Generate opens on its own defaults",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > sparse: one completed session today is enough to suggest from",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > stale: keeps the last request, asks for a focus, and carries its minutes",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > recovery: says the last one was Recovery, and the next opens as an ordinary day",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > changed goal: names no stored Goal, and Generate uses the standing one",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > missing place: the request opens Generate on the default place",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > opens Generate on its defaults while the history read is still loading",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "Home’s one next-workout entry (REQ-007, U20) > opens Generate on its defaults while the history read is failed",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > TASK-AC-579280C10CDC Home keeps no inline rest-day editor: with no Round 7 logging presentation mounted, Mark Rest Day stays in its card, expanded, and opens Log rest day in the LoggingOverlay with the Reason picker focused; Save rest day marks today through the existing writer with no note and focus returns to Change reason",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > TASK-AC-49B5381CB1E9 Log rest day cannot close while the mark is in flight — its X and Cancel are disabled and Escape is refused; a refused mark keeps its alert, the chosen reason and focus inside the dialog, and the retry marks the day once more",
+          "criterion": "TASK-AC-49B5381CB1E9"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > TASK-AC-49B5381CB1E9 Change reason reopens Log rest day at the saved reason; the X discards an unsaved change, a refused change keeps its alert and the new reason in the dialog, and the retry saves it",
+          "criterion": "TASK-AC-49B5381CB1E9"
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "name": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > AC-GAL-05 the rest day keeps its own field and writer in the dialog: the native Reason picker offers exactly the four existing reasons with their effect helper, no Notes field or invented reason, Escape keeps Cancel’s meaning, and the writer sends note null",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-016: the package glow is Generate's 6px in the interaction role, re-tinted by every skin",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-016: Mark Rest Day and Settings sit in the same glow wrapper as Generate, in all four skins",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-016: Change reason, the same trigger once a day is marked, keeps the glow",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-017: the local sheet adds no halo of its own and restates no glow value",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-017: every glow on Home wraps one control, and no card glows",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-018: both controls take keyboard focus and still act",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/action-glow.test.tsx",
+          "name": "Generate glow on actionable controls (REQ-005) > AC-018: a disabled or loading control keeps the component's state, and its glow goes out",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-009: drops \"Not training today?\" and keeps Mark Rest Day and its save",
+          "criterion": "TASK-AC-579280C10CDC"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-010: history but nothing today shows the returning-user action and Mark Rest Day",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-010: abandoned partway history returns to Generate without inventing a completed request",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-010: abandoned before starting history returns to Generate without inventing a completed request",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-010: genuinely empty history retains first-workout guidance",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-010: trained today keeps the existing rule — no rest-day affordance, same action",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-011: the streak is the current run across weeks, and the strip is not a session count",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-011: the rest/pause policy is the picker’s existing helper, unchanged",
+          "criterion": "AC-GAL-05"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-012: Generate stays the explicit, editable entry and the empty-week copy is kept",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Home actions and copy (REQ-003) > AC-012: the deferred empty-week secondary copy is unchanged",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Recent workout rows (REQ-004) > AC-013: title first and smaller, then status and date together, then readable metrics",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Recent workout rows (REQ-004) > AC-014: no \"session\" word and no link underline in recent rows",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Recent workout rows (REQ-004) > AC-015: completed and abandoned rows stay distinct by word, glyph and tone",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/app/home-screen.test.tsx",
+          "name": "Recent workout rows (REQ-004) > keeps History's own chronology row: its full title, with status and date beneath it (TASK-026, C53)",
+          "criterion": "TASK-AC-CE42362E34DD"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "focusFirstInvalid (CORE-05, export pattern 1) > focuses the first control marked aria-invalid, in DOM order",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "focusFirstInvalid (CORE-05, export pattern 1) > returns null and moves nothing when every control is valid",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "useInvalidFocus (CORE-05, the shared submit helper) > moves focus to the control the failed submit marked invalid",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "useInvalidFocus (CORE-05, the shared submit helper) > moves focus again when the same bad value is submitted twice",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "useInvalidFocus (CORE-05, the shared submit helper) > follows a failure the server decided, not only a local one",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "useInvalidFocus (CORE-05, the shared submit helper) > leaves focus alone when the submit was accepted",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "useInvalidFocus (CORE-05, the shared submit helper) > prevents the browser default, so the app owns the failure",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "the shared helper against the 0.14.3 framed fields > focuses the control inside the first invalid frame, across Input and Select",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "the shared helper against the 0.14.3 framed fields > keeps the label above, the wrapper emission, the unit and the warning glyph",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "the shared helper against the 0.14.3 framed fields > lets a narrow container shrink the field without a raw override",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "the shared helper against the 0.14.3 framed fields > grows a textarea with its content and never shows the native grip",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "the shared helper against the 0.14.3 framed fields > carries disabled, read-only, error and focus states on a textarea frame",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "the shared helper against the 0.14.3 framed fields > keeps a quiet action reachable and visibly focused beside a narrow field",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "every form in the app submits through the shared helper > finds the forms it is checking",
+          "criterion": "TASK-AC-4F3A94603641"
+        },
+        {
+          "file": "src/ui/formFocus.test.tsx",
+          "name": "every form in the app submits through the shared helper > wires each one to useInvalidFocus",
+          "criterion": "TASK-AC-4F3A94603641"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-111 --check parity -- npx playwright test e2e/refinement/task-111-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-75169419438B",
+        "TASK-AC-32A027ADF304",
+        "TASK-AC-8197EB40545F",
+        "AC-GAL-05",
+        "TASK-AC-579280C10CDC",
+        "JOURNEY-016",
+        "JOURNEY-019"
+      ],
+      "files": [
+        "e2e/refinement/task-111-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-111-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-75169419438B workout-feedback phone-320: /summary’s Log workout feedback opens Workout feedback in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+          "criterion": "TASK-AC-75169419438B"
+        },
+        {
+          "file": "e2e/refinement/task-111-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-75169419438B workout-feedback phone-390: /summary’s Log workout feedback opens Workout feedback in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+          "criterion": "TASK-AC-75169419438B"
+        },
+        {
+          "file": "e2e/refinement/task-111-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-75169419438B rest-day phone-320: Home’s Mark Rest Day opens Log rest day in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+          "criterion": "TASK-AC-75169419438B"
+        },
+        {
+          "file": "e2e/refinement/task-111-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-75169419438B rest-day phone-390: Home’s Mark Rest Day opens Log rest day in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+          "criterion": "TASK-AC-75169419438B"
+        }
+      ]
+    }
+  }
+}

@@ -19,7 +19,7 @@
  * Arriving here from a finished workout is `Workout.test.tsx`'s subject; this
  * file starts at `/summary` with Home behind it.
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -56,6 +56,7 @@ import {
 import { FAVORITES_EMPTY_TITLE } from './Home'
 import { routes } from './router'
 import { FEELING_CLEAR_LABEL } from '../ui/feeling-row'
+import { WorkoutExperiencePresentationProvider } from '../ui/workout-experience-presentation'
 import {
   DEBRIEF_HEADING,
   SAVE_FAVORITE_FAILED,
@@ -73,23 +74,6 @@ const TITLE_HEADING = `${TITLE}, done.`
 const HOME_HEADING = 'Today'
 const SUMMARY_HEADING = 'Nice work'
 const DONE = 'Save and close'
-/** Round 7 (decision 3): the debrief's fields are in a dialog opened from the debrief card. */
-const FEEDBACK_OPEN = 'Log workout feedback'
-const FEEDBACK_TITLE = 'Workout feedback'
-
-type User = ReturnType<typeof userEvent.setup>
-
-/** Opens the "Log workout feedback" dialog that holds the feeling, the notes and Done. */
-async function openFeedback(user: User): Promise<HTMLElement> {
-  await user.click(screen.getByRole('button', { name: FEEDBACK_OPEN }))
-  return screen.findByRole('dialog', { name: FEEDBACK_TITLE })
-}
-
-/** Opens the feedback dialog and presses Done in it. */
-async function saveAndClose(user: User): Promise<void> {
-  const dialog = await openFeedback(user)
-  await user.click(within(dialog).getByRole('button', { name: DONE }))
-}
 
 interface Mounted {
   summary: FakeSummaryClient
@@ -145,6 +129,15 @@ function mountSummary(
   )
 
   return { summary, double, router, queryClient }
+}
+
+/**
+ * TASK-045: the debrief's feeling, notes and Save and close are in the
+ * Workout feedback dialog its card's "Log workout feedback" opens.
+ */
+async function openFeedback(): Promise<HTMLElement> {
+  await userEvent.click(screen.getByRole('button', { name: 'Log workout feedback' }))
+  return screen.getByRole('dialog', { name: 'Workout feedback' })
 }
 
 /** The debrief, once the session has loaded. */
@@ -203,14 +196,13 @@ describe('Summary — only a completed session reaches it', () => {
 
 describe('Summary — the debrief', () => {
   it('acknowledges the session briefly and goes straight to the debrief', async () => {
-    const user = userEvent.setup()
     await debrief()
 
     expect(screen.getByRole('heading', { level: 1, name: SUMMARY_HEADING })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: TITLE_HEADING })).toBeInTheDocument()
     expect(screen.getByText('42 min')).toBeInTheDocument()
 
-    await openFeedback(user)
+    await openFeedback()
     const moods = within(screen.getByRole('group', { name: 'How do you feel?' }))
     expect(moods.getAllByRole('radio').map((radio) => radio.getAttribute('aria-checked'))).toEqual(
       ['false', 'false', 'false', 'false', 'false'],
@@ -266,26 +258,40 @@ describe('Summary — the debrief', () => {
   })
 
   it('keeps the debrief fields in one card, labels inside, and the action pinned', async () => {
-    const user = userEvent.setup()
     await debrief()
 
-    // Decision 3: the debrief card is headed as before and opens the fields' dialog.
+    // TASK-045: the Debrief card holds its heading and the one opener; the
+    // fields, their labels and Save and close are together in the focused
+    // logging dialog it opens — no pinned foot is left on the screen.
     const card = screen.getByRole('heading', { name: DEBRIEF_HEADING }).closest('.clr-card') as HTMLElement
-    expect(card).toBeInTheDocument()
-    expect(within(card).getByRole('button', { name: FEEDBACK_OPEN })).toBeInTheDocument()
-
-    const dialog = await openFeedback(user)
+    expect(within(card).getByRole('button', { name: 'Log workout feedback' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: DONE })).not.toBeInTheDocument()
+    expect(document.querySelector('.clr-scroll-region__foot button')).toBeNull()
+    const dialog = await openFeedback()
+    // A3 TASK-111: Round 7 draws its LoggingOverlay where its opener is (the
+    // accepted gallery's workout-feedback state draws it inside the Debrief
+    // card too), as a native modal in the top layer, where the build
+    // portalled it to the body. The card's own content, outside that modal,
+    // is still only its heading and the one opener.
+    expect(dialog).toHaveClass('clr-logging-overlay')
+    expect((dialog as HTMLDialogElement).open).toBe(true)
+    expect(
+      [...card.querySelectorAll('button, input, textarea, select, [role="radio"]')]
+        .filter((control) => !dialog.contains(control)),
+    ).toEqual([within(card).getByRole('button', { name: 'Log workout feedback' })])
     const form = document.getElementById('summary-debrief') as HTMLElement
     expect(dialog).toContainElement(form)
+    expect(form.querySelectorAll('.clr-card')).toHaveLength(0)
     const fields = within(form)
     expect(fields.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
     expect(fields.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
     expect(fields.getByText(/Notes · optional/)).toBeInTheDocument()
+    expect(fields.getByRole('button', { name: DONE })).toHaveAttribute('type', 'submit')
   })
 
   it('U43: the feeling is one row of five numbers, its words in the accessible names only', async () => {
     await debrief()
-    await openFeedback(userEvent.setup())
+    await openFeedback()
     const group = screen.getByRole('group', { name: 'How do you feel?' })
     const radios = within(group).getAllByRole('radio')
 
@@ -318,8 +324,8 @@ describe('Summary — the debrief', () => {
   it('U43: the feeling works from the keyboard as one radio group', async () => {
     const user = userEvent.setup()
     const { summary } = await debrief()
-    await openFeedback(user)
 
+    await openFeedback()
     const first = screen.getByRole('radio', { name: '1, Spent' })
     first.focus()
     await user.keyboard('{ArrowRight}{ArrowRight}')
@@ -341,8 +347,8 @@ describe('Summary — the debrief', () => {
     const { summary } = await debrief({
       summary: { latest: async () => ok(completedSession({ mood: 4 })) },
     })
-    await openFeedback(user)
 
+    await openFeedback()
     expect(screen.getByRole('radio', { name: '4, Ready' })).toBeChecked()
     await user.click(screen.getByRole('button', { name: FEELING_CLEAR_LABEL }))
 
@@ -362,9 +368,9 @@ describe('Summary — the debrief', () => {
   it('U43: the feeling is saved as the session’s mood and never as an effort value', async () => {
     const user = userEvent.setup()
     const { summary } = await debrief()
-    await openFeedback(user)
 
     // No effort question sits beside it to be confused with it.
+    await openFeedback()
     expect(screen.queryByText(/effort|RPE|exertion/i)).not.toBeInTheDocument()
     await user.click(screen.getByRole('radio', { name: '2, Worn' }))
     await user.click(screen.getByRole('button', { name: DONE }))
@@ -377,20 +383,27 @@ describe('Summary — the debrief', () => {
 
   it('keeps completion associated with the scrolling form', async () => {
     await debrief()
-    const dialog = await openFeedback(userEvent.setup())
 
-    // Decision 3: Done is the dialog form's own submit, not a pinned screen footer.
+    // TASK-045: Save and close submits the debrief form it sits in, inside the
+    // dialog's own scrolling region, rather than a pinned foot outside it.
+    const dialog = await openFeedback()
     const done = within(dialog).getByRole('button', { name: DONE })
+    // A3 TASK-111: task 1's checks that Done is the form's own submit are kept.
     expect(done).toHaveAttribute('type', 'submit')
     expect((done as HTMLButtonElement).form).toBe(document.getElementById('summary-debrief'))
+    expect(done.closest('form')).toBe(document.getElementById('summary-debrief'))
+    // A3 TASK-111: the dialog's one scrolling region is Round 7's
+    // `.clr-logging-overlay__scroll` (the build's `[data-logging-scroll]`).
+    expect(done.closest('.clr-logging-overlay__scroll')).toBeInTheDocument()
+    expect(done.closest('.clr-logging-overlay__scroll')!.closest('dialog')).toBe(dialog)
     expect(document.getElementById('summary-debrief')).toHaveAttribute('novalidate')
   })
 
   it('persists the mood and notes to the session row, then returns Home', async () => {
     const user = userEvent.setup()
     const { summary, router } = await debrief()
-    await openFeedback(user)
 
+    await openFeedback()
     await user.click(screen.getByRole('radio', { name: '4, Ready' }))
     await user.type(screen.getByRole('textbox', { name: /Notes/ }), '  Squats moved well.  ')
     await user.click(screen.getByRole('button', { name: DONE }))
@@ -406,7 +419,8 @@ describe('Summary — the debrief', () => {
     const user = userEvent.setup()
     const { summary } = await debrief()
 
-    await saveAndClose(user)
+    await openFeedback()
+    await user.click(screen.getByRole('button', { name: DONE }))
 
     await waitFor(() =>
       expect(summary.saved).toEqual([
@@ -421,8 +435,8 @@ describe('Summary — the debrief', () => {
         latest: async () => ok(completedSession({ mood: 2, session_notes: 'Heavy day.' })),
       },
     })
-    await openFeedback(userEvent.setup())
 
+    await openFeedback()
     expect(screen.getByRole('radio', { name: '2, Worn' })).toBeChecked()
     expect(screen.getByRole('textbox', { name: /Notes/ })).toHaveValue('Heavy day.')
   })
@@ -441,10 +455,10 @@ describe('Summary — the debrief', () => {
       },
     })
     const card = document.querySelector('.clr-boot')
-    const dialog = await openFeedback(user)
 
+    await openFeedback()
     await user.click(screen.getByRole('radio', { name: '5, Peak' }))
-    await user.click(within(dialog).getByRole('button', { name: DONE }))
+    await user.click(screen.getByRole('button', { name: DONE }))
 
     expect(await screen.findByText('No connection. Check your network.')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/summary')
@@ -452,7 +466,7 @@ describe('Summary — the debrief', () => {
     expect(document.querySelector('.clr-boot')).toBe(card)
     expect(screen.getByRole('radio', { name: '5, Peak' })).toBeChecked()
 
-    await user.click(within(dialog).getByRole('button', { name: DONE }))
+    await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved.map((entry) => entry.debrief.mood)).toEqual([5, 5])
   })
@@ -466,10 +480,11 @@ describe('Summary — the debrief', () => {
         'true',
       ),
     )
-    // Decision 3: the feeling, the notes and Done are in the feedback dialog.
+    // A3 TASK-111: task 1's check of the closed screen is kept beside the
+    // build's check of the open dialog.
     for (const control of screen.getAllByRole('button')) expect(control).toBeEnabled()
-    await openFeedback(userEvent.setup())
 
+    await openFeedback()
     for (const control of [...screen.getAllByRole('button'), ...screen.getAllByRole('radio')]) {
       expect(control).toBeEnabled()
     }
@@ -666,9 +681,9 @@ describe('Summary — the streak and the week', () => {
     expect(streak.closest('.clr-metric-grid')).toBeInTheDocument()
     expect(within(streak as HTMLElement).getByRole('button', { name: 'Retry' })).toBeEnabled()
 
-    const dialog = await openFeedback(user)
+    await openFeedback()
     await user.click(screen.getByRole('radio', { name: '3, Flat' }))
-    await user.click(within(dialog).getByRole('button', { name: DONE }))
+    await user.click(screen.getByRole('button', { name: DONE }))
 
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved).toHaveLength(1)
@@ -739,7 +754,8 @@ describe('Summary — save as favorite, then Done', () => {
     expect(await screen.findByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
     expect(double.favorites().map((row) => row.original_session_id)).toEqual([SESSION_ID])
 
-    await saveAndClose(user)
+    await openFeedback()
+    await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
 
@@ -764,7 +780,8 @@ describe('Summary — save as favorite, then Done', () => {
     expect(screen.getByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
     expect(double.favorites()).toEqual([])
 
-    await saveAndClose(user)
+    await openFeedback()
+    await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved).toHaveLength(1)
   })
@@ -808,7 +825,8 @@ describe('Summary — undoing a favorite (U22)', () => {
     expect(screen.getByRole('heading', { name: TITLE_HEADING })).toBeInTheDocument()
 
     // Done still saves the session, and Home's favorites tab no longer has it.
-    await saveAndClose(user)
+    await openFeedback()
+    await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved).toHaveLength(1)
     await user.click(screen.getByRole('tab', { name: 'Favorites' }))
@@ -888,7 +906,8 @@ describe('Summary — undoing a favorite (U22)', () => {
     })
 
     await confirmRemove(user)
-    await saveAndClose(user)
+    await openFeedback()
+    await user.click(screen.getByRole('button', { name: DONE }))
     await screen.findByRole('heading', { name: HOME_HEADING })
     await user.click(screen.getByRole('tab', { name: 'Favorites' }))
     const siblingRow = (await screen.findByRole('heading', { name: sibling.title })).closest('li')!
@@ -927,7 +946,8 @@ describe('Summary — undoing a favorite (U22)', () => {
     const button = await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })
     await waitFor(() => expect(button).toBeEnabled())
     await user.click(button)
-    await saveAndClose(user)
+    await openFeedback()
+    await user.click(screen.getByRole('button', { name: DONE }))
     await screen.findByRole('heading', { name: HOME_HEADING })
     await user.click(screen.getByRole('tab', { name: 'Favorites' }))
     await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
@@ -940,5 +960,182 @@ describe('Summary — undoing a favorite (U22)', () => {
       .toEqual({ status: 'ready', data: double.favorites() })
     expect(double.favorites().map(row => row.original_session_id)).toEqual([SESSION_ID])
     expect(screen.queryByRole('heading', { name: sibling.title })).toBeNull()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A3 TASK-111 (F9): Workout feedback in Round 7's dialog, its draft kept
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A3 TASK-111 (#734; adoption inventory F9, owner decision 3): /summary's
+ * debrief is entered only in Round 7's "Workout feedback" LoggingOverlay
+ * (`src/ui/logging-overlay.tsx`), opened from its Debrief card's "Log workout
+ * feedback", over the existing writer (`saveDebrief`). Round 7 had drawn it
+ * only while its presentation was mounted and kept the old inline form and
+ * pinned Save and close behind that gate; the gate is gone. The draft lives in
+ * the screen and the closed dialog keeps its form mounted (the shared Dialog
+ * always renders its children), so it survives Close and reopen; while a save
+ * is in flight nothing closes the dialog; a refused save keeps its alert and
+ * the draft in the dialog for the retry; the form submits through
+ * `useInvalidFocus`.
+ */
+describe('A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept', () => {
+  type Answer = Awaited<ReturnType<FakeSummaryClient['saveDebrief']>>
+
+  /** /summary with a presentation that mounts no Round 7 logging choice: the old gate, closed. */
+  async function debriefWithoutGate(options: { summary?: FakeSummaryOptions } = {}) {
+    const summary = createFakeSummaryClient(options.summary)
+    const router = createMemoryRouter(routes, { initialEntries: ['/', '/summary'], initialIndex: 1 })
+    render(
+      <AppProviders {...signedIn({ summary, workout: createWorkoutDouble({ session: null }).clients })}>
+        <WorkoutExperiencePresentationProvider value={{ focusAction: 'text' }}>
+          <RouterProvider router={router} />
+        </WorkoutExperiencePresentationProvider>
+      </AppProviders>,
+    )
+    await screen.findByRole('heading', { name: TITLE_HEADING })
+    return { summary, router }
+  }
+
+  const closeOf = (dialog: HTMLElement) => within(dialog).getByRole('button', { name: 'Close log' })
+
+  it('TASK-AC-579280C10CDC /summary keeps no inline debrief form: with no Round 7 logging presentation mounted, the Debrief card still holds only Log workout feedback, no pinned Save and close is drawn, and the feeling, notes and Save and close are only in the Workout feedback LoggingOverlay, which saves through saveDebrief and leaves for Home', async () => {
+    const user = userEvent.setup()
+    const { summary, router } = await debriefWithoutGate()
+
+    const card = screen.getByRole('heading', { name: DEBRIEF_HEADING }).closest('.clr-card') as HTMLElement
+    const opener = within(card).getByRole('button', { name: 'Log workout feedback' })
+    expect(screen.queryByRole('button', { name: DONE })).toBeNull()
+    expect(screen.queryByRole('radiogroup')).toBeNull()
+    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(document.querySelector('.clr-scroll-region__foot button')).toBeNull()
+
+    await user.click(opener)
+    const dialog = screen.getByRole('dialog', { name: 'Workout feedback' })
+    expect(dialog).toHaveClass('clr-logging-overlay')
+    expect(within(dialog).getByRole('heading', { name: 'Workout feedback' })).toBeInTheDocument()
+    expect(closeOf(dialog).textContent?.trim()).toBe('')
+    const form = document.getElementById('summary-debrief') as HTMLFormElement
+    expect(dialog).toContainElement(form)
+    // Every field and the save are the dialog's; none is drawn on the screen.
+    for (const control of document.querySelectorAll('input, textarea, [role="radio"], button[type="submit"]')) {
+      expect(dialog).toContainElement(control as HTMLElement)
+    }
+
+    await user.click(within(dialog).getByRole('radio', { name: '3, Flat' }))
+    await user.type(within(dialog).getByRole('textbox', { name: /Notes/ }), 'Steady.')
+    await user.click(within(dialog).getByRole('button', { name: DONE }))
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/')
+    expect(summary.saved).toEqual([{ sessionId: SESSION_ID, debrief: { mood: 3, session_notes: 'Steady.' } }])
+  })
+
+  it('TASK-AC-49B5381CB1E9 the feedback draft survives the X, Escape and reopen: the closed LoggingOverlay keeps the same form mounted, the feeling and notes come back as they were left, focus returns to Log workout feedback, and nothing is written', async () => {
+    const user = userEvent.setup()
+    const { summary } = await debrief()
+
+    const opener = screen.getByRole('button', { name: 'Log workout feedback' })
+    await user.click(opener)
+    const dialog = screen.getByRole('dialog', { name: 'Workout feedback' }) as HTMLDialogElement
+    const form = document.getElementById('summary-debrief')
+    expect(dialog).toContainElement(form)
+    await user.click(within(dialog).getByRole('radio', { name: '2, Worn' }))
+    await user.type(within(dialog).getByRole('textbox', { name: /Notes/ }), 'Long day.')
+
+    // The X: the dialog closes, its form is still mounted inside it.
+    await user.click(closeOf(dialog))
+    await waitFor(() => expect(dialog.open).toBe(false))
+    expect(opener).toHaveFocus()
+    expect(document.getElementById('summary-debrief')).toBe(form)
+    expect(dialog).toContainElement(form)
+
+    await user.click(opener)
+    expect(dialog.open).toBe(true)
+    expect(within(dialog).getByRole('radio', { name: '2, Worn' })).toBeChecked()
+    expect(within(dialog).getByRole('textbox', { name: /Notes/ })).toHaveValue('Long day.')
+
+    // Escape (the native cancel): closed through the consumer, the draft kept.
+    const cancel = new Event('cancel', { cancelable: true })
+    act(() => void fireEvent(dialog, cancel))
+    expect(cancel.defaultPrevented).toBe(true)
+    await waitFor(() => expect(dialog.open).toBe(false))
+    expect(opener).toHaveFocus()
+    expect(document.getElementById('summary-debrief')).toBe(form)
+
+    await user.click(opener)
+    expect(within(dialog).getByRole('radio', { name: '2, Worn' })).toBeChecked()
+    expect(within(dialog).getByRole('textbox', { name: /Notes/ })).toHaveValue('Long day.')
+    expect(summary.saved).toEqual([])
+  })
+
+  it('TASK-AC-49B5381CB1E9 Workout feedback cannot close while Save and close is in flight — its X is disabled and Escape is refused; a refused save keeps its alert, the feeling and the notes inside the dialog on /summary, and the retry writes once more through saveDebrief and leaves for Home', async () => {
+    const user = userEvent.setup()
+    const answers: ((answer: Answer) => void)[] = []
+    const { summary, router } = await debrief({
+      summary: { saveDebrief: () => new Promise<Answer>((settle) => { answers.push(settle) }) },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Log workout feedback' }))
+    const dialog = screen.getByRole('dialog', { name: 'Workout feedback' }) as HTMLDialogElement
+    await user.click(within(dialog).getByRole('radio', { name: '5, Peak' }))
+    await user.type(within(dialog).getByRole('textbox', { name: /Notes/ }), 'Heavy.')
+    await user.click(within(dialog).getByRole('button', { name: DONE }))
+
+    // In flight: busy, and nothing closes the dialog.
+    await waitFor(() => expect(answers).toHaveLength(1))
+    expect(within(dialog).getByRole('button', { name: DONE })).toHaveAttribute('aria-busy', 'true')
+    expect(closeOf(dialog)).toBeDisabled()
+    const cancel = new Event('cancel', { cancelable: true })
+    act(() => void fireEvent(dialog, cancel))
+    expect(cancel.defaultPrevented).toBe(true)
+    const escape = fireEvent.keyDown(dialog, { key: 'Escape' })
+    expect(escape).toBe(false)
+    await new Promise((settle) => setTimeout(settle, 250))
+    expect(dialog.open).toBe(true)
+
+    // Refused: the alert in the dialog, the draft kept, still on /summary.
+    await act(async () => answers[0](err(createError(ErrorCode.NETWORK_OFFLINE))))
+    const alert = await within(dialog).findByRole('alert')
+    expect(alert).toHaveTextContent('No connection. Check your network.')
+    expect([...document.querySelectorAll('[role="alert"]')].filter((node) => !dialog.contains(node))).toEqual([])
+    expect(dialog.open).toBe(true)
+    expect(router.state.location.pathname).toBe('/summary')
+    expect(within(dialog).getByRole('radio', { name: '5, Peak' })).toBeChecked()
+    expect(within(dialog).getByRole('textbox', { name: /Notes/ })).toHaveValue('Heavy.')
+    expect(closeOf(dialog)).toBeEnabled()
+
+    // The retry: once more through the same writer, then Home.
+    await user.click(within(dialog).getByRole('button', { name: DONE }))
+    await waitFor(() => expect(answers).toHaveLength(2))
+    await act(async () => answers[1](ok(completedSession({ id: SESSION_ID, mood: 5, session_notes: 'Heavy.' }))))
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
+    expect(summary.saved).toEqual([
+      { sessionId: SESSION_ID, debrief: { mood: 5, session_notes: 'Heavy.' } },
+      { sessionId: SESSION_ID, debrief: { mood: 5, session_notes: 'Heavy.' } },
+    ])
+  })
+
+  it('TASK-AC-4F3A94603641 the feedback form submits through useInvalidFocus: a note over 2,000 characters is refused in the Workout feedback dialog, the Notes field is marked invalid and takes focus as the first invalid field, nothing is sent, and the dialog and draft stay', async () => {
+    const user = userEvent.setup()
+    const { summary, router } = await debrief()
+
+    await user.click(screen.getByRole('button', { name: 'Log workout feedback' }))
+    const dialog = screen.getByRole('dialog', { name: 'Workout feedback' }) as HTMLDialogElement
+    await user.click(within(dialog).getByRole('radio', { name: '4, Ready' }))
+    const notes = within(dialog).getByRole('textbox', { name: /Notes/ })
+    await user.click(notes)
+    await user.paste('x'.repeat(2001))
+    const done = within(dialog).getByRole('button', { name: DONE })
+    await user.click(done)
+
+    await waitFor(() => expect(notes).toHaveFocus())
+    expect(notes).toHaveAttribute('aria-invalid', 'true')
+    expect(within(dialog).getByText('Notes are kept to 2000 characters.')).toBeInTheDocument()
+    expect(summary.saved).toEqual([])
+    expect(dialog.open).toBe(true)
+    expect(router.state.location.pathname).toBe('/summary')
+    expect(within(dialog).getByRole('radio', { name: '4, Ready' })).toBeChecked()
+    expect(notes).toHaveValue('x'.repeat(2001))
   })
 })
