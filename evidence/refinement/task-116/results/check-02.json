@@ -1,0 +1,59 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-116",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/amrap-block.test.tsx",
+    "--testNamePattern",
+    "TASK-009",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-116/required-cases.json",
+    "sha256": "539fb3a0ba58acc3b89567652f2c6f314b232d70041a156e7b37a9980dff1a36"
+  },
+  "targets": [
+    {
+      "path": "src/ui/amrap-block.test.tsx",
+      "sha256": "9ebd6bd3bc4c8b5d9c1a2dd802957582979b7362d64990d67cd84363f5fe19ba"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "recording rounds afterwards > holds an entered zero as a zero, and no control clears it back to blank (TASK-009, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the partial round > distinguishes a partial round of zero reps from no partial round at all (TASK-009, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > reports a result tapped back down as an explicit zero, never as blank again (TASK-009, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > draws the optional result as framed counts with framed actions, and no text action remains (TASK-009, C27, C28)",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 45,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 41,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}

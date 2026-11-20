@@ -1,0 +1,175 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-116",
+  "description": "A3 task 5b-1 (F3; #739): AMRAP scoring, timed completion choices and effort, wired through Round 7’s owners on /workout — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” LoggingOverlay, and inside it TimedResultLog (src/ui/timed-result-log.tsx), QuantitySelector (src/ui/quantity-selector.tsx) and SetEffortChoice (src/ui/set-effort.tsx). check-01 owns src/ui/set-effort.test.tsx whole (owner decision 3, 2026-11-18): the set’s three faces and, for the timed log, the always-named Clear and a saved answer shown disabled (TASK-010). check-02 runs only this task’s four TASK-009 blank/zero cases of src/ui/amrap-block.test.tsx (TASK-110 owns that file), carried from the old build (181e580) onto the AMRAP the route draws (BlockSlot under the product presentation), in place of the base cases they supersede. parity compares /workout’s AMRAP, For Time and ladder with the accepted gallery states amrap, for_time and ladder (bec4454) at 320 and 390 px: before Start, the log past the cap, the same log answered on both sides, and the card behind it, in words and element boxes; captures go to the evidence store under clear-gallery-adoption-v2-20261118/task-116/captures. The carried TASK-009 and TASK-010 checks (src/ui/timed-result-log.test.tsx, e2e/refinement/task-009.spec.ts, task-010.spec.ts) prove the route behaviour and the save authority (TASK-AC-8FF68F3F5241). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-116 --check check-01 -- npx vitest run src/ui/set-effort.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C30-01",
+        "AC-R010-02",
+        "TASK-AC-A585091AA2A2"
+      ],
+      "files": [
+        "src/ui/set-effort.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-039: one optional three-choice effort with the set’s entry > offers too hard / about right / too easy in the same form as reps and load",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-039: one optional three-choice effort with the set’s entry > has no arbitrary-number field and no step after the set",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-039: one optional three-choice effort with the set’s entry > is optional: a set logs without any answer",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > draws the current glyphs in order and keeps the words visually hidden",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > exposes the selected choice as checked, and only that one",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > maps each face to its stored category, and only to the three categories",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-041: a compact Clear returns the set to unanswered > appears only once answered, and clears back to no selection",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-042: null is unanswered, sets are independent, mood is separate > stores no effort for an unanswered set — never the middle, zero or a guess",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-042: null is unanswered, sets are independent, mood is separate > reads an old record with no effort back without a fabricated face",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-042: null is unanswered, sets are independent, mood is separate > keeps each set’s answer independent through logging, edits and clears",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-042: null is unanswered, sets are independent, mood is separate > leaves the five-choice session feeling a separate question",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "AC-042: null is unanswered, sets are independent, mood is separate > never writes a mood with a set",
+          "criterion": "AC-C30-01"
+        },
+        {
+          "file": "src/ui/set-effort.test.tsx",
+          "name": "TASK-010 the same three faces for a timed log: a Clear always named, and a saved answer shown disabled > names the Clear for the set or the scope it clears, and shows a saved answer disabled with its face kept and no Clear",
+          "criterion": "AC-R010-02"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-116 --check check-02 -- npx vitest run src/ui/amrap-block.test.tsx --testNamePattern \"TASK-009\" --passWithNoTests=false",
+      "criteria": [
+        "AC-C27-01",
+        "AC-C28-01",
+        "AC-R009-02",
+        "TASK-AC-5E1B45BA4C0E",
+        "TASK-AC-A585091AA2A2"
+      ],
+      "files": [
+        "src/ui/amrap-block.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "recording rounds afterwards > holds an entered zero as a zero, and no control clears it back to blank (TASK-009, C28)",
+          "criterion": "TASK-AC-5E1B45BA4C0E"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the partial round > distinguishes a partial round of zero reps from no partial round at all (TASK-009, C28)",
+          "criterion": "TASK-AC-5E1B45BA4C0E"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > reports a result tapped back down as an explicit zero, never as blank again (TASK-009, C28)",
+          "criterion": "TASK-AC-5E1B45BA4C0E"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > draws the optional result as framed counts with framed actions, and no text action remains (TASK-009, C27, C28)",
+          "criterion": "AC-C27-01"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-116 --check parity -- npx playwright test e2e/refinement/task-116-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-4FE4C4B37830",
+        "TASK-AC-E622FD1B4634",
+        "TASK-AC-4C48E860BEB8"
+      ],
+      "files": [
+        "e2e/refinement/task-116-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-116-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-4FE4C4B37830 amrap phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+          "criterion": "TASK-AC-4FE4C4B37830"
+        },
+        {
+          "file": "e2e/refinement/task-116-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-4FE4C4B37830 amrap phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+          "criterion": "TASK-AC-4FE4C4B37830"
+        },
+        {
+          "file": "e2e/refinement/task-116-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-4FE4C4B37830 for_time phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+          "criterion": "TASK-AC-4FE4C4B37830"
+        },
+        {
+          "file": "e2e/refinement/task-116-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-4FE4C4B37830 for_time phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+          "criterion": "TASK-AC-4FE4C4B37830"
+        },
+        {
+          "file": "e2e/refinement/task-116-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-4FE4C4B37830 ladder phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+          "criterion": "TASK-AC-4FE4C4B37830"
+        },
+        {
+          "file": "e2e/refinement/task-116-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-4FE4C4B37830 ladder phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and answered",
+          "criterion": "TASK-AC-4FE4C4B37830"
+        }
+      ]
+    }
+  }
+}

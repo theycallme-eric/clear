@@ -1,0 +1,102 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-116",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/set-effort.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-116/required-cases.json",
+    "sha256": "539fb3a0ba58acc3b89567652f2c6f314b232d70041a156e7b37a9980dff1a36"
+  },
+  "targets": [
+    {
+      "path": "src/ui/set-effort.test.tsx",
+      "sha256": "b3e6e6f428cd654046e9e9b9e0a8eb865c2051b40cd6965c6c566b3b31dc8fee"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-039: one optional three-choice effort with the set’s entry > offers too hard / about right / too easy in the same form as reps and load",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-039: one optional three-choice effort with the set’s entry > has no arbitrary-number field and no step after the set",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-039: one optional three-choice effort with the set’s entry > is optional: a set logs without any answer",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > draws the current glyphs in order and keeps the words visually hidden",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > exposes the selected choice as checked, and only that one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-040: hidden words, exposed state, Frown / Meh / Smile left to right > maps each face to its stored category, and only to the three categories",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-041: a compact Clear returns the set to unanswered > appears only once answered, and clears back to no selection",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-042: null is unanswered, sets are independent, mood is separate > stores no effort for an unanswered set — never the middle, zero or a guess",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-042: null is unanswered, sets are independent, mood is separate > reads an old record with no effort back without a fabricated face",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-042: null is unanswered, sets are independent, mood is separate > keeps each set’s answer independent through logging, edits and clears",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-042: null is unanswered, sets are independent, mood is separate > leaves the five-choice session feeling a separate question",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "AC-042: null is unanswered, sets are independent, mood is separate > never writes a mood with a set",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/set-effort.test.tsx",
+      "name": "TASK-010 the same three faces for a timed log: a Clear always named, and a saved answer shown disabled > names the Clear for the set or the scope it clears, and shows a saved answer disabled with its face kept and no Clear",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 13
+  },
+  "problems": []
+}

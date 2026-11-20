@@ -1,0 +1,335 @@
+{
+  "schema": "clear-task-116-parity/v1",
+  "task": "TASK-116",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "for_time",
+  "width": 390,
+  "route": "/workout",
+  "captures": {
+    "galleryReady": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-ready.png",
+      "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441"
+    },
+    "routeReady": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-ready.png",
+      "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d"
+    },
+    "galleryLog": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-log.png",
+      "sha256": "27e77d752141dae466b1ac6e9106f7078c0a2a205dbd9e317a68853dbdcea8c4"
+    },
+    "routeLog": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-log.png",
+      "sha256": "11e6d14102ecd49ffd5d0b24e908bf2373b5d8bf5ecb06d5586ac160ba54ef0f"
+    },
+    "galleryAnswered": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-answered.png",
+      "sha256": "eaa2fc673d9f4c0025a5c5b44966a5aee9a7f41ec7c416f9c5723d87ccd9c816"
+    },
+    "routeAnswered": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-answered.png",
+      "sha256": "343e3c20f0a2a11dfd3fcd034a77e911a7cd629e0b5979e50cf1f09b1cbef0b2"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "answered": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "CLEAR",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "CAP REACHED",
+        "1",
+        "5",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 15 minutes 0 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "answered": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "CLEAR",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "CAP REACHED",
+        "1",
+        "5",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 15 minutes 0 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    }
+  },
+  "differences": {
+    "ready": [],
+    "log": [],
+    "answered": [],
+    "ended": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 65,
+        "log": 78,
+        "answered": 67,
+        "ended": 81
+      },
+      "route": {
+        "ready": 65,
+        "log": 78,
+        "answered": 67,
+        "ended": 81
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 654.5
+        },
+        "answered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 450.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 654.5
+        },
+        "answered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 450.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "answered": [],
+      "ended": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "TASK-AC-85F76FF493AB",
+      "change": "`askCompletion`: a For Time with no cap is not asked \"Work completed\"; a For Time's amounts belong to a race answered Incomplete, never to one nobody answered."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "AC-R010-01",
+      "change": "For Time starts where the race ended and keeps only the athlete's answer (`workCompleted`); with no cap nothing is asked or claimed."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-8FF68F3F5241",
+      "change": "AMRAP and For Time save authority: a refused save is kept on the attempt's record and said after a reload; a known row whose richer save failed reopens the block."
+    }
+  ]
+}

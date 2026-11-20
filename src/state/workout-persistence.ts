@@ -539,7 +539,9 @@ function isForTimeState(value: unknown): value is ForTimeState {
     (record.finishedAt === null || typeof record.finishedAt === 'string') &&
     isOptionalStamp(record.pausedAt) &&
     isOptionalAnswer(record.workCompleted) &&
-    isOptionalMovementDrafts(record.movements)
+    isOptionalMovementDrafts(record.movements) &&
+    // A3 TASK-116: a failed save of the race's log, kept for the retry.
+    isOptionalAnswer(record.saveFailed)
   )
 }
 
@@ -593,7 +595,9 @@ function isAmrapState(value: unknown): value is AmrapState {
       (typeof record.partialRoundReps === 'number' &&
         Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0)) &&
     isOptionalStamp(record.pausedAt) &&
-    isOptionalMovementDrafts(record.movements)
+    isOptionalMovementDrafts(record.movements) &&
+    // A3 TASK-116: a failed save of the AMRAP's log, kept for the retry.
+    isOptionalAnswer(record.saveFailed)
   )
 }
 

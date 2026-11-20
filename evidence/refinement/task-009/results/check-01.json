@@ -12,17 +12,17 @@
     "run",
     "src/ui/timed-result-log.test.tsx",
     "--testNamePattern",
-    "AMRAP",
+    "^TASK-009 ",
     "--passWithNoTests=false"
   ],
   "manifest": {
     "path": "evidence/refinement/task-009/required-cases.json",
-    "sha256": "bc11b49882752327fa817d77ca586d8f3dd6b7b920e1167564d5c1aec3274a0c"
+    "sha256": "8ad3752f04a1b03090d0efde926c6480a75e634605ae7f5a5cbaefaf82b047a0"
   },
   "targets": [
     {
       "path": "src/ui/timed-result-log.test.tsx",
-      "sha256": "d94add1cc74e10aaa27af32c3aa2fd3c53b0a5f4c26bcfc6ae987fd4dcad7f15"
+      "sha256": "8069b0fd65fad5d70b8b2510711070960f0a45c2c26e360f9fe62a0a7f347cb8"
     }
   ],
   "requiredCases": [
@@ -65,15 +65,20 @@
       "file": "src/ui/timed-result-log.test.tsx",
       "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 AMRAP the accepted gallery state draws the route’s own AMRAP: work first, the grouped log and framed counts, blank beside an explicit zero, memory only",
       "status": "passed"
+    },
+    {
+      "file": "src/ui/timed-result-log.test.tsx",
+      "name": "TASK-009 AMRAP prescription and concise scoring controls > TASK-AC-8FF68F3F5241 AMRAP save authority: a refused Save log keeps the draft through close and reopen and says it did not save, the words survive a reload until a save lands, the saved row then wins over the local echo, and a known row whose richer save failed reopens the block (TASK-AC-ABFEF4069683)",
+      "status": "passed"
     }
   ],
   "totals": {
-    "total": 23,
-    "passed": 10,
+    "total": 19,
+    "passed": 9,
     "failed": 0,
-    "skipped": 13,
+    "skipped": 10,
     "todo": 0,
-    "executed": 10
+    "executed": 9
   },
   "problems": []
 }

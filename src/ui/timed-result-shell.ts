@@ -14,8 +14,12 @@
  *     outcome its shipped renderer reported on the base. An EMOM reports no
  *     measured outcome (the clock is the schedule, E01); an AMRAP its elapsed
  *     time and, once the window has closed, the counts recorded; For Time its
- *     elapsed time and, once ended, whether the work was completed under the
- *     cap; a ladder only its highest rung (Complete is the top rung). Notes
+ *     elapsed time and, once ended, the athlete's answer to "Work completed"
+ *     as `completed_under_cap` (A3 TASK-116; TASK-010's `forTimeCompletion`:
+ *     the answer wins over the clock's starting point, so a Complete given at
+ *     the cap by someone who could not stop it in time is recorded as given,
+ *     and a race with no cap, which is asked nothing, claims nothing); a ladder
+ *     only its highest rung (Complete is the top rung). Notes
  *     travel as the block's notes. Blank is never a zero and nothing is read
  *     from the plan.
  *   · `timedShellReport` is the effort as its category (never a number) and
@@ -99,9 +103,7 @@ export function timedShellOutcome(
     case 'for_time':
       return {
         elapsedSeconds: clock.elapsedSeconds,
-        ...(clock.ended && draft.completed !== null
-          ? { completedUnderCap: draft.completed && !clock.capReached }
-          : {}),
+        ...(clock.ended && draft.completed !== null ? { completedUnderCap: draft.completed } : {}),
         ...notes,
       }
     case 'ladder': {

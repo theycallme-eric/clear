@@ -85,6 +85,13 @@ export interface AmrapState {
    * read into them (TASK-030 §6).
    */
   readonly movements?: Readonly<Record<string, MovementActualDraft>>
+  /**
+   * A3 TASK-116 (TASK-AC-8FF68F3F5241; TASK-048's save authority, carried to
+   * the AMRAP): `true` while a save of this attempt's log has failed and none
+   * has succeeded since, so `Your log didn’t save. Try again.` is said again
+   * after a reload. Absent otherwise, and in every record written before it.
+   */
+  readonly saveFailed?: boolean
 }
 
 /**
@@ -243,6 +250,8 @@ export function clampAmrapState(state: AmrapState, shape: AmrapShape): AmrapStat
     ...(ended === null ? restoredPause(state) : {}),
     // TASK-015: the per-movement entries, exactly as typed; absent stays absent.
     ...(state.movements === undefined ? {} : { movements: state.movements }),
+    // A3 TASK-116: a failed save is kept only as the `true` it is.
+    ...(state.saveFailed === true ? { saveFailed: true } : {}),
   }
 }
 
