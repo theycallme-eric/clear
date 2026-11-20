@@ -2,7 +2,7 @@
   "schema": "clear-task-test-ledger/v1",
   "task": "TASK-111",
   "family": "F9 (notes, feedback and rest-day dialogs: Home / Summary)",
-  "base": "eb6b20afba782ec70991be7371d606f521fb2482",
+  "base": "779b3436ca8f6f0235ff6194123d603f5fa0f4b8",
   "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
   "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F9 = 21 build-edit-pending tests (src/app/Summary.test.tsx 18, src/app/Home.test.tsx 3) and e2e/refinement/task-045.spec.ts; the brief also names src/app/action-glow.test.tsx, src/app/home-screen.test.tsx, src/ui/formFocus.test.tsx (run whole by check-01) and the feedback and rest-day form cases of src/ui/logging-overlay.test.tsx; this task adds e2e/refinement/task-111-parity.spec.ts. Bodies compared with the build and the base by a TypeScript-AST extractor (each it()/test() callback's source text).",
   "rules": {
@@ -13,12 +13,12 @@
       {
         "what": "src/app/Home.test.tsx › Home’s one next-workout entry (REQ-007, U20) › recovery: … (the build's body)",
         "task": "TASK-119",
-        "why": "Plan conflict: the build's body asserts TASK-024's Focus disclosure on Generate, which A3 TASK-119 restores. The base body is kept and passes."
+        "why": "Round-07 scan finding S4 (2026-11-19), under decision R7-5 (Eric, chat, 2026-11-20: \"Great, go ahead please\"): the build's Focus-disclosure assertions on this case are TASK-024's work, which TASK-119 builds. TASK-111 owns Home.test.tsx, runs it whole and keeps Round 7's passing body; TASK-119 restores the assertions on this case, rewritten to Round 7's “Change focus” naming where only the name differs, and runs the file only with the name filter of TASK-119:check-02."
       },
       {
         "what": "e2e/refinement/task-045.spec.ts (the ledger’s F9 e2e spec)",
         "task": "TASK-120",
-        "why": "Round-06 check plan: TASK-120 runs TASK-045 check-01 (one owner per suite, owner decision 3, 2026-11-18)."
+        "why": "Round-06 check plan, kept in round 07: TASK-120 runs TASK-045 check-01 (one owner per suite, owner decision 3, 2026-11-18)."
       },
       {
         "what": "e2e/refinement/task-019.spec.ts › JOURNEY-019 workout feedback on /summary and rest day on Home …",
@@ -624,8 +624,8 @@
       "ledger": "build-edit-pending (F9)",
       "disposition": "deferred",
       "task": "TASK-119",
-      "note": "Plan conflict, reported, not settled here. The build's body asserts Generate's TASK-024 Focus disclosure (a `Focus: …` button with aria-expanded, Recovery inside its choices; its own comment names TASK-024). That is Generate's behaviour on Round 7, which A3 TASK-119 (F10: Generate and Review on Round 7; its checks run TASK-024 check-01/02) restores [inferred from the round-06 check plan]. Round 7 offers Recovery behind “Change focus”. The base body (task 1's, Round 7's “Change focus”) is kept and passes; the build's assertions are not dropped: they wait for TASK-119. The case's Home part (the last request is said to be Recovery, the next opens as an ordinary day) is unchanged.",
-      "reason": "Needs TASK-024's Focus disclosure on Generate (TASK-119), not this task's dialogs.",
+      "note": "Deferred to TASK-119 under round-07 scan finding S4 (2026-11-19) and decision R7-5. The build's (181e580) body asserts Generate's TASK-024 Focus disclosure: a button named /^Focus:/ that opens closed (aria-expanded false) and holds Recovery among its choices; its own comment names TASK-024. Round 7 offers Recovery behind “Change focus”, and TASK-024's disclosure is TASK-119's work. This task owns the file and runs it whole (check-01), so it keeps Round 7's passing body (unchanged from the base 779b3436). TASK-119 restores the build's assertions on this case, rewritten to Round 7's “Change focus” naming where only the name differs, runs the file only with the name filter of TASK-119:check-02 (--testNamePattern \"recovery: says the last one was Recovery\") and records the case in its own test ledger. The case's Home part (the last request is said to be Recovery, the next opens as an ordinary day) is unchanged and passes here.",
+      "reason": "TASK-024's Focus disclosure on Generate is TASK-119's work (round-07 scan finding S4; TASK-119:check-02 runs this case by name filter).",
       "result": "passed"
     },
     {
@@ -988,8 +988,8 @@
       "ledger": "added (F9) — groundwork ledger e2e table",
       "disposition": "deferred",
       "task": "TASK-120",
-      "note": "The groundwork ledger expects this spec to pass after F9. The round-06 plan gives TASK-045 check-01 to TASK-120 (one owner per suite, owner decision 3), so it is not run here. Its workout-feedback and rest-day cases assert behaviour this task delivers (no pinned Save and close; the draft kept through Escape; a refused save kept in place; Mark Rest Day aria-expanded while the dialog is open; the refused mark's alert in the dialog; Change reason at the saved reason) [inferred: read, not run]. Its movement-note case is TASK-109's dialog.",
-      "reason": "Proved at TASK-120 (round-06 check plan).",
+      "note": "The groundwork ledger expects this spec to pass after F9. The round-06 plan gave TASK-045 check-01 to TASK-120, and round 07 keeps it there (one owner per suite, owner decision 3), so it is not run here. Its workout-feedback and rest-day cases assert behaviour this task delivers (no pinned Save and close; the draft kept through Escape; a refused save kept in place; Mark Rest Day aria-expanded while the dialog is open; the refused mark's alert in the dialog; Change reason at the saved reason) [inferred: read, not run]. Its movement-note case is TASK-109's dialog.",
+      "reason": "Proved at TASK-120 (round-06 check plan, kept in round 07).",
       "result": "not run (deferred)"
     },
     {

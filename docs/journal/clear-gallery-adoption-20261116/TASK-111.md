@@ -1,18 +1,25 @@
 # TASK-111 — A3 task 11 (F9): rest-day and workout-feedback dialogs with drafts kept (#734)
 
-Body `clear-gallery-adoption-v2-20261118`, attempt 1, integration branch
-`build/clear-gallery-adoption-2026-11-13`, base `eb6b20af` (TASK-105 and TASK-106 merged). Source material
+Built in body `clear-gallery-adoption-v2-20261118` (round 06), attempt 1, on base `eb6b20af` (TASK-105 and
+TASK-106 merged); resumed in body `clear-gallery-adoption-v2-20261120` (round 07, decision R7-4), attempt 1, on
+base `779b3436` (TASK-107 merged). Integration branch `build/clear-gallery-adoption-2026-11-13`. Source material
 only: the old build `build/clear-refinement-2026-11-04` (`181e580`). This is the task-owned progress note; it
 satisfies the shared daily journal rule for this body. Only TASK-111 writes it.
 
 Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`); the issue body names
-`clear-gallery-adoption-20261113`. The brief's path is used, as TASK-103/104/105/106/113 did.
+`clear-gallery-adoption-20261113`. The brief's path is used, as TASK-103/104/105/106/107/113 did.
 
 ## Status
 
-Attempt 1 implemented, verified and committed on the worker branch (2026-11-19). Every required check passes
-and its receipt is byte-stable on a second identical run. One plan conflict is reported, not settled (see
-"Open"). Nothing is pushed.
+Round 07 (2026-11-20): the round-06 worker branch (`fe571ecf`) is merged onto `779b3436` without conflict;
+every required check passes again on the merged tree, with receipts byte-identical to round 06's and stable over
+two parity runs. The round-06 plan conflict (Home's recovery case) is now placed by round-07 scan finding S4:
+its old assertions are deferred to TASK-119 (see "Round 07"). Committed in the worktree; nothing is pushed.
+Not yet independently verified or reviewed.
+
+Round 06 (superseded by the paragraph above): "Attempt 1 implemented, verified and committed on the worker
+branch (2026-11-19). Every required check passes and its receipt is byte-stable on a second identical run. One
+plan conflict is reported, not settled (see "Open"). Nothing is pushed."
 
 ## Intended outcome
 
@@ -80,7 +87,7 @@ No CSS changed. `PROJECT_MAP.md` not edited (no architecture change).
   see: the route's rest-day dialog opens with focus on its Reason picker (U25, kept), the gallery's on the X. The
   spec now records each dialog moment's focused control and labels that difference (AC-GAL-05) in the receipt.
 
-## Verification (this worktree, 2026-11-19; `npm ci` first)
+## Verification (round 06: the round-06 worktree, 2026-11-19; `npm ci` first)
 
 - check-01 (`run-required-check`): PASSED, 119 executed, 119 passed, 0 skipped. Run again after the last test
   edit: PASSED 119/119, receipt unchanged (no unstaged change under `evidence/`).
@@ -98,13 +105,60 @@ No CSS changed. `PROJECT_MAP.md` not edited (no architecture change).
 - Not run: `e2e/refinement/task-045.spec.ts` and `task-019.spec.ts` (TASK-120's), any other task's parity spec,
   real phones.
 
+## Round 07 (body `clear-gallery-adoption-v2-20261120`, 2026-11-20)
+
+Resumed under decision R7-4; round 07 did not change this task's text.
+
+- **Merge.** `git fetch` of the round-06 clone's `v2/clear-gallery-adoption-v2-20261118/task-111-a1` (tip
+  `fe571ecf8b38`), then `git merge FETCH_HEAD` onto `779b3436`: a real merge (the branch's base is `eb6b20af`),
+  no conflict. TASK-107's changes between the two bases touch none of this task's files (`Home.tsx`,
+  `Summary.tsx`, the five check-01 test files, `logging-overlay.*`, `task-045`/`task-019` specs): checked with
+  `git diff eb6b20af 779b3436` on them, empty. So the ledger's body comparisons with the base still hold.
+- **Criteria re-read against the merged tree.** Nothing missing: both dialogs are Round 7's `LoggingOverlay`
+  with no gate and no inline form (TASK-AC-579280C10CDC); `closeDisabled` while saving on both, the draft kept
+  and the refusals kept in the dialog for the retry (TASK-AC-49B5381CB1E9); the feedback form submits through
+  `useInvalidFocus` (TASK-AC-4F3A94603641). `LoggingOverlay` and `src/ui/logging-overlay.test.tsx` (TASK-114's)
+  are untouched. No product or test code changed in this round.
+- **Home's recovery case, placed (round-07 scan finding S4, decision R7-5).** `src/app/Home.test.tsx` ›
+  "recovery: says the last one was Recovery, and the next opens as an ordinary day" keeps Round 7's passing
+  body (unchanged from `779b3436`). The build's (`181e580`) assertions on it — a button named `/^Focus:/`
+  that opens closed (`aria-expanded` false) with Recovery among its choices, TASK-024's Focus disclosure — are
+  deferred to TASK-119. TASK-119 restores them on that case, rewritten to Round 7's "Change focus" naming where
+  only the name differs, and runs this file only with the name filter of TASK-119:check-02 (`--testNamePattern
+  "recovery: says the last one was Recovery"`). TASK-111 still owns the file and runs it whole.
+- **Ledger** (`evidence/refinement/task-111/test-ledger.json`): `base` is now `779b3436`; the recovery entry and
+  `rules.deferred[0]` say the S4 placement above instead of "plan conflict, reported, not settled"; the
+  task-045 entry and `rules.deferred[1]` note that round 07 keeps TASK-045 check-01 at TASK-120 (checked in the
+  round-07 plan, as are TASK-120's task-019 check and TASK-114's TASK-017 name-filter check). Counts unchanged:
+  104 carried, 3 rewritten, 4 deferred, 12 added, 0 retired. `required-cases.json` unchanged.
+- **Gallery-owned files** (`git diff --name-only 1633333c^ bec4454`, 97 files) that this task changes: only
+  `src/app/Home.tsx` and `src/app/Summary.tsx`, both named by TASK-AC-579280C10CDC / TASK-AC-49B5381CB1E9.
+
+Verification (this worktree, 2026-11-20; `npm ci` first):
+
+- check-01 (`run-required-check`, the brief's command): PASSED, 119 total, 119 executed, 119 passed, 0 skipped;
+  `results/check-01.json` byte-identical to round 06's (no change under `evidence/`).
+- parity (`run-required-check` wrapped in `node …/agent-runner-v2/bin/v2.mjs with-lock -- …`; the CLI takes no
+  body argument): run 1 PASSED 4/4, run 2 PASSED 4/4. Both left `results/parity.json` and the four
+  `parity/*.json` receipts byte-identical to round 06's, and the 28 capture files in
+  `evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/` (the folder the spec already uses)
+  hashed the same after both runs (SHA-256 list compared).
+- CI chain (the brief's one command): exit 0. `npm run typecheck` pass; `npm run lint` 0 errors, 175
+  warnings; `npm run lint:ds` pass; `gen-issues --check` pass (71 requirements, 136 edges); `gen:types --check`
+  current; `npm test` 6,327/6,327 in 269 files, no rerun; `npm run build` pass; console grep no match. The run
+  changed no tracked file.
+- No `.skip`, `.only` or `.todo` in the task's added src and e2e lines (grep: 0).
+- Not run: any other task's parity spec, `task-045.spec.ts`, `task-019.spec.ts` (TASK-120's), real phones.
+
 ## Open
 
-- **Plan conflict (reported, not settled): `Home.test.tsx` › "recovery: says the last one was Recovery …".**
+- **Round 06: plan conflict (reported, not settled): `Home.test.tsx` › "recovery: says the last one was Recovery …".**
   The groundwork ledger lists it as F9 build-edit-pending, but the build's body asserts Generate's TASK-024
   Focus disclosure (a `Focus: …` button with `aria-expanded`), which A3 TASK-119 restores [inferred from the
   round-06 check plan: TASK-119 runs TASK-024 check-01/02]. Base body kept (passes); the build's assertions
   are deferred to TASK-119 in the ledger.
+  - **Round 07: placed, no longer open.** Scan finding S4 and decision R7-5 defer the old assertions to
+    TASK-119, which restores them with a name filter (TASK-119:check-02). See "Round 07".
 - **The rest-day control's surroundings.** Home draws it as the ruled "Rest day" sub-group of This week (a card
   never holds a card); the gallery scene draws it in a card of its own. The parity check compares the control's
   own stack and the dialog box by box and the surroundings by words, and labels the frame difference with
@@ -117,11 +171,17 @@ No CSS changed. `PROJECT_MAP.md` not edited (no architecture change).
 
 ## Next action
 
-Controller: run the brief's commands on this candidate and review the hand diff of `src/app/Home.tsx` and
-`src/app/Summary.tsx` against the allowance (TASK-AC-32A027ADF304). Decide the recovery-case conflict
-(TASK-119). TASK-120 then runs `task-045.spec.ts` and `task-019.spec.ts` over these dialogs.
+Round 07: controller runs the brief's commands on this candidate and reviews the hand diff of
+`src/app/Home.tsx` and `src/app/Summary.tsx` against the allowance (TASK-AC-32A027ADF304); then independent
+verification and review. TASK-119 restores the recovery case's Focus assertions (TASK-119:check-02). TASK-120
+runs `task-045.spec.ts` and `task-019.spec.ts` over these dialogs.
 
-## CI chain
+Round 06 (superseded by the line above): "Controller: run the brief's commands on this candidate and review
+the hand diff of `src/app/Home.tsx` and `src/app/Summary.tsx` against the allowance (TASK-AC-32A027ADF304).
+Decide the recovery-case conflict (TASK-119). TASK-120 then runs `task-045.spec.ts` and `task-019.spec.ts`
+over these dialogs."
+
+## CI chain (round 06)
 
 The brief's one command, once, on the final tree (2026-11-19): exit 0. `npm run typecheck` pass;
 `npm run lint` 0 errors, 175 warnings (as the base); `npm run lint:ds` pass; `gen-issues --check` pass
