@@ -155,7 +155,6 @@ import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { ResumableSession } from './ResumableSession'
 import { LoggingOverlay } from '../ui/logging-overlay'
-import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { Screen } from './Screen'
 import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 import { useOpenHistorySession } from './useOpenHistorySession'
@@ -217,6 +216,9 @@ export const RECENT_EMPTY_TITLE = 'No workouts yet'
  * action names itself. The chosen reason's effect is the picker's helper.
  */
 export const REST_DAY_SAVED = 'Rest day saved.'
+
+/** Round 7's rest-day dialog, for marking a day and changing its reason (decision 3). */
+export const REST_DAY_LOG_TITLE = 'Log rest day'
 
 export function Home() {
   const history = useHistoryQuery()
@@ -424,6 +426,17 @@ function TrainingWeek({
  * sheet), and Save, Cancel or Escape hand focus back to the trigger, so a
  * keyboard or screen-reader user never loses their place. Cancel and Escape
  * discard the choice — the saved reason stays the strip's.
+ *
+ * A3 TASK-111 (adoption inventory F9, owner decision 3): the reason is chosen
+ * in Round 7's "Log rest day" LoggingOverlay, for marking a day and changing
+ * its reason alike. Round 7 drew it only under its presentation and kept the
+ * old inline editor behind that gate; there is no gate and no inline editor
+ * now. The trigger stays in its card while the dialog is open (expanded, as
+ * the accepted gallery state draws it), and the dialog holds the existing
+ * native Reason with its effect helper, Save rest day and Cancel, and a
+ * refused mark's alert for the retry. Its X and Escape are Cancel. Nothing
+ * closes it while the mark is in flight. The writer still sends note null:
+ * no Notes field and no new reason.
  */
 function RestDayControl({
   today: current,
@@ -446,7 +459,6 @@ function RestDayControl({
   const [reason, setReason] = useState<RestDayReason>('rest')
   const [failure, setFailure] = useState(false)
   const [saved, setSaved] = useState(false)
-  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
   const editorId = useId()
   const trigger = useRef<HTMLButtonElement>(null)
   const picker = useRef<HTMLSelectElement>(null)
@@ -504,6 +516,13 @@ function RestDayControl({
 
   const editor = (
             <div id={editorId} className="clr-stack clr-stack--tight" onKeyDown={onEditorKey}>
+              {/* A refused mark is said in the dialog that made it, beside the
+                  reason kept for the retry. */}
+              {failure && (
+                <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+                  The rest day wasn’t saved. Try again.
+                </p>
+              )}
               <Select
                 label="Reason"
                 value={reason}
@@ -541,32 +560,31 @@ function RestDayControl({
           )}
 
           {saved && <p role="status" style={{ margin: 0 }}>{REST_DAY_SAVED}</p>}
-          {failure && (
-            <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
-              The rest day wasn’t saved. Try again.
-            </p>
-          )}
 
-          {/* REQ-005: the trigger carries Generate's glow; the card does not. */}
-          {!editing ? (
-            <ActionGroup>
-              <ActionGlow>
-                <Button
-                  variant="secondary"
-                  icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
-                  aria-expanded={false}
-                  aria-controls={editorId}
-                  buttonRef={trigger}
-                  onClick={begin}
-                >
-                  {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
-                </Button>
-              </ActionGlow>
-            </ActionGroup>
-          ) : (
-            // Escape is Cancel from anywhere in the editor; the native picker
-            // keeps its own Escape while its list is open.
-            proposal ? <LoggingOverlay open title="Log rest day" onClose={cancel} closeDisabled={write.marking}>{editor}</LoggingOverlay> : editor
+          {/* REQ-005: the trigger carries Generate's glow; the card does not.
+              It stays in place while the dialog is open: the opener focus
+              returns to. */}
+          <ActionGroup>
+            <ActionGlow>
+              <Button
+                variant="secondary"
+                icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
+                aria-expanded={editing}
+                aria-controls={editorId}
+                buttonRef={trigger}
+                onClick={begin}
+              >
+                {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
+              </Button>
+            </ActionGlow>
+          </ActionGroup>
+          {/* Escape is Cancel from anywhere in the editor; the native picker
+              keeps its own Escape while its list is open. The X is Cancel too,
+              and neither closes the dialog while the mark is in flight. */}
+          {editing && (
+            <LoggingOverlay open title={REST_DAY_LOG_TITLE} onClose={cancel} closeDisabled={write.marking}>
+              {editor}
+            </LoggingOverlay>
           )}
         </div>
       </Card>

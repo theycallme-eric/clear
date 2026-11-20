@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-111",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-111-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-111/required-cases.json",
+    "sha256": "fcb97f8c632a965d727fc678a3559da7d9a2abe3aa39429f9ca343263242d37a"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-111-parity.spec.ts",
+      "sha256": "7caa37e74cd6a2423e75d012c2465097d57369c516a22d47757fa19bcd05d9d2"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "name": "TASK-AC-75169419438B workout-feedback phone-320: /summary’s Log workout feedback opens Workout feedback in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "name": "TASK-AC-75169419438B workout-feedback phone-390: /summary’s Log workout feedback opens Workout feedback in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "name": "TASK-AC-75169419438B rest-day phone-320: Home’s Mark Rest Day opens Log rest day in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "name": "TASK-AC-75169419438B rest-day phone-390: Home’s Mark Rest Day opens Log rest day in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}

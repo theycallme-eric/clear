@@ -1,0 +1,1038 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-111",
+  "family": "F9 (notes, feedback and rest-day dialogs: Home / Summary)",
+  "base": "eb6b20afba782ec70991be7371d606f521fb2482",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace): F9 = 21 build-edit-pending tests (src/app/Summary.test.tsx 18, src/app/Home.test.tsx 3) and e2e/refinement/task-045.spec.ts; the brief also names src/app/action-glow.test.tsx, src/app/home-screen.test.tsx, src/ui/formFocus.test.tsx (run whole by check-01) and the feedback and rest-day form cases of src/ui/logging-overlay.test.tsx; this task adds e2e/refinement/task-111-parity.spec.ts. Bodies compared with the build and the base by a TypeScript-AST extractor (each it()/test() callback's source text).",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "retired": [],
+    "deferred": [
+      {
+        "what": "src/app/Home.test.tsx › Home’s one next-workout entry (REQ-007, U20) › recovery: … (the build's body)",
+        "task": "TASK-119",
+        "why": "Plan conflict: the build's body asserts TASK-024's Focus disclosure on Generate, which A3 TASK-119 restores. The base body is kept and passes."
+      },
+      {
+        "what": "e2e/refinement/task-045.spec.ts (the ledger’s F9 e2e spec)",
+        "task": "TASK-120",
+        "why": "Round-06 check plan: TASK-120 runs TASK-045 check-01 (one owner per suite, owner decision 3, 2026-11-18)."
+      },
+      {
+        "what": "e2e/refinement/task-019.spec.ts › JOURNEY-019 workout feedback on /summary and rest day on Home …",
+        "task": "TASK-120",
+        "why": "Owner decision 1 (2026-11-16), recorded by TASK-106."
+      },
+      {
+        "what": "src/ui/logging-overlay.test.tsx › TASK-017 … spacing (Workout feedback’s feeling legend)",
+        "task": "TASK-114",
+        "why": "Deferred by TASK-106 with the TASK-017 block (REQ-017 rhythm)."
+      }
+    ],
+    "resolved": []
+  },
+  "summary": {
+    "carried": 104,
+    "rewritten": 3,
+    "retired": 0,
+    "deferred": 4,
+    "added": 12,
+    "failing": 0
+  },
+  "entries": [
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — only a completed session reaches it > waits for the session rather than rendering an empty debrief",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — only a completed session reaches it > sends a visitor with nothing to debrief Home rather than showing an empty shell",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — only a completed session reaches it > offers a retry when the session read fails",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > acknowledges the session briefly and goes straight to the debrief",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > puts each key number in its own small card, its label the heading inside",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > U41: draws the duration and the streak side by side at one enlarged size",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > U41: a duration nothing could measure keeps its card, as a dash with words",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > keeps the debrief fields in one card, labels inside, and the action pinned",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The build's body, with one assertion read on Round 7's markup: the build portalled its dialog to the body and asserted `card` does not contain it; Round 7 draws its LoggingOverlay where its opener is (the accepted gallery's workout-feedback state draws it inside the Debrief card too), as a native modal in the top layer. So the rewrite asserts the dialog is Round 7's open `.clr-logging-overlay` and that the card's own content outside that modal is only the one opener (no field, radio or submit drawn on the card). Every other build assertion (no Save and close before opening, no pinned foot button, the form in the dialog with no card inside it, the fields and labels, Save and close the form's submit) is unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > U43: the feeling is one row of five numbers, its words in the accessible names only",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > U43: the feeling works from the keyboard as one radio group",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > U43: no answer is allowed, and a chosen or restored feeling can be cleared back to none",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > U43: the feeling is saved as the session’s mood and never as an effort value",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > keeps completion associated with the scrolling form",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The build's `[data-logging-scroll]` is Round 7's `.clr-logging-overlay__scroll`, the dialog's one scrolling region (also asserted to be this dialog's). Task 1's two assertions that the build's body did not have (Done is `type=submit` and its `form` is the debrief form) are kept beside the build's (`closest('form')`, the scroll region, `novalidate`): a union, nothing dropped.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > persists the mood and notes to the session row, then returns Home",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > writes an unwritten note as null rather than as an empty string",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > opens on what was already saved",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > re-renders a failed save in place, with the retry, and replays no entrance",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the debrief > has nothing on it that does not work — no disabled control, no “coming soon”",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "rewritten",
+      "note": "The build's body (every button and radio enabled once the dialog is open, the notes enabled, no 'coming soon'), plus task 1's check that every button on the closed screen is enabled, which the build's body did not have: a union, nothing dropped.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > shows SES-01’s count and Home’s week, ticks before a broken run included",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > U41: a marked rest day keeps its reason, as it does on Home",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > U12: rest days take the info role and trained days the completed role, each with its own glyph",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > says a streak that has not reached today runs through yesterday",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > waits for the streak inside its own card, beside the duration",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > states an honest empty streak and an empty week, still drawn",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > offers the week’s own retry when its read fails, and keeps the streak",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the streak and the week > costs the streak display, not the debrief, when the streak read fails",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the title and its one favorite label (U42) > heads the result card with the session title, above every card label",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the title and its one favorite label (U42) > wraps a long title inside its card rather than truncating it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — the title and its one favorite label (U42) > says “favorite” once before saving and once after",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — save as favorite, then Done > saves the session as a favorite in one tap, and Home’s favorites tab has it",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — save as favorite, then Done > reports a failed favorite save on Summary, and does not block Done",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — undoing a favorite (U22) > undoes a favorite just saved, behind the Favorites tab’s confirm",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — undoing a favorite (U22) > removes a favorite saved earlier, and cancelling keeps it",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — undoing a favorite (U22) > sends one delete while one is in flight, and reports a failure in place",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — undoing a favorite (U22) > settles a deferred Summary delete against newer Home removal and Session Detail save",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "Summary — undoing a favorite (U22) > settles a deferred save without resurrecting a favorite removed on Home",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's `openFeedback()` opens “Log workout feedback” and reads the “Workout feedback” dialog, which Round 7's LoggingOverlay draws with the same name; Done is that dialog's “Save and close”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-579280C10CDC /summary keeps no inline debrief form: with no Round 7 logging presentation mounted, the Debrief card still holds only Log workout feedback, no pinned Save and close is drawn, and the feeling, notes and Save and close are only in the Workout feedback LoggingOverlay, which saves through saveDebrief and leaves for Home",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-579280C10CDC: renders /summary under a presentation with no Round 7 logging choice (the gate Round 7 had put around the dialog, closed) and asserts the Debrief card holds only its opener, no Save and close or field is drawn on the screen, and the fields and save are only in the Workout feedback LoggingOverlay, which writes through saveDebrief and leaves for Home. Red on the base (no opener: the old inline form and pinned Save and close were drawn), green after.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-49B5381CB1E9 the feedback draft survives the X, Escape and reopen: the closed LoggingOverlay keeps the same form mounted, the feeling and notes come back as they were left, focus returns to Log workout feedback, and nothing is written",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-49B5381CB1E9 (the objective's draft question, answered in a test): the same form node is in the closed dialog after its X and after Escape (the shared Dialog always renders its children, so LoggingOverlay does not unmount them), and the feeling and notes come back on each reopen; focus returns to the opener; nothing is written. Passes on the base and after: no fix was needed.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-49B5381CB1E9 Workout feedback cannot close while Save and close is in flight — its X is disabled and Escape is refused; a refused save keeps its alert, the feeling and the notes inside the dialog on /summary, and the retry writes once more through saveDebrief and leaves for Home",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-49B5381CB1E9: while saveDebrief is held, Save and close is busy, the X is disabled and the native cancel is refused (defaultPrevented, the dialog stays open); the refused answer shows its alert inside the dialog only, with the draft, on /summary; the retry writes once more and leaves for Home. Red on the base (the X was enabled while saving), green after.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Summary.test.tsx",
+      "test": "A3 TASK-111 (F9) — Workout feedback in the Round 7 dialog, its draft kept > TASK-AC-4F3A94603641 the feedback form submits through useInvalidFocus: a note over 2,000 characters is refused in the Workout feedback dialog, the Notes field is marked invalid and takes focus as the first invalid field, nothing is sent, and the dialog and draft stay",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-4F3A94603641: a 2,001-character note is refused in the dialog; Notes is aria-invalid, shows its error and takes focus (the shared helper's first invalid field); nothing is sent; the dialog and the draft stay. Passes on the base and after (the form already submitted through useInvalidFocus).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > shows the empty daily entry point and hides Quick Start entirely",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > renders recent history, and the primary action opens Generate without generating",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > opens History from the Recent panel as a client-side navigation",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > renders Favorites as one list frame and restores one directly into Review",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > drops deleted progression on actual Review Back → Home remove → Forward",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U21: the existing full favorites list and retained tab > lists all %i favorites without inventing a preview cap",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U21: the existing full favorites list and retained tab > the full-list destination opens directly on Favorites with every saved row",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U21: the existing full favorites list and retained tab > returning from Review really restores the selected full-list tab",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U21: the existing full favorites list and retained tab > switching back to Favorites still shows the complete list",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > REQ-004: a recent workout puts its title first, then status and date, then metrics",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > opens a recent workout into its Session Detail rather than Not Found",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > marks today with a reason and redraws the week from the saved row",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U25: the trigger is a disclosure with short copy, and the picker gets focus",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's TASK-045 reading of the rest day in the “Log rest day” dialog, with the trigger kept and expanded while it is open, which this task's wiring restores (task 1's body had read the editor inside the card).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U25: Cancel and Escape discard the choice and hand focus back to the trigger",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U25: a keyboard save announces itself and returns focus to Change reason",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U12: a rest day takes the info role with its Rest mark, distinct from a trained day",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home > U12: a trained day keeps the completed role with its tick",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > heads every group inside its own barred card, and never nests a card",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > keeps the streak, the week and the rest-day sub-group contained in the week card",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U06: keeps the streak count with its unit",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U19: first use is one clear piece of guidance, and the week repeats no count",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U19: a populated week keeps the streak and the strip, with no second count",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U07: in-card actions share the card width as one compact group",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580), restored over task 1's version of the same name (the groundwork ledger's F9 build-edit-pending). It reads Round 7's dialog: the build's TASK-045 reading of the rest day in the “Log rest day” dialog, with the trigger kept and expanded while it is open, which this task's wiring restores (task 1's body had read the editor inside the card).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > U08: each Home empty state is one statement, with no standing explanation",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > arrives as one staggered set, once, and not again for an inline update",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > is in its final state at once under reduced motion",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > uses the public TextAction for the quiet way into History, and frames the rest",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home on the 0.14.3 hierarchy (REQ-018, REQ-009) > keeps the tabs, and adds nothing from the package’s worked example",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > states the last request once, a plain suggested focus, and one primary action",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > first workout: clear guidance, and Generate opens on its own defaults",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > sparse: one completed session today is enough to suggest from",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > stale: keeps the last request, asks for a focus, and carries its minutes",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > recovery: says the last one was Recovery, and the next opens as an ordinary day",
+      "ledger": "build-edit-pending (F9)",
+      "disposition": "deferred",
+      "task": "TASK-119",
+      "note": "Plan conflict, reported, not settled here. The build's body asserts Generate's TASK-024 Focus disclosure (a `Focus: …` button with aria-expanded, Recovery inside its choices; its own comment names TASK-024). That is Generate's behaviour on Round 7, which A3 TASK-119 (F10: Generate and Review on Round 7; its checks run TASK-024 check-01/02) restores [inferred from the round-06 check plan]. Round 7 offers Recovery behind “Change focus”. The base body (task 1's, Round 7's “Change focus”) is kept and passes; the build's assertions are not dropped: they wait for TASK-119. The case's Home part (the last request is said to be Recovery, the next opens as an ordinary day) is unchanged.",
+      "reason": "Needs TASK-024's Focus disclosure on Generate (TASK-119), not this task's dialogs.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > changed goal: names no stored Goal, and Generate uses the standing one",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > missing place: the request opens Generate on the default place",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > opens Generate on its defaults while the history read is %s",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > TASK-AC-579280C10CDC Home keeps no inline rest-day editor: with no Round 7 logging presentation mounted, Mark Rest Day stays in its card, expanded, and opens Log rest day in the LoggingOverlay with the Reason picker focused; Save rest day marks today through the existing writer with no note and focus returns to Change reason",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-579280C10CDC: renders Home under a presentation with no Round 7 logging choice (the old gate, closed) and asserts Mark Rest Day opens the Log rest day LoggingOverlay with the picker focused, the trigger stays in its card (aria-expanded true), the card keeps only the trigger outside the dialog, and Save rest day marks today through the existing writer (note null) with focus back on Change reason. Red on the base (no dialog: the inline editor was drawn in the card), green after.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > TASK-AC-49B5381CB1E9 Log rest day cannot close while the mark is in flight — its X and Cancel are disabled and Escape is refused; a refused mark keeps its alert, the chosen reason and focus inside the dialog, and the retry marks the day once more",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-49B5381CB1E9: while the mark is held, Save rest day is busy, the X and Cancel are disabled, the native cancel is refused and Escape on the picker does nothing; the refused mark shows its alert inside the dialog only (none in the card behind it — TASK-106's task-019 finding for this task), the chosen reason and focus stay in the dialog; the retry marks once more and closes. Red on the base (the alert was drawn in the card behind the dialog), green after.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > TASK-AC-49B5381CB1E9 Change reason reopens Log rest day at the saved reason; the X discards an unsaved change, a refused change keeps its alert and the new reason in the dialog, and the retry saves it",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "TASK-AC-49B5381CB1E9 (the reason change): Change reason opens at the saved reason; the X discards an unsaved change (focus back on Change reason, nothing written); a refused change keeps its alert and the new reason in the dialog with the saved reason still stated on the card; the retry saves it. Red on the base (the trigger was re-created on close, so focus was not on the same Change reason), green after.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "A3 TASK-111 (F9) — the rest day in the Round 7 dialog > AC-GAL-05 the rest day keeps its own field and writer in the dialog: the native Reason picker offers exactly the four existing reasons with their effect helper, no Notes field or invented reason, Escape keeps Cancel’s meaning, and the writer sends note null",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "added",
+      "note": "AC-GAL-05 (context-owned fields and writer for the rest-day / reason-change context): the native Reason select offers exactly the four existing reasons with their effect helper, no textbox and no note anywhere in the dialog; Escape keeps Cancel's meaning (nothing kept, focus back on the trigger, the next open at the saved reason); the writer sends note null. Red on the base at the same-trigger focus, green after.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-016: the package glow is Generate's 6px in the interaction role, re-tinted by every skin",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-016: Mark Rest Day and Settings sit in the same glow wrapper as Generate, in all four skins",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-016: Change reason, the same trigger once a day is marked, keeps the glow",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-017: the local sheet adds no halo of its own and restates no glow value",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-017: every glow on Home wraps one control, and no card glows",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-018: both controls take keyboard focus and still act",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/action-glow.test.tsx",
+      "test": "Generate glow on actionable controls (REQ-005) > AC-018: a disabled or loading control keeps the component's state, and its glow goes out",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-009: drops \"Not training today?\" and keeps Mark Rest Day and its save",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-010: history but nothing today shows the returning-user action and Mark Rest Day",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > `AC-010: ${label} history returns to Generate without inventing a completed request`",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-010: genuinely empty history retains first-workout guidance",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-010: trained today keeps the existing rule — no rest-day affordance, same action",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-011: the streak is the current run across weeks, and the strip is not a session count",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-011: the rest/pause policy is the picker’s existing helper, unchanged",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-012: Generate stays the explicit, editable entry and the empty-week copy is kept",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Home actions and copy (REQ-003) > AC-012: the deferred empty-week secondary copy is unchanged",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Recent workout rows (REQ-004) > AC-013: title first and smaller, then status and date together, then readable metrics",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Recent workout rows (REQ-004) > AC-014: no \"session\" word and no link underline in recent rows",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Recent workout rows (REQ-004) > AC-015: completed and abandoned rows stay distinct by word, glyph and tone",
+      "ledger": "carried",
+      "disposition": "carried",
+      "note": "Body identical to the build's (181e580) and unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/home-screen.test.tsx",
+      "test": "Recent workout rows (REQ-004) > keeps History's own chronology row: its full title, with status and date beneath it (TASK-026, C53)",
+      "ledger": "not in the groundwork ledger",
+      "disposition": "carried",
+      "note": "Kept as task 2 rewrote it (owner decision 7: History rows read head, context, status, metrics; groundwork ledger `rewritten`). Unchanged by this task; History rows are not this task's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "focusFirstInvalid (CORE-05, export pattern 1) > focuses the first control marked aria-invalid, in DOM order",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "focusFirstInvalid (CORE-05, export pattern 1) > returns null and moves nothing when every control is valid",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "useInvalidFocus (CORE-05, the shared submit helper) > moves focus to the control the failed submit marked invalid",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "useInvalidFocus (CORE-05, the shared submit helper) > moves focus again when the same bad value is submitted twice",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "useInvalidFocus (CORE-05, the shared submit helper) > follows a failure the server decided, not only a local one",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "useInvalidFocus (CORE-05, the shared submit helper) > leaves focus alone when the submit was accepted",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "useInvalidFocus (CORE-05, the shared submit helper) > prevents the browser default, so the app owns the failure",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "the shared helper against the 0.14.3 framed fields > focuses the control inside the first invalid frame, across Input and Select",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "the shared helper against the 0.14.3 framed fields > keeps the label above, the wrapper emission, the unit and the warning glyph",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "the shared helper against the 0.14.3 framed fields > lets a narrow container shrink the field without a raw override",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "the shared helper against the 0.14.3 framed fields > grows a textarea with its content and never shows the native grip",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "the shared helper against the 0.14.3 framed fields > carries disabled, read-only, error and focus states on a textarea frame",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "the shared helper against the 0.14.3 framed fields > keeps a quiet action reachable and visibly focused beside a narrow field",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "every form in the app submits through the shared helper > finds the forms it is checking",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/formFocus.test.tsx",
+      "test": "every form in the app submits through the shared helper > wires each one to useInvalidFocus",
+      "ledger": "base test (the build never changed this file)",
+      "disposition": "carried",
+      "note": "Body unchanged (the base's own; the build never touched this file). The scan `every form in the app submits through the shared helper` finds Summary.tsx's one form, now always the Workout feedback dialog's, wired to useInvalidFocus (TASK-AC-4F3A94603641).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+      "ledger": "brought back by TASK-106 (its check-01); the brief names the file’s feedback and rest-day form cases",
+      "disposition": "carried",
+      "note": "Not this task's file (TASK-114 owns src/ui/logging-overlay.test.tsx, owner decision 3, 2026-11-18); unchanged. Its Workout feedback part opens the gallery's workout-feedback dialog. Run here only by name filter (`npx vitest run src/ui/logging-overlay.test.tsx -t \"Workout feedback\"`: 1 passed, 7 skipped by the filter). The file has no rest-day case: the build's file had none either.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "test": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 TASK-AC-0C1431FDDA19 spacing: every choice legend — Work completed, Effort · optional, a superset movement’s Effort and Workout feedback’s feeling — takes the label gap, the same space the log’s labelled count field leaves between its label and control",
+      "ledger": "deferred (F4) by TASK-106 to TASK-114",
+      "disposition": "deferred",
+      "task": "TASK-114",
+      "note": "The build's one other case that names a feedback form (the Workout feedback feeling legend's label gap). TASK-106's ledger deferred the whole TASK-017 block to TASK-114 (REQ-017 rhythm, run by name there); it asserts the shared spacing tokens, not this task's wiring. Not added here, not run here.",
+      "reason": "REQ-017 rhythm (TASK-114).",
+      "result": "not run (deferred)"
+    },
+    {
+      "file": "e2e/refinement/task-045.spec.ts",
+      "test": "TASK-045 notes, feedback and rest days in the shared focused dialog (4 cases: movement note, workout feedback, rest day and reason change, accepted gallery states)",
+      "ledger": "added (F9) — groundwork ledger e2e table",
+      "disposition": "deferred",
+      "task": "TASK-120",
+      "note": "The groundwork ledger expects this spec to pass after F9. The round-06 plan gives TASK-045 check-01 to TASK-120 (one owner per suite, owner decision 3), so it is not run here. Its workout-feedback and rest-day cases assert behaviour this task delivers (no pinned Save and close; the draft kept through Escape; a refused save kept in place; Mark Rest Day aria-expanded while the dialog is open; the refused mark's alert in the dialog; Change reason at the saved reason) [inferred: read, not run]. Its movement-note case is TASK-109's dialog.",
+      "reason": "Proved at TASK-120 (round-06 check plan).",
+      "result": "not run (deferred)"
+    },
+    {
+      "file": "e2e/refinement/task-019.spec.ts",
+      "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 workout feedback on /summary and rest day on Home phone-320 touch and keyboard reduced motion: each opens the same focused log from its real entry, keeps its own fields, its draft or its existing cancel meaning through close and reopen, keeps the entry through a refused write and saves it once through its original writer on retry",
+      "ledger": "deferred to TASK-120 by TASK-106 (owner decision 1, 2026-11-16)",
+      "disposition": "deferred",
+      "task": "TASK-120",
+      "note": "TASK-106's soft run of this case (round 05) found one assertion for this task: Home drew the refused rest day's alert in the card behind the dialog. The alert is now in the dialog (Home.tsx; unit case “TASK-AC-49B5381CB1E9 Log rest day cannot close while the mark is in flight …”). The spec is TASK-120's and was not run here.",
+      "reason": "Proved at TASK-120 (owner decision 1, 2026-11-16).",
+      "result": "not run (deferred)"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "test": "TASK-AC-75169419438B workout-feedback phone-320: /summary’s Log workout feedback opens Workout feedback in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-111’s look check (TASK-AC-75169419438B): the route beside its accepted gallery state with matched data, reduced motion; the opener, the open dialog and the dialog reopened after an entry and its X, compared word by word and box by box (2 px), with the dialog’s focused control recorded. Intended differences are labelled in the receipt (evidence/refinement/task-111/parity/).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "test": "TASK-AC-75169419438B workout-feedback phone-390: /summary’s Log workout feedback opens Workout feedback in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-111’s look check (TASK-AC-75169419438B): the route beside its accepted gallery state with matched data, reduced motion; the opener, the open dialog and the dialog reopened after an entry and its X, compared word by word and box by box (2 px), with the dialog’s focused control recorded. Intended differences are labelled in the receipt (evidence/refinement/task-111/parity/).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "test": "TASK-AC-75169419438B rest-day phone-320: Home’s Mark Rest Day opens Log rest day in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-111’s look check (TASK-AC-75169419438B): the route beside its accepted gallery state with matched data, reduced motion; the opener, the open dialog and the dialog reopened after an entry and its X, compared word by word and box by box (2 px), with the dialog’s focused control recorded. Intended differences are labelled in the receipt (evidence/refinement/task-111/parity/).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-111-parity.spec.ts",
+      "test": "TASK-AC-75169419438B rest-day phone-390: Home’s Mark Rest Day opens Log rest day in the same Round 7 dialog as the accepted gallery state, drawn alike, and reopens it as the gallery does",
+      "ledger": "new",
+      "disposition": "added",
+      "note": "TASK-111’s look check (TASK-AC-75169419438B): the route beside its accepted gallery state with matched data, reduced motion; the opener, the open dialog and the dialog reopened after an entry and its X, compared word by word and box by box (2 px), with the dialog’s focused control recorded. Intended differences are labelled in the receipt (evidence/refinement/task-111/parity/).",
+      "result": "passed"
+    }
+  ]
+}

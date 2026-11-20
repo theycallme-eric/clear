@@ -35,6 +35,16 @@
  * U42: the session title heads the result card at a size of its own, and the
  * favorite control is the only thing that says "favorite", before and after.
  *
+ * A3 TASK-111 (adoption inventory F9, owner decision 3): the debrief's fields
+ * are entered in Round 7's "Workout feedback" LoggingOverlay, opened from the
+ * Debrief card's "Log workout feedback"; its Save and close saves and leaves
+ * as the pinned CTA did. Round 7 drew it only under its presentation and kept
+ * the old inline form and pinned foot behind that gate; there is no gate and
+ * no inline form now. The draft is this screen's state and the closed dialog
+ * keeps its form mounted (the shared Dialog always renders its children), so
+ * it survives Close and reopen. While a save is in flight nothing closes the
+ * dialog; a refused save is shown in it, with the draft, for the retry.
+ *
  * Motion: the result card boots once with `.clr-boot`; a save that fails
  * re-renders in place and replays no entrance, which is the IA's rule for this
  * screen ("save retries do not replay the entrance").
@@ -46,7 +56,6 @@ import type { CompletedSession } from '../data/summary'
 import {
   AlertCircle,
   Button,
-  Check,
   Input,
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
@@ -71,7 +80,7 @@ import {
 } from '../state/view-state'
 import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { MetricFrame, MetricGrid } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
 import { FeelingRow } from '../ui/feeling-row'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
@@ -79,7 +88,6 @@ import { WeekStrip } from '../ui/week-strip'
 import { FavoriteToggle } from './FavoriteToggle'
 import { AUTHENTICATED_HOME } from './guards'
 import { LoggingOverlay } from '../ui/logging-overlay'
-import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { Screen } from './Screen'
 
 // FAV-01's control now lives beside the screens that share it; its words are
@@ -113,11 +121,15 @@ export const STREAK_EMPTY = 'No streak yet. Sessions on consecutive days build o
 export const SUMMARY_WEEK_LABEL = 'This week'
 export const WEEK_EMPTY = 'No sessions this week yet.'
 
-/** Lets the hard-edge footer submit the form that remains in the scroller. */
+/** The debrief form's id; the form is in the Workout feedback dialog. */
 export const SUMMARY_FORM_ID = 'summary-debrief'
 
-/** The debrief card's heading, inside the card with the fields it names. */
+/** The debrief card's heading, inside the card with the opener it holds. */
 export const DEBRIEF_HEADING = 'Debrief'
+
+/** Round 7's opener on the Debrief card, and the dialog it opens (decision 3). */
+export const LOG_FEEDBACK_LABEL = 'Log workout feedback'
+export const FEEDBACK_TITLE = 'Workout feedback'
 
 export function Summary() {
   const query = useCompletedSessionQuery()
@@ -154,7 +166,6 @@ export function Summary() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Debrief({ completed }: { completed: CompletedSession }) {
-  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
   const [logOpen, setLogOpen] = useState(false)
   const { session, durationMins } = completed
   const summary = useSummaryClient()
@@ -206,59 +217,10 @@ function Debrief({ completed }: { completed: CompletedSession }) {
     })()
   }
 
-  const fields = <>
-            {error !== null && (
-              <div role="alert" className="clr-row">
-                <span
-                  aria-hidden="true"
-                  style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
-                >
-                  <AlertCircle />
-                </span>
-                <span>{error.message}</span>
-              </div>
-            )}
-
-            <FeelingRow value={mood} onChange={setMood} />
-
-            <Input
-              label="Notes · optional"
-              name="session_notes"
-              multiline
-              rows={4}
-              value={notes}
-              onChange={setNotes}
-              placeholder="Overhead felt heavy today. Lateral raises easy."
-              errorText={
-                tooLong
-                  ? `Notes are kept to ${NOTES_MAX_LENGTH} characters.`
-                  : undefined
-              }
-            />
-          </>
-
   return (
-    <Screen
-      title="Summary"
-      heading="Nice work"
-      header={{}}
-      pinnedFoot={proposal ? undefined :
-        <PhoneFooter>
-          <ActionRow>
-            <Button
-              type="submit"
-              form={SUMMARY_FORM_ID}
-              variant="primary"
-              size="lg"
-              loading={saving}
-              icon={<Check size={20} />}
-            >
-              Save and close
-            </Button>
-          </ActionRow>
-        </PhoneFooter>
-      }
-    >
+    // The debrief is entered in its dialog, so the screen has no pinned foot:
+    // the dialog's Save and close is the one way it saves and leaves.
+    <Screen title="Summary" heading="Nice work" header={{}}>
       <div className="clr-stack">
         {/* Only the screen title sits on the atmosphere: the acknowledgment,
             each key number and the debrief are each inside a card. */}
@@ -285,19 +247,47 @@ function Debrief({ completed }: { completed: CompletedSession }) {
           <SummaryWeek />
         </div>
 
-        {/* A form sits inside one card, its labels with it; the primary
-            action stays pinned in the footer and submits it by id. */}
-        {proposal ? <Card heading={DEBRIEF_HEADING}>
-          <Button variant="primary" onClick={() => setLogOpen(true)}>Log workout feedback</Button>
-          <LoggingOverlay open={logOpen} title="Workout feedback" onClose={() => setLogOpen(false)}>
+        {/* The Debrief card holds its heading and the one opener; the fields,
+            their labels and Save and close are in Round 7's dialog, drawn in
+            place as the accepted gallery state draws it. Nothing closes it
+            while a save is in flight. */}
+        <Card heading={DEBRIEF_HEADING}>
+          <Button variant="primary" onClick={() => setLogOpen(true)}>{LOG_FEEDBACK_LABEL}</Button>
+          <LoggingOverlay open={logOpen} title={FEEDBACK_TITLE} onClose={() => setLogOpen(false)} closeDisabled={saving}>
             <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate className="clr-stack">
-              {fields}
+              {error !== null && (
+                <div role="alert" className="clr-row">
+                  <span
+                    aria-hidden="true"
+                    style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
+                  >
+                    <AlertCircle />
+                  </span>
+                  <span>{error.message}</span>
+                </div>
+              )}
+
+              <FeelingRow value={mood} onChange={setMood} />
+
+              <Input
+                label="Notes · optional"
+                name="session_notes"
+                multiline
+                rows={4}
+                value={notes}
+                onChange={setNotes}
+                placeholder="Overhead felt heavy today. Lateral raises easy."
+                errorText={
+                  tooLong
+                    ? `Notes are kept to ${NOTES_MAX_LENGTH} characters.`
+                    : undefined
+                }
+              />
+
               <Button type="submit" variant="primary" loading={saving}>Save and close</Button>
             </form>
           </LoggingOverlay>
-        </Card> : <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate>
-          <Card heading={DEBRIEF_HEADING}>{fields}</Card>
-        </form>}
+        </Card>
       </div>
     </Screen>
   )

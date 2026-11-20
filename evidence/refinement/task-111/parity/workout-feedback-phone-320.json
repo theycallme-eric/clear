@@ -1,0 +1,214 @@
+{
+  "schema": "clear-task-111-parity/v1",
+  "task": "TASK-111",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "workout-feedback",
+  "label": "Workout feedback",
+  "width": 320,
+  "route": "/summary",
+  "drive": "card; Log workout feedback → Workout feedback; feeling 2 and “Long day.”, Close log, Log workout feedback → Workout feedback again — on the browser clock, held between steps; the page behind the dialog held where the card was read",
+  "parts": {
+    "card": "the Debrief card, on both sides",
+    "context": null,
+    "open": "the open dialog",
+    "reopened": "the open dialog, after an entry, its X and the opener again"
+  },
+  "captures": {
+    "gallery-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-card.png",
+      "sha256": "965234aaa103a21c8f5c95b9848e1394a285b6b7cc8d7ec83223d82a96559329"
+    },
+    "route-card": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-card.png",
+      "sha256": "8a3f26493e4e03d8444543245b0485270cb922cef6338f578410d132a2f8f819"
+    },
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-open.png",
+      "sha256": "c1128ce5a7be753ee162a3988a1b5d46e76f90015131882bc1e07871fe1fcb76"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-open.png",
+      "sha256": "b3e4f91f0fb342a42801cda21e39d4569e8556b63807a8554c958807d57c5beb"
+    },
+    "gallery-reopened": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-reopened.png",
+      "sha256": "d7f576f7ebbb1511361419fd759cac6eea2095de205fd757a5cb25085ab654d2"
+    },
+    "route-reopened": {
+      "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-reopened.png",
+      "sha256": "2d402c712ee3e76f34eea8ff3444007d35b1a650140de643e331a27e0fe85b02"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "DEBRIEF",
+        "LOG WORKOUT FEEDBACK"
+      ],
+      "open": [
+        "WORKOUT FEEDBACK",
+        "HOW DO YOU FEEL?",
+        "1",
+        "1, SPENT",
+        "2",
+        "2, WORN",
+        "3",
+        "3, FLAT",
+        "4",
+        "4, READY",
+        "5",
+        "5, PEAK",
+        "NOTES · OPTIONAL",
+        "SAVE AND CLOSE"
+      ],
+      "reopened": [
+        "WORKOUT FEEDBACK",
+        "HOW DO YOU FEEL?",
+        "1",
+        "1, SPENT",
+        "2",
+        "2, WORN",
+        "3",
+        "3, FLAT",
+        "4",
+        "4, READY",
+        "5",
+        "5, PEAK",
+        "CLEAR",
+        "NOTES · OPTIONAL",
+        "SAVE AND CLOSE"
+      ]
+    },
+    "route": {
+      "card": [
+        "DEBRIEF",
+        "LOG WORKOUT FEEDBACK"
+      ],
+      "open": [
+        "WORKOUT FEEDBACK",
+        "HOW DO YOU FEEL?",
+        "1",
+        "1, SPENT",
+        "2",
+        "2, WORN",
+        "3",
+        "3, FLAT",
+        "4",
+        "4, READY",
+        "5",
+        "5, PEAK",
+        "NOTES · OPTIONAL",
+        "SAVE AND CLOSE"
+      ],
+      "reopened": [
+        "WORKOUT FEEDBACK",
+        "HOW DO YOU FEEL?",
+        "1",
+        "1, SPENT",
+        "2",
+        "2, WORN",
+        "3",
+        "3, FLAT",
+        "4",
+        "4, READY",
+        "5",
+        "5, PEAK",
+        "CLEAR",
+        "NOTES · OPTIONAL",
+        "SAVE AND CLOSE"
+      ]
+    }
+  },
+  "differences": {
+    "card": [],
+    "open": [],
+    "reopened": []
+  },
+  "focus": {
+    "open": {
+      "gallery": "Close log",
+      "route": "Close log",
+      "criterion": null,
+      "reason": null,
+      "same": true
+    },
+    "reopened": {
+      "gallery": "Close log",
+      "route": "Close log",
+      "criterion": null,
+      "reason": null,
+      "same": true
+    }
+  },
+  "frame": null,
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 7,
+        "open": 54,
+        "reopened": 57
+      },
+      "route": {
+        "card": 7,
+        "open": 54,
+        "reopened": 57
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 95
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 370.5
+        },
+        "reopened": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 426.5
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 95
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 370.5
+        },
+        "reopened": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 426.5
+        }
+      }
+    },
+    "differences": {
+      "card": [],
+      "open": [],
+      "reopened": []
+    }
+  }
+}
