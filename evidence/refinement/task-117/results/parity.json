@@ -1,0 +1,85 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-117",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-117-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-117/required-cases.json",
+    "sha256": "10f041b61f8322649fa9f3a8547f4ae866945f1db92b0cbdb6965cddba4da95c"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-117-parity.spec.ts",
+      "sha256": "39e0c7b46b5cc652c16cf88f31b6ec0c0acd4474a97bc4f28f0aed468f1f6ebe"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 emom phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 emom phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 amrap phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 amrap phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 for_time phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 for_time phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 ladder phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-117-parity.spec.ts",
+      "name": "TASK-AC-90B334BEA586 ladder phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

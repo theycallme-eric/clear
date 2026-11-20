@@ -9,8 +9,6 @@ import { sessionSnapshotSchema, type SessionSnapshot } from '../../src/state/sch
 import {
   ACTUALS_AMRAP_WORK_LIST,
   ACTUALS_COOLDOWN_TITLE,
-  ACTUALS_FOR_TIME_WORK_LIST,
-  ACTUALS_LADDER_WORK_LIST,
   ACTUALS_PLANNED_LOADS,
   ACTUALS_RACE_SECTION_TITLE,
   ACTUALS_SECTION_TITLE,
@@ -49,7 +47,24 @@ import { expect, test as scanned } from '../fixtures'
  * forwarded; the one History read answers those rows back. This is the app's
  * own write and read contract on a synthetic origin, not backend persistence
  * proof (TASK-047 owns the real lane).
+ *
+ * A3 TASK-117 (F3, #743) carries this spec onto Round 7's owners, the ones
+ * `/workout` draws: `TimedWorkoutFlow` with its one "Log results"
+ * `LoggingOverlay`, and `TimedResultLog` inside it. Each case keeps its name
+ * and its asserted behaviour, read from Round 7's words and geometry
+ * (`evidence/refinement/task-117/test-ledger.json` says what each read
+ * changed): the work lists `Movements in this FOR TIME` and `Prescribed ladder
+ * rounds`, Round 7's `Start FOR TIME`, the AMRAP's amount field `Completed in
+ * next round` (`Next round · <movement>`), units as Round 7's field caps
+ * (`Reps`, `Seconds`, `Distance (m)`), a movement's group read by its title, a
+ * log that opens by itself as the attempt ends (and from the card's action
+ * after), a saved log read back as Round 7's `Log saved` with each movement's
+ * entry in words and `Edit log`, and each accepted gallery state run past its
+ * cap by its own drive (`?state=<id>&open=1`) or finished by its own controls.
  */
+/** The lists Round 7's cards name their work by (`TimedWorkoutFlow`, `LadderPrescription`). */
+const ACTUALS_FOR_TIME_WORK_LIST = 'Movements in this FOR TIME'
+const ACTUALS_LADDER_WORK_LIST = 'Prescribed ladder rounds'
 const OWNER = '00000000-0000-4000-8000-000000001501'
 const PLACE = '00000000-0000-4000-8000-000000001511'
 const CORS = {
@@ -305,7 +320,7 @@ async function pass(page: Page, seconds: number) {
 
 function cardOf(scope: Page | Locator, list: string): Locator {
   const page = 'page' in scope ? scope.page() : scope
-  return scope.locator('[data-workout-card="workout"]').filter({
+  return scope.locator('.clr-timed-flow').filter({
     has: page.getByRole('list', { name: list, exact: true }),
   })
 }
@@ -316,17 +331,26 @@ function cardOf(scope: Page | Locator, list: string): Locator {
  * titled "Log results", over a workout that is inert while it is open.
  */
 function openerOf(card: Locator): Locator {
-  return card.locator('[data-timed-log-opener]').getByRole('button', { name: 'Log results', exact: true })
+  return card.locator('.clr-timed-actions').getByRole('button', { name: 'Log results', exact: true })
 }
 
-/** The block's log: the open focused dialog's one form, named by its title "Log results". */
+/** The block's log: the open focused dialog's one form (Round 7 draws the dialog inside the block's flow). */
 function logOf(card: Locator): Locator {
-  return card.page().locator('dialog.clr-accepted-log[open] form.clr-timed-log')
+  return card.locator('dialog.clr-logging-overlay[open] form.clr-timed-log')
+}
+
+/** Round 7 opens the log by itself as the attempt ends; wait briefly for it so a later step does not race it. */
+async function ownOpening(card: Locator) {
+  try {
+    await expect(logOf(card)).toBeVisible({ timeout: 3_000 })
+  } catch {
+    // Not opened by itself: the next step opens it from the card's action.
+  }
 }
 
 /** Opens the card's log (closing any other first) and returns it. */
 async function openLog(card: Locator): Promise<Locator> {
-  if ((await openerOf(card).getAttribute('aria-expanded')) !== 'true') {
+  if ((await logOf(card).count()) === 0) {
     await closeLog(card.page())
     await openerOf(card).click()
   }
@@ -334,8 +358,17 @@ async function openLog(card: Locator): Promise<Locator> {
   return logOf(card)
 }
 
-/** Opens the card's log by keyboard: the action focused, then Enter. */
+/**
+ * Opens the card's log by keyboard: the log Round 7 opened by itself as the
+ * attempt ended is closed with Escape, then the action is focused and Enter
+ * opens it.
+ */
 async function openLogByKeyboard(card: Locator): Promise<Locator> {
+  await ownOpening(card)
+  if ((await logOf(card).count()) > 0) {
+    await card.page().keyboard.press('Escape')
+    await expect(logOf(card)).toHaveCount(0)
+  }
   await openerOf(card).focus()
   await card.page().keyboard.press('Enter')
   await expect(logOf(card)).toBeVisible()
@@ -344,7 +377,7 @@ async function openLogByKeyboard(card: Locator): Promise<Locator> {
 
 /** Closes the open log with its framed X. */
 async function closeLog(page: Page) {
-  const open = page.locator('dialog.clr-accepted-log[open]')
+  const open = page.locator('dialog.clr-logging-overlay[open]')
   if ((await open.count()) === 0) return
   await open.getByRole('button', { name: 'Close log', exact: true }).click()
   await expect(open).toHaveCount(0)
@@ -354,12 +387,12 @@ function completionOf(card: Locator): Locator {
   return logOf(card).getByRole('group', { name: 'Work completed', exact: true })
 }
 
-/** One movement's group in a log, by its name. */
+/** One movement's group in a log, by its name: Round 7's group titled by its movement. */
 function movementOf(log: Locator, name: string): Locator {
-  return log.locator('[data-timed-movement]').filter({ has: log.page().getByRole('heading', { name, exact: true }) })
+  return log.locator('.clr-timed-log__group').filter({ has: log.page().getByRole('heading', { name, exact: true }) })
 }
 
-const amountOf = (log: Locator, name: string) => log.getByRole('spinbutton', { name: new RegExp(`^(?:Round \\d+|Completed) · ${name}$`) })
+const amountOf = (log: Locator, name: string) => log.getByRole('spinbutton', { name: new RegExp(`^(?:Round \\d+|Next round|Completed) · ${name}$`) })
 const weightOf = (log: Locator, name: string) => log.getByRole('spinbutton', { name: `Weight · ${name}`, exact: true })
 
 /** The words of a question's checked answers — none, or one. */
@@ -368,14 +401,38 @@ async function chosen(group: Locator): Promise<string[]> {
     radios.filter((radio) => radio.getAttribute('aria-checked') === 'true').map((radio) => radio.textContent ?? ''))
 }
 
-/** Every movement group a log draws: its name, its fields' visible labels and their units. */
+/** Every movement group a log draws (the groups titled by their movement): its name, its fields' visible labels and their units. */
 async function movementGroups(log: Locator) {
-  return log.locator('[data-timed-movement]').evaluateAll((groups) =>
-    groups.map((group) => ({
-      name: group.querySelector('h1, h2, h3, h4, h5, h6')?.textContent ?? '',
+  return log.locator('.clr-timed-log__group').evaluateAll((groups) =>
+    groups.filter((group) => group.querySelector(':scope > .clr-timed-log__group-title') !== null).map((group) => ({
+      name: group.querySelector(':scope > .clr-timed-log__group-title')?.textContent ?? '',
       fields: [...group.querySelectorAll('label')].map((label) => label.textContent ?? ''),
       units: [...group.querySelectorAll('.clr-field__unit')].map((unit) => unit.textContent ?? ''),
     })))
+}
+
+/** A count's shown value (Round 7's `QuantitySelector`), by its label. */
+function countValue(log: Locator, label: string): Locator {
+  return log.getByRole('group', { name: label, exact: true }).locator('output')
+}
+
+/** Round 7's saved log, read back on the card: one line per movement with an entry, in words. */
+async function savedEntries(card: Locator): Promise<string[]> {
+  return card.locator('[data-timed-saved]').evaluate((saved) => [...saved.querySelectorAll('p')]
+    .map((line) => line.textContent ?? '')
+    .filter((line) => line.includes(' · ') && !line.includes('active time')))
+}
+
+/** The saved log offers no entry any more: no Log results action, no field on the card, only Round 7's Edit log. */
+async function expectEntriesNotOffered(card: Locator) {
+  await expect(openerOf(card)).toHaveCount(0)
+  await expect(card.getByRole('spinbutton')).toHaveCount(0)
+  await expect(card.locator('[data-timed-saved]').getByRole('button', { name: 'Edit log', exact: true })).toBeVisible()
+}
+
+/** The section the forward action arrived at (Round 7 heads the section and its block cards with its name). */
+function sectionHeading(page: Page, title: string): Locator {
+  return page.getByRole('heading', { name: title, exact: true }).first()
 }
 
 type Box = { top: number; bottom: number; left: number; right: number; width: number; height: number }
@@ -403,8 +460,10 @@ async function readEntryGeometry(log: Locator): Promise<EntryGeometry> {
     }
     const formStyle = getComputedStyle(form)
     const groups = [...form.querySelectorAll<HTMLElement>('.clr-timed-log__group')]
-    const movements = [...form.querySelectorAll<HTMLElement>('[data-timed-movement]')]
-    const result = groups.find((group) => !group.hasAttribute('data-timed-movement'))!
+    const titled = (group: Element) => group.querySelector(':scope > .clr-timed-log__group-title') !== null
+    const movements = groups.filter(titled)
+    // The result group: the first untitled group that draws anything (an EMOM's is empty and not drawn).
+    const result = groups.find((group) => !titled(group) && group.getBoundingClientRect().height > 0)!
     const effort = [...form.querySelectorAll('fieldset')].find((node) => node.querySelector('legend')?.textContent === 'Effort · optional')
     return {
       formContent: {
@@ -414,7 +473,7 @@ async function readEntryGeometry(log: Locator): Promise<EntryGeometry> {
       resultBottom: box(result).bottom,
       effortTop: effort === undefined ? null : box(effort).top,
       movements: movements.map((group) => {
-        const title = group.querySelector('h1, h2, h3, h4, h5, h6')!
+        const title = group.querySelector(':scope > .clr-timed-log__group-title')!
         const titleStyle = getComputedStyle(title)
         return {
           name: title.textContent ?? '',
@@ -485,7 +544,7 @@ async function attachCard(page: Page, card: Locator, name: string) {
     await settle(page)
     await test.info().attach(`${name}.png`, { body: await card.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     // TASK-046: the log itself is in the open focused dialog.
-    const open = page.locator('dialog.clr-accepted-log[open] [data-logging-frame]')
+    const open = card.locator('dialog.clr-logging-overlay[open]')
     if ((await open.count()) > 0) await test.info().attach(`${name}-log.png`, { body: await open.screenshot({ caret: 'hide' }), contentType: 'image/png' })
   } finally {
     await page.setViewportSize(viewport)
@@ -524,10 +583,11 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
 
     // Ready and running ask for nothing; the race stops under the cap.
     await expect(logOf(card)).toHaveCount(0)
-    await card.getByRole('button', { name: 'Start For Time', exact: true }).tap()
+    await card.getByRole('button', { name: 'Start FOR TIME', exact: true }).tap()
     await pass(page, 90)
     await card.getByRole('button', { name: 'Finish', exact: true }).tap()
-    // TASK-046: the card's "Log results" action opens the log.
+    // TASK-046: the log opens as the race ends, and from the card's "Log results" action.
+    await ownOpening(card)
     const log = await openLog(card)
     await settle(page)
 
@@ -541,8 +601,8 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await completionOf(card).getByRole('radio', { name: 'Incomplete', exact: true }).tap()
     await expect(amountOf(log, 'wall ball')).toBeVisible()
     expect(await movementGroups(log)).toEqual([
-      { name: 'wall ball', fields: ['Completed', 'Weight used'], units: ['reps', 'kg'] },
-      { name: 'plank', fields: ['Completed'], units: ['sec'] },
+      { name: 'wall ball', fields: ['Completed', 'Weight used'], units: ['Reps', 'kg'] },
+      { name: 'plank', fields: ['Completed'], units: ['Seconds'] },
     ])
     await expect(amountOf(log, 'wall ball')).toHaveValue('')
     await expect(weightOf(log, 'wall ball')).toHaveValue('')
@@ -609,7 +669,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await expect(amountOf(log, 'wall ball')).toBeEnabled()
     await closeLog(page)
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE, exact: true })).toBeVisible()
+    await expect(sectionHeading(page, ACTUALS_RACE_SECTION_TITLE)).toBeVisible()
 
     // What was sent: the For Time's insert, then its 23505 retry corrected in
     // place (the category as `effort`, the numeric effort null), then each
@@ -637,19 +697,16 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     }
     for (const write of app.sent) expect(JSON.stringify(write.body)).not.toMatch(/"perceived_effort":\d/)
 
-    // Back to the saved section: the entries read back and are no longer offered.
+    // Back to the saved section: the entries read back from the saved rows —
+    // Round 7's "Log saved", each movement's entry in words — and no field
+    // offers them any more (Round 7's correction is its Edit log).
     await page.getByRole('button', { name: 'Previous', exact: true }).tap()
-    await expect(page.getByRole('heading', { name: ACTUALS_SECTION_TITLE, exact: true })).toBeVisible()
-    await openLog(card)
-    await expect(amountOf(log, 'wall ball')).toHaveValue('28')
-    await expect(amountOf(log, 'wall ball')).toBeDisabled()
-    await expect(weightOf(log, 'wall ball')).toHaveValue('8')
-    await expect(weightOf(log, 'wall ball')).toBeDisabled()
-    await expect(amountOf(log, 'plank')).toHaveValue('45')
-    await expect(amountOf(log, 'plank')).toBeDisabled()
+    await expect(sectionHeading(page, ACTUALS_SECTION_TITLE)).toBeVisible()
+    await expect(card.locator('[data-timed-saved]')).toBeVisible()
+    expect(await savedEntries(card)).toEqual([`wall ball · 28 reps · 8 ${unit}`, 'plank · 45 seconds'])
+    await expectEntriesNotOffered(card)
     await expect(card.getByText('Block saved', { exact: true })).toBeVisible()
     await attachCard(page, card, 'for-time-saved-readback-signal-phone-390')
-    await closeLog(page)
 
     // History reads the row back: stopped before its cap, as Incomplete.
     await visit(`/history/${app.sessionId}`)
@@ -680,25 +737,25 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     // Nothing counted: no round to attach a partial to, so no amount field;
     // the loaded swing's load alone.
     expect(await movementGroups(log)).toEqual([{ name: 'kettlebell swing', fields: ['Weight used'], units: ['kg'] }])
-    await expect(log.getByRole('spinbutton', { name: /^Round \d+ · / })).toHaveCount(0)
+    await expect(log.getByRole('spinbutton', { name: /^(?:Round \d+|Next round|Completed) · / })).toHaveCount(0)
 
-    // Two rounds by keyboard: each movement's round-3 amount in its own unit —
-    // reps, reps, metres — and still one load field; the partial reps count
-    // beside them.
+    // Two rounds by keyboard: each movement's next-round amount — the round
+    // after the count, in Round 7's words — in its own unit (reps, reps,
+    // metres), and still one load field; the partial reps count beside them.
     const plusRounds = logOf(card).getByRole('button', { name: 'Increase rounds completed', exact: true })
     await plusRounds.focus()
     await page.keyboard.press('Enter')
     await page.keyboard.press('Enter')
     await expect(amountOf(log, 'kettlebell swing')).toBeVisible()
     expect(await movementGroups(log)).toEqual([
-      { name: 'kettlebell swing', fields: ['Completed in round 3', 'Weight used'], units: ['reps', 'kg'] },
-      { name: 'burpee', fields: ['Completed in round 3'], units: ['reps'] },
-      { name: 'row', fields: ['Completed in round 3'], units: ['m'] },
+      { name: 'kettlebell swing', fields: ['Completed in next round', 'Weight used'], units: ['Reps', 'kg'] },
+      { name: 'burpee', fields: ['Completed in next round'], units: ['Reps'] },
+      { name: 'row', fields: ['Completed in next round'], units: ['Distance (m)'] },
     ])
     const plusReps = logOf(card).getByRole('button', { name: 'Increase reps into the next round', exact: true })
     await plusReps.focus()
     for (let reps = 0; reps < 5; reps += 1) await page.keyboard.press('Enter')
-    await expect(logOf(card).getByRole('status', { name: 'Reps into the next round', exact: true })).toHaveText('5')
+    await expect(countValue(logOf(card), 'Reps into the next round')).toHaveText('5')
 
     // Keyboard through the fields: the swing's amount, Tab to its load, Tab to
     // the burpee's amount; the row left blank; nothing filled from the plan.
@@ -737,10 +794,11 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await checkJourneyA11y(page)
 
     // A count corrected by keyboard moves the round: every amount clears —
-    // the burpee's zero included, never carried to round 2 — and the load stays.
+    // the burpee's zero included, never carried to the new round — and the load stays.
     await logOf(card).getByRole('button', { name: 'Decrease rounds completed', exact: true }).focus()
     await page.keyboard.press('Enter')
-    await expect(log.getByText('Completed in round 2', { exact: true })).toHaveCount(3)
+    await expect(countValue(logOf(card), 'Rounds completed')).toHaveText('1')
+    await expect(log.getByText('Completed in next round', { exact: true })).toHaveCount(3)
     await expect(amountOf(log, 'kettlebell swing')).toHaveValue('')
     await expect(amountOf(log, 'burpee')).toHaveValue('')
     await expect(weightOf(log, 'kettlebell swing')).toHaveValue('20')
@@ -764,7 +822,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     const next = page.getByRole('button', { name: 'Next section', exact: true })
     await next.focus()
     await page.keyboard.press('Enter')
-    await expect(page.getByRole('heading', { name: ACTUALS_RACE_SECTION_TITLE, exact: true })).toBeVisible()
+    await expect(sectionHeading(page, ACTUALS_RACE_SECTION_TITLE)).toBeVisible()
     expect(resultColumns(app.blockRow(app.amrapBlockId)!)).toMatchObject({ block_id: app.amrapBlockId, elapsed_seconds: 120, rounds_completed: 1, partial_round_reps: 5, perceived_effort: null, effort: null })
     expect(app.sent.filter((write) => write.table === 'block_results').map((write) => write.method)).toEqual(['POST', 'POST', 'POST'])
     expect(app.sent.filter((write) => write.table === 'block_movement_results').map((write) => [write.method, write.body?.workout_exercise_id])).toEqual([['POST', swing], ['POST', burpee]])
@@ -780,7 +838,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     // The three-round race in the next section: loads only, no partial round
     // and no rounds count (owner decision); its load reaches a load-only row.
     const race = cardOf(page, ACTUALS_FOR_TIME_WORK_LIST)
-    await race.getByRole('button', { name: 'Start For Time', exact: true }).focus()
+    await race.getByRole('button', { name: 'Start FOR TIME', exact: true }).focus()
     await page.keyboard.press('Enter')
     await pass(page, 200)
     await race.getByRole('button', { name: 'Finish', exact: true }).focus()
@@ -788,6 +846,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     const raceLog = await openLogByKeyboard(race)
     await completionOf(race).getByRole('radio', { name: 'Incomplete', exact: true }).focus()
     await page.keyboard.press('Space')
+    await expect(completionOf(race).getByRole('radio', { name: 'Incomplete', exact: true })).toHaveAttribute('aria-checked', 'true')
     expect(await movementGroups(raceLog)).toEqual([{ name: 'thruster', fields: ['Weight used'], units: ['kg'] }])
     await expect(raceLog.getByRole('group', { name: 'Rounds completed', exact: true })).toHaveCount(0)
     await weightOf(raceLog, 'thruster').focus()
@@ -796,7 +855,7 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await expect(raceLog).toHaveCount(0)
     await next.focus()
     await page.keyboard.press('Enter')
-    await expect(page.getByRole('heading', { name: ACTUALS_COOLDOWN_TITLE, exact: true })).toBeVisible()
+    await expect(sectionHeading(page, ACTUALS_COOLDOWN_TITLE)).toBeVisible()
     const thrusterRow = [...app.sent].reverse().find((write) => write.table === 'block_movement_results')?.body
     expect(movementColumns(thrusterRow ?? null)).toMatchObject({ round_number: null, actual_reps: null, weight: 35 })
     expect(app.movementRowCount()).toBe(3)
@@ -807,69 +866,95 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     test.setTimeout(120_000)
     await page.setViewportSize({ width: 390, height: 844 })
     await installDeterministicCapture(page, { skin: 'signal', reducedMotion: true })
+    // The gallery's memory runtime states loads in its preview profile's unit (`PreviewSetLogging`: pounds).
+    const GALLERY_UNIT = 'lb'
     const requests: string[] = []
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
 
-    // AMRAP: finished early with 3 rounds — round-4 amounts, the swing's
-    // seeded 7 reps and 20 kg (not its prescribed 12 and 24); the cap with
-    // nothing counted — the load field alone.
-    await visit('/gallery/refinements?state=amrap')
+    // AMRAP: Round 7's accepted state is the route's flow over the gallery's
+    // AMRAP (a bodyweight burpee and a 24 kg kb swing), run past its cap by its
+    // own drive. Nothing counted: the load field alone. Round 7 seeds no sample
+    // entry, so the entries are typed here, over memory, and read back as
+    // typed — never the plan's 12 reps or 24 kg.
+    await visit('/gallery/refinements?state=amrap&open=1')
     const amrapRoot = page.locator('[data-refinement-state="amrap"]')
     await expect(amrapRoot.getByRole('heading', { name: 'AMRAP results', exact: true })).toBeVisible()
-    const early = cardOf(amrapRoot.locator('[data-gallery-amrap="early"]'), ACTUALS_AMRAP_WORK_LIST)
+    const amrap = cardOf(amrapRoot, ACTUALS_AMRAP_WORK_LIST)
+    await ownOpening(amrap)
     // TASK-046: each card's "Log results" action opens its log.
-    const earlyLog = await openLog(early)
+    const amrapLog = await openLog(amrap)
     await settle(page)
-    expect(await movementGroups(earlyLog)).toEqual([{ name: 'kb swing', fields: ['Completed in round 4', 'Weight used'], units: ['reps', 'kg'] }])
-    await expect(amountOf(earlyLog, 'kb swing')).toHaveValue('7')
-    await expect(weightOf(earlyLog, 'kb swing')).toHaveValue('20')
-    await expect(logOf(early).getByRole('status', { name: 'Reps into the next round', exact: true })).toHaveText('0')
-    expectEntryContract(await readEntryGeometry(earlyLog), 'gallery amrap early')
-    const capped = cardOf(amrapRoot.locator('[data-gallery-amrap="cap"]'), ACTUALS_AMRAP_WORK_LIST)
-    expect(await movementGroups(await openLog(capped))).toEqual([{ name: 'kb swing', fields: ['Weight used'], units: ['kg'] }])
-    await openLog(early)
-    await test.info().attach('gallery-amrap-entries-signal-phone-390.png', { body: await amrapRoot.locator('[data-gallery-amrap="early"]').screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    expect(await movementGroups(amrapLog)).toEqual([{ name: 'kb swing', fields: ['Weight used'], units: [GALLERY_UNIT] }])
+    await weightOf(amrapLog, 'kb swing').fill('20')
+    const plusRounds = amrapLog.getByRole('button', { name: 'Increase rounds completed', exact: true })
+    for (let round = 0; round < 3; round += 1) await plusRounds.tap()
+    await expect(amountOf(amrapLog, 'kb swing')).toBeVisible()
+    expect(await movementGroups(amrapLog)).toEqual([
+      { name: 'burpee', fields: ['Completed in next round'], units: ['Reps'] },
+      { name: 'kb swing', fields: ['Completed in next round', 'Weight used'], units: ['Reps', GALLERY_UNIT] },
+    ])
+    await amountOf(amrapLog, 'kb swing').fill('7')
+    await expect(amountOf(amrapLog, 'kb swing')).toHaveValue('7')
+    await expect(weightOf(amrapLog, 'kb swing')).toHaveValue('20')
+    await expect(amrapLog).not.toContainText('24 kg')
+    expectEntryContract(await readEntryGeometry(amrapLog), 'gallery amrap')
+    await test.info().attach('gallery-amrap-entries-signal-phone-390.png', { body: await amrapLog.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     // Live over memory: a count moves the round and clears the amount, keeping the load.
-    await logOf(early).getByRole('button', { name: 'Increase rounds completed', exact: true }).tap()
-    await expect(earlyLog.getByText('Completed in round 5', { exact: true })).toBeVisible()
-    await expect(amountOf(earlyLog, 'kb swing')).toHaveValue('')
-    await expect(weightOf(earlyLog, 'kb swing')).toHaveValue('20')
+    await plusRounds.tap()
+    await expect(amountOf(amrapLog, 'kb swing')).toHaveValue('')
+    await expect(weightOf(amrapLog, 'kb swing')).toHaveValue('20')
     await noHorizontalOverflow(page)
     await checkJourneyA11y(page)
+    await closeLog(page)
 
-    // For Time: the cap (Incomplete) — the wall ball's seeded round-1 28 reps
-    // and 8 kg (not 40 and 9), the burpee blank; the finish (Complete) — the
-    // wall ball's load alone, blank.
-    await visit('/gallery/refinements?state=for_time')
+    // For Time: the cap (Incomplete) — the wall ball's round-1 amount and
+    // load, the burpee's amount, blank and typed as typed (not 40 and 9);
+    // finished by its own Finish (Complete) — the wall ball's load alone, blank.
+    await visit('/gallery/refinements?state=for_time&open=1')
     const forTimeRoot = page.locator('[data-refinement-state="for_time"]')
     await expect(forTimeRoot.getByRole('heading', { name: 'For Time results', exact: true })).toBeVisible()
-    const capRace = cardOf(forTimeRoot.locator('[data-gallery-race="for-time-cap"]'), ACTUALS_FOR_TIME_WORK_LIST)
+    const capRace = cardOf(forTimeRoot, ACTUALS_FOR_TIME_WORK_LIST)
+    await ownOpening(capRace)
     const capLog = await openLog(capRace)
     await settle(page)
+    expect(await chosen(completionOf(capRace))).toEqual(['Incomplete'])
     expect(await movementGroups(capLog)).toEqual([
-      { name: 'wall ball', fields: ['Completed', 'Weight used'], units: ['reps', 'kg'] },
-      { name: 'burpee', fields: ['Completed'], units: ['reps'] },
+      { name: 'wall ball', fields: ['Completed', 'Weight used'], units: ['Reps', GALLERY_UNIT] },
+      { name: 'burpee', fields: ['Completed'], units: ['Reps'] },
     ])
+    await expect(amountOf(capLog, 'wall ball')).toHaveValue('')
+    await expect(weightOf(capLog, 'wall ball')).toHaveValue('')
+    await amountOf(capLog, 'wall ball').fill('28')
+    await weightOf(capLog, 'wall ball').fill('8')
     await expect(amountOf(capLog, 'wall ball')).toHaveValue('28')
     await expect(weightOf(capLog, 'wall ball')).toHaveValue('8')
     await expect(amountOf(capLog, 'burpee')).toHaveValue('')
     expectEntryContract(await readEntryGeometry(capLog), 'gallery for_time cap')
-    const finishRace = cardOf(forTimeRoot.locator('[data-gallery-race="for-time-finish"]'), ACTUALS_FOR_TIME_WORK_LIST)
-    expect(await movementGroups(await openLog(finishRace))).toEqual([{ name: 'wall ball', fields: ['Weight used'], units: ['kg'] }])
-    await expect(weightOf(logOf(finishRace), 'wall ball')).toHaveValue('')
-    await test.info().attach('gallery-for-time-entries-signal-phone-390.png', { body: await forTimeRoot.locator('[data-gallery-race="for-time-cap"]').screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    await test.info().attach('gallery-for-time-entries-signal-phone-390.png', { body: await capLog.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     await noHorizontalOverflow(page)
     await checkJourneyA11y(page)
+    await closeLog(page)
+    await visit('/gallery/refinements?state=for_time')
+    const finishRace = cardOf(page.locator('[data-refinement-state="for_time"]'), ACTUALS_FOR_TIME_WORK_LIST)
+    await finishRace.getByRole('button', { name: 'Start FOR TIME', exact: true }).tap()
+    await finishRace.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await ownOpening(finishRace)
+    const finishLog = await openLog(finishRace)
+    expect(await chosen(completionOf(finishRace))).toEqual(['Complete'])
+    expect(await movementGroups(finishLog)).toEqual([{ name: 'wall ball', fields: ['Weight used'], units: [GALLERY_UNIT] }])
+    await expect(weightOf(finishLog, 'wall ball')).toHaveValue('')
+    await closeLog(page)
 
     // Ladder: Incomplete with no rung stated and bodyweight work — nothing to
     // ask; stating round 2 asks each movement's round-3 amount, bounded by
     // that rung's target, blank; typing changes the gallery's copy only.
-    await visit('/gallery/refinements?state=ladder')
+    await visit('/gallery/refinements?state=ladder&open=1')
     const ladderRoot = page.locator('[data-refinement-state="ladder"]')
     await expect(ladderRoot.getByRole('heading', { name: 'Ladder results', exact: true })).toBeVisible()
-    const ladderFinish = cardOf(ladderRoot.locator('[data-gallery-race="ladder-finish"]'), ACTUALS_LADDER_WORK_LIST)
+    const ladderFinish = cardOf(ladderRoot, ACTUALS_LADDER_WORK_LIST)
+    await ownOpening(ladderFinish)
     const ladderLog = await openLog(ladderFinish)
     await settle(page)
     expect(await chosen(completionOf(ladderFinish))).toEqual(['Incomplete'])
@@ -877,15 +962,15 @@ test.describe('TASK-015 truthful per-movement partial and actual-load entry', ()
     await ladderLog.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('button', { name: /^Round 2: / }).tap()
     await expect(amountOf(ladderLog, 'push up')).toBeVisible()
     expect(await movementGroups(ladderLog)).toEqual([
-      { name: 'push up', fields: ['Completed in round 3'], units: ['reps'] },
-      { name: 'burpee', fields: ['Completed in round 3'], units: ['reps'] },
+      { name: 'push up', fields: ['Completed in round 3'], units: ['Reps'] },
+      { name: 'burpee', fields: ['Completed in round 3'], units: ['Reps'] },
     ])
     await expect(amountOf(ladderLog, 'push up')).toHaveValue('')
     await expect(amountOf(ladderLog, 'push up')).toHaveAttribute('max', /^\d+$/)
     await amountOf(ladderLog, 'push up').fill('3')
     await expect(amountOf(ladderLog, 'push up')).toHaveValue('3')
     expectEntryContract(await readEntryGeometry(ladderLog), 'gallery ladder round 3')
-    await test.info().attach('gallery-ladder-entries-signal-phone-390.png', { body: await ladderRoot.locator('[data-gallery-race="ladder-finish"]').screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    await test.info().attach('gallery-ladder-entries-signal-phone-390.png', { body: await ladderLog.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     await noHorizontalOverflow(page)
     await checkJourneyA11y(page)
 

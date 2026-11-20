@@ -40,6 +40,7 @@
  * like. `emom-block.tsx` draws it and `workout-persistence.ts` remembers it.
  */
 import type { Enums } from '../data/database.types'
+import type { MovementActualDraft } from '../data/refinement-logging-rules'
 import { prescribedTarget, type PrescribedColumns, type PrescribedTarget } from './prescription'
 import {
   clockStopMoment,
@@ -110,6 +111,23 @@ export interface EmomState {
    * minute as performed (E01).
    */
   readonly finishedAt?: string | null
+  /**
+   * A3 TASK-117 (TASK-047, R84; TASK-AC-339D1096F660): each loaded movement's
+   * actual load as typed in the end log, by `workout_exercises.id`, kept on
+   * the attempt's record so a reload brings it back. An EMOM has no partial
+   * round (the schedule is assumed), so an entry's `amount` is always blank.
+   * Absent until the athlete types, and in every record written before it.
+   * Never read into the clock, and never a counted minute (E01).
+   */
+  readonly movements?: Readonly<Record<string, MovementActualDraft>>
+  /**
+   * A3 TASK-117 (TASK-AC-D58939F8E091; TASK-048's save authority, carried to
+   * the EMOM as A3 TASK-116 carried it to the AMRAP and For Time): `true` while
+   * a save of this attempt's end log has failed and none has succeeded since,
+   * so `Your log didn’t save. Try again.` is said again after a reload. Absent
+   * otherwise, and in every record written before it.
+   */
+  readonly saveFailed?: boolean
 }
 
 /** Not started: no clock running. */
@@ -303,6 +321,9 @@ export function clampEmomState(stored: EmomState): EmomState {
     ...(finishedAt === null
       ? restoredPause({ startedAt, pausedAt: stored.pausedAt })
       : { finishedAt: stored.finishedAt as string }),
+    // A3 TASK-117: the end log's typed loads and a failed save, kept as they were.
+    ...(stored.movements === undefined ? {} : { movements: stored.movements }),
+    ...(stored.saveFailed === true ? { saveFailed: true } : {}),
   }
 }
 

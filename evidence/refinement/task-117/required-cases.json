@@ -1,0 +1,503 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-117",
+  "description": "A3 task 5b-2 (F3; #743): the EMOM end log and the per-movement partials and loads, wired through Round 7’s owners on /workout — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” LoggingOverlay, and inside it TimedResultLog (src/ui/timed-result-log.tsx) — over each family’s own draft owner (AmrapState.movements, ForTimeState.movements, EmomState.movements, LadderDraft.movements) and the shell’s one completion path. check-01 runs the four files this task owns whole (owner decisions of 2026-11-18, decision 3): src/ui/timed-result-log.test.tsx (TASK-116’s TASK-009 and TASK-010 blocks, AC-C26-01’s exact per-movement group list restored with TASK-015’s gating, and the build’s TASK-015 block (6) rewritten onto Round 7, plus one case for TASK-AC-339D1096F660); src/ui/timed-result-dialog.test.tsx (the build’s TASK-046 unit suite (4) rewritten against TimedWorkoutFlow, TimedResultLog and LoggingOverlay); src/ui/timed-workout-flow.test.tsx (TASK-104’s and TASK-105’s blocks unchanged, the build’s TASK-011 EMOM cases (8) in their own block with AC-C31-01 restored whole, plus one case for TASK-AC-D58939F8E091); and src/data/refinement-logging-contract.test.ts (TASK-030’s cases unchanged, plus the timed-entry row re-verified on the wired entry, TASK-AC-A1C737BDC2FB). parity compares /workout’s EMOM, AMRAP, For Time and ladder with the accepted gallery states emom, amrap, for_time and ladder (bec4454) at 320 and 390 px — before Start, past the cap, after the same entries, and the card behind the log — in words and element boxes; captures go to the evidence store under clear-gallery-adoption-v2-20261120/task-117/captures. The carried TASK-011, TASK-015 and TASK-046 checks prove the route in the browser, and TASK-009’s and TASK-010’s browser suites are rerun as regression checks. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-117 --check check-01 -- npx vitest run src/ui/timed-result-log.test.tsx src/ui/timed-result-dialog.test.tsx src/ui/timed-workout-flow.test.tsx src/data/refinement-logging-contract.test.ts --passWithNoTests=false",
+      "criteria": [
+        "AC-C31-01",
+        "AC-C32-01",
+        "AC-C37-01",
+        "AC-R011-01",
+        "AC-R011-02",
+        "AC-R015-01",
+        "AC-R015-02",
+        "TASK-AC-339D1096F660",
+        "TASK-AC-8C147E2C148D",
+        "TASK-AC-9E768CEF9953",
+        "TASK-AC-A1C737BDC2FB",
+        "TASK-AC-A41C06588058",
+        "TASK-AC-D58939F8E091",
+        "TASK-AC-FB8AF4D9B641"
+      ],
+      "files": [
+        "src/ui/timed-result-log.test.tsx",
+        "src/ui/timed-result-dialog.test.tsx",
+        "src/ui/timed-workout-flow.test.tsx",
+        "src/data/refinement-logging-contract.test.ts"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C25-01 AMRAP work and its prescription precede the scoring on the real /workout route: ready, running and paused ask for no score, and once the window closes the log follows every movement",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C26-01 AMRAP rounds and the partial round are one result group under the simple log hierarchy: one Log results title, labels before their counts, no Result, Movements or Feedback group titles",
+          "criterion": "TASK-AC-FB8AF4D9B641"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C27-01 AMRAP each count is one wide frame holding framed minus and plus actions around a distinct value, in the selected roomier geometry (AC-R009-01)",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-C28-01 AMRAP Clear rounds and No partial round are gone with nothing in their place: blank reads as not recorded, the minus taps down to an explicit zero and stops, and no tap ever clears a value",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP blank and an explicit zero stay apart end to end: stopping records no work, then the stored record, a reload, the saved block result and History all read blank as absent and zero as zero",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP a failed save keeps the entered result on screen and the retry writes it once, unchanged",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > AC-R009-02 AMRAP records written before this change load and read exactly as before: rounds, an observed zero and a blank partial round each keep their meaning",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 AMRAP the accepted gallery state draws the route’s own AMRAP: work first, the grouped log and framed counts, blank beside an explicit zero, memory only",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-009 AMRAP prescription and concise scoring controls > TASK-AC-8FF68F3F5241 AMRAP save authority: a refused Save log keeps the draft through close and reopen and says it did not save, the words survive a reload until a save lands, the saved row then wins over the local echo, and a known row whose richer save failed reopens the block (TASK-AC-ABFEF4069683)",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-C29-01 Complete and Incomplete share one row in the For Time and ladder logs on the real /workout route: one Work completed question, two equal answers side by side under the accepted recipe, after the work",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 For Time completion starts where the race ended — Finish under the cap at Complete, the cap at Incomplete — stopping mid-race or with no cap claims nothing, and the athlete corrects either way",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 ladder completion follows the work it tracked: nothing is chosen before the attempt ends; Finish, the cap and a schedule run out, with nothing tracked, start at Incomplete with no rung — never every rung — and only the athlete’s Complete records the top rung",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 completion end to end: the stored answer, a reload, the saved block results, a return to the saved section and History keep Complete and Incomplete apart",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-C30-01 effort is optional and unanswered stays null: the existing three faces with no default, Clear back to null, and never a numeric block effort or a session mood",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-R010-02 effort reuses Frown, Meh and Smile with their established words, order, categories, selected tick, focus and keyboard behaviour: no new icon, scale or wording",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 a failed save keeps the completion answer and the effort on screen, and the retry writes the same completion once with no effort",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > AC-R010-01 For Time records written before the completion question load and read as before: a finish reads Complete and a cap Incomplete, the same completed_under_cap they always saved, and nothing is rewritten",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > JOURNEY-010 the accepted for_time and ladder gallery states draw the route’s own logs: completion at the route’s starting point, the existing effort faces unanswered, live over memory only",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-010 completion choices and existing effort faces > TASK-AC-8FF68F3F5241 For Time save authority: Work completed is asked only with a cap (TASK-AC-85F76FF493AB), the answer and a refused save survive close, reopen and a reload until a save lands, the saved row wins over the local echo, and a known row whose richer save failed reopens the block (TASK-AC-ABFEF4069683)",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 AMRAP per-movement partial and load fields follow the recorded rounds on the real /workout route: no amount until a rounds count is recorded, an explicit 0 gives round 1, the label names the round after the count, each amount in its movement’s own unit, a load only on a loaded movement, blank unrecorded and 0 kept, the partial reps count kept beside them, and a changed count clears the amounts and keeps the loads",
+          "criterion": "AC-C37-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 For Time partial and load fields follow the race: a single pass answered Incomplete asks each movement’s completed amount for round 1 in its own unit and a load on the loaded movement, Complete asks loads only and clears the amounts, an invalid value is refused in the field by the row’s own rule, and a multi-round race asks loads only with no partial round and no rounds count",
+          "criterion": "AC-C37-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-01 ladder partial fields name the round after the stated prefix, are bounded by that rung’s target and never filled from it, a change of round clears the amounts and keeps the loads, Complete offers loads only, and the entries live on the durable draft",
+          "criterion": "AC-R015-01"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 the partials, loads and effort save through the shell’s one completion path over the migration-transcribed PostgREST: one block row carrying the category as effort and never a number, one movement row per entered movement with its round, modality column and stamped unit, none for a blank movement, a refused movement write keeps every entry with the existing dialog, the retry restates the row and writes the movements once, saved fields read back disabled after a return and a reload, and History reads the entries",
+          "criterion": "AC-R015-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 a save with no new per-movement data behaves exactly as today: a timed log with nothing typed and no effort sends the same bare insert, names no effort column, calls neither the correction nor the movement writer, and a later-typed load reaches the row through the same path",
+          "criterion": "AC-R015-02"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > TASK-AC-339D1096F660 per-movement next-round amounts and actual loads are stored with the attempt and survive a reload: the AMRAP’s and the For Time’s entries come back as typed, a changed round count then clears the amounts and keeps the loads, and an EMOM’s movement rows are load-only",
+          "criterion": "TASK-AC-339D1096F660"
+        },
+        {
+          "file": "src/ui/timed-result-log.test.tsx",
+          "name": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 the accepted amrap, for_time and ladder gallery states draw the route’s own per-movement partial and load fields over memory only: the AMRAP’s seeded round-4 entry and load beside its counts, the capped For Time’s round-1 entry, the finished one’s load alone, the ladder’s fields once a round is stated, nothing stored and no network",
+          "criterion": "AC-C37-01"
+        },
+        {
+          "file": "src/ui/timed-result-dialog.test.tsx",
+          "name": "TASK-046 TimedResultDialog > draws one Log results action and no log until it is opened; the log opens in the shared modal titled Log results, named by it, with the framed Close log X focused",
+          "criterion": "TASK-AC-8C147E2C148D"
+        },
+        {
+          "file": "src/ui/timed-result-dialog.test.tsx",
+          "name": "TASK-046 TimedResultDialog > closes by the X or Escape without touching the consumer’s record, and a reopen shows the draft",
+          "criterion": "TASK-AC-8C147E2C148D"
+        },
+        {
+          "file": "src/ui/timed-result-dialog.test.tsx",
+          "name": "TASK-046 TimedResultDialog > the ladder’s quiet completion action closes the log in the same act and still runs the consumer’s own handler once",
+          "criterion": "TASK-AC-8C147E2C148D"
+        },
+        {
+          "file": "src/ui/timed-result-dialog.test.tsx",
+          "name": "TASK-046 TimedResultDialog > a log drawn before its attempt ends takes the secondary action",
+          "criterion": "TASK-AC-9E768CEF9953"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 EMOM and AMRAP Start follows the work and prescription and precedes coaching on the real /workout route",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-01 the long ladder keeps its Start near the top, after its identity and cap and before the repetitive rounds, with no second Start",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C17-01 every timed action row is the shared responsive full-width slot, after the work and before coaching, and the ladder alone takes the top slot",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 running controls are a secondary Pause and the format's primary Finish or Finish early, and paused controls a secondary Resume in Pause's place",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Pause freezes the section clock and its cap while the workout clock runs on, and Resume keeps the active time and the remaining window",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-C18-01 Finish ends each format's attempt where it stands — a paused attempt at its pause — and records nothing the format did not already observe",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > AC-R006-02 the section's Finish stays distinct from Finish workout: ending a block neither completes nor leaves the workout",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 recovery: a paused section comes back paused after close and reopen, and a reached cap offers no Resume",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-006 timed Start/Pause/Resume/Finish action hierarchy > JOURNEY-006 gallery ladder-4 and ladder-12 draw the actual ladder renderer with the top Start and the Pause/Finish hierarchy",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a reload while paused restores every format’s paused clock with the same time left, kept as one pause stamp beside its start in the format’s own record",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C EMOM Pause and Finish early: PAUSED, then FINISHED EARLY and the minute it was in, stored as the stop and never counted as performed minutes",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-8E33C288F00C the For Time Finish label follows the cap: a race is finished with a cap or without one, never ended early, while a prescribed EMOM or AMRAP window is",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 a raced ladder’s clock pauses and resumes inside its durable attempt, an older For Time-kept clock is adopted, and Undo finish puts the focus back on the lead control",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "A3 TASK-104 timed Pause, Resume and Finish early on Round 7’s flow, kept across reloads > TASK-AC-591C4D5CE263 the accepted gallery states emom, amrap and for_time draw the route’s own flow with its lifecycle, over memory only",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C34-01 a running ladder’s rounds are its ordered live check-off on the real /workout route: a tap selects the prefix through it, the count says how many, no rung tile carries a check glyph, by touch and keyboard",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next rung: one contiguous run, never a gap, live and in the log, recorded as highest_rung alone",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C36-01 checked live progress is imported at Finish into the editable log: every round checked starts Complete, a prefix Incomplete through its last round, and the athlete corrects either before the save",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-03 Finish alone never selects every rung and planned targets never become actuals: nothing tracked starts Incomplete with no round stated and records nothing; the cap imports what was checked",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-C33-01 the result tiles are rep-first and level: the rep target largest, the round secondary, the unit its own row, wrapping without a glyph for twelve and four rungs, one digit and two (AC-R013-02)",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 recovery: checked progress, the pause and the edited log survive close and reopen from the ladder’s durable record; effort stays unsaved; a saved ladder claims no answer",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 a ladder with no cap, a ladder clock an older build stored and a schedule: one durable attempt each, the progress imported only at Finish, and a schedule’s rounds stated by the athlete",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-013 rep-first ordered live ladder progress and result handoff > JOURNEY-013 gallery ladder-4 and ladder-12 draw the actual ladder renderer: live check-off, then the rep-first handoff into its log, over memory only",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo while running returns the same attempt within its original cap: the time spent finished counts and none is granted, the checked progress and the log’s entries come back, the answer returns to before Finish, and nothing completes the workout (AC-C38-01)",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-C38-01 undo while paused pauses the same attempt again at the same moment with its progress; resumed, finished again and saved, each of two differently shaped attempts writes exactly one row with the truthful highest round completed",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo is withdrawn the moment it would resume at the original cap, unprompted and for good, and the cap itself is never undone: the finished time, the log and its correction stay and are saved",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 undo survives close and reopen and a failed save with its draft kept, and a successful save ends it at once and durably, even when a reopen cannot read the saved row back",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-01 the quiet undo sits below Complete and Incomplete and before Rounds completed, left-aligned with no inherited inset, the existing small quiet button at the shared control height, reached by Tab and taking no confirmation (AC-C39-01, AC-C60-01, AC-R014-02)",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > JOURNEY-014 the accepted gallery’s four- and twelve-round states draw the route’s own quiet undo: Finish, then Undo finish brings the same attempt back with its checked rounds, and its original cap withdraws it, over memory only",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-014 accidental Finish recovery with an aligned quiet undo > AC-R014-03 no stale completion survives an undo: an older build’s For Time answer stored beside an adopted clock never becomes the attempt’s answer, and For Time’s own Finish offers no undo",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state",
+          "criterion": "AC-R011-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them",
+          "criterion": "AC-C32-01"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions",
+          "criterion": "TASK-AC-FB8AF4D9B641"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before",
+          "criterion": "AC-R011-02"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > TASK-AC-D58939F8E091 EMOM save authority, as the ladder’s: a refused Save log keeps the end log’s draft through close and reopen and says it did not save, the words and the typed load survive a reload until a save lands, the saved row then wins over the local echo, and a known row whose richer save failed reopens the block",
+          "criterion": "TASK-AC-D58939F8E091"
+        },
+        {
+          "file": "src/ui/timed-workout-flow.test.tsx",
+          "name": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption",
+          "criterion": "AC-C31-01"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 inventories exactly the 16 logging moments of the accepted sources, each with schema, validator, writer, identity, null/zero/update meaning, draft and readback",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 every source the matrix names resolves to a real export, every existing column to the generated types, and every proposed one is still absent",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 the published specification states the same moments, fields, statuses, migrations and owners as the typed contract",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: lifts, timed and distance movements, extra sets, supersets and circuit movements save through the one durable set path and read back in Workout and History",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: a saved set is corrected and cleared by ordered mutations that keep its identity, and a retry replays rather than duplicates",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: circuit, EMOM, AMRAP, For Time and ladder outcomes save through the shell’s one block writer, keep null distinct from zero and read back in History",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: movement notes, workout feedback and rest days keep their own writers, validators and readers",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-02 categorical block effort is never converted into the legacy 1-10 perceived_effort, which keeps its numeric meaning",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-02 per-movement timed partials and loads cannot reuse exercise_set_logs, so they need their own table",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 proposed per-movement identities derive from the block’s recorded outcome, never from planned targets, and keep null distinct from zero",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 a For Time partial is in round 1 only for a single-pass block; a multi-round race takes its round from a recorded completed-rounds count, or has none",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "TASK-030 logging field ownership before dependent writes > AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them",
+          "criterion": "TASK-AC-A41C06588058"
+        },
+        {
+          "file": "src/data/refinement-logging-contract.test.ts",
+          "name": "A3 TASK-117 the timed-entry contract row on the wired timed entry > TASK-AC-A1C737BDC2FB timed-entry holds on Round 7’s wired entry for all four families: the fields its rules state, blank unrecorded and 0 kept, the entries on each family’s own draft owner, and the shell’s one completion path building the rows",
+          "criterion": "TASK-AC-A1C737BDC2FB"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-117 --check parity -- npx playwright test e2e/refinement/task-117-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-90B334BEA586",
+        "TASK-AC-7711B8AB73E4"
+      ],
+      "files": [
+        "e2e/refinement/task-117-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 emom phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 emom phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 amrap phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 amrap phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 for_time phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 for_time phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 ladder phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        },
+        {
+          "file": "e2e/refinement/task-117-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-90B334BEA586 ladder phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+          "criterion": "TASK-AC-90B334BEA586"
+        }
+      ]
+    }
+  }
+}

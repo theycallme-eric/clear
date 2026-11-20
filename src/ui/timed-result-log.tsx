@@ -1,7 +1,16 @@
 import { Fragment, useState, type ReactNode } from 'react'
 import { Button, ChoiceGroup, Input } from '../design-system/index'
 import type { Enums } from '../data/database.types'
-import { exerciseName, modalityLabel } from '../state/prescription'
+import {
+  draftsAfterProgressChange,
+  loadApplies,
+  movementActualFromDraft,
+  movementAmountMax,
+  partialRoundFor,
+  type MovementActualDraft,
+} from '../data/refinement-logging-rules'
+import { isErr } from '../state/errors'
+import { exerciseName, modalityLabel, modalityUnit } from '../state/prescription'
 import type { BlockProgress } from '../state/workout-progress'
 import { ladderRungs, ladderUnit } from '../state/ladder'
 import { QuantitySelector } from './quantity-selector'
@@ -48,6 +57,50 @@ function ResultGroup({ title, children }: { title?: string; children: ReactNode 
 /** The log's words for a save that did not land (the accepted reference's, eded158c…). */
 const TIMED_LOG_SAVE_FAILED = 'Your log didn’t save. Try again.'
 
+/** Nothing typed for a movement yet. */
+const NO_ENTRY: MovementActualDraft = { amount: '', weight: '' }
+
+/** A row id for the inline check only; the shell mints the real one. Never sent. */
+const PROBE_ROW_ID = '00000000-0000-4000-8000-000000000000'
+
+/**
+ * A3 TASK-117 (TASK-015; C37, AC-R015-01): the round a movement's partial
+ * amount belongs to, read from the log's own recorded progress by the rule the
+ * shell saves it with (`partialRoundFor`, over the outcome `timedShellOutcome`
+ * reports), so what the log offers is what saves: an AMRAP's round after the
+ * recorded rounds (none until a rounds count is recorded; an explicit 0 gives
+ * round 1); a For Time answered Incomplete, round 1 of a single pass and none
+ * for a race of several rounds (it records no rounds count); a ladder's round
+ * after the stated prefix while one is left; an EMOM never (the schedule is
+ * assumed, so its movements take loads only). Null: no amount is asked.
+ */
+function partialRoundOfDraft(format: TimedFormat, block: BlockProgress, draft: TimedResultDraft): number | null {
+  switch (format) {
+    case 'emom':
+      return partialRoundFor({ family: 'emom' })
+    case 'amrap':
+      return partialRoundFor({ family: 'amrap', outcome: draft.count === null ? {} : { roundsCompleted: draft.count } })
+    case 'for_time':
+      return partialRoundFor({
+        family: 'for_time',
+        outcome: draft.completed === null ? {} : { completedUnderCap: draft.completed },
+        block: { rounds: block.rounds },
+      })
+    case 'ladder': {
+      const rungCount = ladderRungs(block.exercises).length
+      const highestRung = draft.completed === null ? null : draft.completed ? rungCount : draft.highestRung
+      return partialRoundFor({ family: 'ladder', outcome: highestRung === null ? {} : { highestRung }, rungCount })
+    }
+  }
+}
+
+/** What a refused amount or load is told, in the field, by the same rule that builds the saved row (TASK-015). */
+function refusalText(field: string, details: Record<string, unknown> | undefined, unit: string, partialRound: number | null): string {
+  if (field === 'weight') return 'Enter a weight of zero or more'
+  if (typeof details?.max === 'number') return `At most ${details.max} ${unit} in round ${partialRound}`
+  return field === 'actual_distance' ? `Enter a distance in ${unit}, 0 or more` : `Enter ${unit} as a whole number, 0 or more`
+}
+
 /**
  * A3 TASK-105 (F3; TASK-048, AC-R032-01/03): `saveFailed` is a failure the
  * block keeps beyond this form — a ladder's durable attempt notes it, so it is
@@ -61,6 +114,21 @@ const TIMED_LOG_SAVE_FAILED = 'Your log didn’t save. Try again.'
  * so "Work completed" is not asked. Asked otherwise, for For Time and ladder.
  * A For Time's partial amounts belong to a race answered Incomplete, never to
  * one nobody answered.
+ *
+ * A3 TASK-117 (F3; TASK-015, TASK-047; C37, AC-C37-01, AC-R015-01/02): each
+ * movement's group is drawn by the rules the shell saves it with
+ * (`src/data/refinement-logging-rules.ts`). An amount field only while a
+ * partial round applies (`partialRoundOfDraft`) — an AMRAP's none until a
+ * rounds count is recorded, a For Time's only for a single pass answered
+ * Incomplete, an EMOM's never — in the movement's own unit (a distance takes a
+ * decimal), bounded where the contract bounds it (`movementAmountMax`); a load
+ * field only on a loaded movement (`loadApplies`, the set logger's rule), in
+ * the athlete's unit. A movement with neither has no group. Blank is not
+ * recorded and a typed 0 is a 0; nothing is filled from a planned target or
+ * load. The rule that builds the saved row (`movementActualFromDraft`) says,
+ * in the field, what an entry is refused on. A changed round count clears the
+ * amounts and keeps the loads (`draftsAfterProgressChange`), as a changed
+ * answer or rung already did.
  */
 export function TimedResultLog({ block, format, finished, weightUnit, onSave, initial,
   value, onDraftChange, completionAction, hierarchy = 'simple', rungEmphasis = 'reps', accessibleName = 'Log section results', embedded = false,
@@ -95,33 +163,45 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
     measurements: Object.fromEntries(Object.entries(previous.measurements)
       .map(([id, value]) => [id, { ...value, amount: '' }])),
   }))
-  const nextRung = (draft.highestRung ?? 0) + 1
   // A3 TASK-105 (TASK-013/TASK-015, AC-R013-01/03): a ladder's partial work
   // belongs to the round after the stated prefix, so it is asked only once a
   // prefix is stated (zero included) and a round is left — nothing stated is
-  // not round 0, and no field is offered for a round nobody named.
-  const hasNextRung = nextRung <= rungs.length && (format !== 'ladder' || draft.highestRung !== null)
+  // not round 0, and no field is offered for a round nobody named. A3 TASK-117
+  // reads every family's round by the same rule the shell saves it with.
+  const partialRound = partialRoundOfDraft(format, block, draft)
   // A3 TASK-105 (C33, AC-R013-02): the rung's unit is the ladder's shared
   // reading (`ladderUnit`), the same `reps` / `sec` / `m` its prescription grid
   // states — never a longer word than the round it names.
   const rungUnit = ladderUnit(block.exercises)
   const measurements = block.exercises.flatMap(exercise => {
     const p = exercise.prescription
-    const loaded = p.equipment_used !== 'bodyweight' && p.load_type !== 'bodyweight' && p.equipment_used !== 'none'
-    const amount = format === 'amrap' || (format === 'for_time' && draft.completed === false)
-      || (format === 'ladder' && !draft.completed && hasNextRung)
+    // A3 TASK-117 (TASK-015): a load only where one can attach — the set logger's rule, which the saved row also applies.
+    const loaded = loadApplies(p)
+    const amount = partialRound !== null
     if (!loaded && !amount) return []
     const name = exerciseName(p.exercise_id)
     const unit = modalityLabel(p)
-    const target = format === 'ladder' ? p.target_sequence?.[nextRung - 1] ?? p.target_value : null
+    const entry = draft.measurements[exercise.exerciseId] ?? NO_ENTRY
+    const max = movementAmountMax(p, format, partialRound)
+    // The rule that builds the saved row, read here so what passes is what saves. Its unit is never stamped here.
+    const checked = movementActualFromDraft({
+      id: PROBE_ROW_ID, workoutExerciseId: exercise.exerciseId, prescription: p, partialRound, weightUnit: weightUnit ?? 'kg', draft: entry,
+    }, format)
+    const refused = isErr(checked) ? String(checked.error.details?.field ?? '') : null
+    const details = isErr(checked) ? checked.error.details : undefined
+    const amountRefused = refused !== null && refused !== 'weight'
+    const weightRefused = refused === 'weight'
     return [<ResultGroup key={exercise.exerciseId} title={name}>
-      {amount && <Input type="number" inputMode="numeric" min="0" step="1" max={target ?? undefined}
-        label={format === 'amrap' ? 'Completed in next round' : format === 'ladder' ? `Completed in round ${nextRung}` : 'Completed'}
-        aria-label={`${format === 'amrap' ? 'Next round' : format === 'ladder' ? `Round ${nextRung}` : 'Completed'} · ${name}`}
-        unit={unit} value={draft.measurements[exercise.exerciseId]?.amount ?? ''}
+      {amount && <Input type="number" inputMode={p.modality === 'distance' ? 'decimal' : 'numeric'} min="0"
+        step={p.modality === 'distance' ? 'any' : '1'} max={max ?? undefined}
+        label={format === 'amrap' ? 'Completed in next round' : format === 'ladder' ? `Completed in round ${partialRound}` : 'Completed'}
+        aria-label={`${format === 'amrap' ? 'Next round' : format === 'ladder' ? `Round ${partialRound}` : 'Completed'} · ${name}`}
+        unit={unit} value={entry.amount} invalid={amountRefused}
+        errorText={amountRefused ? refusalText(refused, details, modalityUnit(p), partialRound) : undefined}
         onChange={value => field(exercise.exerciseId, 'amount', value)} />}
       {loaded && <Input type="number" inputMode="decimal" min="0" step="any" label="Weight used" aria-label={`Weight · ${name}`}
-        unit={weightUnit ?? undefined} value={draft.measurements[exercise.exerciseId]?.weight ?? ''}
+        unit={weightUnit ?? undefined} value={entry.weight} invalid={weightRefused}
+        errorText={weightRefused ? refusalText('weight', details, modalityUnit(p), partialRound) : undefined}
         onChange={value => field(exercise.exerciseId, 'weight', value)} />}
     </ResultGroup>]
   })
@@ -142,7 +222,10 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
             progress(complete, format === 'ladder' ? (complete ? rungs.length : null) : draft.highestRung)
           }} />}
         {completionAction}
-        {format === 'amrap' && <QuantitySelector label="Rounds completed" value={draft.count} onChange={count => patch({ count })} />}
+        {/* A3 TASK-117 (TASK-015): a changed count moves the partial round, so its amounts clear and its loads stay. */}
+        {format === 'amrap' && <QuantitySelector label="Rounds completed" value={draft.count} onChange={count => setDraft(previous => ({
+          ...previous, count, measurements: draftsAfterProgressChange(previous.measurements, previous.count, count),
+        }))} />}
         {format === 'amrap' && <QuantitySelector label="Reps into the next round" value={draft.partialReps ?? null} onChange={partialReps => patch({ partialReps })} />}
         {format === 'ladder' && <LadderCompletion rungs={rungs} unit={rungUnit} completedThrough={draft.highestRung}
           emphasis={rungEmphasis} onChange={highestRung => progress(highestRung === rungs.length, highestRung)} />}
