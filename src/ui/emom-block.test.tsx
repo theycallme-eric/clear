@@ -318,11 +318,24 @@ function edges(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('[data-countdown-edge]')]
 }
 
-/** The route's movements carrying a live marker (`Now`, `Next`). */
-function routeMarked(word: string): HTMLElement[] {
+/** The route's movement rows, each named by its ordinal and name (`01 hollow body hold`). */
+function routeRows(): { name: string; item: HTMLElement }[] {
   return within(screen.getByRole('list', { name: 'Movements in this EMOM' }))
     .getAllByRole('listitem')
-    .filter((item) => within(item).queryByText(word) !== null)
+    // The name's own span (what names the movement), not the equipment Round 7 draws after it.
+    .map((item) => ({ name: item.querySelector('.clr-movement-identity__name > span:first-child')?.textContent?.trim() ?? '', item }))
+}
+
+/** The names of the route's movements carrying a live marker (`Now`, `Next`), as the build's `marked` reads them. */
+function routeMarked(word: string): string[] {
+  return routeRows().filter(({ item }) => within(item).queryByText(word) !== null).map(({ name }) => name)
+}
+
+/** One route movement row, by its name, so two movements' labels never collide. */
+function routeMovement(name: string) {
+  const row = routeRows().find((candidate) => candidate.name === name)
+  if (row === undefined) throw new Error(`${name} is not in the movement list`)
+  return within(row.item)
 }
 
 describe('the EMOM runs the clock the block prescribes', () => {
@@ -1128,10 +1141,13 @@ describe('the countdown takes the shared countdown warning', () => {
     expect(routeDigits().style.color).toBe('var(--text-timer-low)')
     expect(routeTimer()).toHaveTextContent('00:04')
     expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
-    // TASK-011 (C32): the minute and Now; the WORK caption is gone.
+    // TASK-011 (C32): the minute and Now; the WORK caption is gone. Round 7
+    // names a movement by its ordinal and name ("01 hollow body hold", where
+    // the build wrote "1. hollow body hold") and says the minute's target in
+    // its own case ("Min 1 · 8 reps" for "MIN 1 · 8 reps").
     expectNoRedundantCaption()
-    expect(routeMarked('Now')).toHaveLength(1)
-    expect(routeMarked('Now')[0]).toHaveTextContent('hollow body hold')
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
+    expect(routeMovement('01 hollow body hold').getByText('Min 1 · 8 reps')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Pause' })).toBeEnabled()
   })
 })

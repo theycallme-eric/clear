@@ -368,9 +368,9 @@ async function chipNames(page: Page): Promise<(string | null)[]> {
 
 const STATUSES_AT_ENTRY = ['Warm-up, complete', 'Primary lift, in progress', 'Conditioning, not started', 'Cooldown, not started']
 
-/** The opened section's name: its first card's own heading (Round 7's `MovementGroupHeader`). */
+/** The opened section's name: its first card's own heading (Round 7's `MovementGroupHeader`), as written. */
 async function firstCardHeading(page: Page): Promise<string> {
-  return firstCard(page).locator('[data-movement-group-header]').getByRole('heading').first().innerText()
+  return (await firstCard(page).locator('[data-movement-group-header]').getByRole('heading').first().textContent())?.trim() ?? ''
 }
 
 async function loggedSets(page: Page): Promise<number> {
@@ -390,7 +390,7 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
       const entry = await readNavigator(page)
       expect(entry.visible).toBe('All sections2 / 4')
       expect(entry.heading, 'no second heading repeats the card’s').toBe('')
-      expect((await firstCardHeading(page)).toLowerCase()).toBe('primary lift')
+      expect(await firstCardHeading(page)).toBe('Primary lift')
       expect(entry.status).toBe('Section 2 / 4 · In progress')
       expect(entry.insideCard, 'C54: no separate section card').toBe(false)
       expect(entry.structureBadges, 'C54: no repeated structure badge').toBe(0)
@@ -428,7 +428,7 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
       const away = await readNavigator(page)
       expect(away.visible).toBe('All sections3 / 4')
       expect(away.heading).toBe('')
-      expect((await firstCardHeading(page)).toLowerCase()).toBe('conditioning')
+      expect(await firstCardHeading(page)).toBe('Conditioning')
       expect(away.status).toBe('Section 3 / 4 · Not started')
       expect(away.structureBadges).toBe(0)
       expect(await visibleCount(page, 'AMRAP')).toEqual({ cards: 1, elsewhere: 0 })

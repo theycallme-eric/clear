@@ -619,7 +619,7 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     // TASK-043: the open log is itself a native dialog now (the standard
     // block's focused logging dialog), so the one edge is drawn in its top
     // layer — above the open log — rather than on the body under it.
-    expectOneSoftEdge(frame, /^dialog:open:/, 'open log')
+    expectOneSoftEdge(frame, 'dialog:open:Log set 1', 'open log')
     expectOnePhase(frame, 'open log')
     expect(await edgeIsTopmost(page), 'the edge paints above the open log').toEqual([true, true, true, true, true, true])
     expect(await storageSnapshot(page)).toEqual(before)
@@ -818,7 +818,9 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     test.setTimeout(120_000)
     await page.setViewportSize(PHONE_390)
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: false })
-    await page.clock.install({ time: ENTRY })
+    // The page's wall clock is fixed (timers and frames run): the state's
+    // driver moves its own memory clock to each moment, so each reads exactly.
+    await page.clock.setFixedTime(ENTRY)
     const requests: string[] = []
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
@@ -827,25 +829,22 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await visit('/gallery/refinements?state=urgency')
     const state = page.locator('[data-refinement-state="urgency"]')
     await expect(state.getByRole('heading', { name: 'Soft deadline warning · synchronized' })).toBeVisible()
-    // The state's driver presses Start and moves its memory clock to the moment;
-    // each check below holds within the second it is read in.
-    const moment = async (label: string, clock: string, readings: readonly string[]) => {
+    // The state's driver presses Start and moves its memory clock to the moment.
+    const moment = async (label: string, clock: string, reading: string) => {
       await tap(state.getByRole('button', { name: label }))
       const timer = state.getByRole('timer', { name: clock })
-      // The moment's own second, or one of the next few of the same band: the
-      // state's clock runs on in real time once it is there.
-      await expect.poll(async () => readings.includes(await readingOf(timer)), { timeout: 10_000 }).toBe(true)
+      await expect.poll(async () => readingOf(timer), { timeout: 10_000 }).toBe(reading)
       return timer
     }
 
     // An EMOM minute at ten seconds: the colour, never the edge.
-    const minute = await moment('EMOM · 10 seconds', 'EMOM time', ['00:10', '00:09', '00:08', '00:07'])
+    const minute = await moment('EMOM · 10 seconds', 'EMOM time', '00:10')
     await expect(frameOf(minute)).toHaveClass(/clr-chamfer--timer-low/)
     await expect(minute).not.toHaveAttribute('data-urgent')
     await expect(edge(page)).toHaveCount(0)
 
     // At five, running: the breathe and the one edge, in phase.
-    const five = await moment('EMOM · 5 seconds', 'EMOM time', ['00:05', '00:04', '00:03'])
+    const five = await moment('EMOM · 5 seconds', 'EMOM time', '00:05')
     await expect(five).toHaveAttribute('data-loop', 'run')
     let frame = await probe(page)
     expectOneSoftEdge(frame, 'body', 'gallery EMOM at 5')
@@ -853,7 +852,7 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await attach(page, 'gallery-urgency-edge-phone-390')
 
     // The count-up race toward its cap reads the same deadline: cap minus elapsed.
-    const race = await moment('For Time · 5 seconds to cap', 'FOR TIME time', ['14:55', '14:56', '14:57'])
+    const race = await moment('For Time · 5 seconds to cap', 'FOR TIME time', '14:55')
     await expect(race).toHaveAttribute('data-loop', 'run')
     frame = await probe(page)
     expectOneSoftEdge(frame, 'body', 'gallery cap')
@@ -866,7 +865,7 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await expect(race).not.toHaveAttribute('data-urgent')
 
     // A race 32 seconds into its seven-minute cap is nowhere near its deadline.
-    const ladder = await moment('Ladder · elapsed', 'Ladder time', ['00:32', '00:33', '00:34', '00:35'])
+    const ladder = await moment('Ladder · elapsed', 'Ladder time', '00:32')
     await expect(frameOf(ladder)).not.toHaveClass(/clr-chamfer--timer-low/)
     await expect(ladder).not.toHaveAttribute('data-urgent')
     await expect(edge(page)).toHaveCount(0)

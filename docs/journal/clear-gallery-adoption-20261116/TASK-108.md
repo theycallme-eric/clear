@@ -186,6 +186,62 @@ Verification after the decision (browser runs under the host lock; through the g
 
 TASK-108's parity was not re-run: no product file, parity spec or manifest changed, and its receipts stay current.
 
+## Repair round 1 (2026-11-23, review `TASK-108-a1-43bc28af7bf0`)
+
+The review met all three journeys and every other criterion but rejected TASK-AC-1A18C1BE61D6 (a port keeps the
+build body's behaviour) and TASK-AC-1ABEBDB57CBF (test ledger): two reads were loosened without disclosure while the
+ledger said `matchersWeakened: false`. Fixed (tests and evidence only; no product change):
+
+1. `src/ui/emom-block.test.tsx` "is still under reduced motion and loses nothing it was saying": the exact Now list
+   `['1. hollow body hold']` → `['01 hollow body hold']` (Round 7's ordinal and name, read from the name's own span,
+   not the equipment drawn after it), and the minute's target `MIN 1 · 8 reps` → `Min 1 · 8 reps` in that movement's
+   row (Round 7 draws it at `timed-workout-flow.tsx`). Both had been loosened to "one item containing the name".
+2. `e2e/refinement/task-008.spec.ts` open-log edge host: `/^dialog:open:/` → exactly `dialog:open:Log set 1` (Round
+   7's log title; attempt 1's own failure output had shown it).
+
+An audit of every inherited body against the build then restored four more weaker reads:
+- task-008's gallery case read each moment's exact second (page `Date.now` fixed, as the parity spec does), not a band;
+- task-027 compares the opened card's heading exactly (`Primary lift`, `Conditioning`), not lower-cased;
+- task-007 reads "the body fills the frame" again, in Round 7's card geometry: the body reaches the frame's far edge
+  and covers all of it but the card's 12 px bar (the card joins the body to the bar, overlapping it by 2 px; measured
+  with a temporary probe spec, since deleted);
+- timer-frame-layout reads the timer's flex body (`flex` or `inline-flex`), and the AMRAP port reads no
+  `[data-urgent="true"]` at eight seconds.
+
+Ledger: `matchersWeakened: false` now holds — the note lists the two restored and four tightened reads, and
+`rules.lookAndWordingRewrites` lists every read whose shape changed for Round 7's look (same behaviour, under the
+owner's 2026-11-23 rule). `rules.forTask115` is completed: TASK-107's circuit-round parity receipts need recapture
+(the circuit rest is now a TimerFrame); every R7-2 wording change ("Racing the clock" → "Elapsed", "MIN 1 OF 10" →
+"Minute 1 of 10", "COMPLETE" → "Time complete", "REST" → "Minute N of M · Rest", "Time remaining"/"Block time" → "EMOM
+time"/"FOR TIME time", "Rounds in this ladder" → "Prescribed ladder rounds", the ladder meta line without "for time,
+at your pace" and "cap on the whole ladder", "1. hollow body hold" → "01 hollow body hold", "MIN 1 · 8 reps" → "Min 1 ·
+8 reps", "Start For Time" → "Start FOR TIME"); and the reviewer's notes (urgent digits to 20% at the trough and 50%
+under reduced motion; the rest bar low at 10 s instead of 5 s; the header title h3 at 380 px and below where the build
+used h4; two urgent deadlines both breathing).
+
+Cleanup failure and its cause: an `npm run e2e:server` on port 5173 was left running for about ten hours and blocked
+V2's verify. Most likely cause: attempt 1 stopped a hung parity run with `pkill -f task-108-parity`, which ended the
+Playwright runner but not the `webServer` child it had started. Prevention: stop a browser run through the task
+runner (or its whole process group), never by pattern-killing the runner alone, and check
+`lsof -nP -iTCP:5173 -sTCP:LISTEN` after every browser run and before hand-back. At this repair's start the port was
+already free; it was checked again after each browser run here.
+
+Verification (browser runs under the host lock, through the guard):
+
+| Check | Result |
+|---|---|
+| TASK-108 check-01 | PASSED, 287/287 |
+| TASK-007 check-01 / check-02 | PASSED, 13/13 / 7/7 (targets changed: timer-frame-layout, task-007 spec) |
+| TASK-008 check-01 / check-02 | PASSED, 13/13 / 5/5 |
+| TASK-027 check-02 (task-027 spec changed) | PASSED, 4/4 |
+| TASK-104 check-01, TASK-116 check-02 (amrap-, emom-block changed) | PASSED, 172/172; 4 of 45 by its filter |
+| CI chain as one command | exit 0: lint 0 errors / 175 warnings; `npm test` 273 files, 6,388/6,388; build ok; console grep no match |
+| `verify-delivery-evidence.mjs --mode final` for TASK-007, 008, 027, 104, 116, 108 | current passing receipts for all six |
+| `lsof -nP -iTCP:5173 -sTCP:LISTEN` | nothing listening |
+
+TASK-108's parity was not re-run: no product file, parity spec or manifest changed, and its receipts stay current. No
+other task's parity spec was run.
+
 ## Open
 
 1. **Look changes from the accepted gallery (labelled, for UAT).** An urgent timer now breathes .2/.8/.2 with the

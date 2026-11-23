@@ -160,8 +160,10 @@ function expectWholeFrame(timer: HTMLElement) {
   }
   // No accent-bar strip, no card and no second chamfer inside the readout.
   expect(timer.querySelectorAll('.clr-chamfer, .clr-card, .clr-card__bar'), `${label}: nothing nested`).toHaveLength(0)
-  // The readout is centred, both ways.
+  // The readout is a flex body, centred both ways (Round 7's element frame is
+  // `inline-flex`, its card's readout row `flex`).
   const style = getComputedStyle(timer)
+  expect(['flex', 'inline-flex'], `${label}: flex body`).toContain(style.display)
   expect(style.justifyContent, `${label}: centred across`).toBe('center')
   expect(style.alignItems, `${label}: centred down`).toBe('center')
   // Labelled once, never a live region; the value said in words.

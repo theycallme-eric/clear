@@ -312,6 +312,8 @@ interface FrameGeometry {
   outerCards: number
   /** The frame's own accent bars. */
   bars: number
+  /** The width of the frame's own accent bar beside its body (0 for an element frame). */
+  barWidth: number
   /** The timer role on the body, low or not. */
   timerRole: boolean
 }
@@ -365,6 +367,7 @@ async function readFrames(page: Page): Promise<FrameGeometry[]> {
           nestedFrames: timer.querySelectorAll('.clr-chamfer, .clr-card').length,
           outerCards: element ? 0 : outerCards,
           bars: element ? frame.parentElement!.querySelectorAll(':scope > .clr-card__bar').length : card!.querySelectorAll(':scope > .clr-card__bar').length,
+          barWidth: element ? 0 : (card!.querySelector(':scope > .clr-card__bar')?.getBoundingClientRect().width ?? 0),
           timerRole: body.classList.contains('clr-chamfer--timer') || body.classList.contains('clr-chamfer--timer-low'),
         } satisfies Record<string, unknown>
       })
@@ -396,6 +399,10 @@ function expectWholeBodyFrame(frame: FrameGeometry, label: string) {
   expect(frame.bars, `${label}: ${frame.kind === 'element' ? 'no bar of its own' : 'one bar'}`).toBe(frame.kind === 'element' ? 0 : 1)
   expect(Math.abs(frame.frame.left - frame.place.left), `${label}: starts at its place's start`).toBeLessThanOrEqual(TOLERANCE)
   expect(Math.abs(frame.frame.right - frame.place.right), `${label}: ends at its place's end`).toBeLessThanOrEqual(TOLERANCE)
+  // The body fills the frame: it reaches the frame's far edge and covers all of
+  // it but the card's own bar (Round 7's card joins the body to its bar).
+  expect(Math.abs(frame.body.right - frame.frame.right), `${label}: the body reaches the frame's end`).toBeLessThanOrEqual(TOLERANCE)
+  expect(frame.body.width, `${label}: the body fills the frame beside its bar`).toBeGreaterThanOrEqual(frame.frame.width - frame.barWidth - TOLERANCE)
   expect(Math.abs(frame.body.height - frame.frame.height), `${label}: one frame, not a frame in a frame`).toBeLessThanOrEqual(TOLERANCE)
   expect(frame.readout.width, `${label}: the readout inside the body`).toBeLessThanOrEqual(frame.body.width)
   if (frame.kind === 'rest') return

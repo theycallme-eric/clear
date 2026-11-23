@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/amrap-block.test.tsx",
-      "sha256": "649594843150c9b514e57556a4031bc1e40892c85815815eb77dd9b9c3c2e073"
+      "sha256": "14e0fb5237130908ae3c8a01908384dc369e3aefba7d02c99c2c569c897995e6"
     }
   ],
   "requiredCases": [

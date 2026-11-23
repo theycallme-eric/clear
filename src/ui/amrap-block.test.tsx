@@ -733,8 +733,10 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     routeClockAt(START + 472_000)
     expect(routeAmrapTimer()).toHaveTextContent('00:08')
     expect(routeAmrapFrame()).toHaveClass('clr-chamfer--timer-low')
-    // The colour alone at eight seconds: no stepped pulse, nothing breathing.
+    // The colour alone at eight seconds: no stepped pulse, nothing breathing,
+    // and nothing marked urgent (Round 7 keeps the flow's marker as "false").
     expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(container.querySelector('[data-urgent="true"]')).toBeNull()
     expect(container.querySelector('.clr-countdown-breathe, [data-loop="run"]')).toBeNull()
     expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(0)
 
