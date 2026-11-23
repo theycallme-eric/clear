@@ -55,6 +55,7 @@ import {
   Button,
   X,
 } from '../design-system/index'
+import { COUNTDOWN_COLOR_SECONDS, restDeadline, type CountdownDeadline } from '../state/countdown-urgency'
 import { REST_EXTENSION_SECONDS, spokenRest, useRestTimer } from '../state/rest'
 import { formatElapsed, spokenElapsed } from '../state/workout-clock'
 import type {
@@ -116,10 +117,25 @@ export interface TimerFrameProps {
   /** The shipped low state: bar, body, emission and digits take timer-low. */
   low?: boolean
   /**
-   * The low state's 80% pulse, as a claim on the view's one loop. Given, the
-   * frame pulses while that claim runs and is still otherwise.
+   * The countdown warning's breathe, as the shared warning loop
+   * (`useCountdownUrgency`). Given — only while its deadline is urgent — the
+   * frame breathes with the one screen-edge aura on the same smooth 1.5 s
+   * cycle and phase while that loop runs, and holds a steady .5 when it is
+   * still (A3 TASK-108; TASK-008: C22, C61). It replaces the shipped
+   * four-second stepped micro-pulse.
    */
   pulse?: InterfaceLoop
+}
+
+/**
+ * The urgent timer's breathe, carried by its `role="timer"` element: the
+ * shared warning class, its marker and the warning's loop.
+ */
+function breathe(pulse: InterfaceLoop | undefined, className?: string) {
+  const classes = [className, pulse === undefined ? undefined : 'clr-countdown-breathe'].filter(Boolean).join(' ')
+  return pulse === undefined
+    ? { className: classes === '' ? undefined : classes }
+    : { className: classes, 'data-urgent': 'true', ...pulse }
 }
 
 /**
@@ -161,14 +177,13 @@ export function TimerFrame({
     // Inside a card it is that card's element frame: the timer role, no bar.
     return (
       <span
-        className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
+        className="clr-bleed"
         style={{ ...(low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE), display: fullWidth ? 'flex' : undefined, width: fullWidth ? '100%' : undefined }}
-        {...pulse}
       >
         <div
           role="timer"
           aria-label={label}
-          className={`clr-chamfer clr-chamfer--md ${role} clr-timer-frame__readout`}
+          {...breathe(pulse, `clr-chamfer clr-chamfer--md ${role} clr-timer-frame__readout`)}
           style={{ ...READOUT_STYLE, flex: fullWidth ? '1 1 0' : undefined, minWidth: fullWidth ? 0 : undefined }}
         >
           {captionNode}
@@ -181,16 +196,12 @@ export function TimerFrame({
 
   // Outside a card it is the timer card itself: the app's Card in the timer
   // role, so the bar, body and emission come from the public component. The
-  // wrapper only decides width (content-sized, or the whole row) and carries
-  // the low state's pulse.
+  // wrapper only decides width (content-sized, or the whole row); the timer
+  // itself carries the urgent state's breathe.
   return (
-    <span
-      className={pulse === undefined ? 'clr-timer-frame' : 'clr-timer-frame clr-pulse-micro'}
-      style={fullWidth ? FULL_FRAME_STYLE : INLINE_FRAME_STYLE}
-      {...pulse}
-    >
+    <span className="clr-timer-frame" style={fullWidth ? FULL_FRAME_STYLE : INLINE_FRAME_STYLE}>
       <Card role={low ? 'timer-low' : 'timer'} className="clr-timer-frame__readout" style={CARD_READOUT_STYLE}>
-        <div role="timer" aria-label={label} style={TIMER_ROW_STYLE}>
+        <div role="timer" aria-label={label} {...breathe(pulse)} style={TIMER_ROW_STYLE}>
           {captionNode}
           <TimerDigits text={text} size={size} low={low} />
           <span className="a11y-hidden">{spoken}</span>
@@ -465,9 +476,18 @@ export function SectionHeader({
           onSelect(index)
         }
 
+  // A3 TASK-108 (TASK-027: C54; R35, R98; decision 2): the compact bar
+  // repeats none of the active card's identity — no card, no visible title or
+  // status line, no structure badges. The section's name is already each
+  // block's own heading (`MovementGroupHeader`), so no second heading is drawn
+  // here; its position and status are read to assistive technology, visually
+  // hidden, and the trigger keeps its one name, `All sections`, with the
+  // visible `N / M` as decoration of it. Each chip in the jump list states its
+  // section's status in words and a glyph.
   if (compact && progress !== undefined) return (
     <div className="clr-workout-section-nav" data-section-navigation="">
-      <CollapsibleSection label={<><span>All sections</span><span className="clr-workout-section-nav__meta">{position} / {total}</span></>} expanded={jumping} onExpandedChange={setJumping}>
+      <p className="a11y-hidden">{`Section ${position} / ${total} · ${STATUS_WORDS[section.status]}`}</p>
+      <CollapsibleSection label={<><span>All sections</span><span className="clr-workout-section-nav__meta" aria-hidden="true" data-section-position="">{position} / {total}</span></>} expanded={jumping} onExpandedChange={setJumping}>
         <SectionJumpList progress={progress} currentIndex={section.index} onSelect={select} inert={!jumping} />
       </CollapsibleSection>
       {children}
@@ -726,9 +746,6 @@ export function WorkoutMenu({ onAbandon, defaultOpen = false }: WorkoutMenuProps
 // Rest
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The last stretch of a rest, where the card crosses into the timer's low state. */
-const REST_URGENT_SECONDS = 10
-
 /**
  * The session's one rest, between sets (EXE-05).
  *
@@ -741,33 +758,76 @@ const REST_URGENT_SECONDS = 10
  * carries no entrance: the bar appears in the same tap that logs a set, and
  * the IA is explicit that no list or route motion fires while a set is being
  * logged. The only moving parts are the digits, which tumble when they change,
- * the fill, which steps, and the low state.
+ * the fill, which steps, and the warning.
  *
- * The low state is the shipped one and nothing more. The card changes role, so
- * bar, body and digits step to the low colours over `--dur-alert`, and the
- * whole card takes `.clr-pulse-micro` — the dim to 80% — with no glow of its
- * own. The pulse is an `urgent` claim on the view's one loop: it outranks a
- * loading region waiting beside it, and under reduced motion it is still, with
- * the word, the digits and the colour all unchanged.
+ * Its warning is the shared one (A3 TASK-108; TASK-008: C22, C23, C24, C61;
+ * R126), read from this rest's own deadline (`restDeadline`). From ten seconds
+ * left the card changes role, so bar, body, fill and digits step to the low
+ * colours over `--dur-alert`, and "Final 10 seconds" is said once. In the final
+ * five the rest's readout breathes with the one soft screen-edge aura on the
+ * shared 1.5 s phase, as an `urgent` claim on the view's one loop — it outranks
+ * a loading region waiting beside it — in the footer and in the open log
+ * alike. The card itself takes no stepped micro-pulse. Under reduced motion
+ * the readout and the aura hold a steady .5, with the word, the digits and the
+ * colour unchanged.
  */
 export function RestTimerBar() {
- const {rest,remainingSeconds,extend,skip}=useRestTimer()
- if(rest===null || remainingSeconds<=0)return null
- return <CountdownBar regionLabel="Rest" label={`Rest after ${rest.label}`} remainingSeconds={remainingSeconds} totalSeconds={rest.totalSeconds} urgent={remainingSeconds<=REST_URGENT_SECONDS} onExtend={()=>extend()} onSkip={skip}/>
+  const { rest, remainingSeconds, extend, skip } = useRestTimer()
+  if (rest === null || remainingSeconds <= 0) return null
+  return (
+    <CountdownBar
+      regionLabel="Rest"
+      label={`Rest after ${rest.label}`}
+      remainingSeconds={remainingSeconds}
+      totalSeconds={rest.totalSeconds}
+      deadline={restDeadline(remainingSeconds)}
+      urgent={remainingSeconds <= COUNTDOWN_COLOR_SECONDS}
+      onExtend={() => extend()}
+      onSkip={skip}
+    />
+  )
 }
 
-/** Same presentation for real set rest and an independent preparation clock. */
-export function CountdownBar({regionLabel,label,remainingSeconds,totalSeconds,urgent=false,running=true,actions,onExtend,onSkip}:{regionLabel?:string;label:string;remainingSeconds:number;totalSeconds:number;urgent?:boolean;running?:boolean;actions?:ReactNode;onExtend?:()=>void;onSkip?:()=>void}) {
- const urgency=useCountdownUrgency(remainingSeconds,running && remainingSeconds>0)
- const loop=urgency.loop
- const fraction=totalSeconds>0?Math.min(1,Math.max(0,remainingSeconds/totalSeconds)):0
+export interface CountdownBarProps {
+  /** The region's accessible name: `Rest`, or `<label> timer`. */
+  regionLabel?: string
+  /** What the countdown is for, in the card's label face. */
+  label: string
+  remainingSeconds: number
+  totalSeconds: number
+  /**
+   * The clock's own deadline, from its adapter (`state/countdown-urgency.ts`):
+   * the colour at ten, the breathe and the edge at five while it runs. Without
+   * one, the reading and `running` stand in for it.
+   */
+  deadline?: CountdownDeadline
+  /** Says "Final 10 seconds" once, as the clock's spoken milestone. */
+  urgent?: boolean
+  /** Whether the clock is running, when no `deadline` is given. */
+  running?: boolean
+  actions?: ReactNode
+  onExtend?: () => void
+  onSkip?: () => void
+}
+
+/**
+ * Same presentation for real set rest and an independent preparation clock:
+ * one timer-role card holding its glyph-led label, the digits, the once-said
+ * milestone, the stepped fill and one row of actions. It holds no clock and
+ * writes nothing.
+ */
+export function CountdownBar({ regionLabel, label, remainingSeconds, totalSeconds, deadline, urgent = false, running = true, actions, onExtend, onSkip }: CountdownBarProps) {
+  const urgency = useCountdownUrgency(deadline ?? {
+    remaining: remainingSeconds > 0 ? remainingSeconds : null,
+    running: running && remainingSeconds > 0,
+  })
+  const fraction = totalSeconds > 0 ? Math.min(1, Math.max(0, remainingSeconds / totalSeconds)) : 0
   return (
-    // The pulse runs on the wrapper so bar and body dim together.
+    // `data-urgent` is the low stretch (from ten seconds), the fill's colour hook.
     <section
       aria-label={regionLabel ?? `${label} timer`}
-      className={urgency.urgent ? 'clr-rest-bar clr-pulse-micro' : 'clr-rest-bar'}
-      data-urgent={urgency.urgent ? 'true' : 'false'}
-      {...loop}
+      className="clr-rest-bar"
+      data-urgent={urgency.low ? 'true' : 'false'}
     >
       {urgency.edge}<Card role={urgency.low ? 'timer-low' : 'timer'}>
         <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
@@ -784,8 +844,14 @@ export function CountdownBar({regionLabel,label,remainingSeconds,totalSeconds,ur
             </span>
             {label}
           </p>
-          {/* Labelled once and not live: the milestone below is what speaks. */}
-          <div role="timer" aria-label="Time remaining" style={{ display: 'inline-flex' }}>
+          {/* Labelled once and not live: the milestone below is what speaks.
+              In the final five it is what breathes, on the warning's loop. */}
+          <div
+            role="timer"
+            aria-label="Time remaining"
+            style={{ display: 'inline-flex' }}
+            {...breathe(urgency.urgent ? urgency.loop : undefined)}
+          >
             <TimerDigits
               text={formatElapsed(remainingSeconds)}
               size="var(--label-xl-size)"
@@ -800,7 +866,7 @@ export function CountdownBar({regionLabel,label,remainingSeconds,totalSeconds,ur
             aria-live="polite"
             style={{ ...labelStyle, color: 'var(--text-timer-low)' }}
           >
-            Final 10 seconds
+            Final {COUNTDOWN_COLOR_SECONDS} seconds
           </p>
         )}
 

@@ -1,9 +1,19 @@
 @import './refinements/tokens.css';
-/* October 26 accepted warning vignette. Independent of countdown ticks and
-   the separate four-second stepped micro pulse. No hard rule or screen fill. */
+/* October 26 accepted warning vignette. Independent of countdown ticks; no
+   hard rule or screen fill.
+   A3 TASK-108 (TASK-008: C22, C61; R133, R135, R144; P05): the urgent timer
+   (`.clr-countdown-breathe`, TimerFrame's wrapper) and the one aura breathe on
+   this same rule — the same keyframes, period and easing — and
+   `useCountdownUrgency` pins both to one phase. It replaces the shipped
+   four-second stepped micro-pulse on an urgent timer. */
 .clr-countdown-edge {
   position: fixed; inset: 0; z-index: 2; pointer-events: none;
   box-shadow: inset 0 0 var(--countdown-warning-edge-softness) var(--urgency-a400);
+}
+/* Still — the loop's still policy, the device's or the app's reduced motion —
+   the urgent timer and the aura hold a steady .5. */
+.clr-countdown-breathe, .clr-countdown-edge { opacity: var(--countdown-warning-opacity-still); }
+.clr-countdown-breathe[data-loop='run'], .clr-countdown-edge[data-loop='run'] {
   animation: clr-deadline-breathe var(--countdown-warning-period) var(--countdown-warning-easing) infinite;
 }
 /* Ledger EXC-07: the owner-selected smooth breathe, on its tokens. */
@@ -11,7 +21,9 @@
   0%, 100% { opacity: var(--countdown-warning-opacity-min); }
   50% { opacity: var(--countdown-warning-opacity-max); }
 }
-.clr-countdown-edge[data-loop='still'] { animation: none; opacity: var(--countdown-warning-opacity-still); }
 @media (prefers-reduced-motion: reduce) {
-  .clr-countdown-edge { animation: none !important; opacity: var(--countdown-warning-opacity-still); }
+  .clr-countdown-breathe, .clr-countdown-edge { animation: none !important; opacity: var(--countdown-warning-opacity-still); }
+}
+html[data-reduce-motion] .clr-countdown-breathe, html[data-reduce-motion] .clr-countdown-edge {
+  animation: none !important; opacity: var(--countdown-warning-opacity-still);
 }

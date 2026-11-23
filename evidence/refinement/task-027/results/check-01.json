@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-027/required-cases.json",
-    "sha256": "238233110e5dce0f734a945bc2e5b118104b754d054e2e6037b7a00ab907562f"
+    "sha256": "a6beeb8200c2f176f531b4be7def84b3a54b6d06f3c3420bef5bc60279d3cc08"
   },
   "targets": [
     {
       "path": "src/ui/workout-chrome.test.tsx",
-      "sha256": "57270cb00dcfd45cd0e393efe9430da078f6fc4212c0c25e467706b2281f4805"
+      "sha256": "019815ba40a168923c5b5014a136c949453914a3f17b3011ed35931e33a94dda"
     }
   ],
   "requiredCases": [
@@ -41,7 +41,7 @@
     },
     {
       "file": "src/ui/workout-chrome.test.tsx",
-      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery state ?state=cards draws the route’s own compact navigator before the live cards, jumping a memory-only position with nothing read or written",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written",
       "status": "passed"
     }
   ],

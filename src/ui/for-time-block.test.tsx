@@ -34,7 +34,9 @@ import { sessionProgress } from '../state/workout-progress'
 import { snapshotFixture, type BlockFixture } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
 import { ForTimeBlock } from './for-time-block'
+import { PRODUCT_PRESENTATION } from './product-presentation'
 import { LoadingView } from './view-state'
+import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
 
 // jsdom applies no stylesheet, so motion is proved as classes, attributes and
 // the rule text the classes resolve to.
@@ -130,21 +132,55 @@ function timerFrame(): HTMLElement {
   return readout().closest('.clr-card__body') as HTMLElement
 }
 
-/** The clock as a whole: the element that owns the pulse and the loop claim. */
-function raceClock(): HTMLElement {
-  return readout().closest('[data-loop]') as HTMLElement
-}
-
-function digits(): HTMLElement {
-  return readout().querySelector('[aria-hidden="true"]') as HTMLElement
-}
-
 function cards(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('.clr-card'))
 }
 
 function nestedCards(): HTMLElement[] {
   return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
+}
+
+/**
+ * A3 TASK-108 (round-07 decision R7-2): For Time as `/workout` draws it —
+ * `BlockSlot` under the product presentation, so Round 7's `TimedWorkoutFlow`
+ * with its race clock, one whole `TimerFrame` beside the block's card — over
+ * the test's completion seam and clock. A seam that names no session keeps
+ * nothing in storage.
+ */
+function renderRouteForTime(block: BlockProgress, api: BlockCompletionApi, beside: ReactNode = null) {
+  window.localStorage.clear()
+  vi.spyOn(Date, 'now').mockImplementation(() => clock)
+  return render(
+    <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+      <BlockCompletionContext value={api}>
+        {beside}
+        <BlockSlot block={block} />
+      </BlockCompletionContext>
+    </WorkoutExperiencePresentationProvider>,
+  )
+}
+
+/** The route's Start, in the block's own words (`Start FOR TIME`). */
+const ROUTE_START = /^Start for time$/i
+
+/** The route's race clock: Round 7's TimerFrame, named by its block (`FOR TIME time`). */
+function routeClock(): HTMLElement {
+  return screen.getByRole('timer', { name: /^for time time$/i })
+}
+
+/** Its frame: the timer card's body, whose role moves bar, body and emission. */
+function routeFrame(): HTMLElement {
+  return routeClock().closest('.clr-card__body') as HTMLElement
+}
+
+/** The decorative digits: the part of the readout that tumbles. */
+function routeDigits(): HTMLElement {
+  return [...routeClock().children].find((child) => child.querySelector('.clr-tumble') !== null) as HTMLElement
+}
+
+/** The one soft screen-edge aura, wherever it is portalled. */
+function edges(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>('[data-countdown-edge]')]
 }
 
 /**
@@ -239,25 +275,32 @@ describe('while the clock runs', () => {
     expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 
-  it('turns urgent in the last ten seconds — words, pulse and hue together', async () => {
+  // TASK-008 (C23, C24, C61) supersedes "words, pulse and hue together": the
+  // colour comes at ten seconds, the breathe and the one edge in the last five.
+  // A3 TASK-108 (round-07 R7-2): ported onto the For Time `/workout` draws —
+  // Round 7's TimedWorkoutFlow through BlockSlot under the product presentation.
+  // The build's "Cap in 00:07 — finish now" sentence is ForTimeBlock's; the
+  // route's race clock draws no such words (held for an owner decision, plan
+  // conflict C2 in evidence/refinement/task-108/test-ledger.json).
+  it('turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five', async () => {
     const user = userWithTimers()
-    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    renderRouteForTime(forTimeBlock(), completionDouble().api)
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
 
     await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
 
-    // The sentence changes, not just the colour — the pulse is disabled under
-    // `prefers-reduced-motion`, so the words have to carry it too.
-    expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
-    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
-    // The pulse is held for the final five seconds.
-    expect(raceClock()).not.toHaveClass('clr-pulse-micro')
+    // The race says it is still running (its caption, in words) and takes the
+    // low colour; the breathe waits for the last five.
+    expect(routeClock()).toHaveTextContent('Elapsed')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeClock()).not.toHaveAttribute('data-urgent')
+    expect(edges()).toHaveLength(0)
 
-    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
-    expect(screen.getByText('Cap in 00:04 — finish now')).toBeInTheDocument()
-    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
-    expect(raceClock()).toHaveClass('clr-pulse-micro')
+    await wallClockReaches(START + (CAP_SECONDS - 5) * 1000)
+    expect(routeClock()).toHaveAttribute('data-urgent', 'true')
+    expect(edges()).toHaveLength(1)
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 })
 
@@ -548,116 +591,123 @@ describe('For Time draws with the shared block frame', () => {
   })
 })
 
-describe('the clock takes the shipped low state and nothing more', () => {
+// TASK-008 (C22, C23, C24, C61; R126) supersedes "the shipped low state and
+// nothing more": the race warns on its cap minus its elapsed time — the low
+// colour at ten seconds, the breathe and the one soft screen edge in the last
+// five while it runs — with no stepped micro-pulse. A3 TASK-108 (round-07
+// R7-2): every case is ported onto the For Time `/workout` draws (Round 7's
+// TimedWorkoutFlow through BlockSlot under the product presentation), whose
+// race clock is one whole TimerFrame, the app's Card in the timer role.
+describe('the clock takes the shared countdown warning', () => {
   it('is not low, and claims no loop, while there is time left', async () => {
     reduceMotion(false)
     const user = userWithTimers()
-    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    renderRouteForTime(forTimeBlock(), completionDouble().api)
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + (CAP_SECONDS - 11) * 1000)
 
-    expect(screen.getByText('Cap in 00:11')).toBeInTheDocument()
-    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
-    expect(digits().style.color).toBe('var(--text-timer)')
+    // Eleven seconds before the cap (the build said "Cap in 00:11"; the
+    // route's clock reads the elapsed time — plan conflict C2).
+    expect(routeClock()).toHaveTextContent('07:49')
+    expect(routeClock()).not.toHaveAttribute('data-urgent')
+    expect(routeClock()).not.toHaveAttribute('data-loop')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer')
+    expect(routeFrame()).not.toHaveClass('clr-chamfer--timer-low')
+    expect(routeDigits().style.color).toBe('var(--text-timer)')
   })
 
-  it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+  it('goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five', async () => {
     reduceMotion(false)
     const user = userWithTimers()
-    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    renderRouteForTime(forTimeBlock(), completionDouble().api)
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + (CAP_SECONDS - 10) * 1000)
 
     // One role change moves bar, body and emission together.
-    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
-    expect(timerFrame()).not.toHaveClass('clr-chamfer--timer')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeFrame()).not.toHaveClass('clr-chamfer--timer')
     expect(nestedCards()).toEqual([])
 
     // The digits cross over on the frame's schedule, and each one tumbles.
-    expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
-    expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+    expect(routeDigits().style.color).toBe('var(--text-timer-low)')
+    expect(routeDigits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(routeDigits().querySelectorAll('.clr-tumble')).toHaveLength(4)
 
-    // Low alone carries no pulse and claims no loop.
+    // The colour alone at ten: no stepped pulse, no loop, no edge.
     expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
-    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
-
-    // In the final five seconds the pulse is on the whole timer card and is
-    // the view's running loop.
-    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
-    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
-    expect(raceClock()).toHaveClass('clr-pulse-micro')
-    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
-    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    expect(routeClock()).not.toHaveAttribute('data-loop')
+    expect(edges()).toHaveLength(0)
 
     // No glow of the timer's own: the extra glow is the primary action's.
-    expect(raceClock().querySelector('.clr-glow')).toBeNull()
+    expect(routeFrame().closest('.clr-card')?.querySelector('.clr-glow') ?? null).toBeNull()
+
+    // The last five: the readout breathes on the view's running loop, with one edge.
+    await wallClockReaches(START + (CAP_SECONDS - 5) * 1000)
+    expect(routeClock()).toHaveAttribute('data-urgent', 'true')
+    expect(routeClock()).toHaveAttribute('data-loop', 'run')
+    expect(edges()).toHaveLength(1)
 
     // What those classes resolve to in the shipped package.
     expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
     expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
     expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
-    expect(
-      MOTION_CSS.includes(
-        '@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }',
-      ),
-    ).toBe(true)
   })
 
-  it('gives the loop up at the cap and at a finish, keeping the outcome’s colours', async () => {
+  it('gives the warning up at the cap and at a finish, keeping the outcome’s colours', async () => {
     reduceMotion(false)
     const user = userWithTimers()
-    const capped = renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    const capped = renderRouteForTime(forTimeBlock(), completionDouble().api)
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + (CAP_SECONDS - 3) * 1000)
-    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    expect(routeClock()).toHaveAttribute('data-loop', 'run')
 
     await wallClockReaches(START + CAP_SECONDS * 1000)
-    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
-    expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    // "Cap reached" keeps its own outcome colour; the warning itself is over.
+    expect(routeClock()).toHaveTextContent('Cap reached')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeDigits().style.color).toBe('var(--text-timer-low)')
+    expect(routeClock()).not.toHaveAttribute('data-urgent')
+    expect(routeClock()).not.toHaveAttribute('data-loop')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(edges()).toHaveLength(0)
     capped.unmount()
 
     clock = START
-    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    renderRouteForTime(forTimeBlock(), completionDouble().api)
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + (CAP_SECONDS - 3) * 1000)
-    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    expect(routeClock()).toHaveAttribute('data-loop', 'run')
 
     await user.click(screen.getByRole('button', { name: 'Finish' }))
-    expect(timerFrame()).toHaveClass('clr-chamfer--timer')
-    expect(digits().style.color).toBe('var(--text-timer)')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer')
+    expect(routeDigits().style.color).toBe('var(--text-timer)')
+    expect(routeClock()).not.toHaveAttribute('data-loop')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(edges()).toHaveLength(0)
   })
 
   it('stays a labelled timer that is not a live region', async () => {
     const user = userWithTimers()
-    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    renderRouteForTime(forTimeBlock(), completionDouble().api)
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + 383_000)
 
-    expect(readout()).not.toHaveAttribute('aria-live')
-    expect(readout().querySelector('[aria-live], [role="status"]')).toBeNull()
-    expect(digits()).toHaveAttribute('aria-hidden', 'true')
+    expect(routeClock()).not.toHaveAttribute('aria-live')
+    expect(routeClock().querySelector('[aria-live], [role="status"]')).toBeNull()
+    expect(routeDigits()).toHaveAttribute('aria-hidden', 'true')
     // The value a screen reader is given is words, and only when it asks.
-    expect(readout().querySelector('.a11y-hidden')).toHaveTextContent(/6 minutes 23 seconds/)
+    expect(routeClock().querySelector('.a11y-hidden')).toHaveTextContent(/6 minutes 23 seconds/)
   })
 
   it('takes the one loop from a loading region beside it, and gives it back', async () => {
     reduceMotion(false)
     const user = userWithTimers()
-    renderForTime(
+    renderRouteForTime(
       forTimeBlock(),
-      fakeStorage(),
       completionDouble().api,
       <LoadingView label="Reading coaching for the next movement" />,
     )
@@ -665,63 +715,58 @@ describe('the clock takes the shipped low state and nothing more', () => {
       .getByText('Reading coaching for the next movement')
       .closest('[data-loop]') as HTMLElement
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
 
     // A clock with time left has no loop, so the wait keeps its own.
     expect(wait).toHaveAttribute('data-loop', 'run')
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(routeClock()).not.toHaveAttribute('data-loop')
 
-    // Low but not yet urgent: still no claim, so the wait keeps its loop.
+    // TASK-008: the colour at eight seconds left is no loop of its own.
     await wallClockReaches(START + (CAP_SECONDS - 8) * 1000)
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('data-loop', 'run')
 
-    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
-
-    // Final five: the pulse carries more state, so it runs and the wait is
+    // The last five: the warning carries more state, so it runs and the wait is
     // stilled — still on screen, still busy, still saying what it is waiting for.
-    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
+    expect(routeClock()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for the next movement')
-    // One claim runs: the clock's pulse and its single screen-edge cue.
-    const edges = document.querySelectorAll('[data-countdown-edge]')
-    expect(edges).toHaveLength(1)
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([raceClock(), edges[0]])
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === routeClock() || node.matches('[data-countdown-edge]'))).toBe(true)
 
     // The cap arrives: nothing is running out, and the wait has its loop back.
     await wallClockReaches(START + CAP_SECONDS * 1000)
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(edges()).toHaveLength(0)
     expect(APP_MOTION_CSS).toMatch(
-      /\[data-loop='still'\]\.clr-pulse-micro,[\s\S]*?\{[^}]*animation: none/,
+      /\[data-loop='still'\] \.clr-scan-band,[\s\S]*?\{[^}]*animation: none/,
     )
   })
 
   it('is still under reduced motion and loses nothing it was saying', async () => {
     reduceMotion(true)
     const user = userWithTimers()
-    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    renderRouteForTime(forTimeBlock(), completionDouble().api)
 
-    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
 
-    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    // TASK-008 (C22): the urgent readout and its aura are still, at a steady .5.
+    expect(routeClock()).toHaveAttribute('data-loop', 'still')
+    expect(edges()[0]).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
 
-    // The reading, the words, the colour role and the controls are all there.
-    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
-    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
-    expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(readout()).toHaveTextContent('07:56')
-    expect(screen.getByText('Racing the clock')).toBeInTheDocument()
-    expect(screen.getByText('Cap in 00:04 — finish now')).toBeInTheDocument()
+    // The reading, the words, the colour role and the controls are all there:
+    // Round 7's race clock says "Elapsed" where ForTimeBlock said "Racing the
+    // clock" (its "Cap in 00:04 — finish now" is plan conflict C2).
+    expect(routeClock()).toHaveAttribute('data-urgent', 'true')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeDigits().style.color).toBe('var(--text-timer-low)')
+    expect(routeClock()).toHaveTextContent('07:56')
+    expect(routeClock()).toHaveTextContent('Elapsed')
     expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled()
-
-    // The shipped rule that makes a reduced pulse static.
-    expect(MOTION_CSS).toMatch(
-      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
-    )
   })
 })
 
@@ -755,16 +800,26 @@ describe('For Time with explicit ladder timing', () => {
     return reportOutcome
   }
 
+  /** A3 TASK-108 (R7-2): the same block through the route's dispatch, under the product presentation. */
+  function renderRouteSlot(block: BlockProgress) {
+    const { api, reportOutcome } = completionDouble()
+    renderRouteForTime(block, api)
+    return reportOutcome
+  }
+
   it.each([
     [3, [21, 15, 9]],
     [5, [10, 8, 6, 4, 2]],
   ])('free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it', (rounds, rungs) => {
     const block = timedLadder({ mode: 'for_time', rounds, interval_seconds: null, cap_seconds: null }, rungs)
-    const reportOutcome = renderSlot(block)
+    const reportOutcome = renderRouteSlot(block)
 
-    expect(screen.getAllByRole('heading', { name: /^Round \d+$/ })).toHaveLength(rounds)
-    expect(screen.getByText(`${rounds} rounds · for time, at your pace · 08:00 cap`)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Start For Time' })).not.toBeInTheDocument()
+    // TASK-012 (C35, R95): every round is a tile of the compact grid — on
+    // Round 7's route, `Prescribed ladder rounds` — under Round 7's meta line,
+    // its rounds and the block's cap (A3 TASK-105's reading of the same line).
+    expect(within(screen.getByRole('list', { name: 'Prescribed ladder rounds' })).getAllByRole('listitem')).toHaveLength(rounds)
+    expect(screen.getByText(`${rounds} rounds · 08:00 cap`)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: ROUTE_START })).not.toBeInTheDocument()
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
@@ -774,10 +829,12 @@ describe('For Time with explicit ladder timing', () => {
       { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: CAP_SECONDS },
       [4, 8, 12, 16],
     )
-    renderSlot(block)
+    renderRouteSlot(block)
 
-    expect(screen.getByText('4 rounds · 08:00 cap on the whole ladder')).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { name: /^Round \d+$/ })).toHaveLength(4)
+    // Round 7's meta line states the one cap the ladder carries (A3 TASK-105's reading).
+    expect(screen.getByText('4 rounds · 08:00 cap')).toBeInTheDocument()
+    // TASK-012 (C35, R95): every round is a tile of the compact grid.
+    expect(within(screen.getByRole('list', { name: 'Prescribed ladder rounds' })).getAllByRole('listitem')).toHaveLength(4)
   })
 
   it('a For Time block with no ladder timing keeps its race clock', () => {

@@ -25,7 +25,7 @@
  * `AmrapBlock`, and is TASK-110's. Blank is still `null`, an entered zero still
  * `0`; tapping down stops at zero and nothing clears a count back to blank.
  */
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
@@ -125,6 +125,27 @@ function renderRouteAmrap(block: BlockProgress, api: BlockCompletionApi) {
       </BlockCompletionContext>
     </WorkoutExperiencePresentationProvider>,
   )
+}
+
+/**
+ * A3 TASK-108: the route's clock moves to `at`, and the flow re-reads it as a
+ * resumed tab does (`useElapsedSeconds` recomputes on focus).
+ */
+function routeClockAt(at: number) {
+  clock = at
+  act(() => {
+    window.dispatchEvent(new Event('focus'))
+  })
+}
+
+/** A3 TASK-108: the route's AMRAP window clock — Round 7's TimerFrame, named by its block. */
+function routeAmrapTimer(): HTMLElement {
+  return screen.getByRole('timer', { name: 'AMRAP time' })
+}
+
+/** Its frame: the timer card's body, whose role moves bar, body and emission. */
+function routeAmrapFrame(): HTMLElement {
+  return routeAmrapTimer().closest('.clr-card__body') as HTMLElement
 }
 
 /**
@@ -660,21 +681,30 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     return { user, block, ...renderAmrap(block, storage, api) }
   }
 
+  // A3 TASK-108 (round-07 R7-2; TASK-007: C19, R49): ported onto the AMRAP
+  // `/workout` draws (`renderRouteAmrap`), whose countdown is one whole Round 7
+  // TimerFrame — the app's Card in the timer role — beside the block's card.
   it('stands the countdown beside the block’s card, never inside one', async () => {
-    const { container } = await resumeAt(60_000)
+    const user = userEvent.setup()
+    const { container } = renderRouteAmrap(amrapBlock(), completionDouble().api)
+    await start(user)
+    routeClockAt(START + 60_000)
 
-    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    const timer = routeAmrapTimer()
     const timerCard = timer.closest('.clr-card')
     expect(timerCard).not.toBeNull()
     expect(timerCard?.parentElement?.closest('.clr-card')).toBeNull()
+    expect(timerCard?.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+    expect(timer.querySelectorAll('.clr-chamfer, .clr-card__bar')).toHaveLength(0)
 
     // One timer card and one block card, and no card within either.
     expect(container.querySelectorAll('.clr-card')).toHaveLength(2)
     expect(container.querySelector('.clr-card .clr-card')).toBeNull()
 
-    // The controls stay with the block, in its card rather than the timer's.
+    // The controls stay with the block, in its card rather than the timer's frame.
     const finishButton = screen.getByRole('button', { name: 'Finish early' })
     expect(finishButton.closest('.clr-card')).not.toBe(timerCard)
+    expect(timerCard).not.toContainElement(finishButton)
   })
 
   it('keeps the countdown a labelled timer that is not a live region', async () => {
@@ -687,31 +717,36 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     }
   })
 
-  it('leaves urgency to the timer’s own low state, with nothing added around it', async () => {
-    const calm = await resumeAt(60_000)
-    const resting = screen.getByRole('timer')
-    expect(resting).toHaveClass('clr-chamfer--timer')
-    expect(resting.closest('.clr-bleed')).not.toHaveClass('clr-pulse-micro')
-    calm.unmount()
+  // TASK-008 (C22, C23, C61) supersedes "the timer's own low state": the
+  // colour at ten seconds, the breathe and one edge in the last five, and no
+  // stepped micro-pulse. A3 TASK-108 (round-07 R7-2): ported onto the AMRAP
+  // `/workout` draws (`renderRouteAmrap`).
+  it('leaves urgency to the timer’s own shared warning, with nothing added around it', async () => {
+    const user = userEvent.setup()
+    const { container } = renderRouteAmrap(amrapBlock(), completionDouble().api)
+    await start(user)
 
-    const { container } = await resumeAt(472_000)
-    const low = screen.getByRole('timer', { name: 'Time remaining' })
-    expect(low).toHaveTextContent('00:08')
-    expect(low).toHaveClass('clr-chamfer--timer-low')
+    routeClockAt(START + 60_000)
+    expect(routeAmrapFrame()).toHaveClass('clr-chamfer--timer')
+    expect(routeAmrapTimer()).not.toHaveAttribute('data-urgent')
 
-    // The package's stepped pulse on the timer's own emission — and that is the
-    // only loop on the block.
-    // Its only wrapper is the shared countdown's own, directly inside the
-    // block, which in the low (not yet final-five) state adds no pulse and
-    // claims no loop.
-    const bleed = low.closest('.clr-bleed')
-    expect(bleed).toHaveClass('clr-pulse-micro')
-    const countdownWrapper = bleed?.parentElement as HTMLElement
-    expect(countdownWrapper).toHaveAttribute('data-loop', 'still')
-    expect(countdownWrapper).not.toHaveClass('clr-pulse-micro')
-    expect(countdownWrapper.parentElement).toBe(container.firstElementChild)
-    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
-    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
+    routeClockAt(START + 472_000)
+    expect(routeAmrapTimer()).toHaveTextContent('00:08')
+    expect(routeAmrapFrame()).toHaveClass('clr-chamfer--timer-low')
+    // The colour alone at eight seconds: no stepped pulse, nothing breathing.
+    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(container.querySelector('.clr-countdown-breathe, [data-loop="run"]')).toBeNull()
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(0)
+
+    routeClockAt(START + 476_000)
+    const urgent = routeAmrapTimer()
+    expect(urgent).toHaveTextContent('00:04')
+    // The timer is the only thing that breathes on the block, with one aura.
+    expect(urgent).toHaveAttribute('data-urgent', 'true')
+    expect([...container.querySelectorAll('.clr-countdown-breathe')]).toEqual([urgent])
+    expect([...container.querySelectorAll('[data-loop="run"]')]).toEqual([urgent])
+    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
 
     // Urgent, and still nothing to enter.
     expectNoScoreEntry()

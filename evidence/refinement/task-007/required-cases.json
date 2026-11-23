@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-007",
-  "description": "Whole timer frames and independent functional clocks (REQ-007; C19, C20, C21; G06; R15, R17, R42, R49, R53, R67, R96, R98, R102, R103, R119) delivered through the shared whole timer body DeadlineTimer (src/ui/refinements/deadline-timer.tsx, consolidating the former TimerFrame and the shipped TimerDisplay positions), the clock reading contract (src/state/timed-clock.ts) over each clock's existing owner, and every consumer — GlobalTimer, RestTimerBar, MovementCountdownView, the EMOM, AMRAP, scheduled-ladder and circuit countdowns, the circuit round clock and ForTimeClock — with the one-row .clr-workout-header recipe (src/ui/refinements/presentation.css), on the real /workout route and its open logging sheet (JOURNEY-007), and the accepted gallery states /gallery/refinements?state=cards and ?state=urgency (reference eded158cfd928d382c9a9409e2c372270312741d) drawing the actual consumers. Every declared case must execute and pass.",
+  "description": "Whole timer frames and independent functional clocks (REQ-007; C19, C20, C21; G06; R15, R17, R42, R49, R53, R67, R96, R98, R102, R103, R119). A3 TASK-108 (round 07) carries it onto Round 7's owners: every clock on the real /workout route and its open logging dialog draws one whole TimerFrame (src/ui/workout-chrome.tsx) — beside a card the app's Card in the timer role, inside a card that card's element frame — and the session's rest is Round 7's one timer-role card (CountdownBar); the clock reading contract (src/state/timed-clock.ts) is unchanged; the one-row .clr-workout-header rules are TASK-007's, carried into src/ui/workout-navigation.css (title shrinks and wraps at 23.75rem and below; readout and menu keep their frame and alignment). The build's DeadlineTimer and refinements/presentation.css are source material only. The accepted gallery is bec4454 (?state=cards, ?state=urgency). Every declared case must execute and pass.",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -63,7 +63,7 @@
         },
         {
           "file": "src/ui/timer-frame-layout.test.tsx",
-          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, not a short readout beside its label",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, with no short inner chamfer inside it",
           "criterion": "AC-R007-01"
         },
         {
@@ -73,7 +73,7 @@
         },
         {
           "file": "src/ui/timer-frame-layout.test.tsx",
-          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the gallery draws the route's own header on one row, and no two-row state",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the route keeps its one row past the hour, and the gallery presents no two-row state",
           "criterion": "AC-R007-02"
         },
         {

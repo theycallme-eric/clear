@@ -196,6 +196,22 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
 // Shell
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * The opened section's first card: the first card frame drawn after the
+ * navigator, never one inside it or above it (the sync notice), and never a
+ * clock's own timer card beside a block (a timer is not the section's work).
+ */
+function firstCardAfter(navigator: HTMLElement): HTMLElement | null {
+  const scope = navigator.parentElement
+  if (scope === null) return null
+  for (const card of scope.querySelectorAll<HTMLElement>('.clr-card__body')) {
+    if (navigator.contains(card)) continue
+    if (card.matches('.clr-chamfer--timer, .clr-chamfer--timer-low')) continue
+    if (navigator.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING) return card
+  }
+  return null
+}
+
 interface WorkoutShellProps {
   snapshot: SessionSnapshot
   /** Publishes the session's end so every other screen agrees immediately. */
@@ -235,13 +251,30 @@ function WorkoutShell({
   const current: SectionProgress | undefined = progress.sections[index]
 
   // Focus follows a move the athlete made — Previous, Next or a jump — to the
-  // heading of the section it opened. A restored section on mount is left to
-  // the route's own focus, which the shell does not second-guess. Neither path
-  // touches the session clock, which reads `started_at` and nothing else.
+  // section it opened. A restored section on mount is left to the route's own
+  // focus, which the shell does not second-guess. Neither path touches the
+  // session clock, which reads `started_at` and nothing else.
+  //
+  // A3 TASK-108 (TASK-027: C54): the compact navigator draws no heading of its
+  // own, so every move lands on the opened section's first card — something
+  // the athlete can see — as a focus target for that one move only. It falls
+  // back to the section's heading when the section draws no card.
   const header = useRef<HTMLDivElement>(null)
   const moved = useRef(false)
   const focusSectionHeader = useCallback(() => {
-    const heading = header.current?.querySelector('h2, h3, h4, h5, h6') ?? header.current?.parentElement?.querySelector('[data-movement-group-header] h2, [data-movement-group-header] h3')
+    const frame = header.current
+    if (frame === null) return
+    const card = firstCardAfter(frame)
+    if (card !== null) {
+      if (!card.hasAttribute('tabindex')) {
+        card.setAttribute('tabindex', '-1')
+        // A focus target for this one move, not a tab stop or a click target afterwards.
+        card.addEventListener('blur', () => card.removeAttribute('tabindex'), { once: true })
+      }
+      card.focus()
+      return
+    }
+    const heading = frame.querySelector('h2, h3, h4, h5, h6') ?? frame.parentElement?.querySelector('[data-movement-group-header] h2, [data-movement-group-header] h3')
     if (heading instanceof HTMLElement) {
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1')
       heading.focus()

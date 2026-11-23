@@ -84,13 +84,31 @@ function actionsInRow(): HTMLButtonElement[] {
   return Array.from(pairedRow().querySelectorAll('button'))
 }
 
-/** Round 7's compact "All sections N / M" bar; its name carries the position. */
-function jumpToggle(): HTMLElement {
-  return screen.getByRole('button', { name: /^All sections/ })
+/**
+ * TASK-027 (C54; owner decision 2026-11-10): a move lands on the opened
+ * section's first card — the first card frame after its navigator — which the
+ * athlete can see. A3 TASK-108 (Round 7, decision 2): the compact navigator
+ * draws no heading of its own, so the section's name is the opened section's
+ * own heading, after the navigator; the helper waits for it first.
+ */
+async function openedSectionCard(name: string): Promise<HTMLElement> {
+  const heading = await screen.findByRole('heading', { level: 2, name })
+  const navigator = document.querySelector('[data-section-navigation]')
+  if (!(navigator instanceof HTMLElement)) throw new Error(`No navigator heads ${name}`)
+  expect(navigator.contains(heading)).toBe(false)
+  expect(navigator.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  const card = [...document.querySelectorAll<HTMLElement>('.clr-card__body')].find(
+    (frame) => !navigator.contains(frame)
+      && Boolean(navigator.compareDocumentPosition(frame) & Node.DOCUMENT_POSITION_FOLLOWING),
+  )
+  if (card === undefined) throw new Error(`No card follows ${name}`)
+  // Visible: not the hidden heading, nor anything else visually hidden.
+  expect(card.closest('.a11y-hidden')).toBeNull()
+  return card
 }
 
 async function jumpTo(user: ReturnType<typeof userEvent.setup>, name: string) {
-  await user.click(jumpToggle())
+  await user.click(screen.getByRole('button', { name: 'All sections' }))
   await user.click(screen.getByRole('button', { name }))
 }
 
@@ -113,7 +131,7 @@ describe('AC-064: progress sits immediately above one compact paired row', () =>
 
     // One bar on the screen: the header keeps its jump list, not a second bar.
     expect(screen.getAllByRole('progressbar', { name: /^Section / })).toHaveLength(1)
-    expect(jumpToggle()).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'All sections' })).toBeInTheDocument()
   })
 
   it('pairs Previous on the left with Next section on the right in one row', async () => {
@@ -194,7 +212,7 @@ describe('AC-065: readable, aligned, reachable, and the same flow', () => {
 
     await user.click(within(pairedRow()).getByRole('button', { name: 'Previous' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Warm-up' })).toHaveFocus()
+    expect(await openedSectionCard('Warm-up')).toHaveFocus()
     expect(within(pairedRow()).getByRole('button', { name: 'Previous' })).toBeDisabled()
     expect(within(footerNav()).getByRole('progressbar', { name: 'Section 1 of 3' })).toBeInTheDocument()
     expect(double.recorded()).toEqual([])
@@ -206,7 +224,7 @@ describe('AC-065: readable, aligned, reachable, and the same flow', () => {
 
     await user.click(within(pairedRow()).getByRole('button', { name: 'Next section' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Conditioning' })).toHaveFocus()
+    expect(await openedSectionCard('Conditioning')).toHaveFocus()
     expect(double.recorded().length).toBeGreaterThan(0)
     expect(within(footerNav()).getByRole('progressbar', { name: 'Section 3 of 3' })).toBeInTheDocument()
   })
