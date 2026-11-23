@@ -51,6 +51,11 @@ results, parity receipts, test-ledger), TASK-003 and TASK-036 receipts, and the 
 - Stored AMRAP ports: Round 7 does not reopen an ended attempt's log on arrival; the card's Log results opens
   it before counts are read.
 - Self-check found two regex reads introduced while porting (For Time caption, one-round line); made exact.
+- Repair round 2 (review): this task's edits to `circuit-block.test.tsx` and `workout-chrome.test.tsx` left
+  TASK-021's and TASK-027's check-01 receipts stale (both current at the base), and the journal called them
+  pre-existing. I had re-run the checks of the tasks whose targets I knew I edited (104, 107, 108, 109, 116) but
+  not by scanning every manifest. Now every manifest was scanned for a target this task changed; those two were
+  the only ones missed, and both are re-run. See "Repair round 2" below.
 - Repair round 1 (V2 verification): rerunning the parity check rewrote `circuit-round-phone-320.json` — the
   route card's capture alternated between two hashes (`d5f5f243…` in the guarded run, `24fd6026…` in the
   others). See "Repair round 1" below.
@@ -118,12 +123,32 @@ card); circuit-round-390 `f61f8996bda7` / `634e0fef2937`; cards-320 route emom `
 (a part scrolled to the region's start sat 0.05 px above its edge); the tolerance fixed it.
 `verify-delivery-evidence --mode final --body clear-refinement-20261103 --tasks TASK-110`: current passing receipts.
 
+## Repair round 2 (evidence only; 2026-11-23)
+
+Defect: TASK-021 check-01 (`src/ui/circuit-block.test.tsx`) and TASK-027 check-01 (`src/ui/workout-chrome.test.tsx`)
+were current passing receipts at 9c9db333 and went stale when this task restored the build's bodies in those
+files (S2, S3, R7-5). Prevention: a scan of every `evidence/refinement/*/required-cases.json` for a check whose
+target is a file changed since the base; every such check now has a receipt rewritten by this task (TASK-003
+c01/c02, 021 c01, 027 c01, 036 c01, 104 c01, 107 c01, 108 c01, 109 c01, 110 c01/c02/parity, 116 c02). No product
+or test file changed in this round.
+
+| Command | Result |
+| --- | --- |
+| `node scripts/refinement/run-required-check.mjs --task TASK-021 --check check-01 -- npx vitest run src/ui/circuit-block.test.tsx --passWithNoTests=false` | PASSED, 41/41 |
+| `node scripts/refinement/run-required-check.mjs --task TASK-027 --check check-01 -- npx vitest run src/ui/workout-chrome.test.tsx --passWithNoTests=false` | PASSED, 44/44 |
+| `verify-delivery-evidence --mode final --body clear-refinement-20261103 --tasks TASK-003,TASK-021,TASK-027,TASK-036,TASK-104,TASK-107,TASK-108,TASK-109,TASK-110,TASK-116` | PASSED: current passing receipts for all ten |
+
+Both checks are vitest; no browser or dev server ran, and port 5173 stayed free.
+
 ## Open assumptions
 
 - Review draws no change from this task (Round 7 already badge-format-only with its line and no timed rest);
   `/review` has no accepted gallery state and is read on the real route by task-003.spec.ts.
 - Pre-existing stale/failed receipts of other tasks (TASK-001/002/004 targets gone, TASK-017/018, TASK-019
-  rejected, TASK-021/023/024/027/029/039/041) are not this task's and were left as they were.
+  rejected, TASK-023/024/029/039/041) are not this task's and were left as they were: none of their check
+  targets is a file this task changed (mechanical scan, repair round 2). Correction (repair round 2): TASK-021
+  and TASK-027 were wrongly listed here as pre-existing; their check-01 targets are `circuit-block.test.tsx`
+  and `workout-chrome.test.tsx`, which this task edited, and their receipts are now re-run and current.
 
 ## Next action
 
