@@ -263,7 +263,7 @@ describe('TASK-008 recovered smooth synchronized countdown warning', () => {
     expect(reduced.replace(/\s+/g, ' ')).toContain(
       '.clr-countdown-breathe, .clr-countdown-edge { animation: none !important; opacity: var(--countdown-warning-opacity-still); }',
     )
-    expect(ruleBody(URGENCY_CSS, 'html[data-reduce-motion] .clr-countdown-breathe, html[data-reduce-motion] .clr-countdown-edge').replace(/\s+/g, ' ')).toBe(
+    expect(ruleBody(URGENCY_CSS, 'html[data-reduce-motion] .clr-countdown-breathe, html[data-reduce-motion] .clr-countdown-edge')).toBe(
       'animation: none !important; opacity: var(--countdown-warning-opacity-still);',
     )
 

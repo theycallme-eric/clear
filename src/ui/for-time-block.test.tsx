@@ -298,6 +298,29 @@ describe('while the clock runs', () => {
   // cap its card states (`8 MIN CAP`), and draws no "— finish now" words — the
   // warning is the colour, the edge and the breathe (updated under Eric's rule
   // of 2026-11-23, "Yes, approve").
+  // Round 7's base body over ForTimeBlock, kept as it is (round-07 decision R7-2:
+  // its title is its own; restored in A3 TASK-108 repair round 3).
+  it('turns urgent in the last ten seconds — words, pulse and hue together', async () => {
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+
+    await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
+
+    // The sentence changes, not just the colour — the pulse is disabled under
+    // `prefers-reduced-motion`, so the words have to carry it too.
+    expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    // The pulse is held for the final five seconds.
+    expect(raceClock()).not.toHaveClass('clr-pulse-micro')
+
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
+    expect(screen.getByText('Cap in 00:04 — finish now')).toBeInTheDocument()
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(raceClock()).toHaveClass('clr-pulse-micro')
+  })
+
   it('turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five', async () => {
     const user = userWithTimers()
     renderRouteForTime(forTimeBlock(), completionDouble().api)

@@ -562,8 +562,18 @@ describe('RestTimerBar', () => {
 
     clock.advance(82)
     returnToForeground()
+    expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
     expect(restBar()).toHaveAttribute('data-urgent', 'true')
     expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
+
+    // The final five, as Round 7's base body of this title read it: the
+    // reading, its words and the milestone, beside the digits.
+    clock.advance(4)
+    returnToForeground()
+    expect(restBar()).toHaveAttribute('data-urgent', 'true')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:04')
+    expect(screen.getByText('4 seconds left')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
   })
 
@@ -713,6 +723,7 @@ describe('RestTimerBar', () => {
     // TASK-008 (C23): the colour at ten seconds is no loop of its own.
     clock.advance(52)
     returnToForeground()
+    expect(timer()).not.toHaveAttribute('data-loop')
     expect(wait).toHaveAttribute('data-loop', 'run')
 
     // The final five (TASK-008, C61): the warning carries more state, so it runs
@@ -726,6 +737,10 @@ describe('RestTimerBar', () => {
     expect(wait).toHaveTextContent('Reading coaching for back squat')
     expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
       node === timer() || node.matches('[data-countdown-edge]'))).toBe(true)
+    // Exactly those two, as Round 7's base body of this title read them.
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([timer(), edges[0]])
 
     await user.click(screen.getByRole('button', { name: 'Skip rest' }))
     expect(wait).toHaveAttribute('data-loop', 'run')

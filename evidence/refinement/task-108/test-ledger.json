@@ -8,7 +8,7 @@
   "rules": {
     "skipOnlyTodoAdded": false,
     "matchersWeakened": false,
-    "matchersWeakenedNote": "No matcher is loosened. Repair round 1 (review TASK-108-a1-43bc28af7bf0) restored the two loosened reads it found — the EMOM reduced-motion port’s exact Now list and its per-minute target (`Min 1 · 8 reps`), and task-008’s open-log edge host (exactly `dialog:open:Log set 1`) — and an audit of every inherited body against the build restored four more weaker reads: task-008’s gallery moments read exactly (no band), task-027’s card heading compared exactly (no lower-casing), task-007’s “the body fills the frame” (in Round 7’s card geometry), timer-frame-layout’s flex body, and the AMRAP port’s no `[data-urgent=\"true\"]` at eight seconds. Every other changed read is a Round 7 look or wording rewrite of the same behaviour (rules.lookAndWordingRewrites), listed for UAT under the owner’s rule. Under that rule (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”) seven checks of ForTimeBlock’s cap-line words now read what Round 7 shows at the same moment — the race clock’s “Elapsed” reading and the cap its card states — which carries the same information (rules.capWordChecks); in four of them the “— finish now” wording, which Round 7 does not draw, is dropped as approved wording (rules.retiredAssertions). Everything else each body checks stays.",
+    "matchersWeakenedNote": "No matcher is loosened. Repair round 1 (review TASK-108-a1-43bc28af7bf0) restored the two loosened reads it found — the EMOM reduced-motion port’s exact Now list and its per-minute target (`Min 1 · 8 reps`), and task-008’s open-log edge host (exactly `dialog:open:Log set 1`) — and an audit of every inherited body against the build restored four more weaker reads: task-008’s gallery moments read exactly (no band), task-027’s card heading compared exactly (no lower-casing), task-007’s “the body fills the frame” (in Round 7’s card geometry), timer-frame-layout’s flex body, and the AMRAP port’s no `[data-urgent=\"true\"]` at eight seconds. Every other changed read is a Round 7 look or wording rewrite of the same behaviour (rules.lookAndWordingRewrites), listed for UAT under the owner’s rule. Under that rule (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”) seven checks of ForTimeBlock’s cap-line words now read what Round 7 shows at the same moment — the race clock’s “Elapsed” reading and the cap its card states — which carries the same information (rules.capWordChecks); in four of them the “— finish now” wording, which Round 7 does not draw, is dropped as approved wording (rules.retiredAssertions). Everything else each body checks stays. Repair round 3 (review TASK-108-a1-be7640e4c058) restored the read the review found weakened — the AMRAP port’s “Finish early sits inside a card” (`not.toBeNull()`, now also read as the block’s own card), which attempt 1 had turned into a repeat of the next read — and then compared every changed body’s expect calls one by one with the build’s and the base’s (rules.selfCheck). That comparison restored every further read that Round 7 still meets (rules.selfCheck.restoredThisRound): the AMRAP port’s “nothing added around it” (in Round 7’s structure) and four reads of the build’s own score-entry helper; the timer-frame helper’s flex body read exactly per kind instead of either; a whitespace normaliser that changed nothing removed from a countdown-urgency rule read; and, from Round 7’s same-title base bodies that the restored build bodies replace, the navigator’s new position and current marker after a jump, the rest’s final five (reading, urgency, running warning, low colour, one edge, milestone, words), the exact pair of running claims (the timer and its edge) where the build read only `every`, the countdown’s low bleed, no stepped pulse and one edge, and the edge recipe’s pointer-events, colour, single keyframe, keyframe body, tokens, running-rule animation and the vendor’s reduced-motion block (replacing a looser whole-sheet read). Three renamed base bodies are kept verbatim beside their ports.",
     "retired": [
       {
         "file": "src/ui/workout-chrome.test.tsx",
@@ -132,11 +132,1395 @@
       "Round 7 look reads that changed shape, same behaviour (rules.lookAndWordingRewrites): clocks as timer-role cards with one bar; the rest’s digits beside its label; captioned clocks centring caption and digits; the open log’s edge read as the dialog’s last child; the navigator with no heading."
     ],
     "forTask110": [
-      "src/ui/emom-block.test.tsx (TASK-110 owns it): TASK-108 ported 11 build bodies onto the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION). It superseded 7 Round 7 base bodies: the 5 of the describe “the countdown takes the shipped low state and nothing more” whose titles the build’s “the countdown takes the shared countdown warning” port reuses (is not low …, stays low through the rest remainder …, stays a labelled timer …, takes the one loop …, is still under reduced motion …), “keeps the timer in its own single frame without remounting the movement list” (same title, replaced in place) and “the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other” (renamed by the build to “… one whole timer frame …”). It kept unchanged the other 3 base bodies of the first describe (“goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow”, “leaves the low state on the minute boundary, and comes back to it every minute”, “gives the loop up once the last minute has elapsed”), over EmomBlock. Every row has its debdeaf4 line (baseLine) and its superseding body (supersededBy).",
-      "src/ui/amrap-block.test.tsx (TASK-110 owns it): TASK-108 ported 2 build bodies; it superseded “the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one” (same title) and “… > leaves urgency to the timer’s own low state, with nothing added around it” (renamed by the build to “… shared warning …”). TASK-116’s four TASK-009 bodies are untouched.",
-      "src/app/Workout.test.tsx (TASK-110 owns it): TASK-108 restored 12 build bodies, retired 1 build body (“the session’s one rest > draws the session clock as one whole frame …”, superseded by the base body “… draws the session timer and the rest as two self-framed cards …”, which stays), and superseded 2 base bodies (“coordinates a low AMRAP window …” and “coordinates a low Circuit round rest …”, by the build’s “urgent” bodies). Every other base body in the file is unchanged.",
+      "src/ui/emom-block.test.tsx (TASK-110 owns it): TASK-108 ported 11 build bodies onto the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION). It superseded 6 Round 7 base bodies whose titles a port reuses: the 5 of the describe “the countdown takes the shipped low state and nothing more” that the build’s “the countdown takes the shared countdown warning” port reuses (is not low …, stays low through the rest remainder …, stays a labelled timer …, takes the one loop …, is still under reduced motion …) and “keeps the timer in its own single frame without remounting the movement list” (same title, replaced in place). It kept unchanged, over EmomBlock, the 4 base bodies whose titles are their own: “goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow”, “leaves the low state on the minute boundary, and comes back to it every minute”, “gives the loop up once the last minute has elapsed” (restored in repair round 2) and “the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other” (restored in repair round 3, beside the port the build renamed “… one whole timer frame …”). Every row has its debdeaf4 line (baseLine); superseded rows name their superseding body (supersededBy).",
+      "src/ui/amrap-block.test.tsx (TASK-110 owns it): TASK-108 ported 2 build bodies; it superseded “the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one” (same title) and kept unchanged “… > leaves urgency to the timer’s own low state, with nothing added around it” (restored in repair round 3, beside the port the build renamed “… shared warning …”). TASK-116’s four TASK-009 bodies are untouched.",
+      "src/app/Workout.test.tsx (TASK-110 owns it): TASK-108 restored 12 build bodies, retired 1 build body (“the session’s one rest > draws the session clock as one whole frame …”, superseded by the base body “… draws the session timer and the rest as two self-framed cards …”, which stays), and superseded 2 base bodies (“coordinates a low AMRAP window …” and “coordinates a low Circuit round rest …”, by the build’s “urgent” bodies). Nine restored build bodies share a title with a Round 7 base body, which each replaces; those base bodies have “(base body)” superseded rows, and repair round 3 carried every one of their reads that Round 7 still meets into the body that stays (rules.selfCheck). Every other base body in the file is unchanged.",
       "src/ui/workout-chrome.test.tsx (TASK-108 owns it): the build’s “SectionHeader > states the structure identity of every block …” is deferred to TASK-110 under R7-5 (see deferred); Round 7’s passing body stays."
     ],
+    "selfCheck": {
+      "when": "2026-11-23, A3 TASK-108 repair round 3 (review TASK-108-a1-be7640e4c058)",
+      "method": "Mechanical: every test file and e2e spec touched since debdeaf4 (14) parsed with the TypeScript compiler; for every body whose text differs from debdeaf4 (changed, ported, rewritten, restored from the build or added), the outermost `expect(…)` chains of the body and of the file’s own helpers it calls (transitively) were extracted, printed canonically, and compared as multisets with its counterpart in the build (181e580: the same title, or the renamed case) and in the base (debdeaf4: the same title, or the base body it supersedes). Each read of the build or base body not present verbatim was then read and classified. To tell base reads Round 7 still meets from those it no longer does, a temporary copy of each base file (expects made soft outside `waitFor`) ran against the current product and was deleted; e2e specs are identical at the build and the base, so their base comparison is the build comparison.",
+      "counts": {
+        "bodies": 81,
+        "withBuildCounterpart": 75,
+        "withBaseCounterpart": 49,
+        "buildReadsNotVerbatim": 313,
+        "baseReadsNotVerbatim": 126,
+        "baseReadsThatFailNow": 46,
+        "bodiesWithADifference": 71
+      },
+      "classes": {
+        "look": "A Round 7 look rewrite of the same read (rules.lookAndWordingRewrites; Eric’s 2026-11-23 rule).",
+        "wording": "Round 7 wording for the same read (rules.forTask115, the R7-2 port wording).",
+        "capWords": "The approved C2 cap-word update (rules.capWordChecks, rules.retiredAssertions).",
+        "gallery": "Round 7’s accepted gallery draws a different state (no header or navigator in its cards state; urgency moments; the SectionHeader specimen); the behaviour is read on the route by the cases named in the note.",
+        "equivalent": "The same read at the body’s own moment or on Round 7’s subject (00:05 where the body’s moment is five seconds; an exact-name lookup for a regex lookup; a stronger read that implies it).",
+        "approvedChange": "A base read that fails on the current product, or that reads the vendor’s stepped micro-pulse rule the rest no longer uses, because TASK-108’s criteria change that behaviour or look: the rest’s stepped pulse and the bar’s loop claim become the shared breathe on the timer (AC-R008-01/02, C61); `data-urgent` marks the low stretch; the jump focuses the opened section’s first card (TASK-027 owner decision, 2026-11-10); two urgent deadlines both breathe; the edge’s animation sits on the running rule; C1 for exercise-coaching.",
+        "superseded": "A base body over the old component (AmrapBlock, EmomBlock, ForTimeBlock or the plain dispatch) superseded by the port of the same title under R7-2; its reads hold over the old component, which the port does not use.",
+        "restored": "Restored in repair round 3 (see restoredThisRound)."
+      },
+      "bodies": [
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 ${name}: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+          "line": 553,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 ${name}: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+            "readsNotVerbatimAtHead": 7,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
+          "line": 625,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "capWords, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
+          "line": 714,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-007.spec.ts",
+          "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: no other header state, and every clock\\'s actual consumer in one whole frame",
+          "line": 776,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: the route\\'s own one-row header, and every clock\\'s actual consumer in one whole frame",
+            "readsNotVerbatimAtHead": 19,
+            "classes": "gallery, look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog\\'s top layer and back on the same phase, and nothing is written",
+          "line": 597,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog\\'s top layer and back on the same phase, and nothing is written",
+            "readsNotVerbatimAtHead": 1,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+          "line": 692,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+            "readsNotVerbatimAtHead": 11,
+            "classes": "look, wording, capWords, equivalent"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-008.spec.ts",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the route’s own flow — an EMOM minute at 10 and at 5 with one edge in phase, a count-up race on its cap, held on pause, and a race far from its cap neutral — with no network",
+          "line": 813,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the shared owner — held at 10 and 5, run into its last five, a count-up cap, an open native log with one edge in phase, and the still preview — with no network",
+            "readsNotVerbatimAtHead": 18,
+            "classes": "gallery"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-027.spec.ts",
+          "test": "TASK-027 compact live navigator preserves section access > JOURNEY-027 ${name}: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+          "line": 384,
+          "build": {
+            "counterpart": "TASK-027 compact live navigator preserves section access > JOURNEY-027 ${name}: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+            "readsNotVerbatimAtHead": 2,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "e2e/refinement/task-027.spec.ts",
+          "test": "TASK-027 compact live navigator preserves section access > gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written",
+          "line": 521,
+          "build": {
+            "counterpart": "TASK-027 compact live navigator preserves section access > gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written",
+            "readsNotVerbatimAtHead": 3,
+            "classes": "gallery"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+          "line": 542,
+          "build": {
+            "counterpart": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+            "baseLine": 489,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange; restored"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+          "line": 575,
+          "build": {
+            "counterpart": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+            "baseLine": 518,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+          "line": 588,
+          "build": {
+            "counterpart": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+            "baseLine": 530,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+          "line": 602,
+          "build": {
+            "counterpart": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+            "baseLine": 542,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+          "line": 1758,
+          "build": {
+            "counterpart": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+            "baseLine": 1696,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+          "line": 1772,
+          "build": {
+            "counterpart": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+            "baseLine": 1708,
+            "readsNotVerbatimAtHead": 5,
+            "ofWhichFailOnRound7Now": 5,
+            "classes": "approvedChange; restored"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s",
+          "line": 1821,
+          "build": {
+            "counterpart": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s",
+            "baseLine": 1753,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 2,
+            "classes": "approvedChange, equivalent; restored"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+          "line": 1871,
+          "build": {
+            "counterpart": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the session’s one rest > coordinates a low AMRAP window with the low session rest across navigation",
+            "baseLine": 1798,
+            "readsNotVerbatimAtHead": 6,
+            "ofWhichFailOnRound7Now": 4,
+            "classes": "approvedChange, equivalent"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+          "line": 1907,
+          "build": {
+            "counterpart": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the session’s one rest > coordinates a low Circuit round rest with the low session rest across navigation",
+            "baseLine": 1843,
+            "readsNotVerbatimAtHead": 6,
+            "ofWhichFailOnRound7Now": 4,
+            "classes": "approvedChange, equivalent"
+          }
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+          "line": 1965,
+          "build": {
+            "counterpart": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+            "baseLine": 1910,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "test": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules",
+          "line": 323,
+          "build": {
+            "counterpart": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "test": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
+          "line": 385,
+          "build": {
+            "counterpart": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
+            "readsNotVerbatimAtHead": 1,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low state and lights the screen edge in the final five seconds only",
+            "baseLine": 376,
+            "readsNotVerbatimAtHead": 2,
+            "ofWhichFailOnRound7Now": 2,
+            "classes": "approvedChange; restored"
+          }
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "test": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion",
+          "line": 447,
+          "build": {
+            "counterpart": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion",
+            "baseLine": 436,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "test": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
+          "line": 461,
+          "build": {
+            "counterpart": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the accepted slow vignette, which reduced motion and a still loop stop — no flashing",
+            "baseLine": 450,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 2,
+            "classes": "approvedChange, equivalent; restored"
+          }
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "test": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions",
+          "line": 116,
+          "build": {
+            "counterpart": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions",
+            "baseLine": 98,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "equivalent"
+          }
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "test": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving",
+          "line": 209,
+          "build": {
+            "counterpart": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving",
+            "baseLine": 191,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "test": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on",
+          "line": 221,
+          "build": {
+            "counterpart": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on",
+            "baseLine": 203,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "test": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+          "line": 687,
+          "build": {
+            "counterpart": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+            "readsNotVerbatimAtHead": 6,
+            "classes": "look, equivalent; restored"
+          },
+          "base": {
+            "counterpart": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+            "baseLine": 663,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+          "line": 760,
+          "build": {
+            "counterpart": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+            "readsNotVerbatimAtHead": 13,
+            "classes": "look, equivalent; restored"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+          "line": 228,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+            "readsNotVerbatimAtHead": 6,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+          "line": 277,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+            "readsNotVerbatimAtHead": 1,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap\\'s outcome never breathes",
+          "line": 333,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap\\'s outcome never breathes",
+            "readsNotVerbatimAtHead": 2,
+            "classes": "capWords"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+          "line": 406,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+            "readsNotVerbatimAtHead": 2,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+          "line": 524,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+            "readsNotVerbatimAtHead": 2,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the route’s own flow: an EMOM minute at 10 and at 5 with one aura, a count-up race warning on its cap, held on pause, and a race far from its cap neutral",
+          "line": 546,
+          "build": {
+            "counterpart": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the shared owner: held at 10 and 5, run into its last five, as a count-up cap, under an open native log with one aura in phase, and still",
+            "readsNotVerbatimAtHead": 17,
+            "classes": "gallery"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+          "line": 355,
+          "build": {
+            "counterpart": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+            "baseLine": 262,
+            "readsNotVerbatimAtHead": 5,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+          "line": 760,
+          "build": {
+            "counterpart": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+          "line": 1081,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+            "readsNotVerbatimAtHead": 6,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "the countdown takes the shipped low state and nothing more > is not low, and claims no loop, while the minute has time left",
+            "baseLine": 828,
+            "readsNotVerbatimAtHead": 5,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+          "line": 1098,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+            "readsNotVerbatimAtHead": 9,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+          "line": 1131,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+          "line": 1153,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+            "readsNotVerbatimAtHead": 10,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+          "line": 1180,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": "the countdown takes the shipped low state and nothing more > stays low through the rest remainder, with the phase still in words",
+            "baseLine": 924,
+            "readsNotVerbatimAtHead": 8,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+          "line": 1200,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+          "line": 1220,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": "the countdown takes the shipped low state and nothing more > stays a labelled timer that is not a live region",
+            "baseLine": 966,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+          "line": 1236,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+            "readsNotVerbatimAtHead": 3,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "the countdown takes the shipped low state and nothing more > takes the one loop from a loading region beside it, and gives it back",
+            "baseLine": 979,
+            "readsNotVerbatimAtHead": 5,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+          "line": 1271,
+          "build": {
+            "counterpart": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+            "readsNotVerbatimAtHead": 9,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": "the countdown takes the shipped low state and nothing more > is still under reduced motion and loses nothing it was saying",
+            "baseLine": 1018,
+            "readsNotVerbatimAtHead": 10,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/exercise-coaching.test.tsx",
+          "test": "the panel’s waits and a low rest keep one loop between them > runs the guidance’s wait until the rest goes low, then stills it — still busy",
+          "line": 451,
+          "build": {
+            "counterpart": null,
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "the panel’s waits and a low rest keep one loop between them > runs the guidance’s wait until the rest goes low, then stills it — still busy",
+            "baseLine": 438,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 4,
+            "classes": "approvedChange (C1)"
+          }
+        },
+        {
+          "file": "src/ui/exercise-coaching.test.tsx",
+          "test": "the panel’s waits and a low rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+          "line": 484,
+          "build": {
+            "counterpart": null,
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "the panel’s waits and a low rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+            "baseLine": 471,
+            "readsNotVerbatimAtHead": 3,
+            "ofWhichFailOnRound7Now": 3,
+            "classes": "approvedChange (C1)"
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
+          "line": 324,
+          "build": {
+            "counterpart": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "look, capWords"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left",
+          "line": 724,
+          "build": {
+            "counterpart": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look, capWords"
+          },
+          "base": {
+            "counterpart": "the clock takes the shipped low state and nothing more > is not low, and claims no loop, while there is time left",
+            "baseLine": 552,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "the clock takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five",
+          "line": 745,
+          "build": {
+            "counterpart": "the clock takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five",
+            "readsNotVerbatimAtHead": 10,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "the clock takes the shared countdown warning > gives the warning up at the cap and at a finish, keeping the outcome’s colours",
+          "line": 783,
+          "build": {
+            "counterpart": "the clock takes the shared countdown warning > gives the warning up at the cap and at a finish, keeping the outcome’s colours",
+            "readsNotVerbatimAtHead": 9,
+            "classes": "look, wording"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "the clock takes the shared countdown warning > stays a labelled timer that is not a live region",
+          "line": 817,
+          "build": {
+            "counterpart": "the clock takes the shared countdown warning > stays a labelled timer that is not a live region",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "the clock takes the shipped low state and nothing more > stays a labelled timer that is not a live region",
+            "baseLine": 641,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+          "line": 831,
+          "build": {
+            "counterpart": "the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+            "readsNotVerbatimAtHead": 3,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "the clock takes the shipped low state and nothing more > takes the one loop from a loading region beside it, and gives it back",
+            "baseLine": 655,
+            "readsNotVerbatimAtHead": 6,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+          "line": 873,
+          "build": {
+            "counterpart": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+            "readsNotVerbatimAtHead": 7,
+            "classes": "look, wording, capWords"
+          },
+          "base": {
+            "counterpart": "the clock takes the shipped low state and nothing more > is still under reduced motion and loses nothing it was saying",
+            "baseLine": 701,
+            "readsNotVerbatimAtHead": 8,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "For Time with explicit ladder timing > free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it",
+          "line": 938,
+          "build": {
+            "counterpart": "For Time with explicit ladder timing > free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it",
+            "readsNotVerbatimAtHead": 3,
+            "classes": "wording"
+          },
+          "base": {
+            "counterpart": "For Time with explicit ladder timing > free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it",
+            "baseLine": 758,
+            "readsNotVerbatimAtHead": 3,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries",
+          "line": 955,
+          "build": {
+            "counterpart": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries",
+            "readsNotVerbatimAtHead": 2,
+            "classes": "wording"
+          },
+          "base": {
+            "counterpart": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries",
+            "baseLine": 772,
+            "readsNotVerbatimAtHead": 2,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": "superseded"
+          }
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+          "line": 199,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+            "readsNotVerbatimAtHead": 14,
+            "classes": "look, wording; restored"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log\\'s width, with no short inner chamfer inside it",
+          "line": 243,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log\\'s width, not a short readout beside its label",
+            "readsNotVerbatimAtHead": 17,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu\\'s height and never stretched across the header",
+          "line": 270,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu\\'s height and never stretched across the header",
+            "readsNotVerbatimAtHead": 5,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the route keeps its one row past the hour, and the gallery presents no two-row state",
+          "line": 301,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the gallery draws the route\\'s own header on one row, and no two-row state",
+            "readsNotVerbatimAtHead": 10,
+            "classes": "gallery, look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+          "line": 333,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+            "readsNotVerbatimAtHead": 3,
+            "classes": "capWords"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+          "line": 388,
+          "build": {
+            "counterpart": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+            "readsNotVerbatimAtHead": 13,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+          "line": 556,
+          "build": {
+            "counterpart": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+            "baseLine": 546,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange; restored"
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside",
+          "line": 593,
+          "build": {
+            "counterpart": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside",
+            "baseLine": 583,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow",
+          "line": 616,
+          "build": {
+            "counterpart": "RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "RestTimerBar > goes low as the shipped low state: stepped over --dur-alert, pulsing to 80%, no glow",
+            "baseLine": 605,
+            "readsNotVerbatimAtHead": 6,
+            "ofWhichFailOnRound7Now": 3,
+            "classes": "approvedChange, equivalent"
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it",
+          "line": 690,
+          "build": {
+            "counterpart": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it",
+            "baseLine": 668,
+            "readsNotVerbatimAtHead": 1,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange"
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+          "line": 706,
+          "build": {
+            "counterpart": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+            "readsNotVerbatimAtHead": 0,
+            "classes": null
+          },
+          "base": {
+            "counterpart": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+            "baseLine": 684,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 4,
+            "classes": "approvedChange; restored"
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > is still under reduced motion and loses nothing it was saying",
+          "line": 751,
+          "build": {
+            "counterpart": "RestTimerBar > is still under reduced motion and loses nothing it was saying",
+            "readsNotVerbatimAtHead": 1,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": "RestTimerBar > is still under reduced motion and loses nothing it was saying",
+            "baseLine": 726,
+            "readsNotVerbatimAtHead": 4,
+            "ofWhichFailOnRound7Now": 1,
+            "classes": "approvedChange, equivalent"
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+          "line": 851,
+          "build": {
+            "counterpart": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+            "readsNotVerbatimAtHead": 3,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+          "line": 935,
+          "build": {
+            "counterpart": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+            "readsNotVerbatimAtHead": 2,
+            "classes": "look"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written",
+          "line": 1004,
+          "build": {
+            "counterpart": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery state ?state=cards draws the route’s own compact navigator before the live cards, jumping a memory-only position with nothing read or written",
+            "readsNotVerbatimAtHead": 4,
+            "classes": "gallery"
+          },
+          "base": {
+            "counterpart": null,
+            "baseLine": null,
+            "readsNotVerbatimAtHead": 0,
+            "ofWhichFailOnRound7Now": 0,
+            "classes": null
+          }
+        }
+      ],
+      "restoredThisRound": [
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+          "readsAdded": [
+            "expect(jumpToggle()).toHaveTextContent('3 / 3')",
+            "expect(within(sectionNavigation()).getByRole('button', { name: 'Conditioning, not started' })).toHaveAttribute('aria-current', 'step')"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+          "readsAdded": [
+            "expect(bar).toHaveAttribute('data-urgent', 'true')",
+            "expect(bar.querySelector('.clr-glow')).toBeNull()",
+            "expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)",
+            "expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)",
+            "expect(restBody()).toHaveClass('clr-chamfer--timer-low')",
+            "expect(restTimer()).toHaveAttribute('data-loop', 'run')",
+            "expect(restTimer()).toHaveTextContent('00:04')",
+            "expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "test": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s",
+          "readsAdded": [
+            "expect(Array.from(document.querySelectorAll('[data-loop=\"run\"]'))).toEqual([restTimer(), edges[0]])",
+            "expect(restTimer()).toHaveTextContent('00:05')"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "test": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
+          "readsAdded": [
+            "expect((countdown().parentElement as HTMLElement).style.getPropertyValue('--bleed')).toBe('var(--border-timer-low)')",
+            "expect(countdown().parentElement).not.toHaveClass('clr-pulse-micro')",
+            "expect(countdown().parentElement).not.toHaveClass('clr-pulse-micro')",
+            "expect(countdown().parentElement).not.toHaveClass('clr-pulse-micro')",
+            "expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)",
+            "expect(within(countdownRegion()).getByRole('status')).toHaveTextContent('')"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "test": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
+          "readsAdded": [
+            "expect(COUNTDOWN_CSS).not.toMatch(/@keyframes|animation|transition|opacity/)",
+            "expect(URGENCY_CSS).toMatch(/@keyframes clr-deadline-breathe\\s*\\{\\s*0%, 100% \\{ opacity: var\\(--countdown-warning-opacity-min\\); \\}\\s*50% \\{ opacity: var\\(--countdown-warning-opacity-max\\); \\}\\s*\\}/)",
+            "expect(URGENCY_CSS).toMatch(/\\.clr-countdown-edge\\[data-loop='run'\\]\\s*\\{\\s*animation: clr-deadline-breathe var\\(--countdown-warning-period\\) var\\(--countdown-warning-easing\\) infinite;/)",
+            "expect(URGENCY_CSS).toMatch(/\\.clr-countdown-edge\\s*\\{[^}]*pointer-events:\\s*none/)",
+            "expect(URGENCY_CSS).toMatch(/\\.clr-countdown-edge\\s*\\{[^}]*var\\(--urgency-a400\\)/)",
+            "expect(URGENCY_CSS.match(/@keyframes/g)).toHaveLength(1)",
+            "expect(reducedMotion).toContain('.clr-pulse-micro')",
+            "expect(tokens).toMatch(/--countdown-warning-opacity-max: \\.8;/)",
+            "expect(tokens).toMatch(/--countdown-warning-opacity-min: \\.2;/)",
+            "expect(tokens).toMatch(/--countdown-warning-period: 1\\.5s;/)"
+          ],
+          "readsReplaced": [
+            "expect(MOTION_CSS).toContain('.clr-pulse-micro')"
+          ]
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "test": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+          "readsAdded": [
+            "expect(blockCard).not.toBe(timerCard)",
+            "expect(blockCard).not.toBeNull()",
+            "expect(finishButton.closest('.clr-card')).not.toBeNull()",
+            "expect(finishButton.closest('.clr-card')).toBe(blockCard)"
+          ],
+          "readsReplaced": [
+            "expect(finishButton.closest('.clr-card')).not.toBe(timerCard)"
+          ]
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own low state, with nothing added around it",
+          "restored": "the whole base body, verbatim with its helpers"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+          "readsAdded": [
+            "expect(screen.queryByRole('button', { name: 'Log results' })).not.toBeInTheDocument()",
+            "expect(screen.queryByRole('button', { name: /^(increase|decrease) /i })).not.toBeInTheDocument()",
+            "expect(screen.queryByRole('group', { name: 'Reps into the next round' })).not.toBeInTheDocument()",
+            "expect(screen.queryByRole('heading', { name: 'Log results' })).not.toBeInTheDocument()",
+            "expect(timerFrame.parentElement).toBe(timerFrameHost)",
+            "expect(timerFrameHost).toHaveClass('clr-timed-clock')",
+            "expect(urgent.closest('.clr-timer-frame')).toBe(timerFrame)"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+          "readsAdded": [
+            "expect(ruleBody(URGENCY_CSS, 'html[data-reduce-motion] .clr-countdown-breathe, html[data-reduce-motion] .clr-countdown-edge')).toBe('animation: none !important; opacity: var(--countdown-warning-opacity-still);')"
+          ],
+          "readsReplaced": [
+            "expect(ruleBody(URGENCY_CSS, 'html[data-reduce-motion] .clr-countdown-breathe, html[data-reduce-motion] .clr-countdown-edge').replace(/\\s+/g, ' ')).toBe('animation: none !important; opacity: var(--countdown-warning-opacity-still);')"
+          ]
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "test": "the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+          "restored": "the whole base body, verbatim with its helpers"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "test": "while the clock runs > turns urgent in the last ten seconds — words, pulse and hue together",
+          "restored": "the whole base body, verbatim with its helpers"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+          "readsAdded": [
+            "expect(restBar()).toHaveAttribute('data-urgent', 'true')",
+            "expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')",
+            "expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')",
+            "expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:04')",
+            "expect(screen.getByText('4 seconds left')).toBeInTheDocument()"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "test": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+          "readsAdded": [
+            "expect(Array.from(document.querySelectorAll('[data-loop=\"run\"]'))).toEqual([timer(), edges[0]])",
+            "expect(edges).toHaveLength(1)",
+            "expect(timer()).not.toHaveAttribute('data-loop')"
+          ],
+          "readsReplaced": []
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "test": "helper expectWholeFrame (every AC-C19-01, AC-R007-02 and AC-C21-01 frame)",
+          "readsAdded": [
+            "expect(style.display, `${label}: flex body`).toBe(frame === timer ? 'inline-flex' : 'flex')"
+          ],
+          "readsReplaced": [
+            "expect(['flex', 'inline-flex'], `${label}: flex body`).toContain(style.display)"
+          ]
+        }
+      ],
+      "result": "After repair round 3 no build or base read that Round 7 can still meet is missing, looser or replaced by a duplicate: every remaining difference is classified above. matchersWeakened stays false."
+    },
     "ownerDecisions": [
       {
         "id": "C1",
@@ -154,10 +1538,10 @@
   },
   "summary": {
     "rewritten": 42,
-    "carried": 106,
+    "carried": 109,
     "retired": 3,
     "deferred": 1,
-    "superseded": 21,
+    "superseded": 38,
     "ported": 22,
     "added": 8
   },
@@ -223,7 +1607,7 @@
       "test": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour (TASK-AC-23D0ADE293F8): every clock on the real route is one whole TimerFrame — beside a card, the app’s Card in the timer role (one bar, one body holding the readout alone, inside no other card); inside a card, that card’s element frame (one chamfer, no bar of its own) — with nothing nested in the readout, the readout centred both ways, labelled once and never live. Round 7’s clock names stand for the build’s `data-clock` pairs. The build’s presentation.css width recipe is read as TimerFrame’s own full-width wrapper (`width: 100%`, `display: flex`); its “nothing outside the shared owner styles a timer’s width” is, on Round 7, movement-countdown.css stretching the countdown’s column, which the case now reads.",
+      "note": "Round 7 look, same asserted behaviour (TASK-AC-23D0ADE293F8): every clock on the real route is one whole TimerFrame — beside a card, the app’s Card in the timer role (one bar, one body holding the readout alone, inside no other card); inside a card, that card’s element frame (one chamfer, no bar of its own) — with nothing nested in the readout, the readout centred both ways, labelled once and never live. Round 7’s clock names stand for the build’s `data-clock` pairs. The build’s presentation.css width recipe is read as TimerFrame’s own full-width wrapper (`width: 100%`, `display: flex`); its “nothing outside the shared owner styles a timer’s width” is, on Round 7, movement-countdown.css stretching the countdown’s column, which the case now reads. Repair round 3: the flex body is read exactly per kind (`inline-flex` for the element frame, `flex` for the card’s readout row) instead of either.",
       "result": "passed"
     },
     {
@@ -615,7 +1999,7 @@
       "test": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "carried",
-      "note": "Body identical to the build’s.",
+      "note": "The build’s body. Repair round 3 (self-check against Round 7’s same-title base body): the low colour role at eight seconds and the final five — 00:04, `4 seconds left`, still urgent, the milestone still spoken — restored from Round 7’s same-title base body, which the build’s body left out.",
       "result": "passed"
     },
     {
@@ -679,7 +2063,7 @@
       "test": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "carried",
-      "note": "Body identical to the build’s.",
+      "note": "The build’s body. Repair round 3 (self-check against Round 7’s same-title base body): from Round 7’s same-title base body: no loop at eight seconds (on the timer, Round 7’s owner), one edge, and exactly the timer and its edge running (`toEqual([timer, edge])`, beside the build’s `every` read).",
       "result": "passed"
     },
     {
@@ -881,7 +2265,7 @@
       "test": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "rewritten",
-      "note": "The build’s body, with Round 7’s edge class `clr-countdown-edge` for the build’s `clr-deadline-edge`; every other read is the build’s (the timer itself breathes on the running loop; pause keeps the colour and ends the breathe and the edge).",
+      "note": "The build’s body, with Round 7’s edge class `clr-countdown-edge` for the build’s `clr-deadline-edge`; every other read is the build’s (the timer itself breathes on the running loop; pause keeps the colour and ends the breathe and the edge). Repair round 3 (self-check against Round 7’s same-title base body): from Round 7’s base body of the old title, the bleed’s low `--bleed` at ten seconds, no stepped pulse at 00:10, 00:06 and on pause, no milestone before the final five, and one edge.",
       "result": "passed"
     },
     {
@@ -897,7 +2281,7 @@
       "test": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour: the one edge’s recipe and its reduced-motion still rule are read from Round 7’s owner src/ui/countdown-urgency.css where the build read refinements/presentation.css; the countdown’s own stylesheet animates nothing.",
+      "note": "Round 7 look, same asserted behaviour: the one edge’s recipe and its reduced-motion still rule are read from Round 7’s owner src/ui/countdown-urgency.css where the build read refinements/presentation.css; the countdown’s own stylesheet animates nothing. Repair round 3 (self-check against Round 7’s same-title base body): from Round 7’s base body of the old title, the raw-stylesheet no-motion read, the edge’s pointer-events and urgency colour, one keyframe, its body and tokens (1.5s, .2, .8), the animation on the running rule only (A3 TASK-108 moved it there), and the vendor’s reduced-motion block (not the whole sheet) stilling the micro pulse — the last replacing a looser whole-sheet read.",
       "result": "passed"
     },
     {
@@ -949,7 +2333,7 @@
       "test": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "carried",
-      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it.",
+      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it. Repair round 3 (self-check against Round 7’s same-title base body): two reads of Round 7’s same-title base body that still hold are restored — the bar states the new position (`3 / 3`) and the jump list marks the new current (`aria-current=\"step\"`).",
       "result": "passed"
     },
     {
@@ -997,7 +2381,7 @@
       "test": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "carried",
-      "note": "Body identical to the build’s.",
+      "note": "The build’s body. Repair round 3 (self-check against Round 7’s same-title base body): the final five, which the build’s body left out, is read again as Round 7’s base body read it — 00:04, urgent, the rest’s warning running (on its timer, Round 7’s owner of the breathe), still low, one edge, the milestone `Final 10 seconds` still the one thing that speaks, no glow and no stepped pulse.",
       "result": "passed"
     },
     {
@@ -1005,7 +2389,7 @@
       "test": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "carried",
-      "note": "Body identical to the build’s.",
+      "note": "The build’s body. Repair round 3 (self-check against Round 7’s same-title base body): the reading at the body’s moment (00:05) and the exact pair of running claims — the rest’s timer and its one edge — as Round 7’s base body read them (`toEqual([timer, edge])`, beside the build’s `every` read).",
       "result": "passed"
     },
     {
@@ -1151,12 +2535,11 @@
     {
       "file": "src/ui/emom-block.test.tsx",
       "test": "the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
-      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
-      "disposition": "superseded",
-      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “is one block card beside one whole timer frame, with neither inside the other”, which replaces it in place, as the build replaced it (ported onto the route).",
-      "result": "removed",
-      "baseLine": 628,
-      "supersededBy": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other"
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over EmomBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose titles the build’s port does not reuse stay as they are; restored verbatim with its helpers in repair round 3 — the build’s port had renamed it, so it is no same-title twin). EmomBlock still passes it as written. For TASK-110, the file’s owner.",
+      "result": "passed",
+      "baseLine": 628
     },
     {
       "file": "src/ui/emom-block.test.tsx",
@@ -1250,7 +2633,7 @@
       "test": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "ported",
-      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Repair round 3 restored the build’s read that Finish early sits inside a card (`finishButton.closest('.clr-card')` `not.toBeNull()`), now also read as the block’s own card (the card holding `Movements in this AMRAP`); attempt 1 had turned it into `not.toBe(timerCard)`, which repeated the next read.",
       "result": "passed"
     },
     {
@@ -1258,7 +2641,7 @@
       "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "ported",
-      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Repair round 3 restored, in Round 7’s structure, the build’s “nothing added around it” read (the build read its frame as the block root’s direct child; Round 7’s frame `.clr-timer-frame` sits directly in the flow’s `.clr-timed-clock` slot, and urgency leaves the same frame in the same host), and the four reads of the build’s own `expectNoScoreEntry` that the file’s Round 7 helper does not make: no “Log results” heading, no log offered (Round 7’s “Log results” action for the build’s marked opener), no “Reps into the next round” group and no increase/decrease steppers (read case-insensitively, as Round 7 names them “Increase …”).",
       "result": "passed"
     },
     {
@@ -1274,12 +2657,11 @@
     {
       "file": "src/ui/amrap-block.test.tsx",
       "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own low state, with nothing added around it",
-      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
-      "disposition": "superseded",
-      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “leaves urgency to the timer’s own shared warning, with nothing added around it”, which replaces it in place, as the build replaced it (ported onto the route).",
-      "result": "removed",
-      "baseLine": 690,
-      "supersededBy": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it"
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over AmrapBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose titles the build’s port does not reuse stay as they are; restored verbatim with its helpers in repair round 3 — the build’s port had renamed it, so it is no same-title twin). AmrapBlock still passes it as written. For TASK-110, the file’s owner.",
+      "result": "passed",
+      "baseLine": 690
     },
     {
       "file": "src/ui/for-time-block.test.tsx",
@@ -1532,12 +2914,11 @@
     {
       "file": "src/ui/for-time-block.test.tsx",
       "test": "while the clock runs > turns urgent in the last ten seconds — words, pulse and hue together",
-      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
-      "disposition": "superseded",
-      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five”, which replaces it in place, as the build replaced it.",
-      "result": "removed",
-      "baseLine": 242,
-      "supersededBy": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five"
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over ForTimeBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose titles the build’s port does not reuse stay as they are; restored verbatim with its helpers in repair round 3 — the build’s port had renamed it, so it is no same-title twin). ForTimeBlock still passes it as written.",
+      "result": "passed",
+      "baseLine": 242
     },
     {
       "file": "src/ui/for-time-block.test.tsx",
@@ -1835,6 +3216,206 @@
       "disposition": "added",
       "note": "TASK-AC-244B4516A858 look check, new in this task.",
       "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 489,
+      "supersededBy": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 518,
+      "supersededBy": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 530,
+      "supersededBy": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > moves focus to the section Next opens once the current one is saved (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 542,
+      "supersededBy": "Workout — the active section header > moves focus to the section Next opens once the current one is saved"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 1696,
+      "supersededBy": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 1708,
+      "supersededBy": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 1753,
+      "supersededBy": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 1910,
+      "supersededBy": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 1974,
+      "supersededBy": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "A movement-owned countdown with Start / Pause / Reset (AC-051) > stays on its movement’s card, still running, while the sheet opens and minimises (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 235,
+      "supersededBy": "A movement-owned countdown with Start / Pause / Reset (AC-051) > stays on its movement’s card, still running, while the sheet opens and minimises"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 321,
+      "supersededBy": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 436,
+      "supersededBy": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 98,
+      "supersededBy": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 191,
+      "supersededBy": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 203,
+      "supersededBy": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 546,
+      "supersededBy": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 583,
+      "supersededBy": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 668,
+      "supersededBy": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 684,
+      "supersededBy": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > is still under reduced motion and loses nothing it was saying (base body)",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the body the brief restores or rewrites under this title (one title, one body). Repair round 3 compared its reads one by one with that body: every read that still holds on Round 7 is in it (restored this round where the build’s body had left it out); the others read the rest’s stepped pulse, the bar’s loop claim, the bar’s `data-urgent=\"false\"` in the low stretch or the section heading’s focus, which TASK-108’s criteria change (rules.selfCheck).",
+      "result": "removed",
+      "baseLine": 726,
+      "supersededBy": "RestTimerBar > is still under reduced motion and loses nothing it was saying"
     }
   ]
 }

@@ -11,8 +11,8 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 ## Status
 
 Attempt 1 implemented and committed. The two plan conflicts it raised (C1, C2) were decided by the owner on
-2026-11-23 and applied; see "Owner decision (2026-11-23)". Repair rounds 1 and 2 applied (round 2 is the last allowed
-under hard rule 6); see their sections. Nothing pushed.
+2026-11-23 and applied; see "Owner decision (2026-11-23)". Repair rounds 1, 2 and 3 applied (round 3 approved by Eric as
+V2's last for this attempt); see their sections. Nothing pushed.
 
 ## Intended outcome
 
@@ -79,7 +79,7 @@ Tests and specs (every inherited body is in `evidence/refinement/task-108/test-l
   restored beside Round 7's), the focus moves and the rest warning; one retired as superseded.
 - `src/ui/emom-block.test.tsx` (11), `src/ui/amrap-block.test.tsx` (2) (TASK-110's) and `src/ui/for-time-block.test.tsx`
   (9, owned whole): ported onto the route's dispatch (R7-2); the same-title base bodies superseded (rows in the
-  ledger); the five base bodies with their own titles kept (restored in repair round 2).
+  ledger); the eight base bodies with their own titles kept (five restored in repair round 2, three in round 3).
 - `src/ui/exercise-coaching.test.tsx` (TASK-109's): two base reads moved from the rest card's pulse to the rest's timer
   (C1; first committed provisionally on its own, kept as final under the owner's 2026-11-23 rule).
 - `e2e/refinement/task-007.spec.ts`, `task-008.spec.ts`, `task-027.spec.ts`: rewritten onto Round 7 (three gallery
@@ -318,6 +318,116 @@ Verification (no browser run was needed: no spec, parity target or product file 
 
 TASK-116 check-02 (amrap-block) was not re-run: that file did not change this round, and the verifier reports its
 receipt current. No parity spec was run.
+
+## Repair round 3 (2026-11-23, review `TASK-108-a1-be7640e4c058`)
+
+The third review met 29 of 30 criteria and every journey. It rejected TASK-AC-1ABEBDB57CBF because one read was
+weakened while the ledger said `matchersWeakened: false`. Eric approved this round as V2's last for the attempt. The
+changes are to tests and evidence only, with no product change.
+
+**The miss.** In the AMRAP port "stands the countdown beside the block's card, never inside one", the build's
+`expect(finishButton.closest('.clr-card')).not.toBeNull()` (181e580 line 652) had become `.not.toBe(timerCard)`. That
+repeated the next read and lost the check that Finish early sits inside a card. The build's read is restored, and the
+card is now also read as the block's own card (the one holding `Movements in this AMRAP`):
+`expect(finishButton.closest('.clr-card')).toBe(blockCard)`.
+
+**Three renamed base bodies kept**, unchanged and in the same form as the five in repair round 2. Each is
+byte-identical to `debdeaf4`, and each helper it uses is unchanged at HEAD. They are set beside their ports, all pass
+as written, and their ledger rows change from superseded to carried with `baseLine`:
+
+| File | `debdeaf4` line | Body |
+|---|---|---|
+| amrap-block | 690 | the 0.14.3 card, timer and group grammar > leaves urgency to the timer's own low state, with nothing added around it |
+| emom-block | 628 | the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other |
+| for-time-block | 242 | while the clock runs > turns urgent in the last ten seconds — words, pulse and hue together |
+
+**Self-check (standing rule; `rules.selfCheck` in the ledger).**
+
+(a) Removed or renamed titles. The same parser audit as round 2 covered every test file and e2e spec touched since
+`debdeaf4`:
+
+| Audit | Count |
+|---|---|
+| Files | 14 |
+| Tests at `debdeaf4` | 295 |
+| Absent or renamed at HEAD | 17 (was 20; the three above are back) |
+| Recorded (`test` or `renamedFrom` row) | 17 |
+| Unrecorded | **0** |
+| Present at both refs with a changed body | 33, every one with a row |
+
+(b) Expect calls, one by one. The audit covered every body whose text differs from `debdeaf4`. For each, it extracted
+the outermost `expect(…)` chains of the body and of the file's own helpers that the body calls, transitively. These
+were compared as multisets with the build's body (181e580: same title, or the renamed case) and with the base's
+(`debdeaf4`: same title, or the base body it supersedes). The e2e specs are identical at the build and the base.
+Temporary soft-assertion copies of the base files told which base reads Round 7 still meets; the copies ran against
+the current product and were then deleted.
+
+| Comparison | Count |
+|---|---|
+| Bodies compared | 81 (75 with a build counterpart, 49 with a base counterpart) |
+| Build reads not verbatim at HEAD | 313, in 50 bodies |
+| Base reads not verbatim at HEAD | 126, of which 46 fail on the current product |
+| Bodies with any difference, each classified | 71 |
+
+Each difference is one of these classes. Counts are bodies; one body can carry more than one class.
+
+- **Build side:**
+  - look rewrite: 41;
+  - Round 7 wording: 16;
+  - C2 cap words: 7;
+  - gallery state: 6 (Round 7's gallery has no header or navigator in its cards state, has urgency moments, and has the SectionHeader specimen; the behaviour is read on the route);
+  - equivalent: 3;
+  - restored this round: 3.
+- **Base side:**
+  - approved change: 21, plus 2 under C1. The read fails now, or it reads the vendor's stepped micro-pulse that the rest no longer uses. The causes are the shared breathe on the timer, `data-urgent` marking the low stretch, focus on the opened section's first card, two urgent deadlines both breathing, and the edge's animation sitting on the running rule.
+  - superseded under R7-2: 13. These are ports whose same-title base twin, over the old component, is superseded; its reads hold over that component.
+  - equivalent: 7 (the same read at the body's own moment, or a stronger read).
+  - restored this round: 7.
+
+What the self-check restored, in addition to the miss:
+
+- **Whole bodies:** the three base bodies above.
+- **Reads:** 49 reads added and 4 replaced, across 11 bodies and 1 helper (listed in `rules.selfCheck.restoredThisRound`).
+  - **AMRAP port "leaves urgency … shared warning":**
+    - The build's "nothing added around it", in Round 7's structure: the frame `.clr-timer-frame` sits directly in the flow's `.clr-timed-clock`, and urgency leaves the same frame in the same host.
+    - The four reads of the build's own `expectNoScoreEntry` that the file's Round 7 helper does not make: no "Log results" heading, no "Log results" action, no "Reps into the next round" group, and no increase or decrease steppers.
+  - **timer-frame-layout:** the flex-body read is now exact for each kind, `inline-flex` for the element frame and `flex` for the card's row, where it accepted either.
+  - **countdown-urgency:** a no-op whitespace normaliser is removed from one rule read, which now has the build's form.
+  - **Round 7's same-title base bodies that the restored build bodies replace.** Each read that still holds is carried into the body that stays:
+    - Workout, after a jump: the bar's new position `3 / 3`, and the jump list's `aria-current="step"`.
+    - The rest's final five: 00:04, urgent, the timer's warning running, low colour, one edge, and `Final 10 seconds`. The build's body had left this out. It is added in Workout and in workout-chrome, with `4 seconds left` in workout-chrome.
+    - The exact pair of running claims, `toEqual([timer, edge])`, beside the build's `every` read: in Workout and in workout-chrome.
+    - movement-countdown:
+      - the low `--bleed`;
+      - no stepped pulse at 00:10, at 00:06 and on pause;
+      - no milestone before the final five;
+      - one edge;
+      - the edge recipe's pointer-events, its colour, a single keyframe, the keyframe body and the tokens;
+      - the animation on the running rule only;
+      - the vendor's reduced-motion block. This replaces a looser whole-sheet read.
+
+Twenty Round 7 base bodies are each replaced by a restored or rewritten body with the same title: 9 in Workout, 3 in
+movement-countdown, 3 in footer-nav and 5 in workout-chrome. Each now has a "(base body)" superseded row with
+`baseLine` and `supersededBy`. `matchersWeakened` stays `false`, and its note names everything this round restored.
+The ledger has 223 entries: rewritten 42, carried 109, retired 3, deferred 1, superseded 38, ported 22 and added 8.
+`rules.forTask110` is updated: emom-block keeps 4 base bodies and supersedes 6, and amrap-block keeps 1 and supersedes 1.
+
+Verification. No spec, parity target or product file changed, so no browser run was needed:
+
+| Check | Result |
+|---|---|
+| `npx vitest run src/ui/amrap-block.test.tsx src/ui/emom-block.test.tsx src/ui/for-time-block.test.tsx` | 3 files, 132/132 (was 129) |
+| TASK-108 check-01 (guard; receipt refreshed) | PASSED, 295/295 |
+| TASK-007 check-01 (timer-frame-layout changed) | PASSED, 13/13 |
+| TASK-008 check-01 (countdown-urgency changed) | PASSED, 13/13 |
+| TASK-027 check-01 (workout-chrome changed) | PASSED, 44/44 |
+| TASK-104 check-01 (amrap-, emom-, for-time-block changed) | PASSED, 180/180 |
+| TASK-116 check-02 (amrap-block changed) | PASSED, 4 run of 46 by its `TASK-009` filter |
+| CI chain as one command | exit 0. typecheck ok; lint 0 errors / 175 warnings; lint:ds ok; gen-issues 71 requirements, 136 edges; gen:types current; `npm test` 273 files, 6,396/6,396; build ok; console grep no match |
+| `verify-delivery-evidence.mjs --mode final` for TASK-007, 008, 027, 104, 116, 108 | PASSED; current passing receipts for all six |
+| `lsof -nP -iTCP:5173 -sTCP:LISTEN` | nothing listening |
+
+No parity spec was run.
 
 ## Open
 

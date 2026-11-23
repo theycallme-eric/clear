@@ -702,8 +702,12 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect(container.querySelector('.clr-card .clr-card')).toBeNull()
 
     // The controls stay with the block, in its card rather than the timer's frame.
+    const blockCard = screen.getByRole('list', { name: 'Movements in this AMRAP' }).closest('.clr-card')
+    expect(blockCard).not.toBeNull()
+    expect(blockCard).not.toBe(timerCard)
     const finishButton = screen.getByRole('button', { name: 'Finish early' })
-    expect(finishButton.closest('.clr-card')).not.toBe(timerCard)
+    expect(finishButton.closest('.clr-card')).not.toBeNull()
+    expect(finishButton.closest('.clr-card')).toBe(blockCard)
     expect(timerCard).not.toContainElement(finishButton)
   })
 
@@ -721,6 +725,38 @@ describe('the 0.14.3 card, timer and group grammar', () => {
   // colour at ten seconds, the breathe and one edge in the last five, and no
   // stepped micro-pulse. A3 TASK-108 (round-07 R7-2): ported onto the AMRAP
   // `/workout` draws (`renderRouteAmrap`).
+  // Round 7's base body over AmrapBlock, kept as it is (round-07 decision R7-2:
+  // its title is its own; restored in A3 TASK-108 repair round 3).
+  it('leaves urgency to the timer’s own low state, with nothing added around it', async () => {
+    const calm = await resumeAt(60_000)
+    const resting = screen.getByRole('timer')
+    expect(resting).toHaveClass('clr-chamfer--timer')
+    expect(resting.closest('.clr-bleed')).not.toHaveClass('clr-pulse-micro')
+    calm.unmount()
+
+    const { container } = await resumeAt(472_000)
+    const low = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(low).toHaveTextContent('00:08')
+    expect(low).toHaveClass('clr-chamfer--timer-low')
+
+    // The package's stepped pulse on the timer's own emission — and that is the
+    // only loop on the block.
+    // Its only wrapper is the shared countdown's own, directly inside the
+    // block, which in the low (not yet final-five) state adds no pulse and
+    // claims no loop.
+    const bleed = low.closest('.clr-bleed')
+    expect(bleed).toHaveClass('clr-pulse-micro')
+    const countdownWrapper = bleed?.parentElement as HTMLElement
+    expect(countdownWrapper).toHaveAttribute('data-loop', 'still')
+    expect(countdownWrapper).not.toHaveClass('clr-pulse-micro')
+    expect(countdownWrapper.parentElement).toBe(container.firstElementChild)
+    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
+
+    // Urgent, and still nothing to enter.
+    expectNoScoreEntry()
+  })
+
   it('leaves urgency to the timer’s own shared warning, with nothing added around it', async () => {
     const user = userEvent.setup()
     const { container } = renderRouteAmrap(amrapBlock(), completionDouble().api)
@@ -729,6 +765,12 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     routeClockAt(START + 60_000)
     expect(routeAmrapFrame()).toHaveClass('clr-chamfer--timer')
     expect(routeAmrapTimer()).not.toHaveAttribute('data-urgent')
+    // Where the timer's frame sits while calm: directly in the flow's clock
+    // slot (the build read its frame as the block root's direct child; Round 7
+    // sets it in `.clr-timed-clock`). Urgency adds nothing around it.
+    const timerFrame = routeAmrapTimer().closest('.clr-timer-frame') as HTMLElement
+    const timerFrameHost = timerFrame.parentElement
+    expect(timerFrameHost).toHaveClass('clr-timed-clock')
 
     routeClockAt(START + 472_000)
     expect(routeAmrapTimer()).toHaveTextContent('00:08')
@@ -748,10 +790,19 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect([...container.querySelectorAll('.clr-countdown-breathe')]).toEqual([urgent])
     expect([...container.querySelectorAll('[data-loop="run"]')]).toEqual([urgent])
     expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(urgent.closest('.clr-timer-frame')).toBe(timerFrame)
+    expect(timerFrame.parentElement).toBe(timerFrameHost)
     expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
 
     // Urgent, and still nothing to enter.
     expectNoScoreEntry()
+    // The build's helper read these too: no log offered or open while the
+    // window runs, and no next-round field or steppers (Round 7 offers its log
+    // through the "Log results" action rather than a marked opener).
+    expect(screen.queryByRole('heading', { name: 'Log results' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Log results' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Reps into the next round' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^(increase|decrease) /i })).not.toBeInTheDocument()
   })
 
   it('labels each group inside the card it belongs to', async () => {

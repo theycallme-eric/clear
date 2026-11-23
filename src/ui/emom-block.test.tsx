@@ -729,6 +729,34 @@ describe('the EMOM draws with the shared block frame', () => {
   // timer card": ported onto the EMOM `/workout` draws, whose whole timer frame
   // is Round 7's TimerFrame — the app's Card in the timer role — beside the
   // block's card, holding the readout and its caption alone.
+  // Round 7's base body over EmomBlock, kept as it is (round-07 decision R7-2:
+  // its title is its own; restored in A3 TASK-108 repair round 3).
+  it('is one block card beside one timer card, with neither inside the other', async () => {
+    const user = setup()
+    mount()
+
+    // Before the clock: the block's card and nothing else.
+    expect(cards()).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+
+    expect(cards()).toHaveLength(2)
+    expect(nestedCards()).toEqual([])
+
+    // The timer's card is the shipped one, and it holds the readout alone: the
+    // minute, the phase, the movements and the controls are the block card's.
+    const timerCard = timer().closest('.clr-card') as HTMLElement
+    const blockCard = screen
+      .getByRole('list', { name: 'Movements in this EMOM' })
+      .closest('.clr-card') as HTMLElement
+    expect(blockCard).not.toBe(timerCard)
+    expect(within(timerCard).queryByRole('button')).not.toBeInTheDocument()
+    const inside = within(blockCard)
+    expect(inside.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expect(inside.getByText('WORK')).toBeInTheDocument()
+    expect(inside.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
+  })
+
   it('is one block card beside one whole timer frame, with neither inside the other', async () => {
     const user = setup()
     mountRoute()

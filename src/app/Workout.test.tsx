@@ -554,6 +554,12 @@ describe('Workout — the active section header', () => {
     expect(firstCard('Conditioning')).toHaveFocus()
     expect(within(activeHeader('Conditioning')).getByText('Section 3 / 3 · Not started'))
       .toBeInTheDocument()
+    // Round 7's base body of this title read the same moment: the bar states
+    // the new position, the jump list the new current.
+    expect(jumpToggle()).toHaveTextContent('3 / 3')
+    expect(
+      within(sectionNavigation()).getByRole('button', { name: 'Conditioning, not started' }),
+    ).toHaveAttribute('aria-current', 'step')
     expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
 
     // The section passed over is still unfinished, and nothing was written.
@@ -1796,6 +1802,20 @@ describe('Workout — the session’s one rest', () => {
     expect(session).not.toHaveClass('clr-chamfer--timer-low')
     expect(session.closest('.clr-pulse-micro')).toBeNull()
     expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+
+    // The final five, as Round 7's base body of this title read it: urgent, the
+    // rest's own warning running (on its timer), one edge cue, still low, and
+    // the milestone still the one thing that speaks.
+    advance(5)
+    returnToForeground()
+    expect(restTimer()).toHaveTextContent('00:04')
+    expect(bar).toHaveAttribute('data-urgent', 'true')
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
+    expect(restBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
+    expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
+    expect(bar.querySelector('.clr-glow')).toBeNull()
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
   })
 
   it.each(['skip', 'expiry'] as const)(
@@ -1821,11 +1841,15 @@ describe('Workout — the session’s one rest', () => {
 
       // The urgent rest outranks the wait; the wait is stilled, not removed.
       // What runs is the one warning: the rest's timer and its one aura.
+      expect(restTimer()).toHaveTextContent('00:05')
       expect(restTimer()).toHaveAttribute('data-loop', 'run')
       expect(wait).toHaveAttribute('data-loop', 'still')
       expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
         node === restTimer() || node.matches('[data-countdown-edge]'))).toBe(true)
       expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
+      // Exactly those two, as Round 7's base body of this title read them.
+      const edges = document.querySelectorAll('[data-countdown-edge]')
+      expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restTimer(), edges[0]])
 
       // The visible wait must regain the loop; a closed dialog owns no hidden claim.
       if (ending === 'skip') {

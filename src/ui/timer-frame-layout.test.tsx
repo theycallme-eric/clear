@@ -163,7 +163,7 @@ function expectWholeFrame(timer: HTMLElement) {
   // The readout is a flex body, centred both ways (Round 7's element frame is
   // `inline-flex`, its card's readout row `flex`).
   const style = getComputedStyle(timer)
-  expect(['flex', 'inline-flex'], `${label}: flex body`).toContain(style.display)
+  expect(style.display, `${label}: flex body`).toBe(frame === timer ? 'inline-flex' : 'flex')
   expect(style.justifyContent, `${label}: centred across`).toBe('center')
   expect(style.alignItems, `${label}: centred down`).toBe('center')
   // Labelled once, never a live region; the value said in words.
