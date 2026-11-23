@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-022/required-cases.json",
-    "sha256": "3dea77b29d645068160a87d79781d2733d47719a1d0dedb6adb7519714d7f1f4"
+    "sha256": "86285d12603b456a818cdcff8eeb00d7804a53fe23af7333fe8a52f9d9c8c100"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-022.spec.ts",
-      "sha256": "e93d60bac81701c8594e1d80cf9d17aa829505226fa88749996ba7a6ad8e5f80"
+      "sha256": "6429b03ec8b9cb75afb211e045a8f01ca4c61570181f2c5e5b7a2250e888de9f"
     }
   ],
   "requiredCases": [
@@ -44,7 +44,7 @@
     },
     {
       "file": "e2e/refinement/task-022.spec.ts",
-      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own guides and clocks from the actual reading, with no Dismiss and nothing read or written",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own PreparationGuide in Review order around the real For Time card, the Warm-up’s clock its own, with no Dismiss and nothing read or written",
       "project": "mobile",
       "status": "passed"
     }

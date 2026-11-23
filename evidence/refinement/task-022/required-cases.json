@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-022",
-  "description": "Accepted concise Warm-up and Cooldown with separate preparation timer (REQ-022; AC-C49-01, AC-R022-01, AC-R022-02; JOURNEY-022). On the real /review and /workout routes a Warm-up or Cooldown is the shared PreparationGuide (src/ui/preparation-guide.tsx) over TASK-034's reading (src/state/preparation-guide.ts): the stable title (Warm-up or Cooldown, never section_title), the approximate total time (~N minutes, GEN-06 estimate of the section) and the movement names on separate lines, with no prose and no per-movement sets, reps, load, time or rest, and no illustrated four minutes or three rows. The live workout adds a separate preparation clock (src/state/preparation-clock.ts) in the rest timer's own pattern (CountdownCard): Start / Pause and Add 30s over the guide's own time, distinct from the session, rest, movement and format clocks, sharing the countdown warning, recording nothing, with no Dismiss or substitute hide action. Loading, failed read, no movement left and an absent section keep their meanings; a malformed persisted row is an error. The accepted gallery state /gallery/refinements?state=preparation (reference eded158cfd928d382c9a9409e2c372270312741d) draws the routes' own consumers from the actual reading. check-01 proves the routes with in-memory doubles and an injected wall clock; check-02 proves them in the browser at 320 and 390 with a contained synthetic session, keyboard, touch, reduced motion, a failed read and its retry, and a reload. Every declared case must execute and pass.",
+  "description": "Accepted concise Warm-up and Cooldown with separate preparation timer (REQ-022; AC-C49-01, AC-R022-01, AC-R022-02; JOURNEY-022). On the real /review and /workout routes a Warm-up or Cooldown is the shared PreparationGuide (src/ui/preparation-guide.tsx) over TASK-034's reading (src/state/preparation-guide.ts): the stable title (Warm-up or Cooldown, never section_title), the approximate total time (~N minutes, GEN-06 estimate of the section) and the movement names on separate lines, with no prose and no per-movement sets, reps, load, time or rest, and no illustrated four minutes or three rows. The live workout adds a separate preparation clock (src/state/preparation-clock.ts) in the rest timer's own pattern (CountdownCard): Start / Pause and Add 30s over the guide's own time, distinct from the session, rest, movement and format clocks, sharing the countdown warning, recording nothing, with no Dismiss or substitute hide action. Loading, failed read, no movement left and an absent section keep their meanings; a malformed persisted row is an error. The accepted gallery state /gallery/refinements?state=preparation (reference eded158cfd928d382c9a9409e2c372270312741d) draws the routes' own consumers from the actual reading. check-01 proves the routes with in-memory doubles and an injected wall clock; check-02 proves them in the browser at 320 and 390 with a contained synthetic session, keyboard, touch, reduced motion, a failed read and its retry, and a reload. Every declared case must execute and pass. A3 TASK-109 (2026-11-23): the cases read Round 7's owner — PreparationGuide (src/ui/preparation-guide.tsx, accepted gallery bec4454) over TASK-034's reading, its clock the session's (PreparationClockProvider) in Round 7's CountdownBar with Start / Pause and Add 30 sec — and the two gallery cases are renamed for Round 7's accepted preparation state (the routes' own owner over the gallery's sample, in Review order); see evidence/refinement/task-109/test-ledger.json.",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -48,7 +48,7 @@
         },
         {
           "file": "src/ui/preparation-guide.test.tsx",
-          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own PreparationGuide in Review order around the real For Time card: each guide concise, the Warm-up’s clock its own with Start, Pause and Add 30 sec, and no Dismiss",
           "criterion": "AC-C49-01"
         }
       ]
@@ -88,7 +88,7 @@
         {
           "file": "e2e/refinement/task-022.spec.ts",
           "project": "mobile",
-          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own guides and clocks from the actual reading, with no Dismiss and nothing read or written",
+          "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own PreparationGuide in Review order around the real For Time card, the Warm-up’s clock its own, with no Dismiss and nothing read or written",
           "criterion": "AC-C49-01"
         }
       ]

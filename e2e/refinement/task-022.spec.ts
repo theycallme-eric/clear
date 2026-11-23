@@ -48,6 +48,14 @@ import { expect, test as scanned } from '../fixtures'
  * synthetic reads only. The only writes the app attempts are Start's two
  * session calls, answered here and never forwarded; no set or block result is
  * written, no model is called and no real account or row exists to mutate.
+ *
+ * A3 TASK-109: the build's cases, read on Round 7's owner
+ * (`src/ui/preparation-guide.tsx`, the accepted gallery bec4454). Where Round 7
+ * draws differently the read follows Round 7 (each change is in
+ * `evidence/refinement/task-109/test-ledger.json`): the guide is the card in
+ * `[data-preparation-guide="Warm-up"]`; the clock's actions read "Start",
+ * "Pause" and "Add 30 sec"; a block's card is `.clr-movement-group`; the
+ * gallery's preparation state is Round 7's (its sample, in Review order).
  */
 const OWNER = '00000000-0000-4000-8000-000000002201'
 const PLACE = '00000000-0000-4000-8000-000000002211'
@@ -284,9 +292,12 @@ async function noHorizontalOverflow(page: Page) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 type Prep = 'warmup' | 'cooldown'
+/** Round 7's section titles, which name each guide's wrapper. */
+const TITLE = { warmup: 'Warm-up', cooldown: 'Cooldown' } as const
 
+/** Round 7: the guide's own card, inside its section's wrapper (which also holds a live clock). */
 function guideOf(scope: Page | Locator, type: Prep): Locator {
-  return scope.locator(`[data-preparation-guide="${type}"]`)
+  return scope.locator(`[data-preparation-guide="${TITLE[type]}"]`).locator('.clr-card').first()
 }
 
 function clockOf(scope: Page | Locator, title: string): Locator {
@@ -331,7 +342,7 @@ async function readGuide(card: Locator): Promise<GuideGeometry> {
 const PRESCRIPTION_WORDS = /×|\breps?\b|\bsec\b|\bRest\b|\bkg\b|\blb\b|each side|Log set|Swap/
 
 /** C49, R01, R13: title, approximate time and one name per line — nothing else. */
-function expectConcise(geometry: GuideGeometry, guide: PreparationGuide, label: string) {
+function expectConcise(geometry: GuideGeometry, guide: Pick<PreparationGuide, 'title' | 'durationText'> & { readonly movements: readonly { readonly name: string }[] }, label: string) {
   expect(geometry.text, `${label}: exactly the title, the time and the names`)
     .toBe([guide.title, guide.durationText, ...guide.movements.map(({ name }) => name)].join(''))
   expect(geometry.text, `${label}: no per-movement prescription`).not.toMatch(PRESCRIPTION_WORDS)
@@ -389,12 +400,12 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
       // The live Warm-up: the guide under the section header, then its own clock (V06).
       await expect(page.getByRole('heading', { name: 'Warm-up', exact: true })).toHaveCount(1)
       expectConcise(await readGuide(guideOf(page, 'warmup')), warm, `workout warmup @${name}`)
-      await expect(main.locator('[data-workout-card="workout"], [data-movement-identity]')).toHaveCount(0)
+      await expect(main.locator('.clr-movement-group')).toHaveCount(0)
       await expect(main.getByRole('button', { name: /^(Log set|Rest|Dismiss|Hide|Skip|Close)/ })).toHaveCount(0)
       const clock = clockOf(page, 'Warm-up')
       await expect(clock).toBeVisible()
       expect(await digits(clock)).toBe(formatElapsed(warm.approximateMinutes * 60))
-      expect(await clockActions(clock)).toEqual(['Start', 'Add 30s'])
+      expect(await clockActions(clock)).toEqual(['Start', 'Add 30 sec'])
       // The guide sits above its clock, inside the content column.
       const [guideBox, clockBox] = [await guideOf(page, 'warmup').boundingBox(), await clock.boundingBox()]
       expect(clockBox!.y).toBeGreaterThanOrEqual(guideBox!.y + guideBox!.height - 1)
@@ -405,7 +416,7 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
       const session = page.getByRole('timer', { name: 'Session time' })
       const sessionBefore = await session.textContent()
       await clock.getByRole('button', { name: 'Start' }).tap()
-      expect(await clockActions(clock)).toEqual(['Pause', 'Add 30s'])
+      expect(await clockActions(clock)).toEqual(['Pause', 'Add 30 sec'])
       await expect.poll(() => digits(clock), { timeout: 5_000 }).not.toBe(formatElapsed(warm.approximateMinutes * 60))
       await expect.poll(() => session.textContent(), { timeout: 5_000 }).not.toBe(sessionBefore)
       await expect(page.getByRole('region', { name: 'Rest', exact: true })).toHaveCount(0)
@@ -416,7 +427,7 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
       await page.waitForTimeout(1_200)
       expect(await digits(clock)).toBe(held)
       const [minutes, seconds] = held.split(':').map(Number)
-      await clock.getByRole('button', { name: 'Add 30s' }).tap()
+      await clock.getByRole('button', { name: 'Add 30 sec' }).tap()
       expect(await digits(clock)).toBe(formatElapsed(minutes * 60 + seconds + 30))
       await expect(page.getByRole('button', { name: /Dismiss|Hide|Close/ })).toHaveCount(0)
       await checkA11y()
@@ -428,7 +439,7 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
       await expect(guideOf(page, 'cooldown')).toBeVisible()
       expectConcise(await readGuide(guideOf(page, 'cooldown')), cool, `workout cooldown @${name}`)
       expect(await digits(clockOf(page, 'Cooldown'))).toBe(formatElapsed(cool.approximateMinutes * 60))
-      expect(await clockActions(clockOf(page, 'Cooldown'))).toEqual(['Start', 'Add 30s'])
+      expect(await clockActions(clockOf(page, 'Cooldown'))).toEqual(['Start', 'Add 30 sec'])
       await noHorizontalOverflow(page)
       await attachScreen(page, `workout-cooldown-${name}`)
 
@@ -437,7 +448,7 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
       await page.getByRole('button', { name: /^Warm-up, / }).tap()
       await expect(clockOf(page, 'Warm-up')).toBeVisible()
       expect(await digits(clockOf(page, 'Warm-up'))).toBe(formatElapsed(minutes * 60 + seconds + 30))
-      expect(await clockActions(clockOf(page, 'Warm-up'))).toEqual(['Start', 'Add 30s'])
+      expect(await clockActions(clockOf(page, 'Warm-up'))).toEqual(['Start', 'Add 30 sec'])
       app.assertContained()
     })
   }
@@ -471,7 +482,7 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
     await expect(clock.getByRole('button', { name: 'Start' })).toBeVisible()
     const held = await digits(clock)
     await page.keyboard.press('Tab')
-    await expect(clock.getByRole('button', { name: 'Add 30s' })).toBeFocused()
+    await expect(clock.getByRole('button', { name: 'Add 30 sec' })).toBeFocused()
     await page.keyboard.press('Enter')
     const [minutes, seconds] = held.split(':').map(Number)
     expect(await digits(clock)).toBe(formatElapsed(minutes * 60 + seconds + 30))
@@ -489,43 +500,53 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
     await expect(guideOf(page, 'warmup')).toBeVisible()
     expectConcise(await readGuide(guideOf(page, 'warmup')), warm, 'reopened warmup')
     expect(await digits(clockOf(page, 'Warm-up'))).toBe(full)
-    expect(await clockActions(clockOf(page, 'Warm-up'))).toEqual(['Start', 'Add 30s'])
+    expect(await clockActions(clockOf(page, 'Warm-up'))).toEqual(['Start', 'Add 30 sec'])
     app.assertContained([])
   })
 
-  test('gallery preparation phone-320: the accepted state draws the routes’ own guides and clocks from the actual reading, with no Dismiss and nothing read or written', async ({ page, visit }) => {
+  // A3 TASK-109: renamed from the build's 'gallery preparation phone-320: the
+  // accepted state draws the routes’ own guides and clocks from the actual
+  // reading, with no Dismiss and nothing read or written'. Round 7's accepted
+  // state (bec4454) draws the routes' own owner over the gallery's sample, in
+  // Review order around the real For Time card, with the Warm-up's clock only;
+  // the actual reading is proved on the real routes above (and, for the exact
+  // sample, in src/ui/preparation-guide.test.tsx).
+  test('gallery preparation phone-320: the accepted state draws the routes’ own PreparationGuide in Review order around the real For Time card, the Warm-up’s clock its own, with no Dismiss and nothing read or written', async ({ page, visit }) => {
     await page.setViewportSize({ width: 320, height: 568 })
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
     const requests: string[] = []
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
-    const acceptance = preparationAcceptance()
-    const warm = readingOf(acceptance, 'warmup')
-    const cool = readingOf(acceptance, 'cooldown')
     await visit('/gallery/refinements?state=preparation')
     const state = page.locator('[data-refinement-state="preparation"]')
-    const review = state.locator('[data-gallery-context="review"]')
-    expectConcise(await readGuide(guideOf(review, 'warmup')), warm, 'gallery review warmup')
-    expectConcise(await readGuide(guideOf(review, 'cooldown')), cool, 'gallery review cooldown')
-    await expect(review.locator('[data-workout-card="review"]')).toHaveCount(1)
-    await expect(state.getByText('~5 minutes', { exact: true })).toHaveCount(0)
-    await noHorizontalOverflow(page)
-    await test.info().attach('gallery-review-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
-
-    await state.getByRole('radio', { name: 'Workout' }).check()
-    const workout = state.locator('[data-gallery-context="workout"]')
-    for (const guide of [warm, cool]) {
-      const clock = clockOf(workout, guide.title)
-      expect(await digits(clock)).toBe(formatElapsed(guide.approximateMinutes * 60))
-      expect(await clockActions(clock)).toEqual(['Start', 'Add 30s'])
+    for (const type of ['warmup', 'cooldown'] as const) {
+      const geometry = await readGuide(guideOf(state, type))
+      // The concise card: the stable title, then an approximate time, then the
+      // names one per line — nothing else (the gallery's own sample names).
+      expect(geometry.text.startsWith(TITLE[type]), `gallery ${type}: title first`).toBe(true)
+      expect(geometry.names.length, `gallery ${type}: names listed`).toBeGreaterThan(0)
+      const time = geometry.text.slice(TITLE[type].length, geometry.text.length - geometry.names.join('').length)
+      expect(time, `gallery ${type}: approximate time`).toMatch(/^~\d+ minutes?$/)
+      expectConcise(geometry, { title: TITLE[type], durationText: time, movements: geometry.names.map((name) => ({ name })) }, `gallery ${type}`)
     }
-    await expect(workout.getByRole('button', { name: /Dismiss|Hide|Close|Skip/ })).toHaveCount(0)
-    await clockOf(workout, 'Warm-up').getByRole('button', { name: 'Start' }).tap()
-    await expect(clockOf(workout, 'Warm-up').getByRole('button', { name: 'Pause' })).toBeVisible()
-    await expect(clockOf(workout, 'Cooldown').getByRole('button', { name: 'Start' })).toBeEnabled()
+    // Review order: the Warm-up, the real For Time card, then the Cooldown.
+    const order = await state.locator('[data-preparation-guide], .clr-movement-group').evaluateAll((nodes) =>
+      nodes.map((node) => (node as HTMLElement).dataset.preparationGuide ?? 'work'))
+    expect(order).toEqual(['Warm-up', 'work', 'Cooldown'])
+    await expect(state.getByText('~5 minutes', { exact: true })).toHaveCount(0)
+    // The Warm-up's own clock; the Cooldown, drawn as Review draws it, has none.
+    const clock = clockOf(state, 'Warm-up')
+    // It counts the Warm-up guide's own approximate time, ready.
+    const warmTime = (await readGuide(guideOf(state, 'warmup'))).text
+    expect(await digits(clock)).toBe(formatElapsed(Number(/~(\d+) minutes?/.exec(warmTime)![1]) * 60))
+    expect(await clockActions(clock)).toEqual(['Start', 'Add 30 sec'])
+    await expect(clockOf(state, 'Cooldown')).toHaveCount(0)
+    await expect(state.getByRole('button', { name: /Dismiss|Hide|Close|Skip/ })).toHaveCount(0)
     await noHorizontalOverflow(page)
-    await test.info().attach('gallery-workout-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    await test.info().attach('gallery-preparation-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    await clock.getByRole('button', { name: 'Start' }).tap()
+    await expect(clock.getByRole('button', { name: 'Pause' })).toBeVisible()
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 })

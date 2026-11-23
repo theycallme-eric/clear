@@ -52,6 +52,8 @@ import { useSectionCompletion } from '../state/block-completion'
 import { useFlushSetLogs } from '../state/set-logging'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
 import { conditioningHistoryQueryKey } from '../state/conditioning-queries'
+import { PreparationClockProvider } from '../state/preparation-clock-provider'
+import { isPreparationSection, persistedPreparationReading } from '../state/preparation-guide'
 import { RestTimerProvider } from '../state/rest-provider'
 import { historyQueryPrefix } from '../state/history-queries'
 import { useQueryClient } from '../state/query'
@@ -249,6 +251,8 @@ function WorkoutShell({
   )
   const index = clampSectionIndex(section.index, progress)
   const current: SectionProgress | undefined = progress.sections[index]
+  // The same section as the session holds it: `sessionProgress` keeps order.
+  const preparation = snapshot.sections[index]
 
   // Focus follows a move the athlete made — Previous, Next or a jump — to the
   // section it opened. A restored section on mount is left to the route's own
@@ -458,6 +462,12 @@ function WorkoutShell({
           recorded.
         */}
         <RestTimerProvider>
+          {/*
+            A3 TASK-109 (TASK-022): every preparation clock of the session,
+            held once here so leaving a Warm-up and coming back finds its
+            clock as it was. Nothing in it persists or writes.
+          */}
+          <PreparationClockProvider>
           <SetLoggingSheetHost>
           <Screen
             title={SCREEN_TITLE}
@@ -528,8 +538,17 @@ function WorkoutShell({
                       onSelect={advancing || ending ? undefined : goTo}
                     />
                   </div>
+                  {/*
+                    A3 TASK-109 (TASK-022, TASK-034; C49; R01, R13, R14,
+                    R15): a Warm-up or Cooldown is Round 7's concise guide —
+                    read from this section's active rows, so a swap reads in
+                    place — and its own separate preparation clock, never its
+                    movements' set-by-set prescriptions. Every other section
+                    draws its blocks, as before. Next section completes it the
+                    same way either way (REQ-013).
+                  */}
                   <SectionLabelContext value={current.title}>
-                    {presentation?.guides && (current.sectionType === 'warmup' || current.sectionType === 'cooldown') ? <PreparationGuide guide={presentation.guides[current.sectionType]} withTimer /> : <>
+                    {isPreparationSection(current.sectionType) && preparation !== undefined ? <PreparationGuide key={current.sectionId} reading={persistedPreparationReading(preparation, current.sectionType)} type={current.sectionType} withTimer clockKey={preparation.section.id} /> : <>
                     {current.blocks.map((block) => (
                       <BlockSlot key={block.blockId} block={block} />
                     ))}
@@ -563,6 +582,7 @@ function WorkoutShell({
             />
           )}
           </SetLoggingSheetHost>
+          </PreparationClockProvider>
         </RestTimerProvider>
       </SetLoggingProvider>
     </BlockCompletionProvider>

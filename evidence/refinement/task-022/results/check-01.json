@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-022/required-cases.json",
-    "sha256": "3dea77b29d645068160a87d79781d2733d47719a1d0dedb6adb7519714d7f1f4"
+    "sha256": "86285d12603b456a818cdcff8eeb00d7804a53fe23af7333fe8a52f9d9c8c100"
   },
   "targets": [
     {
       "path": "src/ui/preparation-guide.test.tsx",
-      "sha256": "392dc21352b81b65a2f45987b7c6325a286249f43535200e9530f2ee11c7f46b"
+      "sha256": "c431d2178b018376c3f80357f11c81efe676f77d8e8abcd5e5f088f7cd778bad"
     }
   ],
   "requiredCases": [
@@ -56,17 +56,17 @@
     },
     {
       "file": "src/ui/preparation-guide.test.tsx",
-      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own PreparationGuide in Review order around the real For Time card: each guide concise, the Warm-up’s clock its own with Start, Pause and Add 30 sec, and no Dismiss",
       "status": "passed"
     }
   ],
   "totals": {
-    "total": 7,
-    "passed": 7,
+    "total": 8,
+    "passed": 8,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 7
+    "executed": 8
   },
   "problems": []
 }

@@ -1,0 +1,73 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-109",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-109-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-109/required-cases.json",
+    "sha256": "08b9533be78b5c82fde382ead24f42a0d44e4592e3ff2782ae37873b4b4cc01c"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-109-parity.spec.ts",
+      "sha256": "c63e8ca4ac20b516bfec0bc0d6680126d0735187ddd29812ba79448a0dc6236e"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "name": "TASK-AC-975923E1E25C preparation phone-320: /review, /workout and /history/:id draw Round 7’s Warm-up and Cooldown guides and the Warm-up’s clock as the accepted preparation state does, from the real prescriptions",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "name": "TASK-AC-975923E1E25C preparation phone-390: /review, /workout and /history/:id draw Round 7’s Warm-up and Cooldown guides and the Warm-up’s clock as the accepted preparation state does, from the real prescriptions",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "name": "TASK-AC-975923E1E25C movement-note phone-320: /workout’s grouped superset opens its one Coaching and notes disclosure and the Movement note dialog as the accepted movement-note state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "name": "TASK-AC-975923E1E25C movement-note phone-390: /workout’s grouped superset opens its one Coaching and notes disclosure and the Movement note dialog as the accepted movement-note state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "name": "TASK-AC-975923E1E25C cards phone-320: /workout’s EMOM, AMRAP and For Time cards each end with the one Coaching and notes disclosure the accepted cards state draws, closed and open",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "name": "TASK-AC-975923E1E25C cards phone-390: /workout’s EMOM, AMRAP and For Time cards each end with the one Coaching and notes disclosure the accepted cards state draws, closed and open",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 6
+  },
+  "problems": []
+}

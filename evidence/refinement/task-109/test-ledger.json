@@ -1,0 +1,834 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-109",
+  "family": "F7 (A3 task 9: Warm-up and Cooldown from real data, coaching and movement notes)",
+  "base": "628c7aa2774e8556d48baff4fd1b62d4e0193d9e",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "The brief (round 07): the build's src/ui/preparation-guide.test.tsx (7) and src/ui/group-exercise-coaching.test.tsx (9) rewritten onto Round 7 and owned whole; src/ui/exercise-coaching.test.tsx owned whole (the groundwork's 6 build-edit-pending and 4 absent bodies restored); src/state/preparation-guide.test.ts carried; the one TASK-005 coaching body in src/app/Workout.test.tsx (TASK-110's; R7-1, except TASK-110's 33); the AC-061 per-movement group assertion in src/app/circuit-rounds.test.tsx (TASK-107's; S2, R7-5); e2e task-005 and task-022 rewritten; the new task-109-parity.spec.ts. visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json for the F7 placement (26 tests).",
+  "summary": {
+    "rewritten": 40,
+    "added": 7,
+    "superseded": 6,
+    "carried": 29
+  },
+  "entries": [
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /review route the Warm-up and Cooldown are each one concise card: the stable title, the approximate total time and the movement names on separate lines, with no generated title, prose, per-movement prescription or Swap",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The concise card is the guide's own card inside Round 7's wrapper `[data-preparation-guide=\"Warm-up\"]` (the build's `[data-preparation-guide=\"warmup\"]` card); its list carries Round 7's class `clr-v4-guide-list` (the build's `clr-preparation-guide__list`) and its one-per-line rule is read from Round 7's stylesheet (`workout-experience-presentation.css`); the order Warm-up, work, Cooldown is read on Round 7's section wrapper `[data-review-section]` (the build's `[data-workout-card=\"review\"]`), each guide named by its title. Every other read is the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 the titles, names, counts and times are TASK-034’s reading of the actual prescriptions on /review and /workout alike — four and two movements, never the illustrated four minutes or three rows — and change with the data",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the list class and the stylesheet rule are Round 7's (`clr-v4-guide-list` in `workout-experience-presentation.css`, list-style none) for the build's `clr-preparation-guide__list` in `refinements/presentation.css`; the clock's digits, the counts, the changed data and the owner-file reads (no duration, count, sample or Dismiss in the owner) are the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /workout route the open Warm-up is its concise guide under the section header, read from the session’s active rows (a swap in place), with no set logging, rest or Dismiss substitute; Next section completes it as before",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the section is headed once — Round 7's compact navigator draws no heading of its own (TASK-108), so the guide card's title is that one heading, as a block card's header heads its section (the build read the title as a label under its own section heading; the read `getAllByRole('heading', { name: 'Warm-up' })` has length 1 is kept and the card's heading is asserted to be that one); a block's card is Round 7's `.clr-movement-group` (the build's `data-workout-card`/`data-movement-identity` hooks); the section's buttons are read in `[data-preparation-guide]` (the build's `[data-preparation-section]`); Round 7's wording \"Add 30 sec\" (the build's \"Add 30s\"). Swap in place, no logger, rest or Dismiss, and Next section completing the block are the build's reads.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 the separate preparation clock counts the guide’s own time down with Start, Pause and Add 30s, keeps the session clock and the rest distinct, records nothing and offers no Dismiss or other hide action",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 wording, same asserted behaviour: the clock's actions read \"Start\"/\"Pause\" and \"Add 30 sec\" (Round 7's CountdownBar actions in the accepted gallery) for the build's \"Add 30s\"; the clock is identified as the preparation clock by sitting in its own guide's section (`[data-preparation-guide]`), Round 7 having no `data-clock` hook. The rest-timer pattern (clr-rest-bar, timer card, fill), the countdown arithmetic, Pause, Add while paused and running, keyboard, the distinct session clock, no rest, nothing recorded and no Dismiss are the build's reads.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 leaving the section and coming back finds the same clock, and its warning is the shared one: colour at 10 seconds, the edge at 5 while running, none when paused or run out; Add 30s after it runs out waits for Start",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 wording, same asserted behaviour: run out, the clock's one action reads Round 7's disabled \"Time reached\" (the build's disabled \"Start\"); \"Add 30 sec\" for \"Add 30s\". The same clock across sections (PreparationClockProvider), the warning (data-urgent and \"Final 10 seconds\" at ten, the one edge at five while running, none paused or run out) and Add after run-out waiting for Start are the build's reads.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 loading, a failed read, a section with no movement left and an absent section keep their meanings; a malformed persisted row is an error, never a guessed guide or clock",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Same asserted behaviour on Round 7's owner: the malformed and emptied persisted rows are drawn as the routes draw them — `PreparationGuide` over `persistedPreparationReading` with the clock asked for (`withTimer`) — for the build's `LivePreparation`, which Round 7 has no export of (the routes compose the owner directly; a new export would need its own gallery frame). Every read is the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > TASK-AC-2E1486B7B4BF on the real /history/:id route the Warm-up and Cooldown are the concise guides read from the record’s own active rows (a swap in place), with no clock; a malformed row is the guide’s error, and its retry reads the record again; no route reads the gallery’s sample guides",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-2E1486B7B4BF, new in this task: /history/:id, which Round 7 draws with the guide and the build did not, wired to TASK-034's persisted reading (a swap in place; a malformed row its error with a retry that reads the record again; no clock), and the three routes read no gallery sample (source read).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own PreparationGuide in Review order around the real For Time card: each guide concise, the Warm-up’s clock its own with Start, Pause and Add 30 sec, and no Dismiss",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed for Round 7's accepted gallery state (bec4454): `?state=preparation` draws the routes' own owner (PreparationGuide) over the gallery's sample guides in Review order around the real For Time card, the Warm-up with its clock and the Cooldown without; it has no Review/Workout context switch and no Cooldown clock. Kept: each guide concise (exact title, approximate time and names, one per line, no action or timer in the card), Review order, no '~5 minutes', the Warm-up's clock with Start and Add 30 sec as the preparation clock, starting it, and no Dismiss. Not kept, because Round 7's gallery draws neither: the guides read from the actual reading (proved on the real routes in this file's /review, /workout and /history/:id cases) and a Cooldown clock in the gallery (proved on /workout). For TASK-115's UAT list.",
+      "renamedFrom": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 /workout: each grouped block ends with one Coaching and notes disclosure with a labelled section per movement, and its rows carry none",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Body byte-identical to the build's; rewritten only through the file's helpers. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 every grouped format — superset, circuit, EMOM, AMRAP, For Time and ladder — ends with one disclosure, and a standard block keeps each movement’s own",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the seven cards are Round 7's `.clr-movement-group`; the standard block's \"no grouped disclosure\" is read by accessible name (a grouped disclosure's name names a format) for the build's `[data-coaching-group]` hook. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7 draws each note's dialog in its section (the build portalled it), so the closed dialog's hidden copy of \"Note saved\" is also in the section; the bench's saved status is read as the visible status line beside its opener (`statusText`) for the build's `getByText`. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`. Repair round 1 (2026-11-23): the case takes the per-test timeout `{ timeout: HEAVY }` (HEAVY = 30_000, as src/ui/preparation-guide.test.tsx gives its route cases) because it opens, types into and closes several Round 7 note dialogs, each close waiting for the dialog's exit, and the AC-R005-01 case ran 5025 ms on the GitHub runner against vitest's 5 s default (PR #755). No assertion, wait or query changed; this is not a matcher change.",
+      "result": "passed",
+      "timeout": 30000
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 keeps the note of a movement the library has no entry for, and saves it",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Body byte-identical to the build's; rewritten only through the file's helpers. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 a resumed workout shows each movement’s stored note in its own section, and a blank note stays blank",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Body byte-identical to the build's; rewritten only through the file's helpers. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 written guidance, blank guidance, no entry, loading and a failed read stay distinct, each in its own movement’s section, with no hide or replacement rule",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Body byte-identical to the build's; rewritten only through the file's helpers. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: Round 7's Review draws a grouped block's movements as a named list and a standard block as its row (no 'Movements in this block' list), so the superset and circuit lists are read by name and the standard lift by its Swap; 'no note field on Review' is read as no textbox at all (stronger than the build's `Notes — ` textbox). Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`. Repair round 1 (2026-11-23): the case takes the per-test timeout `{ timeout: HEAVY }` (HEAVY = 30_000, as src/ui/preparation-guide.test.tsx gives its route cases) because it opens, types into and closes several Round 7 note dialogs, each close waiting for the dialog's exit, and the AC-R005-01 case ran 5025 ms on the GitHub runner against vitest's 5 s default (PR #755). No assertion, wait or query changed; this is not a matcher change.",
+      "result": "passed",
+      "timeout": 30000
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 recovery: a failed save keeps its draft through close and reopen, its retry stores it, and no performed work is recorded",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Body byte-identical to the build's; rewritten only through the file's helpers. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "test": "TASK-005 one grouped coaching and notes disclosure > renders the accepted gallery state cards with the actual disclosure at the foot of each grouped live card",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7's accepted gallery (bec4454): its `cards` state draws the live EMOM, AMRAP and For Time cards (no Review/Workout switch, no superset or circuit there) and its grouped superset is the `movement-note` state; its memory library has no entries. Kept: each grouped live card ends with exactly one disclosure at its foot, the visible label is the accepted words, a labelled section per movement in order, and a note saved in memory for one movement only, its status beside its opener, nothing fetched. Not kept, because Round 7's gallery draws none: the Review context, the written/blank guidance answers (both proved on the real route in this file's AC-R005-02 case). For TASK-115's UAT list. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > shows a failed library read as an error in the panel, and retries it",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The build's body (groundwork build-edit-pending), restored on Round 7: its added read that the opener is enabled beside the failed read is kept; the field is labelled by the movement in Round 7's \"Movement note\" dialog (owner decision 4) for the build's \"Notes — back squat\"; the base's wait for the dialog to leave after Close log is kept.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > shows a failed library read as an error in the panel, and retries it (base body)",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7's base body of the same title, replaced in place by the build's restored body (the groundwork ledger's build-edit-pending row for this title); every base read that Round 7 still meets is carried into the body that stays (see the restored row).",
+      "result": "removed",
+      "baseLine": 208,
+      "supersededBy": "the coaching panel > shows a failed library read as an error in the panel, and retries it"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > writes the typed note to the prescription row and says it is saved",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The build's body, restored on Round 7: \"Note saved\" read in the dialog (the build's) and in the panel (the base's; Round 7 draws the dialog in the panel); closed, the panel still says so — read as the panel's status line by its role (Round 7 keeps the closed dialog's hidden copy in the panel, so the build's `getByText` would find two), after the dialog has left.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > writes the typed note to the prescription row and says it is saved (base body)",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7's base body of the same title, replaced in place by the build's restored body (the groundwork ledger's build-edit-pending row for this title); every base read that Round 7 still meets is carried into the body that stays (see the restored row).",
+      "result": "removed",
+      "baseLine": 229,
+      "supersededBy": "the coaching panel > writes the typed note to the prescription row and says it is saved"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > clears the note when the field is emptied",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The build's body, restored on Round 7: \"Note saved\" read in the dialog (the build's `within(note)`, stronger than the base's `within(panel)`, which contains it).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > clears the note when the field is emptied (base body)",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7's base body of the same title, replaced in place by the build's restored body (the groundwork ledger's build-edit-pending row for this title); every base read that Round 7 still meets is carried into the body that stays (see the restored row).",
+      "result": "removed",
+      "baseLine": 246,
+      "supersededBy": "the coaching panel > clears the note when the field is emptied"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > reports a failed note write and keeps the typed text",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The build's body, restored on Round 7, with the base's reads that still hold kept: the failure read in the dialog and in the panel; closed, the panel's status says Not saved; reopened by its \"Edit note — back squat\" opener (the kept words make it Edit; the build's helper accepted either), the field keeps the words and the failure text is there; one write.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > reports a failed note write and keeps the typed text (base body)",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7's base body of the same title, replaced in place by the build's restored body (the groundwork ledger's build-edit-pending row for this title); every base read that Round 7 still meets is carried into the body that stays (see the restored row).",
+      "result": "removed",
+      "baseLine": 257,
+      "supersededBy": "the coaching panel > reports a failed note write and keeps the typed text"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "optional catalog coaching (U38) > still saves a note for a movement the library has no entry for",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The build's body, restored on Round 7: \"Note saved\" read in the dialog (the build's) and in the panel (the base's); the field labelled by the movement (owner decision 4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "optional catalog coaching (U38) > still saves a note for a movement the library has no entry for (base body)",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7's base body of the same title, replaced in place by the build's restored body (the groundwork ledger's build-edit-pending row for this title); every base read that Round 7 still meets is carried into the body that stays (see the restored row).",
+      "result": "removed",
+      "baseLine": 335,
+      "supersededBy": "optional catalog coaching (U38) > still saves a note for a movement the library has no entry for"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel is one group, with its labels inside > is one card on its own: the disclosure, the cues, the regression and the note",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The build's body, restored on Round 7, structure rewritten: Round 7 draws the note dialog in place in the card (in the top layer) where the build portalled it to the document, so the build's `body` does-not-contain-dialog read is replaced by the base's contains-dialog and one-card reads; kept: the opener in the card, the field and Save note in the dialog, no nested card.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel is one group, with its labels inside > is one card on its own: the disclosure, the cues, the regression and the note (base body)",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7's base body of the same title, replaced in place by the build's restored body (the groundwork ledger's build-edit-pending row for this title); every base read that Round 7 still meets is carried into the body that stays (see the restored row).",
+      "result": "removed",
+      "baseLine": 352,
+      "supersededBy": "the panel is one group, with its labels inside > is one card on its own: the disclosure, the cues, the regression and the note"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and an urgent rest keep one loop between them > runs the guidance’s wait until the rest is urgent, then stills it — still busy",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "The build's body, byte-identical, restored (groundwork build-test-pending: absent at base) beside Round 7's own 'low rest' bodies, under the build's describe; its RaiseUrgentRest (five seconds) and besideRest helpers are the build's, local to the describe so Round 7's base helpers stay unchanged. It agrees with TASK-108's merged warning (the rest's timer breathes, with the one aura, on the warning's loop; no micro-pulse on the card). openNote is the file's Round 7 helper (\"Movement note\").",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and an urgent rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "The build's body, byte-identical, restored (groundwork build-test-pending: absent at base) beside Round 7's own 'low rest' bodies, under the build's describe; its RaiseUrgentRest (five seconds) and besideRest helpers are the build's, local to the describe so Round 7's base helpers stay unchanged. It agrees with TASK-108's merged warning (the rest's timer breathes, with the one aura, on the warning's loop; no micro-pulse on the card). openNote is the file's Round 7 helper (\"Movement note\").",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and an urgent rest keep one loop between them > is static under reduced motion and still says everything",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "The build's body, byte-identical, restored (groundwork build-test-pending: absent at base) beside Round 7's own 'low rest' bodies, under the build's describe; its RaiseUrgentRest (five seconds) and besideRest helpers are the build's, local to the describe so Round 7's base helpers stay unchanged. It agrees with TASK-108's merged warning (the rest's timer breathes, with the one aura, on the warning's loop; no micro-pulse on the card). openNote is the file's Round 7 helper (\"Movement note\").",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and an urgent rest keep one loop between them > shows what was read under reduced motion, with nothing waiting on an animation",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "The build's body, byte-identical, restored (groundwork build-test-pending: absent at base) beside Round 7's own 'low rest' bodies, under the build's describe; its RaiseUrgentRest (five seconds) and besideRest helpers are the build's, local to the describe so Round 7's base helpers stay unchanged. It agrees with TASK-108's merged warning (the rest's timer breathes, with the one aura, on the warning's loop; no micro-pulse on the card). openNote is the file's Round 7 helper (\"Movement note\").",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > draws nothing outside the workout clients",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 158
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > does not read the library until it is opened",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 165
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > shows the cues and regression the library authored for this movement",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 176
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > states an empty cues array and a null regression as answers",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 188
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the coaching panel > states a movement the library has no entry for",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 201
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "optional catalog coaching (U38) > opens and closes on demand, naming its movement on the disclosure",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 277
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "optional catalog coaching (U38) > attributes the cues and regression to the library, not to generation",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 299
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "optional catalog coaching (U38) > states blank catalog cues and a blank regression rather than drawing empty ones",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 307
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "optional catalog coaching (U38) > keeps only the written cues when some are blank",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 321
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel is one group, with its labels inside > heads each sub-group inside it, under a rule rather than a frame",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 374
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel is one group, with its labels inside > heads them one level below whatever the panel sits under",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 393
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel is one group, with its labels inside > is content on an exercise’s card, never a second card inside it",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 403
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel is one group, with its labels inside > keeps a failed read and an absent entry inside the same one card",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged.",
+      "result": "passed",
+      "baseLine": 417
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and a low rest keep one loop between them > runs the guidance’s wait until the rest goes low, then stills it — still busy",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged (TASK-108's C1 re-point to the rest's timer, kept under Eric's 2026-11-23 rule).",
+      "result": "passed",
+      "baseLine": 451
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and a low rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged (TASK-108's C1 re-point to the rest's timer, kept under Eric's 2026-11-23 rule).",
+      "result": "passed",
+      "baseLine": 484
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and a low rest keep one loop between them > is static under reduced motion and still says everything",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged (TASK-108's C1 re-point to the rest's timer, kept under Eric's 2026-11-23 rule).",
+      "result": "passed",
+      "baseLine": 515
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and a low rest keep one loop between them > shows what was read under reduced motion, with nothing waiting on an animation",
+      "ledger": "base (628c7aa2)",
+      "disposition": "carried",
+      "note": "Round 7's base body, unchanged (TASK-108's C1 re-point to the rest's timer, kept under Eric's 2026-11-23 rule).",
+      "result": "passed",
+      "baseLine": 535
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)",
+      "ledger": "round-07 R7-1 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "The one TASK-005 coaching body round 07 gives this task in TASK-110's file (TASK-AC-10C190727D36; groundwork build-test-pending, absent at base), restored beside Round 7's own 'groups coaching under one disclosure …' body, which stays unchanged. Rewritten only where Round 7 draws differently: the block's card is `.clr-movement-group` for the build's `[data-workout-card]`. The 33 bodies TASK-110's criteria list (including this describe's 'shows no broken panel …', 'persists a note …' and 'reports a failed note write …') are not touched.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "test": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one coaching disclosure for the circuit",
+      "ledger": "round-07 S2 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round-07 scan finding S2 (R7-5; TASK-AC-4B0D58B09963): the build's per-movement group assertion TASK-107 deferred, restored in TASK-107's file and run only by name (TASK-109:check-02). Read by role and accessible name — each movement a role=group named by its heading inside the circuit's one disclosure — for the build's `data-coaching-movement` hook (rewritten, same asserted behaviour), before the disclosure is opened as the build read it. TASK-107's Round 7 reads in the body are unchanged. Proved to fail on the base product (no group) and pass on this task's GroupExerciseCoaching.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > keeps ordered sections and gives each shared block one card, with no nested cards",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file (it owns and runs it whole later; round 06/07). Updated under Eric's 2026-11-23 test-update rule because this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which this Round 7 base body (written before the guides were wired) read as block cards: the Warm-up and Cooldown are each one concise guide card in their own places (`[data-preparation-guide]`), every other section a card per block; the base read 'every section a card per block' is narrowed to the worked sections, the guide sections reading one card each; section count and no nested card kept. TASK-119 restores the build's body of this title or family. For TASK-115's UAT list.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > uses static shared headers in section order, with all content visible",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file (it owns and runs it whole later; round 06/07). Updated under Eric's 2026-11-23 test-update rule because this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which this Round 7 base body (written before the guides were wired) read as block cards: the section titles are read from `[data-review-section], [data-preparation-guide]`, the Warm-up and Cooldown headed by their guide card; the same five titles in order and no Warm-up toggle kept. TASK-119 restores the build's body of this title or family. For TASK-115's UAT list.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > renders each target kind as its own shape",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file (it owns and runs it whole later; round 06/07). Updated under Eric's 2026-11-23 test-update rule because this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which this Round 7 base body (written before the guides were wired) read as block cards: the shape reads come from the same spectrum with the Warm-up and Cooldown composed as Mobility and Core (the build's own SPECTRUM_AS_WORK accommodation for TASK-022), since the guide states no prescription; every shape read kept. TASK-119 restores the build's body of this title or family. For TASK-115's UAT list.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > renders time and distance as themselves rather than as reps",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file (it owns and runs it whole later; round 06/07). Updated under Eric's 2026-11-23 test-update rule because this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which this Round 7 base body (written before the guides were wired) read as block cards: as above (SPECTRUM_AS_WORK); both reads kept. TASK-119 restores the build's body of this title or family. For TASK-115's UAT list.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > moves tempo off the rows into an optional, collapsed detail that keeps it",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file (it owns and runs it whole later; round 06/07). Updated under Eric's 2026-11-23 test-update rule because this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which this Round 7 base body (written before the guides were wired) read as block cards: as above (SPECTRUM_AS_WORK); every read kept. TASK-119 restores the build's body of this title or family. For TASK-115's UAT list.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "swapping a movement happens in Review, under the original constraints (U37) > offers a swap on every movement, named for the movement",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file (it owns and runs it whole later; round 06/07). Updated under Eric's 2026-11-23 test-update rule because this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which this Round 7 base body (written before the guides were wired) read as block cards: the warm-up movement (air squat) is in the Warm-up's concise guide with no row or action (C49; the build's own TASK-022 reading, carried from its 'offers a swap on every prescribed movement' body): Swap is asserted on back squat and kb swing, the air squat is read as the guide's one list item, and no 'Swap air squat' exists. TASK-119 restores the build's body of this title or family. For TASK-115's UAT list.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-021: Regenerate sits at the end of the scrolling content > is the last control in the scrolling content, after every section",
+      "ledger": "cross-file (TASK-119 owns; test-update rule 2026-11-23)",
+      "disposition": "rewritten",
+      "note": "TASK-119's file. Updated under Eric's 2026-11-23 test-update rule (this task's C49 wiring): the sections Regenerate follows are read as `[data-review-section]` plus the two concise guides `[data-preparation-guide]`, the same count and order; every other read kept. The build's own body (with TASK-023's Regenerate-after-the-Cooldown reads, `expectRegenerateLast`) is TASK-119's to restore. TASK-023's receipt for this file was already stale at the base (its recorded hash is the build's).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a composed Warm-up and Cooldown read the stable title, every prescribed movement in order and their own count, never the generated title, notes or per-movement prescription",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 the approximate time is GEN-06’s own section estimate from blocks and prescriptions, in whole minutes, never the model estimate, the computed session duration or the target",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a persisted session reads the same guide as the composed workout it was accepted from, and a swap shows its replacement in the same place",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 every owner the source record names resolves to a real export, and the contract states the same owners",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 missing: no workout, no Warm-up or Cooldown composed, and a section with no active movement read as missing with their reason, never as an empty guide",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 loading and error follow the source, and a persisted row whose target contradicts its kind is an error rather than a guess",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 content: the recorded generation reads its own Warm-up exactly as the Review briefing and the live workout name it, from the composed and the persisted source alike",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "test": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 readings follow the data, keep the concise ~N minutes format and carry no hard-coded illustrated four minutes, three rows or sample movements",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "carried",
+      "note": "Body identical to the build's and the base's (TASK-034 contract, unchanged).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "test": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 phone-320: Review then Workout — one bottom disclosure per grouped block, and each movement's note saves and fails on its own",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: on Review the grouped blocks' lists by name and the standard lift by its Swap (Round 7 draws no 'Movements in this block' list), and no textbox at all; the saved and refused statuses read as the visible status lines. The spec's helpers read Round 7: a block's card is `.clr-movement-group` and the disclosure is the card's child holding its trigger (`readDisclosure`, for the build's `data-workout-card`/`data-coaching-group`), sections by `[role=\"group\"]` (for `data-coaching-movement`), the rows by the 'Movements in this …' list (for `data-movement-identity`); the note dialog is Round 7's \"Movement note\" filtered by its field labelled by the movement (owner decision 4); a note's status is read as the visible status line (`noteStatus`), since Round 7 keeps the closed dialog's hidden copy in the section.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "test": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 phone-390: Review then Workout — one bottom disclosure per grouped block, and each movement's note saves and fails on its own",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: on Review the grouped blocks' lists by name and the standard lift by its Swap (Round 7 draws no 'Movements in this block' list), and no textbox at all; the saved and refused statuses read as the visible status lines. The spec's helpers read Round 7: a block's card is `.clr-movement-group` and the disclosure is the card's child holding its trigger (`readDisclosure`, for the build's `data-workout-card`/`data-coaching-group`), sections by `[role=\"group\"]` (for `data-coaching-movement`), the rows by the 'Movements in this …' list (for `data-movement-identity`); the note dialog is Round 7's \"Movement note\" filtered by its field labelled by the movement (owner decision 4); a note's status is read as the visible status line (`noteStatus`), since Round 7 keeps the closed dialog's hidden copy in the section.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "test": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 phone-390: written, blank, no entry, loading and failed guidance stay distinct per movement, and a retry recovers only its own",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour, through the spec's helpers. The spec's helpers read Round 7: a block's card is `.clr-movement-group` and the disclosure is the card's child holding its trigger (`readDisclosure`, for the build's `data-workout-card`/`data-coaching-group`), sections by `[role=\"group\"]` (for `data-coaching-movement`), the rows by the 'Movements in this …' list (for `data-movement-identity`); the note dialog is Round 7's \"Movement note\" filtered by its field labelled by the movement (owner decision 4); a note's status is read as the visible status line (`noteStatus`), since Round 7 keeps the closed dialog's hidden copy in the section.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "test": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 keyboard and reduced motion phone-390: the disclosure opens and closes from the keyboard, drafts survive, and a refused save keeps its words until its retry stores them",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour, through the spec's helpers. The spec's helpers read Round 7: a block's card is `.clr-movement-group` and the disclosure is the card's child holding its trigger (`readDisclosure`, for the build's `data-workout-card`/`data-coaching-group`), sections by `[role=\"group\"]` (for `data-coaching-movement`), the rows by the 'Movements in this …' list (for `data-movement-identity`); the note dialog is Round 7's \"Movement note\" filtered by its field labelled by the movement (owner decision 4); a note's status is read as the visible status line (`noteStatus`), since Round 7 keeps the closed dialog's hidden copy in the section.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-005.spec.ts",
+      "test": "TASK-005 one grouped coaching and notes disclosure > gallery cards phone-320: the accepted state draws the actual disclosure at the foot of each grouped live card",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7's accepted gallery: `cards` draws the live EMOM, AMRAP and For Time cards, each with one disclosure at its foot (read with the same bottom-disclosure geometry), and the grouped superset is the `movement-note` state, opened by touch to its sections and the library's 'no entry' answer; nothing fetched. Not kept: the Review context and the written/blank guidance answers, which Round 7's gallery does not draw (proved on the real route in AC-R005-02). For TASK-115's UAT list. The spec's helpers read Round 7: a block's card is `.clr-movement-group` and the disclosure is the card's child holding its trigger (`readDisclosure`, for the build's `data-workout-card`/`data-coaching-group`), sections by `[role=\"group\"]` (for `data-coaching-movement`), the rows by the 'Movements in this …' list (for `data-movement-identity`); the note dialog is Round 7's \"Movement note\" filtered by its field labelled by the movement (owner decision 4); a note's status is read as the visible status line (`noteStatus`), since Round 7 keeps the closed dialog's hidden copy in the section.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > JOURNEY-022 phone-320: Review then Workout — concise Warm-up and Cooldown read from the prescriptions, and each preparation clock started, paused and extended with no Dismiss",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look and wording, same asserted behaviour: the guide is the card in `[data-preparation-guide=\"Warm-up\"]` (the build's `[data-preparation-guide=\"warmup\"]`), the clock's actions read \"Add 30 sec\" (the build's \"Add 30s\"), and a block's card is `.clr-movement-group` (the build's `data-workout-card`/`data-movement-identity`). Every other read is the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > JOURNEY-022 phone-390: Review then Workout — concise Warm-up and Cooldown read from the prescriptions, and each preparation clock started, paused and extended with no Dismiss",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look and wording, same asserted behaviour: the guide is the card in `[data-preparation-guide=\"Warm-up\"]` (the build's `[data-preparation-guide=\"warmup\"]`), the clock's actions read \"Add 30 sec\" (the build's \"Add 30s\"), and a block's card is `.clr-movement-group` (the build's `data-workout-card`/`data-movement-identity`). Every other read is the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 keyboard, reduced motion and reopen phone-390: Start, Pause and Add 30s from the keyboard; a failed session read keeps its meaning and its retry; a reload keeps the section and the guide and fabricates no work",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7 look and wording, same asserted behaviour: the guide is the card in `[data-preparation-guide=\"Warm-up\"]` (the build's `[data-preparation-guide=\"warmup\"]`), the clock's actions read \"Add 30 sec\" (the build's \"Add 30s\"), and a block's card is `.clr-movement-group` (the build's `data-workout-card`/`data-movement-identity`). Every other read is the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-022.spec.ts",
+      "test": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own PreparationGuide in Review order around the real For Time card, the Warm-up’s clock its own, with no Dismiss and nothing read or written",
+      "ledger": "groundwork F7 → TASK-109 (brief)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed for Round 7's accepted preparation state (the routes' own PreparationGuide over the gallery's sample, in Review order around the real For Time card, the Warm-up's clock only). Kept: each guide concise (title, an approximate time, names one per line, no action or timer in the card, no list marker), Review order, no '~5 minutes', the Warm-up's clock with Start and Add 30 sec, starting it by touch, no Dismiss, nothing read or written. Not kept: the actual reading and a Cooldown clock in the gallery (proved on the real routes in this spec). For TASK-115's UAT list.",
+      "renamedFrom": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > gallery preparation phone-320: the accepted state draws the routes’ own guides and clocks from the actual reading, with no Dismiss and nothing read or written",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "test": "TASK-AC-975923E1E25C preparation phone-320: /review, /workout and /history/:id draw Round 7’s Warm-up and Cooldown guides and the Warm-up’s clock as the accepted preparation state does, from the real prescriptions",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-975923E1E25C look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "test": "TASK-AC-975923E1E25C preparation phone-390: /review, /workout and /history/:id draw Round 7’s Warm-up and Cooldown guides and the Warm-up’s clock as the accepted preparation state does, from the real prescriptions",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-975923E1E25C look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "test": "TASK-AC-975923E1E25C movement-note phone-320: /workout’s grouped superset opens its one Coaching and notes disclosure and the Movement note dialog as the accepted movement-note state does",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-975923E1E25C look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "test": "TASK-AC-975923E1E25C movement-note phone-390: /workout’s grouped superset opens its one Coaching and notes disclosure and the Movement note dialog as the accepted movement-note state does",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-975923E1E25C look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "test": "TASK-AC-975923E1E25C cards phone-320: /workout’s EMOM, AMRAP and For Time cards each end with the one Coaching and notes disclosure the accepted cards state draws, closed and open",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-975923E1E25C look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-109-parity.spec.ts",
+      "test": "TASK-AC-975923E1E25C cards phone-390: /workout’s EMOM, AMRAP and For Time cards each end with the one Coaching and notes disclosure the accepted cards state draws, closed and open",
+      "ledger": "TASK-109 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-975923E1E25C look check, new in this task.",
+      "result": "passed"
+    }
+  ],
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "matchersWeakenedNote": "No matcher is loosened. Every build or base read that is not verbatim at HEAD (rules.selfCheck) is one of: a Round 7 look, structure or wording rewrite of the same read (rules.lookAndWordingRewrites; Eric's 2026-11-23 rule); owner decision 4's dialog title and field label; a read of Round 7's accepted gallery state where it draws a different state (rules.retiredAssertions lists each read dropped there because Round 7's gallery has no equivalent, with where the behaviour is proved on the real route); the approved cross-file update this task's own C49 wiring requires (rules.crossFile); or another task's work that was already so at the base (TASK-107's heading reads; TASK-119's build body of the review-screen case). Base reads that Round 7 still meets were carried into the restored build bodies (exercise-coaching: the panel's Note saved / failure reads beside the dialog's; the dialog's exit wait). Restored read this round: the gallery Warm-up clock's digits (its own approximate time), unit and e2e.",
+    "ownerDecisions": [
+      "Owner decision 4 (Eric, chat, 2026-11-16: “Accept all five”): the movement-note dialog keeps Round 7's fixed “Movement note” title; the movement's name labels its field. Every inherited read of a “Notes — <movement>” dialog or field reads that title and that field.",
+      "Decision 5 (2026-11-13, “Accept recommendations”): the coaching panel's empty-state messages stay; every NO_* text read is kept.",
+      "Test-update rule (Eric, chat, 2026-11-23: “Yes, approve”): old or base tests updated to Round 7's look and wording, each listed for UAT (rules.lookAndWordingRewrites, rules.forTask115); behaviour or saved data Round 7 lacks would stop the build — see rules.crossFile for the one item the controller should confirm."
+    ],
+    "lookAndWordingRewrites": [
+      "Preparation clock actions: “Add 30s” → “Add 30 sec”; run out, the disabled “Start” → the disabled “Time reached” (Round 7's PreparationGuide wording) — preparation-guide unit (5 reads) and task-022 e2e (11 reads).",
+      "Guide markup: `[data-preparation-guide=\"warmup\"]` card → the card inside `[data-preparation-guide=\"Warm-up\"]`; `clr-preparation-guide__list` in `refinements/presentation.css` → `clr-v4-guide-list` in `workout-experience-presentation.css`; the clock found by its own guide (no `data-clock`); `[data-preparation-section]` → `[data-preparation-guide]`; the Review order on `[data-review-section]`.",
+      "Live Warm-up heading: the build read the guide's title as a label under its section heading; Round 7's compact navigator draws no heading, so the guide card's title is the section's one heading (the 'one heading named Warm-up' read is kept).",
+      "Block cards: `[data-workout-card]` / `[data-movement-identity]` → Round 7's `.clr-movement-group` and its movement list.",
+      "Grouped coaching: `[data-coaching-group]` / `[data-coaching-movement]` → the disclosure found by its accessible name and each movement's section by role=group and name (aria-labelledby); the circuit AC-061 read likewise (round-07 S2).",
+      "Movement note: dialog “Notes — <movement>” → “Movement note” (decision 4), the field labelled by the movement; Round 7 draws the dialog in place (top layer) where the build portalled it, so a closed dialog's hidden copy of its status stays in the section and the status beside the opener is read by role (`statusText`, `noteStatus`, `within(panel).getByRole('status')`), and the build's 'dialog not inside the card' read becomes the base's 'dialog inside the one card'; the status line sits below its opener (Round 7's placement), not on the same row.",
+      "Review (group-exercise-coaching JOURNEY-005, task-005 e2e): Round 7 draws no 'Movements in this block' list for a standard block; it is read by its row's Swap; 'no note field on Review' is read as no textbox at all."
+    ],
+    "retiredAssertions": [
+      "src/ui/preparation-guide.test.tsx, the gallery case (renamed): the guides read from the actual reading and a Cooldown clock in the gallery — Round 7's accepted preparation state draws the gallery's sample and only the Warm-up's clock. Proved on the routes by this file's /review, /workout and /history/:id cases.",
+      "e2e/refinement/task-022.spec.ts, the gallery case (renamed): as above; the Review/Workout context switch does not exist in Round 7's gallery.",
+      "src/ui/group-exercise-coaching.test.tsx and e2e task-005, the gallery cards case: the Review context and the written/blank guidance answers in the gallery — Round 7's cards state is the live timed cards and its memory library has no entries. Proved on the real route in AC-R005-02."
+    ],
+    "crossFile": [
+      "src/app/Review.test.tsx (6 bodies) and src/app/review-screen.test.tsx (1 body), TASK-119's files: this task's own criterion (TASK-AC-2E1486B7B4BF, C49) draws Review's Warm-up and Cooldown as Round 7's concise guides, which these Round 7 base bodies (written before the guides were wired) read as block cards, so `npm test` failed on them. Each was updated as narrowly as the old build updated the same bodies for TASK-022 (SPECTRUM_AS_WORK for the shape reads; the guide card counted as its section's one card; the guide headed by its title). One read changes behaviour rather than look and is flagged for the controller: 'offers a swap on every movement' no longer asserts a Swap on the warm-up movement (air squat) — C49 and the inherited TASK-022 case assert the concise guide has no Swap, as the old build did ('offers a swap on every prescribed movement'). TASK-119 restores the build's bodies of these files.",
+      "src/app/Workout.test.tsx (TASK-110's): one restored TASK-005 body only (R7-1).",
+      "src/app/circuit-rounds.test.tsx (TASK-107's): the one restored S2 read, run by name (TASK-109:check-02).",
+      "src/ui/exercise-coaching.test.tsx: owned by this task; TASK-108's C1 re-point of the two base 'low rest' bodies is kept unchanged beside the restored build 'urgent rest' bodies."
+    ],
+    "forTask110": "src/app/Workout.test.tsx: TASK-109 added one build body, 'Workout — coaching and notes > opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)', beside Round 7's own 'groups coaching under one disclosure …' (unchanged). It did not touch the 33 bodies TASK-110's criteria list, including this describe's 'shows no broken panel …', 'persists a note …' and 'reports a failed note write …'.",
+    "forTask119": "src/app/Review.test.tsx and src/app/review-screen.test.tsx: seven Round 7 base bodies were updated for the wired guides (rules.crossFile); restoring the build's bodies (SPECTRUM_AS_WORK, isPreparation, expectRegenerateLast) supersedes them. TASK-023's check-01 receipt was already stale at the base (its recorded hash is the build's file).",
+    "forTask115": [
+      "Warm-up and Cooldown on /review, /workout and /history/:id are Round 7's concise guide from real data: names are the catalog reader's (lower case, no apostrophe: 'arm circles', 'childs pose'); the time is TASK-034's estimate (three one-set movements read ~4 minutes, where the gallery's sample says ~3 for the Cooldown).",
+      "/history/:id draws the Warm-up and Cooldown as the concise guide (as Round 7's own History did under its sample), not as their logged rows; a malformed row is the guide's error with a retry that reads the record again.",
+      "The preparation clock: “Add 30 sec”; run out it shows a disabled “Time reached”; it says “Final 10 seconds” in its final ten and takes the shared warning (colour at ten, breathe and one edge at five only while running).",
+      "The live Warm-up/Cooldown guide's title is the section's heading (the compact navigator has none).",
+      "Review: warm-up movements have no Swap (C49); the guide lists their names only.",
+      "Movement note: the dialog is titled “Movement note” (decision 4), drawn in place in the top layer, the field labelled by the movement; the note's status sits below its opener (Round 7's placement), not beside it on one row.",
+      "Gallery: the preparation state still shows the illustrative sample (4 and 3 minutes, sentence-case names); its cards and movement-note states draw the restored per-movement groups with no visible change (compared at base and at this task: same words, same boxes).",
+      "Cross-file test updates in TASK-119's Review.test.tsx (6) and review-screen.test.tsx (1) (rules.crossFile), including the dropped warm-up Swap read.",
+      "Renamed cases: the preparation gallery case in src/ui/preparation-guide.test.tsx and in e2e task-022 (renamedFrom in their rows; TASK-022's manifest updated)."
+    ],
+    "selfCheck": {
+      "when": "2026-11-23, A3 TASK-109 attempt 1, before hand-back",
+      "method": "Mechanical: every test file and e2e spec touched since 628c7aa2 (10) parsed with the TypeScript compiler; titles keyed by describe chain and title, e2e `${name}` expanded to phone-320 and phone-390. (a) titles present at the base and absent or renamed at HEAD; (b) for every body whose text differs from the base (changed, restored from the build, rewritten, renamed or new), the outermost `expect(…)` chains of the body and of the file's top-level helpers it calls (transitively) were compared as multisets with the build's body (181e580: same title, or the renamed case) and the base's (628c7aa2). Every read of the build or base body not present verbatim was classified by rule (scratch classifier, no read left unclassified). Base reads that Round 7 still meets were restored where they had been replaced (exercise-coaching).",
+      "counts": {
+        "files": 10,
+        "testsAtBase": 218,
+        "absentOrRenamedAtHead": 1,
+        "recorded": 1,
+        "unrecorded": 0,
+        "bodies": 51,
+        "withBuildCounterpart": 41,
+        "withBaseCounterpart": 23,
+        "buildReadsNotVerbatim": 90,
+        "baseReadsNotVerbatim": 38,
+        "bodiesWithADifference": 25,
+        "unclassified": 0,
+        "skipOnlyTodoAdded": 0
+      },
+      "classes": {
+        "build": {
+          "hook": 10,
+          "sectionHeading": 1,
+          "wording": 16,
+          "gallery": 29,
+          "inPlaceDialog": 13,
+          "reviewList": 3,
+          "decision4": 6,
+          "equivalent": 1,
+          "task107Rewrite": 1,
+          "task119Restore": 10
+        },
+        "base": {
+          "approvedChange": 1,
+          "reviewList": 2,
+          "decision4": 2,
+          "inPlaceDialog": 10,
+          "gallery": 11,
+          "hook": 2,
+          "wording": 10
+        }
+      },
+      "classMeaning": {
+        "wording": "Round 7 wording for the same read (Add 30 sec; Time reached).",
+        "decision4": "Owner decision 4: “Movement note” dialog, the field labelled by the movement.",
+        "hook": "A build-only data hook or class read on Round 7's structure (rules.lookAndWordingRewrites).",
+        "inPlaceDialog": "Round 7 draws the note dialog in place, so a status is read by role/visible line, and the dialog is inside the card.",
+        "sectionHeading": "The live guide's title is the section's one heading in Round 7.",
+        "reviewList": "Round 7's Review draws no list for a standard block; no textbox at all on Review.",
+        "gallery": "Round 7's accepted gallery draws a different state (rules.retiredAssertions).",
+        "equivalent": "The same read through a constant holding the same string.",
+        "approvedChange": "The cross-file update this task's C49 wiring requires (rules.crossFile).",
+        "task107Rewrite": "TASK-107's own Round 7 rewrite in the same body, unchanged at the base.",
+        "task119Restore": "Reads of the build's own review-screen body, which TASK-119 restores; this task changed only the base body's section read."
+      }
+    },
+    "repairs": [
+      {
+        "round": 1,
+        "date": "2026-11-23",
+        "kind": "test-only",
+        "cause": "CI Test job on PR theycallme-eric/clear#755: 'AC-R005-01 each movement keeps its own draft …' (src/ui/group-exercise-coaching.test.tsx:414) timed out at 5025 ms against vitest's 5000 ms default; 6417/6418 passed.",
+        "change": "src/ui/group-exercise-coaching.test.tsx: const HEAVY = 30_000 and { timeout: HEAVY } on that case and on 'JOURNEY-005 opens Review …' (the file's other multi-dialog route case: 1.4 s locally against AC-R005-01's 2.6 s). No body, assertion, wait, query or global timeout changed.",
+        "selfCheck": "Parsed before (971c2623) and after: 9 titles each, 0 bodies changed, only the two cases' options changed, the rest of the file identical apart from the HEAVY declaration. matchersWeakened stays false."
+      }
+    ]
+  },
+  "inheritedAssertions": {
+    "groundworkF7": {
+      "total": 26,
+      "preparationGuide": 7,
+      "groupExerciseCoaching": 9,
+      "exerciseCoachingBuildEditPending": 6,
+      "exerciseCoachingAbsent": 4
+    },
+    "roundSevenPlaced": {
+      "workoutCoachingBody": 1,
+      "circuitRoundsAC061": 1
+    },
+    "e2e": {
+      "task-005.spec.ts": 5,
+      "task-022.spec.ts": 4
+    },
+    "carriedStateSuite": {
+      "src/state/preparation-guide.test.ts": 8
+    },
+    "notThisTask": "Workout.test.tsx's 'shows no broken panel …', 'persists a note …', 'reports a failed note write …' are in TASK-110's 33; timed-workout-flow's AC-C31-01 coaching-order reads went whole to TASK-117 (round-07 N5)."
+  }
+}

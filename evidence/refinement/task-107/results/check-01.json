@@ -26,7 +26,7 @@
     },
     {
       "path": "src/app/circuit-rounds.test.tsx",
-      "sha256": "f22a9f52485c2619ff73ba4dbea8ff6b74ffb087758ca8302603694b40939932"
+      "sha256": "aebc3bfc58288aa1d9049ef89c0fca40d9490f724969e714d3989bc0d1863f79"
     },
     {
       "path": "src/app/movement-countdown-circuit.test.tsx",

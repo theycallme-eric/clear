@@ -82,6 +82,29 @@ const ACCEPTANCE = makeSessionAcceptance({
   workout: makeStructureSpectrumWorkout({ estimated_duration_mins: 71 }),
 })
 
+/**
+ * A3 TASK-109 (TASK-022; C49, R01, R13): the Warm-up and Cooldown are drawn as
+ * Round 7's concise guide, which states no prescription. The old build's own
+ * accommodation, carried here: the shape cases read the same spectrum with
+ * those two sections composed as Mobility and Core, which Review draws as work.
+ */
+const SPECTRUM_AS_WORK = makeSessionAcceptance({
+  ...ACCEPTANCE,
+  workout: {
+    ...ACCEPTANCE.workout,
+    sections: ACCEPTANCE.workout.sections.map((section) =>
+      section.section_type === 'warmup'
+        ? { ...section, section_type: 'mobility' as const }
+        : section.section_type === 'cooldown'
+          ? { ...section, section_type: 'core' as const }
+          : section,
+    ),
+  },
+})
+
+/** The sections Review draws as Round 7's concise guide rather than as blocks (A3 TASK-109). */
+const isPreparation = (type: string) => type === 'warmup' || type === 'cooldown'
+
 /** The persisted session `accept` answers with; `start` moves it to active. */
 const PERSISTED = snapshotFixture({ state: 'prescribed' })
 
@@ -214,9 +237,15 @@ describe('all generated content renders', () => {
   it('keeps ordered sections and gives each shared block one card, with no nested cards', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
-    const sections = document.querySelectorAll('[data-review-section]')
+    // A3 TASK-109 (TASK-022): the Warm-up and Cooldown are each one concise
+    // guide card, in their own places; every other section keeps a card per block.
+    const sections = document.querySelectorAll('[data-review-section], [data-preparation-guide]')
     expect(sections).toHaveLength(ACCEPTANCE.workout.sections.length)
-    sections.forEach((section, index) => expect(section.querySelectorAll('.clr-card')).toHaveLength(ACCEPTANCE.workout.sections[index].blocks.length))
+    sections.forEach((section, index) => {
+      const composed = ACCEPTANCE.workout.sections[index]
+      expect(section.hasAttribute('data-preparation-guide')).toBe(isPreparation(composed.section_type))
+      expect(section.querySelectorAll('.clr-card')).toHaveLength(isPreparation(composed.section_type) ? 1 : composed.blocks.length)
+    })
     expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
   })
 
@@ -249,7 +278,8 @@ describe('all generated content renders', () => {
   it('uses static shared headers in section order, with all content visible', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
-    const titles = [...document.querySelectorAll('[data-review-section]')].map(section => within(section as HTMLElement).getAllByRole('heading')[0].textContent)
+    // A3 TASK-109 (TASK-022): the Warm-up and Cooldown are headed by their concise guide's card.
+    const titles = [...document.querySelectorAll('[data-review-section], [data-preparation-guide]')].map(section => within(section as HTMLElement).getAllByRole('heading')[0].textContent)
     expect(titles).toEqual(['Warm-up', 'Primary lift', 'Accessory', 'Conditioning', 'Cooldown'])
     expect(screen.queryByRole('button', { name: /Warm-up/ })).not.toBeInTheDocument()
   })
@@ -399,7 +429,8 @@ describe('all generated content renders', () => {
   })
 
   it('renders each target kind as its own shape', async () => {
-    renderReview()
+    // A3 TASK-109 (TASK-022): read from sections Review draws as work.
+    renderReview({ acceptance: SPECTRUM_AS_WORK })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const text = briefingText()
@@ -410,7 +441,8 @@ describe('all generated content renders', () => {
   })
 
   it('renders time and distance as themselves rather than as reps', async () => {
-    renderReview()
+    // A3 TASK-109 (TASK-022): read from sections Review draws as work.
+    renderReview({ acceptance: SPECTRUM_AS_WORK })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const text = briefingText()
@@ -433,7 +465,8 @@ describe('all generated content renders', () => {
 
   it('moves tempo off the rows into an optional, collapsed detail that keeps it', async () => {
     const user = userEvent.setup()
-    renderReview()
+    // A3 TASK-109 (TASK-022): read from sections Review draws as work.
+    renderReview({ acceptance: SPECTRUM_AS_WORK })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     expect(briefingText()).not.toContain('Tempo 3-1-1-0')
@@ -883,9 +916,15 @@ describe('swapping a movement happens in Review, under the original constraints 
   it('offers a swap on every movement, named for the movement', () => {
     renderReview({ acceptance: SWAPPABLE, candidateSets: CANDIDATE_SETS })
 
-    for (const name of ['air squat', 'back squat', 'kb swing']) {
+    for (const name of ['back squat', 'kb swing']) {
       expect(screen.getByRole('button', { name: `Swap ${name}` })).toBeEnabled()
     }
+    // A3 TASK-109 (TASK-022; C49; R01, R36), as the old build read it: the
+    // Warm-up is its accepted concise guide — the movement's name on its own
+    // line, with no per-movement row or action.
+    const guide = screen.getByRole('list', { name: 'Warm-up movements' })
+    expect(within(guide).getByRole('listitem')).toHaveTextContent(/^air squat$/)
+    expect(screen.queryByRole('button', { name: 'Swap air squat' })).toBeNull()
   })
 
   it('reads alternatives for this composition only when asked, and offers only what fits', async () => {

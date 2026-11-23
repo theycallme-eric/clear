@@ -34,7 +34,7 @@
  * save each take the view's one loop in turn, so neither animates against a
  * low rest timer; both stay marked busy while they are stilled.
  */
-import { createContext, use, useState } from 'react'
+import { createContext, use, useId, useState } from 'react'
 
 import { AlertTriangle, Button, CircleCheck, Input } from '../design-system/index'
 import type { AppError } from '../state/errors'
@@ -65,6 +65,11 @@ export const CATALOG_SOURCE_TEXT = 'From the exercise library'
 export const NOTE_SAVED_TEXT = 'Note saved'
 export const NOTE_FAILED_TEXT =
   'Your note didn’t save. It is still in the field — try again.'
+/** TASK-045: the note's opener, before and after the field holds words. */
+export const NOTE_ADD_LABEL = 'Add note'
+export const NOTE_EDIT_LABEL = 'Edit note'
+/** The grouped disclosure's visible label: the accepted words, unchanged (R36). */
+export const GROUP_COACHING_LABEL = 'Coaching and notes'
 
 export interface ExerciseCoachingProps {
   exercise: ExerciseProgress
@@ -101,6 +106,9 @@ export function GroupExerciseCoaching({ format, exercises }: GroupExerciseCoachi
 }
 
 function GroupCoachingPanel({ format, exercises }: GroupExerciseCoachingProps) {
+  // Sticky, as one movement's panel is: once opened, every section's guidance
+  // stays asked for, so closing and reopening shows what was read. Collapse is
+  // CSS-only, so the sections — and every draft in them — stay mounted.
   const [expanded, setExpanded] = useState(false)
   const [opened, setOpened] = useState(false)
   const names = exercises.map(exercise => exerciseName(exercise.prescription.exercise_id))
@@ -109,7 +117,7 @@ function GroupCoachingPanel({ format, exercises }: GroupExerciseCoachingProps) {
       <CollapsibleSection
         label={
           <>
-            Coaching and notes{' '}
+            {GROUP_COACHING_LABEL}{' '}
             {/* TASK-005 (the build's name): names this block's disclosure apart
                 from another block's on the same screen; the visible label
                 stays the accepted words. */}
@@ -119,17 +127,50 @@ function GroupCoachingPanel({ format, exercises }: GroupExerciseCoachingProps) {
         expanded={expanded}
         onExpandedChange={next => { setExpanded(next); if (next) setOpened(true) }}
       >
-        <div className="clr-stack">
-          {exercises.map(exercise => {
-            const name = exerciseName(exercise.prescription.exercise_id)
-            return <Card key={exercise.exerciseId} heading={name}>
-              {opened ? <Guidance exerciseId={exercise.prescription.exercise_id} name={name} /> : null}
-              <ExerciseNotesField exercise={exercise} name={name} />
-            </Card>
-          })}
-        </div>
+        {/* A3 TASK-109 (TASK-005): each movement's section heads one level
+            below whatever the panel sits under. */}
+        <HeadingSection className="clr-stack">
+          {exercises.map((exercise, index) => (
+            <CoachingMovementSection
+              key={exercise.exerciseId}
+              exercise={exercise}
+              name={names[index]}
+              opened={opened}
+            />
+          ))}
+        </HeadingSection>
       </CollapsibleSection>
     </Card>
+  )
+}
+
+/**
+ * A3 TASK-109 (TASK-005; C16, G11, R29): one movement's labelled section — a
+ * group named by its heading, the movement's name — holding its own guidance
+ * read and its own note writer, the same two owners its standalone panel
+ * draws. Nothing in it is shared with another movement's section.
+ */
+function CoachingMovementSection({
+  exercise,
+  name,
+  opened,
+}: {
+  exercise: ExerciseProgress
+  name: string
+  opened: boolean
+}) {
+  const headingId = useId()
+  return (
+    <div role="group" aria-labelledby={headingId}>
+      <Card heading={<span id={headingId}>{name}</span>}>
+        {/* Its guidance and note head one level below the movement's name, on
+            Round 7's tight rhythm (the accepted section's spacing). */}
+        <HeadingSection className="clr-stack clr-stack--tight">
+          {opened ? <Guidance exerciseId={exercise.prescription.exercise_id} name={name} /> : null}
+          <ExerciseNotesField exercise={exercise} name={name} />
+        </HeadingSection>
+      </Card>
+    </div>
   )
 }
 
@@ -325,7 +366,7 @@ function ExerciseNotesField({
     </div>
   )
   return proposal ? <>
-    <Button variant="secondary" onClick={() => setOpen(true)}>{text.trim() ? 'Edit note' : 'Add note'} — {name}</Button>
+    <Button variant="secondary" onClick={() => setOpen(true)}>{text.trim() ? NOTE_EDIT_LABEL : NOTE_ADD_LABEL} — {name}</Button>
     {!open && <NoteStatusLine status={status} />}
     <LoggingOverlay open={open} title="Movement note" onClose={() => setOpen(false)}>{content}</LoggingOverlay>
   </> : content

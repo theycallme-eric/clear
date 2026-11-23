@@ -313,6 +313,22 @@ export function preparationGuideReading(
   return guide.value === null ? missing('no-movements') : { status: 'ready', guide: guide.value }
 }
 
+/**
+ * One persisted section's reading (Workout, History detail; A3 TASK-109): a
+ * row that cannot be read without guessing is an error, a section with no
+ * active movement left is missing, and otherwise the guide is ready. Swaps read
+ * in place: only active rows are read, in their order.
+ */
+export function persistedPreparationReading(
+  entry: SnapshotSection,
+  type: PreparationSectionType,
+): PreparationGuideReading {
+  const guide = persistedPreparationGuide(entry)
+  if (isErr(guide)) return { status: 'error', error: guide.error }
+  if (guide.value === null) return { status: 'missing', type, reason: 'no-movements' }
+  return { status: 'ready', guide: guide.value }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Source ownership
 // ─────────────────────────────────────────────────────────────────────────────

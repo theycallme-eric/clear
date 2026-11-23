@@ -234,7 +234,9 @@ describe('AC-021: Regenerate sits at the end of the scrolling content', () => {
 
     const buttons = within(region).getAllByRole('button')
     expect(buttons.at(-1)).toBe(regenerate)
-    const sections = reviewSections()
+    // A3 TASK-109 (TASK-022): the Warm-up and Cooldown are each one concise
+    // guide in their own places, not a block section; Regenerate follows all.
+    const sections = [...reviewSections(), ...screen.getByRole('main').querySelectorAll<HTMLElement>('[data-preparation-guide]')]
     expect(sections).toHaveLength(SPECTRUM.sections.length)
     for (const section of sections) {
       expect(precedes(section, regenerate)).toBe(true)

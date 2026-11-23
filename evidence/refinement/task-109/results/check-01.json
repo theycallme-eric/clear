@@ -1,0 +1,322 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-109",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/preparation-guide.test.tsx",
+    "src/ui/group-exercise-coaching.test.tsx",
+    "src/ui/exercise-coaching.test.tsx",
+    "src/app/Workout.test.tsx",
+    "src/state/preparation-guide.test.ts",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-109/required-cases.json",
+    "sha256": "08b9533be78b5c82fde382ead24f42a0d44e4592e3ff2782ae37873b4b4cc01c"
+  },
+  "targets": [
+    {
+      "path": "src/ui/preparation-guide.test.tsx",
+      "sha256": "c431d2178b018376c3f80357f11c81efe676f77d8e8abcd5e5f088f7cd778bad"
+    },
+    {
+      "path": "src/ui/group-exercise-coaching.test.tsx",
+      "sha256": "28c929c187071a0d7dc43fb4c630063e38ef8c94ba7778eab4bff49bfa2e826d"
+    },
+    {
+      "path": "src/ui/exercise-coaching.test.tsx",
+      "sha256": "20a6fa9b0b819e0ae0964b956304b16a0e777237c84e6dc9fbe61873e09b2a65"
+    },
+    {
+      "path": "src/app/Workout.test.tsx",
+      "sha256": "5b23f975eee9e89ba0ba2e8f4cf881271ec995ae357e3b1a1872a32cb6f78989"
+    },
+    {
+      "path": "src/state/preparation-guide.test.ts",
+      "sha256": "1cc61f7df44a2b0a43dae54ea96b4506f596fc553930a93a2786b4167cbf6545"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /review route the Warm-up and Cooldown are each one concise card: the stable title, the approximate total time and the movement names on separate lines, with no generated title, prose, per-movement prescription or Swap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 the titles, names, counts and times are TASK-034’s reading of the actual prescriptions on /review and /workout alike — four and two movements, never the illustrated four minutes or three rows — and change with the data",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 on the real /workout route the open Warm-up is its concise guide under the section header, read from the session’s active rows (a swap in place), with no set logging, rest or Dismiss substitute; Next section completes it as before",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 the separate preparation clock counts the guide’s own time down with Start, Pause and Add 30s, keeps the session clock and the rest distinct, records nothing and offers no Dismiss or other hide action",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-02 leaving the section and coming back finds the same clock, and its warning is the shared one: colour at 10 seconds, the edge at 5 while running, none when paused or run out; Add 30s after it runs out waits for Start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-R022-01 loading, a failed read, a section with no movement left and an absent section keep their meanings; a malformed persisted row is an error, never a guessed guide or clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > TASK-AC-2E1486B7B4BF on the real /history/:id route the Warm-up and Cooldown are the concise guides read from the record’s own active rows (a swap in place), with no clock; a malformed row is the guide’s error, and its retry reads the record again; no route reads the gallery’s sample guides",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/preparation-guide.test.tsx",
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own PreparationGuide in Review order around the real For Time card: each guide concise, the Warm-up’s clock its own with Start, Pause and Add 30 sec, and no Dismiss",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 /workout: each grouped block ends with one Coaching and notes disclosure with a labelled section per movement, and its rows carry none",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-C16-01 every grouped format — superset, circuit, EMOM, AMRAP, For Time and ladder — ends with one disclosure, and a standard block keeps each movement’s own",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 keeps the note of a movement the library has no entry for, and saves it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 a resumed workout shows each movement’s stored note in its own section, and a blank note stays blank",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > AC-R005-02 written guidance, blank guidance, no entry, loading and a failed read stay distinct, each in its own movement’s section, with no hide or replacement rule",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 recovery: a failed save keeps its draft through close and reopen, its retry stores it, and no performed work is recorded",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/group-exercise-coaching.test.tsx",
+      "name": "TASK-005 one grouped coaching and notes disclosure > renders the accepted gallery state cards with the actual disclosure at the foot of each grouped live card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > draws nothing outside the workout clients",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > does not read the library until it is opened",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > shows the cues and regression the library authored for this movement",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > states an empty cues array and a null regression as answers",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > states a movement the library has no entry for",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > shows a failed library read as an error in the panel, and retries it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > writes the typed note to the prescription row and says it is saved",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > clears the note when the field is emptied",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the coaching panel > reports a failed note write and keeps the typed text",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "optional catalog coaching (U38) > opens and closes on demand, naming its movement on the disclosure",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "optional catalog coaching (U38) > attributes the cues and regression to the library, not to generation",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "optional catalog coaching (U38) > states blank catalog cues and a blank regression rather than drawing empty ones",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "optional catalog coaching (U38) > keeps only the written cues when some are blank",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "optional catalog coaching (U38) > still saves a note for a movement the library has no entry for",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel is one group, with its labels inside > is one card on its own: the disclosure, the cues, the regression and the note",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel is one group, with its labels inside > heads each sub-group inside it, under a rule rather than a frame",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel is one group, with its labels inside > heads them one level below whatever the panel sits under",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel is one group, with its labels inside > is content on an exercise’s card, never a second card inside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel is one group, with its labels inside > keeps a failed read and an absent entry inside the same one card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and a low rest keep one loop between them > runs the guidance’s wait until the rest goes low, then stills it — still busy",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and a low rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and a low rest keep one loop between them > is static under reduced motion and still says everything",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and a low rest keep one loop between them > shows what was read under reduced motion, with nothing waiting on an animation",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and an urgent rest keep one loop between them > runs the guidance’s wait until the rest is urgent, then stills it — still busy",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and an urgent rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and an urgent rest keep one loop between them > is static under reduced motion and still says everything",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "name": "the panel’s waits and an urgent rest keep one loop between them > shows what was read under reduced motion, with nothing waiting on an animation",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a composed Warm-up and Cooldown read the stable title, every prescribed movement in order and their own count, never the generated title, notes or per-movement prescription",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 the approximate time is GEN-06’s own section estimate from blocks and prescriptions, in whole minutes, never the model estimate, the computed session duration or the target",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 a persisted session reads the same guide as the composed workout it was accepted from, and a swap shows its replacement in the same place",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-01 every owner the source record names resolves to a real export, and the contract states the same owners",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 missing: no workout, no Warm-up or Cooldown composed, and a section with no active movement read as missing with their reason, never as an empty guide",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 loading and error follow the source, and a persisted row whose target contradicts its kind is an error rather than a guess",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 content: the recorded generation reads its own Warm-up exactly as the Review briefing and the live workout name it, from the composed and the persisted source alike",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/preparation-guide.test.ts",
+      "name": "TASK-034 authoritative preparation guide content and approximate duration > AC-R034-02 readings follow the data, keep the concise ~N minutes format and carry no hard-coded illustrated four minutes, three rows or sample movements",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 131,
+    "passed": 131,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 131
+  },
+  "problems": []
+}
