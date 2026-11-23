@@ -10,7 +10,8 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 
 ## Status
 
-Attempt 1 implemented and committed. Two plan conflicts (C1, C2) are held for the owner; see "Open". Nothing pushed.
+Attempt 1 implemented and committed. The two plan conflicts it raised (C1, C2) were decided by the owner on
+2026-11-23 and applied; see "Owner decision (2026-11-23)". Nothing pushed.
 
 ## Intended outcome
 
@@ -78,7 +79,7 @@ Tests and specs (every inherited body is in `evidence/refinement/task-108/test-l
 - `src/ui/emom-block.test.tsx` (11), `src/ui/amrap-block.test.tsx` (2) (TASK-110's) and `src/ui/for-time-block.test.tsx`
   (9, owned whole): ported onto the route's dispatch (R7-2); the superseded base bodies removed.
 - `src/ui/exercise-coaching.test.tsx` (TASK-109's): two base reads moved from the rest card's pulse to the rest's timer
-  — provisional, in its own commit (plan conflict C1).
+  (C1; first committed provisionally on its own, kept as final under the owner's 2026-11-23 rule).
 - `e2e/refinement/task-007.spec.ts`, `task-008.spec.ts`, `task-027.spec.ts`: rewritten onto Round 7 (three gallery
   cases renamed; manifests updated).
 - `e2e/refinement/task-108-parity.spec.ts` (new, 8 cases): cards, urgency, emom/amrap/for_time (ended) and the
@@ -106,8 +107,8 @@ commit), `src/ui/preparation-guide.tsx` (TASK-109's), `PROJECT_MAP.md` (no new b
 - e2e: Round 7's log dialog exits on the page clock, which the specs hold still; a 0.3 s step (inside the same whole
   second of every reading) lets it leave before the next tap. A `pauseAt(Date.now())` in Node time jumped the page
   clock days ahead; the gallery case no longer pauses and accepts each moment's warning band.
-- Plan conflicts found (held for the owner, see "Open"): C1 (exercise-coaching base bodies), C2 (ForTimeBlock's cap
-  words).
+- Plan conflicts found: C1 (exercise-coaching base bodies), C2 (ForTimeBlock's cap words). Both were held for the
+  owner in attempt 1 and decided on 2026-11-23 (see below).
 
 ## Verification
 
@@ -138,27 +139,65 @@ refreshed: TASK-104 check-01 PASSED 172/172 (amrap-, emom-, for-time-block); TAS
 --tasks TASK-104,TASK-116,TASK-007,TASK-008,TASK-027,TASK-108`: current passing receipts for all six.
 `src/ui/exercise-coaching.test.tsx` is no task's check target yet (TASK-109's check-01 will run it whole).
 
+## Owner decision (2026-11-23)
+
+Decision: Eric, chat, 2026-11-23: "Yes, approve" — approving the rule "tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues."
+
+Applied in new commits on `82aa20f3` (no product change):
+
+- **C1 (final).** `src/ui/exercise-coaching.test.tsx`: the re-pointed reads stay; the comment no longer says
+  provisional and cites the rule (TASK-109 still owns the file and restores the build's TASK-008 bodies). The ledger
+  records both bodies as rewritten under the decision.
+- **C2.** The seven withheld cap-word checks now read what Round 7 shows at that moment — the race clock's "Elapsed"
+  reading and the cap its card states in its meta line (`15 MIN CAP`, `8 MIN CAP`); where Round 7 has no equivalent,
+  the "— finish now" wording alone is dropped. Old → new:
+  1. `countdown-urgency.test.tsx` AC-C23-01: "Cap in 00:10 — finish now" → "Elapsed" (14:50) + `15 MIN CAP`; "finish
+     now" dropped.
+  2. `timer-frame-layout.test.tsx` AC-C21-01: "Cap in 14:30" ×2, "Cap in 14:20" → "Elapsed" (00:30, 00:30, 00:40) +
+     `15 MIN CAP` at each point; the warning-timing cap arithmetic kept.
+  3. `for-time-block.test.tsx` "turns urgent in the last ten seconds …": "Cap in 00:07 — finish now" → "Elapsed"
+     07:53 + `8 MIN CAP`; "finish now" dropped.
+  4. `for-time-block.test.tsx` "is not low, and claims no loop …": "Cap in 00:11" → "Elapsed" 07:49 + `8 MIN CAP`.
+  5. `for-time-block.test.tsx` "is still under reduced motion …": "Cap in 00:04 — finish now" → "Elapsed" 07:56 +
+     `8 MIN CAP`; "finish now" dropped.
+  6. `e2e/refinement/task-007.spec.ts` touch phone-390: "Cap in 14:30" ×2, "Cap in 14:20" → "Elapsed" (00:30, 00:30,
+     00:40) + `15 MIN CAP` at each point; the warning-timing arithmetic kept.
+  7. `e2e/refinement/task-008.spec.ts` keyboard phone-390: "Cap in 00:10 — finish now" → "Elapsed" (14:50) +
+     `15 MIN CAP`; "finish now" dropped.
+  None expects behaviour or saved data Round 7 lacks: elapsed and cap carry the time left, and "finish now" is
+  wording.
+- **Ledger.** `rules.pendingOwnerDecision` replaced by `rules.ownerDecisions` (both resolved, with the quote);
+  `rules.capWordChecks` lists the seven old → new; `rules.retiredAssertions` the four "— finish now" drops;
+  `matchersWeakened: false` with the reason (no matcher loosened; the only removed wording is the approved drop);
+  `rules.forTask115` lists every change for UAT, including "For Time near the cap shows no 'finish now' words; the
+  warning is colour, edge and breathing only."
+
+Verification after the decision (browser runs under the host lock; through the guard):
+
+| Check | Result |
+|---|---|
+| TASK-108 check-01 | PASSED, 287/287 |
+| TASK-007 check-01 / check-02 | PASSED, 13/13 / 7/7 |
+| TASK-008 check-01 / check-02 | PASSED, 13/13 / 5/5 |
+| `npx vitest run src/ui/exercise-coaching.test.tsx` (TASK-109's file alone) | 23/23 |
+| TASK-104 check-01 (its for-time-block target changed; receipt refreshed) | PASSED, 172/172 |
+| CI chain as one command | exit 0: lint 0 errors / 175 warnings; `npm test` 273 files, 6,388/6,388; build ok; console grep no match |
+| `verify-delivery-evidence.mjs --mode final` for TASK-007, 008, 027, 104, 116, 108 | current passing receipts for all six |
+
+TASK-108's parity was not re-run: no product file, parity spec or manifest changed, and its receipts stay current.
+
 ## Open
 
-1. **Plan conflict C1 (owner decision).** Two Round 7 base bodies in `src/ui/exercise-coaching.test.tsx` (TASK-109's
-   file) read the rest's final-five warning as the card's stepped micro-pulse; TASK-108's criteria move it to the
-   rest's timer with the one aura. Round 07 gave the build's replacing TASK-008 bodies to TASK-109, which lands after
-   TASK-108, so `npm test` would fail between them. Provisional: only those reads changed, in their own commit
-   (drop it if decided otherwise). Options: accept, or move the build's four bodies to TASK-108.
-2. **Plan conflict C2 (owner decision).** The build's TASK-007/008 bodies read ForTimeBlock's cap line ("Cap in
-   MM:SS", "Cap in MM:SS — finish now"). The route's race (Round 7's TimedWorkoutFlow) reads "Elapsed" and states the
-   cap only in its meta line; no round-07 criterion builds the line. Those word assertions are withheld (listed in the
-   ledger's `rules.pendingOwnerDecision`); the cap arithmetic is still proved through the race's warning timing.
-   Options: retire them as Round 7 look (as R7-3 did for the AMRAP readout), or have a task draw the line.
-3. **Look change from the accepted gallery (labelled, for review).** An urgent timer now breathes .2/.8/.2 with the
-   edge on the 1.5 s cycle instead of the stepped four-second 1 → .8 micro-pulse (AC-R008-01/02, C61); the rest's
-   fill turns the low colour at ten seconds (was five); the circuit's round rest and a schedule's interval are
-   TimerFrames. Under reduced motion all hold .5.
-4. UAT: the 320 px Start scroll-anchoring note from TASK-104's review (the 40 px timer bar pushed just above the
-   scroll area when Start is pressed on a tall timed card) is not covered by this task's criteria; carried as a UAT
-   item. The three "one whole frame with no card" bodies retired as superseded and the C2 words go on TASK-115's list.
-5. Real phones and WebKit untested (Chromium and jsdom only).
+1. **Look changes from the accepted gallery (labelled, for UAT).** An urgent timer now breathes .2/.8/.2 with the
+   edge on the 1.5 s cycle instead of the stepped four-second 1 → .8 micro-pulse (AC-R008-01/02, C61), and holds a
+   steady .5 under reduced motion; the rest's fill turns the low colour at ten seconds (was five); the circuit's round
+   rest and a schedule's interval are TimerFrames.
+2. **UAT list (ledger `rules.forTask115`).** For Time near the cap shows no "finish now" words; the warning is colour,
+   edge and breathing only. The cap is "Elapsed" + the card's `N MIN CAP`, not "Cap in MM:SS". The C1 re-point in
+   exercise-coaching. The three "one whole frame with no card" bodies retired as superseded. The renamed cases. The
+   320 px Start scroll-anchoring note from TASK-104's review (not in this task's criteria).
+3. Real phones and WebKit untested (Chromium and jsdom only).
 
 ## Next action
 
-Controller: decide C1 and C2 with the owner (one batch), then V2 verify and review.
+Controller: V2 verify and review.

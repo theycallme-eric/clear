@@ -8,7 +8,7 @@
   "rules": {
     "skipOnlyTodoAdded": false,
     "matchersWeakened": false,
-    "matchersWeakenedNote": "No matcher is loosened. Assertions are withheld only where a plan conflict is held for the owner (pendingOwnerDecision: C2’s cap-line words); each is listed there and in the entry’s note. If the owner retires them they become retirements; if the owner has the route draw them, they come back.",
+    "matchersWeakenedNote": "No matcher is loosened. Under the owner’s rule (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”) seven checks of ForTimeBlock’s cap-line words now read what Round 7 shows at the same moment — the race clock’s “Elapsed” reading and the cap its card states — which carries the same information (rules.capWordChecks); in four of them the “— finish now” wording, which Round 7 does not draw, is dropped as approved wording (rules.retiredAssertions). Everything else each body checks stays.",
     "retired": [
       {
         "file": "src/ui/workout-chrome.test.tsx",
@@ -26,6 +26,76 @@
         "reason": "Retired as superseded by the base body “Workout — the session’s one rest > draws the session timer and the rest as two self-framed cards, neither inside another”, which stays: TASK-AC-23D0ADE293F8 makes the session clock and every clock one whole Round 7 TimerFrame (the app’s Card in the timer role) and the rest Round 7’s one timer card, where the build’s body asserts its DeadlineTimer look (no card around the session clock, a whole frame inside the rest card). For TASK-115’s UAT list."
       }
     ],
+    "retiredAssertions": [
+      {
+        "file": "src/ui/countdown-urgency.test.tsx",
+        "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 …",
+        "assertion": "“— finish now” in “Cap in 00:10 — finish now”",
+        "reason": "Round 7 draws no urgency words beside the race clock; approved wording drop (Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”). On TASK-115’s UAT list."
+      },
+      {
+        "file": "src/ui/for-time-block.test.tsx",
+        "test": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
+        "assertion": "“— finish now” in “Cap in 00:07 — finish now”",
+        "reason": "As above."
+      },
+      {
+        "file": "src/ui/for-time-block.test.tsx",
+        "test": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+        "assertion": "“— finish now” in “Cap in 00:04 — finish now”",
+        "reason": "As above."
+      },
+      {
+        "file": "e2e/refinement/task-008.spec.ts",
+        "test": "JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+        "assertion": "“— finish now” in “Cap in 00:10 — finish now”",
+        "reason": "As above."
+      }
+    ],
+    "capWordChecks": [
+      {
+        "file": "src/ui/countdown-urgency.test.tsx",
+        "test": "AC-C23-01 …",
+        "old": "getByText(“Cap in 00:10 — finish now”)",
+        "new": "race clock “Elapsed” (reading 14:50) + the card’s meta line /^15 MIN CAP/; “— finish now” dropped"
+      },
+      {
+        "file": "src/ui/timer-frame-layout.test.tsx",
+        "test": "AC-C21-01 …",
+        "old": "getAllByText(“Cap in 14:30”) ×2, getAllByText(“Cap in 14:20”)",
+        "new": "race clock “Elapsed” (00:30, 00:30, 00:40) + the card’s meta line /^15 MIN CAP/ at each point; the warning-timing cap arithmetic kept"
+      },
+      {
+        "file": "src/ui/for-time-block.test.tsx",
+        "test": "turns urgent in the last ten seconds — words and hue together …",
+        "old": "getByText(“Cap in 00:07 — finish now”)",
+        "new": "race clock “Elapsed” 07:53 + the card’s meta line /^8 MIN CAP/; “— finish now” dropped"
+      },
+      {
+        "file": "src/ui/for-time-block.test.tsx",
+        "test": "is not low, and claims no loop, while there is time left",
+        "old": "getByText(“Cap in 00:11”)",
+        "new": "race clock “Elapsed” 07:49 + the card’s meta line /^8 MIN CAP/"
+      },
+      {
+        "file": "src/ui/for-time-block.test.tsx",
+        "test": "is still under reduced motion and loses nothing it was saying",
+        "old": "getByText(“Cap in 00:04 — finish now”)",
+        "new": "race clock “Elapsed” 07:56 + the card’s meta line /^8 MIN CAP/; “— finish now” dropped"
+      },
+      {
+        "file": "e2e/refinement/task-007.spec.ts",
+        "test": "JOURNEY-007 touch phone-390: start and pause the hold and a section clock …",
+        "old": "getByText(“Cap in 14:30”) ×2, getByText(“Cap in 14:20”)",
+        "new": "race clock contains “Elapsed” (00:30, 00:30, 00:40) + the card’s meta line /^15 MIN CAP/ at each point; the warning-timing cap arithmetic kept"
+      },
+      {
+        "file": "e2e/refinement/task-008.spec.ts",
+        "test": "JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap …",
+        "old": "getByText(“Cap in 00:10 — finish now”)",
+        "new": "race clock contains “Elapsed” (reading 14:50) + the card’s meta line /^15 MIN CAP/; “— finish now” dropped"
+      }
+    ],
     "deferred": [
       {
         "file": "src/ui/workout-chrome.test.tsx",
@@ -35,48 +105,36 @@
       }
     ],
     "forTask115": [
+      "For Time near the cap shows no “finish now” words; the warning is colour, edge and breathing only.",
+      "For Time’s time to its cap is no longer said as “Cap in MM:SS”: Round 7 shows the race clock’s “Elapsed” reading and the cap in the card’s meta line (“15 MIN CAP”); seven inherited checks were updated to that (rules.capWordChecks).",
+      "exercise-coaching.test.tsx (TASK-109’s file): two Round 7 base bodies now read the rest’s warning on its timer rather than the card’s micro-pulse (C1).",
       "The three build bodies retired as superseded by Round 7’s timer card (GlobalTimer “is one whole timer frame in the header placement …”, movement-countdown “is one whole timer frame, with no card and no bar …”, Workout “draws the session clock as one whole frame and the rest as its own timer card …”).",
-      "C2’s withheld cap-line words, as the owner decides them.",
-      "The urgent timer’s breathe (.2/.8/.2 on 1.5 s with the edge; .5 still) in place of the stepped micro-pulse; the rest’s fill in the low colour from ten seconds; the circuit rest and a schedule’s interval as TimerFrames.",
+      "Case names changed to Round 7’s look and states: countdown-urgency AC-R008-02, timer-frame-layout AC-R007-01 and AC-R007-02, workout-chrome’s TASK-027 gallery case (the SectionHeader specimen), and the gallery cases of task-007, task-008 and task-027.",
+      "The urgent timer’s breathe (.2/.8/.2 on 1.5 s with the edge; a steady .5 under reduced motion, so its digits read dimmer) in place of the stepped micro-pulse; the rest’s fill in the low colour from ten seconds; the circuit rest and a schedule’s interval as TimerFrames.",
       "TASK-104’s 320 px note: pressing Start on a tall timed card scrolled to its top lets scroll anchoring push the 40 px timer bar just above the scroll area (not in TASK-108’s criteria)."
     ],
-    "pendingOwnerDecision": [
+    "ownerDecisions": [
       {
         "id": "C1",
-        "what": "Two Round 7 base bodies in src/ui/exercise-coaching.test.tsx (TASK-109’s file) read the rest’s final-five warning as the card’s stepped micro-pulse; TASK-108’s criteria (AC-R008-01, AC-R008-02, C61) move it to the rest’s timer with the one aura. Round 07 placed the build’s replacing TASK-008 bodies with TASK-109, which lands after TASK-108, so between them the base bodies fail `npm test`.",
-        "provisional": "Commit “provisional — read the rest’s warning on its timer in two exercise-coaching base bodies (plan conflict C1)”: only those reads change, same asserted behaviour. Drop it if the owner places the fix otherwise.",
-        "options": [
-          "Accept the provisional edit (TASK-108 adapts the two reads; TASK-109 still restores the build’s four bodies).",
-          "Move the build’s four “… an urgent rest keep one loop between them” bodies from TASK-109 to TASK-108."
-        ]
+        "status": "resolved",
+        "decision": "Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”",
+        "what": "Two Round 7 base bodies in src/ui/exercise-coaching.test.tsx (TASK-109’s file) read the rest’s final-five warning as the card’s stepped micro-pulse; TASK-108 moved those reads to the rest’s timer (same asserted behaviour). Kept as final; TASK-109 still owns the file and restores the build’s bodies."
       },
       {
         "id": "C2",
-        "what": "The build’s TASK-007/TASK-008 bodies read ForTimeBlock’s cap line — “Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds (words carrying the urgency beside the colour). On Round 7 the route’s For Time is TimedWorkoutFlow, whose race clock reads “Elapsed” and the elapsed time and states the cap only in the block’s meta line; no round-07 criterion builds the cap line. Withheld assertions:",
-        "assertions": [
-          "src/ui/countdown-urgency.test.tsx AC-C23-01: “Cap in 00:10 — finish now”",
-          "src/ui/timer-frame-layout.test.tsx AC-C21-01: “Cap in 14:30” (twice), “Cap in 14:20” (replaced by the race’s warning timing, which still proves the cap arithmetic)",
-          "src/ui/for-time-block.test.tsx “turns urgent in the last ten seconds …”: “Cap in 00:07 — finish now”",
-          "src/ui/for-time-block.test.tsx “is not low, and claims no loop …”: “Cap in 00:11”",
-          "src/ui/for-time-block.test.tsx “is still under reduced motion …”: “Cap in 00:04 — finish now”",
-          "e2e/refinement/task-007.spec.ts touch phone-390: “Cap in 14:30” (twice), “Cap in 14:20”",
-          "e2e/refinement/task-008.spec.ts keyboard phone-390: “Cap in 00:10 — finish now”"
-        ],
-        "options": [
-          "Retire them as Round 7 look (as R7-3 retired the AMRAP readout).",
-          "Have a task draw a cap line with the urgency words on the route’s race clock (a look change to the accepted For Time card)."
-        ]
+        "status": "resolved",
+        "decision": "Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”",
+        "what": "Seven checks of ForTimeBlock’s cap-line words updated to what Round 7 shows at the same moment (rules.capWordChecks); the “— finish now” wording dropped where Round 7 has no equivalent (rules.retiredAssertions). No product change."
       }
     ]
   },
   "summary": {
-    "rewritten": 40,
+    "rewritten": 42,
     "carried": 101,
     "retired": 3,
     "deferred": 1,
     "superseded": 12,
     "ported": 22,
-    "rewritten-provisional": 2,
     "added": 8
   },
   "entries": [
@@ -101,7 +159,7 @@
       "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap\\'s outcome never breathes",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour: the EMOM minute and the count-up race warn on their own remaining time; pause holds the colour and ends the edge; the cap ends the warning, “Cap reached” in its outcome colour. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Round 7 look, same asserted behaviour: the EMOM minute and the count-up race warn on their own remaining time; pause holds the colour and ends the edge; the cap ends the warning, “Cap reached” in its outcome colour. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” (getByText) → Round 7’s race clock reading “Elapsed” 14:50 and the card’s meta line `15 MIN CAP` (elapsed and cap carry the ten seconds left). The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {
@@ -173,7 +231,7 @@
       "test": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour: the session clock, the hold and a paused section clock keep their own readings and arithmetic (Round 7’s `FOR TIME time`). The cap arithmetic is read through the race’s own warning — its colour arrives at 14:50 of race time, the paused two minutes counting for nothing — where the build read ForTimeBlock’s “Cap in 14:30/14:20”. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Round 7 look, same asserted behaviour: the session clock, the hold and a paused section clock keep their own readings and arithmetic (Round 7’s `FOR TIME time`). The cap arithmetic is also read through the race’s own warning — its colour arrives at 14:50 of race time, the paused two minutes counting for nothing. Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice, before and through the pause) and “Cap in 14:20” (after Resume) → Round 7’s race clock reading “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each of the three points.",
       "result": "passed"
     },
     {
@@ -1149,7 +1207,7 @@
       "test": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "ported",
-      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). The race’s caption “Elapsed” is read for its words. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:07 — finish now” → Round 7’s race clock “Elapsed” 07:53 and the card’s meta line `8 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {
@@ -1285,7 +1343,7 @@
       "test": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "ported",
-      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). The reading 07:49 stands for “Cap in 00:11”. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:11” → Round 7’s race clock “Elapsed” 07:49 and the card’s meta line `8 MIN CAP`.",
       "result": "passed"
     },
     {
@@ -1325,7 +1383,7 @@
       "test": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "ported",
-      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). “Racing the clock” is Round 7’s caption “Elapsed”. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). “Racing the clock” is Round 7’s caption “Elapsed”. Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:04 — finish now” → Round 7’s race clock “Elapsed” 07:56 and the card’s meta line `8 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {
@@ -1388,16 +1446,16 @@
       "file": "src/ui/exercise-coaching.test.tsx",
       "test": "the panel’s waits and a low rest keep one loop between them > runs the guidance’s wait until the rest goes low, then stills it — still busy",
       "ledger": "base (TASK-109’s file)",
-      "disposition": "rewritten-provisional",
-      "note": "Plan conflict C1, held for the owner: Round 7’s base body (TASK-109 owns the file) reads the rest’s warning on the card’s stepped micro-pulse, which TASK-108’s criteria replace (AC-R008-01/AC-R008-02/C61: the rest’s timer breathes with the one aura). Only those reads are moved to the rest’s timer (`restTimer()`); what it asserts — one loop between the panel’s wait and the rest’s warning — is unchanged. In its own commit so it can be dropped if the owner places it otherwise; TASK-109 restores the build’s four TASK-008 bodies there (“… an urgent rest keep one loop between them”).",
+      "disposition": "rewritten",
+      "note": "Rewritten under the owner’s decision on C1 (Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”). Round 7’s base body (TASK-109 owns the file) read the rest’s warning on the card’s stepped micro-pulse, which TASK-108’s criteria replace (AC-R008-01/AC-R008-02/C61: the rest’s timer breathes with the one aura). Only those reads moved to the rest’s timer (`restTimer()`): the card’s `clr-pulse-micro` and `data-loop` → the timer’s `data-loop` (none while low, run while urgent), and the running loops [card, edge] → [timer, edge]; what it asserts — one loop between the panel’s wait and the rest’s warning — is unchanged. TASK-109 still owns the file and restores the build’s four TASK-008 bodies there (“… an urgent rest keep one loop between them”). On TASK-115’s UAT list.",
       "result": "passed"
     },
     {
       "file": "src/ui/exercise-coaching.test.tsx",
       "test": "the panel’s waits and a low rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
       "ledger": "base (TASK-109’s file)",
-      "disposition": "rewritten-provisional",
-      "note": "Plan conflict C1, held for the owner: Round 7’s base body (TASK-109 owns the file) reads the rest’s warning on the card’s stepped micro-pulse, which TASK-108’s criteria replace (AC-R008-01/AC-R008-02/C61: the rest’s timer breathes with the one aura). Only those reads are moved to the rest’s timer (`restTimer()`); what it asserts — one loop between the panel’s wait and the rest’s warning — is unchanged. In its own commit so it can be dropped if the owner places it otherwise; TASK-109 restores the build’s four TASK-008 bodies there (“… an urgent rest keep one loop between them”).",
+      "disposition": "rewritten",
+      "note": "Rewritten under the owner’s decision on C1 (Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”). Round 7’s base body (TASK-109 owns the file) read the rest’s warning on the card’s stepped micro-pulse, which TASK-108’s criteria replace (AC-R008-01/AC-R008-02/C61: the rest’s timer breathes with the one aura). Only those reads moved to the rest’s timer (`restTimer()`): the card’s `clr-pulse-micro` and `data-loop` → the timer’s `data-loop` (none while low, run while urgent), and the running loops [card, edge] → [timer, edge]; what it asserts — one loop between the panel’s wait and the rest’s warning — is unchanged. TASK-109 still owns the file and restores the build’s four TASK-008 bodies there (“… an urgent rest keep one loop between them”). On TASK-115’s UAT list.",
       "result": "passed"
     },
     {
@@ -1405,7 +1463,7 @@
       "test": "JOURNEY-007 phone-320: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
       "result": "passed"
     },
     {
@@ -1413,7 +1471,7 @@
       "test": "JOURNEY-007 phone-390: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
       "result": "passed"
     },
     {
@@ -1421,7 +1479,7 @@
       "test": "JOURNEY-007 phone-320: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
       "result": "passed"
     },
     {
@@ -1429,7 +1487,7 @@
       "test": "JOURNEY-007 phone-390: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
       "result": "passed"
     },
     {
@@ -1437,7 +1495,7 @@
       "test": "JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
       "result": "passed"
     },
     {
@@ -1445,7 +1503,7 @@
       "test": "JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
       "result": "passed"
     },
     {
@@ -1461,7 +1519,7 @@
       "test": "JOURNEY-008 touch phone-390: a running countdown takes the colour at 10 and one soft edge at 5, breathing in phase with its timer over multiple cycles and numeric ticks; pause and expiry end it; elapsed-only clocks stay neutral",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {
@@ -1469,7 +1527,7 @@
       "test": "JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog's top layer and back on the same phase, and nothing is written",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {
@@ -1477,7 +1535,7 @@
       "test": "JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {
@@ -1485,7 +1543,7 @@
       "test": "JOURNEY-008 reduced motion phone-320: the urgent timer and the one edge hold a steady .5 with no animation, cover the narrow viewport, and lose no word, digit or colour",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
-      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
       "result": "passed"
     },
     {

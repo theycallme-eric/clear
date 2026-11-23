@@ -352,20 +352,28 @@ describe('TASK-007 whole timer frames and independent functional clocks', () => 
     // The race clock beside its card (Round 7 names it by its block).
     const race = () => screen.getByRole('timer', { name: 'FOR TIME time' })
     const isLow = () => frameOf(race()).classList.contains('clr-chamfer--timer-low')
+    // Round 7 states the race as its "Elapsed" reading beside the cap its card
+    // states (`15 MIN CAP`), where the build read ForTimeBlock's "Cap in 14:30"
+    // and "Cap in 14:20" (updated under Eric's rule of 2026-11-23, "Yes,
+    // approve"): elapsed and cap together carry the time left.
+    const cap = () => race().closest('.clr-timed-flow')!.querySelector('.clr-timed-meta')
     expect(reading(race())).toBe('00:30')
+    expect(race()).toHaveTextContent('Elapsed')
+    expect(cap()).toHaveTextContent(/^15 MIN CAP/)
     await user.click(within(forTimeCard).getByRole('button', { name: 'Pause' }))
     advance(120)
     expect(reading(race())).toBe('00:30')
+    expect(cap()).toHaveTextContent(/^15 MIN CAP/)
     expect(reading(sessionClock())).toBe('04:10')
     await user.click(within(forTimeCard).getByRole('button', { name: 'Resume' }))
     advance(10)
     expect(reading(race())).toBe('00:40')
+    expect(race()).toHaveTextContent('Elapsed')
+    expect(cap()).toHaveTextContent(/^15 MIN CAP/)
     expect(reading(sessionClock())).toBe('04:20')
     // The cap arithmetic is the race's own: the 15:00 cap is still 14:20 of
     // active time away — the pause counted for nothing — so the warning's
-    // colour arrives at 14:50 of race time, ten seconds before the cap. (The
-    // build read ForTimeBlock's "Cap in 14:30" line; the route's race draws
-    // no such words — plan conflict C2.)
+    // colour arrives at 14:50 of race time, ten seconds before the cap.
     advance(849)
     expect(reading(race())).toBe('14:49')
     expect(isLow()).toBe(false)

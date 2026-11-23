@@ -169,6 +169,11 @@ function theEdge(): HTMLElement {
   return all[0]
 }
 
+/** The cap a timed block's card states, Round 7's meta line (`15 MIN CAP`). */
+function capLine(timer: HTMLElement): HTMLElement {
+  return timer.closest('.clr-timed-flow')!.querySelector<HTMLElement>('.clr-timed-meta')!
+}
+
 function reading(timer: HTMLElement): string {
   return /\d{1,2}:\d{2}(?::\d{2})?/.exec(timer.textContent ?? '')?.[0] ?? ''
 }
@@ -361,8 +366,13 @@ describe('TASK-008 recovered smooth synchronized countdown warning', () => {
     advance(1)
     expect(reading(race())).toBe('14:50')
     expect(warningOf(race())).toEqual(COLOUR)
-    // The build also read ForTimeBlock's "Cap in 00:10 — finish now" here; the
-    // route's race draws no such words (plan conflict C2, held for the owner).
+    // The build read ForTimeBlock's "Cap in 00:10 — finish now". Round 7 says
+    // the same ten seconds as its race clock's "Elapsed" 14:50 beside the cap
+    // its card states (`15 MIN CAP`); it draws no "— finish now" words — the
+    // warning is the colour, the edge and the breathe (updated under Eric's
+    // rule of 2026-11-23, "Yes, approve").
+    expect(race()).toHaveTextContent('Elapsed')
+    expect(capLine(race())).toHaveTextContent(/^15 MIN CAP/)
     advance(5)
     expect(reading(race())).toBe('14:55')
     expect(warningOf(race())).toEqual(BREATHE)

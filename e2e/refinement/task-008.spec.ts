@@ -734,8 +734,13 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await pass(page, 1)
     expect(await readingOf(race)).toBe('14:50')
     await expect(frameOf(race)).toHaveClass(/clr-chamfer--timer-low/)
-    // The build also read ForTimeBlock's "Cap in 00:10 — finish now" here; the
-    // route's race draws no such words (plan conflict C2, held for the owner).
+    // The build read ForTimeBlock's "Cap in 00:10 — finish now". Round 7 says
+    // the same ten seconds as its race clock's "Elapsed" 14:50 beside the cap
+    // its card states (`15 MIN CAP`); it draws no "— finish now" words — the
+    // warning is the colour, the edge and the breathe (updated under Eric's
+    // rule of 2026-11-23, "Yes, approve").
+    await expect(race).toContainText('Elapsed')
+    await expect(forTimeCard.locator('.clr-timed-meta').first()).toHaveText(/^15 MIN CAP/)
     await expect(edge(page)).toHaveCount(0)
     await pass(page, 5)
     expect(await readingOf(race)).toBe('14:55')

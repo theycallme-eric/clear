@@ -173,6 +173,11 @@ function routeFrame(): HTMLElement {
   return routeClock().closest('.clr-card__body') as HTMLElement
 }
 
+/** The cap the race's card states: Round 7's meta line (`8 MIN CAP`). */
+function routeCap(): HTMLElement {
+  return routeClock().closest('.clr-timed-flow')!.querySelector<HTMLElement>('.clr-timed-meta')!
+}
+
 /** The decorative digits: the part of the readout that tumbles. */
 function routeDigits(): HTMLElement {
   return [...routeClock().children].find((child) => child.querySelector('.clr-tumble') !== null) as HTMLElement
@@ -279,9 +284,11 @@ describe('while the clock runs', () => {
   // colour comes at ten seconds, the breathe and the one edge in the last five.
   // A3 TASK-108 (round-07 R7-2): ported onto the For Time `/workout` draws —
   // Round 7's TimedWorkoutFlow through BlockSlot under the product presentation.
-  // The build's "Cap in 00:07 — finish now" sentence is ForTimeBlock's; the
-  // route's race clock draws no such words (held for an owner decision, plan
-  // conflict C2 in evidence/refinement/task-108/test-ledger.json).
+  // The build's "Cap in 00:07 — finish now" is ForTimeBlock's sentence: Round 7
+  // says the same seven seconds as its race clock's "Elapsed" 07:53 beside the
+  // cap its card states (`8 MIN CAP`), and draws no "— finish now" words — the
+  // warning is the colour, the edge and the breathe (updated under Eric's rule
+  // of 2026-11-23, "Yes, approve").
   it('turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five', async () => {
     const user = userWithTimers()
     renderRouteForTime(forTimeBlock(), completionDouble().api)
@@ -290,9 +297,11 @@ describe('while the clock runs', () => {
 
     await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
 
-    // The race says it is still running (its caption, in words) and takes the
-    // low colour; the breathe waits for the last five.
+    // The race says it is still running (its caption, in words), how far in it
+    // is and its cap, and takes the low colour; the breathe waits for the last five.
     expect(routeClock()).toHaveTextContent('Elapsed')
+    expect(routeClock()).toHaveTextContent('07:53')
+    expect(routeCap()).toHaveTextContent(/^8 MIN CAP/)
     expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(routeClock()).not.toHaveAttribute('data-urgent')
     expect(edges()).toHaveLength(0)
@@ -607,9 +616,12 @@ describe('the clock takes the shared countdown warning', () => {
     await user.click(screen.getByRole('button', { name: ROUTE_START }))
     await wallClockReaches(START + (CAP_SECONDS - 11) * 1000)
 
-    // Eleven seconds before the cap (the build said "Cap in 00:11"; the
-    // route's clock reads the elapsed time — plan conflict C2).
+    // Eleven seconds before the cap: the build said "Cap in 00:11"; Round 7
+    // says "Elapsed" 07:49 beside its card's `8 MIN CAP` (updated under Eric's
+    // rule of 2026-11-23, "Yes, approve").
+    expect(routeClock()).toHaveTextContent('Elapsed')
     expect(routeClock()).toHaveTextContent('07:49')
+    expect(routeCap()).toHaveTextContent(/^8 MIN CAP/)
     expect(routeClock()).not.toHaveAttribute('data-urgent')
     expect(routeClock()).not.toHaveAttribute('data-loop')
     expect(routeFrame()).toHaveClass('clr-chamfer--timer')
@@ -760,12 +772,15 @@ describe('the clock takes the shared countdown warning', () => {
 
     // The reading, the words, the colour role and the controls are all there:
     // Round 7's race clock says "Elapsed" where ForTimeBlock said "Racing the
-    // clock" (its "Cap in 00:04 — finish now" is plan conflict C2).
+    // clock", and the cap is its card's `8 MIN CAP` where ForTimeBlock said
+    // "Cap in 00:04 — finish now"; Round 7 draws no "— finish now" words
+    // (updated under Eric's rule of 2026-11-23, "Yes, approve").
     expect(routeClock()).toHaveAttribute('data-urgent', 'true')
     expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
     expect(routeDigits().style.color).toBe('var(--text-timer-low)')
     expect(routeClock()).toHaveTextContent('07:56')
     expect(routeClock()).toHaveTextContent('Elapsed')
+    expect(routeCap()).toHaveTextContent(/^8 MIN CAP/)
     expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled()
   })
 })

@@ -438,10 +438,11 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
   /**
    * A3 TASK-108 (TASK-008, C61): the rest's warning breathes on its timer, with
    * the one aura, rather than the card's stepped micro-pulse — the reads below
-   * that named the card's pulse read the rest's timer. Provisional, pending
-   * the owner's decision on plan conflict C1 (evidence/refinement/task-108/
-   * test-ledger.json); TASK-109 owns this file and restores the build's
-   * TASK-008 bodies in its place.
+   * that named the card's pulse read the rest's timer. Updated under Eric's
+   * rule of 2026-11-23 ("Yes, approve": tasks may update old tests to match
+   * Round 7's look and wording, each change listed for UAT); see
+   * evidence/refinement/task-108/test-ledger.json. TASK-109 still owns this
+   * file and restores the build's TASK-008 bodies in its place.
    */
   function restTimer(): HTMLElement {
     return within(restBar()).getByRole('timer', { name: 'Time remaining' })
