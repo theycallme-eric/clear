@@ -1,0 +1,44 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-109",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/circuit-rounds.test.tsx",
+    "--testNamePattern",
+    "keeps one compact numbered row per movement",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-109/required-cases.json",
+    "sha256": "08b9533be78b5c82fde382ead24f42a0d44e4592e3ff2782ae37873b4b4cc01c"
+  },
+  "targets": [
+    {
+      "path": "src/app/circuit-rounds.test.tsx",
+      "sha256": "aebc3bfc58288aa1d9049ef89c0fca40d9490f724969e714d3989bc0d1863f79"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/circuit-rounds.test.tsx",
+      "name": "AC-061 — compact numbered rows, optional sheet-based logging > keeps one compact numbered row per movement, each with logging, and one coaching disclosure for the circuit",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 14,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 13,
+    "todo": 0,
+    "executed": 1
+  },
+  "problems": []
+}

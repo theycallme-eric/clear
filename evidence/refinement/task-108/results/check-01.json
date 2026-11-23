@@ -53,7 +53,7 @@
     },
     {
       "path": "src/app/Workout.test.tsx",
-      "sha256": "88180f0429355b2dc98993d9ae5973c6dae7a61ab80f8e06d2b52563f8b28167"
+      "sha256": "5b23f975eee9e89ba0ba2e8f4cf881271ec995ae357e3b1a1872a32cb6f78989"
     },
     {
       "path": "src/ui/emom-block.test.tsx",
@@ -786,12 +786,12 @@
     }
   ],
   "totals": {
-    "total": 295,
-    "passed": 295,
+    "total": 296,
+    "passed": 296,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 295
+    "executed": 296
   },
   "problems": []
 }

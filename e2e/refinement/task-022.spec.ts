@@ -537,6 +537,9 @@ test.describe('TASK-022 accepted concise Warm-up and Cooldown with separate prep
     await expect(state.getByText('~5 minutes', { exact: true })).toHaveCount(0)
     // The Warm-up's own clock; the Cooldown, drawn as Review draws it, has none.
     const clock = clockOf(state, 'Warm-up')
+    // It counts the Warm-up guide's own approximate time, ready.
+    const warmTime = (await readGuide(guideOf(state, 'warmup'))).text
+    expect(await digits(clock)).toBe(formatElapsed(Number(/~(\d+) minutes?/.exec(warmTime)![1]) * 60))
     expect(await clockActions(clock)).toEqual(['Start', 'Add 30 sec'])
     await expect(clockOf(state, 'Cooldown')).toHaveCount(0)
     await expect(state.getByRole('button', { name: /Dismiss|Hide|Close|Skip/ })).toHaveCount(0)

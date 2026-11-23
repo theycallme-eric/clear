@@ -667,6 +667,8 @@ describe('TASK-022 accepted concise Warm-up and Cooldown with separate preparati
     const region = within(state).getByRole('region', { name: preparationTimerLabel(warm.title) })
     expect(within(region).getAllByRole('button').map((button) => button.textContent?.trim())).toEqual(['Start', 'Add 30 sec'])
     expect(clockOf(within(region).getByRole('timer'))).toBe('preparation')
+    // It counts the guide's own approximate time, ready.
+    expect(digits(warm.title)).toBe(formatElapsed(sample.warmup.minutes * 60))
     expect(within(state).queryByRole('region', { name: preparationTimerLabel(cool.title) })).toBeNull()
     expect(within(state).queryByRole('button', { name: /Dismiss|Hide|Close|Skip/ })).toBeNull()
     // The clock is the specimen's own (no session store here): it starts and pauses.

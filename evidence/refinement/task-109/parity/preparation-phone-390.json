@@ -2,6 +2,55 @@
   "schema": "clear-task-109-parity/v1",
   "task": "TASK-109",
   "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "galleryChanges": [
+    {
+      "file": "src/ui/preparation-guide.tsx",
+      "criteria": [
+        "TASK-AC-2E1486B7B4BF",
+        "TASK-AC-4BF91CC8AA52",
+        "AC-R034-02",
+        "AC-R022-02"
+      ],
+      "change": "PreparationGuide also draws TASK-034’s reading in its four states (loading, error with retry, missing, ready); the ready card names its list (“<title> movements”) and states the time with approximateDurationText (identical for the sample); its clock is the session’s (usePreparationClock: the PreparationClockProvider’s, the component’s own in the gallery) with the shared warning from its own deadline and “Final 10 seconds” in the final ten. The gallery’s guide prop is unchanged."
+    },
+    {
+      "file": "src/ui/exercise-coaching.tsx",
+      "criteria": [
+        "TASK-AC-82B8F7A4EF0B",
+        "TASK-AC-C4EE3D4EC8F0"
+      ],
+      "change": "GroupExerciseCoaching: each movement’s section is a role=group labelled by its heading (aria-labelledby), the sections and their guidance/note under HeadingSection levels; constants for the accepted label and the note openers. No box moves (gallery states compared at base and at this task: same words, same boxes)."
+    },
+    {
+      "file": "src/app/Review.tsx",
+      "criteria": [
+        "TASK-AC-2E1486B7B4BF"
+      ],
+      "change": "Warm-up and Cooldown drawn in place by PreparationGuide from composedPreparationGuide; the presentation’s sample guides are no longer read."
+    },
+    {
+      "file": "src/app/Workout.tsx",
+      "criteria": [
+        "TASK-AC-2E1486B7B4BF",
+        "TASK-AC-4BF91CC8AA52"
+      ],
+      "change": "PreparationClockProvider around the shell; a Warm-up or Cooldown section draws PreparationGuide over persistedPreparationReading with its clock; the presentation’s sample guides are no longer read."
+    },
+    {
+      "file": "src/app/SessionDetail.tsx",
+      "criteria": [
+        "TASK-AC-2E1486B7B4BF"
+      ],
+      "change": "Warm-up and Cooldown drawn by PreparationGuide over persistedPreparationReading of the record’s rows, its retry re-reading the record; the presentation’s sample guides are no longer read."
+    },
+    {
+      "file": "src/ui/workout-experience-presentation.tsx",
+      "criteria": [
+        "TASK-AC-9165CD7E97CC"
+      ],
+      "change": "Comment only: `guides` is the gallery’s sample; the routes read TASK-034’s guides directly."
+    }
+  ],
   "state": "preparation",
   "width": 390,
   "routes": [

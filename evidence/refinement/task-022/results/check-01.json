@@ -2,7 +2,7 @@
   "schema": "clear-refinement-required-check-result/v1",
   "task": "TASK-022",
   "check": "check-01",
-  "verdict": "rejected",
+  "verdict": "passed",
   "purpose": "delivery",
   "runner": "vitest",
   "runnerVersion": "4.1.11",
@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-022/required-cases.json",
-    "sha256": "3dea77b29d645068160a87d79781d2733d47719a1d0dedb6adb7519714d7f1f4"
+    "sha256": "86285d12603b456a818cdcff8eeb00d7804a53fe23af7333fe8a52f9d9c8c100"
   },
   "targets": [
     {
       "path": "src/ui/preparation-guide.test.tsx",
-      "sha256": "9c34393948e546168c6a50aad6d3892defb7ef7cb76889057e4b50cb32520497"
+      "sha256": "c431d2178b018376c3f80357f11c81efe676f77d8e8abcd5e5f088f7cd778bad"
     }
   ],
   "requiredCases": [
@@ -56,8 +56,8 @@
     },
     {
       "file": "src/ui/preparation-guide.test.tsx",
-      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss",
-      "status": "missing"
+      "name": "TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own PreparationGuide in Review order around the real For Time card: each guide concise, the Warm-up’s clock its own with Start, Pause and Add 30 sec, and no Dismiss",
+      "status": "passed"
     }
   ],
   "totals": {
@@ -68,7 +68,5 @@
     "todo": 0,
     "executed": 8
   },
-  "problems": [
-    "required case did not run: src/ui/preparation-guide.test.tsx > TASK-022 accepted concise Warm-up and Cooldown with separate preparation timer > AC-C49-01 the accepted gallery state ?state=preparation draws the routes’ own consumers from the actual reading, each with its own clock and no Dismiss"
-  ]
+  "problems": []
 }
