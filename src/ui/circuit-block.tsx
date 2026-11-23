@@ -186,6 +186,11 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   return (
     <BlockPanel
       block={block}
+      // A3 TASK-110 (TASK-003: C08, AC-R003-01; decision 6): the badge names
+      // the format alone; the prescribed rounds are read once, on the line
+      // under it — Round 7's format-only badge had left them nowhere before a
+      // round was recorded.
+      detailLine
       // The round boundary's one countdown: Round 7's whole timer frame, a
       // real deadline with the shared warning in its last seconds, beside the
       // card (A3 TASK-108). While the recorded round's dialog holds this same

@@ -7,18 +7,37 @@
  * `docs/specs/LOAD_GUIDANCE_CONTRACT.md`. The repeated circuit criterion is
  * consumed from TASK-003's receipts, not re-implemented.
  *
- * A3 task 2: two checks are carried later, with the live-row wiring task (F8):
- * the gallery `cards` state check (AC-R036-03's live consumer), which drove
- * the build's own gallery page that Round 7 replaced, and the check that
- * consumes TASK-003's receipt (AC-R036-02), whose evidence file
- * `src/ui/block-panel.test.tsx` tests the build's block cards.
+ * A3 task 2 carried two checks later, with the live-row wiring task (F8);
+ * A3 TASK-110 restores both: the check that consumes TASK-003's receipts
+ * (AC-R036-02), whose evidence file `src/ui/block-panel.test.tsx` now reads
+ * Round 7's cards, and AC-R036-03's live consumer, re-pointed from the
+ * build's gallery cards page at the real Review and Workout rows (and
+ * Round 7's accepted cards state).
  *
  * Synthetic data only: no account, no network, no write.
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { createElement } from 'react'
+import { MemoryRouter, RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
+
+import { verifyReceipt } from '../../scripts/refinement/lib/required-check.mjs'
+import { routes } from '../app/router'
+import { REVIEW_PATH } from '../app/ReviewRoute'
+import type { SessionsClient } from '../data/sessions'
+import { timedBlock } from '../dev/gallery-refinement-fixtures'
+import { GalleryRefinements } from '../dev/gallery-refinements'
+import { formatBadgesAcceptance, formatBadgesSnapshot } from '../test/format-badges-fixture'
+import { AppProviders, signedIn } from '../test/render'
+import { FIXTURE_USER_ID } from '../test/user-data-double'
+import { createWorkoutDouble } from '../test/workout-double'
+import { ok, type Result } from './errors'
+import { reviewHandoff } from './review-handoff'
+import type { SessionSnapshot } from './schemas'
 
 import { Constants, type Enums } from '../data/database.types'
 import { loadApplies, movementActualFromDraft } from '../data/refinement-logging-rules'
@@ -184,6 +203,42 @@ describe('TASK-036 load-guidance source and actual-versus-target contract', () =
     expect(types).not.toMatch(/load_(min|max|low|high|range)\b|weight_suggested/)
   })
 
+  // A3 TASK-110 (F8): the build's case, restored once TASK-003's evidence
+  // file (src/ui/block-panel.test.tsx) is carried onto Round 7.
+  it('AC-R036-02 consumes TASK-003’s current passing evidence that the verified circuit has no Review weight change and keeps its optional logger', () => {
+    const manifestPath = resolve(ROOT, 'evidence/refinement/task-003/required-cases.json')
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+      checks: Record<string, { runner: string; files: string[]; cases: { name: string; criterion: string }[] }>
+    }
+    const expected: Record<string, string> = {
+      'check-01': 'TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 offers no Review Change weight control on the verified circuit and keeps its actual weight entry in the optional logger',
+      'check-02': 'TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 keyboard and touch: the verified circuit explains its suggestion without a Review weight change, and its optional logger takes the actual weight',
+    }
+    for (const [checkId, name] of Object.entries(expected)) {
+      const check = manifest.checks[checkId]
+      expect(check.cases.map((testCase) => testCase.name), checkId).toContain(name)
+      const problems = verifyReceipt({
+        cwd: ROOT,
+        evidenceRoot: resolve(ROOT, 'evidence/refinement'),
+        task: 'TASK-003',
+        checkId,
+        check,
+        manifestPath,
+      })
+      expect(problems, checkId).toEqual([])
+      const receipt = JSON.parse(read(`evidence/refinement/task-003/results/${checkId}.json`)) as {
+        verdict: string
+        requiredCases: { name: string; status: string }[]
+      }
+      expect(receipt.verdict).toBe('passed')
+      expect(receipt.requiredCases.find((testCase) => testCase.name === name)?.status, checkId).toBe('passed')
+    }
+    // The contract names both consumed cases (prose is wrapped, so spaces are folded).
+    const contract = read(CONTRACT).replace(/\s+/g, ' ')
+    expect(contract).toContain(expected['check-01'].split(' > ')[1])
+    expect(contract).toContain(expected['check-02'].split(' > ')[1])
+  })
+
   it('AC-R036-02 removes the Review weight change for the circuit only and does not extrapolate that storage proof to other formats', () => {
     const anchored = makePrescription({ exercise_id: 'kb-swing', equipment: 'kettlebell', session_function: 'accessory', load_type: 'absolute', load_value: 24 })
     const structures: readonly WorkoutBlock['structure_type'][] = ['standard', 'superset', 'circuit', 'emom', 'amrap', 'for_time']
@@ -232,6 +287,86 @@ describe('TASK-036 load-guidance source and actual-versus-target contract', () =
       'EVID-8D879C0997E4', 'EVID-76CED19E0F10', 'eded158cfd928d382c9a9409e2c372270312741d', '/gallery/refinements?state=cards',
       'src/ui/refinements/movement.tsx', 'src/ui/refinements/workout-card.tsx']) {
       expect(contract, id).toContain(id)
+    }
+  })
+
+  // A3 TASK-110 (F8; Q-002, owner decision 6): re-pointed from the build's
+  // gallery cards page, which Round 7 replaced, at the real Review and Workout
+  // rows — the same reading on the actual routes, for every load meaning,
+  // and on Round 7's accepted cards state, whose live rows are the route's
+  // own TimedWorkoutFlow. The prescription's own load is the load shown; no
+  // gallery sample (suggested loads) reaches either route.
+  it('AC-R036-03 continues the prescribed-load presentation on the gallery cards state through the read model, with no range', { timeout: 30_000 }, async () => {
+    const user = userEvent.setup()
+    const acceptance = formatBadgesAcceptance()
+    const startedAt = new Date(Date.now() - 60_000).toISOString()
+    const running = formatBadgesSnapshot(acceptance, { userId: FIXTURE_USER_ID, startedAt })
+    let started = false
+    const sessions: Partial<SessionsClient> = {
+      accept: async () => ok(formatBadgesSnapshot(acceptance, { userId: FIXTURE_USER_ID })) as Result<SessionSnapshot>,
+      start: async () => { started = true; return ok({ session: running.session, state: 'active' as const }) },
+      resume: async () => ok(started ? running : null),
+      snapshot: async () => ok(running),
+    }
+    const double = createWorkoutDouble({ session: null, sessions })
+    const router = createMemoryRouter(routes, {
+      initialEntries: ['/', { pathname: REVIEW_PATH, state: reviewHandoff(acceptance) }],
+      initialIndex: 1,
+    })
+    render(createElement(AppProviders, { ...signedIn({ workout: double.clients }), children: createElement(RouterProvider, { router }) }))
+    await screen.findByRole('heading', { level: 1, name: acceptance.workout.title })
+
+    // What the read model says each prescription's target is, in the profile's unit.
+    const blocks = acceptance.workout.sections[0].blocks
+    const expected = (index: number) => blocks[index].exercises.map((exercise) =>
+      prescribedLoadReading(
+        prescribedLoad({ ...exercise, equipment_used: exercise.equipment }, 'kg').text,
+        equipmentName(exercise.equipment),
+      ))
+    // Each block's rows, as the route draws them: every MovementIdentity's
+    // load (Round 7 states it beside the prescription), and the live ladder's
+    // summary line.
+    const loads = (card: HTMLElement) => {
+      const ladder = [...card.querySelectorAll<HTMLElement>('[data-ladder-movement]')]
+      if (ladder.length > 0) return ladder.map((line) => line.querySelector('[data-movement-load]')?.textContent ?? null)
+      return [...card.querySelectorAll<HTMLElement>('.clr-movement-identity')]
+        .filter((identity) => identity.closest('dialog') === null)
+        .map((identity) => identity.querySelector('[data-movement-detail]')?.children[1]?.textContent ?? null)
+    }
+    const blockCards = () => [...document.querySelectorAll<HTMLElement>('main .clr-card')].filter((card) =>
+      card.querySelector('[data-movement-group-header]')?.closest('.clr-card') === card)
+    const check = (context: string) => {
+      const cards = blockCards()
+      expect(cards, context).toHaveLength(blocks.length)
+      cards.forEach((card, index) => {
+        const want = expected(index)
+        expect(loads(card), `${context} ${index}`).toEqual(want)
+        for (const load of loads(card)) {
+          expect(load ?? '').not.toMatch(RANGE_LIKE)
+          expect(load ?? '').not.toMatch(PER_HAND_GLOSS)
+        }
+      })
+    }
+    expect(blocks.flatMap((_, index) => expected(index)).some((load) => load !== null)).toBe(true)
+    check('review')
+    await user.click(screen.getByRole('button', { name: 'Start workout' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/workout'))
+    await screen.findByRole('list', { name: 'Movements in this superset' })
+    check('workout')
+    cleanup()
+
+    // Round 7's accepted cards state draws the same reading on its live rows.
+    render(createElement(MemoryRouter, { initialEntries: ['/gallery/refinements?state=cards'] }, createElement(GalleryRefinements)))
+    const state = document.querySelector<HTMLElement>('[data-refinement-state="cards"]')!
+    const galleryLoads = [...state.querySelectorAll<HTMLElement>('.clr-movement-identity')]
+      .map((identity) => identity.querySelector('[data-movement-detail]')?.children[1]?.textContent ?? null)
+    const galleryWant = (['emom', 'amrap', 'for_time'] as const).flatMap((kind) => timedBlock(kind).exercises.map(({ prescription }) =>
+      prescribedLoadReading(prescribedLoad(prescription, 'lb').text, equipmentName(prescription.equipment_used))))
+    expect(galleryWant.some((load) => load !== null)).toBe(true)
+    expect(galleryLoads).toEqual(galleryWant)
+    for (const load of galleryLoads) {
+      expect(load ?? '').not.toMatch(RANGE_LIKE)
+      expect(load ?? '').not.toMatch(PER_HAND_GLOSS)
     }
   })
 })

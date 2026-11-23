@@ -519,9 +519,10 @@ export function SectionHeader({
           gap: 'var(--spacing-200)',
         }}
       >
+        {/* A3 TASK-110 (TASK-003: AC-C08-01; decision 6): each block named by its format alone, as its own card's badge names it; the card states the window, cap and rounds. */}
         {section.blocks.map((block) => (
           <li key={block.blockId}>
-            <StructureBadge identity={block.identity} />
+            <StructureBadge identity={block.identity} formatOnly />
           </li>
         ))}
       </ul>

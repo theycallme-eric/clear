@@ -27,8 +27,7 @@
 import { useId, type CSSProperties } from 'react'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { Enums } from '../data/database.types'
-import { exerciseName } from '../state/prescription'
-import { distinctLoadText, equipmentName, loadText } from '../state/review'
+import { liveMovementReadings } from './refinements/movement-readings'
 
 import { Check, Chip, OverflowRail } from '../design-system/index'
 import {
@@ -319,8 +318,9 @@ export function LadderPrescription({ exercises, weightUnit, completedThrough = n
     <div className="clr-ladder-prescription__summary">
       {exercises.map(exercise => {
         const p = exercise.prescription
-        const load = p.load_type === null ? null : distinctLoadText(loadText(p.load_type, p.load_value, weightUnit), equipmentName(p.equipment_used))
-        return <p key={exercise.exerciseId} data-ladder-movement=""><strong>{exerciseName(p.exercise_id)}</strong> · {ladderProgressionText(p)}
+        // A3 TASK-110 (TASK-003; C10): the live ladder's prescribed load is the shared reading (`liveMovementReadings`).
+        const { name, load } = liveMovementReadings(p, weightUnit)
+        return <p key={exercise.exerciseId} data-ladder-movement=""><strong>{name}</strong> · {ladderProgressionText(p)}
           {load ? <> · <span data-movement-load="">{load}</span></> : null}</p>
       })}
     </div>

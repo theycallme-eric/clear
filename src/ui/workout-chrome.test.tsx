@@ -259,10 +259,19 @@ describe('SectionHeader', () => {
 
     renderWithProviders(<SectionHeader section={progress.sections[0]} position={1} total={1} />)
 
+    // A3 TASK-110 (round-07 S2/S3, R7-5): the build's body, restored.
+    // TASK-003 (AC-C08-01): each block named by its format alone, as its own
+    // card's badge names it; the card states the window, cap and rounds.
+    // Round 7's format-only badge names a ladder scheme by its shape, LADDER
+    // (as Review's badge does), where the build's said CIRCUIT for the
+    // ladder-down circuit (test-update rule, Eric 2026-11-23; for UAT).
     const structures = within(screen.getByRole('list', { name: 'Structures in this section' }))
-    expect(structures.getByText('EMOM · 10 MIN')).toBeInTheDocument()
-    expect(structures.getByText('FOR TIME · 15 MIN CAP')).toBeInTheDocument()
-    expect(structures.getByText('CIRCUIT · 3 ROUNDS · LADDER DOWN')).toBeInTheDocument()
+    expect(structures.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'EMOM',
+      'FOR TIME',
+      'LADDER',
+    ])
+    expect(structures.queryByText(/MIN|CAP|ROUNDS/)).toBeNull()
   })
 
   it('is one card: the title, its position and its badges are all inside it', () => {
