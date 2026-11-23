@@ -1,0 +1,1037 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-110",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/block-panel.test.tsx",
+    "src/state/refinement-load-guidance.test.ts",
+    "src/ui/amrap-block.test.tsx",
+    "src/ui/emom-block.test.tsx",
+    "src/app/Workout.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-110/required-cases.json",
+    "sha256": "b4e118a81a33d92b73c0a32ff890b3d6d97640f2edff71a307e16dbaf06a42c6"
+  },
+  "targets": [
+    {
+      "path": "src/ui/block-panel.test.tsx",
+      "sha256": "bd5d35520400713d9f42b2c351de0297e5674f81e873e027e54f51fd7aa9aaee"
+    },
+    {
+      "path": "src/state/refinement-load-guidance.test.ts",
+      "sha256": "11ec8254f950e2718a742c20035255b64093d288d63f5b575316f98583ceb5a1"
+    },
+    {
+      "path": "src/ui/amrap-block.test.tsx",
+      "sha256": "324d63d8720548c2961f34bffd9ce3c75bd73401e636f9e57a088f64925275ed"
+    },
+    {
+      "path": "src/ui/emom-block.test.tsx",
+      "sha256": "c651eb447ba57bd61e4c570ed361ebf4c393f7ba234a11fb558ee16f3616238f"
+    },
+    {
+      "path": "src/app/Workout.test.tsx",
+      "sha256": "7d81e670eafe63e6556a4891b118ff71a75a5430a98eb3fe8448897ad2f3ba48"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C08-01 names only the format or shape in every Review and Workout badge, with duration, cap, rounds and prescription outside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C09-01 places every badge the same way, directly below its title, and never truncates it by label length",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C10-01 shows each live movement’s prescribed load with the existing formatter, unit and per-hand equipment, and keeps it apart from the weight performed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C11-01 drops the generic Rest 60s line from EMOM, AMRAP and For Time movements in Review",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-01 keeps duration, cap, rounds and the target schedule readable outside the badge in both contexts",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-02 reads every load meaning through loadText and the profile unit, and never a performed weight, an inferred unit or a range",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-03 removes only the generic rest: planned rest in standard and grouped blocks, the EMOM rest window and every timed clock stay",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 offers no Review Change weight control on the verified circuit and keeps its actual weight entry in the optional logger",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 opens Review, starts that same workout and shows format-only badges below each title and the prescribed load in each target row",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 recovery: a failed Start keeps Review as planned and records no work",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > names a block LADDER exactly when the ladder renderer performs it, and states its scheme outside the badge",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > renders the accepted gallery state cards with format-only badges, the details beside them and the live prescribed load",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 reads every load meaning and unit from the prescription’s own columns through loadText, and never a range",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 states no per-hand reading: the stored number is shown unchanged beside its implement, never doubled, halved or explained",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 keeps the prescribed target apart from the weight performed, each in its own unit",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 names one existing owner per reading and promotes no synthetic preview range into production code",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 consumes TASK-003’s current passing evidence that the verified circuit has no Review weight change and keeps its optional logger",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 removes the Review weight change for the circuit only and does not extrapolate that storage proof to other formats",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 records each definition dependency the source cannot establish, with its owner and what continues meanwhile",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 continues the prescribed-load presentation on the gallery cards state through the read model, with no range",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what the AMRAP reads from the block > states the window it prescribes, before it is opened, with no round goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what the AMRAP reads from the block > shows no round goal even when the block carries a round count",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what the AMRAP reads from the block > names the round when two or more movements make one, per the quickfix",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what the AMRAP reads from the block > leaves the label off a single-movement AMRAP, where the round is obvious",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what the AMRAP reads from the block > says so when every movement in it was swapped out",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window, hands-off > runs with nothing to enter and no round goal — only the countdown and a way to stop",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window, hands-off > stays hands-off through the low-time cue",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window, hands-off > reports the running window with no rounds, so nothing is claimed in-window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the window closing > never expires on its own when the block prescribes no window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "recording rounds afterwards > counts rounds on the card, with no dialog and no other screen",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "recording rounds afterwards > takes a round back, and never counts below zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "recording rounds afterwards > holds an entered zero as a zero, and no control clears it back to blank (TASK-009, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the partial round > is asked for after the window and nowhere before it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the partial round > distinguishes a partial round of zero reps from no partial round at all (TASK-009, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the partial round > counts the reps up and down without leaving the card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > sends the result, partial round included, entered after the clock ended the block",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > supplies blank rounds and partial round as absent, so the row holds null",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > supplies an entered zero as a zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > reports a result tapped back down as an explicit zero, never as blank again (TASK-009, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > supplies nothing at all for an AMRAP that was never started",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "what it supplies to the shell > supplies no score at all for an AMRAP with nothing to perform",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the like-for-like comparison after the window > compares an entered result against an identical earlier attempt",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the like-for-like comparison after the window > shows no score and no comparison while the result is blank",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the like-for-like comparison after the window > never compares against a different piece, and says so",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the like-for-like comparison after the window > claims nothing about history it does not have",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the like-for-like comparison after the window > renders the score alone outside a signed-in shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > keeps the countdown a labelled timer that is not a live region",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own low state, with nothing added around it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > labels each group inside the card it belongs to",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > draws the settled time as the shared bare readout, and says when the cap ended it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > does not call an early finish a cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > draws the optional result as framed counts with framed actions, and no text action remains (TASK-009, C27, C28)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > says a saved block is saved, and still shows the result for editing",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > says a block with nothing to perform in plain copy inside the one card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > recovers from an unusable stored record without a timer or a score",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > comes back to the window that is left, with nothing recorded in it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > keeps the post-window result it was holding, zero included",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > restores an edit made after the window as the edit, not the first entry",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > restores a stored record from before rounds became optional",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > starts from the top when the stored record cannot be used",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "surviving a refresh > cannot log a window longer than a cap that has since been shortened",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > counts the minutes off a block whose window is a different length",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > runs no grid at all for a block whose timer type is none",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > counts on without a last minute when the block carries no window",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > names what is coming during the rest window rather than telling the user to start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > says the block is done once its last minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the minute boundary flips the active work > marks the live movement for a screen reader, not only in colour",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "an alternating EMOM says which minutes each movement covers > labels two movements ODD MIN and EVEN MIN",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "an alternating EMOM says which minutes each movement covers > keeps the labels while the clock runs, in every phase",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "an alternating EMOM says which minutes each movement covers > names the minutes of a rotation of three or more",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "an alternating EMOM says which minutes each movement covers > labels nothing on a single-movement EMOM",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "an alternating EMOM says which minutes each movement covers > assigns no minutes when the block prescribes no clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > comes back to the minute the clock is actually in",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > restores a record written by an earlier visit",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > comes back finished when the window expired while the tab was away",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > ignores a record no clock can be read against",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports no minutes while the clock runs",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports no minutes once every prescribed minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports nothing at all when the clock never ran",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > reports nothing for a block that prescribes no clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "completion never records a scheduled minute as performed work > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM draws with the shared block frame > carries the identity row and the movement rows",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM draws with the shared block frame > reads every movement whichever one the minute is on, with nothing to enter",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "execution is hands-off (REQ-014) > draws no set-entry form, no Minute done and no exertion prompt, in any phase",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "execution is hands-off (REQ-014) > draws no entry form for a block that prescribes no clock either",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "targets follow the scheduled minute > states a fixed target for the minute each movement is scheduled",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "targets follow the scheduled minute > raises a rising target on each of its own turns, with no tap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "targets follow the scheduled minute > rotates three movements and their targets across the boundaries",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "targets follow the scheduled minute > says a sequence is spent rather than inventing a rung past its end",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shipped low state and nothing more > goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shipped low state and nothing more > leaves the low state on the minute boundary, and comes back to it every minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shipped low state and nothing more > gives the loop up once the last minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "an EMOM whose movements were swapped out > says the block has nothing left to perform rather than running a clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the four states > waits for the session rather than starting a timer for one it has not got",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the four states > shows the failure and offers the one recovery action",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the four states > sends a visitor with no running session Home rather than rendering an empty shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the four states > is not the shell for a session that has only been prescribed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the global timer > reads elapsed time from the session, not from the moment the shell mounted",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > opens on the first section that is not finished",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > reflects each section’s status, derived from the rows",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > labels every section by its type, never by its generated title (REQ-011)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > walks forward and back across every section",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > reserves the measured footer for section navigation",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > jumps straight to a section from the progress tracker",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — navigation and progress > states the structure identity of the section’s blocks",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > consolidates status and section count into one compact navigator, with progress above the footer navigation",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > consolidates status, section count and structure identity into one header, with progress above the footer navigation",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > keeps progress visible while the full jump list starts collapsed and out of the tab order",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > restores the open section after a refresh, leaving focus to the route and the clock to the session",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > offers no in-app way out except completing or abandoning",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > turns browser Back into the abandon confirm rather than leaving",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > keeps the session when the confirm is declined, and stays where it was",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > blocks an in-app navigation the same way it blocks Back",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > abandons through the header menu, and lands where the session is resumable",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > keeps the session running when the abandon itself fails",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > completes the session with the time the user actually watched",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > lands completion on the debrief of the session just completed, not on Home",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > reads the streak again after completing, rather than the one Home cached",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > returns Home from the debrief’s Done",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the focus mode > keeps the session on screen when completing it fails",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — closing and backgrounding > remembers the open section across a close",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — closing and backgrounding > reopens on the section the user was looking at",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — closing and backgrounding > ignores a record left by a different session",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — closing and backgrounding > never argues with the platform about leaving",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > does not turn an untouched circuit counter into an observed zero-round result",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > shows the section just saved as complete without inventing any measured work",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > keeps the section and entered set when that set has not reached the server",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > joins the in-flight set save, prevents navigation, and advances only after confirmation",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > retries a failed entered set with its original identity and saves once before continuing",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > saves the open section’s explicit completion with no effort, then shows the next section",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > saves every block of a multi-block section in that one action",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > finishes the workout on the last section with the same save, and never fabricates a count",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > saves the rounds the athlete entered, as entered",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > keeps the athlete on the section with input preserved when the save fails, and retries once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > keeps entries through backward navigation after a failed save, and saves each block once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > keeps entries across leaving and returning, and a resaved section writes no duplicate",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — one forward action saves, then continues > saves nothing on Previous or a jump, marks no skipped section complete, and leaves the clock alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — no swap during the session (U37) > draws no swap or undo on any card, and never reads alternatives",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > shows the cues and regression the library authored, in the shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > shows no legacy overview or section introduction, and keeps cues, labels and work (REQ-010)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > groups coaching under one disclosure, preserving separate movement drafts (R29)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > shows no broken panel when the catalog has nothing for a movement",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > says a movement with no cues and no regression has none",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > keeps set logging working beside a failed library read",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > persists a note to the exercise row and keeps it across sections",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — coaching and notes > reports a failed note write and keeps the typed text",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > draws no rest bar before any set is logged",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > starts the movement’s own rest when Rest opens its sheet",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > starts none, and draws no bar, for a prescription with no rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > rests a superset once, after the pair, for the block’s own number",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > keeps a running rest through another Rest and Log, rather than restarting or queueing one",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > reads the wall clock after backgrounding, and leaves the screen when the rest elapses",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > extends and skips the rest from the bar",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > keeps the rest when the user moves between sections, because the session owns it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > fires no list or route motion when the bar appears in the tap that logs a set",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > draws the session timer and the rest as two self-framed cards, neither inside another",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by skip",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by expiry",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > groups coaching inside its own card, with every label inside the group",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > claims no loop for a section clock that has not been started",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > leaves global time and the finish untouched by a running rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 196,
+    "passed": 196,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 196
+  },
+  "problems": []
+}

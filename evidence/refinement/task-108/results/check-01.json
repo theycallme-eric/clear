@@ -41,7 +41,7 @@
     },
     {
       "path": "src/ui/workout-chrome.test.tsx",
-      "sha256": "553e68f115c9f54d682d2130c7c916325b7ecbc402a37c9edde9a4e10adf0e67"
+      "sha256": "a64dd07911e09fd8d53e4663d5e84f32298c5995f1b0471f93cba29e1ab80dc5"
     },
     {
       "path": "src/app/workout-footer-nav.test.tsx",
@@ -53,11 +53,11 @@
     },
     {
       "path": "src/app/Workout.test.tsx",
-      "sha256": "5b23f975eee9e89ba0ba2e8f4cf881271ec995ae357e3b1a1872a32cb6f78989"
+      "sha256": "7d81e670eafe63e6556a4891b118ff71a75a5430a98eb3fe8448897ad2f3ba48"
     },
     {
       "path": "src/ui/emom-block.test.tsx",
-      "sha256": "4fcb09ff7718d1b14ac2914ed5a7080b16835981a9071420c1ec76856aefd076"
+      "sha256": "c651eb447ba57bd61e4c570ed361ebf4c393f7ba234a11fb558ee16f3616238f"
     },
     {
       "path": "src/ui/for-time-block.test.tsx",
@@ -65,7 +65,7 @@
     },
     {
       "path": "src/ui/amrap-block.test.tsx",
-      "sha256": "42b2087942676868205635ca9a2e2607b7106fa08d981e7f51dffdf2613271eb"
+      "sha256": "324d63d8720548c2961f34bffd9ce3c75bd73401e636f9e57a088f64925275ed"
     }
   ],
   "requiredCases": [

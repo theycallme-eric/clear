@@ -1,0 +1,1085 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-110",
+  "description": "A3 task 10a (F8, part 1; #733): format-only badges (owner decision 6), prescribed load and load guidance on real rows, on Round 7's owners. Badges: StructureBadge formatOnly in the shared group header (src/ui/workout-chrome.tsx); the block's prescription line under it — Review's, the timed flow's (with an EMOM's rest window) and the circuit's (BlockPanel detailLine, src/ui/block-renderers-frame.tsx, src/ui/circuit-block.tsx); SectionHeader's structure list format-only. Loads: live timed rows (TimedWorkoutFlow, the ladder's summary) read liveMovementReadings (src/ui/refinements/movement-readings.ts) through MovementIdentity. check-01 runs the five files this task owns whole (block-panel: TASK-003's carried cases on Round 7; refinement-load-guidance: TASK-036's, two restored and re-pointed at the real Review and Workout rows; amrap-block, emom-block, Workout.test.tsx: every remaining build-edited body restored, ported onto BlockSlot under PRODUCT_PRESENTATION (round-07 R7-2) or with its retired readout (R7-3)) and declares every case in them. check-02 runs the three build bodies restored in TASK-107's and TASK-108's files with the round-07 name filter (S2, S3, R7-5). parity compares /workout with the accepted cards and circuit-round states at 320 and 390. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-110 --check check-01 -- npx vitest run src/ui/block-panel.test.tsx src/state/refinement-load-guidance.test.ts src/ui/amrap-block.test.tsx src/ui/emom-block.test.tsx src/app/Workout.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C08-01",
+        "AC-C09-01",
+        "AC-C10-01",
+        "AC-C11-01",
+        "AC-R003-01",
+        "AC-R003-02",
+        "AC-R003-03",
+        "TASK-AC-94B1EF79F1FA",
+        "JOURNEY-003",
+        "AC-R036-01",
+        "TASK-AC-9DA128EDAE2E",
+        "AC-R036-03",
+        "TASK-AC-9A47DF868BD4",
+        "TASK-AC-D5A150844355",
+        "TASK-AC-93165C175938",
+        "TASK-AC-0EED96F7EA27"
+      ],
+      "files": [
+        "src/ui/block-panel.test.tsx",
+        "src/state/refinement-load-guidance.test.ts",
+        "src/ui/amrap-block.test.tsx",
+        "src/ui/emom-block.test.tsx",
+        "src/app/Workout.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C08-01 names only the format or shape in every Review and Workout badge, with duration, cap, rounds and prescription outside it",
+          "criterion": "AC-C08-01"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C09-01 places every badge the same way, directly below its title, and never truncates it by label length",
+          "criterion": "AC-C09-01"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C10-01 shows each live movement’s prescribed load with the existing formatter, unit and per-hand equipment, and keeps it apart from the weight performed",
+          "criterion": "AC-C10-01"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C11-01 drops the generic Rest 60s line from EMOM, AMRAP and For Time movements in Review",
+          "criterion": "AC-C11-01"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-01 keeps duration, cap, rounds and the target schedule readable outside the badge in both contexts",
+          "criterion": "AC-R003-01"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-02 reads every load meaning through loadText and the profile unit, and never a performed weight, an inferred unit or a range",
+          "criterion": "AC-R003-02"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-03 removes only the generic rest: planned rest in standard and grouped blocks, the EMOM rest window and every timed clock stay",
+          "criterion": "AC-R003-03"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 offers no Review Change weight control on the verified circuit and keeps its actual weight entry in the optional logger",
+          "criterion": "TASK-AC-94B1EF79F1FA"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 opens Review, starts that same workout and shows format-only badges below each title and the prescribed load in each target row",
+          "criterion": "JOURNEY-003"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 recovery: a failed Start keeps Review as planned and records no work",
+          "criterion": "JOURNEY-003"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > names a block LADDER exactly when the ladder renderer performs it, and states its scheme outside the badge",
+          "criterion": "AC-C08-01"
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "name": "TASK-003 consistent format badges and truthful prescribed load > renders the accepted gallery state cards with format-only badges, the details beside them and the live prescribed load",
+          "criterion": "AC-C09-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 reads every load meaning and unit from the prescription’s own columns through loadText, and never a range",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 states no per-hand reading: the stored number is shown unchanged beside its implement, never doubled, halved or explained",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 keeps the prescribed target apart from the weight performed, each in its own unit",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-01 names one existing owner per reading and promotes no synthetic preview range into production code",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 consumes TASK-003’s current passing evidence that the verified circuit has no Review weight change and keeps its optional logger",
+          "criterion": "TASK-AC-9DA128EDAE2E"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 removes the Review weight change for the circuit only and does not extrapolate that storage proof to other formats",
+          "criterion": "AC-R036-01"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 records each definition dependency the source cannot establish, with its owner and what continues meanwhile",
+          "criterion": "AC-R036-03"
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "name": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 continues the prescribed-load presentation on the gallery cards state through the read model, with no range",
+          "criterion": "TASK-AC-9DA128EDAE2E"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what the AMRAP reads from the block > states the window it prescribes, before it is opened, with no round goal",
+          "criterion": "TASK-AC-9A47DF868BD4"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what the AMRAP reads from the block > shows no round goal even when the block carries a round count",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what the AMRAP reads from the block > names the round when two or more movements make one, per the quickfix",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what the AMRAP reads from the block > leaves the label off a single-movement AMRAP, where the round is obvious",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what the AMRAP reads from the block > says so when every movement in it was swapped out",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window, hands-off > runs with nothing to enter and no round goal — only the countdown and a way to stop",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window, hands-off > stays hands-off through the low-time cue",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window, hands-off > reports the running window with no rounds, so nothing is claimed in-window",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+          "criterion": "TASK-AC-93165C175938"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+          "criterion": "TASK-AC-93165C175938"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the window closing > never expires on its own when the block prescribes no window",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "recording rounds afterwards > counts rounds on the card, with no dialog and no other screen",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "recording rounds afterwards > takes a round back, and never counts below zero",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "recording rounds afterwards > holds an entered zero as a zero, and no control clears it back to blank (TASK-009, C28)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the partial round > is asked for after the window and nowhere before it",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the partial round > distinguishes a partial round of zero reps from no partial round at all (TASK-009, C28)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the partial round > counts the reps up and down without leaving the card",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > sends the result, partial round included, entered after the clock ended the block",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > supplies blank rounds and partial round as absent, so the row holds null",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > supplies an entered zero as a zero",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > reports a result tapped back down as an explicit zero, never as blank again (TASK-009, C28)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > supplies nothing at all for an AMRAP that was never started",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "what it supplies to the shell > supplies no score at all for an AMRAP with nothing to perform",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the like-for-like comparison after the window > compares an entered result against an identical earlier attempt",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the like-for-like comparison after the window > shows no score and no comparison while the result is blank",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the like-for-like comparison after the window > never compares against a different piece, and says so",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the like-for-like comparison after the window > claims nothing about history it does not have",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the like-for-like comparison after the window > renders the score alone outside a signed-in shell",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > keeps the countdown a labelled timer that is not a live region",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own low state, with nothing added around it",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > labels each group inside the card it belongs to",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > draws the settled time as the shared bare readout, and says when the cap ended it",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > does not call an early finish a cap",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > draws the optional result as framed counts with framed actions, and no text action remains (TASK-009, C27, C28)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > says a saved block is saved, and still shows the result for editing",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > says a block with nothing to perform in plain copy inside the one card",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > recovers from an unusable stored record without a timer or a score",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > comes back to the window that is left, with nothing recorded in it",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+          "criterion": "TASK-AC-93165C175938"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > keeps the post-window result it was holding, zero included",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > restores an edit made after the window as the edit, not the first entry",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > restores a stored record from before rounds became optional",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > starts from the top when the stored record cannot be used",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "surviving a refresh > cannot log a window longer than a cap that has since been shortened",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > counts the minutes off a block whose window is a different length",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > runs no grid at all for a block whose timer type is none",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > counts on without a last minute when the block carries no window",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > names what is coming during the rest window rather than telling the user to start",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > says the block is done once its last minute has elapsed",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the minute boundary flips the active work > marks the live movement for a screen reader, not only in colour",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "an alternating EMOM says which minutes each movement covers > labels two movements ODD MIN and EVEN MIN",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "an alternating EMOM says which minutes each movement covers > keeps the labels while the clock runs, in every phase",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "an alternating EMOM says which minutes each movement covers > names the minutes of a rotation of three or more",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "an alternating EMOM says which minutes each movement covers > labels nothing on a single-movement EMOM",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "an alternating EMOM says which minutes each movement covers > assigns no minutes when the block prescribes no clock",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > comes back to the minute the clock is actually in",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > restores a record written by an earlier visit",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > comes back finished when the window expired while the tab was away",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > ignores a record no clock can be read against",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports no minutes while the clock runs",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports no minutes once every prescribed minute has elapsed",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports nothing at all when the clock never ran",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > reports nothing for a block that prescribes no clock",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "completion never records a scheduled minute as performed work > offers no completion of its own: the section’s forward action saves it (REQ-013)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM draws with the shared block frame > carries the identity row and the movement rows",
+          "criterion": "TASK-AC-9A47DF868BD4"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM draws with the shared block frame > reads every movement whichever one the minute is on, with nothing to enter",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "execution is hands-off (REQ-014) > draws no set-entry form, no Minute done and no exertion prompt, in any phase",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "execution is hands-off (REQ-014) > draws no entry form for a block that prescribes no clock either",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "targets follow the scheduled minute > states a fixed target for the minute each movement is scheduled",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "targets follow the scheduled minute > raises a rising target on each of its own turns, with no tap",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "targets follow the scheduled minute > rotates three movements and their targets across the boundaries",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "targets follow the scheduled minute > says a sequence is spent rather than inventing a rung past its end",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shipped low state and nothing more > goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shipped low state and nothing more > leaves the low state on the minute boundary, and comes back to it every minute",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shipped low state and nothing more > gives the loop up once the last minute has elapsed",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "an EMOM whose movements were swapped out > says the block has nothing left to perform rather than running a clock",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the four states > waits for the session rather than starting a timer for one it has not got",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the four states > shows the failure and offers the one recovery action",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the four states > sends a visitor with no running session Home rather than rendering an empty shell",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the four states > is not the shell for a session that has only been prescribed",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the global timer > reads elapsed time from the session, not from the moment the shell mounted",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > opens on the first section that is not finished",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > reflects each section’s status, derived from the rows",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > labels every section by its type, never by its generated title (REQ-011)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > walks forward and back across every section",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > reserves the measured footer for section navigation",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > jumps straight to a section from the progress tracker",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — navigation and progress > states the structure identity of the section’s blocks",
+          "criterion": "TASK-AC-9A47DF868BD4"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > consolidates status and section count into one compact navigator, with progress above the footer navigation",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > consolidates status, section count and structure identity into one header, with progress above the footer navigation",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > keeps progress visible while the full jump list starts collapsed and out of the tab order",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > restores the open section after a refresh, leaving focus to the route and the clock to the session",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > offers no in-app way out except completing or abandoning",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > turns browser Back into the abandon confirm rather than leaving",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > keeps the session when the confirm is declined, and stays where it was",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > blocks an in-app navigation the same way it blocks Back",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > abandons through the header menu, and lands where the session is resumable",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > keeps the session running when the abandon itself fails",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > completes the session with the time the user actually watched",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > lands completion on the debrief of the session just completed, not on Home",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > reads the streak again after completing, rather than the one Home cached",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > returns Home from the debrief’s Done",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the focus mode > keeps the session on screen when completing it fails",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — closing and backgrounding > remembers the open section across a close",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — closing and backgrounding > reopens on the section the user was looking at",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — closing and backgrounding > ignores a record left by a different session",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — closing and backgrounding > never argues with the platform about leaving",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > does not turn an untouched circuit counter into an observed zero-round result",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > shows the section just saved as complete without inventing any measured work",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > keeps the section and entered set when that set has not reached the server",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > joins the in-flight set save, prevents navigation, and advances only after confirmation",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > retries a failed entered set with its original identity and saves once before continuing",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > saves the open section’s explicit completion with no effort, then shows the next section",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > saves every block of a multi-block section in that one action",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > finishes the workout on the last section with the same save, and never fabricates a count",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > saves the rounds the athlete entered, as entered",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > keeps the athlete on the section with input preserved when the save fails, and retries once",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > keeps entries through backward navigation after a failed save, and saves each block once",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > keeps entries across leaving and returning, and a resaved section writes no duplicate",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — one forward action saves, then continues > saves nothing on Previous or a jump, marks no skipped section complete, and leaves the clock alone",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — no swap during the session (U37) > draws no swap or undo on any card, and never reads alternatives",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > shows the cues and regression the library authored, in the shell",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > shows no legacy overview or section introduction, and keeps cues, labels and work (REQ-010)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > groups coaching under one disclosure, preserving separate movement drafts (R29)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > shows no broken panel when the catalog has nothing for a movement",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > says a movement with no cues and no regression has none",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > keeps set logging working beside a failed library read",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > persists a note to the exercise row and keeps it across sections",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — coaching and notes > reports a failed note write and keeps the typed text",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > draws no rest bar before any set is logged",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > starts the movement’s own rest when Rest opens its sheet",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > starts none, and draws no bar, for a prescription with no rest",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > rests a superset once, after the pair, for the block’s own number",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > keeps a running rest through another Rest and Log, rather than restarting or queueing one",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > reads the wall clock after backgrounding, and leaves the screen when the rest elapses",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > extends and skips the rest from the bar",
+          "criterion": "TASK-AC-0EED96F7EA27"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > keeps the rest when the user moves between sections, because the session owns it",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > fires no list or route motion when the bar appears in the tap that logs a set",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > draws the session timer and the rest as two self-framed cards, neither inside another",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by skip",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by expiry",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > groups coaching inside its own card, with every label inside the group",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > claims no loop for a section clock that has not been started",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > leaves global time and the finish untouched by a running rest",
+          "criterion": "TASK-AC-D5A150844355"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind",
+          "criterion": "TASK-AC-D5A150844355"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-110 --check check-02 -- npx vitest run src/ui/circuit-block.test.tsx src/ui/workout-chrome.test.tsx --testNamePattern \"states the total rounds and the shared rest|carries the identity row, the work|SectionHeader states the structure identity\" --passWithNoTests=false",
+      "criteria": [
+        "TASK-AC-2E6734369AC5"
+      ],
+      "files": [
+        "src/ui/circuit-block.test.tsx",
+        "src/ui/workout-chrome.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each",
+          "criterion": "TASK-AC-2E6734369AC5"
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "name": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card",
+          "criterion": "TASK-AC-2E6734369AC5"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+          "criterion": "TASK-AC-2E6734369AC5"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-110 --check parity -- npx playwright test e2e/refinement/task-110-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-58FFB5625188"
+      ],
+      "files": [
+        "e2e/refinement/task-110-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-110-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-58FFB5625188 cards phone-320: /workout’s EMOM, AMRAP and For Time cards before Start — format-only badges, the prescription line and each prescribed load — match the accepted cards state",
+          "criterion": "TASK-AC-58FFB5625188"
+        },
+        {
+          "file": "e2e/refinement/task-110-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-58FFB5625188 circuit-round phone-320: /workout’s circuit card before its first round — the format-only badge and its rounds on the line under it — matches the accepted circuit-round state",
+          "criterion": "TASK-AC-58FFB5625188"
+        },
+        {
+          "file": "e2e/refinement/task-110-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-58FFB5625188 cards phone-390: /workout’s EMOM, AMRAP and For Time cards before Start — format-only badges, the prescription line and each prescribed load — match the accepted cards state",
+          "criterion": "TASK-AC-58FFB5625188"
+        },
+        {
+          "file": "e2e/refinement/task-110-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-58FFB5625188 circuit-round phone-390: /workout’s circuit card before its first round — the format-only badge and its rounds on the line under it — matches the accepted circuit-round state",
+          "criterion": "TASK-AC-58FFB5625188"
+        }
+      ]
+    }
+  }
+}
