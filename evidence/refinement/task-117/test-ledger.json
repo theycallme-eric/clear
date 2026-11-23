@@ -19,13 +19,13 @@
     "file": "src/ui/timed-result-dialog.test.tsx",
     "test": "TASK-046 TimedResultDialog > draws one Log results action …",
     "assertion": "the form is named by the dialog’s title (`form.getAttribute('aria-labelledby') === title.id`, TASK-046)",
-    "reason": "The same TASK-046 assertion that R7-3 retires in AC-C26-01, retired on the same reason: Round 7’s accepted form name “Log section results” stays. R7-3’s text names the AC-C26-01 case; this placement of the same assertion is flagged for TASK-115’s UAT list."
+    "reason": "The same TASK-046 assertion that R7-3 retires in AC-C26-01, retired on the same reason: Round 7’s accepted form name “Log section results” stays. R7-3’s text names the AC-C26-01 case; the owner extended R7-3 to this placement (Eric, chat, 2026-11-22: “Yes, extend R7-3”). On TASK-115’s UAT list."
    },
    {
     "file": "e2e/refinement/task-046.spec.ts",
     "test": "expectFocusedLog (every TASK-046 case)",
     "assertion": "the form is named by the dialog’s title (`aria-labelledby` → “Log results”) and carries `data-timed-format`",
-    "reason": "As above (R7-3): the form keeps its accepted name; the family is read from the block’s flow (`data-timed-format`), which Round 7 draws there. Flagged for TASK-115’s UAT list."
+    "reason": "As above (R7-3, which the owner extended to this placement: Eric, chat, 2026-11-22: “Yes, extend R7-3”): the form keeps its accepted name “Log section results”; the family is read from the block’s flow (`data-timed-format`), which Round 7 draws there. On TASK-115’s UAT list."
    }
   ],
   "rewrittenWithOwnerReason": [
@@ -61,7 +61,7 @@
     "why": "Unused by the carried cases, which read Round 7 through local helpers; left as it is at base."
    }
   ],
-  "forTask115": "UAT items: the AMRAP’s amount label stays Round 7’s “Completed in next round” (the build named the round); Round 7 keeps the EMOM’s Now through its rest and marks Next while working and before Start on the movement after the opening minute’s; the EMOM rest caption “Minute N of M · Rest” is new (no accepted state shows a rest window); the R7-3 retirement applied to timed-result-dialog.test.tsx and task-046.spec.ts; the dialog’s Save log in place of the build’s “no Save”."
+  "forTask115": "UAT items: the AMRAP’s amount label stays Round 7’s “Completed in next round” (the build named the round); Round 7 keeps the EMOM’s Now through its rest and marks Next while working and before Start on the movement after the opening minute’s; the EMOM rest caption “Minute N of M · Rest” is new (no accepted state shows a rest window); the R7-3 retirement in timed-result-dialog.test.tsx and task-046.spec.ts, approved by the owner on 2026-11-22 (Eric, chat, 2026-11-22: “Yes, extend R7-3”; R7-3’s list is now six); the dialog’s Save log in place of the build’s “no Save”."
  },
  "summary": {
   "carried": 18,

@@ -12,6 +12,7 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 
 Attempt 1 implemented and committed; every required check passed through the guard twice, receipts and captures byte-stable (see "Verification"). Nothing pushed.
 Repair 1 (2026-11-20) restored two inherited e2e reads the review found weakened and corrected the ledger; see "Repair 1".
+Repair 2 (2026-11-22) recorded the owner's extension of R7-3 in the ledger and this note (evidence text only); see "Repair 2".
 
 ## Intended outcome
 
@@ -156,7 +157,8 @@ Correction (test files and evidence only; no product change):
   it, with `clr-hit` and `.clr-bleed`; the task-011 keyboard entry (35) records the unchanged 5-Tab bound and Round 7's
   3; `rules.resolved` records both restorations; `rules.matchersWeakened: false` is now accurate. Counts unchanged.
 - Not changed: the R7-3 form-name retirements in `timed-result-dialog.test.tsx` and `task-046.spec.ts` (the owner is
-  deciding their scope), the parity spec and its receipts, and every product file.
+  deciding their scope), the parity spec and its receipts, and every product file. (Since decided: Eric, chat,
+  2026-11-22: "Yes, extend R7-3"; see "Repair 2".)
 
 Verification (through the guard, browser runs under the host lock
 `node /Users/eric/Projects/support-tooling/agent-runner-v2/bin/v2.mjs with-lock -- …`):
@@ -172,6 +174,33 @@ Verification (through the guard, browser runs under the host lock
   the spec's target hash (the receipts carry no timestamp). No other receipt hashes these two specs (`evidence/refinement/task-042/source-map.json`
   names task-011's command and path only).
 
+## Repair 2 (2026-11-22, evidence text only)
+
+Why: the independent re-review of `f8a7efff` met all 20 criteria and both journeys; its one open point was whether
+R7-3 (which names the AC-C26-01 case) also covers the same TASK-046 "form named by the dialog's title" read that
+attempt 1 retired in two more places. The owner decided: Eric, chat, 2026-11-22: "Yes, extend R7-3". Scope, exactly:
+R7-3 also retires that read in `src/ui/timed-result-dialog.test.tsx:201` and `e2e/refinement/task-046.spec.ts:372`;
+the form keeps its accepted name "Log section results"; TASK-115's UAT retirement list grows from four to six.
+Nothing else is widened.
+
+Changes (evidence text only):
+
+- `evidence/refinement/task-117/test-ledger.json`: the two `rules.retired` reasons for those placements now cite the
+  owner's extension verbatim with its date and source, keep the technical reason (the accepted name stays; the e2e
+  family is read from the flow's `data-timed-format`) and say each is on TASK-115's UAT list; `forTask115` says the
+  retirement was approved by the owner on 2026-11-22 (R7-3's list is now six). No other entry, status, count or
+  check result changed; same structure and key order.
+- This note: the decision recorded in "Repair 1" and "Open" item 3, and this entry.
+- Not changed: every product file, every test and spec, every parity receipt and result receipt, the contract docs
+  and the package files.
+
+Verification: the ledger parses
+(`node -e 'JSON.parse(require("fs").readFileSync("evidence/refinement/task-117/test-ledger.json","utf8"))'`, exit 0).
+No repository test or script reads `evidence/refinement/*/test-ledger.json` (every `test-ledger` mention in
+`scripts/`, `src/` and `e2e/` is a comment; the rest is description text in other tasks' `required-cases.json`), so
+there was no ledger check to run. No browser suite was re-run: no test or product code changed. V2 verify reruns the
+task's full checks.
+
 ## Open
 
 1. The AMRAP's amount label stays Round 7's accepted "Completed in next round" (`Next round · …`); the build named the
@@ -182,6 +211,9 @@ Verification (through the guard, browser runs under the host lock
    for UAT.
 3. R7-3 names the AC-C26-01 case; the identical TASK-046 "form named by the dialog's title" read in
    `timed-result-dialog.test.tsx` and `task-046.spec.ts` is retired on the same reason (recorded in the ledger).
+   Decided 2026-11-22 (Eric, chat, 2026-11-22: "Yes, extend R7-3"): R7-3 also retires that read in
+   `src/ui/timed-result-dialog.test.tsx:201` and `e2e/refinement/task-046.spec.ts:372`; the form keeps its accepted
+   name "Log section results"; TASK-115's UAT retirement list grows from four to six. Nothing else is widened.
 4. Real write/read-back on the disposable lane (task-047/task-048) is not among this task's checks; the specs here run
    on a synthetic origin.
 5. TASK-116's parity receipts were made before this task's AMRAP gating; re-run, its amrap `log` moment would draw only
