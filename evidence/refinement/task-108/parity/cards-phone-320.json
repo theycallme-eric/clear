@@ -1,0 +1,458 @@
+{
+  "schema": "clear-task-108-parity/v1",
+  "task": "TASK-108",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "cards",
+  "width": 320,
+  "route": "/workout",
+  "captures": {
+    "gallery:emom:ready": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-gallery-ready.png",
+      "sha256": "59f0ec676a9991434edb26124ec3974d1f8d8f2a73b05010012e060bf7ab2a95"
+    },
+    "route:emom:ready": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-route-ready.png",
+      "sha256": "985d67bb7298bf5d156dec04665519a9279377b18ee26346a7752057458a296e"
+    },
+    "gallery:amrap:ready": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-gallery-ready.png",
+      "sha256": "79b4d3a3dce10220ac73297dfd79ad37c6886cdfe834cc860ce1caba93d54d06"
+    },
+    "route:amrap:ready": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-route-ready.png",
+      "sha256": "e45b28be65d39f54d5f9ee49b1932d11bfa7c66cf7c6f24bbabf39a15ed7ea89"
+    },
+    "gallery:for_time:ready": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-gallery-ready.png",
+      "sha256": "707166f7663547aaa578d55c7697afbfd7bf9f8bee43102d989e2c516087e44d"
+    },
+    "route:for_time:ready": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-route-ready.png",
+      "sha256": "e6b1ad49fd6e18ceac713fff8f30b19422cd05fe18829ebcf89433c260c9026a"
+    },
+    "gallery:emom:running": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-gallery-running.png",
+      "sha256": "508abcb5d470d76a5c14cca9d4afb82f4f40b6da692d37d25990fe52ff7f38d6"
+    },
+    "route:emom:running": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-route-running.png",
+      "sha256": "d2de5904061c007e0a433af39dc7183cad098a8a8bdd127c968d625bfd6b2a7d"
+    },
+    "gallery:amrap:running": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-gallery-running.png",
+      "sha256": "ed653887cc9505d8de209fcd2814e7489b4dab7acfd3aff1d2c7b75234cef3dd"
+    },
+    "route:amrap:running": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-route-running.png",
+      "sha256": "057094ed62bd790455260c41c937079ce7d0a33f7e8019f4df10bf7a136362aa"
+    },
+    "gallery:for_time:running": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-gallery-running.png",
+      "sha256": "e15f65d9bd048e250f87e2487318332bbd0c892bd7d747f602177f40ba3ad8ab"
+    },
+    "route:for_time:running": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-route-running.png",
+      "sha256": "ade060662bbd9ffc71124895ff132cd23820cbc58287056c90b3c96643d25352"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "emom:ready": [
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "START EMOM",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "amrap:ready": [
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "START AMRAP",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "for_time:ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ],
+      "emom:running": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "4",
+        "0",
+        "Minute 1 of 10. 40 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "amrap:running": [
+        "REMAINING",
+        "0",
+        "7",
+        ":",
+        "4",
+        "0",
+        "Remaining. 7 minutes 40 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "PAUSE",
+        "FINISH EARLY",
+        "Log when complete",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "for_time:running": [
+        "ELAPSED",
+        "0",
+        "0",
+        ":",
+        "2",
+        "0",
+        "Elapsed. 20 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "PAUSE",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ]
+    },
+    "route": {
+      "emom:ready": [
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "START EMOM",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "amrap:ready": [
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "START AMRAP",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "for_time:ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ],
+      "emom:running": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "4",
+        "0",
+        "Minute 1 of 10. 40 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "amrap:running": [
+        "REMAINING",
+        "0",
+        "7",
+        ":",
+        "4",
+        "0",
+        "Remaining. 7 minutes 40 seconds",
+        "CONDITIONING",
+        "AMRAP",
+        "8 MIN · INVERSE",
+        "01 BURPEEbodyweight",
+        "10 reps",
+        "PAUSE",
+        "FINISH EARLY",
+        "Log when complete",
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "for_time:running": [
+        "ELAPSED",
+        "0",
+        "0",
+        ":",
+        "2",
+        "0",
+        "Elapsed. 20 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "PAUSE",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ]
+    }
+  },
+  "differences": {
+    "emom:ready": [],
+    "amrap:ready": [],
+    "for_time:ready": [],
+    "emom:running": [],
+    "amrap:running": [],
+    "for_time:running": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "emom:ready": 41,
+        "amrap:ready": 40,
+        "for_time:ready": 41,
+        "emom:running": 64,
+        "amrap:running": 63,
+        "for_time:running": 63
+      },
+      "route": {
+        "emom:ready": 41,
+        "amrap:ready": 40,
+        "for_time:ready": 41,
+        "emom:running": 64,
+        "amrap:running": 63,
+        "for_time:running": 63
+      }
+    },
+    "parts": {
+      "gallery": {
+        "emom:ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "amrap:ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "for_time:ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "emom:running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "amrap:running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 429
+        },
+        "for_time:running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 381
+        }
+      },
+      "route": {
+        "emom:ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "amrap:ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "for_time:ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "emom:running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "amrap:running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 429
+        },
+        "for_time:running": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 381
+        }
+      }
+    },
+    "differences": {
+      "emom:ready": [],
+      "amrap:ready": [],
+      "for_time:ready": [],
+      "emom:running": [],
+      "amrap:running": [],
+      "for_time:running": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/countdown-urgency.tsx",
+      "criterion": "AC-R008-02",
+      "change": "Every urgent timer and the one aura share one warning loop and one phase: each urgent clock claims the view's one urgent loop, every urgent timer breathes while any claim runs (bec4454 stilled a second urgent timer), the first draws the one edge, and each new breathe is pinned to the document timeline's epoch. Fed by each clock's deadline adapter."
+    },
+    {
+      "file": "src/ui/countdown-urgency.css",
+      "criterion": "AC-R008-01",
+      "change": "The urgent timer breathes on the edge's own rule — the same keyframes, 1.5 s period and easing (.2/.8/.2), a steady .5 when still or under reduced motion — in place of the shipped four-second stepped micro-pulse on the timer. The urgency state's urgent clock breathes with its edge; under reduced motion both hold .5."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "TimerFrame carries the breathe on its `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, the warning loop) in place of `clr-pulse-micro` on its wrapper; CountdownBar and RestTimerBar read the rest's deadline (`restDeadline`): the low colour, the fill's colour and \"Final 10 seconds\" from ten seconds, the breathe on the rest's timer (not the card) and the edge from five."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-A5D62CC0272B",
+      "change": "The compact SectionHeader reads \"Section N / M · status\" to assistive technology, visually hidden, and its visible \"N / M\" is decoration of the trigger (`aria-hidden`), so the trigger's one name is \"All sections\". Nothing drawn changes."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "Each format clock's warning reads its adapter (EMOM minute, AMRAP window, race cap): held while paused, none once ended. The low colour at ten and the edge at five are as before; the breathe is the change above."
+    },
+    {
+      "file": "src/ui/circuit-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "The circuit's round rest is one whole TimerFrame (the app's Card in the timer role) fed by `circuitRestDeadline`, in place of the package's TimerDisplay whose stepped micro-pulse ran through the last ten seconds. No state compared here draws a circuit; the circuit-round state shows it in the same commit."
+    },
+    {
+      "file": "src/ui/ladder-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "A scheduled ladder's interval countdown is one whole TimerFrame fed by `scheduleIntervalDeadline`. No accepted state draws a schedule."
+    },
+    {
+      "file": "src/ui/movement-countdown.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The movement countdown reads `movementCountdownDeadline`; its warning is unchanged but for the breathe above."
+    },
+    {
+      "file": "src/ui/timer-display.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "CountdownDisplay takes an optional deadline from its consumer; its drawing is unchanged (the route no longer draws it)."
+    },
+    {
+      "file": "src/state/countdown-urgency.ts",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The adapters read only the fields of a view they need, so the route's flow feeds its attempt through them. Nothing drawn changes."
+    },
+    {
+      "file": "src/app/Workout.tsx",
+      "criterion": "TASK-AC-DCFC4C79B85A",
+      "change": "Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading. Not a gallery state."
+    },
+    {
+      "file": "src/ui/workout-navigation.css",
+      "criterion": "TASK-AC-8E1E91D4F4AA",
+      "change": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    }
+  ]
+}

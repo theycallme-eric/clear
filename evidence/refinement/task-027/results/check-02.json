@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-027/required-cases.json",
-    "sha256": "238233110e5dce0f734a945bc2e5b118104b754d054e2e6037b7a00ab907562f"
+    "sha256": "9dec84d79d472f4577dae9be94954818713f1081465d5ac4663c3c153245e73a"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-027.spec.ts",
-      "sha256": "e47c13fc5dcfd1403d03da7ef2401c57581856f8ceb00fb0542f38bd717b3e40"
+      "sha256": "924d7d0905bee592e4bd5fbffab6bc3b4e7758d2a9ad6fb048ef98c1639e9526"
     }
   ],
   "requiredCases": [
@@ -44,7 +44,7 @@
     },
     {
       "file": "e2e/refinement/task-027.spec.ts",
-      "name": "TASK-027 compact live navigator preserves section access > gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written",
+      "name": "TASK-027 compact live navigator preserves section access > gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written",
       "project": "mobile",
       "status": "passed"
     }

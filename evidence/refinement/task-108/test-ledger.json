@@ -1,0 +1,1596 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-108",
+  "family": "F6 (A3 task 8: section navigator access, workout header, timer frames and the pause-aware countdown warning)",
+  "base": "debdeaf4b528c6bb0a73ab4b58a34d4948f17cdd",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "The brief (round 07; TASK-AC-1ABEBDB57CBF, TASK-AC-C805757B61E2, TASK-AC-01EADCB074D1, TASK-AC-0FE872A256A7, TASK-AC-1A18C1BE61D6): the build’s src/ui/countdown-urgency.test.tsx and src/ui/timer-frame-layout.test.tsx rewritten onto Round 7; src/state/countdown-urgency.test.ts and src/state/timed-clock.test.ts carried; src/ui/workout-chrome.test.tsx, src/app/workout-footer-nav.test.tsx, src/app/movement-countdown.test.tsx and src/ui/for-time-block.test.tsx owned whole; this task’s TASK-007/008/027 bodies in src/app/Workout.test.tsx, src/ui/emom-block.test.tsx and src/ui/amrap-block.test.tsx (TASK-110 owns them; round-07 R7-1, R7-2); the EXC-07 case (S5); e2e task-007, task-008 and task-027 rewritten; the new task-108-parity.spec.ts. visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json for the groundwork placement, overridden for amrap-block, emom-block, for-time-block and Workout.test.tsx by round-07 decision R7-1.",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "matchersWeakenedNote": "No matcher is loosened. Assertions are withheld only where a plan conflict is held for the owner (pendingOwnerDecision: C2’s cap-line words); each is listed there and in the entry’s note. If the owner retires them they become retirements; if the owner has the route draw them, they come back.",
+    "retired": [
+      {
+        "file": "src/ui/workout-chrome.test.tsx",
+        "test": "GlobalTimer > is one whole timer frame in the header placement — no accent bar, no card, the timer role",
+        "reason": "Retired as superseded by the base body “GlobalTimer > is the shipped timer card — one bar, the timer role, and no frame around it”, which stays. The build’s body asserts its DeadlineTimer look (no card, no accent bar); TASK-AC-23D0ADE293F8 makes every real-route clock one whole Round 7 TimerFrame as the app’s Card in the timer role. For TASK-115’s UAT list."
+      },
+      {
+        "file": "src/app/movement-countdown.test.tsx",
+        "test": "Countdown framing matches the session clock (AC-052) > is one whole timer frame, with no card and no bar, wherever no card surrounds it",
+        "reason": "Retired as superseded by the base body “Countdown framing matches the session clock (AC-052) > is the shipped timer card, with one bar, wherever no card surrounds it”, which stays: TASK-AC-23D0ADE293F8 makes every clock one whole Round 7 TimerFrame, the app’s Card in the timer role, where no card surrounds it. For TASK-115’s UAT list."
+      },
+      {
+        "file": "src/app/Workout.test.tsx",
+        "test": "Workout — the session’s one rest > draws the session clock as one whole frame and the rest as its own timer card holding its whole frame, neither inside another",
+        "reason": "Retired as superseded by the base body “Workout — the session’s one rest > draws the session timer and the rest as two self-framed cards, neither inside another”, which stays: TASK-AC-23D0ADE293F8 makes the session clock and every clock one whole Round 7 TimerFrame (the app’s Card in the timer role) and the rest Round 7’s one timer card, where the build’s body asserts its DeadlineTimer look (no card around the session clock, a whole frame inside the rest card). For TASK-115’s UAT list."
+      }
+    ],
+    "deferred": [
+      {
+        "file": "src/ui/workout-chrome.test.tsx",
+        "test": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+        "to": "TASK-110",
+        "why": "Deferred to TASK-110 (round-07 scan finding S3; decision R7-5): the build’s body names each block by its format alone (TASK-003’s format-only badges), which TASK-110 builds and restores here with its name filter (TASK-110:check-02). Round 7’s passing body stays."
+      }
+    ],
+    "forTask115": [
+      "The three build bodies retired as superseded by Round 7’s timer card (GlobalTimer “is one whole timer frame in the header placement …”, movement-countdown “is one whole timer frame, with no card and no bar …”, Workout “draws the session clock as one whole frame and the rest as its own timer card …”).",
+      "C2’s withheld cap-line words, as the owner decides them.",
+      "The urgent timer’s breathe (.2/.8/.2 on 1.5 s with the edge; .5 still) in place of the stepped micro-pulse; the rest’s fill in the low colour from ten seconds; the circuit rest and a schedule’s interval as TimerFrames.",
+      "TASK-104’s 320 px note: pressing Start on a tall timed card scrolled to its top lets scroll anchoring push the 40 px timer bar just above the scroll area (not in TASK-108’s criteria)."
+    ],
+    "pendingOwnerDecision": [
+      {
+        "id": "C1",
+        "what": "Two Round 7 base bodies in src/ui/exercise-coaching.test.tsx (TASK-109’s file) read the rest’s final-five warning as the card’s stepped micro-pulse; TASK-108’s criteria (AC-R008-01, AC-R008-02, C61) move it to the rest’s timer with the one aura. Round 07 placed the build’s replacing TASK-008 bodies with TASK-109, which lands after TASK-108, so between them the base bodies fail `npm test`.",
+        "provisional": "Commit “provisional — read the rest’s warning on its timer in two exercise-coaching base bodies (plan conflict C1)”: only those reads change, same asserted behaviour. Drop it if the owner places the fix otherwise.",
+        "options": [
+          "Accept the provisional edit (TASK-108 adapts the two reads; TASK-109 still restores the build’s four bodies).",
+          "Move the build’s four “… an urgent rest keep one loop between them” bodies from TASK-109 to TASK-108."
+        ]
+      },
+      {
+        "id": "C2",
+        "what": "The build’s TASK-007/TASK-008 bodies read ForTimeBlock’s cap line — “Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds (words carrying the urgency beside the colour). On Round 7 the route’s For Time is TimedWorkoutFlow, whose race clock reads “Elapsed” and the elapsed time and states the cap only in the block’s meta line; no round-07 criterion builds the cap line. Withheld assertions:",
+        "assertions": [
+          "src/ui/countdown-urgency.test.tsx AC-C23-01: “Cap in 00:10 — finish now”",
+          "src/ui/timer-frame-layout.test.tsx AC-C21-01: “Cap in 14:30” (twice), “Cap in 14:20” (replaced by the race’s warning timing, which still proves the cap arithmetic)",
+          "src/ui/for-time-block.test.tsx “turns urgent in the last ten seconds …”: “Cap in 00:07 — finish now”",
+          "src/ui/for-time-block.test.tsx “is not low, and claims no loop …”: “Cap in 00:11”",
+          "src/ui/for-time-block.test.tsx “is still under reduced motion …”: “Cap in 00:04 — finish now”",
+          "e2e/refinement/task-007.spec.ts touch phone-390: “Cap in 14:30” (twice), “Cap in 14:20”",
+          "e2e/refinement/task-008.spec.ts keyboard phone-390: “Cap in 00:10 — finish now”"
+        ],
+        "options": [
+          "Retire them as Round 7 look (as R7-3 retired the AMRAP readout).",
+          "Have a task draw a cap line with the urgency words on the route’s race clock (a look change to the accepted For Time card)."
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "rewritten": 40,
+    "carried": 101,
+    "retired": 3,
+    "deferred": 1,
+    "superseded": 12,
+    "ported": 22,
+    "rewritten-provisional": 2,
+    "added": 8
+  },
+  "entries": [
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour. The recipe is read from Round 7’s one owner, src/ui/countdown-urgency.css (`.clr-countdown-edge`, `.clr-countdown-breathe` for the build’s `.clr-deadline-edge` and `.clr-accepted-timer__body[data-urgent]` in refinements/presentation.css): the same owner-selected tokens; one fixed, pointer-transparent 70px urgency-a400 inset vignette with no outline or fill; the timer and the aura on one rule (same keyframes, period and easing); a steady .5 under the still policy, reduced motion and the app’s own choice; no stepped micro-pulse. The rule reader skips the stylesheet’s @import.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour, on the real /workout route over the same fixture: the hold takes the colour at 10 and the one edge at 5 only while it runs; pause and expiry end it; the session clock stays neutral. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap\\'s outcome never breathes",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the EMOM minute and the count-up race warn on their own remaining time; pause holds the colour and ends the edge; the cap ends the warning, “Cap reached” in its outcome colour. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: two urgent deadlines (the hold behind the log and the rest in it) both breathe with exactly one decorative pointer-transparent edge, drawn in the open log’s native dialog, then on the body, then in the Abandon dialog and back; nothing is written. The build compared the edge’s z-index with its sheet layer; Round 7’s log is itself the native dialog, so the edge is read as the dialog’s last child with a positive z-index. The end reads `[data-urgent=\"true\"]`: Round 7 keeps each flow’s deadline marker as `data-urgent=\"false\"`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-C61-01 the timer and the aura share one phase: each breathe is pinned to the document timeline\\'s epoch when it starts, again when the aura moves into or out of a dialog or the deadline resumes, and never restarted by a numeric tick",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: each breathe (the urgent timer’s and the aura’s) is pinned to the document timeline’s epoch when it starts, when the aura moves into or out of a dialog and when the deadline resumes, and no numeric tick restarts either; the animation stub matches Round 7’s selectors.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: under reduced motion the urgent timer and the one aura hold a steady .5 (`clr-countdown-breathe`, `clr-countdown-edge`), no loop runs, and every word, digit and colour stays.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the route’s own flow: an EMOM minute at 10 and at 5 with one aura, a count-up race warning on its cap, held on pause, and a race far from its cap neutral",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed. Round 7’s accepted ?state=urgency (bec4454) runs the route’s own TimedWorkoutFlow at its moments (EMOM · 10, EMOM · 5, For Time · 5 seconds to cap, Ladder · elapsed); it has no held, run, open-log or still-preview controls. The same asserted behaviour is read through its moments — colour at 10; the breathe and one aura at 5; a count-up race on its cap minus elapsed; held on pause (the colour stays, the aura ends); a race far from its cap neutral — and the open native log and the still policy are proved on the route by AC-C24-01 and AC-R008-04. The TASK-008 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "test": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (TASK-AC-23D0ADE293F8): every clock on the real route is one whole TimerFrame — beside a card, the app’s Card in the timer role (one bar, one body holding the readout alone, inside no other card); inside a card, that card’s element frame (one chamfer, no bar of its own) — with nothing nested in the readout, the readout centred both ways, labelled once and never live. Round 7’s clock names stand for the build’s `data-clock` pairs. The build’s presentation.css width recipe is read as TimerFrame’s own full-width wrapper (`width: 100%`, `display: flex`); its “nothing outside the shared owner styles a timer’s width” is, on Round 7, movement-countdown.css stretching the countdown’s column, which the case now reads.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "test": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log\\'s width, with no short inner chamfer inside it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed. Round 7’s rest is one timer-role card holding its label and its digits on the card’s row (the accepted look), so the asserted behaviour — one frame filling the log’s width, no short inner chamfer inside an empty wider frame, the label inside the same card — is read on that card, its width in the browser (task-007.spec.ts). The TASK-007 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "test": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu\\'s height and never stretched across the header",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: one row (TASK-007’s nowrap rules, carried into src/ui/workout-navigation.css; computed flex-wrap nowrap), the title giving up width first, the readout the menu’s height (Round 7’s accepted logging-overlay.css header rule), centred and not stretched across the header.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "test": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the route keeps its one row past the hour, and the gallery presents no two-row state",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed. Round 7’s accepted gallery (bec4454) draws no workout header in its refinement states, so it shows no other header state; the route’s own header is read on one row past the hour (`1:02:03`), with TASK-007’s narrow-phone title rule. The TASK-007 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "test": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the session clock, the hold and a paused section clock keep their own readings and arithmetic (Round 7’s `FOR TIME time`). The cap arithmetic is read through the race’s own warning — its colour arrives at 14:50 of race time, the paused two minutes counting for nothing — where the build read ForTimeBlock’s “Cap in 14:30/14:20”. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "test": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the same rest moves between the log and the footer without restarting; Round 7’s dialog closes on its own next frame (waitFor); the footer rest is read as Round 7’s one timer card.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "test": "TASK-008 countdown warning eligibility > AC-C23-01 the accepted rule: colour at 10 seconds left, the edge only while running at 5 and under, nothing at 11, at zero or for an unusable reading",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "test": "TASK-008 countdown warning eligibility > AC-R008-03 every countdown family warns on its own owner\\'s remaining time: a movement countdown, the rest, an EMOM minute, an AMRAP window, a scheduled interval and a circuit round rest",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "test": "TASK-008 countdown warning eligibility > AC-C23-01 a count-up race warns on its cap minus elapsed, never on the number it shows: For Time and the raced ladder",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "test": "TASK-008 countdown warning eligibility > AC-C24-01 pause holds the colour and stops the edge; resume brings it back; expiry, a finish and the cap end it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "test": "TASK-008 countdown warning eligibility > AC-R008-03 elapsed-only clocks stay neutral at every reading: the session clock, a round\\'s elapsed time and a race with no cap",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "test": "TASK-008 countdown warning eligibility > AC-C24-01 a warning records no work: reading every deadline stores nothing, starts nothing and changes no owner\\'s record",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-C21-01 session elapsed, a movement countdown, the session rest and a format clock each read only their own owner at the same moment",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-C21-01 a section Pause freezes only its format clock and its cap; the session clock, the rest and a running countdown run on",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-C21-01 cap arithmetic is the race\\'s own: cap minus elapsed while running, frozen while paused, zero once the cap is reached, none without a cap",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-C21-01 a movement countdown banks its own time on Pause, and a rest extension moves only the rest",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-C21-01 the session clock is elapsed only: it counts up, carries no deadline, and past an hour still reads as one clock",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-C21-01 each clock keeps its own name, direction and words",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/timed-clock.test.ts",
+      "test": "TASK-007 distinct functional clocks > AC-R007-03 a reading is a pure function of its owner\\'s reading: re-read after a reload or in another place it is identical, and reading starts nothing",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "GlobalTimer > is a labelled timer, spoken in words rather than punctuation",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "GlobalTimer > is not a live region — a second-by-second announcement ruins the screen",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "GlobalTimer > is one whole timer frame in the header placement — no accent bar, no card, the timer role",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "retired",
+      "note": "Retired as superseded by the base body “GlobalTimer > is the shipped timer card — one bar, the timer role, and no frame around it”, which stays. The build’s body asserts its DeadlineTimer look (no card, no accent bar); TASK-AC-23D0ADE293F8 makes every real-route clock one whole Round 7 TimerFrame as the app’s Card in the timer role. For TASK-115’s UAT list.",
+      "result": "not run"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "GlobalTimer > is an element frame inside a card, never a second card",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "GlobalTimer > counts up, so it has no low state at any reading",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "ProgressTracker > measures real progress: sections resolved out of sections prescribed",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "ProgressTracker > says each section’s status in words, never in colour alone",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "ProgressTracker > marks where the user is with aria-current, not with a tint",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "ProgressTracker > jumps to a section when the shell offers it, and is inert when it does not",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "ProgressTracker > is one card with its heading, bar and section list inside",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > uses the current structural heading level rather than skipping past it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > says where the section sits, what it is called, and what state it is in",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "deferred",
+      "note": "Deferred to TASK-110 (round-07 scan finding S3; decision R7-5): the build’s body names each block by its format alone (TASK-003’s format-only badges), which TASK-110 builds and restores here with its name filter (TASK-110:check-02). Round 7’s passing body stays.",
+      "result": "not run"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > is one card: the title, its position and its badges are all inside it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > carries the session’s bar and a collapsible jump list in that one card (U34, U35)",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "StructureBadge > is the label alone when the block carries no number",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "StructureBadge > is an element frame on the structure role, emitting through its own wrapper",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "StructureBadge > is not a card, so it sits inside one without nesting",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "WorkoutNavigation > is a named landmark, because the shell has more than one nav’s worth of controls",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "WorkoutNavigation > refuses to go back from the first section",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "WorkoutNavigation > turns the forward action into completion on the last section",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "WorkoutNavigation > offers no destructive action beside the one pressed between every section",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "WorkoutNavigation > stops taking presses while a lifecycle call is in flight",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "WorkoutNavigation > claims the loop only while finishing, and stays busy when it is stilled",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > draws nothing until a rest is running — no bar at zero",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > starts nothing for a rest of zero seconds",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > shows the remaining time, in digits and in words, with skip and add-time",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > adds time to the end of the rest, not to its start",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > leaves the screen when the rest is skipped",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > reads the wall clock on return from the background, and leaves when it elapses",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > enters with no list or route motion — it appears in the tap that logs a set",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > breathes with the one soft screen edge in its final five seconds: the timer frame on the running loop, not the card",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > steps the fill to the low colour on the same schedule, with no glow in its styles",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > stays a labelled timer that is not live, with one milestone that is",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > is still under reduced motion and loses nothing it was saying",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the build’s body unchanged but its last read — the shared still rule — read from Round 7’s owner src/ui/countdown-urgency.css (`.clr-countdown-breathe, .clr-countdown-edge { animation: none !important; …}`) where the build read refinements/presentation.css.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (decision 2): the compact bar draws no heading of its own — the section’s name is each block’s own MovementGroupHeader heading, which the case reads on the opened card — and reads “Section N / M · status” to assistive technology, visually hidden; the trigger keeps its one name “All sections”, its visible position `aria-hidden` (Round 7’s class `clr-workout-section-nav__meta`, its rules read from Round 7’s movement-presentation.css and timed-workout.css). The jump list, focus on the opened section’s first card, and nothing recorded or reset are the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "TASK-027 compact live navigator preserves section access > AC-C54-01 the jump list opens by keyboard and touch, jumps and collapses, stays out of the tab order while collapsed, and is read-only while a move is saving",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (decision 2): the compact bar draws no heading of its own — the section’s name is each block’s own MovementGroupHeader heading, which the case reads on the opened card — and reads “Section N / M · status” to assistive technology, visually hidden; the trigger keeps its one name “All sections”, its visible position `aria-hidden` (Round 7’s class `clr-workout-section-nav__meta`, its rules read from Round 7’s movement-presentation.css and timed-workout.css). The jump list, focus on the opened section’s first card, and nothing recorded or reset are the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (decision 2): the compact bar draws no heading of its own — the section’s name is each block’s own MovementGroupHeader heading, which the case reads on the opened card — and reads “Section N / M · status” to assistive technology, visually hidden; the trigger keeps its one name “All sections”, its visible position `aria-hidden` (Round 7’s class `clr-workout-section-nav__meta`, its rules read from Round 7’s movement-presentation.css and timed-workout.css). The jump list, focus on the opened section’s first card, and nothing recorded or reset are the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed. Round 7’s accepted gallery shows the compact navigator as the SectionHeader specimen of its component catalogue (GallerySectionHeader, the route’s own component over a memory-only position); its ?state=cards draws the live cards with no navigator. The same asserted behaviour on the specimen: no card, no structure badge, the visible “All sections2 / 3”, the hidden position and status, a jump to Cooldown read back as “3 / 3 · Not started”, nothing fetched. The TASK-027 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "RestTimerBar > goes low as the shipped low state: stepped over --dur-alert, pulsing to 80%, no glow",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow”, which replaces it in place, as the build replaced it (R133, R135: the warning is the smooth breathe with one edge, not the stepped micro-pulse).",
+      "result": "removed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-064: progress sits immediately above one compact paired row > pairs Previous on the left with Next section on the right in one row",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-064: progress sits immediately above one compact paired row > keeps the pair on the last section, with Finish workout on the right",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-064: progress sits immediately above one compact paired row > lays the row out as two equal columns at every width, never stacked",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > keeps both actions full-cell, aligned and labelled at the control height",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > stays inside the device safe areas the contained shell reserves",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; its helper `openedSectionCard` is rewritten for Round 7 (decision 2): the opened section’s name is its own heading after the navigator, not a hidden heading inside it; the first card after the navigator is the same read.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; its helper `openedSectionCard` is rewritten for Round 7 (decision 2): the opened section’s name is its own heading after the navigator, not a hidden heading inside it; the first card after the navigator is the same read.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "test": "AC-065: readable, aligned, reachable, and the same flow > ends through the existing finish flow from the right-hand action",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Elapsed session clock and movement countdown stay separate (AC-050) > names, directions and sizes the two clocks differently",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "A movement-owned countdown with Start / Pause / Reset (AC-051) > starts, pauses, resumes and resets the hold’s own seconds",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "A movement-owned countdown with Start / Pause / Reset (AC-051) > stays on its movement’s card, still running, while the sheet opens and minimises",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "A movement-owned countdown with Start / Pause / Reset (AC-051) > times the next set from its own prescribed seconds once a set is logged",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the base’s Round 7 body is kept — the logged set’s dialog confirms it beside the rest (decision 1), the rest is the dialog’s clock and the card’s countdown is re-armed at 00:30 — which reads everything the build’s body does, and Rest then opens set 2.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "B05-06: full-width countdown above its paired controls, above Rest > draws the timer first, then Start/Pause and Reset as one pair, inside the card above Rest",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour (TASK-007, C19): the countdown is TimerFrame’s own full-width element frame — its bleed `display: flex` at `width: 100%` on the route — with Round 7’s movement-countdown.css stretching its column; the build read its DeadlineTimer’s body placement. The readout’s fill is read in the browser (task-007.spec.ts).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Countdown framing matches the session clock (AC-052) > is an element frame of the timer role inside the block card — no second card, no second bar",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the base’s Round 7 body — the session clock’s frame is the same chamfered frame on the same role, standing alone as the app’s Card — is kept; the build read the session clock as a bare chamfer.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Countdown framing matches the session clock (AC-052) > is one whole timer frame, with no card and no bar, wherever no card surrounds it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "retired",
+      "note": "Retired as superseded by the base body “Countdown framing matches the session clock (AC-052) > is the shipped timer card, with one bar, wherever no card surrounds it”, which stays: TASK-AC-23D0ADE293F8 makes every clock one whole Round 7 TimerFrame, the app’s Card in the timer role, where no card surrounds it. For TASK-115’s UAT list.",
+      "result": "not run"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Countdown framing matches the session clock (AC-052) > never adds a frame or bar in a card",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "The build’s body, with Round 7’s edge class `clr-countdown-edge` for the build’s `clr-deadline-edge`; every other read is the build’s (the timer itself breathes on the running loop; pause keeps the colour and ends the breathe and the edge).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Round 7 look, same asserted behaviour: the one edge’s recipe and its reduced-motion still rule are read from Round 7’s owner src/ui/countdown-urgency.css where the build read refinements/presentation.css; the countdown’s own stylesheet animates nothing.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > records no movement result when the countdown runs out",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Countdown framing matches the session clock (AC-052) > is the shipped timer card, with one bar, wherever no card surrounds it",
+      "ledger": "base",
+      "disposition": "carried",
+      "note": "Base body (Round 7’s), kept: it supersedes the build’s “is one whole timer frame, with no card and no bar …” (retired above).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low state and lights the screen edge in the final five seconds only",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only”, which replaces it in place, as the build replaced it (TASK-008: the timer breathes with the edge, no stepped micro-pulse).",
+      "result": "removed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "test": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the accepted slow vignette, which reduced motion and a still loop stop — no flashing",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own”, which replaces it in place, as the build replaced it.",
+      "result": "removed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > consolidates status and section count into one compact navigator, with progress above the footer navigation",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it. Restored under its build title (round-07 finding S5); Round 7’s “consolidates status, section count and structure identity into one header …” stays beside it.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s; the describe’s helpers `activeHeader` and `firstCard` are rewritten for Round 7 (decision 2): the navigator draws no heading of its own and the section’s name is its block’s own heading after it.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > draws the session clock as one whole frame and the rest as its own timer card holding its whole frame, neither inside another",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "retired",
+      "note": "Retired as superseded by the base body “Workout — the session’s one rest > draws the session timer and the rest as two self-framed cards, neither inside another”, which stays: TASK-AC-23D0ADE293F8 makes the session clock and every clock one whole Round 7 TimerFrame (the app’s Card in the timer role) and the rest Round 7’s one timer card, where the build’s body asserts its DeadlineTimer look (no card around the session clock, a whole frame inside the rest card). For TASK-115’s UAT list.",
+      "result": "not run"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by %s",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > coordinates a low AMRAP window with the low session rest across navigation",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge”, which replaces it in place, as the build replaced it (TASK-008: one warning loop and one edge for two urgent deadlines).",
+      "result": "removed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > coordinates a low Circuit round rest with the low session rest across navigation",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge”, which replaces it in place, as the build replaced it.",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). Base body of the same title superseded.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “is one block card beside one whole timer frame, with neither inside the other”, which replaces it in place, as the build replaced it (ported onto the route).",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list (base body)",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the ported build body (R7-2), as TASK-116 recorded its own.",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one (base body)",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title (over AmrapBlock), replaced by the ported build body (R7-2).",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own low state, with nothing added around it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “leaves urgency to the timer’s own shared warning, with nothing added around it”, which replaces it in place, as the build replaced it (ported onto the route).",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "before the clock starts > states the cap and the work, and offers the one control that starts it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "before the clock starts > records nothing it did not observe",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "while the clock runs > counts up from the tap that started it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "while the clock runs > offers no second start that would discard the time it took",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "while the clock runs > carries no urgency treatment while there is time left",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). The race’s caption “Elapsed” is read for its words. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the first completion path: finished under the cap > stops the clock at the finish, not at the cap",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the first completion path: finished under the cap > supplies the elapsed seconds and the under-cap finish to the shell",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the first completion path: finished under the cap > wears the finished treatment, and no urgency however close it came",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the second completion path: the cap is reached > stops at the cap on its own, with no tap and no stamp",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the second completion path: the cap is reached > reads differently from a finish — the words and the treatment both",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the second completion path: the cap is reached > supplies the cap and the cap-expiry outcome to the shell",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "across a refresh > comes back to the race it was in, elapsed from the wall clock",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "across a refresh > comes back to a finish it already recorded",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "across a refresh > ignores a stored clock it cannot believe",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "a block with no movements left > says so, runs no clock, and records nothing it did not observe",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "a block with no cap > counts up, states no deadline, and claims nothing about one",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time draws with the shared block frame > keeps the clock’s words inside the clock’s own card",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time draws with the shared block frame > carries the identity row, the movement rows and exactly one completion",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time draws with the shared block frame > states the two endings with a glyph beside the words, not by hue alone",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time draws with the shared block frame > draws the swapped-out block as one card with no clock",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). The reading 07:49 stands for “Cap in 00:11”. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shared countdown warning > gives the warning up at the cap and at a finish, keeping the outcome’s colours",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shared countdown warning > stays a labelled timer that is not a live region",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s words for the same reading: each format clock is named by its block (`EMOM time`, `AMRAP time`, `FOR TIME time`) and captioned in words (`Minute 1 of 10`, `· Rest`, `Remaining`, `Elapsed`, `Time complete`, `Cap reached`) where the build’s components said `Time remaining`/`Block time`, `MIN 1 OF 10`, `REST`, `COMPLETE`, `Racing the clock`; the low colour is the timer role of the frame’s chamfer (Round 7’s TimerFrame is the app’s Card in the timer role beside the block’s card) where the build’s frame carried `data-low`; the breathe is on the clock’s `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, `data-loop`). “Racing the clock” is Round 7’s caption “Elapsed”. Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time with explicit ladder timing > free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s raced ladder: its grid `Prescribed ladder rounds` and its meta line `N rounds · 08:00 cap` (the rounds and the block’s cap, A3 TASK-105’s reading of the same line) for the build’s `Rounds in this ladder` and `… · for time, at your pace · 08:00 cap`; no race clock, Start is the ladder’s, nothing inferred. Base body of the same title superseded.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "ported",
+      "note": "Ported under round-07 decision R7-2 (Eric, chat, 2026-11-20: “Great, go ahead please”): mounted through the route’s dispatch — BlockSlot under PRODUCT_PRESENTATION, so Round 7’s TimedWorkoutFlow, as src/ui/ladder-block.test.tsx and TASK-116’s renderRouteAmrap cases do — over the file’s own completion seam and a Date.now clock, keeping the behaviour the build’s body asserts; nothing is built into the old component. Round 7’s meta line `4 rounds · 08:00 cap` (A3 TASK-105’s reading) for the build’s `… cap on the whole ladder`; grid `Prescribed ladder rounds`. Base body of the same title superseded.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time with explicit ladder timing > a For Time block with no ladder timing keeps its race clock",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "carried",
+      "note": "Body identical to the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "while the clock runs > turns urgent in the last ten seconds — words, pulse and hue together",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Base body superseded by the build’s TASK-008/TASK-007 case “turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five”, which replaces it in place, as the build replaced it.",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time with explicit ladder timing > free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it (base body)",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title (over the plain dispatch), replaced by the ported build body (R7-2).",
+      "result": "removed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries (base body)",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title (over the plain dispatch), replaced by the ported build body (R7-2).",
+      "result": "removed"
+    },
+    {
+      "file": "src/test/design-system-097-deprecations.test.ts",
+      "test": "the production app speaks one dialect per component > declares the owner-selected countdown warning breathe once, on its tokens (EXC-07)",
+      "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
+      "disposition": "rewritten",
+      "note": "Recorded as rewritten (round-07 finding S5): at the starting code it already reads Round 7’s src/ui/countdown-urgency.css, where the build read the breathe from src/ui/refinements/presentation.css — Round 7 look, same asserted behaviour. It keeps passing: the timer’s breathe and the aura’s share the one declared `animation` (one use of `clr-deadline-breathe`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and a low rest keep one loop between them > runs the guidance’s wait until the rest goes low, then stills it — still busy",
+      "ledger": "base (TASK-109’s file)",
+      "disposition": "rewritten-provisional",
+      "note": "Plan conflict C1, held for the owner: Round 7’s base body (TASK-109 owns the file) reads the rest’s warning on the card’s stepped micro-pulse, which TASK-108’s criteria replace (AC-R008-01/AC-R008-02/C61: the rest’s timer breathes with the one aura). Only those reads are moved to the rest’s timer (`restTimer()`); what it asserts — one loop between the panel’s wait and the rest’s warning — is unchanged. In its own commit so it can be dropped if the owner places it otherwise; TASK-109 restores the build’s four TASK-008 bodies there (“… an urgent rest keep one loop between them”).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/exercise-coaching.test.tsx",
+      "test": "the panel’s waits and a low rest keep one loop between them > treats a note being saved the same way: one loop, and the button stays busy",
+      "ledger": "base (TASK-109’s file)",
+      "disposition": "rewritten-provisional",
+      "note": "Plan conflict C1, held for the owner: Round 7’s base body (TASK-109 owns the file) reads the rest’s warning on the card’s stepped micro-pulse, which TASK-108’s criteria replace (AC-R008-01/AC-R008-02/C61: the rest’s timer breathes with the one aura). Only those reads are moved to the rest’s timer (`restTimer()`); what it asserts — one loop between the panel’s wait and the rest’s warning — is unchanged. In its own commit so it can be dropped if the owner places it otherwise; TASK-109 restores the build’s four TASK-008 bodies there (“… an urgent rest keep one loop between them”).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 phone-320: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 phone-390: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 phone-320: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 phone-390: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, body as tall as the frame, readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is read through its warning (colour at 14:50), Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-007.spec.ts",
+      "test": "JOURNEY-007 gallery cards and urgency phone-320: no other header state, and every clock's actual consumer in one whole frame",
+      "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed: Round 7’s accepted cards state draws the route’s timed flows and no workout header (so no other header state is presented); its clocks and the urgency state’s are each one whole TimerFrame. The TASK-007 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "test": "JOURNEY-008 touch phone-390: a running countdown takes the colour at 10 and one soft edge at 5, breathing in phase with its timer over multiple cycles and numeric ticks; pause and expiry end it; elapsed-only clocks stay neutral",
+      "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "test": "JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog's top layer and back on the same phase, and nothing is written",
+      "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "test": "JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+      "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "test": "JOURNEY-008 reduced motion phone-320: the urgent timer and the one edge hold a steady .5 with no animation, cover the narrow viewport, and lose no word, digit or colour",
+      "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker). Plan conflict C2, held for the owner: the build also read ForTimeBlock’s cap line (“Cap in MM:SS”, and “Cap in MM:SS — finish now” in the last ten seconds), which the route’s race clock does not draw and no round-07 criterion builds; that assertion is withheld, not retired, pending the owner’s decision (rules.pendingOwnerDecision).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-008.spec.ts",
+      "test": "JOURNEY-008 gallery urgency phone-390: the warning through the route’s own flow — an EMOM minute at 10 and at 5 with one edge in phase, a count-up race on its cap, held on pause, and a race far from its cap neutral — with no network",
+      "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed: Round 7’s accepted urgency state runs the route’s own flow at its moments (EMOM at 10 and 5, For Time 5 seconds to cap, a race far from its cap); its edge and phase, the colour, pause and neutrality are read there, and the open log, native dialog and reduced motion on the route above. The TASK-008 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "test": "JOURNEY-027 phone-320: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+      "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour (decision 2): the navigator draws no heading — the opened section’s name is its first card’s own heading — with its hidden “Section N / M · status” reading; the cards are Round 7’s `.clr-card`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "test": "JOURNEY-027 phone-390: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+      "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour (decision 2): the navigator draws no heading — the opened section’s name is its first card’s own heading — with its hidden “Section N / M · status” reading; the cards are Round 7’s `.clr-card`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "test": "AC-C54-01 keyboard, reduced motion, failed read and reopen phone-390: the jump list opens and jumps from the keyboard with a visible focus on the opened card; a failed read keeps its retry; a reload keeps the section and grabs no focus",
+      "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten for Round 7, same asserted behaviour (decision 2): the navigator draws no heading — the opened section’s name is its first card’s own heading — with its hidden “Section N / M · status” reading; the cards are Round 7’s `.clr-card`.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-027.spec.ts",
+      "test": "gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written",
+      "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
+      "disposition": "rewritten",
+      "note": "Rewritten and renamed: Round 7’s accepted gallery shows the compact navigator as the SectionHeader specimen of its component catalogue (/gallery/app?component=SectionHeader); same asserted behaviour there. The TASK-027 manifest carries the new name.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 cards phone-320: /workout’s EMOM, AMRAP and For Time clocks, before Start and running, match the accepted cards state",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 cards phone-390: /workout’s EMOM, AMRAP and For Time clocks, before Start and running, match the accepted cards state",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 urgency phone-320: /workout’s EMOM minute at ten and five seconds and its For Time race five seconds before the cap warn as the accepted urgency state does",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 urgency phone-390: /workout’s EMOM minute at ten and five seconds and its For Time race five seconds before the cap warn as the accepted urgency state does",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 emom, amrap and for_time phone-320: each /workout clock at its end, behind its Log results dialog, matches the accepted state",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 emom, amrap and for_time phone-390: each /workout clock at its end, behind its Log results dialog, matches the accepted state",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 navigator phone-320: /workout’s compact navigator, closed and open, matches the accepted gallery’s SectionHeader specimen; the workout header is captured on the route",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "test": "TASK-AC-244B4516A858 navigator phone-390: /workout’s compact navigator, closed and open, matches the accepted gallery’s SectionHeader specimen; the workout header is captured on the route",
+      "ledger": "TASK-108 (brief)",
+      "disposition": "added",
+      "note": "TASK-AC-244B4516A858 look check, new in this task.",
+      "result": "passed"
+    }
+  ]
+}

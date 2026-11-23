@@ -144,7 +144,7 @@
         {
           "file": "e2e/refinement/task-007.spec.ts",
           "project": "mobile",
-          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: the route's own one-row header, and every clock's actual consumer in one whole frame",
+          "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: no other header state, and every clock's actual consumer in one whole frame",
           "criterion": "AC-R007-02"
         }
       ]

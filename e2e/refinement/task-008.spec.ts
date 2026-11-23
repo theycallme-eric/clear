@@ -6,7 +6,7 @@ import type { Locator, Page, Route } from '@playwright/test'
 
 import { readE2eEnv } from '../../scripts/e2e/env.mjs'
 import { sessionSnapshotSchema, type SessionSnapshot } from '../../src/state/schemas'
-import { TIMER_FRAME_LISTS, timerFramesAcceptance, timerFramesSnapshot } from '../../src/test/timer-frames-fixture'
+import { timerFramesAcceptance, timerFramesSnapshot } from '../../src/test/timer-frames-fixture'
 import { fixtureLocation, onboardedProfile } from '../../src/test/user-data-double'
 import { installDeterministicCapture } from '../design-0143/fixtures'
 import { expect, test as scanned } from '../fixtures'
@@ -31,9 +31,16 @@ import { expect, test as scanned } from '../fixtures'
  * pause and expiry end it; elapsed-only clocks stay neutral; reduced motion is
  * a steady .5; nothing is written.
  *
- * Comparable reference: the accepted gallery eded158c…'s `?state=urgency`
- * (REUSE.md: one deduplicated edge, timer and aura on one document-timeline
- * phase) and P05 (`P05-acceptance-schematic.svg`). The breathe runs on the
+ * Comparable reference: the accepted gallery bec4454's `?state=urgency` (the
+ * route's own timed flows at their warning moments) and P05
+ * (`P05-acceptance-schematic.svg`).
+ *
+ * A3 TASK-108 carries the build's cases onto Round 7's owners: the warning is
+ * `useCountdownUrgency` fed by each clock's deadline adapter, the urgent
+ * timer (its `role="timer"` element) and the one aura breathe on the one rule
+ * in `src/ui/countdown-urgency.css`, and each clock is Round 7's TimerFrame;
+ * its low colour is the timer role of the frame's chamfer. Each case keeps the
+ * build's asserted behaviour (evidence/refinement/task-108/test-ledger.json). The breathe runs on the
  * browser's real document timeline; the app's clocks run on Playwright's clock,
  * so every threshold is crossed exactly while the shared phase is sampled live.
  *
@@ -231,7 +238,17 @@ function holdRegion(page: Page): Locator {
 }
 
 function holdCard(page: Page): Locator {
-  return page.locator('[data-workout-card="workout"]').filter({ has: holdRegion(page) })
+  return page.locator('.clr-card').filter({ has: holdRegion(page) })
+}
+
+/** A block's card, by the list its work is named in (Round 7's lists name the block). */
+function blockCard(page: Page, list: string): Locator {
+  return page.locator('.clr-card').filter({ has: page.getByRole('list', { name: list, exact: true }) })
+}
+
+/** A timer's frame on Round 7: its own chamfer (inside a card), or its card's body. */
+function frameOf(timer: Locator): Locator {
+  return timer.locator('xpath=ancestor-or-self::*[contains(concat(" ", normalize-space(@class), " "), " clr-chamfer ")][1]')
 }
 
 function holdTimer(page: Page): Locator {
@@ -258,7 +275,8 @@ async function jumpToMain(page: Page, mode: 'touch' | 'keyboard' = 'touch') {
   const act = mode === 'touch' ? tap : (control: Locator) => press(page, control)
   await act(page.getByRole('button', { name: 'All sections' }))
   await act(page.getByRole('button', { name: /^Accessory, / }))
-  await expect(page.getByRole('list', { name: TIMER_FRAME_LISTS.ladder })).toHaveCount(2)
+  // Round 7's ladders name their grid `Prescribed ladder rounds`.
+  await expect(page.getByRole('list', { name: 'Prescribed ladder rounds' })).toHaveCount(2)
   await settle(page)
 }
 
@@ -351,10 +369,12 @@ async function probe(page: Page): Promise<WarningProbe> {
         .filter((timer) => timer.getClientRects().length > 0)
         .map((timer) => {
           const style = getComputedStyle(timer)
+          // Round 7: the low colour is the timer role of the frame's chamfer.
+          const frame = timer.matches('.clr-chamfer') ? timer : timer.closest('.clr-chamfer')
           return {
             label: timer.getAttribute('aria-label') ?? '',
             digits: /\d{1,2}:\d{2}(?::\d{2})?/.exec(timer.textContent ?? '')?.[0] ?? '',
-            low: timer.parentElement?.hasAttribute('data-low') ?? false,
+            low: frame?.classList.contains('clr-chamfer--timer-low') ?? false,
             urgent: timer.getAttribute('data-urgent') === 'true',
             loop: timer.getAttribute('data-loop'),
             opacity: Number(style.opacity),
@@ -599,7 +619,7 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     // TASK-043: the open log is itself a native dialog now (the standard
     // block's focused logging dialog), so the one edge is drawn in its top
     // layer — above the open log — rather than on the body under it.
-    expectOneSoftEdge(frame, 'dialog:open:Log set 1', 'open log')
+    expectOneSoftEdge(frame, /^dialog:open:/, 'open log')
     expectOnePhase(frame, 'open log')
     expect(await edgeIsTopmost(page), 'the edge paints above the open log').toEqual([true, true, true, true, true, true])
     expect(await storageSnapshot(page)).toEqual(before)
@@ -610,6 +630,10 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     // before the menu: the workout behind the modal log is inert.
     await tap(page.getByRole('button', { name: 'Close log' }))
     await expect(log).toHaveCount(0)
+    // Round 7's dialog leaves on its own exit, timed on the page's clock: a
+    // fraction of a second, inside the same whole second of every reading.
+    await pass(page, 0.3)
+    await expect.poll(async () => (await probe(page)).edges[0]?.host).toBe('body')
     await expect(page.getByRole('region', { name: 'Rest' })).toHaveCount(1)
     await expect(edge(page)).toHaveCount(1)
     frame = await probe(page)
@@ -657,7 +681,8 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await pass(page, 4)
     await expect(page.getByRole('region', { name: 'Rest' })).toHaveCount(0)
     await expect(edge(page)).toHaveCount(0)
-    await expect(page.locator('[data-urgent]')).toHaveCount(0)
+    // Round 7 keeps each flow's deadline marker; none of them says urgent.
+    await expect(page.locator('[data-urgent="true"], .clr-countdown-breathe')).toHaveCount(0)
     expect(await storageSnapshot(page)).toEqual(before)
     await page.clock.resume()
     await checkJourneyA11y(page)
@@ -671,18 +696,18 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await openWorkout(page, visit)
     await jumpToMain(page, 'keyboard')
 
-    const emomCard = page.locator('[data-workout-card="workout"]').filter({ has: page.getByRole('list', { name: TIMER_FRAME_LISTS.emom }) })
+    const emomCard = blockCard(page, 'Movements in this EMOM')
     const emomStack = page.locator('main .clr-stack').filter({ has: emomCard }).last()
-    const emomTimer = emomStack.getByRole('timer', { name: 'Time remaining' })
+    const emomTimer = emomStack.getByRole('timer', { name: 'EMOM time' })
 
     // The EMOM's minute: colour at ten, the edge at five, reset at the boundary.
     await press(page, emomCard.getByRole('button', { name: 'Start EMOM' }))
     await expect(emomCard.getByRole('button', { name: 'Pause' })).toBeFocused()
     await pass(page, 49)
     expect(await readingOf(emomTimer)).toBe('00:11')
-    await expect(emomTimer.locator('xpath=..')).not.toHaveAttribute('data-low')
+    await expect(frameOf(emomTimer)).not.toHaveClass(/clr-chamfer--timer-low/)
     await pass(page, 1)
-    await expect(emomTimer.locator('xpath=..')).toHaveAttribute('data-low', 'true')
+    await expect(frameOf(emomTimer)).toHaveClass(/clr-chamfer--timer-low/)
     await expect(edge(page)).toHaveCount(0)
     await pass(page, 5)
     expect(await readingOf(emomTimer)).toBe('00:05')
@@ -698,27 +723,28 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await expect(emomCard.getByRole('button', { name: 'Resume' })).toBeFocused()
 
     // The For Time race counts up toward its 15:00 cap and warns on the cap.
-    const forTimeCard = page.locator('[data-workout-card="workout"]').filter({ has: page.getByRole('list', { name: TIMER_FRAME_LISTS.for_time }).filter({ hasText: /wall ball/i }) })
+    const forTimeCard = blockCard(page, 'Movements in this FOR TIME')
     const forTimeStack = page.locator('main .clr-stack').filter({ has: forTimeCard }).last()
-    const race = forTimeStack.getByRole('timer', { name: 'Block time' })
-    await press(page, forTimeCard.getByRole('button', { name: 'Start For Time' }))
+    const race = forTimeStack.getByRole('timer', { name: 'FOR TIME time' })
+    await press(page, forTimeCard.getByRole('button', { name: 'Start FOR TIME' }))
     await jump(page, 880)
     await pass(page, 9)
     expect(await readingOf(race)).toBe('14:49')
-    await expect(race.locator('xpath=..')).not.toHaveAttribute('data-low')
+    await expect(frameOf(race)).not.toHaveClass(/clr-chamfer--timer-low/)
     await pass(page, 1)
     expect(await readingOf(race)).toBe('14:50')
-    await expect(race.locator('xpath=..')).toHaveAttribute('data-low', 'true')
-    await expect(forTimeStack.getByText('Cap in 00:10 — finish now')).toBeVisible()
+    await expect(frameOf(race)).toHaveClass(/clr-chamfer--timer-low/)
+    // The build also read ForTimeBlock's "Cap in 00:10 — finish now" here; the
+    // route's race draws no such words (plan conflict C2, held for the owner).
     await expect(edge(page)).toHaveCount(0)
     await pass(page, 5)
     expect(await readingOf(race)).toBe('14:55')
     frame = await probe(page)
-    expect(timerNamed(frame, 'Block time')).toMatchObject({ digits: '14:55', urgent: true })
+    expect(timerNamed(frame, 'FOR TIME time')).toMatchObject({ digits: '14:55', urgent: true })
     expectOneSoftEdge(frame, 'body', 'cap at 5')
     expectOnePhase(frame, 'cap at 5')
     // The held EMOM and the elapsed-only session clock stay out of it.
-    expect(frame.timers.filter((timer) => timer.urgent).map((timer) => timer.label)).toEqual(['Block time'])
+    expect(frame.timers.filter((timer) => timer.urgent).map((timer) => timer.label)).toEqual(['FOR TIME time'])
     expect(timerNamed(frame, 'Session time')).toMatchObject({ low: false, urgent: false })
     await attach(page, 'cap-edge-5-phone-390')
 
@@ -727,7 +753,7 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     await press(page, forTimeCard.getByRole('button', { name: 'Pause' }))
     await pass(page, 60)
     expect(await readingOf(race)).toBe('14:57')
-    await expect(race.locator('xpath=..')).toHaveAttribute('data-low', 'true')
+    await expect(frameOf(race)).toHaveClass(/clr-chamfer--timer-low/)
     await expect(edge(page)).toHaveCount(0)
     await expect(race).not.toHaveAttribute('data-urgent')
 
@@ -741,11 +767,11 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
 
     // The cap ends the warning; "Cap reached" keeps its own outcome colour, still.
     await pass(page, 4)
-    await expect(forTimeStack.getByText('Cap reached')).toBeVisible()
+    await expect(race).toContainText('Cap reached')
     expect(await readingOf(race)).toBe('15:00')
     await expect(edge(page)).toHaveCount(0)
     await expect(race).not.toHaveAttribute('data-urgent')
-    await expect(race).toHaveClass(/clr-chamfer--timer-low/)
+    await expect(frameOf(race)).toHaveClass(/clr-chamfer--timer-low/)
     await page.clock.resume()
     await checkJourneyA11y(page)
     app.assertContained()
@@ -779,7 +805,11 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
     app.assertContained()
   })
 
-  test('JOURNEY-008 gallery urgency phone-390: the warning through the shared owner — held at 10 and 5, run into its last five, a count-up cap, an open native log with one edge in phase, and the still preview — with no network', async ({ page, visit }) => {
+  test('JOURNEY-008 gallery urgency phone-390: the warning through the route’s own flow — an EMOM minute at 10 and at 5 with one edge in phase, a count-up race on its cap, held on pause, and a race far from its cap neutral — with no network', async ({ page, visit }) => {
+    // Round 7's accepted `?state=urgency` (bec4454) runs the route's own
+    // TimedWorkoutFlow, moved by its buttons to each warning moment; the
+    // build's state had its own held/run/log/still controls, whose cases the
+    // route proves above (the open log and native dialog, reduced motion).
     test.setTimeout(120_000)
     await page.setViewportSize(PHONE_390)
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: false })
@@ -791,72 +821,50 @@ test.describe('TASK-008 recovered smooth synchronized countdown warning', () => 
 
     await visit('/gallery/refinements?state=urgency')
     const state = page.locator('[data-refinement-state="urgency"]')
-    await expect(state.getByRole('heading', { name: /^Countdown warning and whole timer frames/ })).toBeVisible()
-    await page.clock.pauseAt(ENTRY + 10_000)
-    const demo = state.locator('[data-gallery-deadline-warning]')
-    const cue = demo.getByRole('timer').first()
+    await expect(state.getByRole('heading', { name: 'Soft deadline warning · synchronized' })).toBeVisible()
+    // The state's driver presses Start and moves its memory clock to the moment;
+    // each check below holds within the second it is read in.
+    const moment = async (label: string, clock: string, readings: readonly string[]) => {
+      await tap(state.getByRole('button', { name: label }))
+      const timer = state.getByRole('timer', { name: clock })
+      // The moment's own second, or one of the next few of the same band: the
+      // state's clock runs on in real time once it is there.
+      await expect.poll(async () => readings.includes(await readingOf(timer)), { timeout: 10_000 }).toBe(true)
+      return timer
+    }
 
-    // Held at ten and at five: the colour, never the edge.
-    await tap(demo.getByRole('button', { name: 'Inspect 10 seconds' }))
-    await expect(cue.locator('xpath=..')).toHaveAttribute('data-low', 'true')
-    await tap(demo.getByRole('button', { name: 'Inspect 5 seconds' }))
-    expect(await readingOf(cue)).toBe('00:05')
+    // An EMOM minute at ten seconds: the colour, never the edge.
+    const minute = await moment('EMOM · 10 seconds', 'EMOM time', ['00:10', '00:09', '00:08', '00:07'])
+    await expect(frameOf(minute)).toHaveClass(/clr-chamfer--timer-low/)
+    await expect(minute).not.toHaveAttribute('data-urgent')
     await expect(edge(page)).toHaveCount(0)
-    await expect(cue).not.toHaveAttribute('data-urgent')
 
-    // Run: the breathe and the one edge, in phase.
-    await tap(demo.getByRole('button', { name: 'Run countdown' }))
-    await expect(edge(page)).toHaveCount(1)
-    await expect(cue).toHaveAttribute('data-loop', 'run')
+    // At five, running: the breathe and the one edge, in phase.
+    const five = await moment('EMOM · 5 seconds', 'EMOM time', ['00:05', '00:04', '00:03'])
+    await expect(five).toHaveAttribute('data-loop', 'run')
     let frame = await probe(page)
-    expectOneSoftEdge(frame, 'body', 'gallery running')
-    expectOnePhase(frame, 'gallery running')
+    expectOneSoftEdge(frame, 'body', 'gallery EMOM at 5')
+    expectOnePhase(frame, 'gallery EMOM at 5')
     await attach(page, 'gallery-urgency-edge-phone-390')
 
     // The count-up race toward its cap reads the same deadline: cap minus elapsed.
-    await tap(demo.getByRole('button', { name: 'Show count-up cap' }))
-    await expect(cue).toHaveAccessibleName('Block time')
-    expect(await readingOf(cue)).toBe('00:55')
+    const race = await moment('For Time · 5 seconds to cap', 'FOR TIME time', ['14:55', '14:56', '14:57'])
+    await expect(race).toHaveAttribute('data-loop', 'run')
     frame = await probe(page)
+    expectOneSoftEdge(frame, 'body', 'gallery cap')
     expectOnePhase(frame, 'gallery cap')
 
-    // An open native log over the warning: two timers, one edge in its top layer.
-    await tap(demo.getByRole('button', { name: 'Open log over the warning' }))
-    const dialog = page.getByRole('dialog', { name: 'Log set' })
-    await expect(dialog).toBeVisible()
-    await expect.poll(async () => (await probe(page)).edges[0]?.host).toBe('dialog:open:Log set')
-    frame = await probe(page)
-    expectOneSoftEdge(frame, 'dialog:open:Log set', 'gallery log')
-    expectOnePhase(frame, 'gallery log')
-    expect(frame.timers.filter((timer) => timer.urgent)).toHaveLength(2)
-    expect(await edgeIsTopmost(page)).toEqual([true, true, true, true, true, true])
-    await attach(page, 'gallery-urgency-log-phone-390')
-    await tap(dialog.getByRole('button', { name: 'Close log' }))
-    // The dialog's own 200 ms exit runs on the page's clock.
-    await pass(page, 0.5)
-    await expect(dialog).toBeHidden()
-    await expect.poll(async () => (await probe(page)).edges[0]?.host).toBe('body')
-
-    // The still preview: a steady .5 on the timer and the edge, no animation.
-    await tap(demo.getByRole('checkbox', { name: 'Still preview (reduced motion)' }))
-    await expect(edge(page)).toHaveAttribute('data-loop', 'still')
-    frame = await probe(page)
-    expectOneSoftEdge(frame, 'body', 'gallery still', true)
-    // The demonstration's own timer: the urgent one (the race specimens above are held).
-    expect(frame.timers.filter((timer) => timer.urgent)).toEqual([
-      expect.objectContaining({ label: 'Block time', urgent: true, loop: 'still', opacity: 0.5, breathes: [] }),
-    ])
-    await attach(page, 'gallery-urgency-still-phone-390')
-    await tap(demo.getByRole('checkbox', { name: 'Still preview (reduced motion)' }))
-
-    // Pause ends the edge; the elapsed-only session clock never warns.
-    await tap(demo.getByRole('button', { name: 'Pause' }))
+    // Held: the colour stays; the breathe and the edge end.
+    await tap(state.getByRole('button', { name: 'Pause' }))
     await expect(edge(page)).toHaveCount(0)
-    await expect(cue.locator('xpath=..')).toHaveAttribute('data-low', 'true')
-    frame = await probe(page)
-    for (const session of frame.timers.filter((timer) => timer.label === 'Session time')) {
-      expect(session).toMatchObject({ low: false, urgent: false })
-    }
+    await expect(frameOf(race)).toHaveClass(/clr-chamfer--timer-low/)
+    await expect(race).not.toHaveAttribute('data-urgent')
+
+    // A race 32 seconds into its seven-minute cap is nowhere near its deadline.
+    const ladder = await moment('Ladder · elapsed', 'Ladder time', ['00:32', '00:33', '00:34', '00:35'])
+    await expect(frameOf(ladder)).not.toHaveClass(/clr-chamfer--timer-low/)
+    await expect(ladder).not.toHaveAttribute('data-urgent')
+    await expect(edge(page)).toHaveCount(0)
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 })

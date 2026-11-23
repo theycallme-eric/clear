@@ -1,0 +1,797 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-108",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/countdown-urgency.test.tsx",
+    "src/ui/timer-frame-layout.test.tsx",
+    "src/state/countdown-urgency.test.ts",
+    "src/ui/workout-chrome.test.tsx",
+    "src/app/workout-footer-nav.test.tsx",
+    "src/app/movement-countdown.test.tsx",
+    "src/app/Workout.test.tsx",
+    "src/ui/emom-block.test.tsx",
+    "src/ui/for-time-block.test.tsx",
+    "src/ui/amrap-block.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-108/required-cases.json",
+    "sha256": "baad9234a8b2a19879a95d30b4e950382b457a6452641f1d66f1dd001f7f7016"
+  },
+  "targets": [
+    {
+      "path": "src/ui/countdown-urgency.test.tsx",
+      "sha256": "91d1f046019277f0d1e7b6a8bfcbd1297a2d887db4eb738e1b8063ef8653897b"
+    },
+    {
+      "path": "src/ui/timer-frame-layout.test.tsx",
+      "sha256": "a0d38fc4c9c71b755c6a05c3d803de346d2996d5613d5b197caa068d024e502f"
+    },
+    {
+      "path": "src/state/countdown-urgency.test.ts",
+      "sha256": "2cb99785cfc2a8f401f24f7bdef4c4adf59d182edc48ac6c9e89d7f4d6bce3ec"
+    },
+    {
+      "path": "src/ui/workout-chrome.test.tsx",
+      "sha256": "019815ba40a168923c5b5014a136c949453914a3f17b3011ed35931e33a94dda"
+    },
+    {
+      "path": "src/app/workout-footer-nav.test.tsx",
+      "sha256": "ffebb31244985f84155d0cc3ee5a267dbde8aac62623b84a316b2d4472087948"
+    },
+    {
+      "path": "src/app/movement-countdown.test.tsx",
+      "sha256": "d0f46dac7062ac6ed75013ced114f927b01b45fe4eefd8281da66591d0e45e56"
+    },
+    {
+      "path": "src/app/Workout.test.tsx",
+      "sha256": "b8cb424a325223e6c3c8e3ad51429e631eecd7928dc1b8b275c90428c6935406"
+    },
+    {
+      "path": "src/ui/emom-block.test.tsx",
+      "sha256": "2e05095abe67e518cfe8e68b007bb57edd2a3fb810882aa867589def45b71d46"
+    },
+    {
+      "path": "src/ui/for-time-block.test.tsx",
+      "sha256": "01ea062d66a8688d25c540128cba8d5ec7e518db90cd295f54bb82e66081959f"
+    },
+    {
+      "path": "src/ui/amrap-block.test.tsx",
+      "sha256": "649594843150c9b514e57556a4031bc1e40892c85815815eb77dd9b9c3c2e073"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap's outcome never breathes",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C61-01 the timer and the aura share one phase: each breathe is pinned to the document timeline's epoch when it starts, again when the aura moves into or out of a dialog or the deadline resumes, and never restarted by a numeric tick",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/countdown-urgency.test.tsx",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the route’s own flow: an EMOM minute at 10 and at 5 with one aura, a count-up race warning on its cap, held on pause, and a race far from its cap neutral",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, with no short inner chamfer inside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu's height and never stretched across the header",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the route keeps its one row past the hour, and the gallery presents no two-row state",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/timer-frame-layout.test.tsx",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C23-01 the accepted rule: colour at 10 seconds left, the edge only while running at 5 and under, nothing at 11, at zero or for an unusable reading",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-R008-03 every countdown family warns on its own owner's remaining time: a movement countdown, the rest, an EMOM minute, an AMRAP window, a scheduled interval and a circuit round rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C23-01 a count-up race warns on its cap minus elapsed, never on the number it shows: For Time and the raced ladder",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C24-01 pause holds the colour and stops the edge; resume brings it back; expiry, a finish and the cap end it",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-R008-03 elapsed-only clocks stay neutral at every reading: the session clock, a round's elapsed time and a race with no cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/state/countdown-urgency.test.ts",
+      "name": "TASK-008 countdown warning eligibility > AC-C24-01 a warning records no work: reading every deadline stores nothing, starts nothing and changes no owner's record",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "GlobalTimer > is a labelled timer, spoken in words rather than punctuation",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "GlobalTimer > is not a live region — a second-by-second announcement ruins the screen",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "GlobalTimer > is the shipped timer card — one bar, the timer role, and no frame around it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "GlobalTimer > is an element frame inside a card, never a second card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "GlobalTimer > counts up, so it has no low state at any reading",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "ProgressTracker > measures real progress: sections resolved out of sections prescribed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "ProgressTracker > says each section’s status in words, never in colour alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "ProgressTracker > marks where the user is with aria-current, not with a tint",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "ProgressTracker > jumps to a section when the shell offers it, and is inert when it does not",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "ProgressTracker > is one card with its heading, bar and section list inside",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "SectionHeader > uses the current structural heading level rather than skipping past it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "SectionHeader > says where the section sits, what it is called, and what state it is in",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "SectionHeader > is one card: the title, its position and its badges are all inside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "SectionHeader > carries the session’s bar and a collapsible jump list in that one card (U34, U35)",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "StructureBadge > is the label alone when the block carries no number",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "StructureBadge > is an element frame on the structure role, emitting through its own wrapper",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "StructureBadge > is not a card, so it sits inside one without nesting",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "WorkoutNavigation > is a named landmark, because the shell has more than one nav’s worth of controls",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "WorkoutNavigation > refuses to go back from the first section",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "WorkoutNavigation > turns the forward action into completion on the last section",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "WorkoutNavigation > offers no destructive action beside the one pressed between every section",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "WorkoutNavigation > stops taking presses while a lifecycle call is in flight",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "WorkoutNavigation > claims the loop only while finishing, and stays busy when it is stilled",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > draws nothing until a rest is running — no bar at zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > starts nothing for a rest of zero seconds",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > shows the remaining time, in digits and in words, with skip and add-time",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > adds time to the end of the rest, not to its start",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > leaves the screen when the rest is skipped",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > reads the wall clock on return from the background, and leaves when it elapses",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > enters with no list or route motion — it appears in the tap that logs a set",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > breathes with the one soft screen edge in its final five seconds: the timer frame on the running loop, not the card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > steps the fill to the low colour on the same schedule, with no glow in its styles",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > stays a labelled timer that is not live, with one milestone that is",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "RestTimerBar > is still under reduced motion and loses nothing it was saying",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the jump list opens by keyboard and touch, jumps and collapses, stays out of the tab order while collapsed, and is read-only while a move is saving",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-064: progress sits immediately above one compact paired row > pairs Previous on the left with Next section on the right in one row",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-064: progress sits immediately above one compact paired row > keeps the pair on the last section, with Finish workout on the right",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-064: progress sits immediately above one compact paired row > lays the row out as two equal columns at every width, never stacked",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-065: readable, aligned, reachable, and the same flow > keeps both actions full-cell, aligned and labelled at the control height",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-065: readable, aligned, reachable, and the same flow > stays inside the device safe areas the contained shell reserves",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/workout-footer-nav.test.tsx",
+      "name": "AC-065: readable, aligned, reachable, and the same flow > ends through the existing finish flow from the right-hand action",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Elapsed session clock and movement countdown stay separate (AC-050) > names, directions and sizes the two clocks differently",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "A movement-owned countdown with Start / Pause / Reset (AC-051) > starts, pauses, resumes and resets the hold’s own seconds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "A movement-owned countdown with Start / Pause / Reset (AC-051) > stays on its movement’s card, still running, while the sheet opens and minimises",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "A movement-owned countdown with Start / Pause / Reset (AC-051) > times the next set from its own prescribed seconds once a set is logged",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "B05-06: full-width countdown above its paired controls, above Rest > draws the timer first, then Start/Pause and Reset as one pair, inside the card above Rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Countdown framing matches the session clock (AC-052) > is an element frame of the timer role inside the block card — no second card, no second bar",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Countdown framing matches the session clock (AC-052) > is the shipped timer card, with one bar, wherever no card surrounds it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Countdown framing matches the session clock (AC-052) > never adds a frame or bar in a card",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/movement-countdown.test.tsx",
+      "name": "Final five seconds: low state and screen-edge cue (AC-053) > records no movement result when the countdown runs out",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "before the clock starts > states the cap and the work, and offers the one control that starts it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "before the clock starts > records nothing it did not observe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "while the clock runs > counts up from the tap that started it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "while the clock runs > offers no second start that would discard the time it took",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "while the clock runs > carries no urgency treatment while there is time left",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the first completion path: finished under the cap > stops the clock at the finish, not at the cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the first completion path: finished under the cap > supplies the elapsed seconds and the under-cap finish to the shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the first completion path: finished under the cap > wears the finished treatment, and no urgency however close it came",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the second completion path: the cap is reached > stops at the cap on its own, with no tap and no stamp",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the second completion path: the cap is reached > reads differently from a finish — the words and the treatment both",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the second completion path: the cap is reached > supplies the cap and the cap-expiry outcome to the shell",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "across a refresh > comes back to the race it was in, elapsed from the wall clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "across a refresh > comes back to a finish it already recorded",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "across a refresh > ignores a stored clock it cannot believe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "a block with no movements left > says so, runs no clock, and records nothing it did not observe",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "a block with no cap > counts up, states no deadline, and claims nothing about one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time draws with the shared block frame > keeps the clock’s words inside the clock’s own card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time draws with the shared block frame > carries the identity row, the movement rows and exactly one completion",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time draws with the shared block frame > states the two endings with a glyph beside the words, not by hue alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time draws with the shared block frame > draws the swapped-out block as one card with no clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the clock takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the clock takes the shared countdown warning > gives the warning up at the cap and at a finish, keeping the outcome’s colours",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the clock takes the shared countdown warning > stays a labelled timer that is not a live region",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time with explicit ladder timing > free-paced, 3 rounds: rounds listed, no race clock and nothing inferred from it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time with explicit ladder timing > free-paced, 5 rounds: rounds listed, no race clock and nothing inferred from it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "name": "For Time with explicit ladder timing > a For Time block with no ladder timing keeps its race clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > consolidates status and section count into one compact navigator, with progress above the footer navigation",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by skip",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by expiry",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "name": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "name": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "name": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 287,
+    "passed": 287,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 287
+  },
+  "problems": []
+}

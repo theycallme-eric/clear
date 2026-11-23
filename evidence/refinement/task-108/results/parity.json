@@ -1,0 +1,85 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-108",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-108-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-108/required-cases.json",
+    "sha256": "baad9234a8b2a19879a95d30b4e950382b457a6452641f1d66f1dd001f7f7016"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-108-parity.spec.ts",
+      "sha256": "9cdfb11f4b37aac7e839d96530fac93c10b27c2b82b28c53d3287646e480c2a9"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 cards phone-320: /workout’s EMOM, AMRAP and For Time clocks, before Start and running, match the accepted cards state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 urgency phone-320: /workout’s EMOM minute at ten and five seconds and its For Time race five seconds before the cap warn as the accepted urgency state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 emom, amrap and for_time phone-320: each /workout clock at its end, behind its Log results dialog, matches the accepted state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 navigator phone-320: /workout’s compact navigator, closed and open, matches the accepted gallery’s SectionHeader specimen; the workout header is captured on the route",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 cards phone-390: /workout’s EMOM, AMRAP and For Time clocks, before Start and running, match the accepted cards state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 urgency phone-390: /workout’s EMOM minute at ten and five seconds and its For Time race five seconds before the cap warn as the accepted urgency state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 emom, amrap and for_time phone-390: each /workout clock at its end, behind its Log results dialog, matches the accepted state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-108-parity.spec.ts",
+      "name": "TASK-AC-244B4516A858 navigator phone-390: /workout’s compact navigator, closed and open, matches the accepted gallery’s SectionHeader specimen; the workout header is captured on the route",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 8
+  },
+  "problems": []
+}

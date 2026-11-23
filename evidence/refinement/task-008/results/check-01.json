@@ -16,7 +16,7 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-008/required-cases.json",
-    "sha256": "5d39b1d9e5b7b656643eeaf8e3b3028a1f720209d2483c5dc71fc502eac35ac9"
+    "sha256": "9378ebe9d6984d4783815f84a1d3457d4bfe638cc930cf201acbab6428ddd275"
   },
   "targets": [
     {
