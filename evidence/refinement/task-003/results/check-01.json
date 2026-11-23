@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/ui/block-panel.test.tsx",
-      "sha256": "be6568b8e41fa0d83cf015f24cbf38e7995ef73d4c6744d477cac7b18a2ba940"
+      "sha256": "bd5d35520400713d9f42b2c351de0297e5674f81e873e027e54f51fd7aa9aaee"
     }
   ],
   "requiredCases": [

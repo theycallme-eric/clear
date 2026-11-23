@@ -307,6 +307,56 @@ function mountRoute(options: { block?: BlockFixture; beside?: ReactNode } = {}):
   }
 }
 
+/**
+ * A3 TASK-110 (round-07 R7-2): the route's EMOM over a completion seam that
+ * names the session, so it keeps its record in the shell's storage under the
+ * key EmomBlock kept (`clear.workout-emom`), starting from what an earlier
+ * visit left there. `refresh` is a refresh: a fresh mount over the same
+ * storage, with the clock where it now is.
+ */
+function mountStoredRoute(options: { block?: BlockFixture; stored?: EmomState } = {}) {
+  const snapshot = snapshotFixture({
+    sections: [
+      {
+        title: 'Conditioning',
+        sectionType: 'conditioning',
+        blocks: [{ structureType: 'emom', timerType: 'per_minute', timerSeconds: 600, exercises: PAIR, ...options.block }],
+      },
+    ],
+  })
+  const block = sessionProgress(snapshot).sections[0].blocks[0]
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const completion: BlockCompletionApi = { reportOutcome, isBlockRecorded: () => false, sessionId: FIXTURE_SESSION_ID }
+  window.localStorage.clear()
+  const storage: ShellStorage = window.localStorage
+  if (options.stored !== undefined) writeEmomState(storage, block.blockId, options.stored)
+  let current = NOW
+  vi.spyOn(Date, 'now').mockImplementation(() => current)
+  const tree = (
+    <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+      <BlockCompletionContext value={completion}>
+        <BlockSlot block={block} />
+      </BlockCompletionContext>
+    </WorkoutExperiencePresentationProvider>
+  )
+  let view = render(tree)
+  return {
+    block,
+    storage,
+    reportOutcome,
+    advance: (seconds: number) => {
+      current += seconds * 1000
+      act(() => {
+        window.dispatchEvent(new Event('focus'))
+      })
+    },
+    refresh: () => {
+      view.unmount()
+      view = render(tree)
+    },
+  }
+}
+
 /** The route's minute clock: Round 7's TimerFrame, named by its block. */
 function routeTimer(): HTMLElement {
   return screen.getByRole('timer', { name: 'EMOM time' })
@@ -387,16 +437,26 @@ describe('the EMOM runs the clock the block prescribes', () => {
     expectSingleTimerFrame('00:00')
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): the build's body, ported onto the
+  // EMOM `/workout` draws (`BlockSlot` under the product presentation).
+  // Round 7 states the minute in the clock's caption once it runs ("Minute 1
+  // of 10"), and before Start each movement's scheduled minute in its row;
+  // before Start it marks the second movement Next (A3 TASK-117's UAT item).
   it('states the window from timer_seconds once the clock is started', async () => {
     const user = setup()
-    mount()
+    mountRoute()
 
     // Not started: the block says what it is, and offers the one way in.
-    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    expect(screen.getByText('10 MIN')).toBeInTheDocument()
+    expect(routeMovement('01 hollow body hold').getByText('Min 1 · 8 reps')).toBeInTheDocument()
+    expect(routeMarked('Next')).toEqual(['02 v up'])
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expectNoRedundantCaption()
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
-    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
+    expectNoRedundantCaption()
     expect(screen.getByRole('timer')).toBeInTheDocument()
   })
 
@@ -433,39 +493,46 @@ describe('the EMOM runs the clock the block prescribes', () => {
 })
 
 describe('the minute boundary flips the active work', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM; the
+  // minute is the clock's caption ("Minute 2 of 10" for "MIN 2 OF 10").
   it('moves the live movement on the boundary, with no tap', async () => {
     const user = setup()
-    const mounted = mount()
+    const mounted = mountRoute()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
-    expect(marked('Now')).toEqual(['1. hollow body hold'])
-    expect(movement('1. hollow body hold').getByText('Now')).toBeInTheDocument()
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
+    expect(routeMovement('01 hollow body hold').getByText('Now')).toBeInTheDocument()
 
     // The phone was in a pocket for the rest of minute one.
     mounted.advance(60)
 
-    expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
-    expect(marked('Now')).toEqual(['2. v up'])
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Minute 2 of 10')
+    expect(routeMarked('Now')).toEqual(['02 v up'])
+    // TASK-011 (C32): Now and the minute carry the work; no WORK caption.
+    expectNoRedundantCaption()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM.
   it('offers nothing to press once the clock runs: the minute is never marked done', async () => {
     const user = setup()
-    const mounted = mount()
+    const mounted = mountRoute()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(20)
 
-    // Still work, and nothing on the screen claims the minute is finished.
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // Still work — the minute and Now say so (TASK-011, C32: no WORK
+    // caption) — and nothing on the screen claims the minute is finished.
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
+    expectNoRedundantCaption()
     expect(screen.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
     expect(screen.queryByText(/minute done/i)).not.toBeInTheDocument()
 
     // And the next boundary moves the work on without anything being pressed.
     mounted.advance(40)
 
-    expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
-    expect(marked('Now')).toEqual(['2. v up'])
+    expect(routeTimer()).toHaveTextContent('Minute 2 of 10')
+    expect(routeMarked('Now')).toEqual(['02 v up'])
   })
 
   it('names what is coming during the rest window rather than telling the user to start', async () => {
@@ -479,37 +546,63 @@ describe('the minute boundary flips the active work', () => {
     expect(marked('Next')).toEqual(['2. v up'])
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM. The
+  // block's rest window is stated once on its prescription line (TASK-003,
+  // AC-R003-03, restored by A3 TASK-110); the rest itself is the clock's
+  // caption, "Minute 1 of 10 · Rest", for the build's REST word.
   it('rests for the window the block prescribes at the end of every minute', async () => {
     const user = setup()
-    const mounted = mount({ block: { roundRestSeconds: 15 } })
+    const mounted = mountRoute({ block: { roundRestSeconds: 15 } })
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     // Stated once, as the block's rest rather than each movement's.
-    expect(screen.getByText('15s rest at the end of each minute')).toBeInTheDocument()
+    expect(screen.getAllByText('15s rest at the end of each minute')).toHaveLength(1)
 
+    // TASK-011 (C32): the work part of the minute is the minute and Now; the
+    // transition into its rest keeps its rest word.
     mounted.advance(44)
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
+    expect(routeTimer()).not.toHaveTextContent('Rest')
+    expectNoRedundantCaption()
 
     mounted.advance(1)
-    expect(screen.getByText('REST')).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10 · Rest')
 
     mounted.advance(15)
-    expect(screen.getByText('WORK')).toBeInTheDocument()
-    expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
+    expect(routeTimer()).not.toHaveTextContent('Rest')
+    expect(routeMarked('Now')).toEqual(['02 v up'])
+    expectNoRedundantCaption()
+    expect(routeTimer()).toHaveTextContent('Minute 2 of 10')
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM; its
+  // end is the clock's caption, "Time complete" (for "COMPLETE"), and the
+  // card's real Log action opens the end log in the shared focused dialog.
   it('says the block is done once its last minute has elapsed', async () => {
     const user = setup()
-    const mounted = mount({ block: { timerSeconds: 120 } })
+    const mounted = mountRoute({ block: { timerSeconds: 120 } })
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(120)
 
-    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
-    // The schedule is over; nothing says the work was performed.
-    expect(screen.getByText(/The clock has run every prescribed minute/)).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Time complete')
+    // The schedule is over; nothing says the work was performed. TASK-011
+    // (C31; R43, R84) supersedes the closing sentence with the end log: no
+    // minutes counter, only the optional notes for an exception.
+    expect(screen.queryByText(/The clock has run every prescribed minute/)).not.toBeInTheDocument()
+    // TASK-046 (C45; R43, R100): the card's real Log action opens it in the
+    // shared focused dialog, titled "Log results".
+    const open = screen.getByRole('button', { name: 'Log results' })
+    expect(open).toBeInTheDocument()
+    await user.click(open)
+    const log = screen.getByRole('dialog', { name: 'Log results' })
+    expect(log.querySelector('form.clr-timed-log')?.closest('dialog')).not.toBeNull()
+    expect(within(log).getByRole('heading', { name: 'Log results' })).toBeInTheDocument()
+    expect(within(log).getByRole('textbox', { name: 'Notes · optional' })).toBeInTheDocument()
+    expect(screen.queryByText(/minutes? completed/i)).not.toBeInTheDocument()
+    expect(document.querySelector('output, .clr-quantity')).toBeNull()
     expect(screen.queryByText(/minutes? (is |are )?done/i)).not.toBeInTheDocument()
-    expect(marked('Now')).toEqual([])
+    expect(routeMarked('Now')).toEqual([])
   })
 
   it('marks the live movement for a screen reader, not only in colour', async () => {
@@ -558,14 +651,15 @@ describe('an alternating EMOM says which minutes each movement covers', () => {
     expect(movement('3. plank').getByText('MIN 3, 6, 9…')).toBeInTheDocument()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM.
   it('labels nothing on a single-movement EMOM', () => {
     // Every minute is the same movement; a label would say nothing.
-    mount({ block: { exercises: [PAIR[0]] } })
+    mountRoute({ block: { exercises: [PAIR[0]] } })
 
-    // Looked for inside the movement's own row: the structure badge above says
-    // `EMOM · 10 MIN`, which is the window rather than an assignment, and the
+    // Looked for inside the movement's own row: the header above says `EMOM`
+    // and `10 MIN`, which is the window rather than an assignment, and the
     // target line names the scheduled minute rather than a pattern.
-    expect(movement('1. hollow body hold').queryByText(/^(ODD|EVEN) MIN$|^MIN \d+, /)).not.toBeInTheDocument()
+    expect(routeMovement('01 hollow body hold').queryByText(/^(ODD|EVEN) MIN$|^MIN \d+, /)).not.toBeInTheDocument()
     expect(screen.queryByText('ODD MIN')).not.toBeInTheDocument()
   })
 
@@ -605,45 +699,47 @@ describe('the timed state survives a refresh', () => {
     expect(screen.queryByRole('button', { name: 'Start EMOM' })).not.toBeInTheDocument()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM, which
+  // reads the record EmomBlock kept (`clear.workout-emom`) under a seam that
+  // names the session.
   it('drops a minute marked done by an earlier build: the restored minute is the clock’s', () => {
-    mount({
+    mountStoredRoute({
       stored: {
         startedAt: new Date(NOW - 190_000).toISOString(),
         workDoneMinute: 4,
       },
     })
 
-    expect(screen.getByText('MIN 4 OF 10')).toBeInTheDocument()
-    expect(screen.getByText('WORK')).toBeInTheDocument()
-    expect(timer()).toHaveTextContent('00:50')
+    expect(routeTimer()).toHaveTextContent('Minute 4 of 10')
+    // Work, not rest: minute 4 is the second movement's, marked Now (TASK-011,
+    // C32: no WORK caption).
+    expect(routeMarked('Now')).toEqual(['02 v up'])
+    expectNoRedundantCaption()
+    expect(routeTimer()).toHaveTextContent('00:50')
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM; the
+  // end-of-minute cue is Round 7's low state on the clock's frame (the
+  // build's `data-low` and `clr-chamfer--timer-low`, A3 TASK-108).
   it('restores the countdown and its end-of-minute cue after a background and a refresh', async () => {
     reduceMotion(false)
     const user = setup()
-    const mounted = mount()
+    const mounted = mountStoredRoute()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     // Backgrounded across two boundaries, into the last ten seconds of minute 3.
     mounted.advance(172)
-    expect(screen.getByText('MIN 3 OF 10')).toBeInTheDocument()
-    expect(timer()).toHaveTextContent('00:08')
-    expect(minuteFrame()).toHaveAttribute('data-urgent', 'true')
+    expect(routeTimer()).toHaveTextContent('Minute 3 of 10')
+    expect(routeTimer()).toHaveTextContent('00:08')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
 
     mounted.refresh()
 
-    expect(screen.getByText('MIN 3 OF 10')).toBeInTheDocument()
-    expect(timer()).toHaveTextContent('00:08')
-    expect(timer()).toHaveClass('clr-chamfer--timer-low')
-    expect(minuteFrame()).toHaveAttribute('data-urgent', 'true')
-    expect(marked('Now')).toEqual(['1. hollow body hold'])
-
-    // Into the final five seconds and refreshed again: the pulse comes back too.
-    mounted.advance(4)
-    mounted.refresh()
-    expect(timer()).toHaveTextContent('00:04')
-    expect(countdown()).toHaveClass('clr-pulse-micro')
-    expect(countdown()).toHaveAttribute('data-loop', 'run')
+    expect(routeTimer()).toHaveTextContent('Minute 3 of 10')
+    expect(routeTimer()).toHaveTextContent('00:08')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeFrame()).not.toHaveClass('clr-chamfer--timer')
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
   })
 
   it('comes back finished when the window expired while the tab was away', () => {
@@ -658,21 +754,33 @@ describe('the timed state survives a refresh', () => {
     expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM. Before
+  // Start Round 7 marks the second movement Next (A3 TASK-117's UAT item).
   it('ignores a record no clock can be read against', () => {
-    mount({ stored: { startedAt: 'some time on Tuesday', workDoneMinute: 4 } })
+    mountStoredRoute({ stored: { startedAt: 'some time on Tuesday', workDoneMinute: 4 } })
 
-    // Repaired to "not started" rather than frozen at minute one for ever.
+    // Repaired to "not started" rather than frozen at minute one for ever:
+    // Start, minute one ahead (TASK-011, C32: no NOT STARTED caption).
     expect(screen.getByRole('button', { name: 'Start EMOM' })).toBeInTheDocument()
-    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(routeMarked('Next')).toEqual(['02 v up'])
+    expect(routeMarked('Now')).toEqual([])
+    expectNoRedundantCaption()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM, which
+  // keeps its record under EmomBlock's key once the seam names the session.
   it('starts at the top when there is nothing stored, and stores what it starts', async () => {
     const user = setup()
-    const mounted = mount({ stored: EMOM_START })
+    const mounted = mountStoredRoute({ stored: EMOM_START })
 
-    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    // TASK-011 (C32): ready reads as Start and minute one, without a caption.
+    expect(screen.getByRole('button', { name: 'Start EMOM' })).toBeInTheDocument()
+    expect(routeMovement('01 hollow body hold').getByText('Min 1 · 8 reps')).toBeInTheDocument()
+    expectNoRedundantCaption()
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
     expect(mounted.storage.getItem('clear.workout-emom')).toContain(mounted.block.blockId)
   })
 })
@@ -789,13 +897,17 @@ describe('the EMOM draws with the shared block frame', () => {
     expect(inside.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2; TASK-003, AC-C08-01): ported onto the
+  // route's EMOM. The block's title is its section label on the route.
   it('carries the identity row and the movement rows', () => {
-    mount()
+    mountRoute()
 
     const blockCard = cards()[0]
     const inside = within(blockCard)
-    // Round 7 (decision 6): the structure badge names the format only.
+    // TASK-003 (AC-C08-01): the format badge, and the window on the line below it.
     expect(inside.getByText('EMOM')).toBeInTheDocument()
+    expect(inside.getByText('10 MIN')).toBeInTheDocument()
+    expect(inside.queryByText('EMOM · 10 MIN')).toBeNull()
     expect(inside.getByText('2 movements')).toBeInTheDocument()
 
     // Rows of one list, each headed by its movement — never cards of their own.
@@ -803,8 +915,11 @@ describe('the EMOM draws with the shared block frame', () => {
       inside.getByRole('list', { name: 'Movements in this EMOM' }),
     ).getAllByRole('listitem')
     expect(rows).toHaveLength(2)
+    // Round 7's live timed rows are named by the movement's name line, not a
+    // heading (test-update rule, Eric 2026-11-23; for UAT).
+    expect(rows.map((row) => row.querySelector('.clr-movement-identity__name > span:first-child')?.textContent?.trim()))
+      .toEqual(['01 hollow body hold', '02 v up'])
     for (const row of rows) {
-      expect(within(row).getByRole('heading')).toBeInTheDocument()
       expect(row.querySelector('.clr-card')).toBeNull()
     }
   })
@@ -834,16 +949,21 @@ function entryFields(): HTMLElement[] {
 }
 
 describe('execution is hands-off (REQ-014)', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's EMOM; its
+  // rest is the clock's caption ("· Rest") and its end "Time complete".
   it('draws no set-entry form, no Minute done and no exertion prompt, in any phase', async () => {
     const user = setup()
-    const mounted = mount({ block: { roundRestSeconds: 15 } })
+    const mounted = mountRoute({ block: { roundRestSeconds: 15 } })
 
-    const expectHandsOff = () => {
-      expect(entryFields()).toEqual([])
-      expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+    // On the card: outside the end log's dialog (Round 7 keeps the log
+    // mounted in it; test-update rule, Eric 2026-11-23).
+    const reachable = (field: HTMLElement) => field.closest('dialog') === null
+    const expectHandsOff = (fields: string[] = []) => {
+      expect(entryFields().filter(reachable).map((field) => (field as HTMLTextAreaElement).labels?.[0]?.textContent ?? '')).toEqual(fields)
+      expect(screen.queryAllByRole('spinbutton').filter(reachable)).toEqual([])
       expect(screen.queryByRole('slider')).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /log set|minute done/i })).not.toBeInTheDocument()
-      expect(screen.queryByText(/RPE|exertion|effort/i)).not.toBeInTheDocument()
+      expect(screen.queryAllByText(/RPE|exertion|effort/i).filter(reachable)).toEqual([])
       expect(screen.queryByText(/No sets logged/)).not.toBeInTheDocument()
     }
 
@@ -851,11 +971,31 @@ describe('execution is hands-off (REQ-014)', () => {
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     expectHandsOff()
     mounted.advance(50)
-    expect(screen.getByText('REST')).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10 · Rest')
     expectHandsOff()
     mounted.advance(600)
-    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Time complete')
+    // TASK-011 (C31; R43, R84) supersedes "no entry field once the schedule
+    // ends": the end log's one field is the optional notes for an exception.
+    // Still no set form, no count, no Minute done and no exertion prompt.
+    // TASK-046: none on the card; the notes are in the log. Round 7 opens
+    // that log itself once the schedule ends, in the shared focused dialog
+    // its "Log results" action reopens (for UAT).
     expectHandsOff()
+    expect(screen.getByRole('dialog', { name: 'Log results' })).toHaveAttribute('open')
+    await user.click(screen.getByRole('button', { name: 'Log results' }))
+    // TASK-047 (REQ-031; R84: "optional effort, applicable movement weights
+    // and notes") supersedes "the notes are the end log's one field": the end
+    // log also offers the existing three-face effort and each loaded
+    // movement's actual load. Still no set form, no count, no Minute done and
+    // no RPE or exertion prompt — the only number fields are loads.
+    expect(entryFields().map((field) => (field as HTMLTextAreaElement).labels?.[0]?.textContent ?? '')).toEqual(['Notes · optional'])
+    for (const field of screen.queryAllByRole('spinbutton')) expect(field).toHaveAccessibleName(/^Weight · /)
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /log set|minute done/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/RPE|exertion/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Effort · optional' })).toBeInTheDocument()
+    expect(screen.queryByText(/No sets logged/)).not.toBeInTheDocument()
   })
 
   it('draws no entry form for a block that prescribes no clock either', () => {

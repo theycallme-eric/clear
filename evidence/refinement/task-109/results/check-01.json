@@ -36,7 +36,7 @@
     },
     {
       "path": "src/app/Workout.test.tsx",
-      "sha256": "5b23f975eee9e89ba0ba2e8f4cf881271ec995ae357e3b1a1872a32cb6f78989"
+      "sha256": "7d81e670eafe63e6556a4891b118ff71a75a5430a98eb3fe8448897ad2f3ba48"
     },
     {
       "path": "src/state/preparation-guide.test.ts",

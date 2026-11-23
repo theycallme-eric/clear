@@ -1,0 +1,59 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-110",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/circuit-block.test.tsx",
+    "src/ui/workout-chrome.test.tsx",
+    "--testNamePattern",
+    "states the total rounds and the shared rest|carries the identity row, the work|SectionHeader states the structure identity",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-110/required-cases.json",
+    "sha256": "b4e118a81a33d92b73c0a32ff890b3d6d97640f2edff71a307e16dbaf06a42c6"
+  },
+  "targets": [
+    {
+      "path": "src/ui/circuit-block.test.tsx",
+      "sha256": "d0ff7478ef79cc4073c076cb9d8c2a863854420a1b2eea233cd4bd412b69c21e"
+    },
+    {
+      "path": "src/ui/workout-chrome.test.tsx",
+      "sha256": "a64dd07911e09fd8d53e4663d5e84f32298c5995f1b0471f93cba29e1ab80dc5"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "name": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "name": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 85,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 82,
+    "todo": 0,
+    "executed": 3
+  },
+  "problems": []
+}

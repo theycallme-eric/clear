@@ -1,0 +1,999 @@
+{
+  "schema": "clear-refinement-test-ledger/v1",
+  "task": "TASK-110",
+  "family": "F8 part 1 (A3 task 10a)",
+  "base": "9c9db333f2248c72b348e6d46b530caa2b7805a5",
+  "build": "181e580 (source material only)",
+  "source": "Brief NB2/briefs/TASK-110-a1.md; round-07 placement review; TASK-108 ledger rules.forTask110; TASK-109 ledger; running summary.",
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "matchersWeakenedNote": "No matcher is loosened. The parser comparison (rules.selfCheck) lists every build and base read not present verbatim in the body that stays; each is (a) the same read on Round 7’s subject or helper (a renamed helper: routeShown for rounds(), routeTimer for timer(), the card’s “Log results” for timedLogOpener, `closeLog` for a click), (b) a Round 7 look or wording rewrite under the owner’s rule, listed in rules.forTask115, (c) an R7-3 retirement (rules.retiredAssertions), or (d) a base read over AmrapBlock/EmomBlock superseded by a port. Two regex reads introduced while porting were made exact again before hand-back (the For Time caption “Finished”, the one-round line). One read is stronger than the build’s (the EMOM rest window once, `toHaveLength(1)`). No `getBy` became `queryBy`, no `not` read was removed, no count dropped.",
+    "testUpdateRule": "Eric, chat, 2026-11-23: “Yes, approve” (standing test-update rule: update an old or base test to match Round 7’s look and wording, or drop only the look/wording part where Round 7 has no equivalent; keep everything else; list each change for UAT).",
+    "retiredAssertions": [
+      {
+        "file": "src/ui/amrap-block.test.tsx",
+        "test": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+        "assertion": "“08:00 on the clock”; “AMRAP complete”; no timer once ended",
+        "reason": "R7-3 (Eric, chat, 2026-11-20: “Great, go ahead please”): Round 7’s accepted AMRAP clock replaced the readout; it stays and shows the window left (“Time complete”). For TASK-115’s UAT list."
+      },
+      {
+        "file": "src/ui/amrap-block.test.tsx",
+        "test": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+        "assertion": "“05:23 on the clock”; “AMRAP complete”",
+        "reason": "R7-3, as above. The elapsed time is still read, as what the block supplies to the shell."
+      },
+      {
+        "file": "src/ui/amrap-block.test.tsx",
+        "test": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+        "assertion": "“08:00 on the clock”; “AMRAP complete”",
+        "reason": "R7-3, as above; Round 7’s clock comes back reading “Time complete”."
+      }
+    ],
+    "forTask115": [
+      "R7-3 (three AMRAP bodies): Round 7’s AMRAP clock stays after the window and after Finish early, showing the window left; the old “NN:NN on the clock” readout is retired. The carried base body “does not call an early finish a cap” still asserts that readout over AmrapBlock (round-07 N11).",
+      "The circuit card (Workout, and the circuit-round gallery state) now reads `CIRCUIT` in its badge and `3 ROUNDS` on a line under the header (was `CIRCUIT · 3 ROUNDS` outside the product presentation; under it Round 7 showed no rounds before one was recorded). TASK-107’s circuit-round parity receipts describe the older card (TASK-115 recaptures them, as TASK-108 noted).",
+      "A live EMOM with a rest window states “Ns rest at the end of each minute” on its prescription line after its window (“10 MIN · 15s rest at the end of each minute”).",
+      "Round 7’s format-only badge names any ladder rep scheme LADDER (glyph rule), so a circuit with a ladder-down scheme is badged LADDER although the circuit renderer performs it; `structureIdentity.format` still names LADDER only when the ladder renderer performs the block. The restored SectionHeader body reads LADDER for that circuit.",
+      "Wording read in ported/rewritten tests: “Minute N of M” (for MIN N OF M), “Minute 1 of 10 · Rest” (REST), “Time complete” (COMPLETE, AMRAP complete), “AMRAP time”/“EMOM time”/“FOR TIME time” (Time remaining), `01 hollow body hold` (1. hollow body hold), “Min 1 · 8 reps”, “Start FOR TIME”, `15 MIN CAP` (15:00 cap), `8 MIN` (As many rounds as possible in 08:00.), “4 rounds · 10:00 cap” (…on the whole ladder), `10 reps` (3 × 10 reps), “One round: 01 → 02 — no rest between movements”, “Finished” (Finished under cap), the note dialog “Movement note” with its field named by the movement (Notes — back squat).",
+      "Look read in ported/rewritten tests: live timed rows are named by a name line, not a heading; the blank AMRAP count is a quiet dash named “… : not recorded”; the AMRAP card has no “Each round:” heading; the prescription line sits under the header in the card, not inside the header; the header keeps a (never-used) flex-wrap in its column.",
+      "Behaviour noted, already Round 7’s: the timed end log opens itself when the clock ends during the visit (not on arrival after); before Start an EMOM marks its second movement Next (A3 TASK-117); the circuit-round dialog etc. unchanged."
+    ],
+    "selfCheck": {
+      "when": "2026-11-23, A3 TASK-110 attempt 1, before hand-back",
+      "method": "Mechanical: every test file and e2e spec touched since 9c9db333 (9) parsed with the TypeScript compiler API; full titles (describe > … > it) at the base, the build (181e580) and this tree; for every body whose text differs from the base, the outermost expect(…) chains of the body and of the file helpers it calls (transitively) were printed canonically and compared, as sets, with the build’s and the base’s body of the same title. Each read not present verbatim was read and classified (see matchersWeakenedNote).",
+      "counts": {
+        "files": 9,
+        "baseTitlesGone": 0,
+        "bodiesChanged": 59,
+        "withBuild": 56,
+        "withBase": 42,
+        "buildReadsNotVerbatim": 145,
+        "baseReadsNotVerbatim": 104
+      },
+      "titlesAtBaseAbsentAtHead": 0,
+      "perFile": [
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "baseTitles": 46,
+          "headTitles": 46,
+          "absentAtHead": 0,
+          "bodiesChanged": 13
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "baseTitles": 51,
+          "headTitles": 51,
+          "absentAtHead": 0,
+          "bodiesChanged": 12
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "baseTitles": 78,
+          "headTitles": 78,
+          "absentAtHead": 0,
+          "bodiesChanged": 13
+        },
+        {
+          "file": "src/ui/circuit-block.test.tsx",
+          "baseTitles": 41,
+          "headTitles": 41,
+          "absentAtHead": 0,
+          "bodiesChanged": 2
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "baseTitles": 44,
+          "headTitles": 44,
+          "absentAtHead": 0,
+          "bodiesChanged": 1
+        },
+        {
+          "file": "src/ui/block-panel.test.tsx",
+          "baseTitles": 0,
+          "headTitles": 12,
+          "absentAtHead": 0,
+          "bodiesChanged": 12
+        },
+        {
+          "file": "src/state/refinement-load-guidance.test.ts",
+          "baseTitles": 6,
+          "headTitles": 8,
+          "absentAtHead": 0,
+          "bodiesChanged": 2
+        },
+        {
+          "file": "e2e/refinement/task-003.spec.ts",
+          "baseTitles": 3,
+          "headTitles": 3,
+          "absentAtHead": 0,
+          "bodiesChanged": 1
+        },
+        {
+          "file": "e2e/refinement/task-110-parity.spec.ts",
+          "baseTitles": 0,
+          "headTitles": 3,
+          "absentAtHead": 0,
+          "bodiesChanged": 3
+        }
+      ]
+    },
+    "ownerDecisions": [],
+    "planConflicts": []
+  },
+  "summary": {
+    "ported": 25,
+    "superseded": 41,
+    "restored": 13,
+    "rewritten": 22,
+    "carried": 1,
+    "added": 1
+  },
+  "entries": [
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "what the AMRAP reads from the block > states the window it prescribes, before it is opened, with no round goal",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Duration body (TASK-003, AC-C08-01, AC-R003-01): the format badge `AMRAP` and the window `8 MIN` as separate texts (and no `AMRAP · 8 MIN`) on the route. Dropped (wording, Round 7 has no equivalent): “As many rounds as possible in 08:00.” — Round 7 states the window as `8 MIN` on the prescription line. The build’s `expectNoScoreEntry` reads are carried in `expectNoRouteScoreEntry` (the card’s “Log results” action for `timedLogOpener`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "what the AMRAP reads from the block > states the window it prescribes, before it is opened, with no round goal (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "what the AMRAP reads from the block > states the window it prescribes, before it is opened, with no round goal"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. R7-3: retired the build’s “08:00 on the clock” readout and its “no timer once ended” read (Round 7’s accepted AMRAP clock stays and shows the window left); “AMRAP complete” reads as the clock’s caption “Time complete”, “Time remaining” as the route’s `AMRAP time`. The rest ported: no tap ended it, the result is offered only then (Finish early gone, “Log results” present and its log titled “Log results”), both counts blank.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the window closing > ends on its own when the block’s seconds have passed, and only then offers the result"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the window closing > shows the elapsed time when the user finishes early, not the cap",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. R7-3: retired the build’s “05:23 on the clock” readout and “AMRAP complete” (Round 7’s accepted clock shows the window left after Finish early). The rest ported: the result is offered blank. Added on the route: the elapsed 323 s is what the block supplies to the shell (`reportOutcome`), so “elapsed, not the cap” is still asserted.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the window closing > shows the elapsed time when the user finishes early, not the cap (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the window closing > shows the elapsed time when the user finishes early, not the cap"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "recording rounds afterwards > counts rounds on the card, with no dialog and no other screen",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route’s framed counts (`routeShown` for `rounds()`): 3 rounds; the one dialog is “Log results”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "recording rounds afterwards > counts rounds on the card, with no dialog and no other screen (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "recording rounds afterwards > counts rounds on the card, with no dialog and no other screen"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "recording rounds afterwards > takes a round back, and never counts below zero",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route: 1, then 0, and Decrease disabled.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "recording rounds afterwards > takes a round back, and never counts below zero (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "recording rounds afterwards > takes a round back, and never counts below zero"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the partial round > is asked for after the window and nowhere before it",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route. The blank count’s status reads Round 7’s quiet dash, named “Reps into the next round: not recorded” (look: for the build’s visible “Not recorded”).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the partial round > is asked for after the window and nowhere before it (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the partial round > is asked for after the window and nowhere before it"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the partial round > counts the reps up and down without leaving the card",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route: up, up, down reads 1.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the partial round > counts the reps up and down without leaving the card (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the partial round > counts the reps up and down without leaving the card"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "what it supplies to the shell > sends the result, partial round included, entered after the clock ended the block",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same read on the route: `reportOutcome` last called with { elapsedSeconds: 480, roundsCompleted: 5, partialRoundReps: 8 } after the clock (not a tap) ended the block.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "what it supplies to the shell > sends the result, partial round included, entered after the clock ended the block (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "what it supplies to the shell > sends the result, partial round included, entered after the clock ended the block"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "what it supplies to the shell > supplies an entered zero as a zero",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same read on the route: { elapsedSeconds: 300, roundsCompleted: 0, partialRoundReps: 0 }.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "what it supplies to the shell > supplies an entered zero as a zero (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "what it supplies to the shell > supplies an entered zero as a zero"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the 0.14.3 card, timer and group grammar > labels each group inside the card it belongs to",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route: the card holds the “Log results” action; both counts are groups inside the log’s dialog under its one title, with no heading of their own. Round 7’s AMRAP card has no “Each round:” heading, so the card is the one its movement list is drawn in (look).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "the 0.14.3 card, timer and group grammar > labels each group inside the card it belongs to (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the 0.14.3 card, timer and group grammar > labels each group inside the card it belongs to"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "surviving a refresh > comes back into the completion state when the buzzer went while it was away",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. R7-3: retired “AMRAP complete” / “08:00 on the clock”; Round 7’s clock comes back reading “Time complete”. Ported over a seam that names the session (the shell’s storage, AmrapBlock’s key `clear.workout-amraps`): no Start, the log offered, rounds blank. An attempt that ended while away does not reopen its log on arrival (Round 7), so the card’s “Log results” opens it before the counts are read.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "surviving a refresh > comes back into the completion state when the buzzer went while it was away (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "surviving a refresh > comes back into the completion state when the buzzer went while it was away"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "surviving a refresh > keeps the post-window result it was holding, zero included",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Ported over a seam that names the session: after a refresh the counts read 0 and 0 and the shell is told { elapsedSeconds: 0, roundsCompleted: 0, partialRoundReps: 0 }; the log is opened from the card first (Round 7 does not reopen it on arrival).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "surviving a refresh > keeps the post-window result it was holding, zero included (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "surviving a refresh > keeps the post-window result it was holding, zero included"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "surviving a refresh > restores an edit made after the window as the edit, not the first entry",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Ported over a seam that names the session: after a refresh the count reads 3 and the stored record (`readAmrapState(localStorage)`) holds 3.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/amrap-block.test.tsx",
+      "test": "surviving a refresh > restores an edit made after the window as the edit, not the first entry (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over AmrapBlock (which the route never draws), replaced by the port (R7-2; as TASK-116 and TASK-108 did). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "surviving a refresh > restores an edit made after the window as the edit, not the first entry"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Round 7’s words: the minute is the clock’s caption once it runs (“Minute 1 of 10” for “MIN 1 OF 10”); before Start the first movement’s row states its scheduled minute (“Min 1 · 8 reps”) and the window `10 MIN` is on the prescription line, and Round 7 marks the second movement Next (A3 TASK-117’s UAT item; for the build’s first). Movement names read `01 hollow body hold` for `1. hollow body hold`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the EMOM runs the clock the block prescribes > states the window from timer_seconds once the clock is started"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route in Round 7’s words (“Minute 2 of 10”, `01`/`02` names).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the minute boundary flips the active work > moves the live movement on the boundary, with no tap"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route in Round 7’s words.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the minute boundary flips the active work > offers nothing to press once the clock runs: the minute is never marked done"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. The block’s rest window is stated once (`getAllByText(…).toHaveLength(1)`, stronger than the build’s `getByText`) on the prescription line A3 TASK-110 restores (AC-R003-03). The rest is the clock’s caption “Minute 1 of 10 · Rest” for the build’s REST word.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the minute boundary flips the active work > rests for the window the block prescribes at the end of every minute"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > says the block is done once its last minute has elapsed",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. “COMPLETE” reads as the clock’s caption “Time complete”; the card’s “Log results” opens the end log in its dialog (heading “Log results”, “Notes · optional”); no minutes counter, no count, nothing marked Now.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the minute boundary flips the active work > says the block is done once its last minute has elapsed (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the minute boundary flips the active work > says the block is done once its last minute has elapsed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "an alternating EMOM says which minutes each movement covers > labels nothing on a single-movement EMOM",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same reads on the route’s row (`01 hollow body hold`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "an alternating EMOM says which minutes each movement covers > labels nothing on a single-movement EMOM (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "an alternating EMOM says which minutes each movement covers > labels nothing on a single-movement EMOM"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Ported over a seam that names the session: the route reads the record EmomBlock kept (`clear.workout-emom`, with `workDoneMinute: 4`) and comes back at “Minute 4 of 10”, 00:50, the second movement Now.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the timed state survives a refresh > drops a minute marked done by an earlier build: the restored minute is the clock’s"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Ported over a seam that names the session; the end-of-minute cue is Round 7’s low state on the clock’s frame (`clr-chamfer--timer-low`, and not `clr-chamfer--timer`) for the build’s `data-low` and low chamfer (A3 TASK-108’s mapping), before and after the refresh.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the timed state survives a refresh > restores the countdown and its end-of-minute cue after a background and a refresh"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > ignores a record no clock can be read against",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Ported over a seam that names the session: repaired to not started (Start, no timer). Round 7 marks the second movement Next before Start (A3 TASK-117’s UAT item); added: nothing is marked Now.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > ignores a record no clock can be read against (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the timed state survives a refresh > ignores a record no clock can be read against"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Ported over a seam that names the session: Start and the first minute’s row (“Min 1 · 8 reps”) before Start, “Minute 1 of 10” after, and the record stored under `clear.workout-emom` with the block’s id.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the timed state survives a refresh > starts at the top when there is nothing stored, and stores what it starts"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM draws with the shared block frame > carries the identity row and the movement rows",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Duration body (TASK-003, AC-C08-01): the badge `EMOM` and the window `10 MIN` as separate texts inside the card (added: no `EMOM · 10 MIN`), its title, two rows of one list and no card inside a row. Round 7’s live rows are named by the movement’s name line, not a heading (look; the read is the names `01 hollow body hold`, `02 v up`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the EMOM draws with the shared block frame > carries the identity row and the movement rows (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "the EMOM draws with the shared block frame > carries the identity row and the movement rows"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "execution is hands-off (REQ-014) > draws no set-entry form, no Minute done and no exertion prompt, in any phase",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "ported",
+      "note": "Ported (round-07 R7-1, R7-2): the build’s body mounts the block through the route’s dispatch, BlockSlot under PRODUCT_PRESENTATION (Round 7’s TimedWorkoutFlow), and keeps the behaviour it asserts; it replaces Round 7’s base body of the same title over the old component, recorded below as superseded. Same hands-off reads on the card (outside the end log’s dialog, which Round 7 keeps mounted); REST and COMPLETE read as the clock’s captions. Round 7 opens the end log itself when the schedule ends (read: the “Log results” dialog is open); the TASK-047 reads inside the log are the build’s.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "execution is hands-off (REQ-014) > draws no set-entry form, no Minute done and no exertion prompt, in any phase (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, over EmomBlock (which the route never draws), replaced by the port (R7-2). Its reads hold over the old component, which the port does not use.",
+      "result": "passed",
+      "supersededBy": "execution is hands-off (REQ-014) > draws no set-entry form, no Minute done and no exertion prompt, in any phase"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — navigation and progress > opens on the first section that is not finished",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body (the position and status as “Section 2 / 3 · In progress”, which Round 7’s compact navigator reads to assistive technology), plus the base’s Round 7 reads it replaces (the bar’s `2 / 3`, the jump list’s `aria-current`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — navigation and progress > opens on the first section that is not finished (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — navigation and progress > opens on the first section that is not finished"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — navigation and progress > jumps straight to a section from the progress tracker",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body plus the base’s Round 7 reads (`3 / 3`, `aria-current`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — navigation and progress > jumps straight to a section from the progress tracker (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — navigation and progress > jumps straight to a section from the progress tracker"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — navigation and progress > states the structure identity of the section’s blocks",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). Duration body (TASK-003, AC-C08-01): no structure list; the cards’ badges `EMOM` and `AMRAP`; `10 MIN` and `8 MIN` on the blocks’ prescription lines; plus the base’s read of each badge in its block’s own group header.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — navigation and progress > states the structure identity of the section’s blocks (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — navigation and progress > states the structure identity of the section’s blocks"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > keeps progress visible while the full jump list starts collapsed and out of the tab order",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body plus the base’s Round 7 read (the collapsed bar’s `2 / 3`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > keeps progress visible while the full jump list starts collapsed and out of the tab order (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — the active section header > keeps progress visible while the full jump list starts collapsed and out of the tab order"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > restores the open section after a refresh, leaving focus to the route and the clock to the session",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body (the active header’s position, the bar’s value, no focus on the heading or the first card, the session clock) plus the base’s Round 7 reads (the block header, `3 / 3`, `aria-current` in the navigation).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the active section header > restores the open section after a refresh, leaving focus to the route and the clock to the session (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — the active section header > restores the open section after a refresh, leaving focus to the route and the clock to the session"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the focus mode > lands completion on the debrief of the session just completed, not on Home",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body (the feedback dialog’s groups read the same way, and its Close log).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the focus mode > lands completion on the debrief of the session just completed, not on Home (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — the focus mode > lands completion on the debrief of the session just completed, not on Home"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the focus mode > returns Home from the debrief’s Done",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body as it is.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the focus mode > returns Home from the debrief’s Done (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — the focus mode > returns Home from the debrief’s Done"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — no swap during the session (U37) > draws no swap or undo on any card, and never reads alternatives",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body as it is (the stricter `^Coaching and notes — ` name).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — no swap during the session (U37) > draws no swap or undo on any card, and never reads alternatives (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — no swap during the session (U37) > draws no swap or undo on any card, and never reads alternatives"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > shows no broken panel when the catalog has nothing for a movement",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body (the note’s opener “Add note — back squat” enabled) plus the base’s Round 7 read (the note dialog’s field, labelled “back squat”, enabled).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > shows no broken panel when the catalog has nothing for a movement (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — coaching and notes > shows no broken panel when the catalog has nothing for a movement"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > persists a note to the exercise row and keeps it across sections",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s flow and reads; Round 7 titles the note dialog “Movement note” and labels its field by the movement (“back squat”) where the build read “Notes — back squat” (wording, test-update rule). Plus the base’s reads: the saved status in the panel, and the dialog read closed after its X (`closeLog`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > persists a note to the exercise row and keeps it across sections (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — coaching and notes > persists a note to the exercise row and keeps it across sections"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > reports a failed note write and keeps the typed text",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). As above for the dialog’s and field’s names; plus the base’s reads of the failure (and no success) in the panel.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — coaching and notes > reports a failed note write and keeps the typed text (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — coaching and notes > reports a failed note write and keeps the typed text"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > starts none, and draws no bar, for a prescription with no rest",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body (the saved set confirmed as “Set 1 logged”, no bar, no zero rest) plus the base’s Round 7 reads: the confirmation then closes itself with no rest to run (A3 TASK-106, TASK-AC-C53DC0A896ED), and the next Rest opens set 2 with no bar.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > starts none, and draws no bar, for a prescription with no rest (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — the session’s one rest > starts none, and draws no bar, for a prescription with no rest"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > keeps a running rest through another Rest and Log, rather than restarting or queueing one",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). Kept as the base’s Round 7 body: it holds every one of the build’s reads, plus closing the modal set dialog before the next Rest (Round 7’s set dialog is modal; with it left open the build’s flow draws the dialog’s rest beside the footer’s) and the dialogs closed after the rest runs out. Body unchanged from the base.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > extends and skips the rest from the bar",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Real route (round-07 R7-1; Workout.test.tsx renders /workout, so restored or rewritten, never ported). The build’s body (skipping closes set 1’s confirmation and opens no form; “Set 1 · 8 reps” stays) plus the base’s Round 7 reads (no dialog left open, one set recorded, Rest then opens set 2).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Workout.test.tsx",
+      "test": "Workout — the session’s one rest > extends and skips the rest from the bar (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body of the same title, replaced by the restored build body; every one of its reads that Round 7 still meets is carried into the body that stays (self-check).",
+      "result": "passed",
+      "supersededBy": "Workout — the session’s one rest > extends and skips the rest from the bar"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Round-07 S2, R7-5; name filter TASK-110:check-02 (the file stays TASK-107’s). The build’s body verbatim: `CIRCUIT` alone, `3 ROUNDS` once, no `CIRCUIT · 3 ROUNDS`. Needed CircuitBlock’s badge to become format-only with its rounds on the line under the header (BlockPanel `detailLine`; decision 6) — this task’s change; the circuit-round state shows it in the same commit.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body reading `CIRCUIT · 3 ROUNDS`, superseded by decision 6’s format-only badge (its other reads are in the build’s body).",
+      "result": "passed",
+      "supersededBy": "the complete ordered circuit > states the total rounds and the shared rest the block prescribes, once each"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "restored",
+      "note": "Round-07 S2, R7-5; name filter TASK-110:check-02. The build’s body verbatim (`CIRCUIT` and `3 ROUNDS` inside the card).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/circuit-block.test.tsx",
+      "test": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body reading `CIRCUIT · 3 ROUNDS`, superseded by the format-only badge; its other reads are the build’s.",
+      "result": "passed",
+      "supersededBy": "the circuit draws with the shared block frame > carries the identity row, the work, the rest line and the round record inside the card"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Round-07 S3, R7-5; name filter TASK-110:check-02 (the file stays TASK-108’s; TASK-108 deferred it here). The build’s body: each block by its format alone, no MIN, CAP or ROUNDS; SectionHeader’s list now draws `StructureBadge formatOnly`. Round 7’s format-only badge names a ladder rep scheme by its shape, so the ladder-down circuit reads `LADDER` where the build read `CIRCUIT` (wording, test-update rule; Review’s base test asserts the same Round 7 rule). For UAT.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/workout-chrome.test.tsx",
+      "test": "SectionHeader > states the structure identity of every block, per the master clarity spec (base body)",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body reading the combined badges (`EMOM · 10 MIN` …), superseded by the format-only list (decision 6).",
+      "result": "passed",
+      "supersededBy": "SectionHeader > states the structure identity of every block, per the master clarity spec"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-C08-01 names only the format or shape in every Review and Workout badge, with duration, cap, rounds and prescription outside it",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Round 7’s card (shared group header + the prescription line under it, for the build’s `data-workout-card` and in-header `data-structure-meta`). Details: Review’s exactly FORMAT_DETAILS.review; Workout’s with the EMOM’s rest window added to its line and the ladder’s “4 rounds · 10:00 cap” (Round 7’s words). The live superset’s per-round prescription reads `10 reps` for `3 × 10 reps` (Round 7).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-C09-01 places every badge the same way, directly below its title, and never truncates it by label length",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same column, order and no-truncation reads on Round 7’s stylesheets (movement-presentation.css, timed-workout.css). Dropped (look): `flex-wrap` not `wrap` — Round 7’s column header keeps the shared row rule’s wrap, which an auto-height column never uses. The line sits directly after the header (Round 7), read as the header’s next sibling; added: the header holds only title and badge.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-C10-01 shows each live movement’s prescribed load with the existing formatter, unit and per-hand equipment, and keeps it apart from the weight performed",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same reads; each load is the MovementIdentity’s load beside its prescription (`[data-movement-detail]`’s second part) for the build’s `data-movement-load`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-C11-01 drops the generic Rest 60s line from EMOM, AMRAP and For Time movements in Review",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same reads on Review’s timed rows (Round 7 draws no list around a standard block, so the rows are the card’s MovementIdentity rows; added: each timed block has rows).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-01 keeps duration, cap, rounds and the target schedule readable outside the badge in both contexts",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same reads on Round 7’s lines; the one-round sequence reads Round 7’s whole line (“One round: 01 → 02 — no rest between movements”); the live target schedule is each movement’s scheduled minute (“Min 1 · 8 reps”) for “MIN 1 OF 10”, and the ladder’s “4 rounds · 10:00 cap”.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-02 reads every load meaning through loadText and the profile unit, and never a performed weight, an inferred unit or a range",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same reads; the bare-number EMOM is mounted as the route draws it (BlockSlot under PRODUCT_PRESENTATION).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-03 removes only the generic rest: planned rest in standard and grouped blocks, the EMOM rest window and every timed clock stay",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same reads; the EMOM’s rest window on Workout is the prescription line A3 TASK-110 restores; the AMRAP’s window reads `8 MIN` (for “As many rounds as possible in 08:00.”, which Round 7 does not draw), the race’s start “Start FOR TIME” and its cap `15 MIN CAP` (for “15:00 cap”); added: Start AMRAP.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 offers no Review Change weight control on the verified circuit and keeps its actual weight entry in the optional logger",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Build reads unchanged on Round 7.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 opens Review, starts that same workout and shows format-only badges below each title and the prescribed load in each target row",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same reads; after Finish the race clock’s caption reads “Finished” and the card offers “Log results” (for “Finished under cap”).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 recovery: a failed Start keeps Review as planned and records no work",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Build reads unchanged on Round 7’s card.",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > names a block LADDER exactly when the ladder renderer performs it, and states its scheme outside the badge",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Same state-level reads; the shared card is Round 7’s block card as the route draws it (for the build’s WorkoutCard).",
+      "result": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > renders the accepted gallery state cards with format-only badges, the details beside them and the live prescribed load",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Inherited (TASK-003 check-01; groundwork F8). Round 7 look, same asserted behaviour. Round 7’s accepted cards state draws only the live timed cards (no Review column or composition radio): badges EMOM, AMRAP, FOR TIME; lines “10 MIN · N+1”, “8 MIN · INVERSE”, “15 MIN CAP”; loads in the gallery’s unit (24 lb, —, 9 lb). The source reads name Round 7’s owners (the gallery’s TimedWorkoutFlow; Review’s and BlockPanel’s MovementGroupHeader with StructureBadge formatOnly; liveMovementReadings in the flow and the ladder).",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "test": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-02 consumes TASK-003’s current passing evidence that the verified circuit has no Review weight change and keeps its optional logger",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "carried",
+      "note": "The build’s body verbatim, restored now that TASK-003’s evidence file is carried; reads TASK-003’s check-01 and check-02 receipts (verifyReceipt) and the contract.",
+      "result": "passed"
+    },
+    {
+      "file": "src/state/refinement-load-guidance.test.ts",
+      "test": "TASK-036 load-guidance source and actual-versus-target contract > AC-R036-03 continues the prescribed-load presentation on the gallery cards state through the read model, with no range",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Re-pointed (TASK-AC-9DA128EDAE2E): the build read its own gallery cards page (three compositions); this reads the read model’s target on the real Review and Workout rows for every block of the format-badges composition (every load meaning, kg), and Round 7’s accepted cards state (lb); no range, no per-hand gloss. Title kept: it is TASK-036’s required case name.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 phone-320: Review then Workout show format-only badges below each title, their details beside them and each prescribed load in its target row",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7’s card and lines (as block-panel): the line is read directly under the header inside the card (its right edge against the card’s content, for “inside the header”); Workout wording: “Min 1 · 8 reps”, `8 MIN`, `15 MIN CAP`, “4 rounds · 10:00 cap”.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 phone-390: Review then Workout show format-only badges below each title, their details beside them and each prescribed load in its target row",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7’s card and lines (as block-panel): the line is read directly under the header inside the card (its right edge against the card’s content, for “inside the header”); Workout wording: “Min 1 · 8 reps”, `8 MIN`, `15 MIN CAP`, “4 rounds · 10:00 cap”.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 keyboard and touch: the verified circuit explains its suggestion without a Review weight change, and its optional logger takes the actual weight",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "The circuit row’s prescribed load read as its MovementIdentity’s load.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 recovery: a failed Start keeps Review’s badges, details and loads as planned and records no work",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Same reads on Round 7’s card helpers.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "test": "TASK-003 consistent format badges and truthful prescribed load > gallery cards: the accepted state draws format-only badges below each title, the details beside them and the live prescribed load",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "rewritten",
+      "note": "Round 7’s accepted cards state (live timed cards only): badges, lines under them, badge geometry and the live loads (lb).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-110-parity.spec.ts",
+      "test": "TASK-AC-58FFB5625188 cards and circuit-round, phone-320 and phone-390",
+      "ledger": "round-07 R7-1/R7-2/R7-3/R7-5, S2, S3 → TASK-110 (brief)",
+      "disposition": "added",
+      "note": "The look check (4 cases).",
+      "result": "passed"
+    }
+  ]
+}

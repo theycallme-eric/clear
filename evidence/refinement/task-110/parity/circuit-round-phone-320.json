@@ -1,0 +1,158 @@
+{
+  "schema": "clear-task-110-parity/v1",
+  "task": "TASK-110",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "circuit-round",
+  "width": 320,
+  "route": "/workout",
+  "drive": "card, before the state's driver is pressed (route: before Start round 1)",
+  "captures": {
+    "gallery:card": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-320-gallery-card.png",
+      "sha256": "8d01f3b28f7960a1ce1888ffbb7e4b74e733cd2b1b281e981d5ce1cfc2654bf7"
+    },
+    "route:card": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-320-route-card.png",
+      "sha256": "f153c68774450c0aa9284c0d85a1adc2fee3864f02b1f6775cd4c374a6ce948f"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "card": [
+        "CONDITIONING",
+        "CIRCUIT",
+        "3 ROUNDS",
+        "NO ROUNDS RECORDED",
+        "START ROUND 1",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ]
+    },
+    "route": {
+      "card": [
+        "CONDITIONING",
+        "CIRCUIT",
+        "3 ROUNDS",
+        "NO ROUNDS RECORDED",
+        "START ROUND 1",
+        "EACH ROUND:",
+        "1. GOBLET SQUATkettlebell",
+        "8 reps",
+        "25 lb",
+        "REST",
+        "2. PUSH UPbodyweight",
+        "8 reps",
+        "REST",
+        "45s rest between rounds",
+        "COACHING AND NOTES",
+        "— CIRCUIT: GOBLET SQUAT, PUSH UP",
+        "GOBLET SQUAT",
+        "ADD NOTE — GOBLET SQUAT",
+        "PUSH UP",
+        "ADD NOTE — PUSH UP"
+      ]
+    }
+  },
+  "differences": {
+    "card": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "card": 51
+      },
+      "route": {
+        "card": 51
+      }
+    },
+    "parts": {
+      "gallery": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 613
+        }
+      },
+      "route": {
+        "card": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 613
+        }
+      }
+    },
+    "differences": {
+      "card": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/block-renderers-frame.tsx",
+      "criterion": "TASK-AC-9A47DF868BD4, TASK-AC-2E6734369AC5",
+      "states": [
+        "circuit-round"
+      ],
+      "change": "BlockPanel takes `detailLine`: the badge names the format alone and the block's size it leaves out (rounds, scheme) is read once, on a `clr-timed-meta` line directly under the header (the line Review and the timed flow already draw). Only the circuit asks for it."
+    },
+    {
+      "file": "src/ui/circuit-block.tsx",
+      "criterion": "TASK-AC-2E6734369AC5, TASK-AC-9A47DF868BD4",
+      "states": [
+        "circuit-round"
+      ],
+      "change": "The circuit's badge is format-only (`CIRCUIT`, was `CIRCUIT · 3 ROUNDS` outside the product presentation) and its prescribed rounds (`3 ROUNDS`) are read on the line under the header; under the product presentation Round 7 had dropped the rounds from the card before a round was recorded. The circuit-round state's card gains that one line."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-4BEA11242321, AC-R003-03, TASK-AC-9A47DF868BD4",
+      "states": [
+        "cards"
+      ],
+      "change": "Each live row's name, compact equipment and prescribed load are `liveMovementReadings` (the load-guidance read model's target through `loadText`), drawn exactly as before. The prescription line carries `data-structure-meta` and, for an EMOM with a rest window, `Ns rest at the end of each minute` after its window; the cards state's EMOM prescribes no rest, so its line is unchanged."
+    },
+    {
+      "file": "src/ui/ladder-rungs.tsx",
+      "criterion": "TASK-AC-4BEA11242321",
+      "states": [],
+      "change": "The live ladder's summary line reads its name and load through `liveMovementReadings`, drawn exactly as before. Not in a state compared here."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-2E6734369AC5",
+      "states": [],
+      "change": "SectionHeader's full (non-compact) structure list names each block by its format alone (`StructureBadge formatOnly`). The route and the accepted gallery draw the compact navigator, which has no list; the registry's full-header specimen holds no blocks, so nothing drawn changes."
+    }
+  ],
+  "galleryAgainstBase": {
+    "card": {
+      "base": "evidence/refinement/task-107/parity/circuit-round-phone-320.json#lines.gallery.card",
+      "differences": [
+        {
+          "side": "tree only",
+          "line": "3 ROUNDS",
+          "criterion": "TASK-AC-2E6734369AC5, TASK-AC-9A47DF868BD4",
+          "reason": "The circuit's badge names its format alone, and its prescribed rounds are read on the line under the header."
+        }
+      ]
+    }
+  }
+}

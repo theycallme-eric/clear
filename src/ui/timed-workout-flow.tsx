@@ -146,7 +146,6 @@ import { emomShape, emomView, minuteAssignment, scheduledMinuteFor, targetForMin
 import { explicitLadderTiming, ladderRoundPlan, ladderRungs, roundMarker, scheduleView } from '../state/ladder'
 import { ladderAttemptView, ladderRaceCapSeconds, type LadderDraft, type LadderDraftPatch } from '../state/ladder-recovery'
 import { exerciseName, modalityLabel, targetText } from '../state/prescription'
-import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { SetLoggingContext } from '../state/set-logging'
 import { activeSeconds, EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptFromClock, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
 import { readTimedAttempt, recordTimedAction, writeForTimeAnswer, writeTimedCounts, writeTimedMovements, writeTimedSaveFailed } from '../state/timed-attempt-records'
@@ -160,6 +159,7 @@ import { GroupExerciseCoaching } from './exercise-coaching'
 import { LadderBlock, PACING_NOTES, timingSummary } from './ladder-block'
 import { LadderPrescription, type LadderRoundContext } from './ladder-rungs'
 import { MovementIdentity } from './movement-presentation'
+import { liveMovementReadings } from './refinements/movement-readings'
 import { TimerFrame } from './workout-chrome'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { TimedResultLog, type TimedFormat, type TimedResultReceipt, type TimedResultDraft } from './timed-result-log'
@@ -494,6 +494,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const summary = schedule !== null ? timingSummary(schedule, block.timerSeconds) : format === 'ladder'
     ? `${rungs.length} rounds${cap === null ? '' : ` · ${formatElapsed(cap)} cap`}`
     : [block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')
+  const emomRest = format === 'emom' && shape.restSeconds > 0 ? `${shape.restSeconds}s rest at the end of each minute` : null
   // TASK-012 (JOURNEY-012): each scheduled round states its own start, and the live round is marked from the clock.
   const plan = schedule === null ? [] : ladderRoundPlan(block.exercises, schedule)
   const roundContext = scheduleNow === null ? undefined : (number: number): LadderRoundContext | null => {
@@ -541,7 +542,15 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
         spoken={`${caption}. ${spokenElapsed(clockSeconds)}`} caption={caption} size="var(--heading-h2-size)" fullWidth
         low={urgency.low || (view.phase === 'capped' && (format === 'for_time' || format === 'ladder'))} pulse={urgency.urgent ? urgency.loop : undefined} /></div>}>
       {block.exercises.length === 0 ? <BlockPanel.EmptyNote /> : <>
-        <p className="clr-text-data-xs clr-timed-meta">{summary}</p>
+        {/*
+          A3 TASK-110 (TASK-003: C08, AC-R003-01, AC-R003-03; decision 6): the
+          block's prescription line — what the format-only badge leaves out
+          (its window, cap and scheme) and, for an EMOM, the block's own rest
+          window, which Round 7 had stated only while it ran.
+        */}
+        <p className="clr-text-data-xs clr-timed-meta" data-structure-meta="">
+          {emomRest === null ? summary : <>{summary === '' ? null : <><span>{summary}</span> · </>}<span>{emomRest}</span></>}
+        </p>
         {scheduleNow !== null && schedule !== null && <LadderBlock.ScheduleStatus view={scheduleNow} rounds={schedule.rounds} />}
         {format === 'ladder' && actions}
         {/* A ladder scheme with no sequence on any movement: the block is malformed, and saying so is its existing meaning. */}
@@ -551,8 +560,11 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
           onProgress={schedule === null && ladderView.canTrack && (view.phase === 'running' || view.phase === 'paused') ? ladder.track : undefined} /> : <BlockPanel.MovementList label={`Movements in this ${block.identity.label}`}>
           {block.exercises.map(exercise => {
             const p = exercise.prescription
-            const equipment = equipmentName(p.equipment_used)
-            const load = p.load_type === null ? null : distinctLoadText(loadText(p.load_type, p.load_value, weightUnit), equipment)
+            // A3 TASK-110 (TASK-002, TASK-003; C10, R31): the live row's name,
+            // compact equipment and prescribed load are the shared readings
+            // (`liveMovementReadings`: the load-guidance read model's target
+            // through `loadText`, in the profile's unit), never a performed weight.
+            const reading = liveMovementReadings(p, weightUnit)
             const scheduled = format === 'emom' ? scheduledMinuteFor(exercise.position, minute, shape) : null
             const detail = format === 'emom' && scheduled !== null
               ? `Min ${scheduled} · ${targetText(p, targetForMinute(p, scheduled, shape.size))}` : targetText(p)
@@ -563,8 +575,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
                 ? <BlockPanel.Label>Now</BlockPanel.Label> : null}
               {format === 'emom' && !ended && exercise.position !== minute.activePosition && exercise.position === minute.nextPosition
                 ? <BlockPanel.Label>Next</BlockPanel.Label> : null}
-              <MovementIdentity name={exerciseName(p.exercise_id)} ordinal={String(exercise.position).padStart(2, '0')}
-                prescription={detail} load={load} equipment={equipment} />
+              <MovementIdentity name={reading.name} ordinal={String(exercise.position).padStart(2, '0')}
+                prescription={detail} load={reading.load} equipment={reading.equipment} />
             </BlockPanel.MovementItem>
           })}
         </BlockPanel.MovementList>}

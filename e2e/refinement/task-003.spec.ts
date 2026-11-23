@@ -12,7 +12,6 @@ import {
   FORMAT_BADGES,
   FORMAT_DETAILS,
   FORMAT_KEYS,
-  FORMAT_LISTS,
   FORMAT_LOADS,
   FORMAT_SECTION,
   formatBadgesAcceptance,
@@ -42,6 +41,12 @@ import { expect, test as scanned } from '../fixtures'
  * its actual weight entry in its optional logger. Recovery: a failed Start
  * leaves Review as planned; keyboard and touch reach every action; reduced
  * motion throughout.
+ *
+ * A3 TASK-110 (F8; owner decision 6) carries this spec onto Round 7: each
+ * block's card is Round 7's (the shared group header opening its content, the
+ * block's prescription line directly under it), each movement's load is its
+ * \`MovementIdentity\`'s, and the live wording is Round 7's; every change is in
+ * \`evidence/refinement/task-110/test-ledger.json\`.
  *
  * Synthetic and contained: an intercepted session for a fictional user and
  * synthetic reads. The only writes the app attempts are Start's two session
@@ -251,6 +256,7 @@ interface HeaderGeometry {
   title: string
   titleBox: Box
   header: Box
+  group: Box
   badge: string | null
   badgeBox: Box | null
   badgeTruncated: boolean
@@ -265,15 +271,18 @@ interface HeaderGeometry {
 
 /** Every shared block header in one scope, in card order. */
 async function readHeaders(scope: Locator | Page, context: Context): Promise<HeaderGeometry[]> {
-  return scope.locator(`[data-workout-card="${context}"] > [data-movement-group-header]`).evaluateAll((headers) =>
-    headers.map((header) => {
+  return scope.locator(`${cardIn(context)} [data-movement-group-header]`).evaluateAll((headers, cardSelector) =>
+    headers.filter((header) => header.closest('.clr-card')?.matches(cardSelector) === true).map((header) => {
       const box = (node: Element) => {
         const rect = node.getBoundingClientRect()
         return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height }
       }
       const title = header.querySelector(':scope > .clr-movement-group-header__title')!
       const badge = header.querySelector(':scope > .clr-movement-group-header__badge')
-      const meta = header.querySelector(':scope > [data-structure-meta]')
+      // Round 7's prescription line is the header's next line, under it in the card.
+      const next = header.nextElementSibling
+      const meta = next instanceof HTMLParagraphElement && next.classList.contains('clr-timed-meta') && (next.textContent ?? '') !== '' ? next : null
+      const group = header.parentElement!
       const frame = badge?.querySelector('.clr-chamfer--structure') ?? null
       // The label's text lines only: the glyph beside it is its own box.
       const lines = (node: Element) => {
@@ -296,6 +305,7 @@ async function readHeaders(scope: Locator | Page, context: Context): Promise<Hea
         title: title.textContent ?? '',
         titleBox: box(title),
         header: box(header),
+        group: box(group),
         badge: badge?.textContent ?? null,
         badgeBox: badge === null ? null : box(badge),
         badgeTruncated: frame === null ? false : truncated(frame) || [...frame.querySelectorAll('*')].some(truncated),
@@ -307,7 +317,26 @@ async function readHeaders(scope: Locator | Page, context: Context): Promise<Hea
         metaVisible: metaStyle !== null && metaStyle.visibility === 'visible' && Number(metaStyle.opacity) > 0 && metaStyle.display !== 'none',
         metaInsideBadge: meta !== null && badge !== null && badge.contains(meta),
       }
-    }))
+    }), CARD)
+}
+
+/** Each block's card: the card whose own content opens with the shared group header (Round 7). */
+const HEADER_PATH = '> .clr-card__body > .clr-movement-group > [data-movement-group-header]'
+const CARD = `.clr-card:has(${HEADER_PATH})`
+/** Review's cards are its sections'; the live ones are the workout's. */
+const cardIn = (context: Context) => context === 'review' ? `[data-review-section] ${CARD}` : CARD
+
+/**
+ * Round 7's prescription lines (FORMAT_DETAILS on Round 7): Review states the
+ * fixture's; the live EMOM's also states the block's rest window and the live
+ * ladder's its rounds and cap in Round 7's words, its scheme read in its
+ * movement's progression line.
+ */
+const DETAILS: Readonly<Record<Context, readonly (string | null)[]>> = {
+  review: FORMAT_DETAILS.review,
+  workout: FORMAT_DETAILS.workout.map((detail, index) =>
+    FORMAT_KEYS[index] === 'emom' ? `${detail} · 15s rest at the end of each minute`
+      : FORMAT_KEYS[index] === 'ladder' ? '4 rounds · 10:00 cap' : detail),
 }
 
 const TOLERANCE = 1
@@ -336,8 +365,9 @@ function expectHeader(header: HeaderGeometry, label: string) {
   expect(header.metaVisible, `${label}: details visible`).toBe(true)
   expect(header.metaFont, `${label}: details readable`).toBeGreaterThanOrEqual(12)
   expect(header.metaBox.top, `${label}: details below the badge`).toBeGreaterThanOrEqual(header.badgeBox.bottom - TOLERANCE)
+  expect(header.metaBox.top, `${label}: details directly under the header`).toBeGreaterThanOrEqual(header.header.bottom - TOLERANCE)
   expect(Math.abs(header.metaBox.left - header.header.left), `${label}: details at the header's start`).toBeLessThanOrEqual(TOLERANCE)
-  expect(header.metaBox.right, `${label}: details inside the header`).toBeLessThanOrEqual(header.header.right + TOLERANCE)
+  expect(header.metaBox.right, `${label}: details inside the card`).toBeLessThanOrEqual(header.group.right + TOLERANCE)
 }
 
 /** C09: one position for every badge — the same offset under the title, whatever its label. */
@@ -353,33 +383,36 @@ function expectOnePosition(headers: HeaderGeometry[], label: string) {
 }
 
 /** Each block's movements and their prescribed loads, in card order (C10). */
-async function readLoads(page: Page, context: Context): Promise<FormatReading[][]> {
-  return page.locator(`[data-workout-card="${context}"]`).evaluateAll((cards, lists) =>
-    cards.map((card, index) => {
-      const list = [...card.querySelectorAll('ol, ul')].find((node) => node.getAttribute('aria-label') === lists[index])
-      if (list === undefined) throw new Error(`No list ${lists[index]} in card ${index + 1}`)
-      const identities = [...list.querySelectorAll(':scope > li [data-movement-identity]')]
-      if (list.getAttribute('aria-label') === 'Rounds in this ladder') {
+async function readLoads(scope: Page | Locator, context: Context): Promise<FormatReading[][]> {
+  return scope.locator(cardIn(context)).evaluateAll((cards, live) =>
+    cards.map((card) => {
+      const ladder = [...card.querySelectorAll('[data-ladder-movement]')]
+      if (live && ladder.length > 0) {
         // TASK-012 (C35, R70, R72): the live ladder states each movement's load
         // once, in its line of the compact prescription's summary; its rounds
-        // read `2 × dumbbell thruster` and repeat no load.
-        if (list.querySelector('[data-movement-load]') !== null) throw new Error('A ladder round repeats the load')
-        return [...card.querySelectorAll('[data-ladder-movement]')].map((line) => ({
-          name: line.querySelector('[data-movement-name]')?.textContent ?? '',
+        // repeat no load.
+        const rounds = card.querySelector('[data-ladder-prescription] ol, [data-ladder-prescription] ul')
+        if (rounds?.querySelector('[data-movement-load]')) throw new Error('A ladder round repeats the load')
+        return ladder.map((line) => ({
+          name: line.querySelector('strong')?.textContent ?? '',
           load: line.querySelector('[data-movement-load]')?.textContent ?? null,
         }))
       }
-      return identities.map((identity) => ({
-        name: (identity.querySelector('[data-movement-name]')?.textContent ?? '').replace(/^\d+\.\s+/, ''),
-        load: identity.querySelector('[data-movement-load]')?.textContent ?? null,
-      }))
-    }), [...FORMAT_LISTS[context]])
+      return [...card.querySelectorAll('.clr-movement-identity')].filter((identity) => identity.closest('dialog') === null).map((identity) => {
+        const name = identity.querySelector('.clr-movement-identity__name > span:first-child')!.cloneNode(true) as Element
+        name.querySelector('.clr-movement-identity__ordinal')?.remove()
+        return {
+          name: (name.textContent ?? '').trim().replace(/^(\d+\.|\d{2}|[A-Z]\d)\s+/, ''),
+          load: identity.querySelector('[data-movement-detail]')?.children[1]?.textContent ?? null,
+        }
+      })
+    }), context === 'workout')
 }
 
 /** C10: every prescribed load sits in its movement's target row, beside the target. */
 async function loadsInTargetRows(page: Page, context: Context) {
-  const rows = await page.locator(`[data-workout-card="${context}"] [data-movement-load]`).evaluateAll((loads) =>
-    loads.map((load) => {
+  const rows = await page.locator(`${cardIn(context)} [data-movement-detail] > span:nth-child(2), ${cardIn(context)} [data-ladder-movement] [data-movement-load]`).evaluateAll((loads) =>
+    loads.filter((load) => load.closest('dialog') === null).map((load) => {
       const row = load.closest('[data-movement-detail]') ?? load.parentElement!
       const loadBox = load.getBoundingClientRect()
       const rowBox = row.getBoundingClientRect()
@@ -410,7 +443,7 @@ async function openReview(page: Page, visit: (path: string) => Promise<void>, ac
 async function startWorkout(page: Page, checkA11y: () => Promise<void>, start: (button: Locator) => Promise<void>) {
   await start(page.getByRole('button', { name: 'Start workout' }))
   await expect(page).toHaveURL(/\/workout$/)
-  await expect(page.getByRole('list', { name: FORMAT_LISTS.workout[1], exact: true })).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Movements in this superset', exact: true })).toBeVisible()
   await settle(page)
   await checkA11y()
 }
@@ -433,7 +466,7 @@ async function attachCards(page: Page, context: Context, name: string) {
   await page.setViewportSize({ width: viewport.width, height: 3000 })
   await settle(page)
   try {
-    const cards = page.locator(`[data-workout-card="${context}"]`)
+    const cards = page.locator(cardIn(context))
     const count = await cards.count()
     for (let index = 0; index < count; index += 1) {
       const body = await cards.nth(index).screenshot({ caret: 'hide' })
@@ -449,7 +482,7 @@ async function noHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 }
 
-const card = (page: Page, context: Context, index: number) => page.locator(`[data-workout-card="${context}"]`).nth(index)
+const card = (page: Page, context: Context, index: number) => page.locator(cardIn(context)).nth(index)
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -464,7 +497,7 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
       // Review: C08, C09, AC-R003-01 — the badge, its place and the details.
       const review = await readHeaders(page, 'review')
       expect(review.map((header) => header.badge)).toEqual(FORMAT_BADGES.review)
-      expect(review.map((header) => header.meta)).toEqual(FORMAT_DETAILS.review)
+      expect(review.map((header) => header.meta)).toEqual(DETAILS.review)
       review.forEach((header, index) => expectHeader(header, `Review ${FORMAT_KEYS[index]} @${name}`))
       expectOnePosition(review, `Review @${name}`)
       // C10, AC-R003-02: each prescribed load through the existing formatter and unit.
@@ -485,7 +518,7 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
       await startWorkout(page, checkA11y, (button) => button.tap())
       const live = await readHeaders(page, 'workout')
       expect(live.map((header) => header.badge)).toEqual(FORMAT_BADGES.workout)
-      expect(live.map((header) => header.meta)).toEqual(FORMAT_DETAILS.workout)
+      expect(live.map((header) => header.meta)).toEqual(DETAILS.workout)
       live.forEach((header, index) => expectHeader(header, `Workout ${FORMAT_KEYS[index]} @${name}`))
       expectOnePosition(live, `Workout @${name}`)
       // TASK-027 (C54; R35) superseded the live section's repeated structure
@@ -497,11 +530,14 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
       expect(await readLoads(page, 'workout')).toEqual(expectedLoads())
       await loadsInTargetRows(page, 'workout')
       // AC-R003-01, AC-R003-03: the schedule, rest window and caps stay readable.
-      await expect(card(page, 'workout', 3)).toContainText('MIN 1 OF 10')
+      // Round 7's words: each movement's scheduled minute in its row (for the
+      // build's MIN 1 OF 10), the AMRAP's window and the race's cap on their
+      // prescription lines, the ladder's rounds and cap on its own.
+      await expect(card(page, 'workout', 3)).toContainText('Min 1 · 8 reps')
       await expect(card(page, 'workout', 3)).toContainText('15s rest at the end of each minute')
-      await expect(card(page, 'workout', 4)).toContainText('As many rounds as possible in 08:00.')
-      await expect(page.getByText('15:00 cap', { exact: true })).toBeVisible()
-      await expect(card(page, 'workout', 6)).toContainText('4 rounds · 10:00 cap on the whole ladder')
+      await expect(card(page, 'workout', 4)).toContainText('8 MIN')
+      await expect(card(page, 'workout', 5).getByText('15 MIN CAP', { exact: true })).toBeVisible()
+      await expect(card(page, 'workout', 6)).toContainText('4 rounds · 10:00 cap')
       await noHorizontalOverflow(page)
       await attachCapture(page, `workout-${name}`)
       await attachCards(page, 'workout', name)
@@ -546,7 +582,7 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
     await expect(form).toBeVisible()
     await expect(form.getByLabel('Weight', { exact: true })).toBeVisible()
     // The prescribed target stays the circuit row's own reading, apart from the entry.
-    await expect(card(page, 'workout', 2).locator('[data-movement-load]').first()).toHaveText('24 kg')
+    await expect(card(page, 'workout', 2).locator('[data-movement-detail] > span:nth-child(2)').first()).toHaveText('24 kg')
     // TASK-044: the entry is the focused logging dialog; its X closes it (was Minimize).
     await page.getByRole('button', { name: 'Close log' }).tap()
     await expect(form).toBeHidden()
@@ -577,31 +613,24 @@ test.describe('TASK-003 consistent format badges and truthful prescribed load', 
     await expect(state).toBeVisible()
     await settle(page)
 
-    const compositions = [
-      { name: 'Standard, superset and circuit', review: [null, 'SUPERSET', 'CIRCUIT'], workout: ['STANDARD', 'SUPERSET', 'CIRCUIT'], details: { review: [null, '3 ROUNDS', '2 ROUNDS'], workout: [null, null, '2 ROUNDS'] } },
-      { name: 'EMOM, AMRAP and For Time', review: ['EMOM', 'AMRAP', 'FOR TIME'], workout: ['EMOM', 'AMRAP', 'FOR TIME'], details: { review: ['10 MIN', '8 MIN', '15 MIN CAP'], workout: ['10 MIN', '8 MIN', '15 MIN CAP'] } },
-    ] as const
-    for (const composition of compositions) {
-      await state.getByRole('radio', { name: new RegExp(composition.name) }).click()
-      await settle(page)
-      for (const context of ['review', 'workout'] as const) {
-        const scope = state.locator(`[data-gallery-context="${context}"]`)
-        const headers = await readHeaders(scope, context)
-        expect(headers.map((header) => header.badge)).toEqual([...composition[context]])
-        expect(headers.map((header) => header.meta)).toEqual([...composition.details[context]])
-        for (const header of headers) {
-          if (header.badgeBox === null) continue
-          expect(header.badge).toMatch(FORMAT_ONLY)
-          expect(header.badgeBox.top).toBeGreaterThanOrEqual(header.titleBox.bottom - TOLERANCE)
-          expect(Math.abs(header.badgeBox.left - header.header.left)).toBeLessThanOrEqual(TOLERANCE)
-          expect(header.badgeTruncated).toBe(false)
-        }
-      }
-      // The live movements state the same prescribed load as Review, timed ones included.
-      const loads = (context: Context) => state.locator(`[data-gallery-context="${context}"] [data-movement-identity]`)
-        .evaluateAll((identities) => identities.map((identity) => identity.querySelector('[data-movement-load]')?.textContent ?? null))
-      expect(await loads('workout')).toEqual(await loads('review'))
+    // Round 7's accepted cards state is the real timed cards before Start
+    // (the build's state also drew a Review column and a composition radio).
+    const headers = await readHeaders(state, 'workout')
+    expect(headers.map((header) => header.badge)).toEqual(['EMOM', 'AMRAP', 'FOR TIME'])
+    expect(headers.map((header) => header.meta)).toEqual(['10 MIN · N+1', '8 MIN · INVERSE', '15 MIN CAP'])
+    for (const header of headers) {
+      expect(header.badge).toMatch(FORMAT_ONLY)
+      expect(header.badgeBox!.top).toBeGreaterThanOrEqual(header.titleBox.bottom - TOLERANCE)
+      expect(Math.abs(header.badgeBox!.left - header.header.left)).toBeLessThanOrEqual(TOLERANCE)
+      expect(header.badgeTruncated).toBe(false)
+      expect(header.metaBox!.top).toBeGreaterThanOrEqual(header.badgeBox!.bottom - TOLERANCE)
     }
+    // The live movements state their prescribed load through the route's own reading.
+    expect(await readLoads(state, 'workout')).toEqual([
+      [{ name: 'kb swing', load: '24 lb' }],
+      [{ name: 'burpee', load: null }],
+      [{ name: 'wall ball', load: '9 lb' }],
+    ])
     await attachCapture(page, 'gallery-cards-phone-320')
   })
 })

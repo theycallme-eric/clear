@@ -32,11 +32,11 @@
     },
     {
       "path": "src/ui/amrap-block.test.tsx",
-      "sha256": "42b2087942676868205635ca9a2e2607b7106fa08d981e7f51dffdf2613271eb"
+      "sha256": "324d63d8720548c2961f34bffd9ce3c75bd73401e636f9e57a088f64925275ed"
     },
     {
       "path": "src/ui/emom-block.test.tsx",
-      "sha256": "4fcb09ff7718d1b14ac2914ed5a7080b16835981a9071420c1ec76856aefd076"
+      "sha256": "c651eb447ba57bd61e4c570ed361ebf4c393f7ba234a11fb558ee16f3616238f"
     },
     {
       "path": "src/ui/for-time-block.test.tsx",

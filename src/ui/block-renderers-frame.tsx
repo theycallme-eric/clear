@@ -99,6 +99,14 @@ export interface BlockPanelProps {
    * does. Omitted, the block observed nothing and says so.
    */
   completion?: BlockPanelCompletion
+  /**
+   * A3 TASK-110 (TASK-003: C08, C09, AC-R003-01; owner decision 6): the badge
+   * names the format alone, and the block's size it leaves out — its rounds,
+   * its scheme — is read once, on the line directly under the header. For a
+   * renderer whose own content states no such line (the circuit); a timed
+   * flow states its window and cap in its own line.
+   */
+  detailLine?: boolean
   children?: ReactNode
 }
 
@@ -116,6 +124,7 @@ export function BlockPanel({
   role,
   timer,
   completion = NOTHING_OBSERVED,
+  detailLine = false,
   children,
 }: BlockPanelProps) {
   const sectionLabel = useSectionLabel()
@@ -123,6 +132,7 @@ export function BlockPanel({
   const groupedCoaching = block.structureType !== 'standard' && block.exercises.length > 1
   const rounds = groupRounds({ structure_type: block.structureType, rounds: block.rounds, exercises: block.exercises.map(exercise => ({ sets: exercise.prescription.sets })) })
   const identity = rounds !== null && block.identity.detail === null ? { ...block.identity, detail: `${rounds} ROUNDS` } : block.identity
+  const detail = detailLine ? [identity.detail, identity.repScheme].filter(Boolean).join(' · ') : ''
 
   const card = (
     <Card role={role}>
@@ -132,7 +142,8 @@ export function BlockPanel({
           badge on the right, so the badge never competes with the movement
           heading below it.
         */}
-        <MovementGroupHeader heading={presentation !== null} title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`} badge={<StructureBadge identity={identity} formatOnly={presentation?.timedWorkflows !== undefined} />} />
+        <MovementGroupHeader heading={presentation !== null} title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`} badge={<StructureBadge identity={identity} formatOnly={detailLine || presentation?.timedWorkflows !== undefined} />} />
+        {detail !== '' && <p className="clr-text-data-xs clr-timed-meta" data-structure-meta="">{detail}</p>}
         <GroupCoachingContext value={groupedCoaching}>
           {children}
           {groupedCoaching && <GroupExerciseCoaching format={block.identity.format} exercises={block.exercises} />}

@@ -43,7 +43,7 @@ import {
   WORKOUT_AMRAP_STORAGE_KEY,
   type ShellStorage,
 } from '../state/workout-persistence'
-import { fixtureId, snapshotFixture, type BlockFixture } from '../test/workout-double'
+import { FIXTURE_SESSION_ID, fixtureId, snapshotFixture, type BlockFixture } from '../test/workout-double'
 import { AmrapBlock } from './amrap-block'
 import { BlockSlot } from './block-renderers'
 import { PRODUCT_PRESENTATION } from './product-presentation'
@@ -125,6 +125,34 @@ function renderRouteAmrap(block: BlockProgress, api: BlockCompletionApi) {
       </BlockCompletionContext>
     </WorkoutExperiencePresentationProvider>,
   )
+}
+
+/**
+ * A3 TASK-110 (round-07 R7-2): the route's AMRAP over a seam that names the
+ * session, so its record is kept in the shell's storage under the key
+ * AmrapBlock kept (`clear.workout-amraps`); a later call over the same block
+ * is a refresh. `fresh` starts from empty storage.
+ */
+function renderStoredRouteAmrap(block: BlockProgress, api: BlockCompletionApi, { fresh = false } = {}) {
+  if (fresh) window.localStorage.clear()
+  return renderRouteAmrap(block, { ...api, sessionId: FIXTURE_SESSION_ID })
+}
+
+/** A3 TASK-110: the card's "Log results" action, once the window has closed (TASK-046). */
+function routeLogOpener(): HTMLElement | null {
+  const actions = document.querySelector<HTMLElement>('.clr-timed-actions')
+  return actions === null ? null : within(actions).queryByRole('button', { name: 'Log results' })
+}
+
+/** A3 TASK-110: nothing on the route's card asks for a score or names a round goal (the build's `expectNoScoreEntry`). */
+function expectNoRouteScoreEntry() {
+  expect(screen.queryByRole('heading', { name: 'Log results' })).not.toBeInTheDocument()
+  expect(routeLogOpener()).toBeNull()
+  expect(screen.queryByRole('group', { name: 'Rounds completed' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('group', { name: 'Reps into the next round' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^(increase|decrease) / })).not.toBeInTheDocument()
+  expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+  expect(screen.queryByText(/goal|target rounds|expected|predicted/i)).not.toBeInTheDocument()
 }
 
 /**
@@ -236,16 +264,19 @@ afterEach(() => {
 })
 
 describe('what the AMRAP reads from the block', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2; TASK-003, AC-C08-01, AC-R003-01): the
+  // build's body, ported onto the AMRAP `/workout` draws (`renderRouteAmrap`).
   it('states the window it prescribes, before it is opened, with no round goal', () => {
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
 
-    expect(screen.getByText('AMRAP · 8 MIN')).toBeInTheDocument()
-    expect(
-      screen.getByText('As many rounds as possible in 08:00.'),
-    ).toBeInTheDocument()
+    // TASK-003 (AC-C08-01, AC-R003-01): the format badge, and the window
+    // stated on the block's prescription line below it.
+    expect(screen.getByText('AMRAP')).toBeInTheDocument()
+    expect(screen.getByText('8 MIN')).toBeInTheDocument()
+    expect(screen.queryByText('AMRAP · 8 MIN')).toBeNull()
     // Nothing is counting yet, and nothing is being scored yet either.
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
-    expectNoScoreEntry()
+    expectNoRouteScoreEntry()
   })
 
   it('shows no round goal even when the block carries a round count', () => {
@@ -327,38 +358,51 @@ describe('the window, hands-off', () => {
 })
 
 describe('the window closing', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2, R7-3): ported onto the route's AMRAP.
+  // Retired (R7-3): the build's "08:00 on the clock" readout and its "no
+  // timer" read — Round 7's accepted AMRAP clock stays, showing the window
+  // left ("Time complete"); the rest of the body is the build's.
   it('ends on its own when the block’s seconds have passed, and only then offers the result', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    const user = userEvent.setup()
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
 
     await start(user)
-    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('08:00')
+    expect(routeAmrapTimer()).toHaveTextContent('08:00')
+    expectNoRouteScoreEntry()
 
     // No tap ended it: the clock did, and the card now offers the optional result.
-    clock = START + 480_000
-    await vi.advanceTimersByTimeAsync(1000)
+    routeClockAt(START + 480_000)
 
-    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
-    expect(screen.getByText('AMRAP complete')).toBeInTheDocument()
-    expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
-    expect(
-      screen.getByText('No rounds recorded. Optional — leave it blank if you like.'),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Record rounds' })).toBeInTheDocument()
+    expect(routeAmrapTimer()).toHaveTextContent('Time complete')
+    expect(screen.queryByRole('button', { name: 'Finish early' })).not.toBeInTheDocument()
+    // TASK-009 (C26, C28): offered as the log's two blank counts, not as a
+    // sentence and a Record rounds toggle.
+    // TASK-046: through the card's "Log results" action, into the focused log.
+    expect(routeLogOpener()).not.toBeNull()
+    openRouteLog()
+    expect(screen.getByRole('heading', { name: 'Log results' })).toBeInTheDocument()
+    expect(routeShown('Rounds completed')).toBe('blank')
+    expect(routeShown('Reps into the next round')).toBe('blank')
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2, R7-3): ported onto the route's AMRAP.
+  // Retired (R7-3): the build's "05:23 on the clock" readout — Round 7's
+  // accepted clock shows the window left after Finish early; the elapsed
+  // time is what the block supplies, read here from the shell's seam.
   it('shows the elapsed time when the user finishes early, not the cap', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    const { api, reportOutcome } = completionDouble()
+    const block = amrapBlock()
+    renderRouteAmrap(block, api)
 
     await start(user)
     clock = START + 323_000
     await finish(user)
 
-    expect(screen.getByText('AMRAP complete')).toBeInTheDocument()
-    expect(screen.getByText('05:23 on the clock')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Record rounds' })).toBeInTheDocument()
+    expect(routeLogOpener()).not.toBeNull()
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 323 })
+    // TASK-009 (C28): stopping early offers the blank result; it fills nothing in.
+    expect(routeShown('Rounds completed')).toBe('blank')
   })
 
   it('never expires on its own when the block prescribes no window', async () => {
@@ -380,29 +424,33 @@ describe('the window closing', () => {
 })
 
 describe('recording rounds afterwards', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP.
   it('counts rounds on the card, with no dialog and no other screen', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
     await start(user)
     await finish(user)
 
-    await recordRounds(user, 3)
+    await recordRouteRounds(user, 3)
 
-    expect(rounds()).toBe('3')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(routeShown('Rounds completed')).toBe('3')
+    // TASK-046 (C45; R100) supersedes "no dialog": the counts are entered in
+    // the one shared focused log on the workout, still no other screen.
+    expect(screen.getAllByRole('dialog')).toEqual([screen.getByRole('dialog', { name: 'Log results' })])
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP.
   it('takes a round back, and never counts below zero', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
     await start(user)
     await finish(user)
-    await recordRounds(user, 1)
+    await recordRouteRounds(user, 1)
 
-    expect(rounds()).toBe('1')
-    await user.click(screen.getByRole('button', { name: 'Take back a round' }))
-    expect(rounds()).toBe('0')
-    expect(screen.getByRole('button', { name: 'Take back a round' })).toBeDisabled()
+    expect(routeShown('Rounds completed')).toBe('1')
+    await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
+    expect(routeShown('Rounds completed')).toBe('0')
+    expect(screen.getByRole('button', { name: 'Decrease rounds completed' })).toBeDisabled()
   })
 
   // TASK-009 (C28, R57) supersedes "clearing it goes back to blank": Clear
@@ -423,18 +471,24 @@ describe('recording rounds afterwards', () => {
 })
 
 describe('the partial round', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP. The
+  // blank count's status names itself "not recorded" (Round 7's quiet dash,
+  // for the build's "Not recorded" text).
   it('is asked for after the window and nowhere before it', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
     await start(user)
 
-    expect(screen.queryByRole('button', { name: 'Partial round' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Reps into the next round' })).not.toBeInTheDocument()
 
     clock = START + 480_000
     await finish(user)
 
-    expect(screen.getByText('No partial round recorded.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Partial round' })).toBeInTheDocument()
+    // TASK-009 (C28): no partial round recorded is the count's own blank.
+    expect(routeShown('Reps into the next round')).toBe('blank')
+    expect(
+      within(screen.getByRole('group', { name: 'Reps into the next round' })).getByRole('status'),
+    ).toHaveAccessibleName('Reps into the next round: not recorded')
   })
 
   // TASK-009 (C28, R57) supersedes "it can be given up again": No partial
@@ -454,39 +508,37 @@ describe('the partial round', () => {
     expect(screen.queryByRole('button', { name: 'No partial round' })).not.toBeInTheDocument()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP.
   it('counts the reps up and down without leaving the card', async () => {
     const user = userEvent.setup()
-    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
     await start(user)
     await finish(user)
-    await user.click(screen.getByRole('button', { name: 'Partial round' }))
 
-    await user.click(screen.getByRole('button', { name: 'One more rep in the partial round' }))
-    await user.click(screen.getByRole('button', { name: 'One more rep in the partial round' }))
-    await user.click(screen.getByRole('button', { name: 'One rep fewer in the partial round' }))
+    openRouteLog()
+    await user.click(screen.getByRole('button', { name: 'Increase reps into the next round' }))
+    await user.click(screen.getByRole('button', { name: 'Increase reps into the next round' }))
+    await user.click(screen.getByRole('button', { name: 'Decrease reps into the next round' }))
 
-    const reps = screen.getByRole('group', { name: 'Reps into the next round' })
-    expect(within(reps).getByRole('status')).toHaveTextContent('1')
+    expect(routeShown('Reps into the next round')).toBe('1')
   })
 })
 
 describe('what it supplies to the shell', () => {
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP.
   it('sends the result, partial round included, entered after the clock ended the block', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
-    renderAmrap(block, fakeStorage(), api)
+    renderRouteAmrap(block, api)
 
     await start(user)
-    clock = START + 480_000
-    await vi.advanceTimersByTimeAsync(1000)
+    routeClockAt(START + 480_000)
 
-    await recordRounds(user, 5)
-    await user.click(screen.getByRole('button', { name: 'Partial round' }))
+    await recordRouteRounds(user, 5)
     for (let rep = 0; rep < 8; rep += 1) {
       await user.click(
-        screen.getByRole('button', { name: 'One more rep in the partial round' }),
+        screen.getByRole('button', { name: 'Increase reps into the next round' }),
       )
     }
 
@@ -512,17 +564,18 @@ describe('what it supplies to the shell', () => {
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 300 })
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP.
   it('supplies an entered zero as a zero', async () => {
     const user = userEvent.setup()
     const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
-    renderAmrap(block, fakeStorage(), api)
+    renderRouteAmrap(block, api)
 
     await start(user)
     clock = START + 300_000
     await finish(user)
-    await recordRounds(user, 0)
-    await user.click(screen.getByRole('button', { name: 'Partial round' }))
+    await recordRouteRounds(user, 0)
+    await recordRouteZeroPartial(user)
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 300,
@@ -721,12 +774,10 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     }
   })
 
-  // TASK-008 (C22, C23, C61) supersedes "the timer's own low state": the
-  // colour at ten seconds, the breathe and one edge in the last five, and no
-  // stepped micro-pulse. A3 TASK-108 (round-07 R7-2): ported onto the AMRAP
-  // `/workout` draws (`renderRouteAmrap`).
   // Round 7's base body over AmrapBlock, kept as it is (round-07 decision R7-2:
-  // its title is its own; restored in A3 TASK-108 repair round 3).
+  // its title is its own; restored in A3 TASK-108 repair round 3). The build's
+  // TASK-008 case that superseded it is the port that follows, "… the timer's
+  // own shared warning …", on the AMRAP `/workout` draws (`renderRouteAmrap`).
   it('leaves urgency to the timer’s own low state, with nothing added around it', async () => {
     const calm = await resumeAt(60_000)
     const resting = screen.getByRole('timer')
@@ -805,25 +856,29 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect(screen.queryByRole('button', { name: /^(increase|decrease) /i })).not.toBeInTheDocument()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP. The
+  // card is the one its movement list is drawn in.
   it('labels each group inside the card it belongs to', async () => {
-    const { user } = await resumeAt(60_000)
+    const user = userEvent.setup()
+    renderRouteAmrap(amrapBlock(), completionDouble().api)
+    await start(user)
+    routeClockAt(START + 60_000)
     await finish(user)
-    await recordRounds(user, 1)
-    await user.click(screen.getByRole('button', { name: 'Partial round' }))
+    await recordRouteRounds(user, 1)
+    await recordRouteZeroPartial(user)
 
-    const card = screen.getByRole('button', { name: 'Take back a round' }).closest('.clr-card')
+    // TASK-046 (C45; R100): the card holds the work and its "Log results"
+    // action; the counts are labelled inside the log that action opens, under
+    // that log's one title.
+    const card = screen.getByRole('list', { name: 'Movements in this AMRAP' }).closest('.clr-card')
     expect(card).not.toBeNull()
-
-    for (const label of ['Rounds completed', 'Reps into the next round', 'Each round:']) {
-      const heading = screen.getByRole('heading', { name: label })
-      expect(heading.closest('.clr-card')).toBe(card)
-    }
+    expect(card).toContainElement(routeLogOpener())
+    const log = screen.getByRole('dialog', { name: 'Log results' })
+    expect(screen.getByRole('heading', { name: 'Log results' }).closest('dialog')).toBe(log)
     for (const name of ['Rounds completed', 'Reps into the next round']) {
-      expect(screen.getByRole('group', { name }).closest('.clr-card')).toBe(card)
+      expect(screen.getByRole('group', { name }).closest('dialog')).toBe(log)
+      expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument()
     }
-    expect(
-      screen.getByRole('list', { name: 'Movements in this AMRAP' }).closest('.clr-card'),
-    ).toBe(card)
   })
 
   it('draws the settled time as the shared bare readout, and says when the cap ended it', async () => {
@@ -933,42 +988,51 @@ describe('surviving a refresh', () => {
     expectNoScoreEntry()
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2, R7-3): ported onto the route's AMRAP,
+  // over a seam that names the session (`renderStoredRouteAmrap`). Retired
+  // (R7-3): the build's "AMRAP complete" / "08:00 on the clock" readout —
+  // Round 7's accepted clock comes back reading "Time complete".
   it('comes back into the completion state when the buzzer went while it was away', async () => {
     const user = userEvent.setup()
-    const storage = fakeStorage()
     const block = amrapBlock()
-    const first = renderAmrap(block, storage, completionDouble().api)
+    const first = renderStoredRouteAmrap(block, completionDouble().api, { fresh: true })
 
     await start(user)
     first.unmount()
 
     clock = START + 600_000
-    renderAmrap(block, storage, completionDouble().api)
+    renderStoredRouteAmrap(block, completionDouble().api)
 
     // Expiry is derived from the clock, so nothing had to be running for it.
-    expect(screen.getByText('AMRAP complete')).toBeInTheDocument()
-    expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Record rounds' })).toBeInTheDocument()
+    expect(routeAmrapTimer()).toHaveTextContent('Time complete')
+    expect(screen.queryByRole('button', { name: 'Start AMRAP' })).not.toBeInTheDocument()
+    expect(routeLogOpener()).not.toBeNull()
+    // An attempt that ended while away does not reopen its log on arrival:
+    // the card's "Log results" opens it.
+    await user.click(routeLogOpener()!)
+    // TASK-009 (C28): the result is offered blank; the buzzer filled nothing in.
+    expect(routeShown('Rounds completed')).toBe('blank')
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP, over a
+  // seam that names the session, so the result is kept under AmrapBlock's key.
   it('keeps the post-window result it was holding, zero included', async () => {
     const user = userEvent.setup()
-    const storage = fakeStorage()
     const block = amrapBlock()
-    const first = renderAmrap(block, storage, completionDouble().api)
+    const first = renderStoredRouteAmrap(block, completionDouble().api, { fresh: true })
 
     await start(user)
     await finish(user)
-    await recordRounds(user, 0)
-    await user.click(screen.getByRole('button', { name: 'Partial round' }))
+    await recordRouteRounds(user, 0)
+    await recordRouteZeroPartial(user)
     first.unmount()
 
     const { api, reportOutcome } = completionDouble()
-    renderAmrap(block, storage, api)
+    renderStoredRouteAmrap(block, api)
 
-    expect(rounds()).toBe('0')
-    const reps = screen.getByRole('group', { name: 'Reps into the next round' })
-    expect(within(reps).getByRole('status')).toHaveTextContent('0')
+    await user.click(routeLogOpener()!)
+    expect(routeShown('Rounds completed')).toBe('0')
+    expect(routeShown('Reps into the next round')).toBe('0')
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 0,
       roundsCompleted: 0,
@@ -976,22 +1040,24 @@ describe('surviving a refresh', () => {
     })
   })
 
+  // A3 TASK-110 (round-07 R7-1, R7-2): ported onto the route's AMRAP, over a
+  // seam that names the session (the shell's storage, AmrapBlock's key).
   it('restores an edit made after the window as the edit, not the first entry', async () => {
     const user = userEvent.setup()
-    const storage = fakeStorage()
     const block = amrapBlock()
-    const first = renderAmrap(block, storage, completionDouble().api)
+    const first = renderStoredRouteAmrap(block, completionDouble().api, { fresh: true })
 
     await start(user)
     clock = START + 480_000
     await finish(user)
-    await recordRounds(user, 4)
-    await user.click(screen.getByRole('button', { name: 'Take back a round' }))
+    await recordRouteRounds(user, 4)
+    await user.click(screen.getByRole('button', { name: 'Decrease rounds completed' }))
     first.unmount()
 
-    renderAmrap(block, storage, completionDouble().api)
-    expect(rounds()).toBe('3')
-    expect(readAmrapState(storage, block.blockId)?.roundsCompleted).toBe(3)
+    renderStoredRouteAmrap(block, completionDouble().api)
+    await user.click(routeLogOpener()!)
+    expect(routeShown('Rounds completed')).toBe('3')
+    expect(readAmrapState(window.localStorage, block.blockId)?.roundsCompleted).toBe(3)
   })
 
   it('restores a stored record from before rounds became optional', () => {

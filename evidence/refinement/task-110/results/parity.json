@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-110",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-110-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-110/required-cases.json",
+    "sha256": "b4e118a81a33d92b73c0a32ff890b3d6d97640f2edff71a307e16dbaf06a42c6"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-110-parity.spec.ts",
+      "sha256": "8936a706b70e4e9137a641b2df1607c4fd8474ae6a71beae5ad59b0ea07ef6f0"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-110-parity.spec.ts",
+      "name": "TASK-AC-58FFB5625188 cards phone-320: /workout’s EMOM, AMRAP and For Time cards before Start — format-only badges, the prescription line and each prescribed load — match the accepted cards state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-110-parity.spec.ts",
+      "name": "TASK-AC-58FFB5625188 circuit-round phone-320: /workout’s circuit card before its first round — the format-only badge and its rounds on the line under it — matches the accepted circuit-round state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-110-parity.spec.ts",
+      "name": "TASK-AC-58FFB5625188 cards phone-390: /workout’s EMOM, AMRAP and For Time cards before Start — format-only badges, the prescription line and each prescribed load — match the accepted cards state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-110-parity.spec.ts",
+      "name": "TASK-AC-58FFB5625188 circuit-round phone-390: /workout’s circuit card before its first round — the format-only badge and its rounds on the line under it — matches the accepted circuit-round state",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}
