@@ -131,6 +131,12 @@
       "R7-2 port wording, read in Round 7’s words: “Racing the clock” → “Elapsed”; “MIN 1 OF 10” → “Minute 1 of 10” (in the timer’s caption, no longer inside the block card); “COMPLETE” → “Time complete”; “REST” → “Minute N of M · Rest”; the timer names “Time remaining” / “Block time” → “EMOM time” / “AMRAP time” / “FOR TIME time” / “Ladder time”; “Rounds in this ladder” → “Prescribed ladder rounds”; the ladder meta line loses “for time, at your pace” and “cap on the whole ladder” (now “N rounds · 08:00 cap”); a movement “1. hollow body hold” → “01 hollow body hold”; its minute target “MIN 1 · 8 reps” → “Min 1 · 8 reps”; the start control “Start For Time” → “Start FOR TIME”.",
       "Round 7 look reads that changed shape, same behaviour (rules.lookAndWordingRewrites): clocks as timer-role cards with one bar; the rest’s digits beside its label; captioned clocks centring caption and digits; the open log’s edge read as the dialog’s last child; the navigator with no heading."
     ],
+    "forTask110": [
+      "src/ui/emom-block.test.tsx (TASK-110 owns it): TASK-108 ported 11 build bodies onto the route’s dispatch (BlockSlot under PRODUCT_PRESENTATION). It superseded 7 Round 7 base bodies: the 5 of the describe “the countdown takes the shipped low state and nothing more” whose titles the build’s “the countdown takes the shared countdown warning” port reuses (is not low …, stays low through the rest remainder …, stays a labelled timer …, takes the one loop …, is still under reduced motion …), “keeps the timer in its own single frame without remounting the movement list” (same title, replaced in place) and “the EMOM draws with the shared block frame > is one block card beside one timer card, with neither inside the other” (renamed by the build to “… one whole timer frame …”). It kept unchanged the other 3 base bodies of the first describe (“goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow”, “leaves the low state on the minute boundary, and comes back to it every minute”, “gives the loop up once the last minute has elapsed”), over EmomBlock. Every row has its debdeaf4 line (baseLine) and its superseding body (supersededBy).",
+      "src/ui/amrap-block.test.tsx (TASK-110 owns it): TASK-108 ported 2 build bodies; it superseded “the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one” (same title) and “… > leaves urgency to the timer’s own low state, with nothing added around it” (renamed by the build to “… shared warning …”). TASK-116’s four TASK-009 bodies are untouched.",
+      "src/app/Workout.test.tsx (TASK-110 owns it): TASK-108 restored 12 build bodies, retired 1 build body (“the session’s one rest > draws the session clock as one whole frame …”, superseded by the base body “… draws the session timer and the rest as two self-framed cards …”, which stays), and superseded 2 base bodies (“coordinates a low AMRAP window …” and “coordinates a low Circuit round rest …”, by the build’s “urgent” bodies). Every other base body in the file is unchanged.",
+      "src/ui/workout-chrome.test.tsx (TASK-108 owns it): the build’s “SectionHeader > states the structure identity of every block …” is deferred to TASK-110 under R7-5 (see deferred); Round 7’s passing body stays."
+    ],
     "ownerDecisions": [
       {
         "id": "C1",
@@ -148,10 +154,10 @@
   },
   "summary": {
     "rewritten": 42,
-    "carried": 101,
+    "carried": 106,
     "retired": 3,
     "deferred": 1,
-    "superseded": 12,
+    "superseded": 21,
     "ported": 22,
     "added": 8
   },
@@ -722,7 +728,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow”, which replaces it in place, as the build replaced it (R133, R135: the warning is the smooth breathe with one edge, not the stepped micro-pulse).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 605,
+      "supersededBy": "RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow"
     },
     {
       "file": "src/app/workout-footer-nav.test.tsx",
@@ -914,7 +922,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only”, which replaces it in place, as the build replaced it (TASK-008: the timer breathes with the edge, no stepped micro-pulse).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 376,
+      "supersededBy": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only"
     },
     {
       "file": "src/app/movement-countdown.test.tsx",
@@ -922,7 +932,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own”, which replaces it in place, as the build replaced it.",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 450,
+      "supersededBy": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own"
     },
     {
       "file": "src/app/Workout.test.tsx",
@@ -1034,7 +1046,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge”, which replaces it in place, as the build replaced it (TASK-008: one warning loop and one edge for two urgent deadlines).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 1798,
+      "supersededBy": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge"
     },
     {
       "file": "src/app/Workout.test.tsx",
@@ -1042,7 +1056,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge”, which replaces it in place, as the build replaced it.",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 1843,
+      "supersededBy": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge"
     },
     {
       "file": "src/ui/emom-block.test.tsx",
@@ -1138,7 +1154,86 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “is one block card beside one whole timer frame, with neither inside the other”, which replaces it in place, as the build replaced it (ported onto the route).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 628,
+      "supersededBy": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > is not low, and claims no loop, while the minute has time left",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over EmomBlock, superseded by the build’s ported body of the same title, “the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008). For TASK-110, the file’s owner.",
+      "result": "removed",
+      "baseLine": 828,
+      "supersededBy": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow",
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over EmomBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose own titles the build’s port does not reuse stay as they are; restored in repair round 2 after attempt 1 had removed it). EmomBlock is unchanged, so it passes as written. For TASK-110, the file’s owner.",
+      "result": "passed",
+      "baseLine": 844
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > leaves the low state on the minute boundary, and comes back to it every minute",
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over EmomBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose own titles the build’s port does not reuse stay as they are; restored in repair round 2 after attempt 1 had removed it). EmomBlock is unchanged, so it passes as written. For TASK-110, the file’s owner.",
+      "result": "passed",
+      "baseLine": 899
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > stays low through the rest remainder, with the phase still in words",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over EmomBlock, superseded by the build’s ported body of the same title, “the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008). For TASK-110, the file’s owner.",
+      "result": "removed",
+      "baseLine": 924,
+      "supersededBy": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > gives the loop up once the last minute has elapsed",
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over EmomBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose own titles the build’s port does not reuse stay as they are; restored in repair round 2 after attempt 1 had removed it). EmomBlock is unchanged, so it passes as written. For TASK-110, the file’s owner.",
+      "result": "passed",
+      "baseLine": 944
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > stays a labelled timer that is not a live region",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over EmomBlock, superseded by the build’s ported body of the same title, “the countdown takes the shared countdown warning > stays a labelled timer that is not a live region” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008). For TASK-110, the file’s owner.",
+      "result": "removed",
+      "baseLine": 966,
+      "supersededBy": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > takes the one loop from a loading region beside it, and gives it back",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over EmomBlock, superseded by the build’s ported body of the same title, “the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008). For TASK-110, the file’s owner.",
+      "result": "removed",
+      "baseLine": 979,
+      "supersededBy": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back"
+    },
+    {
+      "file": "src/ui/emom-block.test.tsx",
+      "test": "the countdown takes the shipped low state and nothing more > is still under reduced motion and loses nothing it was saying",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over EmomBlock, superseded by the build’s ported body of the same title, “the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008). For TASK-110, the file’s owner.",
+      "result": "removed",
+      "baseLine": 1018,
+      "supersededBy": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying"
     },
     {
       "file": "src/ui/emom-block.test.tsx",
@@ -1146,7 +1241,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Round 7’s base body of the same title, replaced by the ported build body (R7-2), as TASK-116 recorded its own.",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 262,
+      "supersededBy": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list"
     },
     {
       "file": "src/ui/amrap-block.test.tsx",
@@ -1170,7 +1267,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Round 7’s base body of the same title (over AmrapBlock), replaced by the ported build body (R7-2).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 663,
+      "supersededBy": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one"
     },
     {
       "file": "src/ui/amrap-block.test.tsx",
@@ -1178,7 +1277,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “leaves urgency to the timer’s own shared warning, with nothing added around it”, which replaces it in place, as the build replaced it (ported onto the route).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 690,
+      "supersededBy": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it"
     },
     {
       "file": "src/ui/for-time-block.test.tsx",
@@ -1434,7 +1535,67 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Base body superseded by the build’s TASK-008/TASK-007 case “turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five”, which replaces it in place, as the build replaced it.",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 242,
+      "supersededBy": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shipped low state and nothing more > is not low, and claims no loop, while there is time left",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over ForTimeBlock, superseded by the build’s ported body of the same title, “the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008).",
+      "result": "removed",
+      "baseLine": 552,
+      "supersededBy": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shipped low state and nothing more > goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow",
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over ForTimeBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose own titles the build’s port does not reuse stay as they are; restored in repair round 2 after attempt 1 had removed it). ForTimeBlock’s behaviour is unchanged (it only takes the hook’s new signature), so it passes as written.",
+      "result": "passed",
+      "baseLine": 566
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shipped low state and nothing more > gives the loop up at the cap and at a finish, keeping the outcome’s colours",
+      "ledger": "base (debdeaf4)",
+      "disposition": "carried",
+      "note": "Round 7’s base body over ForTimeBlock, kept unchanged (round-07 decision R7-2: base bodies over the old component whose own titles the build’s port does not reuse stay as they are; restored in repair round 2 after attempt 1 had removed it). ForTimeBlock’s behaviour is unchanged (it only takes the hook’s new signature), so it passes as written.",
+      "result": "passed",
+      "baseLine": 611
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shipped low state and nothing more > stays a labelled timer that is not a live region",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over ForTimeBlock, superseded by the build’s ported body of the same title, “the clock takes the shared countdown warning > stays a labelled timer that is not a live region” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008).",
+      "result": "removed",
+      "baseLine": 641,
+      "supersededBy": "the clock takes the shared countdown warning > stays a labelled timer that is not a live region"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shipped low state and nothing more > takes the one loop from a loading region beside it, and gives it back",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over ForTimeBlock, superseded by the build’s ported body of the same title, “the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008).",
+      "result": "removed",
+      "baseLine": 655,
+      "supersededBy": "the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back"
+    },
+    {
+      "file": "src/ui/for-time-block.test.tsx",
+      "test": "the clock takes the shipped low state and nothing more > is still under reduced motion and loses nothing it was saying",
+      "ledger": "base (debdeaf4)",
+      "disposition": "superseded",
+      "note": "Round 7’s base body over ForTimeBlock, superseded by the build’s ported body of the same title, “the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying” (round-07 decision R7-2: a ported body replaces the base body of the same title; the build renamed the describe for TASK-008).",
+      "result": "removed",
+      "baseLine": 701,
+      "supersededBy": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying"
     },
     {
       "file": "src/ui/for-time-block.test.tsx",
@@ -1442,7 +1603,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Round 7’s base body of the same title (over the plain dispatch), replaced by the ported build body (R7-2).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 758,
+      "supersededBy": "For Time with explicit ladder timing > free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it"
     },
     {
       "file": "src/ui/for-time-block.test.tsx",
@@ -1450,7 +1613,9 @@
       "ledger": "groundwork F6/F3 → TASK-108 (brief; round-07 R7-1, R7-2, S3, S5)",
       "disposition": "superseded",
       "note": "Round 7’s base body of the same title (over the plain dispatch), replaced by the ported build body (R7-2).",
-      "result": "removed"
+      "result": "removed",
+      "baseLine": 772,
+      "supersededBy": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries"
     },
     {
       "file": "src/test/design-system-097-deprecations.test.ts",
@@ -1478,7 +1643,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 phone-320: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-320: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, the body as tall as the frame, reaching its far edge and covering all of it but the bar (Round 7’s card joins the body to its 12 px bar, overlapping it by 2 px; restored in repair round 1), the readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card, whose digits sit beside its label at the row’s end, so the centring read applies to every other clock; a captioned format clock centres its caption and digits together), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
@@ -1486,7 +1651,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 phone-390: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-390: the Workout title, the centred session readout and the menu frame share one row at the menu's height, past an hour too",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, the body as tall as the frame, reaching its far edge and covering all of it but the bar (Round 7’s card joins the body to its 12 px bar, overlapping it by 2 px; restored in repair round 1), the readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card, whose digits sit beside its label at the row’s end, so the centring read applies to every other clock; a captioned format clock centres its caption and digits together), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
@@ -1494,7 +1659,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 phone-320: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-320: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, the body as tall as the frame, reaching its far edge and covering all of it but the bar (Round 7’s card joins the body to its 12 px bar, overlapping it by 2 px; restored in repair round 1), the readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card, whose digits sit beside its label at the row’s end, so the centring read applies to every other clock; a captioned format clock centres its caption and digits together), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
@@ -1502,7 +1667,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 phone-390: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 phone-390: every clock is one whole frame filling its place with centred digits — the preparation hold, the rest in the open log and the footer, and every format clock",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, the body as tall as the frame, reaching its far edge and covering all of it but the bar (Round 7’s card joins the body to its 12 px bar, overlapping it by 2 px; restored in repair round 1), the readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card, whose digits sit beside its label at the row’s end, so the centring read applies to every other clock; a captioned format clock centres its caption and digits together), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
@@ -1510,7 +1675,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 touch phone-390: start and pause the hold and a section clock and open a log while the rest runs — every clock keeps its own reading and its pause and cap arithmetic",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, the body as tall as the frame, reaching its far edge and covering all of it but the bar (Round 7’s card joins the body to its 12 px bar, overlapping it by 2 px; restored in repair round 1), the readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card, whose digits sit beside its label at the row’s end, so the centring read applies to every other clock; a captioned format clock centres its caption and digits together), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
@@ -1518,7 +1683,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 keyboard, reduced motion and recovery phone-390: every control by keyboard, still frames, and a paused section clock comes back paused after close and reopen",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: frames read as Round 7’s TimerFrame (the clock’s own timer-role card beside a card — one bar, the body as tall as the frame, reaching its far edge and covering all of it but the bar (Round 7’s card joins the body to its 12 px bar, overlapping it by 2 px; restored in repair round 1), the readout centred, spanning its place — or the card’s element frame inside one; the rest Round 7’s one timer card, whose digits sit beside its label at the row’s end, so the centring read applies to every other clock; a captioned format clock centres its caption and digits together), clocks by Round 7’s names, cards by `.clr-card` and their lists, ladders’ grid `Prescribed ladder rounds`; the header’s readout frame is the session clock’s card body. Round 7’s dialog exit runs on the page clock (a 0.3 s step inside the same whole second). The race’s cap arithmetic is also read through its warning (colour at 14:50). In the touch phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 14:30” (twice) and “Cap in 14:20” → Round 7’s race clock “Elapsed” 00:30 / 00:30 / 00:40 with the card’s meta line `15 MIN CAP` at each point.",
@@ -1526,15 +1691,16 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "test": "JOURNEY-007 gallery cards and urgency phone-320: no other header state, and every clock's actual consumer in one whole frame",
+      "test": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: no other header state, and every clock's actual consumer in one whole frame",
       "ledger": "build TASK-007 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten and renamed: Round 7’s accepted cards state draws the route’s timed flows and no workout header (so no other header state is presented); its clocks and the urgency state’s are each one whole TimerFrame. The TASK-007 manifest carries the new name.",
-      "result": "passed"
+      "result": "passed",
+      "renamedFrom": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: the route's own one-row header, and every clock's actual consumer in one whole frame"
     },
     {
       "file": "e2e/refinement/task-008.spec.ts",
-      "test": "JOURNEY-008 touch phone-390: a running countdown takes the colour at 10 and one soft edge at 5, breathing in phase with its timer over multiple cycles and numeric ticks; pause and expiry end it; elapsed-only clocks stay neutral",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: a running countdown takes the colour at 10 and one soft edge at 5, breathing in phase with its timer over multiple cycles and numeric ticks; pause and expiry end it; elapsed-only clocks stay neutral",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker); the open log’s edge host is exactly `dialog:open:Log set 1`, Round 7’s log title (restored in repair round 1 after the review found it loosened to any open dialog). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
@@ -1542,7 +1708,7 @@
     },
     {
       "file": "e2e/refinement/task-008.spec.ts",
-      "test": "JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog's top layer and back on the same phase, and nothing is written",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 touch phone-390: with the log open and then a native dialog open, one pointer-transparent edge covers the viewport above them, moves into the dialog's top layer and back on the same phase, and nothing is written",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker); the open log’s edge host is exactly `dialog:open:Log set 1`, Round 7’s log title (restored in repair round 1 after the review found it loosened to any open dialog). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
@@ -1550,7 +1716,7 @@
     },
     {
       "file": "e2e/refinement/task-008.spec.ts",
-      "test": "JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 keyboard phone-390: an EMOM minute and a count-up cap warn on their own remaining time; pause stops the edge, resume brings it back in phase, and the cap ends it",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker); the open log’s edge host is exactly `dialog:open:Log set 1`, Round 7’s log title (restored in repair round 1 after the review found it loosened to any open dialog). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
@@ -1558,7 +1724,7 @@
     },
     {
       "file": "e2e/refinement/task-008.spec.ts",
-      "test": "JOURNEY-008 reduced motion phone-320: the urgent timer and the one edge hold a steady .5 with no animation, cover the narrow viewport, and lose no word, digit or colour",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 reduced motion phone-320: the urgent timer and the one edge hold a steady .5 with no animation, cover the narrow viewport, and lose no word, digit or colour",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour: the low colour read as the frame chamfer’s timer role, cards by `.clr-card` and their lists, Round 7’s clock names, the ladders’ grid `Prescribed ladder rounds`; the edge and the timers breathe on Round 7’s one rule; Round 7’s log dialog exit runs on the page clock (0.3 s, inside the same whole second); the final read is `[data-urgent=\"true\"]` (Round 7 keeps each flow’s marker); the open log’s edge host is exactly `dialog:open:Log set 1`, Round 7’s log title (restored in repair round 1 after the review found it loosened to any open dialog). In the keyboard phone-390 case: Cap words, decided (C2; Eric, chat, 2026-11-23: “Yes, approve” — approving the rule “tasks may update old tests to match Round 7's look and wording, and each change gets listed for your UAT. A test that expects behaviour or saved data Round 7 doesn't have would still stop the build. That approval covers both TASK-108 issues.”): the build’s ForTimeBlock cap line “Cap in 00:10 — finish now” → Round 7’s race clock “Elapsed” 14:50 and the card’s meta line `15 MIN CAP`. The “— finish now” wording, which Round 7 does not draw, is dropped under that rule: near the cap the warning is the colour, the edge and the breathe.",
@@ -1566,15 +1732,16 @@
     },
     {
       "file": "e2e/refinement/task-008.spec.ts",
-      "test": "JOURNEY-008 gallery urgency phone-390: the warning through the route’s own flow — an EMOM minute at 10 and at 5 with one edge in phase, a count-up race on its cap, held on pause, and a race far from its cap neutral — with no network",
+      "test": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the route’s own flow — an EMOM minute at 10 and at 5 with one edge in phase, a count-up race on its cap, held on pause, and a race far from its cap neutral — with no network",
       "ledger": "build TASK-008 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten and renamed: Round 7’s accepted urgency state runs the route’s own flow at its moments (EMOM at 10 and 5, For Time 5 seconds to cap, a race far from its cap), each read at its exact second (the page’s `Date.now` fixed; repair round 1 removed an accepted band of readings); its edge and phase, the colour, pause and neutrality are read there, and the open log, native dialog and reduced motion on the route above. The TASK-008 manifest carries the new name.",
-      "result": "passed"
+      "result": "passed",
+      "renamedFrom": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the shared owner — held at 10 and 5, run into its last five, a count-up cap, an open native log with one edge in phase, and the still preview — with no network"
     },
     {
       "file": "e2e/refinement/task-027.spec.ts",
-      "test": "JOURNEY-027 phone-320: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+      "test": "TASK-027 compact live navigator preserves section access > JOURNEY-027 phone-320: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
       "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour (decision 2): the navigator draws no heading — the opened section’s name is its first card’s own heading, read exactly as written (`Primary lift`, `Conditioning`; repair round 1 removed a case-insensitive compare) — with its hidden “Section N / M · status” reading; the cards are Round 7’s `.clr-card`.",
@@ -1582,7 +1749,7 @@
     },
     {
       "file": "e2e/refinement/task-027.spec.ts",
-      "test": "JOURNEY-027 phone-390: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
+      "test": "TASK-027 compact live navigator preserves section access > JOURNEY-027 phone-390: a started multi-section workout — the compact navigator shows position and status without repeating the active card, jumps away and back by touch with focus on each opened section’s first card, and records or resets nothing",
       "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour (decision 2): the navigator draws no heading — the opened section’s name is its first card’s own heading, read exactly as written (`Primary lift`, `Conditioning`; repair round 1 removed a case-insensitive compare) — with its hidden “Section N / M · status” reading; the cards are Round 7’s `.clr-card`.",
@@ -1590,7 +1757,7 @@
     },
     {
       "file": "e2e/refinement/task-027.spec.ts",
-      "test": "AC-C54-01 keyboard, reduced motion, failed read and reopen phone-390: the jump list opens and jumps from the keyboard with a visible focus on the opened card; a failed read keeps its retry; a reload keeps the section and grabs no focus",
+      "test": "TASK-027 compact live navigator preserves section access > AC-C54-01 keyboard, reduced motion, failed read and reopen phone-390: the jump list opens and jumps from the keyboard with a visible focus on the opened card; a failed read keeps its retry; a reload keeps the section and grabs no focus",
       "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten for Round 7, same asserted behaviour (decision 2): the navigator draws no heading — the opened section’s name is its first card’s own heading, read exactly as written (`Primary lift`, `Conditioning`; repair round 1 removed a case-insensitive compare) — with its hidden “Section N / M · status” reading; the cards are Round 7’s `.clr-card`.",
@@ -1598,11 +1765,12 @@
     },
     {
       "file": "e2e/refinement/task-027.spec.ts",
-      "test": "gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written",
+      "test": "TASK-027 compact live navigator preserves section access > gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written",
       "ledger": "build TASK-027 e2e → TASK-108 (brief; check-02)",
       "disposition": "rewritten",
       "note": "Rewritten and renamed: Round 7’s accepted gallery shows the compact navigator as the SectionHeader specimen of its component catalogue (/gallery/app?component=SectionHeader); same asserted behaviour there. The TASK-027 manifest carries the new name.",
-      "result": "passed"
+      "result": "passed",
+      "renamedFrom": "TASK-027 compact live navigator preserves section access > gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written"
     },
     {
       "file": "e2e/refinement/task-108-parity.spec.ts",

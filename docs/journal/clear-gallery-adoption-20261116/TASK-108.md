@@ -11,7 +11,8 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 ## Status
 
 Attempt 1 implemented and committed. The two plan conflicts it raised (C1, C2) were decided by the owner on
-2026-11-23 and applied; see "Owner decision (2026-11-23)". Nothing pushed.
+2026-11-23 and applied; see "Owner decision (2026-11-23)". Repair rounds 1 and 2 applied (round 2 is the last allowed
+under hard rule 6); see their sections. Nothing pushed.
 
 ## Intended outcome
 
@@ -77,7 +78,8 @@ Tests and specs (every inherited body is in `evidence/refinement/task-108/test-l
 - `src/app/Workout.test.tsx` (TASK-110's): this task's 13 bodies — the navigator block (S5's compact-navigator body
   restored beside Round 7's), the focus moves and the rest warning; one retired as superseded.
 - `src/ui/emom-block.test.tsx` (11), `src/ui/amrap-block.test.tsx` (2) (TASK-110's) and `src/ui/for-time-block.test.tsx`
-  (9, owned whole): ported onto the route's dispatch (R7-2); the superseded base bodies removed.
+  (9, owned whole): ported onto the route's dispatch (R7-2); the same-title base bodies superseded (rows in the
+  ledger); the five base bodies with their own titles kept (restored in repair round 2).
 - `src/ui/exercise-coaching.test.tsx` (TASK-109's): two base reads moved from the rest card's pulse to the rest's timer
   (C1; first committed provisionally on its own, kept as final under the owner's 2026-11-23 rule).
 - `e2e/refinement/task-007.spec.ts`, `task-008.spec.ts`, `task-027.spec.ts`: rewritten onto Round 7 (three gallery
@@ -241,6 +243,81 @@ Verification (browser runs under the host lock, through the guard):
 
 TASK-108's parity was not re-run: no product file, parity spec or manifest changed, and its receipts stay current. No
 other task's parity spec was run.
+
+## Repair round 2 (2026-11-23, review `TASK-108-a1-8c3922cba9f8`)
+
+The review rejected TASK-AC-1A18C1BE61D6 again: attempt 1 had replaced two whole describes of Round 7 base bodies
+with its ports, and none of the 14 removed bodies had a ledger row — `src/ui/emom-block.test.tsx` "the countdown takes
+the shipped low state and nothing more" (`debdeaf4` line 827, 8 bodies) and `src/ui/for-time-block.test.tsx` "the
+clock takes the shipped low state and nothing more" (line 551, 6 bodies). Tests and evidence only; no product change.
+
+Restored unchanged (5), under their own describes, before the ports. R7-2 keeps a base body whose title the port
+does not reuse. Each body and the helpers it reads (`APP_MOTION_CSS` and `digits()` in emom-block; `raceClock()` and
+`digits()` in for-time-block) are byte-identical to `debdeaf4`. All five pass as written. Each has a `carried` ledger
+row with `ledger: "base (debdeaf4)"` and its `baseLine`.
+
+| File | `debdeaf4` line | Body |
+|---|---|---|
+| emom-block | 844 | goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow |
+| emom-block | 899 | leaves the low state on the minute boundary, and comes back to it every minute |
+| emom-block | 944 | gives the loop up once the last minute has elapsed |
+| for-time-block | 566 | goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow |
+| for-time-block | 611 | gives the loop up at the cap and at a finish, keeping the outcome's colours |
+
+Superseded (9): each shares its title with a ported body under the build's renamed describe ("the countdown / clock
+takes the shared countdown warning"). Each now has a `superseded` row: file, describe and title, `baseLine`, and
+`supersededBy` (the full key at HEAD).
+
+| File | `debdeaf4` line | Body (superseded by the same title under "… takes the shared countdown warning") |
+|---|---|---|
+| emom-block | 828 | is not low, and claims no loop, while the minute has time left |
+| emom-block | 924 | stays low through the rest remainder, with the phase still in words |
+| emom-block | 966 | stays a labelled timer that is not a live region |
+| emom-block | 979 | takes the one loop from a loading region beside it, and gives it back |
+| emom-block | 1018 | is still under reduced motion and loses nothing it was saying |
+| for-time-block | 552 | is not low, and claims no loop, while there is time left |
+| for-time-block | 641 | stays a labelled timer that is not a live region |
+| for-time-block | 655 | takes the one loop from a loading region beside it, and gives it back |
+| for-time-block | 701 | is still under reduced motion and loses nothing it was saying |
+
+Ledger (`evidence/refinement/task-108/test-ledger.json`, 203 entries, was 189): rewritten 42, carried 106 (+5),
+retired 3, deferred 1, superseded 21 (+9), ported 22, added 8. Every `superseded` row now has `baseLine` and
+`supersededBy`. The three renamed e2e gallery cases (task-007 line 676, task-008 line 782, task-027 line 508) have
+`renamedFrom` with the exact `debdeaf4` title. New `rules.forTask110` says what this task superseded, kept, ported or
+deferred in TASK-110's emom-block, amrap-block and Workout tests and in the workout-chrome deferral. `matchersWeakened`
+stays `false`: the restored bodies are verbatim.
+
+Self-audit (mechanical; a TypeScript-parser extractor over every test file and e2e spec changed since `debdeaf4`,
+plus untracked ones, keyed by describe chain and title, `${name}` expanded to phone-320 and phone-390):
+
+| Audit | Count |
+|---|---|
+| Files | 14 |
+| Tests at `debdeaf4` | 295 |
+| Absent or renamed at HEAD | 20 (14 in the two describes above minus the 5 restored = 9; 3 e2e gallery renames; 8 recorded before) |
+| Recorded (`test` or `renamedFrom` row) | 20 |
+| Unrecorded | **0** |
+| Present at both with a changed body | 33, every one with a row (rewritten, carried, or ported) |
+
+Three base bodies have their own titles because the build's port renamed them. They stay recorded as superseded, as
+the review asked: amrap "leaves urgency to the timer's own low state, with nothing added around it"; emom "is one
+block card beside one timer card, with neither inside the other"; for-time "turns urgent in the last ten seconds —
+words, pulse and hue together". A temporary probe ran each from a copy of its `debdeaf4` file against the current
+product, and all three pass; the copies were then deleted. Restoring them would need no product change.
+
+Verification (no browser run was needed: no spec, parity target or product file changed):
+
+| Check | Result |
+|---|---|
+| `npx vitest run src/ui/emom-block.test.tsx src/ui/for-time-block.test.tsx` | 2 files, 84/84 |
+| TASK-108 check-01 (guard; receipt refreshed) | PASSED, 292/292 (was 287; +5 restored) |
+| TASK-104 check-01 (guard; emom- and for-time-block are its targets; receipt refreshed) | PASSED, 177/177 (was 172) |
+| CI chain as one command | exit 0: typecheck ok; lint 0 errors / 175 warnings; lint:ds ok; gen-issues 71 requirements, 136 edges; gen:types current; `npm test` 273 files, 6,393/6,393; build ok; console grep no match |
+| `verify-delivery-evidence.mjs --mode final` for TASK-007, 008, 027, 104, 116, 108 | PASSED; current passing receipts for all six |
+| `lsof -nP -iTCP:5173 -sTCP:LISTEN` | nothing listening |
+
+TASK-116 check-02 (amrap-block) was not re-run: that file did not change this round, and the verifier reports its
+receipt current. No parity spec was run.
 
 ## Open
 

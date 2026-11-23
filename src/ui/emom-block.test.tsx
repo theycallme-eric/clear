@@ -66,6 +66,10 @@ const MOTION_CSS = readFileSync(
   resolve(import.meta.dirname, '../design-system/css/motion.css'),
   'utf-8',
 )
+const APP_MOTION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../styles/app-motion.css'),
+  'utf-8',
+)
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -231,6 +235,11 @@ function marked(word: string): string[] {
 /** The countdown's readout: the shipped timer's own labelled frame. */
 function timer(): HTMLElement {
   return screen.getByRole('timer')
+}
+
+/** The decorative digits: the timer's first child. */
+function digits(): HTMLElement {
+  return timer().firstElementChild as HTMLElement
 }
 
 /** What owns the countdown's loop and its final-five-seconds pulse. */
@@ -922,6 +931,114 @@ describe('targets follow the scheduled minute', () => {
 
     expect(screen.getByText('MIN 7 OF 10')).toBeInTheDocument()
     expect(movement('1. hollow body hold').getByText('MIN 7 · No target')).toBeInTheDocument()
+  })
+})
+
+// Round 7's base bodies over EmomBlock whose own titles the build's TASK-008
+// port does not reuse stay as they are (round-07 decision R7-2; A3 TASK-108
+// repair round 2). Their same-title siblings are superseded by the ported
+// cases below (evidence/refinement/task-108/test-ledger.json).
+describe('the countdown takes the shipped low state and nothing more', () => {
+  it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(50)
+
+    // One role change moves bar, body and emission together.
+    expect(timer()).toHaveTextContent('00:10')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(timer()).not.toHaveClass('clr-chamfer--timer')
+    expect(nestedCards()).toEqual([])
+
+    // The digits cross over on the frame's schedule, and each one tumbles.
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+
+    // Low marks the minute as running out. The shipped timer's own low pulse
+    // is the only pulse, and it sits inside a loop that is still: low alone
+    // does not take the view's one loop.
+    expect(minuteFrame()).toHaveAttribute('data-urgent', 'true')
+    const timerPulse = timer().closest('.clr-pulse-micro')
+    expect(timerPulse).not.toBeNull()
+    expect(Array.from(document.querySelectorAll('.clr-pulse-micro'))).toEqual([timerPulse])
+    expect(countdown()).not.toHaveClass('clr-pulse-micro')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+
+    // In the final five seconds the pulse is on the whole timer card and is
+    // the view's running loop.
+    mounted.advance(6)
+    expect(timer()).toHaveTextContent('00:04')
+    expect(countdown()).toHaveClass('clr-pulse-micro')
+    expect(Array.from(document.querySelectorAll('.clr-pulse-micro'))).toEqual([
+      countdown(),
+      timer().closest('.clr-pulse-micro'),
+    ])
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+
+    // No glow of the timer's own: the extra glow is the primary action's.
+    expect(countdown().querySelector('.clr-glow')).toBeNull()
+
+    // What those classes resolve to in the shipped package.
+    expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
+    expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
+    expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
+    expect(
+      MOTION_CSS.includes(
+        '@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }',
+      ),
+    ).toBe(true)
+  })
+
+  it('leaves the low state on the minute boundary, and comes back to it every minute', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(55)
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+
+    mounted.advance(5)
+    expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('01:00')
+    expect(timer()).toHaveClass('clr-chamfer--timer')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+
+    mounted.advance(52)
+    expect(timer()).toHaveTextContent('00:08')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+
+    mounted.advance(4)
+    expect(timer()).toHaveTextContent('00:04')
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+  })
+
+  it('gives the loop up once the last minute has elapsed', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount({ block: { timerSeconds: 120 } })
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(115)
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+
+    mounted.advance(5)
+
+    // A finished clock holds the low colours at zero and does not pulse on.
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:00')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(APP_MOTION_CSS).toMatch(
+      /\[data-loop='still'\] \.clr-pulse-micro,[\s\S]*?\{[^}]*animation: none/,
+    )
   })
 })
 

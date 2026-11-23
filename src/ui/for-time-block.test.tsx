@@ -132,6 +132,15 @@ function timerFrame(): HTMLElement {
   return readout().closest('.clr-card__body') as HTMLElement
 }
 
+/** The clock as a whole: the element that owns the pulse and the loop claim. */
+function raceClock(): HTMLElement {
+  return readout().closest('[data-loop]') as HTMLElement
+}
+
+function digits(): HTMLElement {
+  return readout().querySelector('[aria-hidden="true"]') as HTMLElement
+}
+
 function cards(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('.clr-card'))
 }
@@ -597,6 +606,87 @@ describe('For Time draws with the shared block frame', () => {
     expect(cards()).toHaveLength(1)
     expect(document.querySelector('[data-loop]')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Start For Time' })).not.toBeInTheDocument()
+  })
+})
+
+// Round 7's base bodies over ForTimeBlock whose own titles the build's TASK-008
+// port does not reuse stay as they are (round-07 decision R7-2; A3 TASK-108
+// repair round 2). Their same-title siblings are superseded by the ported
+// cases below (evidence/refinement/task-108/test-ledger.json).
+describe('the clock takes the shipped low state and nothing more', () => {
+  it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+    reduceMotion(false)
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 10) * 1000)
+
+    // One role change moves bar, body and emission together.
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(timerFrame()).not.toHaveClass('clr-chamfer--timer')
+    expect(nestedCards()).toEqual([])
+
+    // The digits cross over on the frame's schedule, and each one tumbles.
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+
+    // Low alone carries no pulse and claims no loop.
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+
+    // In the final five seconds the pulse is on the whole timer card and is
+    // the view's running loop.
+    await wallClockReaches(START + (CAP_SECONDS - 4) * 1000)
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(raceClock()).toHaveClass('clr-pulse-micro')
+    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+
+    // No glow of the timer's own: the extra glow is the primary action's.
+    expect(raceClock().querySelector('.clr-glow')).toBeNull()
+
+    // What those classes resolve to in the shipped package.
+    expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
+    expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
+    expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
+    expect(
+      MOTION_CSS.includes(
+        '@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }',
+      ),
+    ).toBe(true)
+  })
+
+  it('gives the loop up at the cap and at a finish, keeping the outcome’s colours', async () => {
+    reduceMotion(false)
+    const user = userWithTimers()
+    const capped = renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 3) * 1000)
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+
+    await wallClockReaches(START + CAP_SECONDS * 1000)
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    capped.unmount()
+
+    clock = START
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 3) * 1000)
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer')
+    expect(digits().style.color).toBe('var(--text-timer)')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
   })
 })
 

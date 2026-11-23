@@ -36,11 +36,11 @@
     },
     {
       "path": "src/ui/emom-block.test.tsx",
-      "sha256": "5d35f0bdebc61cfcf8cf27a54d970c9384124702a0ba6391a06f7e1873d1f7a9"
+      "sha256": "40cebd82274e45019d0f25e07c2cf57cdc02c019011e8927c2b7fa1db742b259"
     },
     {
       "path": "src/ui/for-time-block.test.tsx",
-      "sha256": "7185ee1b503796285dce2e62c0624f4853d067eef760906a163175e6dd8423a4"
+      "sha256": "e559e9af6ff6c5e4399548848c17ec72fdfcd75d6d6ed7e1ce5005b37e148843"
     }
   ],
   "requiredCases": [
@@ -416,12 +416,12 @@
     }
   ],
   "totals": {
-    "total": 172,
-    "passed": 172,
+    "total": 177,
+    "passed": 177,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 172
+    "executed": 177
   },
   "problems": []
 }
