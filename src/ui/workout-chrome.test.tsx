@@ -7,7 +7,9 @@
  * And the 0.14.3 composition of the same parts: a timer is its own card and is
  * never put inside another, a label is inside the card it names, the structure
  * badge is an element frame, and the low rest is the shipped low state — the
- * stepped `--dur-alert` crossing and the 80% pulse, as the view's one loop.
+ * stepped `--dur-alert` crossing from ten seconds — with the shared countdown
+ * warning in its final five (A3 TASK-108; TASK-008): the rest's timer breathes
+ * with the one screen-edge aura as the view's one loop, no stepped pulse.
  * jsdom applies no stylesheet, so motion is proved as classes, attributes and
  * the rule text the classes resolve to.
  */

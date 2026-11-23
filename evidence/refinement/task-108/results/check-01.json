@@ -41,7 +41,7 @@
     },
     {
       "path": "src/ui/workout-chrome.test.tsx",
-      "sha256": "019815ba40a168923c5b5014a136c949453914a3f17b3011ed35931e33a94dda"
+      "sha256": "ee21ae8f16828a684677ecd52eb2b1c6b59b93284d9955eb99c332d9d59d3e45"
     },
     {
       "path": "src/app/workout-footer-nav.test.tsx",
