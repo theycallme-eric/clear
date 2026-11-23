@@ -385,10 +385,72 @@ async function steadyScreenshot(target: Locator): Promise<Buffer> {
   throw new Error('The captured part never held still for two screenshots in a row.')
 }
 
+/** No ScrollRegion is lit: the streak a scroll raises has settled (its 420 ms timer). */
+async function scrollSettled(page: Page) {
+  await page.waitForFunction(() => document.querySelector('.clr-scroll-region[data-scrolling]') === null)
+}
+
+/**
+ * How far the part runs past what its scroll region shows: 0 when it is wholly
+ * inside its scroller's visible area (or the viewport, with no scroller),
+ * within a pixel (a part scrolled to the region's start can sit a fraction of
+ * a pixel above its edge).
+ */
+async function overrun(target: Locator): Promise<number> {
+  return target.evaluate((element) => {
+    const box = element.getBoundingClientRect()
+    const scroller = element.closest('.clr-scroll-region__scroller')
+    const shown = scroller === null ? { top: 0, bottom: window.innerHeight } : scroller.getBoundingClientRect()
+    const over = Math.max(shown.top - box.top, box.bottom - shown.bottom)
+    return over > 1 ? Math.ceil(over) : 0
+  })
+}
+
+/**
+ * The part's image, whole. A part taller than what its scroll region shows
+ * (the circuit's card at 320) used to be captured clipped by the region, with
+ * the pinned footer and the page beyond the viewport drawn over its lower
+ * part — painted differently run to run (repair round 1: the route's
+ * circuit-round card at 320 changed hash between identical runs). So the page
+ * is made just tall enough, at the same width, for the region to show the
+ * part whole; the part is captured once no ScrollRegion is lit, and the
+ * viewport is put back. Its words and boxes were read before, at the
+ * approved size.
+ */
+async function wholePart(target: Locator): Promise<Buffer> {
+  const page = target.page()
+  const viewport = page.viewportSize()!
+  const extra = await overrun(target)
+  if (extra > 0) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height + extra + 64 })
+    await target.evaluate((element) => element.scrollIntoView({ block: 'nearest' }))
+    await renderFrame(page)
+    await settle(page)
+    expect(await overrun(target), 'the part fits the taller page').toBe(0)
+  }
+  try {
+    // Taken while no region is lit, and kept only if none lit while it was taken.
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await scrollSettled(page)
+      await renderFrame(page)
+      const bytes = await steadyScreenshot(target)
+      if (await page.evaluate(() => document.querySelector('.clr-scroll-region[data-scrolling]') === null)) return bytes
+    }
+    throw new Error('A scroll region stayed lit through every capture of the part.')
+  } finally {
+    if (extra > 0) {
+      await page.setViewportSize(viewport)
+      await target.evaluate((element) => element.scrollIntoView({ block: 'start' }))
+      await renderFrame(page)
+      await settle(page)
+    }
+  }
+}
+
 async function keep(target: Locator, name: string) {
   await target.page().mouse.move(0, 0)
   await repaint(target)
-  const bytes = await steadyScreenshot(target)
+  const bytes = await wholePart(target)
   await test.info().attach(`${name}.png`, { body: bytes, contentType: 'image/png' })
   const { dir, identity } = captureDir()
   mkdirSync(dir, { recursive: true })

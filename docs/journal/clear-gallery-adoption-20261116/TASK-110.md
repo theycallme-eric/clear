@@ -51,6 +51,9 @@ results, parity receipts, test-ledger), TASK-003 and TASK-036 receipts, and the 
 - Stored AMRAP ports: Round 7 does not reopen an ended attempt's log on arrival; the card's Log results opens
   it before counts are read.
 - Self-check found two regex reads introduced while porting (For Time caption, one-round line); made exact.
+- Repair round 1 (V2 verification): rerunning the parity check rewrote `circuit-round-phone-320.json` — the
+  route card's capture alternated between two hashes (`d5f5f243…` in the guarded run, `24fd6026…` in the
+  others). See "Repair round 1" below.
 
 ## Self-check (parser; TypeScript compiler API, every touched test file and spec, 9)
 
@@ -81,6 +84,39 @@ Gallery against the base (receipt `galleryAgainstBase`, diffed with TASK-108's a
 `cards` unchanged at 320 and 390; `circuit-round` gains `3 ROUNDS` (TASK-AC-2E6734369AC5, TASK-AC-9A47DF868BD4).
 Port 5173 free before and after each browser run. No test over 2 s locally; route-level block-panel cases carry
 `{ timeout: HEAVY }` anyway.
+
+## Repair round 1 (evidence only; 2026-11-23)
+
+Cause. The circuit's card at 320 is taller than what its scroll region shows (card 74–687 px, region 74–438,
+viewport 568); it is the only route part this spec captures that overruns its region (the gallery's circuit card
+at 320 overruns too). Playwright's element screenshot of an overrunning part scrolls it into view and captures
+its whole box: the region's clip, the pinned footer and the page past the viewport are drawn over its lower part,
+and the scroll it makes lights the ScrollRegion's streak (`data-scrolling`, settled by a 420 ms timer) at the
+region's edge. Two screenshots 100 ms apart can agree while the streak is lit, so the steady capture sometimes
+caught the lit edge. Diagnosed with a temporary, uncommitted probe: three full runs and six repeats of the case
+in one worker all gave `24fd6026`; the guarded run's `d5f5f243` could not be reproduced on demand, and nothing
+else in the page was moving (no part scrolling at capture, focus on the body, clocks held).
+
+Fix (`e2e/refinement/task-110-parity.spec.ts` only; no product file; no text or layout read changed — words and
+boxes are still read at the approved size before the capture): `wholePart` captures a part only once it fits
+its region (within a pixel). A part that overruns gets a viewport just tall enough at the same width, then is
+captured once no ScrollRegion is lit, and only kept if none lit during the capture; the viewport is then put
+back and the part scrolled back to where it was read. The other parts already fit and are captured as before
+(their hashes are unchanged). Applies to every capture in the spec (cards and circuit-round).
+
+Runs (each through the guard, under `with-lock`, one at a time; port 5173 free before and after each):
+
+| Run | Result | cards-320 | cards-390 | circuit-round-320 | circuit-round-390 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | PASSED 4/4 | identical | identical | identical | identical |
+| 2 | PASSED 4/4 | (receipts byte-identical to run 1) | | | |
+
+Capture hashes (both runs): circuit-round-320 gallery `8d01f3b28f79`, route `f153c6877445` (both now the whole
+card); circuit-round-390 `f61f8996bda7` / `634e0fef2937`; cards-320 route emom `985d67bb7298`, amrap
+`e45b28be65d3`, for_time `e6b1ad49fd6e`; cards-390 route emom `b89d960a9b68`, amrap `698cb8524ab0`, for_time
+`f07c3f3f5ea9` (gallery hashes unchanged too). A first attempt without the one-pixel tolerance failed cards-320
+(a part scrolled to the region's start sat 0.05 px above its edge); the tolerance fixed it.
+`verify-delivery-evidence --mode final --body clear-refinement-20261103 --tasks TASK-110`: current passing receipts.
 
 ## Open assumptions
 

@@ -9,11 +9,11 @@
   "captures": {
     "gallery:card": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-320-gallery-card.png",
-      "sha256": "f1c38bd218c6d5f5df8d0ce9e69527b13cde3022ffb56e8f89d1568731f1fbaf"
+      "sha256": "8d01f3b28f7960a1ce1888ffbb7e4b74e733cd2b1b281e981d5ce1cfc2654bf7"
     },
     "route:card": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-320-route-card.png",
-      "sha256": "d5f5f243aa5f853627479d9dbb0a25b2409dff43309f3963e27954b3ac0c7c46"
+      "sha256": "f153c68774450c0aa9284c0d85a1adc2fee3864f02b1f6775cd4c374a6ce948f"
     }
   },
   "lines": {
