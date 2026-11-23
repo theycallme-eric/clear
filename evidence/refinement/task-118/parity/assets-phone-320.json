@@ -1,0 +1,586 @@
+{
+  "schema": "clear-task-118-parity/v1",
+  "task": "TASK-118",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "assets",
+  "width": 320,
+  "routes": [
+    "/onboarding",
+    "/review",
+    "/workout"
+  ],
+  "captures": {
+    "gallery:inventory": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-gallery-inventory.png",
+      "sha256": "8a2d0c4a526f0271c3c061cbb6e14ba55fa6253431d3aa18d2308f489beddb03"
+    },
+    "setup:equipment": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-setup-equipment.png",
+      "sha256": "8f763d12695f9af6c3eeef3ae2577585b52197843e06244b7ca314aead94bf73"
+    },
+    "review:required": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-review-required.png",
+      "sha256": "ef66ebec31c377797f01dc0815cedd0c4a17b2c2a9b481bab9e6cfbcad2ea6a7"
+    },
+    "review:standard": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-review-standard.png",
+      "sha256": "ad320abd7beb10133f25339f86b06b9a5a8bc2d7149052c09952ce3e20d2eb3a"
+    },
+    "workout:standard": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-workout-standard.png",
+      "sha256": "cf466eca3d47165b52f1cd22693af02dc6ecf5fa47676657da1044723c5f92ff"
+    }
+  },
+  "lines": {
+    "gallery:inventory": [
+      "EQUIPMENT ICON INVENTORY",
+      "Equipment names remain readable beside movement names. New glyphs are a wanted list; none are invented here.",
+      "Dumbbell · shipped",
+      "WeightPlate · shipped supplementary glyph",
+      "Bodyweight · equipment glyph wanted / text fallback",
+      "Resistance bands · equipment glyph wanted / text fallback",
+      "Foam roller · equipment glyph wanted / text fallback",
+      "Dumbbells · Dumbbell available",
+      "Kettlebells · equipment glyph wanted / text fallback",
+      "Pull-up bar · equipment glyph wanted / text fallback",
+      "Barbell · equipment glyph wanted / text fallback",
+      "Plyo box · equipment glyph wanted / text fallback",
+      "Cable machine · equipment glyph wanted / text fallback",
+      "Rowing machine · equipment glyph wanted / text fallback",
+      "Assault bike · equipment glyph wanted / text fallback",
+      "Battle ropes · equipment glyph wanted / text fallback",
+      "Assisted pull-up / dip · equipment glyph wanted / text fallback",
+      "Leg press · equipment glyph wanted / text fallback",
+      "Leg curl / extension · equipment glyph wanted / text fallback",
+      "Hack squat · equipment glyph wanted / text fallback",
+      "Medicine ball is also wanted from the Wall ball review. It is not a current Setup equipment ID; resolve catalog coverage separately."
+    ],
+    "setup:equipment": [
+      "EQUIPMENT",
+      "BODYWEIGHT",
+      "RESISTANCE BANDS",
+      "FOAM ROLLER",
+      "DUMBBELLS",
+      "KETTLEBELLS",
+      "PULL-UP BAR",
+      "BARBELL",
+      "PLYO BOX",
+      "CABLE MACHINE",
+      "ROWING MACHINE",
+      "ASSAULT BIKE",
+      "BATTLE ROPES",
+      "ASSISTED PULL-UP / DIP",
+      "LEG PRESS",
+      "LEG CURL / EXTENSION",
+      "HACK SQUAT"
+    ],
+    "review:required": [
+      "REQUIRED EQUIPMENT",
+      "BARBELL",
+      "DUMBBELLS",
+      "CABLE MACHINE",
+      "LEG PRESS",
+      "HACK SQUAT",
+      "LEG CURL EXTENSION",
+      "KETTLEBELLS",
+      "ASSISTED PULLUP DIP",
+      "PULLUP BAR",
+      "RESISTANCE BANDS",
+      "MEDICINE BALL",
+      "BOX",
+      "BATTLE ROPES",
+      "ROWING MACHINE",
+      "ASSAULT BIKE",
+      "FOAM ROLLER"
+    ],
+    "review:standard": [
+      "ACCESSORY",
+      "BACK SQUATbarbell",
+      "SWAP",
+      "3 × 5 reps",
+      "100 kg",
+      "Rest 120s",
+      "DUMBBELL BENCH PRESSdumbbells",
+      "SWAP",
+      "3 × 8 reps",
+      "24 kg",
+      "Rest 90s",
+      "CABLE ROWcable machine",
+      "SWAP",
+      "3 × 12 reps",
+      "40 kg",
+      "Rest 90s",
+      "LEG PRESSleg press",
+      "SWAP",
+      "3 × 10 reps",
+      "120 kg",
+      "Rest 90s",
+      "HACK SQUAThack squat",
+      "SWAP",
+      "3 × 8 reps",
+      "60 kg",
+      "Rest 90s",
+      "LEG EXTENSIONleg curl extension",
+      "SWAP",
+      "3 × 12 reps",
+      "35 kg",
+      "Rest 90s"
+    ],
+    "workout:standard": [
+      "ACCESSORY",
+      "STANDARD",
+      "BACK SQUATbarbell",
+      "Set 1/3",
+      "3 × 5 reps",
+      "100 kg",
+      "Rest 120s",
+      "REST",
+      "COACHING AND NOTES — BACK SQUAT",
+      "ADD NOTE — BACK SQUAT",
+      "DUMBBELL BENCH PRESSdumbbells",
+      "Set 1/3",
+      "3 × 8 reps",
+      "24 kg",
+      "Rest 90s",
+      "REST",
+      "COACHING AND NOTES — DUMBBELL BENCH PRESS",
+      "ADD NOTE — DUMBBELL BENCH PRESS",
+      "CABLE ROWcable machine",
+      "Set 1/3",
+      "3 × 12 reps",
+      "40 kg",
+      "Rest 90s",
+      "REST",
+      "COACHING AND NOTES — CABLE ROW",
+      "ADD NOTE — CABLE ROW",
+      "LEG PRESSleg press",
+      "Set 1/3",
+      "3 × 10 reps",
+      "120 kg",
+      "Rest 90s",
+      "REST",
+      "COACHING AND NOTES — LEG PRESS",
+      "ADD NOTE — LEG PRESS",
+      "HACK SQUAThack squat",
+      "Set 1/3",
+      "3 × 8 reps",
+      "60 kg",
+      "Rest 90s",
+      "REST",
+      "COACHING AND NOTES — HACK SQUAT",
+      "ADD NOTE — HACK SQUAT",
+      "LEG EXTENSIONleg curl extension",
+      "Set 1/3",
+      "3 × 12 reps",
+      "35 kg",
+      "Rest 90s",
+      "REST",
+      "COACHING AND NOTES — LEG EXTENSION",
+      "ADD NOTE — LEG EXTENSION"
+    ]
+  },
+  "compared": {
+    "setup-equipment": {
+      "gallery": "gallery:inventory",
+      "route": "setup:equipment",
+      "differences": [
+        {
+          "side": "gallery only",
+          "text": "EQUIPMENT ICON INVENTORY",
+          "criterion": "AC-C56-01",
+          "reason": "The inventory card’s own heading: the verified inventory is a reference record, drawn by the state and recorded in the wanted list; no route draws it."
+        },
+        {
+          "side": "gallery only",
+          "text": "Equipment names remain readable beside movement names. New glyphs are a wanted list; none are invented here.",
+          "criterion": "AC-R029-02",
+          "reason": "The state states the selected placement and the explicit follow-up; the routes show it (labels beside names, read here and in task-029.spec.ts)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Dumbbell · shipped",
+          "criterion": "AC-C56-01",
+          "reason": "The two shipped equipment glyphs, named; Review’s Required equipment draws the shipped Dumbbell (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "WeightPlate · shipped supplementary glyph",
+          "criterion": "AC-C56-01",
+          "reason": "The two shipped equipment glyphs, named; Review’s Required equipment draws the shipped Dumbbell (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Bodyweight · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Resistance bands · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Foam roller · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Dumbbells · Dumbbell available",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Kettlebells · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Pull-up bar · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Barbell · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Plyo box · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Cable machine · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Rowing machine · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Assault bike · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Battle ropes · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Assisted pull-up / dip · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Leg press · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Leg curl / extension · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Hack squat · equipment glyph wanted / text fallback",
+          "criterion": "AC-C56-01",
+          "reason": "Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+        },
+        {
+          "side": "gallery only",
+          "text": "Medicine ball is also wanted from the Wall ball review. It is not a current Setup equipment ID; resolve catalog coverage separately.",
+          "criterion": "AC-R029-01",
+          "reason": "The wanted medicine ball, which is no Setup id: Setup offers no medicine ball."
+        },
+        {
+          "side": "route only",
+          "text": "EQUIPMENT",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own step legend."
+        },
+        {
+          "side": "route only",
+          "text": "BODYWEIGHT",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "RESISTANCE BANDS",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "FOAM ROLLER",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "DUMBBELLS",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "KETTLEBELLS",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "PULL-UP BAR",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "BARBELL",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "PLYO BOX",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "CABLE MACHINE",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "ROWING MACHINE",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "ASSAULT BIKE",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "BATTLE ROPES",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "ASSISTED PULL-UP / DIP",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "LEG PRESS",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "LEG CURL / EXTENSION",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        },
+        {
+          "side": "route only",
+          "text": "HACK SQUAT",
+          "criterion": "AC-R029-01",
+          "reason": "Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+        }
+      ]
+    }
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery:inventory": 31,
+      "setup:equipment": 82,
+      "review:required": 21,
+      "review:standard": 98,
+      "workout:standard": 138
+    },
+    "parts": {
+      "gallery:inventory": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 288,
+        "height": 1364
+      },
+      "setup:equipment": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 254,
+        "height": 840
+      },
+      "review:required": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 254,
+        "height": 466
+      },
+      "review:standard": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 288,
+        "height": 769
+      },
+      "workout:standard": {
+        "key": "(part)#0",
+        "x": 0,
+        "y": 0,
+        "width": 288,
+        "height": 1473
+      }
+    },
+    "differences": {},
+    "notCompared": {
+      "setup-equipment": "words only: the parts hold different readings by intent (the labelled differences), so each shared reading’s own layout is compared as its own part"
+    }
+  },
+  "kinds": {
+    "gallery": [
+      "Bodyweight",
+      "Resistance bands",
+      "Foam roller",
+      "Dumbbells",
+      "Kettlebells",
+      "Pull-up bar",
+      "Barbell",
+      "Plyo box",
+      "Cable machine",
+      "Rowing machine",
+      "Assault bike",
+      "Battle ropes",
+      "Assisted pull-up / dip",
+      "Leg press",
+      "Leg curl / extension",
+      "Hack squat"
+    ],
+    "setup": [
+      "Bodyweight",
+      "Resistance bands",
+      "Foam roller",
+      "Dumbbells",
+      "Kettlebells",
+      "Pull-up bar",
+      "Barbell",
+      "Plyo box",
+      "Cable machine",
+      "Rowing machine",
+      "Assault bike",
+      "Battle ropes",
+      "Assisted pull-up / dip",
+      "Leg press",
+      "Leg curl / extension",
+      "Hack squat"
+    ]
+  },
+  "glyphs": {
+    "gallery": [
+      "94d093bcd8b10241b44354896a66dea3ea0adb43d76dda2ae0f7d1d67ab5362c",
+      "0f54120a0bfbfc3a9a389969c2b70ee0077a8fa3467e7b8b835429c0c12fcf37"
+    ],
+    "reviewRequiredEquipment": [
+      "94d093bcd8b10241b44354896a66dea3ea0adb43d76dda2ae0f7d1d67ab5362c"
+    ]
+  },
+  "labels": {
+    "review": [
+      "barbell",
+      "dumbbells",
+      "cable machine",
+      "leg press",
+      "hack squat",
+      "leg curl extension",
+      "kettlebells",
+      "assisted pullup dip",
+      "pullup bar",
+      "resistance bands",
+      "medicine ball",
+      "box",
+      "battle ropes",
+      "rowing machine",
+      "assault bike",
+      "bodyweight",
+      "foam roller"
+    ],
+    "workout": [
+      "barbell",
+      "dumbbells",
+      "cable machine",
+      "leg press",
+      "hack squat",
+      "leg curl extension",
+      "kettlebells",
+      "assisted pullup dip",
+      "pullup bar",
+      "resistance bands",
+      "medicine ball",
+      "box",
+      "battle ropes",
+      "rowing machine",
+      "assault bike",
+      "bodyweight",
+      "foam roller"
+    ]
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/composition.tsx",
+      "criterion": "TASK-AC-010B47E192B5, AC-C14-01",
+      "states": [],
+      "change": "`SummaryFacts` takes `facts` that carry their `FactKind` and orders, glyphs and sets the term visibility of each by its kind (marked `data-overview-facts`); given children only, as the overview state passes them, it draws exactly as before."
+    },
+    {
+      "file": "src/app/Review.tsx",
+      "criterion": "TASK-AC-010B47E192B5",
+      "states": [],
+      "change": "Review’s Overview hands its facts to `SummaryFacts` with their kinds (and the movement count as `movements`), in place of its label-keyed glyph, order and term tables; it draws the same readings."
+    },
+    {
+      "file": "src/app/SessionDetail.tsx",
+      "criterion": "TASK-AC-BF12C17FC7BF, AC-C14-01, AC-R004-02, AC-R004-03",
+      "states": [],
+      "change": "The saved Overview’s facts carry their kinds (Review’s glyphs, order and term visibility over the record’s own values) and the card gains Round 7’s `EquipmentSummary` built from the saved `equipment_used`. No state draws `/history/:id`."
+    }
+  ],
+  "galleryAgainstBase": {
+    "base": "evidence/refinement/task-118/parity/gallery-base-assets-phone-320.json",
+    "lines": "unchanged",
+    "dom": "8a0610415b9a8863ab3b4fc81e7ed7258b2cb65ff018772541cf243c3f199d9d",
+    "boxes": 37,
+    "layout": "unchanged",
+    "differences": [],
+    "layoutDifferences": []
+  }
+}

@@ -1,0 +1,485 @@
+{
+ "schema": "clear-refinement-test-ledger/v1",
+ "task": "TASK-118",
+ "family": "F8 part 2 (A3 task 10b)",
+ "base": "779618a01fd7642e4a532aca02f88b377588ffdb",
+ "build": "181e580 (source material only)",
+ "source": "Brief NB2/briefs/TASK-118-a1.md; running summary; round-07 placement review; the build’s src/ui/summary-facts.test.tsx, src/ui/movement-identity.test.tsx (TASK-029 block), e2e/refinement/task-004.spec.ts and task-029.spec.ts.",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "matchersWeakenedNote": "No matcher is loosened. The parser comparison (rules.selfCheck) lists every build read not present verbatim at HEAD (91; the 34 base reads are the same e2e reads, base = build there). Each is (a) the same read on Round 7’s subject or locator (`.clr-equipment-summary` for `[data-equipment-summary]`, `.clr-equipment-summary__empty` for `data-equipment-none`, the label’s own svg, `.clr-movement-identity`, the name element as the column, `nameOf()` for `[data-movement-name]`, `rowsOf()`/`rows()` for Review’s standard block, list-item words for data attributes, per-line-box contrast), (b) a Round 7 look or wording rewrite under the owner’s rule (rules.retiredAssertions, rules.forTask115), or (c) a read of a gallery variant or scene Round 7’s accepted state does not draw, proved on the real routes instead. Two no-paragraph reads became exact (`toEqual([label])`, `toEqual([label, none])`). No getBy became queryBy, no `not` read was removed (`not.toContainElement` became `toContainElement` with the name-words `not.toContainElement` kept), no count was dropped, no exact text became a regex. Three reads were restored after the comparison (`words.nextElementSibling` is the equipment, the metric grid’s class, the two shipped glyphs’ count).",
+  "testUpdateRule": "Eric, chat, 2026-11-23: “Yes, approve” (standing test-update rule: update an old or base test to match Round 7’s look and wording, or drop only the look/wording part where Round 7 has no equivalent; keep everything else; list each change for UAT).",
+  "retiredAssertions": [
+   {
+    "file": "src/ui/summary-facts.test.tsx",
+    "test": "(helper expectNoCarousel)",
+    "assertion": "each reading `max-width: 100%`",
+    "reason": "Look: Round 7’s shell.css (bec4454) sets no max-width on a reading; readings staying inside the row are measured in the browser (task-004.spec.ts)."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "(helper expectCompactEquipment)",
+    "assertion": "name column `flex-wrap: wrap`; equipment `max-width: 100%`; equipment not inside the name element",
+    "reason": "Look: Round 7 draws the equipment as inline text inside the name element (`equipmentPlacement: 'name'`); read as `display: inline`, inside the name, after the name’s words."
+   },
+   {
+    "file": "src/ui/summary-facts.test.tsx",
+    "test": "JOURNEY-004 gallery overview: …",
+    "assertion": "Saved-workout and Bodyweight-only variants of the state; “Through yesterday” in the state",
+    "reason": "Round 7’s overview state has no variants and no note; the behaviour is proved on the real routes."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "renders the accepted gallery state assets: …",
+    "assertion": "the state’s Review, Workout and Setup scenes and their reads; source reads of cards/SetupStepView/equipment-assets imports",
+    "reason": "Round 7’s assets state is one inventory card; the routes’ own labels and Setup are read on the routes."
+   },
+   {
+    "file": "e2e/refinement/task-004.spec.ts",
+    "test": "gallery overview phone-320: …",
+    "assertion": "Saved and Bodyweight-only variants; compositionOf(saved) vs planned inside the state",
+    "reason": "No variants in Round 7’s state; compared against the real /review instead (face, case, gap, glyph by kind)."
+   },
+   {
+    "file": "e2e/refinement/task-029.spec.ts",
+    "test": "(helper expectReadableLabel)",
+    "assertion": "`lines` 1 (“wraps as one unit”); wrapped flush with the column",
+    "reason": "Look: Round 7’s inline label flows with the name’s words; every part is still read inside the name column, starting beside the name or the next line."
+   },
+   {
+    "file": "e2e/refinement/task-029.spec.ts",
+    "test": "gallery assets phone-320: …",
+    "assertion": "the state’s Review, Workout and Setup scenes and their label reads",
+    "reason": "Round 7’s assets state is one inventory card."
+   }
+  ],
+  "forTask115": [
+   "TASK-029 / R132: Round 7 draws each movement’s equipment inline in the name’s own element; on Review at 320 and 390 a two-word label (“cable machine”, “leg curl extension”) continues on a second line under the name instead of moving as one unit (the build’s look). Readable, inside the name column, AA contrast in all four skins. TASK-112 owns AC-C03-01 (“readable wrapping”) and may want to confirm this look with Eric.",
+   "TASK-004: the accepted overview state is a composed card; the routes differ from it by intent — Review adds its Goal reading, Review calls the focus reading “Anchor”, and both routes keep the Duration and Focus terms (and a saved record’s Date term) for assistive technology only where the state shows every term (receipts’ `lookDifferences`).",
+   "TASK-004: /summary’s Duration and Streak numbers are drawn in Summary’s own key-number face (Round 7’s Summary.tsx since bec4454), larger and coloured as card headers, where the overview state’s composed cells draw them small; each route cell is 8 px taller. Both rows fill their equal-height cells. Labelled AC-C15-01 in the parity receipts; confirm the accepted look.",
+   "TASK-004 (this task): /history/:id’s Overview now draws Review’s glyph-led facts (term kept for assistive technology for duration, focus and date) and Round 7’s Required equipment group from the saved equipment_used, above the provenance line. No gallery state draws /history/:id; see the parity captures overview-phone-*-history-card.",
+   "Retired look reads (rules.retiredAssertions): reading max-width, flex column wrap, label max-width, wrap-as-one-unit, and the build’s gallery variants/scenes that Round 7’s overview and assets states do not draw.",
+   "TASK-002 check-01 (targets src/ui/movement-identity.test.tsx whole) stays stale/failing until TASK-112 adds the TASK-002 block (owner decision 3)."
+  ],
+  "selfCheck": {
+   "when": "2026-11-23, A3 TASK-118 attempt 1, before hand-back",
+   "method": "Mechanical: every test file and e2e spec touched since 779618a0 (5) parsed with the TypeScript compiler API; full titles (describe > … > it/test, template titles as written) at the base, the build (181e580) and this tree; a body counts as changed when its text or the text of any file-level helper it reaches (transitively) differs from the base; the outermost expect(…) chains of the body and those helpers were printed canonically and compared, as sets, with the build’s and the base’s body of the same title. Each read not present verbatim was read and classified (matchersWeakenedNote).",
+   "counts": {
+    "files": 5,
+    "baseTitlesGone": 0,
+    "buildTitlesNotCarried": 11,
+    "bodiesChanged": 28,
+    "withBuild": 26,
+    "withBase": 8,
+    "buildReadsNotVerbatim": 91,
+    "baseReadsNotVerbatim": 34
+   },
+   "titlesAtBaseAbsentAtHead": 0,
+   "buildTitlesNotCarried": "the 11 TASK-002 titles of src/ui/movement-identity.test.tsx (deferred to TASK-112; entries above)",
+   "perFile": [
+    {
+     "file": "src/ui/summary-facts.test.tsx",
+     "buildTitles": 10,
+     "baseTitles": 0,
+     "headTitles": 10,
+     "absentAtHead": 0,
+     "bodiesChanged": 10,
+     "buildReadsNotVerbatim": 13
+    },
+    {
+     "file": "src/ui/movement-identity.test.tsx",
+     "buildTitles": 19,
+     "baseTitles": 0,
+     "headTitles": 8,
+     "absentAtHead": 0,
+     "buildTitlesNotCarried": 11,
+     "bodiesChanged": 8,
+     "buildReadsNotVerbatim": 44
+    },
+    {
+     "file": "e2e/refinement/task-004.spec.ts",
+     "buildTitles": 4,
+     "baseTitles": 4,
+     "headTitles": 4,
+     "absentAtHead": 0,
+     "bodiesChanged": 4,
+     "buildReadsNotVerbatim": 4
+    },
+    {
+     "file": "e2e/refinement/task-029.spec.ts",
+     "buildTitles": 6,
+     "baseTitles": 6,
+     "headTitles": 6,
+     "absentAtHead": 0,
+     "bodiesChanged": 4,
+     "buildReadsNotVerbatim": 30
+    },
+    {
+     "file": "e2e/refinement/task-118-parity.spec.ts",
+     "buildTitles": 0,
+     "baseTitles": 0,
+     "headTitles": 2,
+     "absentAtHead": 0,
+     "bodiesChanged": 2,
+     "buildReadsNotVerbatim": 0
+    }
+   ],
+   "titleCountNote": "e2e titles are counted as written (a title in a viewport or skin loop counts once); the runner executes 5 (task-004), 13 (task-029) and 4 (parity) cases."
+  },
+  "ownerDecisions": [],
+  "planConflicts": []
+ },
+ "summary": {
+  "rewritten": 18,
+  "carried": 10,
+  "deferred": 11,
+  "added": 4
+ },
+ "entries": [
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C12-01 /review: every useful fact is a whole glyph-led reading in one wrapping description list, with no carousel, rail or tab stop",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness: Round 7’s stylesheets are applied (shell.css, foreground-echo.css, text-roles.css, src/styles/equipment-summary.css, src/styles/workout-r7.css), where the build applied its refinement recipes (src/ui/refinements/tokens.css, presentation.css); the labels come from src/app/Review.tsx (EQUIPMENT_LABEL, NO_EQUIPMENT_LABEL), as the build’s src/ui/refinements/overview.tsx is not carried. Body identical to the build’s. In the shared `expectNoCarousel` helper the build’s `max-width: 100%` read of each reading is retired (look: Round 7’s shell.css sets no max-width on a reading; whether a reading stays inside the row is measured in the browser by task-004.spec.ts, which passes); Round 7’s `dd` white-space nowrap is read beside the build’s `dt` read (added).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-01 /review: intensity reads its value without \"of 10\", on the unchanged ten-point scale Start persists",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helpers identical to the build’s; passes on Round 7 under the Round 7 harness above.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C13-01 /review: Required equipment is one group under a rule, with the glyph-led label and each actual name once as an uppercase element",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7’s EquipmentSummary markup, same reads: the group is `.clr-equipment-summary` (the build’s `[data-equipment-summary]`); the label’s glyph is its own `svg[aria-hidden=true]` (the build wrapped it in `.clr-equipment-summary__glyph`). The no-paragraph read (REQ-010) is kept and made exact: the card’s only paragraph element is Round 7’s equipment label itself (`toEqual([label])`, the build’s `querySelector('p')` null). Every CSS read (flex column, rule, padding, uppercase, wrap) is kept verbatim and passes on Round 7’s stylesheet.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 None — bodyweight only appears for an all-bodyweight workout and never beside real equipment",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7 markup, same reads: the None reading is `.clr-equipment-summary__empty` (the build’s `data-equipment-none`), the group `.clr-equipment-summary`. The no-paragraph read is exact: the only paragraphs are the group’s label and its None reading. The saved Overview’s reads (None only for an all-bodyweight record, one recorded dumbbell makes it untrue) are kept verbatim and pass on this task’s /history/:id Overview group (TASK-AC-BF12C17FC7BF).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C14-01 /history/:id: the saved Overview draws the same fact composition and equipment group as Review",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Same reads; the group is `.clr-equipment-summary`. `data-overview-facts` is kept verbatim: Round 7’s SummaryFacts marks the kind-driven composition both views now draw (this task). The build’s `max-width` read in `expectNoCarousel` is retired as above.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-03 /history/:id: saved facts are the record’s own values and meanings, never the planned request",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helpers identical to the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary: Duration and Streak are each the one frame of an equal-height metric cell and fill it",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helpers identical to the build’s; Round 7’s metric-cell fill is in src/styles/workout-r7.css (applied by the harness).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary recovery: a loading, failed or empty streak keeps its card filling the cell beside the recorded duration",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helpers identical to the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery: a failed saved read keeps its error and retry, and shows no invented facts",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Same reads; the group is `.clr-equipment-summary` (the build’s `[data-equipment-summary]`).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/summary-facts.test.tsx",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 gallery overview: the accepted state draws the Review, Session Detail and Summary consumers",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7’s accepted overview state (bec4454) is one composed Overview card and the Summary metric row, drawn from the primitives the routes draw; it has no Planned/Saved/Bodyweight/Loaded switch. Kept: the state and its current link, the facts as one `clr-summary-facts` list with no carousel, the readings (Round 7’s values: Duration 50 min, Focus Upper body, Intensity 7, Movements 9 — wording/data of the state), the Required equipment names (barbell, dumbbell, bench, kettlebell) after the facts, no None reading, the metric grid (`toHaveClass('clr-metric-grid')` kept verbatim), its two cards’ values 42 min and 2 days and every cell filling (expectCardFillsCell). Added: each reading wears the glyph its kind wears on the real Review route; the cells’ headings Duration and Streak. Retired (Round 7 has no equivalent in the state): the Saved-workout variant’s terms and 42 min, the Bodyweight-only variant’s None reading in both contexts (proved on the routes by AC-R004-02, AC-C14-01 and AC-R004-03 above), the Summary note “Through yesterday” (the state draws none).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 preserves the verified equipment inventory: the 75 shipped icons unchanged, Dumbbell and WeightPlate the only equipment glyphs, and Setup’s 16 equipment ids",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body identical to the build’s; the icon family, equipment-assets.ts and Setup’s ids are unchanged on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 keeps the equipment wanted list in step with the inventory: every Setup id’s glyph status and next step, the medicine ball as a review label",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body identical to the build’s. It passes because the wanted list (docs/design/library/refinements-2026-11-04/authority/EQUIPMENT-ICON-WANTED-LIST.md, not a gallery-owned file) carries the build’s TASK-029 text again (verified family of 75, status in the application build, explicit follow-up), with one added sentence on Round 7’s inline placement.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 preserves the approved round effort faces: only Frown, Meh, Smile and SmilePlus are round, and Effort still reuses Frown, Meh and Smile",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body identical to the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 reads the Wall ball’s medicine ball as composed equipment without inventing a medicine-ball setup id",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness rewritten for Round 7 (shared with TASK-112’s TASK-002 block, which reuses it unchanged): Round 7’s stylesheets (movement-presentation.css, workout-r7.css, text-roles.css); identities are `.clr-movement-identity` (the build’s `[data-movement-identity]`); `rows()` reads Review’s standard block from its card’s movement group, which Round 7 draws without a list (every other scope is the build’s named list); `expectCompactEquipment` reads Round 7’s inline equipment inside the name element. The name read is `nameOf()` (the name’s words without the group ordinal; the build’s `[data-movement-name]`), still exactly “wall ball”. `expectCompactEquipment` (Round 7: the equipment is drawn inside the name’s own element, directly after the name’s words — the brief’s stated Round 7 placement): kept — the equipment reading exists, follows the name’s words (`words.nextElementSibling` is it, the build’s `name.nextElementSibling`), is not part of the words, reads exactly the equipment, has no svg or img, is the identity’s only equipment reading, and is label-xs in --text-secondary; `overflow-wrap: anywhere` and `min-width: 0` are read on the name element, Round 7’s column. Rewritten: `not.toContainElement` becomes `toContainElement` (inside the name element, Round 7); the column’s `flex-wrap: wrap` and the label’s `max-width: 100%` are retired (look: Round 7’s label is inline text in the name’s line box, read as `display: inline`).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment offers exactly the 16 Setup equipment choices, each named in words, and no medicine ball",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helper identical to the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-02 JOURNEY-029 reads every equipment kind as a readable label beside its name in Review and Workout, glyph or none, and Review’s Required equipment in words",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Body identical to the build’s. Harness rewritten for Round 7 (shared with TASK-112’s TASK-002 block, which reuses it unchanged): Round 7’s stylesheets (movement-presentation.css, workout-r7.css, text-roles.css); identities are `.clr-movement-identity` (the build’s `[data-movement-identity]`); `rows()` reads Review’s standard block from its card’s movement group, which Round 7 draws without a list (every other scope is the build’s named list); `expectCompactEquipment` reads Round 7’s inline equipment inside the name element. `expectCompactEquipment` (Round 7: the equipment is drawn inside the name’s own element, directly after the name’s words — the brief’s stated Round 7 placement): kept — the equipment reading exists, follows the name’s words (`words.nextElementSibling` is it, the build’s `name.nextElementSibling`), is not part of the words, reads exactly the equipment, has no svg or img, is the identity’s only equipment reading, and is label-xs in --text-secondary; `overflow-wrap: anywhere` and `min-width: 0` are read on the name element, Round 7’s column. Rewritten: `not.toContainElement` becomes `toContainElement` (inside the name element, Round 7); the column’s `flex-wrap: wrap` and the label’s `max-width: 100%` are retired (look: Round 7’s label is inline text in the name’s line box, read as `display: inline`). `expectRequiredEquipmentReadable` reads `.clr-equipment-summary` (the build’s `[data-equipment-summary]`), every other read verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery: a failed Start keeps Review’s equipment labels and Required equipment as they were and records no work",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Body identical to the build’s; the same harness and helper rewrites as the case above.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > renders the accepted gallery state assets: the shared equipment inventory, then the routes’ own Review, Workout and Setup equipment as readable labels",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7’s accepted assets state (bec4454) is one inventory card; it draws no Review, Workout or Setup scene and carries no data attributes. Kept on Round 7’s card: every Setup id once in Setup’s order with the status the shared inventory gives it (the list items’ words, for the build’s `data-equipment-asset`/`data-equipment-status`), each named by Setup’s label, no glyph in any row; the two shipped glyphs (`toHaveLength(2)`; each the public entry’s own Dumbbell/WeightPlate markup and named, for the build’s `data-shipped-glyph`); the medicine ball “not a current Setup equipment ID”; the scenes source reads Setup’s own EQUIPMENT and draws `<EquipmentSummary equipment=` (verbatim). Added: the current link and the selected-placement sentence. Retired (no equivalent in Round 7’s state): the state’s Review, Workout and Setup contexts and their label reads (proved on the real routes by the AC-R029-02, recovery and Setup cases in this block and in task-029.spec.ts), and the build’s source reads of the gallery-refinement-cards, SetupStepView and equipment-assets imports.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-C03-01 shows the compact equipment beside each movement name in Review and Workout, as readable wrapping text",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-C06-01 offers Swap in Review’s movement slot and set progress, Rest and logging in Workout’s, never the other way round",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-C07-01 heads Review’s block cards with the live cards’ static header: the section identity and the badge, in the same face",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-01 says a duplicate Bodyweight once, by the equipment, in both contexts and never hides an actual prescribed load",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keeps Review’s sections open under static semantic headings, with no toggle, chevron or hit area, and keeps the separate disclosures",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-03 keeps planned sets, reps, rounds and rest in Review, keeps live counters and Rest or log controls out of it, and keeps Swap out of Workout",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 opens Review, uses Swap, starts that same workout and uses Rest on Workout without recording work",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed formats show the same equipment beside each name in Review and in the live EMOM, AMRAP and For Time blocks",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read or a failed Start keeps Review as planned and records no work",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > renders the shared owners with each context’s own slot",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > renders the accepted gallery state cards through WorkoutCard with static headers and each context’s slot",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "deferred",
+   "note": "Not carried by this task: the brief (TASK-AC-A82C56A627E7) has TASK-118 create the file with the TASK-029 block only; TASK-112 adds the TASK-002 block and owns the whole file, reusing this file’s rewritten harness and expectCompactEquipment unchanged.",
+   "result": "not run (TASK-112)"
+  },
+  {
+   "file": "e2e/refinement/task-004.spec.ts",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 ${name}: Review, the saved workout and Summary read wrapping glyph facts, one equipment group and filled metric frames",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Body identical to the build’s (phone-320 and phone-390). `readOverview` reads Round 7’s group `.clr-equipment-summary` and its None reading `.clr-equipment-summary__empty` (the build’s data attributes); `tabsPastOverview` reads `[data-overview-facts], .clr-equipment-summary`. Every expect read is verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-004.spec.ts",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 phone-320: None — bodyweight only appears for an all-bodyweight workout, in Review and the saved Overview, and only there",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Body identical to the build’s; the helper locators as above.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-004.spec.ts",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery phone-390: a failed saved read and a failed streak read keep their meanings, retry by touch and reopen the same record",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Same reads; the no-invented-facts count reads `[data-overview-facts], .clr-equipment-summary` (the build’s `[data-equipment-summary]`).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-004.spec.ts",
+   "test": "TASK-004 accepted Overview facts, equipment and summary frames > gallery overview phone-320: the accepted state draws the Review, saved and Summary consumers with the same facts, equipment and frames",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7’s accepted overview state is one composed card and the metric row (no Saved or Bodyweight switch). Kept: the readings (Round 7’s values Duration 50 min, Focus Upper body, Intensity 7, Movements 9 — the state’s wording/data), expectWrappingFacts, expectEquipmentGroup (barbell, dumbbell, bench, kettlebell), expectFilledCells, the capture. The build’s `compositionOf(saved)` equals `compositionOf(planned)` becomes the state against the real /review: the same face, case and gap and the same glyph for duration, focus and intensity (term visibility is not compared: the state’s composed card shows every term; listed for UAT). Retired (no equivalent in the state): the Saved and Bodyweight-only variants (proved on the routes by the cases above). The case now loads the contained synthetic app, so assertContained is added.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-029.spec.ts",
+   "test": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 ${name}: every equipment kind reads as a label beside its name in Review and Workout, glyph or none, and Review’s Required equipment names each in words",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Body identical to the build’s. `readEquipment` reads Round 7’s markup: `.clr-movement-identity`, the name element as the column, the equipment inside it directly after the name’s words; `rowsOf()` reads Review’s standard block from its card group (no list on Round 7). In `expectReadableLabel`: `insideName` becomes true (Round 7) with `afterWords` true added; the build’s “wraps as one unit” (`lines` 1, and wrapped flush with the column) is rewritten to Round 7’s inline flow — the label starts beside the name on its last line or starts the next line after its own inline gap, each further part continues on the next line from the column’s start, and every part is inside the name column (look: at 320 and 390 Review’s “cable machine” and “leg curl extension” continue on a second line; listed for UAT). Every other read verbatim. `expectRequiredEquipment` reads `.clr-equipment-summary` and the label’s own `svg[aria-hidden=true]` (Round 7 markup).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-029.spec.ts",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment phone-320: the sixteen Setup choices are named in words, none is a medicine ball, and touch and keyboard answer them",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helpers identical to the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-029.spec.ts",
+   "test": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 skin ${skin} phone-320: every equipment kind reads as a label beside its name in Review and Workout in the ${skin} skin, with each label's contrast passing and Required equipment in words",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Body identical to the build’s (clear, vapour, signal, mono). `readEquipment` reads Round 7’s markup: `.clr-movement-identity`, the name element as the column, the equipment inside it directly after the name’s words; `rowsOf()` reads Review’s standard block from its card group (no list on Round 7). In `expectReadableLabel`: `insideName` becomes true (Round 7) with `afterWords` true added; the build’s “wraps as one unit” (`lines` 1, and wrapped flush with the column) is rewritten to Round 7’s inline flow — the label starts beside the name on its last line or starts the next line after its own inline gap, each further part continues on the next line from the column’s start, and every part is inside the name column (look: at 320 and 390 Review’s “cable machine” and “leg curl extension” continue on a second line; listed for UAT). Every other read verbatim. `expectLabelContrast` hit-tests and captures the ground of each of the label’s line boxes (Round 7’s inline label can span two lines), the build’s single box; colour, topmost, paint-restored and AA reads verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-029.spec.ts",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment skin ${skin} phone-320: the sixteen Setup choices are visible words in the ${skin} skin and none is a medicine ball",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "Body and helpers identical to the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-029.spec.ts",
+   "test": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery phone-320: a failed Start and its keyboard retry keep every equipment label and Required equipment as they were, record no work, and Start stays reachable",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Same reads; the before/after label reads use `rowsOf()` (Review’s standard block has no list on Round 7). `readEquipment` reads Round 7’s markup: `.clr-movement-identity`, the name element as the column, the equipment inside it directly after the name’s words; `rowsOf()` reads Review’s standard block from its card group (no list on Round 7). In `expectReadableLabel`: `insideName` becomes true (Round 7) with `afterWords` true added; the build’s “wraps as one unit” (`lines` 1, and wrapped flush with the column) is rewritten to Round 7’s inline flow — the label starts beside the name on its last line or starts the next line after its own inline gap, each further part continues on the next line from the column’s start, and every part is inside the name column (look: at 320 and 390 Review’s “cable machine” and “leg curl extension” continue on a second line; listed for UAT). Every other read verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-029.spec.ts",
+   "test": "TASK-029 equipment asset inventory and readable fallback > gallery assets phone-320: the accepted state draws the shared inventory, then the routes’ own Review, Workout and Setup equipment as readable labels, with nothing read or written",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7’s accepted assets state is one inventory card. Kept on it: sixteen rows (count), each Setup kind with its shared status in words (for the build’s data attributes), each a visible readable word (≥ 12 px, added), no glyph in a row, two shipped glyphs, the medicine ball note, no horizontal overflow, the URL and no network request. Retired (no equivalent in the state): its Review/Workout/Setup scenes and their label reads (proved on the routes by this spec’s other cases).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-118-parity.spec.ts",
+   "test": "TASK-AC-49761FC1B153 overview phone-320: /review’s and /history/:id’s Overview and /summary’s Duration and Streak match the accepted overview state",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-49761FC1B153).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-118-parity.spec.ts",
+   "test": "TASK-AC-49761FC1B153 assets phone-320: Setup’s equipment, Review’s Required equipment glyph and /review’s and /workout’s equipment labels match the accepted assets state",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-49761FC1B153).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-118-parity.spec.ts",
+   "test": "TASK-AC-49761FC1B153 overview phone-390: /review’s and /history/:id’s Overview and /summary’s Duration and Streak match the accepted overview state",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-49761FC1B153).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-118-parity.spec.ts",
+   "test": "TASK-AC-49761FC1B153 assets phone-390: Setup’s equipment, Review’s Required equipment glyph and /review’s and /workout’s equipment labels match the accepted assets state",
+   "ledger": "TASK-118 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "added",
+   "note": "The look check (TASK-AC-49761FC1B153).",
+   "result": "passed"
+  }
+ ]
+}

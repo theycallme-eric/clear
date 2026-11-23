@@ -1,0 +1,541 @@
+{
+  "schema": "clear-task-118-gallery-base/v1",
+  "base": "779618a01fd7642e4a532aca02f88b377588ffdb",
+  "state": "overview",
+  "width": 320,
+  "lines": [
+    "OVERVIEW AND SUMMARY FRAMES",
+    "OVERVIEW",
+    "DURATION",
+    "50 MIN",
+    "FOCUS",
+    "UPPER BODY",
+    "INTENSITY",
+    "7",
+    "MOVEMENTS",
+    "9",
+    "REQUIRED EQUIPMENT",
+    "BARBELL",
+    "DUMBBELL",
+    "BENCH",
+    "KETTLEBELL",
+    "DURATION",
+    "42 min",
+    "STREAK",
+    "2 days"
+  ],
+  "dom": "08fc5db4194b420fc97aa2e746fe6fb7f475cd646f61dd655a3a966eb115e638",
+  "boxes": [
+    {
+      "key": "(part)#0",
+      "x": 0,
+      "y": 0,
+      "width": 288,
+      "height": 415.9
+    },
+    {
+      "key": "h|OVERVIEW AND SUMMARY FRAMES#0",
+      "x": 0,
+      "y": 0,
+      "width": 288,
+      "height": 56
+    },
+    {
+      "key": "div.clr-stack|OVERVIEW DURATION 50 MIN FOCUS UPPER BODY INTENSITY 7 MOVEMENTS 9 REQUIRED EQUIP#0",
+      "x": 0,
+      "y": 56,
+      "width": 288,
+      "height": 359.9
+    },
+    {
+      "key": "div.clr-echo|OVERVIEW DURATION 50 MIN FOCUS UPPER BODY INTENSITY 7 MOVEMENTS 9 REQUIRED EQUIP#0",
+      "x": 0,
+      "y": 56,
+      "width": 288,
+      "height": 251
+    },
+    {
+      "key": "svg.clr-echo__rear|#0",
+      "x": 0,
+      "y": 56,
+      "width": 288,
+      "height": 251
+    },
+    {
+      "key": "path.clr-echo__source|#0",
+      "x": 0,
+      "y": 56,
+      "width": 288,
+      "height": 251
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|OVERVIEW DURATION 50 MIN FOCUS UPPER BODY INTENSITY 7 MOVEMENTS 9 REQUIRED EQUIP#0",
+      "x": 0,
+      "y": 56,
+      "width": 288,
+      "height": 251
+    },
+    {
+      "key": "div.clr-card|OVERVIEW DURATION 50 MIN FOCUS UPPER BODY INTENSITY 7 MOVEMENTS 9 REQUIRED EQUIP#0",
+      "x": 0,
+      "y": 56,
+      "width": 288,
+      "height": 251
+    },
+    {
+      "key": "span.clr-card__bar|#0",
+      "x": 0,
+      "y": 56,
+      "width": 12,
+      "height": 251
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--lg|OVERVIEW DURATION 50 MIN FOCUS UPPER BODY INTENSITY 7 MOVEMENTS 9 REQUIRED EQUIP#0",
+      "x": 10,
+      "y": 56,
+      "width": 278,
+      "height": 251
+    },
+    {
+      "key": "div|OVERVIEW#0",
+      "x": 22,
+      "y": 68,
+      "width": 254,
+      "height": 16
+    },
+    {
+      "key": "h|OVERVIEW#0",
+      "x": 22,
+      "y": 68,
+      "width": 77.6,
+      "height": 16
+    },
+    {
+      "key": "dl.clr-summary-facts|DURATION 50 MIN FOCUS UPPER BODY INTENSITY 7 MOVEMENTS 9#0",
+      "x": 22,
+      "y": 92,
+      "width": 254,
+      "height": 72
+    },
+    {
+      "key": "div.clr-summary-fact|DURATION 50 MIN#0",
+      "x": 22,
+      "y": 92,
+      "width": 148.3,
+      "height": 16
+    },
+    {
+      "key": "dt|DURATION#0",
+      "x": 22,
+      "y": 92,
+      "width": 94.3,
+      "height": 16
+    },
+    {
+      "key": "span.clr-summary-fact__glyph|#0",
+      "x": 22,
+      "y": 92,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "svg|#0",
+      "x": 22,
+      "y": 92,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#0",
+      "x": 23.3,
+      "y": 93.3,
+      "width": 13.3,
+      "height": 13.3
+    },
+    {
+      "key": "span|DURATION#0",
+      "x": 42,
+      "y": 92,
+      "width": 74.3,
+      "height": 16
+    },
+    {
+      "key": "dd|50 MIN#0",
+      "x": 120.3,
+      "y": 92,
+      "width": 50,
+      "height": 16
+    },
+    {
+      "key": "div.clr-summary-fact|FOCUS UPPER BODY#0",
+      "x": 22,
+      "y": 120,
+      "width": 163.5,
+      "height": 16
+    },
+    {
+      "key": "dt|FOCUS#0",
+      "x": 22,
+      "y": 120,
+      "width": 67.8,
+      "height": 16
+    },
+    {
+      "key": "span.clr-summary-fact__glyph|#1",
+      "x": 22,
+      "y": 120,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "svg|#1",
+      "x": 22,
+      "y": 120,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#1",
+      "x": 23.3,
+      "y": 121.3,
+      "width": 13.3,
+      "height": 13.3
+    },
+    {
+      "key": "span|FOCUS#0",
+      "x": 42,
+      "y": 120,
+      "width": 47.8,
+      "height": 16
+    },
+    {
+      "key": "dd|UPPER BODY#0",
+      "x": 93.8,
+      "y": 120,
+      "width": 91.7,
+      "height": 16
+    },
+    {
+      "key": "div.clr-summary-fact|INTENSITY 7#0",
+      "x": 22,
+      "y": 148,
+      "width": 108.6,
+      "height": 16
+    },
+    {
+      "key": "dt|INTENSITY#0",
+      "x": 22,
+      "y": 148,
+      "width": 95.8,
+      "height": 16
+    },
+    {
+      "key": "span.clr-summary-fact__glyph|#2",
+      "x": 22,
+      "y": 148,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "svg|#2",
+      "x": 22,
+      "y": 148,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#2",
+      "x": 23.3,
+      "y": 150,
+      "width": 13.3,
+      "height": 12
+    },
+    {
+      "key": "span|INTENSITY#0",
+      "x": 42,
+      "y": 148,
+      "width": 75.8,
+      "height": 16
+    },
+    {
+      "key": "dd|7#0",
+      "x": 121.8,
+      "y": 148,
+      "width": 8.8,
+      "height": 16
+    },
+    {
+      "key": "div.clr-summary-fact|MOVEMENTS 9#0",
+      "x": 142.6,
+      "y": 148,
+      "width": 125.5,
+      "height": 16
+    },
+    {
+      "key": "dt|MOVEMENTS#0",
+      "x": 142.6,
+      "y": 148,
+      "width": 112.7,
+      "height": 16
+    },
+    {
+      "key": "span.clr-summary-fact__glyph|#3",
+      "x": 142.6,
+      "y": 148,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "svg|#3",
+      "x": 142.6,
+      "y": 148,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#3",
+      "x": 144.6,
+      "y": 150.7,
+      "width": 12,
+      "height": 10.7
+    },
+    {
+      "key": "span|MOVEMENTS#0",
+      "x": 162.6,
+      "y": 148,
+      "width": 92.7,
+      "height": 16
+    },
+    {
+      "key": "dd|9#0",
+      "x": 259.3,
+      "y": 148,
+      "width": 8.8,
+      "height": 16
+    },
+    {
+      "key": "div.clr-equipment-summary|REQUIRED EQUIPMENT BARBELL DUMBBELL BENCH KETTLEBELL#0",
+      "x": 22,
+      "y": 172,
+      "width": 254,
+      "height": 106
+    },
+    {
+      "key": "p.clr-equipment-summary__label.clr-text-data-xs.clr-text-data-xs--upper|REQUIRED EQUIPMENT#0",
+      "x": 22,
+      "y": 186,
+      "width": 254,
+      "height": 20
+    },
+    {
+      "key": "svg|#4",
+      "x": 22,
+      "y": 188,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#4",
+      "x": 23.3,
+      "y": 191.3,
+      "width": 13.3,
+      "height": 9.3
+    },
+    {
+      "key": "ul.clr-equipment-summary__list|BARBELL DUMBBELL BENCH KETTLEBELL#0",
+      "x": 22,
+      "y": 214,
+      "width": 254,
+      "height": 64
+    },
+    {
+      "key": "li|BARBELL#0",
+      "x": 22,
+      "y": 214,
+      "width": 84.3,
+      "height": 28
+    },
+    {
+      "key": "li|DUMBBELL#0",
+      "x": 114.3,
+      "y": 214,
+      "width": 98.5,
+      "height": 28
+    },
+    {
+      "key": "li|BENCH#0",
+      "x": 22,
+      "y": 250,
+      "width": 69.4,
+      "height": 28
+    },
+    {
+      "key": "li|KETTLEBELL#0",
+      "x": 99.4,
+      "y": 250,
+      "width": 109.3,
+      "height": 28
+    },
+    {
+      "key": "div.clr-metric-grid|DURATION 42 min STREAK 2 days#0",
+      "x": 0,
+      "y": 323,
+      "width": 288,
+      "height": 93
+    },
+    {
+      "key": "div.clr-echo|DURATION 42 min#0",
+      "x": 0,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "svg.clr-echo__rear|#1",
+      "x": 0,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "path.clr-echo__source|#1",
+      "x": 0,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|DURATION 42 min#0",
+      "x": 0,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "div.clr-card|DURATION 42 min#0",
+      "x": 0,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "span.clr-card__bar|#1",
+      "x": 0,
+      "y": 323,
+      "width": 12,
+      "height": 93
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--md|DURATION 42 min#0",
+      "x": 10,
+      "y": 323,
+      "width": 130,
+      "height": 93
+    },
+    {
+      "key": "div|DURATION#0",
+      "x": 22,
+      "y": 331,
+      "width": 106,
+      "height": 16
+    },
+    {
+      "key": "h|DURATION#0",
+      "x": 22,
+      "y": 331,
+      "width": 75.8,
+      "height": 16
+    },
+    {
+      "key": "div.clr-metric-frame|42 min#0",
+      "x": 22,
+      "y": 355,
+      "width": 106,
+      "height": 44
+    },
+    {
+      "key": "p|42 min#0",
+      "x": 34,
+      "y": 367,
+      "width": 82,
+      "height": 20
+    },
+    {
+      "key": "div.clr-echo|STREAK 2 days#0",
+      "x": 148,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "svg.clr-echo__rear|#2",
+      "x": 148,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "path.clr-echo__source|#2",
+      "x": 148,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|STREAK 2 days#0",
+      "x": 148,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "div.clr-card|STREAK 2 days#0",
+      "x": 148,
+      "y": 323,
+      "width": 140,
+      "height": 93
+    },
+    {
+      "key": "span.clr-card__bar|#2",
+      "x": 148,
+      "y": 323,
+      "width": 12,
+      "height": 93
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--md|STREAK 2 days#0",
+      "x": 158,
+      "y": 323,
+      "width": 130,
+      "height": 93
+    },
+    {
+      "key": "div|STREAK#0",
+      "x": 170,
+      "y": 331,
+      "width": 106,
+      "height": 16
+    },
+    {
+      "key": "h|STREAK#0",
+      "x": 170,
+      "y": 331,
+      "width": 57.3,
+      "height": 16
+    },
+    {
+      "key": "div.clr-metric-frame|2 days#0",
+      "x": 170,
+      "y": 355,
+      "width": 106,
+      "height": 44
+    },
+    {
+      "key": "p|2 days#0",
+      "x": 182,
+      "y": 367,
+      "width": 82,
+      "height": 20
+    }
+  ]
+}
