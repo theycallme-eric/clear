@@ -98,8 +98,9 @@
       "test": "TASK-005 one grouped coaching and notes disclosure > AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it",
       "ledger": "groundwork F7 → TASK-109 (brief)",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour: Round 7 draws each note's dialog in its section (the build portalled it), so the closed dialog's hidden copy of \"Note saved\" is also in the section; the bench's saved status is read as the visible status line beside its opener (`statusText`) for the build's `getByText`. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
-      "result": "passed"
+      "note": "Round 7 look, same asserted behaviour: Round 7 draws each note's dialog in its section (the build portalled it), so the closed dialog's hidden copy of \"Note saved\" is also in the section; the bench's saved status is read as the visible status line beside its opener (`statusText`) for the build's `getByText`. Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`. Repair round 1 (2026-11-23): the case takes the per-test timeout `{ timeout: HEAVY }` (HEAVY = 30_000, as src/ui/preparation-guide.test.tsx gives its route cases) because it opens, types into and closes several Round 7 note dialogs, each close waiting for the dialog's exit, and the AC-R005-01 case ran 5025 ms on the GitHub runner against vitest's 5 s default (PR #755). No assertion, wait or query changed; this is not a matcher change.",
+      "result": "passed",
+      "timeout": 30000
     },
     {
       "file": "src/ui/group-exercise-coaching.test.tsx",
@@ -130,8 +131,9 @@
       "test": "TASK-005 one grouped coaching and notes disclosure > JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft",
       "ledger": "groundwork F7 → TASK-109 (brief)",
       "disposition": "rewritten",
-      "note": "Round 7 look, same asserted behaviour: Round 7's Review draws a grouped block's movements as a named list and a standard block as its row (no 'Movements in this block' list), so the superset and circuit lists are read by name and the standard lift by its Swap; 'no note field on Review' is read as no textbox at all (stronger than the build's `Notes — ` textbox). Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`.",
-      "result": "passed"
+      "note": "Round 7 look, same asserted behaviour: Round 7's Review draws a grouped block's movements as a named list and a standard block as its row (no 'Movements in this block' list), so the superset and circuit lists are read by name and the standard lift by its Swap; 'no note field on Review' is read as no textbox at all (stronger than the build's `Notes — ` textbox). Its file helpers read Round 7: a live block's card is `.clr-movement-group` (the build's `data-workout-card`); each movement's section is found by role and name, its order by `[role=\"group\"]` with `aria-labelledby` naming its heading (the build's `data-coaching-movement`); the note dialog is Round 7's \"Movement note\" with the field labelled by the movement (owner decision 4; the build's \"Notes — <movement>\" dialog and field) and closing waits for Round 7's exit; the note's status is read beside its opener, which Round 7 wraps in its glow (`.clr-bleed`), not in a `.clr-row`. Repair round 1 (2026-11-23): the case takes the per-test timeout `{ timeout: HEAVY }` (HEAVY = 30_000, as src/ui/preparation-guide.test.tsx gives its route cases) because it opens, types into and closes several Round 7 note dialogs, each close waiting for the dialog's exit, and the AC-R005-01 case ran 5025 ms on the GitHub runner against vitest's 5 s default (PR #755). No assertion, wait or query changed; this is not a matcher change.",
+      "result": "passed",
+      "timeout": 30000
     },
     {
       "file": "src/ui/group-exercise-coaching.test.tsx",
@@ -796,7 +798,17 @@
         "task107Rewrite": "TASK-107's own Round 7 rewrite in the same body, unchanged at the base.",
         "task119Restore": "Reads of the build's own review-screen body, which TASK-119 restores; this task changed only the base body's section read."
       }
-    }
+    },
+    "repairs": [
+      {
+        "round": 1,
+        "date": "2026-11-23",
+        "kind": "test-only",
+        "cause": "CI Test job on PR theycallme-eric/clear#755: 'AC-R005-01 each movement keeps its own draft …' (src/ui/group-exercise-coaching.test.tsx:414) timed out at 5025 ms against vitest's 5000 ms default; 6417/6418 passed.",
+        "change": "src/ui/group-exercise-coaching.test.tsx: const HEAVY = 30_000 and { timeout: HEAVY } on that case and on 'JOURNEY-005 opens Review …' (the file's other multi-dialog route case: 1.4 s locally against AC-R005-01's 2.6 s). No body, assertion, wait, query or global timeout changed.",
+        "selfCheck": "Parsed before (971c2623) and after: 9 titles each, 0 bodies changed, only the two cases' options changed, the rest of the file identical apart from the HEAVY declaration. matchersWeakened stays false."
+      }
+    ]
   },
   "inheritedAssertions": {
     "groundworkF7": {

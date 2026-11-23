@@ -12,6 +12,7 @@ Path note: the brief's rules name this folder (`clear-gallery-adoption-20261116`
 
 Attempt 1 implemented and committed locally; every required check passed through the guard (parity twice, receipts
 and captures byte-identical). Nothing pushed. One item is flagged for the controller (see "Open", item 1).
+Repair round 1 (2026-11-23, test-only): a CI timeout in group-exercise-coaching; see "Repair round 1".
 
 ## Intended outcome
 
@@ -94,6 +95,12 @@ Tests and specs (every inherited body is in `evidence/refinement/task-109/test-l
   box moved.
 - Self-check found base reads replaced by stronger in-dialog reads in three exercise-coaching bodies; the base's panel
   reads were carried back in. It also found the gallery clock's digits read droppable; restored in unit and e2e.
+- CI (PR #755, repair round 1): `group-exercise-coaching.test.tsx` "AC-R005-01 each movement keeps its own draft …"
+  timed out at 5025 ms on the GitHub runner (vitest's default is 5 s; 2.6 s locally). Cause: the case opens, types into
+  and closes several note dialogs, each close waiting for Round 7's exit. Corrected with a per-test timeout, as
+  `preparation-guide.test.tsx` already does (`const HEAVY = 30_000`, `{ timeout: HEAVY }`), on that case and on the
+  file's other multi-dialog route case, "JOURNEY-005 opens Review …" (1.4 s locally). No body, assertion, wait, query
+  or global timeout changed.
 
 ## Verification
 
@@ -145,6 +152,24 @@ equivalent are in `rules.retiredAssertions`.
 Inherited assertions: groundwork F7 26 (preparation-guide 7, group-exercise-coaching 9, exercise-coaching 6 + 4), round
 07's Workout coaching body 1 and circuit AC-061 1, e2e task-005 5 and task-022 4, the carried TASK-034 suite 8. Ledger:
 82 rows — rewritten 40, carried 29, superseded 6, added 7.
+
+## Repair round 1 (2026-11-23, test-only)
+
+The failure, the cause and the change are under "Failures and corrections" (last item). Files:
+`src/ui/group-exercise-coaching.test.tsx`; the two ledger rows' notes and `rules.repairs` in
+`evidence/refinement/task-109/test-ledger.json`; the refreshed receipts below.
+
+| Check | Result |
+|---|---|
+| TASK-109 check-01 (guard; receipt rewritten) | PASSED, 131/131 |
+| `npm test -- src/ui/group-exercise-coaching.test.tsx` | 1 file, 9/9 |
+| `verify-delivery-evidence --mode final` (TASK-005, 022, 034, 107, 108, 109) | first REJECTED: TASK-005 check-01 stale (its target is this file) |
+| TASK-005 check-01 (guard; receipt rewritten) | PASSED, 9/9 |
+| `verify-delivery-evidence --mode final`, again | PASSED, current passing receipts for all six |
+| Self-check (TypeScript parser, 971c2623 against the working tree) | 9 titles before and after; 0 bodies changed; only the two cases' options changed; the rest of the file identical apart from the HEAVY declaration |
+| `lsof -nP -iTCP:5173 -sTCP:LISTEN` | nothing listening |
+
+Parity was not re-run (no product file or parity target changed); no browser was started.
 
 ## Open
 

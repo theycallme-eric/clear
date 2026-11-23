@@ -61,6 +61,14 @@ import {
   NOTE_SAVED_TEXT,
 } from './exercise-coaching'
 
+/**
+ * A3 TASK-109: the route cases that open, type into and close many note
+ * dialogs (each close waits for Round 7's exit) run longer than vitest's 5 s
+ * default on a shared CI runner; they take the per-test allowance
+ * src/ui/preparation-guide.test.tsx gives its route cases.
+ */
+const HEAVY = 30_000
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The seams: one library answer and one note writer per movement
 // ─────────────────────────────────────────────────────────────────────────────
@@ -411,7 +419,7 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     expect(screen.getAllByRole('button', { name: /^Coaching and notes/ })).toHaveLength(8)
   })
 
-  it('AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it', async () => {
+  it('AC-R005-01 each movement keeps its own draft, writer, save and error: one save writes only its row, a failed save keeps its text under its own name, and its retry writes it', { timeout: HEAVY }, async () => {
     const user = userEvent.setup()
     const { router, notes, prescribed } = await openReview(groupedCoachingAcceptance(), { failFirst: ['goblet squat'] })
     await startWorkout(router)
@@ -606,7 +614,7 @@ describe('TASK-005 one grouped coaching and notes disclosure', () => {
     expect(screen.queryAllByRole('alert')).toEqual([])
   })
 
-  it('JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft', async () => {
+  it('JOURNEY-005 opens Review, starts that same workout, opens the bottom disclosure and edits one movement’s note; closing and reopening keeps every draft', { timeout: HEAVY }, async () => {
     const user = userEvent.setup()
     const { router, notes, prescribed, double } = await openReview(groupedCoachingAcceptance())
 
