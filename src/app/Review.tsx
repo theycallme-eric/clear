@@ -49,25 +49,16 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   Button,
-  Clock,
-  Crosshair,
-  Gauge,
   Info,
   Play,
   RefreshCw,
-  Log,
   Rest,
-  Target,
 } from '../design-system/index'
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
 import { useAuth } from '../state/auth-context'
 import { createError, ErrorCode, isErr, type AppError } from '../state/errors'
 import { composedPreparationGuide } from '../state/preparation-guide'
 import {
-  ANCHOR_LABEL,
-  DURATION_LABEL,
-  GOAL_LABEL,
-  INTENSITY_LABEL,
   reviewBriefing,
   sequenceOrdinal,
   type ReviewBlockView,
@@ -97,7 +88,7 @@ import { MovementGroupHeader, MovementList } from '../ui/movement-presentation'
 import { ReviewExerciseRow } from '../ui/review-exercise-row'
 import { PreparationGuide } from '../ui/preparation-guide'
 import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
-import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
+import { ActionRow, PhoneFooter, SummaryFacts, type SummaryFactReading } from '../ui/composition'
 import {
   LoadSuggestionDialog,
   LoadSuggestionsStatus,
@@ -423,41 +414,7 @@ interface SuggestionProps {
 // The overview
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * A glyph beside each fact. The glyph is shorthand, never the only cue: each
- * reading keeps its own `<dt>`, visible wherever the value alone would not
- * say what it is.
- */
-const FACT_GLYPHS: Readonly<Record<string, ReactNode>> = {
-  [INTENSITY_LABEL]: <Gauge size={16} />,
-  [ANCHOR_LABEL]: <Target size={16} />,
-  [GOAL_LABEL]: <Crosshair size={16} />,
-  [DURATION_LABEL]: <Clock size={16} />,
-}
-
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
-
-/**
- * The order the compact row reads in: B05-03's duration, focus and intensity
- * first, then the two real facts the pictured demo row did not carry. Both stay
- * — the goal and the movement count are accepted facts of this workout, and a
- * compact row is not a reason to drop them.
- */
-const FACT_ORDER: readonly string[] = [DURATION_LABEL, ANCHOR_LABEL, INTENSITY_LABEL, GOAL_LABEL]
-
-/** Unknown labels keep their given order, after the known ones. */
-function factRank(label: string): number {
-  const rank = FACT_ORDER.indexOf(label)
-  return rank === -1 ? FACT_ORDER.length : rank
-}
-
-/**
- * Facts whose glyph and value already say what they are (`45 min`, `Lower
- * body`); their term stays for assistive technology. Intensity, goal and the
- * movement count keep a visible term: `7`, `Not set` and `5` are not
- * readable without one.
- */
-const SELF_DESCRIBING_FACTS: ReadonlySet<string> = new Set([DURATION_LABEL, ANCHOR_LABEL])
 
 export const MOVEMENTS_LABEL = 'Movements'
 
@@ -483,22 +440,16 @@ function BriefingOverview({
   movementCount: number
   equipment: readonly string[]
 }) {
-  const ordered = [...facts].sort((a, b) => factRank(a.label) - factRank(b.label))
+  // A3 TASK-118 (TASK-004: C12, C14): each reading carries the kind its owner
+  // declared (`FactKind`), and Round 7's `SummaryFacts` orders and glyphs it
+  // by that kind — never by its word — as a saved record's Overview does.
+  const readings: readonly SummaryFactReading[] = [
+    ...facts.map((fact) => ({ kind: fact.kind, term: fact.label, value: fact.value })),
+    { kind: 'movements', term: MOVEMENTS_LABEL, value: movementCount },
+  ]
   return (
     <Card heading={OVERVIEW_LABEL}>
-      <SummaryFacts aria-label={FACTS_LABEL}>
-        {ordered.map((fact) => (
-          <SummaryFact
-            key={fact.label}
-            glyph={FACT_GLYPHS[fact.label]}
-            term={fact.label}
-            termHidden={SELF_DESCRIBING_FACTS.has(fact.label)}
-          >
-            {fact.value}
-          </SummaryFact>
-        ))}
-        <SummaryFact glyph={<Log size={16} />} term={MOVEMENTS_LABEL}>{movementCount}</SummaryFact>
-      </SummaryFacts>
+      <SummaryFacts aria-label={FACTS_LABEL} facts={readings} />
 
       <EquipmentSummary equipment={equipment} />
 

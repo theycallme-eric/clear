@@ -47,6 +47,13 @@ import { expect, test as scanned } from '../fixtures'
  * Synthetic and contained: an intercepted session for a fictional user and
  * synthetic reads only. Nothing is written — no Start, no debrief save, no
  * model call — and no real account or row exists to mutate.
+ *
+ * A3 TASK-118 carries these cases onto Round 7 (accepted gallery bec4454):
+ * Round 7's `SummaryFacts` orders and glyphs each reading by its `FactKind`
+ * (marked `data-overview-facts`), its `EquipmentSummary` (`.clr-equipment-summary`)
+ * is the Required equipment group on Review and on the saved Overview, and the
+ * accepted overview state is Round 7's composed card and metric row. Each
+ * change is listed in `evidence/refinement/task-118/test-ledger.json`.
  */
 const OWNER = '00000000-0000-4000-8000-000000004501'
 const PLACE = '00000000-0000-4000-8000-000000004511'
@@ -356,7 +363,7 @@ async function readOverview(scope: Locator): Promise<OverviewGeometry> {
       const centre = (reading.box.top + reading.box.bottom) / 2
       if (!tops.some((top) => Math.abs(top - centre) <= 2)) tops.push(centre)
     }
-    const group = element.querySelector<HTMLElement>('[data-equipment-summary]')!
+    const group = element.querySelector<HTMLElement>('.clr-equipment-summary')!
     const groupStyle = getComputedStyle(group)
     const items = [...group.querySelectorAll<HTMLElement>('li')]
     const focusable = 'a[href], button, input, select, textarea, [tabindex]'
@@ -395,7 +402,7 @@ async function readOverview(scope: Locator): Promise<OverviewGeometry> {
         rendered: items.map((item) => item.innerText.trim()),
         namesInside: items.every((item) => box(item).left >= inner.left - 1 && box(item).right <= inner.right + 1),
         namesUppercase: items.every((item) => getComputedStyle(item).textTransform === 'uppercase'),
-        none: group.querySelector('[data-equipment-none]')?.textContent ?? null,
+        none: group.querySelector('.clr-equipment-summary__empty')?.textContent ?? null,
         belowFacts: box(group).top >= box(dl).bottom - 1,
       },
     }
@@ -531,7 +538,7 @@ async function tabsPastOverview(page: Page) {
     await page.keyboard.press('Tab')
     const inside = await page.evaluate(() => {
       const active = document.activeElement
-      return active !== null && active.closest('[data-overview-facts], [data-equipment-summary]') !== null
+      return active !== null && active.closest('[data-overview-facts], .clr-equipment-summary') !== null
     })
     expect(inside, 'no tab stop inside the facts or the equipment group').toBe(false)
   }
@@ -637,7 +644,7 @@ test.describe('TASK-004 accepted Overview facts, equipment and summary frames', 
     // The saved read fails: its own error and retry, and no invented facts.
     await page.goto(app.detailPath)
     await expect(page.getByText('Workout didn’t load')).toBeVisible()
-    await expect(page.locator('[data-overview-facts], [data-equipment-summary]')).toHaveCount(0)
+    await expect(page.locator('[data-overview-facts], .clr-equipment-summary')).toHaveCount(0)
     await checkA11y()
     await page.getByRole('button', { name: 'Retry', exact: true }).tap()
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(app.session.title)
@@ -670,7 +677,11 @@ test.describe('TASK-004 accepted Overview facts, equipment and summary frames', 
   })
 
   test('gallery overview phone-320: the accepted state draws the Review, saved and Summary consumers with the same facts, equipment and frames', async ({ page, visit }) => {
-    await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
+    // Round 7's accepted state is one composed Overview card and the Summary's
+    // metric row, drawn from the primitives the routes draw (SummaryFacts,
+    // EquipmentSummary, MetricGrid). It has no saved or bodyweight variant;
+    // those are read on the real routes above.
+    const app = await syntheticApp(page)
     await page.setViewportSize(VIEWPORTS[0].viewport)
     await visit('/gallery/refinements?state=overview')
     const state = page.locator('[data-refinement-state="overview"]')
@@ -679,23 +690,23 @@ test.describe('TASK-004 accepted Overview facts, equipment and summary frames', 
 
     const planned = await readOverview(state)
     expect(planned.facts.readings.map((reading) => [reading.term, reading.value])).toEqual([
-      ['Duration', '45 min'], ['Anchor', 'Upper body'], ['Intensity', '7'], ['Goal', 'Strength'], ['Movements', '6'],
+      ['Duration', '50 min'], ['Focus', 'Upper body'], ['Intensity', '7'], ['Movements', '9'],
     ])
     expectWrappingFacts(planned, 'Gallery planned', 320)
-    expectEquipmentGroup(planned, 'Gallery planned', OVERVIEW_PLANNED.loaded.equipment)
+    expectEquipmentGroup(planned, 'Gallery planned', ['barbell', 'dumbbell', 'bench', 'kettlebell'])
     expectFilledCells(await readMetrics(state), 'Gallery summary frames')
     await attach(state, 'gallery-overview-planned-phone-320')
 
-    await state.getByRole('radio', { name: /Saved workout/ }).tap()
+    // The same composition as the routes: Review's face, case, gap and the
+    // glyph each kind wears (Round 7's composed card shows every term).
+    await visit('/review')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(app.acceptance.workout.title)
     await settle(page)
-    const saved = await readOverview(state)
-    expect(saved.facts.readings.map((reading) => reading.term)).toEqual(['Duration', 'Focus', 'Intensity', 'Date', 'Status'])
-    expect(compositionOf(saved)).toEqual(compositionOf(planned))
-    expectEquipmentGroup(saved, 'Gallery saved', OVERVIEW_PLANNED.loaded.equipment)
-
-    await state.getByRole('radio', { name: /Bodyweight only/ }).tap()
-    await settle(page)
-    expectEquipmentGroup(await readOverview(state), 'Gallery saved bodyweight', [])
-    await attach(state, 'gallery-overview-saved-bodyweight-phone-320')
+    const review = compositionOf(await readOverview(page.locator('main')))
+    const gallery = compositionOf(planned)
+    expect({ font: gallery.font, textTransform: gallery.textTransform, gap: gallery.gap })
+      .toEqual({ font: review.font, textTransform: review.textTransform, gap: review.gap })
+    for (const kind of ['Duration', 'Focus', 'Intensity']) expect(gallery.shared[kind].glyph, kind).toBe(review.shared[kind].glyph)
+    app.assertContained()
   })
 })

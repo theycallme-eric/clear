@@ -18,7 +18,16 @@ import {
   type ReactNode,
 } from 'react'
 
-import { EmptyState } from '../design-system/index'
+import {
+  Calendar,
+  Clock,
+  Crosshair,
+  EmptyState,
+  Gauge,
+  Log,
+  Target,
+} from '../design-system/index'
+import type { FactKind } from '../state/review'
 
 import { useInsideCard } from './card-context'
 import { ForegroundEchoFrame } from './foreground-echo'
@@ -138,11 +147,86 @@ export function MetricFrame(props: CompositionProps) {
   )
 }
 
+/**
+ * One Overview reading, declared by the view that owns its value (A3 TASK-118,
+ * TASK-004: C12, C14). Its `kind` (`FactKind`, `state/review.ts`) picks the
+ * glyph, the place in the row and whether the term stays visible; the `term`
+ * is the view's own word (`Anchor` in Review, `Focus` in a saved record) and
+ * the `value` its own recorded reading. Nothing here derives a value.
+ */
+export interface SummaryFactReading {
+  readonly kind: FactKind
+  readonly term: string
+  readonly value: ReactNode
+}
+
+/**
+ * One public system glyph per kind (R33, R74). Status has none: no single
+ * glyph is true of completed, abandoned and unstarted alike, so its term says
+ * what it is.
+ */
+const FACT_GLYPHS: Readonly<Record<FactKind, ReactNode>> = {
+  duration: <Clock size={16} />,
+  focus: <Target size={16} />,
+  intensity: <Gauge size={16} />,
+  goal: <Crosshair size={16} />,
+  movements: <Log size={16} />,
+  date: <Calendar size={16} />,
+  status: undefined,
+}
+
+/**
+ * The Overview's order (B05-03): duration, focus and intensity, then the goal
+ * and the movement count, then a saved record's own date and status.
+ */
+const FACT_ORDER: readonly FactKind[] = ['duration', 'focus', 'intensity', 'goal', 'movements', 'date', 'status']
+
+/**
+ * Readings whose glyph and value already say what they are (`45 min`, `Upper
+ * body`, a day); their term stays for assistive technology. Intensity, the
+ * goal, the movement count and a status keep a visible term: `7`, `Strength`,
+ * `6` and `Completed` are not readable without one.
+ */
+const SELF_DESCRIBING_FACTS: ReadonlySet<FactKind> = new Set<FactKind>(['duration', 'focus', 'date'])
+
+/** Marks the kind-driven Overview composition, the one Review and a saved record share. */
+const OVERVIEW_FACTS_MARK = { 'data-overview-facts': '' }
+
 /** Compact workout facts: keep each reading whole and wrap onto more rows.
  * All values remain visible; result/score metric grids keep their own roles.
+ *
+ * `facts` (A3 TASK-118, TASK-004): readings that carry their kind are ordered,
+ * glyphed and given their term visibility by that kind, never by their word,
+ * so Review's Overview and a saved record's draw one composition (C14), marked
+ * `data-overview-facts`. Facts of one kind keep the order they were given; any
+ * children follow them.
  */
-export function SummaryFacts(props: CompositionProps) {
-  return composition('dl', 'clr-summary-facts', props)
+export function SummaryFacts({
+  facts,
+  children,
+  ...props
+}: CompositionProps & { facts?: readonly SummaryFactReading[] }) {
+  if (facts === undefined) return composition('dl', 'clr-summary-facts', { ...props, children })
+  const ordered = [...facts].sort((a, b) => FACT_ORDER.indexOf(a.kind) - FACT_ORDER.indexOf(b.kind))
+  return composition('dl', 'clr-summary-facts', {
+    ...OVERVIEW_FACTS_MARK,
+    ...props,
+    children: (
+      <>
+        {ordered.map((fact) => (
+          <SummaryFact
+            key={`${fact.kind}:${fact.term}`}
+            glyph={FACT_GLYPHS[fact.kind]}
+            term={fact.term}
+            termHidden={SELF_DESCRIBING_FACTS.has(fact.kind)}
+          >
+            {fact.value}
+          </SummaryFact>
+        ))}
+        {children}
+      </>
+    ),
+  })
 }
 
 /**

@@ -47,6 +47,13 @@ import { expect, test as scanned } from '../fixtures'
  * synthetic reads. The only writes the journey attempts are Start's session
  * calls, answered here and never forwarded; no set is logged, Setup commits
  * nothing, no model is called and no real account or row exists to mutate.
+ *
+ * A3 TASK-118 carries these cases onto Round 7 (accepted gallery bec4454):
+ * Round 7 draws each movement's equipment inline in the name's own element,
+ * directly after the name (`equipmentPlacement: 'name'`); Review draws a
+ * standard block's rows without a list; Required equipment is Round 7's
+ * `EquipmentSummary`; the accepted assets state is Round 7's inventory card.
+ * Each change is listed in `evidence/refinement/task-118/test-ledger.json`.
  */
 const OWNER = '00000000-0000-4000-8000-000000002901'
 const PLACE = '00000000-0000-4000-8000-000000002911'
@@ -135,6 +142,17 @@ const LISTS: Record<Context, Record<(typeof STRUCTURES)[number], string>> = {
   workout: { standard: 'Movements in this block', superset: 'Movements in this superset', circuit: 'Movements in this circuit' },
 }
 const REQUIRED_EQUIPMENT = 'Required equipment'
+
+/**
+ * The rows of one structure in one context. Every Workout block and every
+ * grouped Review block is a named list; Round 7's Review draws a standard
+ * block's rows straight in its card's movement group, with no list around them.
+ */
+function rowsOf(page: Page, context: Context, structure: (typeof STRUCTURES)[number]): Locator {
+  if (context === 'workout' || structure !== 'standard') return page.getByRole('list', { name: LISTS[context][structure], exact: true })
+  return page.locator('[data-review-section] .clr-movement-group:not(:has(ol)):not(:has(.clr-movement-group))')
+    .filter({ has: page.locator('.clr-movement-identity') })
+}
 /** Every shipped skin: the label colour is resolved per skin. */
 const SKINS = ['clear', 'vapour', 'signal', 'mono'] as const
 type Skin = (typeof SKINS)[number]
@@ -335,6 +353,8 @@ const TEXT_CONTRAST = 4.5
  * is brought to the middle of the view, its own paint is made transparent for
  * one capture of the ground beneath its box, and its computed colour,
  * composited over every captured pixel, is measured; the weakest pixel decides.
+ * Round 7's label is inline text that can continue on the next line, so each
+ * of its line boxes is hit-tested and its ground captured.
  */
 async function expectLabelContrast(page: Page, skin: Skin, label: string) {
   const labels = page.locator('[data-movement-context]')
@@ -343,21 +363,23 @@ async function expectLabelContrast(page: Page, skin: Skin, label: string) {
   const readings: Array<{ text: string; colour: string; expected: string; minimum: number; median: number }> = []
   for (let index = 0; index < count; index += 1) {
     const node = labels.nth(index)
-    const { text, colour, expected, clip, topmost } = await node.evaluate((element) => {
+    const { text, colour, expected, clips, topmost } = await node.evaluate((element) => {
       element.scrollIntoView({ block: 'center', inline: 'nearest' })
       const probe = document.createElement('span')
       probe.style.color = 'var(--text-secondary)'
       element.parentElement!.append(probe)
       const resolved = getComputedStyle(probe).color
       probe.remove()
-      const rect = element.getBoundingClientRect()
-      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+      const rects = [...element.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0)
       return {
         text: element.textContent ?? '',
         colour: getComputedStyle(element).color,
         expected: resolved,
-        clip: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
-        topmost: hit !== null && element.contains(hit),
+        clips: rects.map((rect) => ({ x: rect.left, y: rect.top, width: rect.width, height: rect.height })),
+        topmost: rects.length > 0 && rects.every((rect) => {
+          const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+          return hit !== null && element.contains(hit)
+        }),
       }
     })
     const at = `${label}: ${text}`
@@ -370,7 +392,8 @@ async function expectLabelContrast(page: Page, skin: Skin, label: string) {
       style.setProperty('color', 'transparent', 'important')
       void getComputedStyle(element).color
     })
-    const ground = await page.screenshot({ clip, caret: 'hide', animations: 'disabled', scale: 'css' })
+    const grounds: Buffer[] = []
+    for (const clip of clips) grounds.push(await page.screenshot({ clip, caret: 'hide', animations: 'disabled', scale: 'css' }))
     await node.evaluate((element) => {
       const style = (element as HTMLElement).style
       style.removeProperty('color')
@@ -378,33 +401,35 @@ async function expectLabelContrast(page: Page, skin: Skin, label: string) {
       style.removeProperty('transition')
     })
     expect(await node.evaluate((element) => getComputedStyle(element).color), `${at} paint restored`).toBe(colour)
-    const pixels = await page.evaluate(async ({ png, paint }) => {
-      const image = new Image()
-      image.src = `data:image/png;base64,${png}`
-      await image.decode()
-      const canvas = document.createElement('canvas')
-      canvas.width = image.naturalWidth
-      canvas.height = image.naturalHeight
-      const context = canvas.getContext('2d', { willReadFrequently: true })!
-      context.drawImage(image, 0, 0)
-      const data = context.getImageData(0, 0, canvas.width, canvas.height).data
+    const pixels = await page.evaluate(async ({ pngs, paint }) => {
       // The label's paint (any CSS colour form, alpha included) over each ground pixel.
       const swatch = document.createElement('canvas')
       swatch.width = swatch.height = 1
       const blend = swatch.getContext('2d', { willReadFrequently: true })!
       const seen = new Map<string, [number[], number[]]>()
-      for (let offset = 0; offset < data.length; offset += 4) {
-        const ground = [data[offset], data[offset + 1], data[offset + 2]]
-        const key = ground.join(',')
-        if (seen.has(key)) continue
-        blend.fillStyle = `rgb(${key})`
-        blend.fillRect(0, 0, 1, 1)
-        blend.fillStyle = paint
-        blend.fillRect(0, 0, 1, 1)
-        seen.set(key, [ground, [...blend.getImageData(0, 0, 1, 1).data.slice(0, 3)]])
+      for (const png of pngs) {
+        const image = new Image()
+        image.src = `data:image/png;base64,${png}`
+        await image.decode()
+        const canvas = document.createElement('canvas')
+        canvas.width = image.naturalWidth
+        canvas.height = image.naturalHeight
+        const context = canvas.getContext('2d', { willReadFrequently: true })!
+        context.drawImage(image, 0, 0)
+        const data = context.getImageData(0, 0, canvas.width, canvas.height).data
+        for (let offset = 0; offset < data.length; offset += 4) {
+          const ground = [data[offset], data[offset + 1], data[offset + 2]]
+          const key = ground.join(',')
+          if (seen.has(key)) continue
+          blend.fillStyle = `rgb(${key})`
+          blend.fillRect(0, 0, 1, 1)
+          blend.fillStyle = paint
+          blend.fillRect(0, 0, 1, 1)
+          seen.set(key, [ground, [...blend.getImageData(0, 0, 1, 1).data.slice(0, 3)]])
+        }
       }
       return [...seen.values()]
-    }, { png: ground.toString('base64'), paint: colour })
+    }, { pngs: grounds.map((ground) => ground.toString('base64')), paint: colour })
     const ratios = pixels.map(([back, fore]) => contrast(fore, back)).sort((a, b) => a - b)
     expect(ratios.length, `${at}: ground captured`).toBeGreaterThan(0)
     readings.push({ text, colour, expected, minimum: ratios[0], median: ratios[Math.floor(ratios.length / 2)] })
@@ -442,16 +467,24 @@ interface EquipmentReading {
   glyphs: number
   truncated: boolean
   insideName: boolean
+  afterWords: boolean
   font: number
   nameFont: number
+  gap: number
   box: Box
   column: Box
   nameLastLine: Box
+  /** The label's line fragments, first to last (Round 7's inline label flows with the name's words). */
+  fragments: Box[]
   lines: number
   overflow: boolean
 }
 
-/** Every movement's equipment in a list, read in the browser. */
+/**
+ * Every movement's equipment in a scope, read in the browser. Round 7 draws
+ * it inline in the name's own element, directly after the name's words, so
+ * the name element is the column it wraps in.
+ */
 async function readEquipment(scope: Locator): Promise<EquipmentReading[]> {
   return scope.evaluate((root) => {
     const box = (rect: DOMRect) => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })
@@ -460,27 +493,31 @@ async function readEquipment(scope: Locator): Promise<EquipmentReading[]> {
       range.selectNodeContents(node)
       return [...range.getClientRects()].filter((rect) => rect.width > 0)
     }
-    return [...root.querySelectorAll('[data-movement-identity]')].map((identity) => {
-      const column = identity.querySelector(':scope > [data-movement-name-row] > .clr-movement-identity__title')!
-      const name = column.querySelector(':scope > .clr-movement-identity__name')!
-      const words = name.querySelector('[data-movement-name]')!
-      const equipment = column.querySelector(':scope > [data-movement-context]')
-      if (equipment === null) throw new Error(`No equipment beside ${words.textContent}`)
+    return [...root.querySelectorAll('.clr-movement-identity')].map((identity) => {
+      const name = identity.querySelector(':scope > [data-movement-name-row] > .clr-movement-identity__name')!
+      const equipment = name.querySelector(':scope > [data-movement-context]')
+      if (equipment === null) throw new Error(`No equipment beside ${name.textContent}`)
+      const words = equipment.previousElementSibling!
       const style = getComputedStyle(equipment)
       return {
-        name: words.textContent ?? '',
+        name: [...words.childNodes]
+          .filter((node) => !(node instanceof HTMLElement && node.classList.contains('clr-movement-identity__ordinal')))
+          .map((node) => node.textContent ?? '').join(''),
         equipment: equipment.textContent ?? '',
         visible: style.visibility === 'visible' && Number(style.opacity) > 0 && style.display !== 'none',
         glyphs: equipment.querySelectorAll('svg, img, [role="img"]').length,
         truncated: equipment.scrollWidth > equipment.clientWidth + 1 || style.textOverflow === 'ellipsis',
         insideName: name.contains(equipment),
+        afterWords: words.nextElementSibling === equipment && !words.contains(equipment),
         font: parseFloat(style.fontSize),
         nameFont: parseFloat(getComputedStyle(name).fontSize),
+        gap: parseFloat(style.marginInlineStart),
         box: box(equipment.getBoundingClientRect()),
-        column: box(column.getBoundingClientRect()),
+        column: box(name.getBoundingClientRect()),
         nameLastLine: box(lineRects(words).at(-1)!),
+        fragments: lineRects(equipment).map(box),
         lines: new Set(lineRects(equipment).map((rect) => Math.round(rect.top))).size,
-        overflow: column.scrollWidth > column.clientWidth + 1 || identity.scrollWidth > identity.clientWidth + 1,
+        overflow: name.scrollWidth > name.clientWidth + 1 || identity.scrollWidth > identity.clientWidth + 1,
       }
     })
   })
@@ -492,7 +529,11 @@ const TOLERANCE = 1
  * AC-R029-02, R132: the readable label beside the name — on the name's last
  * line, or moved as one unit to the next line inside the name column — visible,
  * untruncated, readable and never a glyph alone, whether or not its kind has a
- * shipped glyph.
+ * shipped glyph. Round 7 draws it inside the name's own element, directly
+ * after the name's words, with its own inline gap before it, as inline text
+ * that flows with the name: it starts on the name's last line or at the start
+ * of the next, and a label longer than what is left of the line continues on
+ * the lines after it, every part inside the name's column.
  */
 function expectReadableLabel(reading: EquipmentReading, label: string) {
   const at = `${label}: ${reading.name} · ${reading.equipment}`
@@ -500,14 +541,26 @@ function expectReadableLabel(reading: EquipmentReading, label: string) {
   expect(reading.visible, `${at}: visible`).toBe(true)
   expect(reading.glyphs, `${at}: text, never a glyph alone`).toBe(0)
   expect(reading.truncated, `${at}: not truncated`).toBe(false)
-  expect(reading.insideName, `${at}: beside the name, not inside it`).toBe(false)
+  expect(reading.insideName, `${at}: in the name's own element (Round 7)`).toBe(true)
+  expect(reading.afterWords, `${at}: directly after the name's words, not part of them`).toBe(true)
   expect(reading.font, `${at}: readable size`).toBeGreaterThanOrEqual(12)
   expect(reading.font, `${at}: quieter than the name`).toBeLessThan(reading.nameFont)
-  expect(reading.lines, `${at}: wraps as one unit`).toBe(1)
-  const { box, nameLastLine: line, column } = reading
-  const besideOnLine = box.left >= line.right - TOLERANCE && box.top < line.bottom && box.bottom > line.top
-  const wrappedAsUnit = Math.abs(box.left - column.left) <= TOLERANCE && box.top >= line.bottom - TOLERANCE
-  expect(besideOnLine || wrappedAsUnit, `${at}: beside the name, or wrapped as one unit under it`).toBe(true)
+  const { box, nameLastLine: line, column, fragments } = reading
+  expect(fragments.length, `${at}: drawn on at least one line`).toBeGreaterThanOrEqual(1)
+  expect(reading.lines, `${at}: one fragment per line`).toBe(fragments.length)
+  const [first] = fragments
+  const besideOnLine = first.left >= line.right - TOLERANCE && first.top < line.bottom && first.bottom > line.top
+  const startsNextLine = Math.abs(first.left - (column.left + reading.gap)) <= TOLERANCE && first.top >= line.bottom - TOLERANCE
+  expect(besideOnLine || startsNextLine, `${at}: beside the name, or starting the line under it`).toBe(true)
+  for (const [index, fragment] of fragments.entries()) {
+    expect(fragment.left, `${at}: part ${index + 1} inside the name column`).toBeGreaterThanOrEqual(column.left - TOLERANCE)
+    expect(fragment.right, `${at}: part ${index + 1} inside the name column`).toBeLessThanOrEqual(column.right + TOLERANCE)
+    // Each further part continues on the next line, from the column's start.
+    if (index > 0) {
+      expect(fragment.top, `${at}: part ${index + 1} on the line after`).toBeGreaterThanOrEqual(fragments[index - 1].bottom - TOLERANCE)
+      expect(Math.abs(fragment.left - column.left), `${at}: part ${index + 1} from the column's start`).toBeLessThanOrEqual(TOLERANCE)
+    }
+  }
   expect(box.right, `${at}: inside the name column`).toBeLessThanOrEqual(column.right + TOLERANCE)
   expect(reading.overflow, `${at}: nothing overflows`).toBe(false)
 }
@@ -516,7 +569,7 @@ function expectReadableLabel(reading: EquipmentReading, label: string) {
 async function expectEveryLabel(page: Page, context: Context, label: string) {
   const labels: string[][] = []
   for (const structure of STRUCTURES) {
-    const list = page.getByRole('list', { name: LISTS[context][structure], exact: true })
+    const list = rowsOf(page, context, structure)
     await expect(list).toBeVisible()
     const readings = await readEquipment(list)
     for (const reading of readings) expectReadableLabel(reading, `${label} ${structure}`)
@@ -527,11 +580,11 @@ async function expectEveryLabel(page: Page, context: Context, label: string) {
 
 /** Review's Required equipment: the label and its one category glyph, then every kind in words. */
 async function expectRequiredEquipment(page: Page, label: string) {
-  const summary = page.locator('[data-equipment-summary]')
+  const summary = page.locator('.clr-equipment-summary')
   await expect(summary).toBeVisible()
   await expect(summary.locator('.clr-equipment-summary__label')).toHaveText(REQUIRED_EQUIPMENT)
   await expect(summary.locator('svg'), `${label}: one category glyph, beside its label`).toHaveCount(1)
-  await expect(summary.locator('.clr-equipment-summary__label [aria-hidden="true"] svg')).toHaveCount(1)
+  await expect(summary.locator('.clr-equipment-summary__label svg[aria-hidden="true"]')).toHaveCount(1)
   const names = summary.getByRole('list', { name: REQUIRED_EQUIPMENT })
   const expected = ASSET_EQUIPMENT_LABELS.flat().filter((name) => name !== 'bodyweight')
   await expect(names.getByRole('listitem')).toHaveCount(expected.length)
@@ -689,7 +742,7 @@ test.describe('TASK-029 equipment asset inventory and readable fallback', () => 
     expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true)
 
     const before = await Promise.all(STRUCTURES.map(async (structure) =>
-      (await readEquipment(page.getByRole('list', { name: LISTS.review[structure], exact: true }))).map((reading) => reading.equipment)))
+      (await readEquipment(rowsOf(page, 'review', structure))).map((reading) => reading.equipment)))
     await page.locator('footer').getByRole('button', { name: 'Start workout' }).tap()
     const failure = page.getByRole('dialog', { name: 'Couldn’t start this workout' })
     await expect(failure).toBeVisible()
@@ -708,7 +761,7 @@ test.describe('TASK-029 equipment asset inventory and readable fallback', () => 
     await expectRequiredEquipment(page, 'after a failed Start')
     await expectEveryLabel(page, 'review', 'after a failed Start')
     const after = await Promise.all(STRUCTURES.map(async (structure) =>
-      (await readEquipment(page.getByRole('list', { name: LISTS.review[structure], exact: true }))).map((reading) => reading.equipment)))
+      (await readEquipment(rowsOf(page, 'review', structure))).map((reading) => reading.equipment)))
     expect(after).toEqual(before)
     // Start stays reachable by keyboard.
     const start = page.locator('footer').getByRole('button', { name: 'Start workout' })
@@ -731,28 +784,24 @@ test.describe('TASK-029 equipment asset inventory and readable fallback', () => 
     await expect(state).toBeVisible()
     await settle(page)
 
-    const inventory = state.getByRole('list', { name: 'Setup equipment glyph status' })
-    await expect(inventory.getByRole('listitem')).toHaveCount(EQUIPMENT.length)
-    expect(await inventory.getByRole('listitem').evaluateAll((items) => items.map((item) => [
-      (item as HTMLElement).dataset.equipmentAsset, (item as HTMLElement).dataset.equipmentStatus,
-    ]))).toEqual(EQUIPMENT_ASSETS.map(({ id, status }) => [id, status]))
-    await expect(state.getByRole('list', { name: 'Shipped equipment glyphs' }).locator('svg')).toHaveCount(2)
-    await expect(state.locator('[data-equipment-wanted="medicine-ball"]')).toContainText('not a current Setup equipment ID')
-    await attachCapture(page, 'gallery-assets-inventory-phone-320', state.locator('[data-equipment-inventory]'))
-
-    for (const context of ['review', 'workout'] as const) {
-      if (context === 'workout') {
-        await state.getByRole('radio', { name: 'Workout' }).tap()
-        await settle(page)
-      }
-      const scope = state.locator(`[data-gallery-context="${context}"]`)
-      const readings = await readEquipment(scope)
-      expect(readings.map((reading) => reading.equipment)).toEqual(ASSET_EQUIPMENT_LABELS.flat())
-      for (const reading of readings) expectReadableLabel(reading, `Gallery ${context}`)
+    // Round 7's state is the inventory card; the routes' own Review, Workout
+    // and Setup equipment are read on the routes (the cases above).
+    const inventory = state.locator('.clr-card').filter({ has: page.getByRole('heading', { name: 'Equipment icon inventory', exact: true }) })
+    await expect(inventory).toContainText('Equipment names remain readable beside movement names.')
+    const items = inventory.getByRole('listitem')
+    await expect(items).toHaveCount(EQUIPMENT.length)
+    expect(await items.evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''))).toEqual(EQUIPMENT_ASSETS.map(({ label, status }) =>
+      `${label} · ${status === 'shipped' ? 'Dumbbell available' : 'equipment glyph wanted / text fallback'}`))
+    for (const { label } of EQUIPMENT) {
+      const word = items.filter({ hasText: label }).first()
+      await word.scrollIntoViewIfNeeded()
+      await expect(word, `${label} is a visible word`).toBeVisible()
+      expect(await word.evaluate((node) => parseFloat(getComputedStyle(node).fontSize)), `${label} readable`).toBeGreaterThanOrEqual(12)
     }
-    const setup = state.locator('[data-gallery-setup-equipment]')
-    await expect(setup.getByRole('checkbox')).toHaveCount(EQUIPMENT.length)
-    for (const { label } of EQUIPMENT) await expect(setup.getByRole('checkbox', { name: label, exact: true })).toHaveCount(1)
+    await expect(items.locator('svg, img')).toHaveCount(0)
+    await expect(inventory.locator('svg')).toHaveCount(2)
+    await expect(inventory.getByText(/^Medicine ball is also wanted from the Wall ball review\./)).toContainText('not a current Setup equipment ID')
+    await attachCapture(page, 'gallery-assets-inventory-phone-320', inventory)
     await noHorizontalOverflow(page)
     await expect(page).toHaveURL(/\/gallery\/refinements\?state=assets$/)
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
