@@ -15,8 +15,13 @@ import { expect, test as scanned } from '../fixtures'
 /**
  * TASK-027 (REQ-027; C54, G22; R35, R98; AC-C54-01, AC-R027-01; JOURNEY-027)
  * — the compact live navigator on the real `/workout` route, compared with the
- * accepted gallery state `/gallery/refinements?state=cards` (reference
- * eded158c…, `SectionHeader compact`).
+ * accepted gallery (bec4454)'s `SectionHeader` compact navigator specimen
+ * (`/gallery/app?component=SectionHeader`).
+ *
+ * A3 TASK-108 (round 07; decision 2) carries it onto Round 7's compact bar:
+ * the section's name is each block's own heading (`MovementGroupHeader`), so
+ * the navigator draws no second heading; its `Section N / M · status` reading
+ * stays for assistive technology, visually hidden.
  *
  * Entry: a started four-section workout — a finished Warm-up, a Press section
  * with one bench-press set already logged, an untouched Conditioning AMRAP and
@@ -303,8 +308,9 @@ function firstCard(page: Page): Locator {
 interface NavigatorReading {
   /** What a sighted athlete reads: no visually hidden text, nothing collapsed out of sight. */
   visible: string
-  /** The hidden reading assistive technology gets. */
+  /** Any heading of the navigator's own: Round 7 draws none (the cards name the section). */
   heading: string
+  /** The hidden reading assistive technology gets. */
   status: string
   insideCard: boolean
   structureBadges: number
@@ -322,7 +328,7 @@ async function readNavigator(page: Page): Promise<NavigatorReading> {
     const position = node.querySelector('[data-section-position]')!.getBoundingClientRect()
     return {
       visible: (clone.textContent ?? '').replace(/\s+/g, ' ').trim(),
-      heading: node.querySelector('h2')?.textContent ?? '',
+      heading: node.querySelector('h1, h2, h3, h4, h5, h6')?.textContent ?? '',
       status: node.querySelector('p.a11y-hidden')?.textContent ?? '',
       insideCard: node.closest('.clr-card') !== null,
       structureBadges: node.querySelectorAll('.clr-chamfer--structure').length,
@@ -347,7 +353,7 @@ async function visibleCount(page: Page, phrase: string): Promise<{ cards: number
       const element = node.parentElement!
       if (element.closest('.a11y-hidden, [aria-hidden="true"], .clr-collapsible__region[data-expanded="false"]')) continue
       if (element.getBoundingClientRect().width === 0) continue
-      if (element.closest('[data-workout-card]')) count.cards += 1
+      if (element.closest('.clr-card')) count.cards += 1
       else count.elsewhere += 1
     }
     return count
@@ -361,6 +367,11 @@ async function chipNames(page: Page): Promise<(string | null)[]> {
 }
 
 const STATUSES_AT_ENTRY = ['Warm-up, complete', 'Primary lift, in progress', 'Conditioning, not started', 'Cooldown, not started']
+
+/** The opened section's name: its first card's own heading (Round 7's `MovementGroupHeader`), as written. */
+async function firstCardHeading(page: Page): Promise<string> {
+  return (await firstCard(page).locator('[data-movement-group-header]').getByRole('heading').first().textContent())?.trim() ?? ''
+}
 
 async function loggedSets(page: Page): Promise<number> {
   return firstCard(page).getByRole('list', { name: 'Logged sets' }).getByRole('listitem').count()
@@ -378,7 +389,8 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
       // Entry: the first unfinished section, Press (Primary lift), is open with its logged set.
       const entry = await readNavigator(page)
       expect(entry.visible).toBe('All sections2 / 4')
-      expect(entry.heading).toBe('Primary lift')
+      expect(entry.heading, 'no second heading repeats the card’s').toBe('')
+      expect(await firstCardHeading(page)).toBe('Primary lift')
       expect(entry.status).toBe('Section 2 / 4 · In progress')
       expect(entry.insideCard, 'C54: no separate section card').toBe(false)
       expect(entry.structureBadges, 'C54: no repeated structure badge').toBe(0)
@@ -415,7 +427,8 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
       await expect(toggleOf(page)).toHaveAttribute('aria-expanded', 'false')
       const away = await readNavigator(page)
       expect(away.visible).toBe('All sections3 / 4')
-      expect(away.heading).toBe('Conditioning')
+      expect(away.heading).toBe('')
+      expect(await firstCardHeading(page)).toBe('Conditioning')
       expect(away.status).toBe('Section 3 / 4 · Not started')
       expect(away.structureBadges).toBe(0)
       expect(await visibleCount(page, 'AMRAP')).toEqual({ cards: 1, elsewhere: 0 })
@@ -492,7 +505,7 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
     expect(await chipNames(page)).toEqual(STATUSES_AT_ENTRY)
 
     // Previous from the keyboard lands where a jump does: the opened section's
-    // first card, with its focus drawn — never the visually hidden heading.
+    // first card, with its focus drawn.
     const previous = page.getByRole('navigation', { name: 'Workout sections' })
       .getByRole('button', { name: 'Previous', exact: true })
     await previous.focus()
@@ -505,34 +518,33 @@ test.describe('TASK-027 compact live navigator preserves section access', () => 
     app.assertContained()
   })
 
-  test('gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written', async ({ page, visit }) => {
+  test('gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written', async ({ page, visit }) => {
+    // Round 7's accepted gallery (bec4454) shows the compact navigator as the
+    // SectionHeader specimen of its component catalogue (`GallerySectionHeader`,
+    // the route's own component over a memory-only position); its
+    // `?state=cards` draws the live cards with no navigator.
     await page.setViewportSize({ width: 320, height: 568 })
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
     const requests: string[] = []
     page.on('request', (request) => {
       if (/\/(rest|auth|functions)\/v1\//.test(request.url())) requests.push(`${request.method()} ${request.url()}`)
     })
-    await visit('/gallery/refinements?state=cards')
-    const state = page.locator('[data-refinement-state="cards"]')
-    const workout = state.locator('[data-gallery-context="workout"]')
-    await expect(navigatorOf(state.locator('[data-gallery-context="review"]'))).toHaveCount(0)
-    const navigator = navigatorOf(workout)
+    await visit('/gallery/app?component=SectionHeader')
+    const navigator = navigatorOf(page)
     await expect(navigator).toHaveCount(1)
-    const order = await workout.evaluate((node) => {
-      const nav = node.querySelector('[data-section-navigation]')!
-      const card = node.querySelector('[data-workout-card="workout"]')!
-      return Boolean(nav.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING)
-    })
-    expect(order, 'the navigator sits above the live cards').toBe(true)
+    expect(await navigator.evaluate((node) => node.closest('.clr-card') === null), 'no section card').toBe(true)
     await expect(navigator.locator('[data-section-position]')).toHaveText('2 / 3')
+    await expect(navigator.locator('[data-section-position]')).toHaveAttribute('aria-hidden', 'true')
+    await expect(navigator.getByText('Section 2 / 3 · In progress')).toHaveClass(/a11y-hidden/)
+    await expect(navigator.getByRole('heading')).toHaveCount(0)
     await expect(navigator.locator('.clr-chamfer--structure')).toHaveCount(0)
-    await toggleOf(workout).tap()
+    await toggleOf(page).tap()
     await navigator.getByRole('button', { name: 'Cooldown, not started' }).tap()
     await expect(navigator.locator('[data-section-position]')).toHaveText('3 / 3')
-    await expect(workout.locator('[data-workout-card="workout"]')).toHaveCount(3)
+    await expect(toggleOf(page)).toHaveAttribute('aria-expanded', 'false')
     await noHorizontalOverflow(page)
     await navigator.scrollIntoViewIfNeeded()
-    await test.info().attach('gallery-cards-navigator-phone-320.png', { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    await test.info().attach('gallery-navigator-specimen-phone-320.png', { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 })

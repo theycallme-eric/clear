@@ -7,7 +7,9 @@
  * And the 0.14.3 composition of the same parts: a timer is its own card and is
  * never put inside another, a label is inside the card it names, the structure
  * badge is an element frame, and the low rest is the shipped low state — the
- * stepped `--dur-alert` crossing and the 80% pulse, as the view's one loop.
+ * stepped `--dur-alert` crossing from ten seconds — with the shared countdown
+ * warning in its final five (A3 TASK-108; TASK-008): the rest's timer breathes
+ * with the one screen-edge aura as the view's one loop, no stepped pulse.
  * jsdom applies no stylesheet, so motion is proved as classes, attributes and
  * the rule text the classes resolve to.
  */
@@ -15,12 +17,15 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import type { ReactNode } from 'react'
-import { act, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { renderWithProviders } from '../test/render'
-import { snapshotFixture } from '../test/workout-double'
+import { routes } from '../app/router'
+import { GallerySectionHeader } from '../dev/gallery-refinement-scenes'
+import { AppProviders, renderWithProviders, signedIn } from '../test/render'
+import { createWorkoutDouble, snapshotFixture, type WorkoutDouble } from '../test/workout-double'
 import { useRestTimer } from '../state/rest'
 import { RestTimerProvider } from '../state/rest-provider'
 import { sessionProgress, type SessionProgress } from '../state/workout-progress'
@@ -41,6 +46,11 @@ const MOTION_CSS = readFileSync(
   'utf-8',
 )
 const REST_BAR_CSS = readFileSync(resolve(import.meta.dirname, 'rest-timer-bar.css'), 'utf-8')
+/** Round 7's one owner of the countdown warning's breathe and aura (A3 TASK-108). */
+const COUNTDOWN_CSS = readFileSync(resolve(import.meta.dirname, 'countdown-urgency.css'), 'utf-8')
+/** Round 7's compact navigator rules (A3 TASK-108; TASK-027). */
+const MOVEMENT_PRESENTATION_CSS = readFileSync(resolve(import.meta.dirname, '../styles/movement-presentation.css'), 'utf-8')
+const TIMED_WORKOUT_CSS = readFileSync(resolve(import.meta.dirname, '../styles/timed-workout.css'), 'utf-8')
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -550,15 +560,15 @@ describe('RestTimerBar', () => {
     await user.click(screen.getByRole('button', { name: 'Raise rest' }))
     expect(restBar()).toHaveAttribute('data-urgent', 'false')
 
-    // The last ten seconds: low colour role and the spoken milestone, beside
-    // the digits; the urgent pulse is held for the final five.
     clock.advance(82)
     returnToForeground()
     expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
-    expect(restBar()).toHaveAttribute('data-urgent', 'false')
+    expect(restBar()).toHaveAttribute('data-urgent', 'true')
     expect(screen.getByText('8 seconds left')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
 
+    // The final five, as Round 7's base body of this title read it: the
+    // reading, its words and the milestone, beside the digits.
     clock.advance(4)
     returnToForeground()
     expect(restBar()).toHaveAttribute('data-urgent', 'true')
@@ -599,12 +609,13 @@ describe('RestTimerBar', () => {
 
     // Not low: nothing pulses and nothing claims the loop.
     expect(restBar()).not.toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(restBar()).not.toHaveAttribute('data-loop')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).not.toHaveAttribute('data-loop')
   })
 
-  it('goes low as the shipped low state: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+  it('goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow', async () => {
     reduceMotion(false)
-    const { clock } = await restWith(8)
+    await restWith(8)
 
     // One role change moves bar, body and emission together.
     expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
@@ -616,16 +627,10 @@ describe('RestTimerBar', () => {
     expect(restDigits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
     expect(restDigits().querySelectorAll('.clr-tumble')).toHaveLength(4)
 
-    // Low alone does not pulse or claim the loop.
-    expect(restBar()).not.toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
-
-    // In the final five seconds the pulse is on the whole card and is the
-    // view's running loop.
-    clock.advance(4)
-    returnToForeground()
-    expect(restBar()).toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    // Eight seconds left is the colour alone: nothing pulses yet, no edge.
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
+    expect(restBar()).not.toHaveAttribute('data-loop')
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
 
     // No glow of the timer's own: the extra glow is the primary action's.
     expect(document.querySelector('.clr-glow')).toBeNull()
@@ -634,8 +639,25 @@ describe('RestTimerBar', () => {
     expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
     expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
     expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
-    expect(MOTION_CSS.includes('@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }')).toBe(true)
-    expect(MOTION_CSS.includes('.clr-pulse-micro { animation: clr-micro-pulse var(--dur-idle) var(--step-2) infinite; }')).toBe(true)
+  })
+
+  it('breathes with the one soft screen edge in its final five seconds: the timer frame on the running loop, not the card', async () => {
+    reduceMotion(false)
+    const { clock } = await restWith(8)
+    clock.advance(3)
+    returnToForeground()
+
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(timer).toHaveTextContent('00:05')
+    expect(timer).toHaveAttribute('data-urgent', 'true')
+    expect(timer).toHaveAttribute('data-loop', 'run')
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restBar()).not.toHaveAttribute('data-loop')
+    const edges = document.querySelectorAll('[data-countdown-edge]')
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toHaveAttribute('data-loop', 'run')
+    expect(edges[0]).toHaveAttribute('aria-hidden', 'true')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 
   it('steps the fill to the low colour on the same schedule, with no glow in its styles', () => {
@@ -673,7 +695,7 @@ describe('RestTimerBar', () => {
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:38')
     expect(restBar()).toHaveAttribute('data-urgent', 'false')
     expect(restBar()).not.toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).not.toHaveAttribute('data-loop')
     expect(restCardBody()).toHaveClass('clr-chamfer--timer')
     expect(screen.queryByText('Final 10 seconds')).not.toBeInTheDocument()
 
@@ -693,57 +715,312 @@ describe('RestTimerBar', () => {
       '[data-loop]',
     ) as HTMLElement
 
-    // A rest that is not low has no loop, so the wait keeps its own.
+    // A rest with time left has no loop, so the wait keeps its own.
+    const timer = () => screen.getByRole('timer', { name: 'Time remaining' })
     expect(wait).toHaveAttribute('data-loop', 'run')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(timer()).not.toHaveAttribute('data-loop')
 
-    // Low but not yet urgent: still no claim, so the wait keeps its loop.
+    // TASK-008 (C23): the colour at ten seconds is no loop of its own.
     clock.advance(52)
     returnToForeground()
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(timer()).not.toHaveAttribute('data-loop')
     expect(wait).toHaveAttribute('data-loop', 'run')
 
-    clock.advance(4)
+    // The final five (TASK-008, C61): the warning carries more state, so it runs
+    // — the timer and its one aura, together — and the wait is stilled: still on
+    // screen, still busy, still saying what it is waiting for.
+    clock.advance(3)
     returnToForeground()
-
-    // Final five: the pulse carries more state, so it runs and the wait is stilled —
-    // still on screen, still busy, still saying what it is waiting for.
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    expect(timer()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    // One urgent claim runs: the card's pulse and its one screen-edge cue,
-    // which carries the same claim's loop state.
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === timer() || node.matches('[data-countdown-edge]'))).toBe(true)
+    // Exactly those two, as Round 7's base body of this title read them.
     const edges = document.querySelectorAll('[data-countdown-edge]')
     expect(edges).toHaveLength(1)
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBar(), edges[0]])
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([timer(), edges[0]])
 
     await user.click(screen.getByRole('button', { name: 'Skip rest' }))
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
   })
 
   it('is still under reduced motion and loses nothing it was saying', async () => {
     reduceMotion(true)
-    await restWith(4)
+    await restWith(5)
 
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    // TASK-008 (C22): the urgent timer and its aura are still, at a steady .5.
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-countdown-edge]')).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
 
     // The reading, the word, the colour role and the controls are all there.
     expect(restBar()).toHaveAttribute('data-urgent', 'true')
     expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
     expect(restDigits().style.color).toBe('var(--text-timer-low)')
-    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:04')
-    expect(screen.getByText('4 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:05')
+    expect(screen.getByText('5 seconds left')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
     expect(screen.getByText('Rest after Back Squat')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add 30s' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Skip rest' })).toBeEnabled()
 
-    // The shipped rule that makes a stilled or reduced pulse static.
-    expect(MOTION_CSS).toMatch(
-      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
+    // The shared rule that makes the stilled warning static (Round 7's owner,
+    // countdown-urgency.css; A3 TASK-108 — the build read presentation.css).
+    expect(COUNTDOWN_CSS).toMatch(
+      /prefers-reduced-motion: reduce\) \{\s*\.clr-countdown-breathe,\s*\.clr-countdown-edge \{\s*animation: none !important;/,
     )
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-027 — the compact live navigator (C54; R35, R98; JOURNEY-027)
+//
+// A3 TASK-108 carries the build's four cases onto Round 7's compact bar
+// (decision 2): the section's name is each block's own heading
+// (`MovementGroupHeader`), so the navigator draws no second heading; its
+// position and status are read to assistive technology, visually hidden.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The navigator's own frame: no card, just the disclosure and its hidden reading. */
+function navigatorFrame(): HTMLElement {
+  const frame = document.querySelector<HTMLElement>('[data-section-navigation]')
+  if (frame === null) throw new Error('No compact navigator')
+  return frame
+}
+
+/** What a sighted athlete reads in the navigator: everything not visually hidden or aria-hidden decoration. */
+function visibleText(frame: HTMLElement): string {
+  const clone = frame.cloneNode(true) as HTMLElement
+  // The visually hidden reading, and a jump list collapsed out of sight.
+  clone.querySelectorAll('.a11y-hidden, .clr-collapsible__region[data-expanded="false"]').forEach((node) => node.remove())
+  return (clone.textContent ?? '').replace(/\s+/g, ' ').trim()
+}
+
+/** The opened section's first card: the first card frame after the navigator. */
+function firstCardAfterNavigator(): HTMLElement {
+  const frame = navigatorFrame()
+  const card = [...document.querySelectorAll<HTMLElement>('.clr-card__body')].find(
+    (candidate) => frame.compareDocumentPosition(candidate) & Node.DOCUMENT_POSITION_FOLLOWING,
+  )
+  if (card === undefined) throw new Error('No card follows the navigator')
+  return card
+}
+
+/**
+ * A real multi-section session: a finished Warm-up, a Primary lift under way
+ * — its first movement with one of three sets already logged, its second done
+ * — and an untouched Conditioning AMRAP.
+ */
+function multiSectionSession() {
+  return snapshotFixture({
+    sections: [
+      { title: 'Warm-up', blocks: [{ exercises: ['completed'] }] },
+      {
+        title: 'Primary lift',
+        sectionType: 'primary_lift',
+        blocks: [{
+          structureType: 'standard',
+          exercises: [{ status: 'not_started', prescription: { sets: 3 }, setLogs: [{ actual_reps: 5, weight: 100 }] }, 'completed'],
+        }],
+      },
+      { title: 'Finisher', sectionType: 'conditioning', blocks: [{ structureType: 'amrap', timerSeconds: 480 }] },
+    ],
+    startedAt: new Date(Date.now() - 750 * 1000).toISOString(),
+  })
+}
+
+function mountWorkoutRoute(): { double: WorkoutDouble } {
+  const double = createWorkoutDouble({ session: multiSectionSession() })
+  const router = createMemoryRouter(routes, { initialEntries: ['/', '/workout'], initialIndex: 1 })
+  render(
+    <AppProviders {...signedIn({ workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  return { double }
+}
+
+describe('TASK-027 compact live navigator preserves section access', () => {
+  // The real-route case pins wall-clock time (Date only); always restore it.
+  afterEach(() => vi.useRealTimers())
+
+  it('AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen', () => {
+    const progress = mixedProgress()
+    renderWithProviders(
+      <HeadingLevelProvider level={2}>
+        <SectionHeader compact section={progress.sections[1]} position={2} total={3} progress={progress} bar={false} onSelect={() => {}} />
+      </HeadingLevelProvider>,
+    )
+
+    const frame = navigatorFrame()
+    // No card of its own, and no block identity: no structure list, badge or format word.
+    expect(cards()).toHaveLength(0)
+    expect(within(frame).queryByRole('list', { name: 'Structures in this section' })).toBeNull()
+    expect(frame.querySelector('.clr-chamfer--structure')).toBeNull()
+    expect(frame.textContent).not.toMatch(/EMOM|AMRAP|STANDARD|10 MIN/)
+    // What the athlete sees: the disclosure and the position — not the title or a status line.
+    expect(visibleText(frame)).toBe('All sections2 / 3')
+    // Assistive technology still reads the section's position and its status;
+    // no second heading repeats the section's name, which is the block's own
+    // heading (Round 7, decision 2; A3 TASK-108).
+    expect(within(frame).queryByRole('heading')).toBeNull()
+    expect(within(frame).getByText('Section 2 / 3 · In progress')).toHaveClass('a11y-hidden')
+    // The trigger keeps its one name; the visible position is decoration of it.
+    const toggle = within(frame).getByRole('button', { name: 'All sections' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    const position = toggle.querySelector('[data-section-position]')
+    expect(position).toHaveTextContent('2 / 3')
+    expect(position).toHaveAttribute('aria-hidden', 'true')
+    expect(position).toHaveClass('clr-workout-section-nav__meta')
+    // Every section's status, in words and a glyph, and which one is open.
+    const list = within(frame).getByRole('list', { name: 'Sections' })
+    const chips = within(list).getAllByRole('button')
+    expect(chips.map((chip) => chip.getAttribute('aria-label'))).toEqual([
+      'Warm-up, complete',
+      'Primary lift, in progress',
+      'Conditioning, not started',
+    ])
+    for (const chip of chips) expect(chip.querySelector('svg')).not.toBeNull()
+    expect(within(list).getByRole('button', { name: 'Primary lift, in progress' })).toHaveAttribute('aria-current', 'step')
+    // The meta sits at the trigger's end, from tokens, as the accepted Round 7
+    // reference draws it (its rules, not the build's presentation.css).
+    expect(MOVEMENT_PRESENTATION_CSS).toMatch(
+      /\.clr-workout-section-nav__meta \{\s*margin-inline-start:\s*auto;\s*color:\s*var\(--text-secondary\);\s*\}/,
+    )
+    expect(TIMED_WORKOUT_CSS).toMatch(/\.clr-v4-experience \.clr-workout-section-nav__meta \{\s*font-size:\s*var\(--label-xs-size\);\s*\}/)
+  })
+
+  it('AC-C54-01 the jump list opens by keyboard and touch, jumps and collapses, stays out of the tab order while collapsed, and is read-only while a move is saving', async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+    const progress = mixedProgress()
+    const { rerender } = renderWithProviders(
+      <SectionHeader compact section={progress.sections[1]} position={2} total={3} progress={progress} bar={false} onSelect={onSelect} />,
+    )
+
+    const frame = within(navigatorFrame())
+    const toggle = frame.getByRole('button', { name: 'All sections' })
+    expect(frame.getByRole('list', { name: 'Sections' })).toHaveAttribute('inert')
+
+    // Keyboard: the trigger is the one tab stop; Enter opens it and the chips follow it.
+    await user.tab()
+    expect(toggle).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(frame.getByRole('list', { name: 'Sections' })).not.toHaveAttribute('inert')
+    await user.tab()
+    expect(frame.getByRole('button', { name: 'Warm-up, complete' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(onSelect).toHaveBeenLastCalledWith(0)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(frame.getByRole('list', { name: 'Sections' })).toHaveAttribute('inert')
+
+    // Touch: open, choose, collapsed again.
+    await user.click(toggle)
+    await user.click(frame.getByRole('button', { name: 'Conditioning, not started' }))
+    expect(onSelect).toHaveBeenLastCalledWith(2)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    // While a move is saving the route withholds `onSelect`: the list reads, but jumps nowhere.
+    rerender(<SectionHeader compact section={progress.sections[1]} position={2} total={3} progress={progress} bar={false} />)
+    await user.click(toggle)
+    for (const chip of within(frame.getByRole('list', { name: 'Sections' })).getAllByRole('button')) expect(chip).toBeDisabled()
+    expect(onSelect).toHaveBeenCalledTimes(2)
+  })
+
+  it('AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were', { timeout: 30_000 }, async () => {
+    const user = userEvent.setup()
+    // Pin the wall clock (Date only: real timers keep driving React, the
+    // double and the user events), so the session clock's reading is
+    // deterministic instead of racing its 500 ms tick. The session started
+    // 12:30 before this instant.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-04T09:00:00.000Z'))
+    const { double } = mountWorkoutRoute()
+    await screen.findByRole('heading', { level: 1, name: 'Workout' })
+    await screen.findByRole('navigation', { name: 'Workout sections' })
+
+    // Entry: the first unfinished section is open, its logged set on its card.
+    // The section's name is its card's own heading, never the navigator's.
+    expect(within(firstCardAfterNavigator()).getByRole('heading', { level: 2, name: 'Primary lift' })).toBeInTheDocument()
+    expect(within(navigatorFrame()).queryByRole('heading')).toBeNull()
+    expect(within(navigatorFrame()).getByText('Section 2 / 3 · In progress')).toHaveClass('a11y-hidden')
+    expect(visibleText(navigatorFrame())).toBe('All sections2 / 3')
+    expect(screen.queryByRole('list', { name: 'Structures in this section' })).toBeNull()
+    expect(navigatorFrame().closest('.clr-card')).toBeNull()
+    const loggedBefore = within(firstCardAfterNavigator()).getByRole('list', { name: 'Logged sets' })
+    expect(within(loggedBefore).getAllByRole('listitem')).toHaveLength(1)
+    const sessionTime = () => screen.getByRole('timer', { name: 'Session time' })
+    // The clock reads the session's stored start, not the moment of mounting.
+    expect(sessionTime()).toHaveTextContent('12:30')
+
+    // Jump away by keyboard: the Conditioning AMRAP's own card takes focus.
+    const toggle = screen.getByRole('button', { name: 'All sections' })
+    toggle.focus()
+    await user.keyboard('{Enter}')
+    screen.getByRole('button', { name: 'Conditioning, not started' }).focus()
+    await user.keyboard('{Enter}')
+    await waitFor(() => expect(firstCardAfterNavigator()).toHaveFocus())
+    const amrap = firstCardAfterNavigator()
+    expect(amrap.querySelector('.clr-movement-group-header__badge')).toHaveTextContent('AMRAP')
+    expect(within(amrap).getByRole('heading', { level: 2, name: 'Conditioning' })).toBeInTheDocument()
+    expect(within(navigatorFrame()).queryByRole('heading')).toBeNull()
+    expect(within(navigatorFrame()).getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
+    expect(visibleText(navigatorFrame())).toBe('All sections3 / 3')
+    expect(navigatorFrame().textContent).not.toMatch(/AMRAP|8 MIN/)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    // And back by touch: the Primary lift's card, its logged set still there.
+    await user.click(toggle)
+    await user.click(screen.getByRole('button', { name: 'Primary lift, in progress' }))
+    await waitFor(() => expect(firstCardAfterNavigator()).toHaveFocus())
+    const loggedAfter = within(firstCardAfterNavigator()).getByRole('list', { name: 'Logged sets' })
+    expect(within(loggedAfter).getAllByRole('listitem')).toHaveLength(1)
+    expect(visibleText(navigatorFrame())).toBe('All sections2 / 3')
+
+    // Nothing recorded, corrected, cleared or completed; no status moved; the session clock ran on.
+    expect(double.recorded()).toEqual([])
+    expect(double.loggedSets()).toEqual([])
+    expect(double.correctedSets()).toEqual([])
+    expect(double.clearedSets()).toEqual([])
+    expect(double.completed()).toEqual([])
+    expect(within(screen.getByRole('list', { name: 'Sections' })).getAllByRole('button').map((chip) => chip.getAttribute('aria-label'))).toEqual([
+      'Warm-up, complete',
+      'Primary lift, in progress',
+      'Conditioning, not started',
+    ])
+    expect(screen.getByRole('progressbar', { name: 'Section 2 of 3' })).toHaveAttribute('aria-valuenow', '1')
+    // The clock was not reset by either jump: at the same instant it reads the same 12:30…
+    expect(sessionTime()).toHaveTextContent('12:30')
+    // …and it runs on from that same start: five seconds later, 12:35 (a reset would read 00:05).
+    vi.setSystemTime(Date.now() + 5_000)
+    await waitFor(() => expect(sessionTime()).toHaveTextContent('12:35'))
+  })
+
+  it('AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written', async () => {
+    // Round 7's accepted gallery (bec4454) shows the compact navigator as the
+    // SectionHeader specimen of its component catalogue (`GallerySectionHeader`,
+    // the route's own component over a memory-only position); its
+    // `?state=cards` draws the live cards with no navigator (A3 TASK-108).
+    const user = userEvent.setup()
+    const fetch = vi.spyOn(globalThis, 'fetch')
+    renderWithProviders(<GallerySectionHeader />)
+    const frame = navigatorFrame()
+    expect(frame.closest('.clr-card')).toBeNull()
+    expect(visibleText(frame)).toBe('All sections2 / 3')
+    expect(frame.querySelector('.clr-chamfer--structure')).toBeNull()
+    expect(within(frame).queryByRole('heading')).toBeNull()
+    expect(within(frame).getByText('Section 2 / 3 · In progress')).toHaveClass('a11y-hidden')
+
+    await user.click(within(frame).getByRole('button', { name: 'All sections' }))
+    await user.click(within(frame).getByRole('button', { name: 'Cooldown, not started' }))
+    expect(visibleText(frame)).toBe('All sections3 / 3')
+    expect(within(frame).getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
+    expect(within(frame).getByRole('button', { name: 'All sections' })).toHaveAttribute('aria-expanded', 'false')
+    expect(fetch).not.toHaveBeenCalled()
   })
 })

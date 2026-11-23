@@ -24,6 +24,11 @@
  *
  * This is not a clock. It starts nothing, reads no wall clock, stores nothing
  * and writes nothing: a warning never records performed work (C24).
+ *
+ * A3 TASK-108: on Round 7 every clock's warning reads its deadline through
+ * these adapters into `useCountdownUrgency` (`ui/countdown-urgency.tsx`); each
+ * adapter reads only the fields of its owner's view it needs, so the route's
+ * `TimedWorkoutFlow` feeds its attempt's own phase and reading through them.
  */
 import type { AmrapView } from './amrap'
 import type { CircuitView } from './circuit'
@@ -73,13 +78,13 @@ export function restDeadline(remainingSeconds: number): CountdownDeadline {
 }
 
 /** An EMOM's minute: the seconds left of the minute the user is in. */
-export function emomMinuteDeadline(view: EmomView): CountdownDeadline {
+export function emomMinuteDeadline(view: Pick<EmomView, 'phase' | 'paused' | 'secondsRemaining'>): CountdownDeadline {
   if (view.phase !== 'work' && view.phase !== 'rest') return NO_DEADLINE
   return live(view.secondsRemaining, !view.paused)
 }
 
 /** An AMRAP's window, when it carries one. */
-export function amrapWindowDeadline(view: AmrapView): CountdownDeadline {
+export function amrapWindowDeadline(view: Pick<AmrapView, 'phase' | 'capSeconds' | 'remainingSeconds'>): CountdownDeadline {
   if (view.capSeconds === null) return NO_DEADLINE
   if (view.phase === 'running') return live(view.remainingSeconds, true)
   if (view.phase === 'paused') return live(view.remainingSeconds, false)
@@ -91,7 +96,7 @@ export function amrapWindowDeadline(view: AmrapView): CountdownDeadline {
  * that runs its clock. The deadline is the cap minus the elapsed time, as the
  * race's own view holds it; a race with no cap has none.
  */
-export function raceCapDeadline(view: ForTimeView): CountdownDeadline {
+export function raceCapDeadline(view: Pick<ForTimeView, 'phase' | 'remainingSeconds'>): CountdownDeadline {
   if (view.remainingSeconds === null) return NO_DEADLINE
   if (view.phase === 'running') return live(view.remainingSeconds, true)
   if (view.phase === 'paused') return live(view.remainingSeconds, false)
@@ -107,6 +112,6 @@ export function scheduleIntervalDeadline(view: {
 }
 
 /** A circuit's shared round rest. */
-export function circuitRestDeadline(view: CircuitView): CountdownDeadline {
+export function circuitRestDeadline(view: Pick<CircuitView, 'phase' | 'restRemaining'>): CountdownDeadline {
   return view.phase === 'rest' ? live(view.restRemaining, true) : NO_DEADLINE
 }

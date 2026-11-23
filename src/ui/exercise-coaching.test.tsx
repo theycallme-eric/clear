@@ -435,6 +435,19 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     return screen.getByRole('region', { name: 'Rest' })
   }
 
+  /**
+   * A3 TASK-108 (TASK-008, C61): the rest's warning breathes on its timer, with
+   * the one aura, rather than the card's stepped micro-pulse — the reads below
+   * that named the card's pulse read the rest's timer. Updated under Eric's
+   * rule of 2026-11-23 ("Yes, approve": tasks may update old tests to match
+   * Round 7's look and wording, each change listed for UAT); see
+   * evidence/refinement/task-108/test-ledger.json. TASK-109 still owns this
+   * file and restores the build's TASK-008 bodies in its place.
+   */
+  function restTimer(): HTMLElement {
+    return within(restBar()).getByRole('timer', { name: 'Time remaining' })
+  }
+
   it('runs the guidance’s wait until the rest goes low, then stills it — still busy', async () => {
     reduceMotion(false)
     mount({ exercises: { definition: () => never() } }, besideRest)
@@ -446,20 +459,20 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     // Low (final ten) alone takes no loop: the wait keeps running.
     await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
     expect(restBar()).not.toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(restTimer()).not.toHaveAttribute('data-loop')
     expect(wait).toHaveAttribute('data-loop', 'run')
 
-    // Urgent (final five): the rest's pulse takes the one loop.
+    // Urgent (final five): the rest's warning takes the one loop.
     await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
-    expect(restBar()).toHaveClass('clr-pulse-micro')
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for back squat')
-    // One claim runs: the card's pulse and its single screen-edge cue.
+    // One claim runs: the rest's breathing timer and its single screen-edge cue.
     const edges = document.querySelectorAll('[data-countdown-edge]')
     expect(edges).toHaveLength(1)
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBar(), edges[0]])
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restTimer(), edges[0]])
 
     // The rest ends and the wait, which never stopped being one, moves again.
     await userEvent.click(screen.getByRole('button', { name: 'Skip rest' }))
@@ -483,11 +496,11 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Raise low rest' }))
-    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(restTimer()).not.toHaveAttribute('data-loop')
     expect(row).toHaveAttribute('data-loop', 'run')
 
     await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
-    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
     expect(row).toHaveAttribute('data-loop', 'still')
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(within(panel).getByText('Saving…')).toBeInTheDocument()
@@ -496,7 +509,7 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     // With the note dialog open the one edge cue is drawn in it (the top
     // layer), so it comes before the rest bar in document order.
     expect(note).toContainElement(edges[0] as HTMLElement)
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([edges[0], restBar()])
+    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([edges[0], restTimer()])
   })
 
   it('is static under reduced motion and still says everything', async () => {

@@ -67,7 +67,7 @@
  *     closed, however it closed. Not persisted: a reload comes back to the
  *     card, never to the dialog.
  */
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { use, useEffect, useRef, useState, type RefObject } from 'react'
 import { LoggingOverlay } from './logging-overlay'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
@@ -78,7 +78,10 @@ import {
   Rest,
   TextAction,
 } from '../design-system/index'
-import { CountdownDisplay } from './timer-display'
+import { circuitRestDeadline } from '../state/countdown-urgency'
+import { spokenRest } from '../state/rest'
+import { useCountdownUrgency } from './countdown-urgency'
+import { LoggingSurfaceContext } from './logging-surface-context'
 import {
   circuitShape,
   circuitView,
@@ -183,17 +186,17 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   return (
     <BlockPanel
       block={block}
-      // The round boundary's one countdown: the shipped `TimerDisplay`, a real
-      // deadline with urgency in its last seconds, beside the card. While the
-      // recorded round's dialog holds this same rest (A3 TASK-107), the card
-      // does not draw it a second time.
+      // The round boundary's one countdown: Round 7's whole timer frame, a
+      // real deadline with the shared warning in its last seconds, beside the
+      // card (A3 TASK-108). While the recorded round's dialog holds this same
+      // rest (A3 TASK-107), the card does not draw it a second time.
       timer={
         resting && recorded === null ? (
           <div
             style={{ display: 'flex', flexDirection: 'column' }}
             data-urgent={urgent ? 'true' : 'false'}
                 >
-            <CountdownDisplay seconds={view.restRemaining} />
+            <CircuitRestClock view={view} />
           </div>
         ) : null
       }
@@ -359,6 +362,33 @@ function RoundRecord({
   )
 }
 
+/**
+ * The circuit's shared round rest, a countdown (A3 TASK-108; TASK-007: C19,
+ * R42, R103; TASK-008: C23, C61): one whole Round 7 `TimerFrame` — the app's
+ * `Card` in the timer role beside the block's card, filling the open log's
+ * width inside it (`.clr-log-timer`) — whose warning reads the rest's own
+ * deadline (`circuitRestDeadline`): the low colour at ten seconds, the breathe
+ * and the one edge at five. It holds no clock and writes nothing.
+ */
+function CircuitRestClock({ view }: { view: CircuitView }) {
+  const logging = use(LoggingSurfaceContext)
+  const urgency = useCountdownUrgency(circuitRestDeadline(view))
+  return (
+    <div className={logging ? 'clr-log-timer' : undefined}>
+      {urgency.edge}
+      <TimerFrame
+        label="Time remaining"
+        text={formatElapsed(view.restRemaining)}
+        spoken={spokenRest(view.restRemaining)}
+        size="var(--heading-h3-size)"
+        fullWidth
+        low={urgency.low}
+        pulse={urgency.urgent ? urgency.loop : undefined}
+      />
+    </div>
+  )
+}
+
 /** The running round's elapsed time: a count-up, so the shared timer frame. */
 function RoundElapsed({ round, seconds }: { round: number; seconds: number }) {
   return (
@@ -462,7 +492,7 @@ function RecordedRoundLog({
       {recorded === null ? null : (
         <>
           <p role="status">{seconds === null ? 'Round recorded' : `${formatElapsed(seconds)} round time recorded`}</p>
-          {view.phase === 'rest' && <div aria-label="Rest between rounds"><CountdownDisplay seconds={view.restRemaining} /></div>}
+          {view.phase === 'rest' && <div aria-label="Rest between rounds"><CircuitRestClock view={view} /></div>}
           <Button variant="secondary" onClick={onTakeBack}>Take back this round</Button>
         </>
       )}

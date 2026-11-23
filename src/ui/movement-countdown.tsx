@@ -40,6 +40,7 @@ import {
 } from '../state/movement-countdown'
 import { spokenRest } from '../state/rest'
 import { formatElapsed } from '../state/workout-clock'
+import { movementCountdownDeadline } from '../state/countdown-urgency'
 import { ActionGroup } from './composition'
 import { useCountdownUrgency } from './countdown-urgency'
 import { TimerFrame } from './workout-chrome'
@@ -74,7 +75,8 @@ export interface MovementCountdownViewProps {
 export function MovementCountdownView({ clock, movement }: MovementCountdownViewProps) {
   const { status, remainingSeconds, start, pause, reset } = clock
 
-  const { low, urgent, loop, edge } = useCountdownUrgency(status === 'ready' ? null : remainingSeconds, status === 'running')
+  // A3 TASK-108 (TASK-008): its own deadline — live once started, held while paused, none before Start or once run out.
+  const { low, urgent, loop, edge } = useCountdownUrgency(movementCountdownDeadline(status, remainingSeconds))
 
   return (
     <section

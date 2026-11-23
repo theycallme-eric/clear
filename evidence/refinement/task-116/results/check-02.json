@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/amrap-block.test.tsx",
-      "sha256": "9ebd6bd3bc4c8b5d9c1a2dd802957582979b7362d64990d67cd84363f5fe19ba"
+      "sha256": "42b2087942676868205635ca9a2e2607b7106fa08d981e7f51dffdf2613271eb"
     }
   ],
   "requiredCases": [
@@ -48,10 +48,10 @@
     }
   ],
   "totals": {
-    "total": 45,
+    "total": 46,
     "passed": 4,
     "failed": 0,
-    "skipped": 41,
+    "skipped": 42,
     "todo": 0,
     "executed": 4
   },

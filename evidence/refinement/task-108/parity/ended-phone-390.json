@@ -1,0 +1,234 @@
+{
+  "schema": "clear-task-108-parity/v1",
+  "task": "TASK-108",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "states": [
+    "emom",
+    "amrap",
+    "for_time"
+  ],
+  "width": 390,
+  "route": "/workout",
+  "captures": {
+    "gallery:emom": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/emom-phone-390-gallery-ended.png",
+      "sha256": "ec1e586a15aede183ff635a81c716db22ce55239b2a4376506310311d7057de7"
+    },
+    "route:emom": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/emom-phone-390-route-ended.png",
+      "sha256": "82e81d6b187b8f2cb5fac98f4eec5d539adcdd2155cdb403583716906ea756f5"
+    },
+    "gallery:amrap": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/amrap-phone-390-gallery-ended.png",
+      "sha256": "a01e1349ae6b90fe80279591d4f40f666700850548fc2c46ea7c68a72d3b571a"
+    },
+    "route:amrap": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/amrap-phone-390-route-ended.png",
+      "sha256": "23a59d2e78070ce86553d4542d3a0807c4bdef0d63167751de78fd5ae1f07727"
+    },
+    "gallery:for_time": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/for_time-phone-390-gallery-ended.png",
+      "sha256": "af740379a4520aef250d004690573fb1a59fffa13cd0bdeda09fc50ed63fd824"
+    },
+    "route:for_time": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/for_time-phone-390-route-ended.png",
+      "sha256": "7694c9a61f43b3e16bcfc906438454cc85a7cc7d9b3ef9281579d473d25af639"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "emom": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds"
+      ],
+      "amrap": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds"
+      ],
+      "for_time": [
+        "CAP REACHED",
+        "1",
+        "5",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 15 minutes 0 seconds"
+      ]
+    },
+    "route": {
+      "emom": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds"
+      ],
+      "amrap": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds"
+      ],
+      "for_time": [
+        "CAP REACHED",
+        "1",
+        "5",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 15 minutes 0 seconds"
+      ]
+    }
+  },
+  "differences": {
+    "emom": [],
+    "amrap": [],
+    "for_time": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "emom": 18,
+        "amrap": 18,
+        "for_time": 18
+      },
+      "route": {
+        "emom": 18,
+        "amrap": 18,
+        "for_time": 18
+      }
+    },
+    "parts": {
+      "gallery": {
+        "emom": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 40
+        },
+        "amrap": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 40
+        },
+        "for_time": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 40
+        }
+      },
+      "route": {
+        "emom": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 40
+        },
+        "amrap": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 40
+        },
+        "for_time": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 40
+        }
+      }
+    },
+    "differences": {
+      "emom": [],
+      "amrap": [],
+      "for_time": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/countdown-urgency.tsx",
+      "criterion": "AC-R008-02",
+      "change": "Every urgent timer and the one aura share one warning loop and one phase: each urgent clock claims the view's one urgent loop, every urgent timer breathes while any claim runs (bec4454 stilled a second urgent timer), the first draws the one edge, and each new breathe is pinned to the document timeline's epoch. Fed by each clock's deadline adapter."
+    },
+    {
+      "file": "src/ui/countdown-urgency.css",
+      "criterion": "AC-R008-01",
+      "change": "The urgent timer breathes on the edge's own rule — the same keyframes, 1.5 s period and easing (.2/.8/.2), a steady .5 when still or under reduced motion — in place of the shipped four-second stepped micro-pulse on the timer. The urgency state's urgent clock breathes with its edge; under reduced motion both hold .5."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "TimerFrame carries the breathe on its `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, the warning loop) in place of `clr-pulse-micro` on its wrapper; CountdownBar and RestTimerBar read the rest's deadline (`restDeadline`): the low colour, the fill's colour and \"Final 10 seconds\" from ten seconds, the breathe on the rest's timer (not the card) and the edge from five."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-A5D62CC0272B",
+      "change": "The compact SectionHeader reads \"Section N / M · status\" to assistive technology, visually hidden, and its visible \"N / M\" is decoration of the trigger (`aria-hidden`), so the trigger's one name is \"All sections\". Nothing drawn changes."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "Each format clock's warning reads its adapter (EMOM minute, AMRAP window, race cap): held while paused, none once ended. The low colour at ten and the edge at five are as before; the breathe is the change above."
+    },
+    {
+      "file": "src/ui/circuit-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "The circuit's round rest is one whole TimerFrame (the app's Card in the timer role) fed by `circuitRestDeadline`, in place of the package's TimerDisplay whose stepped micro-pulse ran through the last ten seconds. No state compared here draws a circuit; the circuit-round state shows it in the same commit."
+    },
+    {
+      "file": "src/ui/ladder-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "A scheduled ladder's interval countdown is one whole TimerFrame fed by `scheduleIntervalDeadline`. No accepted state draws a schedule."
+    },
+    {
+      "file": "src/ui/movement-countdown.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The movement countdown reads `movementCountdownDeadline`; its warning is unchanged but for the breathe above."
+    },
+    {
+      "file": "src/ui/timer-display.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "CountdownDisplay takes an optional deadline from its consumer; its drawing is unchanged (the route no longer draws it)."
+    },
+    {
+      "file": "src/state/countdown-urgency.ts",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The adapters read only the fields of a view they need, so the route's flow feeds its attempt through them. Nothing drawn changes."
+    },
+    {
+      "file": "src/app/Workout.tsx",
+      "criterion": "TASK-AC-DCFC4C79B85A",
+      "change": "Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading. Not a gallery state."
+    },
+    {
+      "file": "src/ui/workout-navigation.css",
+      "criterion": "TASK-AC-8E1E91D4F4AA",
+      "change": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    }
+  ]
+}

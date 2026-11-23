@@ -16,7 +16,7 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-007/required-cases.json",
-    "sha256": "dd7efcb15cbb8c9028cc2c2654059559615a87ed9003a6c7c548e0acd21b802a"
+    "sha256": "f6bc6c8cdf848fb77907b9056fbc79dc4d0c43c5505307a8d75c8e66c41642c7"
   },
   "targets": [
     {
@@ -25,7 +25,7 @@
     },
     {
       "path": "src/ui/timer-frame-layout.test.tsx",
-      "sha256": "00270f64f6a60f01d9b99568fd49de196bbd200bfecaff3304e04465dbb7f623"
+      "sha256": "3bed5ffee021432650db0caf795a8b89bc53d24faf3b3002d5017b4434e1fa59"
     }
   ],
   "requiredCases": [
@@ -71,7 +71,7 @@
     },
     {
       "file": "src/ui/timer-frame-layout.test.tsx",
-      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, not a short readout beside its label",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, with no short inner chamfer inside it",
       "status": "passed"
     },
     {
@@ -81,7 +81,7 @@
     },
     {
       "file": "src/ui/timer-frame-layout.test.tsx",
-      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the gallery draws the route's own header on one row, and no two-row state",
+      "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the route keeps its one row past the hour, and the gallery presents no two-row state",
       "status": "passed"
     },
     {

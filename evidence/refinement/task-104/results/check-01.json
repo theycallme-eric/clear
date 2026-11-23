@@ -32,15 +32,15 @@
     },
     {
       "path": "src/ui/amrap-block.test.tsx",
-      "sha256": "9ebd6bd3bc4c8b5d9c1a2dd802957582979b7362d64990d67cd84363f5fe19ba"
+      "sha256": "42b2087942676868205635ca9a2e2607b7106fa08d981e7f51dffdf2613271eb"
     },
     {
       "path": "src/ui/emom-block.test.tsx",
-      "sha256": "95e7191df54ab48574b36d9d2ff86072f192d828a957b702fba9c8f9343bc89b"
+      "sha256": "4fcb09ff7718d1b14ac2914ed5a7080b16835981a9071420c1ec76856aefd076"
     },
     {
       "path": "src/ui/for-time-block.test.tsx",
-      "sha256": "1ae2ebfd407896e91914f4cec677774844f0e49c628e6808b60e0acf50f95a72"
+      "sha256": "f1a9aa92df2e7731a4e5fa71f4dddc3fa5422ad36593dc29af1f01620ad9f444"
     }
   ],
   "requiredCases": [
@@ -416,12 +416,12 @@
     }
   ],
   "totals": {
-    "total": 171,
-    "passed": 171,
+    "total": 180,
+    "passed": 180,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 171
+    "executed": 180
   },
   "problems": []
 }

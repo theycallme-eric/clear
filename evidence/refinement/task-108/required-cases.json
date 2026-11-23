@@ -1,0 +1,827 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-108",
+  "description": "A3 task 8 (F6; #731): the section navigator's access, the workout header, whole timer frames and the pause-aware countdown warning, wired through Round 7's owners on /workout and its open logging dialogs. Navigator (TASK-027): Round 7's compact SectionHeader bar reads position and status to assistive technology with no second heading, and Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex (src/ui/workout-chrome.tsx, src/app/Workout.tsx). Header (TASK-007): one row, the title shrinking and wrapping at 23.75rem and below (src/ui/workout-navigation.css). Clocks (TASK-007): every real-route clock is one whole TimerFrame. Warning (TASK-008): every clock feeds useCountdownUrgency through its per-clock deadline adapter (src/state/countdown-urgency.ts); one shared warning loop, one aura, timer and aura on one breathe and phase (src/ui/countdown-urgency.tsx, .css). check-01 runs the brief's ten files whole and declares every case of the files this task owns whole (countdown-urgency, timer-frame-layout, state/countdown-urgency, workout-chrome, workout-footer-nav, movement-countdown, for-time-block) and the bodies it restores, ports (round-07 R7-2) or adds in the files TASK-110 owns (Workout.test.tsx, emom-block, amrap-block). parity compares each real route this task wires with its accepted gallery state (cards, urgency, emom, amrap, for_time, and the SectionHeader specimen) at 320 and 390. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-108 --check check-01 -- npx vitest run src/ui/countdown-urgency.test.tsx src/ui/timer-frame-layout.test.tsx src/state/countdown-urgency.test.ts src/ui/workout-chrome.test.tsx src/app/workout-footer-nav.test.tsx src/app/movement-countdown.test.tsx src/app/Workout.test.tsx src/ui/emom-block.test.tsx src/ui/for-time-block.test.tsx src/ui/amrap-block.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C19-01",
+        "AC-C20-01",
+        "AC-C21-01",
+        "AC-C22-01",
+        "AC-C23-01",
+        "AC-C24-01",
+        "AC-C54-01",
+        "AC-C61-01",
+        "AC-R007-01",
+        "AC-R007-02",
+        "AC-R007-03",
+        "AC-R008-02",
+        "AC-R008-03",
+        "AC-R008-04",
+        "AC-R027-01",
+        "TASK-AC-0FE872A256A7",
+        "TASK-AC-1A18C1BE61D6",
+        "TASK-AC-1ABEBDB57CBF",
+        "TASK-AC-23D0ADE293F8",
+        "TASK-AC-C805757B61E2",
+        "TASK-AC-DCFC4C79B85A",
+        "TASK-AC-ED9D1944F3CE"
+      ],
+      "files": [
+        "src/ui/countdown-urgency.test.tsx",
+        "src/ui/timer-frame-layout.test.tsx",
+        "src/state/countdown-urgency.test.ts",
+        "src/ui/workout-chrome.test.tsx",
+        "src/app/workout-footer-nav.test.tsx",
+        "src/app/movement-countdown.test.tsx",
+        "src/app/Workout.test.tsx",
+        "src/ui/emom-block.test.tsx",
+        "src/ui/for-time-block.test.tsx",
+        "src/ui/amrap-block.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C22-01 the recovered appearance: one 70px urgency-a400 inset vignette and the timer breathing .2/.8/.2 on one smooth 1.5 s ease-in-out cycle, a steady .5 still, with no hard outline, fill, flash or stepped micro-pulse",
+          "criterion": "AC-C22-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-03 on the real /workout route the preparation hold takes the colour at 10 seconds and the one edge only while it runs at 5 and under; pause and expiry end the edge; the session clock stays neutral",
+          "criterion": "AC-R008-03"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C23-01 an EMOM minute and a count-up cap warn on their own remaining time on the real route: colour at 10, the edge at 5, none on pause or at the cap, and the cap's outcome never breathes",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C24-01 exactly one decorative pointer-transparent edge, above the open log: two urgent deadlines draw one, it moves into an open native dialog and back, and nothing is recorded",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-C61-01 the timer and the aura share one phase: each breathe is pinned to the document timeline's epoch when it starts, again when the aura moves into or out of a dialog or the deadline resumes, and never restarted by a numeric tick",
+          "criterion": "AC-C61-01"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-04 reduced motion and the still policy: the urgent timer and the one aura hold a steady .5 with no animation, stay drawn, and keep every word, digit and colour",
+          "criterion": "AC-R008-04"
+        },
+        {
+          "file": "src/ui/countdown-urgency.test.tsx",
+          "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the route’s own flow: an EMOM minute at 10 and at 5 with one aura, a count-up race warning on its cap, held on pause, and a race far from its cap neutral",
+          "criterion": "AC-R008-02"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-C19-01 every clock on the real /workout route draws one whole frame: one chamfered body, no accent bar or second chamfer, the readout centred",
+          "criterion": "AC-C19-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-01 the rest in the open log is one frame filling the log's width, with no short inner chamfer inside it",
+          "criterion": "AC-R007-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-C20-01 the Workout title, the centred elapsed readout and the menu frame share one row: the readout is the menu's height and never stretched across the header",
+          "criterion": "AC-C20-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-02 the accepted single-row header is the only header state shown: the route keeps its one row past the hour, and the gallery presents no two-row state",
+          "criterion": "AC-R007-02"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-C21-01 the session clock, the preparation hold, the rest and a paused section clock each keep their own reading and arithmetic",
+          "criterion": "AC-C21-01"
+        },
+        {
+          "file": "src/ui/timer-frame-layout.test.tsx",
+          "name": "TASK-007 whole timer frames and independent functional clocks > AC-R007-03 opening, minimising and reopening the log moves the rest between the log and the footer without creating, restarting or resetting a clock",
+          "criterion": "AC-R007-03"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C23-01 the accepted rule: colour at 10 seconds left, the edge only while running at 5 and under, nothing at 11, at zero or for an unusable reading",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-R008-03 every countdown family warns on its own owner's remaining time: a movement countdown, the rest, an EMOM minute, an AMRAP window, a scheduled interval and a circuit round rest",
+          "criterion": "AC-R008-03"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C23-01 a count-up race warns on its cap minus elapsed, never on the number it shows: For Time and the raced ladder",
+          "criterion": "AC-C23-01"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C24-01 pause holds the colour and stops the edge; resume brings it back; expiry, a finish and the cap end it",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-R008-03 elapsed-only clocks stay neutral at every reading: the session clock, a round's elapsed time and a race with no cap",
+          "criterion": "AC-R008-03"
+        },
+        {
+          "file": "src/state/countdown-urgency.test.ts",
+          "name": "TASK-008 countdown warning eligibility > AC-C24-01 a warning records no work: reading every deadline stores nothing, starts nothing and changes no owner's record",
+          "criterion": "AC-C24-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "GlobalTimer > is a labelled timer, spoken in words rather than punctuation",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "GlobalTimer > is not a live region — a second-by-second announcement ruins the screen",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "GlobalTimer > is the shipped timer card — one bar, the timer role, and no frame around it",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "GlobalTimer > is an element frame inside a card, never a second card",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "GlobalTimer > counts up, so it has no low state at any reading",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "ProgressTracker > measures real progress: sections resolved out of sections prescribed",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "ProgressTracker > says each section’s status in words, never in colour alone",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "ProgressTracker > marks where the user is with aria-current, not with a tint",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "ProgressTracker > jumps to a section when the shell offers it, and is inert when it does not",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "ProgressTracker > is one card with its heading, bar and section list inside",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "SectionHeader > uses the current structural heading level rather than skipping past it",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "SectionHeader > says where the section sits, what it is called, and what state it is in",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "SectionHeader > states the structure identity of every block, per the master clarity spec",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "SectionHeader > is one card: the title, its position and its badges are all inside it",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "SectionHeader > carries the session’s bar and a collapsible jump list in that one card (U34, U35)",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "StructureBadge > is the label alone when the block carries no number",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "StructureBadge > is an element frame on the structure role, emitting through its own wrapper",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "StructureBadge > is not a card, so it sits inside one without nesting",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "WorkoutNavigation > is a named landmark, because the shell has more than one nav’s worth of controls",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "WorkoutNavigation > refuses to go back from the first section",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "WorkoutNavigation > turns the forward action into completion on the last section",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "WorkoutNavigation > offers no destructive action beside the one pressed between every section",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "WorkoutNavigation > stops taking presses while a lifecycle call is in flight",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "WorkoutNavigation > claims the loop only while finishing, and stays busy when it is stilled",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > draws nothing until a rest is running — no bar at zero",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > starts nothing for a rest of zero seconds",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > shows the remaining time, in digits and in words, with skip and add-time",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > adds time to the end of the rest, not to its start",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > leaves the screen when the rest is skipped",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > reads the wall clock on return from the background, and leaves when it elapses",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > carries urgency in the last ten seconds beside the digits, never instead of them",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > enters with no list or route motion — it appears in the tap that logs a set",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > is one timer card, with the label, the digits, the fill and the controls inside",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > goes low at ten seconds as the shipped low state: stepped over --dur-alert, no stepped pulse and no glow",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > breathes with the one soft screen edge in its final five seconds: the timer frame on the running loop, not the card",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > steps the fill to the low colour on the same schedule, with no glow in its styles",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > stays a labelled timer that is not live, with one milestone that is",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > keeps its controls true in the low state: added time leaves it, skip ends it",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > takes the one loop from a loading region beside it, and gives it back",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "RestTimerBar > is still under reduced motion and loses nothing it was saying",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the compact navigator keeps the position and status and repeats none of the active card’s identity: no section card, title, status line or structure badges on screen",
+          "criterion": "AC-C54-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the jump list opens by keyboard and touch, jumps and collapses, stays out of the tab order while collapsed, and is read-only while a move is saving",
+          "criterion": "AC-C54-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-R027-01 on the real /workout route a multi-section session jumps away and back: focus lands on each opened section’s first card, the navigator repeats no card identity, and nothing is recorded or reset — the logged set, every status and the session clock stay as they were",
+          "criterion": "AC-R027-01"
+        },
+        {
+          "file": "src/ui/workout-chrome.test.tsx",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written",
+          "criterion": "AC-C54-01"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-064: progress sits immediately above one compact paired row > puts the session progress in the pinned footer, directly above the actions",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-064: progress sits immediately above one compact paired row > pairs Previous on the left with Next section on the right in one row",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-064: progress sits immediately above one compact paired row > keeps the pair on the last section, with Finish workout on the right",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-064: progress sits immediately above one compact paired row > lays the row out as two equal columns at every width, never stacked",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-065: readable, aligned, reachable, and the same flow > keeps both actions full-cell, aligned and labelled at the control height",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-065: readable, aligned, reachable, and the same flow > stays inside the device safe areas the contained shell reserves",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-065: readable, aligned, reachable, and the same flow > keeps Previous disabled on the first section and moves back without saving",
+          "criterion": "TASK-AC-DCFC4C79B85A"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-065: readable, aligned, reachable, and the same flow > saves the open section before Next section moves on",
+          "criterion": "TASK-AC-DCFC4C79B85A"
+        },
+        {
+          "file": "src/app/workout-footer-nav.test.tsx",
+          "name": "AC-065: readable, aligned, reachable, and the same flow > ends through the existing finish flow from the right-hand action",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Elapsed session clock and movement countdown stay separate (AC-050) > names, directions and sizes the two clocks differently",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "A movement-owned countdown with Start / Pause / Reset (AC-051) > starts, pauses, resumes and resets the hold’s own seconds",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "A movement-owned countdown with Start / Pause / Reset (AC-051) > stays on its movement’s card, still running, while the sheet opens and minimises",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "A movement-owned countdown with Start / Pause / Reset (AC-051) > times the next set from its own prescribed seconds once a set is logged",
+          "criterion": "TASK-AC-1ABEBDB57CBF"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "B05-06: full-width countdown above its paired controls, above Rest > draws the timer first, then Start/Pause and Reset as one pair, inside the card above Rest",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "B05-06: full-width countdown above its paired controls, above Rest > spans the card width and keeps the pair on one row through the shipped rules",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Countdown framing matches the session clock (AC-052) > is an element frame of the timer role inside the block card — no second card, no second bar",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Countdown framing matches the session clock (AC-052) > is the shipped timer card, with one bar, wherever no card surrounds it",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Countdown framing matches the session clock (AC-052) > never adds a frame or bar in a card",
+          "criterion": "TASK-AC-23D0ADE293F8"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Final five seconds: low state and screen-edge cue (AC-053) > crosses into the low colour at ten seconds and lights the one soft screen edge in the final five only",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Final five seconds: low state and screen-edge cue (AC-053) > keeps the low state and the edge, still, under reduced motion",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Final five seconds: low state and screen-edge cue (AC-053) > animates only with the shared soft warning, which reduced motion stills — no flash and no cue of its own",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/movement-countdown.test.tsx",
+          "name": "Final five seconds: low state and screen-edge cue (AC-053) > records no movement result when the countdown runs out",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "before the clock starts > states the cap and the work, and offers the one control that starts it",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "before the clock starts > records nothing it did not observe",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "while the clock runs > counts up from the tap that started it",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "while the clock runs > offers no second start that would discard the time it took",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "while the clock runs > carries no urgency treatment while there is time left",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "while the clock runs > turns urgent in the last ten seconds — words and hue together, then the breathe and the edge in the last five",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the first completion path: finished under the cap > stops the clock at the finish, not at the cap",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the first completion path: finished under the cap > supplies the elapsed seconds and the under-cap finish to the shell",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the first completion path: finished under the cap > wears the finished treatment, and no urgency however close it came",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the second completion path: the cap is reached > stops at the cap on its own, with no tap and no stamp",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the second completion path: the cap is reached > reads differently from a finish — the words and the treatment both",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the second completion path: the cap is reached > supplies the cap and the cap-expiry outcome to the shell",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "across a refresh > comes back to the race it was in, elapsed from the wall clock",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "across a refresh > comes back to a finish it already recorded",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "across a refresh > ignores a stored clock it cannot believe",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "a block with no movements left > says so, runs no clock, and records nothing it did not observe",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "a block with no cap > counts up, states no deadline, and claims nothing about one",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time draws with the shared block frame > is one block card beside one timer card, with neither inside the other",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time draws with the shared block frame > keeps the clock’s words inside the clock’s own card",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time draws with the shared block frame > carries the identity row, the movement rows and exactly one completion",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time draws with the shared block frame > states the two endings with a glyph beside the words, not by hue alone",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time draws with the shared block frame > draws the swapped-out block as one card with no clock",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the clock takes the shared countdown warning > is not low, and claims no loop, while there is time left",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the clock takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, no stepped pulse, no glow; the breathe and the edge in the last five",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the clock takes the shared countdown warning > gives the warning up at the cap and at a finish, keeping the outcome’s colours",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the clock takes the shared countdown warning > stays a labelled timer that is not a live region",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the clock takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "the clock takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time with explicit ladder timing > free-paced, 3 rounds: rounds listed, no race clock and nothing inferred from it",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time with explicit ladder timing > free-paced, 5 rounds: rounds listed, no race clock and nothing inferred from it",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time with explicit ladder timing > a capped window inside For Time states the cap it carries",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/for-time-block.test.tsx",
+          "name": "For Time with explicit ladder timing > a For Time block with no ladder timing keeps its race clock",
+          "criterion": "TASK-AC-C805757B61E2"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > consolidates status and section count into one compact navigator, with progress above the footer navigation",
+          "criterion": "TASK-AC-0FE872A256A7"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > expands to jump, then collapses and focuses the chosen section without saving or touching the clock",
+          "criterion": "TASK-AC-DCFC4C79B85A"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > reselects the current section without leaving focus in the collapsed jump list",
+          "criterion": "TASK-AC-DCFC4C79B85A"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > moves focus to the section Previous opens, marking nothing complete",
+          "criterion": "TASK-AC-DCFC4C79B85A"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the active section header > moves focus to the section Next opens once the current one is saved",
+          "criterion": "TASK-AC-DCFC4C79B85A"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > keeps an active rest still and in the timer role until its final ten seconds",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > takes the low state for the final ten seconds, on the rest alone and with no glow",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by skip",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > hands the one loop back to coaching after urgent rest ends by expiry",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > keeps every word, digit and colour of the low state under reduced motion",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/app/Workout.test.tsx",
+          "name": "Workout — the session’s one rest > abandons from an urgent rest and lands Home with no rest left behind",
+          "criterion": "TASK-AC-ED9D1944F3CE"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM runs the clock the block prescribes > keeps the timer in its own single frame without remounting the movement list",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the EMOM draws with the shared block frame > is one block card beside one whole timer frame, with neither inside the other",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > is not low, and claims no loop, while the minute has time left",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > breathes with the one soft screen edge in the last five seconds of a running minute",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > leaves the warning on the minute boundary, and comes back to it every minute",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > stays low through the rest remainder, with the phase still in words",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > gives the warning up once the last minute has elapsed",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > stays a labelled timer that is not a live region",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > takes the one loop from a loading region beside it, and gives it back",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/emom-block.test.tsx",
+          "name": "the countdown takes the shared countdown warning > is still under reduced motion and loses nothing it was saying",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > stands the countdown beside the block’s card, never inside one",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        },
+        {
+          "file": "src/ui/amrap-block.test.tsx",
+          "name": "the 0.14.3 card, timer and group grammar > leaves urgency to the timer’s own shared warning, with nothing added around it",
+          "criterion": "TASK-AC-1A18C1BE61D6"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-108 --check parity -- npx playwright test e2e/refinement/task-108-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-244B4516A858",
+        "TASK-AC-A71FC484A98E"
+      ],
+      "files": [
+        "e2e/refinement/task-108-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 cards phone-320: /workout’s EMOM, AMRAP and For Time clocks, before Start and running, match the accepted cards state",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 urgency phone-320: /workout’s EMOM minute at ten and five seconds and its For Time race five seconds before the cap warn as the accepted urgency state does",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 emom, amrap and for_time phone-320: each /workout clock at its end, behind its Log results dialog, matches the accepted state",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 navigator phone-320: /workout’s compact navigator, closed and open, matches the accepted gallery’s SectionHeader specimen; the workout header is captured on the route",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 cards phone-390: /workout’s EMOM, AMRAP and For Time clocks, before Start and running, match the accepted cards state",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 urgency phone-390: /workout’s EMOM minute at ten and five seconds and its For Time race five seconds before the cap warn as the accepted urgency state does",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 emom, amrap and for_time phone-390: each /workout clock at its end, behind its Log results dialog, matches the accepted state",
+          "criterion": "TASK-AC-244B4516A858"
+        },
+        {
+          "file": "e2e/refinement/task-108-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-244B4516A858 navigator phone-390: /workout’s compact navigator, closed and open, matches the accepted gallery’s SectionHeader specimen; the workout header is captured on the route",
+          "criterion": "TASK-AC-244B4516A858"
+        }
+      ]
+    }
+  }
+}

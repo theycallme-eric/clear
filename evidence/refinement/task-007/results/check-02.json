@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-007/required-cases.json",
-    "sha256": "dd7efcb15cbb8c9028cc2c2654059559615a87ed9003a6c7c548e0acd21b802a"
+    "sha256": "f6bc6c8cdf848fb77907b9056fbc79dc4d0c43c5505307a8d75c8e66c41642c7"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-007.spec.ts",
-      "sha256": "150fd4c425b5e50047368fe092c419e2cb628c075bed51985984f7f975b5c70e"
+      "sha256": "8369c9a0895c4c48b82dc2d278e4b5d48aaa9854345fa16296bdb7e34a870c98"
     }
   ],
   "requiredCases": [
@@ -62,7 +62,7 @@
     },
     {
       "file": "e2e/refinement/task-007.spec.ts",
-      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: the route's own one-row header, and every clock's actual consumer in one whole frame",
+      "name": "TASK-007 whole timer frames and independent functional clocks > JOURNEY-007 gallery cards and urgency phone-320: no other header state, and every clock's actual consumer in one whole frame",
       "project": "mobile",
       "status": "passed"
     }

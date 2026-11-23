@@ -66,7 +66,10 @@
 import { useState, type ReactNode } from 'react'
 
 import { Button, ChoiceGroup, Play } from '../design-system/index'
-import { CountdownDisplay } from './timer-display'
+import { scheduleIntervalDeadline } from '../state/countdown-urgency'
+import { spokenRest } from '../state/rest'
+import { useCountdownUrgency } from './countdown-urgency'
+import { TimerFrame } from './workout-chrome'
 import type { BlockOutcome } from '../state/block-completion'
 import { clampForTimeState, startForTime, FOR_TIME_START } from '../state/for-time'
 import {
@@ -323,9 +326,6 @@ function LadderMovement({
 // Explicit timing — REQ-018 / E03
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The last stretch of an interval, where the countdown crosses into its low state. */
-const INTERVAL_LOW_SECONDS = 10
-
 /**
  * A scheduled ladder: the round list, the live round marked from the block's
  * own clock, and the countdown to the next start beside the card.
@@ -571,22 +571,32 @@ const SCHEDULE_WORDS: Readonly<Record<ScheduleView['phase'], string>> = {
 }
 
 /**
- * The countdown to the next scheduled start, as `BlockPanel`'s `timer`: the
- * shipped `TimerDisplay`, drawn beside the block's card. It counts the current
- * interval rather than the block, so its low state means "the next round is
- * about to start" and resets at every boundary — and it is given up once the
- * schedule has run out.
+ * The countdown to the next scheduled start, as `BlockPanel`'s `timer`: Round
+ * 7's whole timer frame (A3 TASK-108; TASK-007), drawn beside the block's card.
+ * It counts the current interval rather than the block, so its warning means
+ * "the next round is about to start" and resets at every boundary — read from
+ * the interval's own deadline (`scheduleIntervalDeadline`, TASK-008): the low
+ * colour at ten seconds, the breathe and the one edge at five — and it is
+ * given up once the schedule has run out.
  */
 function IntervalCountdown({ view }: { view: ScheduleView }) {
-  const low = view.secondsRemaining <= INTERVAL_LOW_SECONDS
-  const running = view.phase === 'running'
+  const urgency = useCountdownUrgency(scheduleIntervalDeadline(view))
 
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column' }}
-      data-urgent={low && running ? 'true' : 'false'}
+      data-urgent={urgency.low ? 'true' : 'false'}
     >
-      <CountdownDisplay running={running} seconds={view.secondsRemaining} lowThreshold={INTERVAL_LOW_SECONDS} />
+      {urgency.edge}
+      <TimerFrame
+        label="Time remaining"
+        text={formatElapsed(view.secondsRemaining)}
+        spoken={spokenRest(view.secondsRemaining)}
+        size="var(--heading-h3-size)"
+        fullWidth
+        low={urgency.low}
+        pulse={urgency.urgent ? urgency.loop : undefined}
+      />
     </div>
   )
 }

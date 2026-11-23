@@ -54,8 +54,11 @@ import {
   type BlockFixture,
   type ExerciseFixture,
 } from '../test/workout-double'
+import { BlockSlot } from './block-renderers'
 import { EmomBlock } from './emom-block'
+import { PRODUCT_PRESENTATION } from './product-presentation'
 import { LoadingView } from './view-state'
+import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
 
 // jsdom applies no stylesheet, so motion is proved as classes, attributes and
 // the rule text the classes resolve to.
@@ -258,20 +261,115 @@ function nestedCards(): HTMLElement[] {
   return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
 }
 
+/** TASK-011 (C32): no Not started or Work caption repeats what the minute and Now say. */
+function expectNoRedundantCaption() {
+  expect(screen.queryByText('NOT STARTED')).not.toBeInTheDocument()
+  expect(screen.queryByText('WORK')).not.toBeInTheDocument()
+}
+
+/**
+ * A3 TASK-108 (round-07 decision R7-2): the EMOM as `/workout` draws it —
+ * `BlockSlot` under the product presentation, so Round 7's `TimedWorkoutFlow`
+ * with its minute clock, one whole `TimerFrame` beside the block's card — over
+ * the test's completion seam and clock. A seam that names no session keeps
+ * nothing in storage.
+ */
+function mountRoute(options: { block?: BlockFixture; beside?: ReactNode } = {}): { advance(seconds: number): void } {
+  const snapshot = snapshotFixture({
+    sections: [
+      {
+        title: 'Conditioning',
+        sectionType: 'conditioning',
+        blocks: [{ structureType: 'emom', timerType: 'per_minute', timerSeconds: 600, exercises: PAIR, ...options.block }],
+      },
+    ],
+  })
+  const block = sessionProgress(snapshot).sections[0].blocks[0]
+  const completion: BlockCompletionApi = { reportOutcome: vi.fn(), isBlockRecorded: () => false }
+  let current = NOW
+  window.localStorage.clear()
+  vi.spyOn(Date, 'now').mockImplementation(() => current)
+  render(
+    <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+      <BlockCompletionContext value={completion}>
+        {options.beside}
+        <BlockSlot block={block} />
+      </BlockCompletionContext>
+    </WorkoutExperiencePresentationProvider>,
+  )
+  return {
+    advance: (seconds) => {
+      current += seconds * 1000
+      act(() => {
+        window.dispatchEvent(new Event('focus'))
+      })
+    },
+  }
+}
+
+/** The route's minute clock: Round 7's TimerFrame, named by its block. */
+function routeTimer(): HTMLElement {
+  return screen.getByRole('timer', { name: 'EMOM time' })
+}
+
+/** Its frame: the timer card's body, whose role moves bar, body and emission. */
+function routeFrame(): HTMLElement {
+  return routeTimer().closest('.clr-card__body') as HTMLElement
+}
+
+/** The decorative digits: the part of the readout that tumbles. */
+function routeDigits(): HTMLElement {
+  return [...routeTimer().children].find((child) => child.querySelector('.clr-tumble') !== null) as HTMLElement
+}
+
+/** The one soft screen-edge aura, wherever it is portalled. */
+function edges(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>('[data-countdown-edge]')]
+}
+
+/** The route's movement rows, each named by its ordinal and name (`01 hollow body hold`). */
+function routeRows(): { name: string; item: HTMLElement }[] {
+  return within(screen.getByRole('list', { name: 'Movements in this EMOM' }))
+    .getAllByRole('listitem')
+    // The name's own span (what names the movement), not the equipment Round 7 draws after it.
+    .map((item) => ({ name: item.querySelector('.clr-movement-identity__name > span:first-child')?.textContent?.trim() ?? '', item }))
+}
+
+/** The names of the route's movements carrying a live marker (`Now`, `Next`), as the build's `marked` reads them. */
+function routeMarked(word: string): string[] {
+  return routeRows().filter(({ item }) => within(item).queryByText(word) !== null).map(({ name }) => name)
+}
+
+/** One route movement row, by its name, so two movements' labels never collide. */
+function routeMovement(name: string) {
+  const row = routeRows().find((candidate) => candidate.name === name)
+  if (row === undefined) throw new Error(`${name} is not in the movement list`)
+  return within(row.item)
+}
+
 describe('the EMOM runs the clock the block prescribes', () => {
+  // A3 TASK-108 (round-07 R7-2; TASK-007: C19, R42): ported onto the EMOM
+  // `/workout` draws — Round 7's TimedWorkoutFlow through BlockSlot under the
+  // product presentation — whose single frame is Round 7's whole TimerFrame,
+  // the app's Card in the timer role beside the block's card.
   it('keeps the timer in its own single frame without remounting the movement list', async () => {
     const user = setup()
-    const mounted = mount()
+    const mounted = mountRoute()
     const movementList = screen.getByRole('list', { name: 'Movements in this EMOM' })
 
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
 
+    // TASK-007 (C19, R42): the single frame is one whole timer card — one bar,
+    // one body — holding the readout alone, beside the block's card.
     const expectSingleTimerFrame = (seconds: string) => {
-      const timer = screen.getByRole('timer')
-      const frame = timer.closest('.clr-card')
-      expect(frame).not.toBeNull()
-      expect(frame?.parentElement?.closest('.clr-card')).toBeNull()
-      expect(within(timer).getByText(seconds)).toBeInTheDocument()
+      const timer = routeTimer()
+      const frame = timer.closest('.clr-card') as HTMLElement
+      expect(frame.parentElement?.closest('.clr-card')).toBeNull()
+      expect(frame.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+      expect(frame).not.toContainElement(movementList)
+      expect(timer.querySelectorAll('.clr-chamfer, .clr-card, .clr-card__bar')).toHaveLength(0)
+      // The digits are decorative spans; the value is also said in words.
+      expect(timer).toHaveTextContent(seconds)
       expect(screen.getByRole('list', { name: 'Movements in this EMOM' })).toBe(movementList)
     }
 
@@ -279,11 +377,13 @@ describe('the EMOM runs the clock the block prescribes', () => {
     expectSingleTimerFrame('01:00')
 
     mounted.advance(20)
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    // TASK-011 (C32): the minute and Now say it; the WORK caption is gone.
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
+    expectNoRedundantCaption()
     expectSingleTimerFrame('00:40')
 
     mounted.advance(580)
-    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Time complete')
     expectSingleTimerFrame('00:00')
   })
 
@@ -625,6 +725,12 @@ describe('completion never records a scheduled minute as performed work', () => 
 })
 
 describe('the EMOM draws with the shared block frame', () => {
+  // A3 TASK-108 (round-07 R7-2; TASK-007: C19, R102) supersedes "beside one
+  // timer card": ported onto the EMOM `/workout` draws, whose whole timer frame
+  // is Round 7's TimerFrame — the app's Card in the timer role — beside the
+  // block's card, holding the readout and its caption alone.
+  // Round 7's base body over EmomBlock, kept as it is (round-07 decision R7-2:
+  // its title is its own; restored in A3 TASK-108 repair round 3).
   it('is one block card beside one timer card, with neither inside the other', async () => {
     const user = setup()
     mount()
@@ -648,6 +754,38 @@ describe('the EMOM draws with the shared block frame', () => {
     const inside = within(blockCard)
     expect(inside.getByText('MIN 1 OF 10')).toBeInTheDocument()
     expect(inside.getByText('WORK')).toBeInTheDocument()
+    expect(inside.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
+  })
+
+  it('is one block card beside one whole timer frame, with neither inside the other', async () => {
+    const user = setup()
+    mountRoute()
+
+    // Before the clock: the block's card and nothing else.
+    expect(cards()).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+
+    expect(cards()).toHaveLength(2)
+    expect(nestedCards()).toEqual([])
+
+    // The frame holds the readout alone: the movements, the live marker and
+    // the controls are the block card's (Round 7 says the minute in the
+    // frame's own caption).
+    const timerFrame = routeTimer().closest('.clr-card') as HTMLElement
+    expect(timerFrame.querySelector('.clr-card__body')).toHaveClass('clr-chamfer--timer')
+    const blockCard = screen
+      .getByRole('list', { name: 'Movements in this EMOM' })
+      .closest('.clr-card') as HTMLElement
+    expect(blockCard).not.toBe(timerFrame)
+    expect(blockCard).not.toContainElement(timerFrame)
+    expect(within(timerFrame).queryByRole('button')).not.toBeInTheDocument()
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
+    const inside = within(blockCard)
+    // TASK-011 (C32): the movement marked Now, not a WORK caption.
+    expect(inside.getByText('Now')).toBeInTheDocument()
+    expect(inside.queryByText('WORK')).not.toBeInTheDocument()
+    expect(inside.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
     expect(inside.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
   })
 
@@ -824,23 +962,11 @@ describe('targets follow the scheduled minute', () => {
   })
 })
 
+// Round 7's base bodies over EmomBlock whose own titles the build's TASK-008
+// port does not reuse stay as they are (round-07 decision R7-2; A3 TASK-108
+// repair round 2). Their same-title siblings are superseded by the ported
+// cases below (evidence/refinement/task-108/test-ledger.json).
 describe('the countdown takes the shipped low state and nothing more', () => {
-  it('is not low, and claims no loop, while the minute has time left', async () => {
-    reduceMotion(false)
-    const user = setup()
-    const mounted = mount()
-
-    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
-    mounted.advance(49)
-
-    expect(timer()).toHaveTextContent('00:11')
-    expect(timer()).toHaveClass('clr-chamfer--timer')
-    expect(timer()).not.toHaveClass('clr-chamfer--timer-low')
-    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
-    expect(minuteFrame()).toHaveAttribute('data-urgent', 'false')
-    expect(countdown()).toHaveAttribute('data-loop', 'still')
-  })
-
   it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
     reduceMotion(false)
     const user = setup()
@@ -921,26 +1047,6 @@ describe('the countdown takes the shipped low state and nothing more', () => {
     expect(countdown()).toHaveAttribute('data-loop', 'run')
   })
 
-  it('stays low through the rest remainder, with the phase still in words', async () => {
-    reduceMotion(false)
-    const user = setup()
-    const mounted = mount({ block: { roundRestSeconds: 15 } })
-
-    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
-    mounted.advance(52)
-
-    expect(screen.getByText('REST')).toBeInTheDocument()
-    expect(timer()).toHaveTextContent('00:08')
-    expect(timer()).toHaveClass('clr-chamfer--timer-low')
-    expect(countdown()).toHaveAttribute('data-loop', 'still')
-
-    mounted.advance(4)
-    expect(screen.getByText('REST')).toBeInTheDocument()
-    expect(timer()).toHaveTextContent('00:04')
-    expect(timer()).toHaveClass('clr-chamfer--timer-low')
-    expect(countdown()).toHaveAttribute('data-loop', 'run')
-  })
-
   it('gives the loop up once the last minute has elapsed', async () => {
     reduceMotion(false)
     const user = setup()
@@ -962,24 +1068,175 @@ describe('the countdown takes the shipped low state and nothing more', () => {
       /\[data-loop='still'\] \.clr-pulse-micro,[\s\S]*?\{[^}]*animation: none/,
     )
   })
+})
 
-  it('stays a labelled timer that is not a live region', async () => {
+// TASK-008 (C22, C23, C24, C61; R126) supersedes "the shipped low state and
+// nothing more": the minute warns on its own seconds — the low colour at ten,
+// the breathe and the one soft screen edge in the last five while it runs —
+// with no stepped micro-pulse. A3 TASK-108 (round-07 R7-2): every case is
+// ported onto the EMOM `/workout` draws (Round 7's TimedWorkoutFlow through
+// BlockSlot under the product presentation); its minute clock is one whole
+// TimerFrame, the app's Card in the timer role, captioned with the minute.
+describe('the countdown takes the shared countdown warning', () => {
+  it('is not low, and claims no loop, while the minute has time left', async () => {
+    reduceMotion(false)
     const user = setup()
-    const mounted = mount()
+    const mounted = mountRoute()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(49)
+
+    expect(routeTimer()).toHaveTextContent('00:11')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer')
+    expect(routeFrame()).not.toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
+    expect(routeTimer()).not.toHaveAttribute('data-urgent')
+    expect(routeTimer()).not.toHaveAttribute('data-loop')
+    expect(edges()).toHaveLength(0)
+  })
+
+  it('goes low in the last ten seconds: stepped over --dur-alert, with no stepped pulse and no glow', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mountRoute()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(50)
+
+    // One role change moves bar, body and emission together.
+    expect(routeTimer()).toHaveTextContent('00:10')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeFrame()).not.toHaveClass('clr-chamfer--timer')
+    expect(nestedCards()).toEqual([])
+
+    // The digits cross over on the frame's schedule, and each one tumbles.
+    expect(routeDigits().style.color).toBe('var(--text-timer-low)')
+    expect(routeDigits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(routeDigits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+
+    // The colour alone: nothing pulses and no edge until the last five.
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    expect(routeTimer()).not.toHaveAttribute('data-loop')
+    expect(edges()).toHaveLength(0)
+
+    // No glow of the timer's own: the extra glow is the primary action's.
+    expect(routeFrame().querySelector('.clr-glow')).toBeNull()
+
+    // What those classes resolve to in the shipped package.
+    expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
+    expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
+    expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
+  })
+
+  it('breathes with the one soft screen edge in the last five seconds of a running minute', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mountRoute()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(55)
+
+    expect(routeTimer()).toHaveTextContent('00:05')
+    expect(routeTimer()).toHaveAttribute('data-urgent', 'true')
+    expect(routeTimer()).toHaveAttribute('data-loop', 'run')
+    expect(edges()).toHaveLength(1)
+    expect(edges()[0]).toHaveAttribute('data-loop', 'run')
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+
+    // Paused in the last stretch: the colour holds, the breathe and the edge stop.
+    await user.click(screen.getByRole('button', { name: 'Pause' }))
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeTimer()).not.toHaveAttribute('data-urgent')
+    expect(edges()).toHaveLength(0)
+  })
+
+  it('leaves the warning on the minute boundary, and comes back to it every minute', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mountRoute()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(55)
+    expect(routeTimer()).toHaveAttribute('data-loop', 'run')
+
+    mounted.advance(5)
+    expect(routeTimer()).toHaveTextContent('Minute 2 of 10')
+    expect(routeTimer()).toHaveTextContent('01:00')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer')
+    expect(routeTimer()).not.toHaveAttribute('data-loop')
+    expect(edges()).toHaveLength(0)
+
+    mounted.advance(52)
+    expect(routeTimer()).toHaveTextContent('00:08')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeTimer()).not.toHaveAttribute('data-loop')
+
+    mounted.advance(3)
+    expect(routeTimer()).toHaveTextContent('00:05')
+    expect(routeTimer()).toHaveAttribute('data-loop', 'run')
+    expect(edges()).toHaveLength(1)
+  })
+
+  it('stays low through the rest remainder, with the phase still in words', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mountRoute({ block: { roundRestSeconds: 15 } })
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(52)
 
-    expect(screen.getByRole('timer', { name: 'Time remaining' })).toBe(timer())
-    expect(timer()).not.toHaveAttribute('aria-live')
-    expect(digits()).toHaveAttribute('aria-hidden', 'true')
-    expect(countdown().querySelector('[aria-live], [role="status"]')).toBeNull()
+    // Round 7 says the block's own rest beside the minute (A3 TASK-117).
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10 · Rest')
+    expect(routeTimer()).toHaveTextContent('00:08')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+
+    // The minute's deadline runs through its rest window: the last five warn too.
+    mounted.advance(4)
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10 · Rest')
+    expect(routeTimer()).toHaveAttribute('data-loop', 'run')
+    expect(edges()).toHaveLength(1)
+  })
+
+  it('gives the warning up once the last minute has elapsed', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mountRoute({ block: { timerSeconds: 120 } })
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(115)
+    expect(routeTimer()).toHaveAttribute('data-loop', 'run')
+
+    mounted.advance(5)
+
+    // Expiry ends the warning (C24): no colour, no breathe, no edge at zero.
+    expect(routeTimer()).toHaveTextContent('Time complete')
+    expect(routeTimer()).toHaveTextContent('00:00')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer')
+    expect(routeTimer()).not.toHaveAttribute('data-loop')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(edges()).toHaveLength(0)
+  })
+
+  it('stays a labelled timer that is not a live region', async () => {
+    const user = setup()
+    const mounted = mountRoute()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(56)
+
+    expect(screen.getByRole('timer', { name: 'EMOM time' })).toBe(routeTimer())
+    expect(routeTimer()).not.toHaveAttribute('aria-live')
+    expect(routeDigits()).toHaveAttribute('aria-hidden', 'true')
+    expect(routeTimer().closest('.clr-card')!.querySelector('[aria-live], [role="status"]')).toBeNull()
+    // The aura is decorative: hidden from assistive tech, saying nothing.
+    expect(edges()[0]).toHaveAttribute('aria-hidden', 'true')
+    expect(edges()[0].textContent).toBe('')
   })
 
   it('takes the one loop from a loading region beside it, and gives it back', async () => {
     reduceMotion(false)
     const user = setup()
-    const mounted = mount({
+    const mounted = mountRoute({
       beside: <LoadingView label="Reading coaching for hollow body hold" />,
     })
     const wait = screen
@@ -988,29 +1245,25 @@ describe('the countdown takes the shipped low state and nothing more', () => {
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
-    // A minute that is not low has no loop, so the wait keeps its own.
+    // A minute with time left has no loop, so the wait keeps its own.
     expect(wait).toHaveAttribute('data-loop', 'run')
-    expect(countdown()).toHaveAttribute('data-loop', 'still')
+    expect(routeTimer()).not.toHaveAttribute('data-loop')
 
-    // Low but not yet urgent: still no claim, so the wait keeps its loop.
+    // The colour at ten is no loop of its own.
     mounted.advance(52)
-    expect(countdown()).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('data-loop', 'run')
 
-    mounted.advance(4)
-
-    // Final five: the pulse carries more state, so it runs and the wait is
-    // stilled — still on screen, still busy, still saying what it is waiting for.
-    expect(countdown()).toHaveAttribute('data-loop', 'run')
+    // The last five: the warning carries more state, so it runs and the wait
+    // is stilled — still on screen, still busy, still saying what it waits for.
+    mounted.advance(3)
+    expect(routeTimer()).toHaveAttribute('data-loop', 'run')
     expect(wait).toHaveAttribute('data-loop', 'still')
     expect(wait).toHaveAttribute('aria-busy', 'true')
     expect(wait).toHaveTextContent('Reading coaching for hollow body hold')
-    // One claim runs: the countdown's pulse and its single screen-edge cue.
-    const edges = document.querySelectorAll('[data-countdown-edge]')
-    expect(edges).toHaveLength(1)
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([countdown(), edges[0]])
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === routeTimer() || node.matches('[data-countdown-edge]'))).toBe(true)
 
-    mounted.advance(4)
+    mounted.advance(5)
     expect(wait).toHaveAttribute('data-loop', 'run')
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
   })
@@ -1018,28 +1271,29 @@ describe('the countdown takes the shipped low state and nothing more', () => {
   it('is still under reduced motion and loses nothing it was saying', async () => {
     reduceMotion(true)
     const user = setup()
-    const mounted = mount()
+    const mounted = mountRoute()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(56)
 
-    expect(countdown()).toHaveAttribute('data-loop', 'still')
+    expect(routeTimer()).toHaveAttribute('data-loop', 'still')
+    expect(edges()[0]).toHaveAttribute('data-loop', 'still')
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
 
     // The reading, the words, the colour role and the controls are all there.
-    expect(minuteFrame()).toHaveAttribute('data-urgent', 'true')
-    expect(timer()).toHaveClass('clr-chamfer--timer-low')
-    expect(digits().style.color).toBe('var(--text-timer-low)')
-    expect(timer()).toHaveTextContent('00:04')
-    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
-    expect(screen.getByText('WORK')).toBeInTheDocument()
-    expect(marked('Now')).toEqual(['1. hollow body hold'])
-    expect(movement('1. hollow body hold').getByText('MIN 1 · 8 reps')).toBeInTheDocument()
-
-    // The shipped rule that makes a reduced pulse static.
-    expect(MOTION_CSS).toMatch(
-      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
-    )
+    expect(routeTimer()).toHaveAttribute('data-urgent', 'true')
+    expect(routeFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(routeDigits().style.color).toBe('var(--text-timer-low)')
+    expect(routeTimer()).toHaveTextContent('00:04')
+    expect(routeTimer()).toHaveTextContent('Minute 1 of 10')
+    // TASK-011 (C32): the minute and Now; the WORK caption is gone. Round 7
+    // names a movement by its ordinal and name ("01 hollow body hold", where
+    // the build wrote "1. hollow body hold") and says the minute's target in
+    // its own case ("Min 1 · 8 reps" for "MIN 1 · 8 reps").
+    expectNoRedundantCaption()
+    expect(routeMarked('Now')).toEqual(['01 hollow body hold'])
+    expect(routeMovement('01 hollow body hold').getByText('Min 1 · 8 reps')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeEnabled()
   })
 })
 

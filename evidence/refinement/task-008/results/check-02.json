@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-008/required-cases.json",
-    "sha256": "8ab5a84b65898841385f556caf15f3c08f4875992a14224399e1a67adde77d96"
+    "sha256": "9378ebe9d6984d4783815f84a1d3457d4bfe638cc930cf201acbab6428ddd275"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-008.spec.ts",
-      "sha256": "41d248adea03cc11353f4e5f0df7c772722335a7d930f124997122f1d8bb3421"
+      "sha256": "126f2c05788a57daa0a484b7014b5bff44304875b502f83e4888e5a5c4457be0"
     }
   ],
   "requiredCases": [
@@ -50,7 +50,7 @@
     },
     {
       "file": "e2e/refinement/task-008.spec.ts",
-      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the shared owner — held at 10 and 5, run into its last five, a count-up cap, an open native log with one edge in phase, and the still preview — with no network",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > JOURNEY-008 gallery urgency phone-390: the warning through the route’s own flow — an EMOM minute at 10 and at 5 with one edge in phase, a count-up race on its cap, held on pause, and a race far from its cap neutral — with no network",
       "project": "mobile",
       "status": "passed"
     }

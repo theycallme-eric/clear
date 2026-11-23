@@ -1,0 +1,214 @@
+{
+  "schema": "clear-task-108-parity/v1",
+  "task": "TASK-108",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "gallery/app?component=SectionHeader",
+  "width": 320,
+  "route": "/workout",
+  "captures": {
+    "gallery:closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/navigator-phone-320-gallery-closed.png",
+      "sha256": "dd7324023380ea57685ba18b90fcb61dccd32e3fa8593cbd1703cbf6619c4dd6"
+    },
+    "route:closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/navigator-phone-320-route-closed.png",
+      "sha256": "883a60c17a64a04ae0f6bdea040b1f3ab1999ce7b2a17776601727c0be19013d"
+    },
+    "gallery:open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/navigator-phone-320-gallery-open.png",
+      "sha256": "1e7fc76ccc20314bd23879072a70972a21740560df2b0c1a76fe03bccd93903d"
+    },
+    "route:open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/navigator-phone-320-route-open.png",
+      "sha256": "320a64e3b4a830b4f73bdd47da4c7cb441126d73213e978ec7eb35d05f1f2892"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "closed": [
+        "Section 2 / 3 · In progress",
+        "ALL SECTIONS",
+        "2 / 3",
+        "WARM-UP",
+        "CONDITIONING",
+        "COOLDOWN"
+      ],
+      "open": [
+        "Section 2 / 3 · In progress",
+        "ALL SECTIONS",
+        "2 / 3",
+        "WARM-UP",
+        "CONDITIONING",
+        "COOLDOWN"
+      ]
+    },
+    "route": {
+      "closed": [
+        "Section 2 / 3 · In progress",
+        "ALL SECTIONS",
+        "2 / 3",
+        "WARM-UP",
+        "CONDITIONING",
+        "COOLDOWN"
+      ],
+      "open": [
+        "Section 2 / 3 · In progress",
+        "ALL SECTIONS",
+        "2 / 3",
+        "WARM-UP",
+        "CONDITIONING",
+        "COOLDOWN"
+      ]
+    }
+  },
+  "header": {
+    "capture": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/header-phone-320-route.png",
+      "sha256": "54c29ee28e6f2a2eeae9f18bdca9f50323d47c414637b8e351f4a728079206ac"
+    },
+    "lines": [
+      "WORKOUT",
+      "0",
+      "1",
+      ":",
+      "0",
+      "0",
+      "1 MINUTE 0 SECONDS"
+    ],
+    "note": "Route only: no accepted gallery state (bec4454) draws the workout header. TASK-AC-8E1E91D4F4AA and AC-C20-01 are proved by e2e/refinement/task-007.spec.ts; this capture records it."
+  },
+  "differences": {
+    "closed": [],
+    "open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "closed": 9,
+        "open": 27
+      },
+      "route": {
+        "closed": 9,
+        "open": 27
+      }
+    },
+    "parts": {
+      "gallery": {
+        "closed": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 40
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 128
+        }
+      },
+      "route": {
+        "closed": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 40
+        },
+        "open": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 128
+        }
+      }
+    },
+    "differences": {
+      "closed": [],
+      "open": []
+    },
+    "specimenWidthPx": 288
+  },
+  "specimenContext": {
+    "note": "The catalogue specimen is compared inside Round 7’s workout presentation (`.clr-v4-experience`) at the route navigator’s width; as catalogued it sits in a narrower card outside that context (its own 8px inline padding, the jump list wrapping to more rows). The as-catalogued capture is kept beside it.",
+    "capture": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/navigator-phone-320-gallery-catalogue.png",
+      "sha256": "a798bf28aca7d301c1878abc035ea642661c825792657513dcbdeed368a4678b"
+    },
+    "lines": [
+      "Section 2 / 3 · In progress",
+      "ALL SECTIONS",
+      "2 / 3",
+      "WARM-UP",
+      "CONDITIONING",
+      "COOLDOWN"
+    ]
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/countdown-urgency.tsx",
+      "criterion": "AC-R008-02",
+      "change": "Every urgent timer and the one aura share one warning loop and one phase: each urgent clock claims the view's one urgent loop, every urgent timer breathes while any claim runs (bec4454 stilled a second urgent timer), the first draws the one edge, and each new breathe is pinned to the document timeline's epoch. Fed by each clock's deadline adapter."
+    },
+    {
+      "file": "src/ui/countdown-urgency.css",
+      "criterion": "AC-R008-01",
+      "change": "The urgent timer breathes on the edge's own rule — the same keyframes, 1.5 s period and easing (.2/.8/.2), a steady .5 when still or under reduced motion — in place of the shipped four-second stepped micro-pulse on the timer. The urgency state's urgent clock breathes with its edge; under reduced motion both hold .5."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "TimerFrame carries the breathe on its `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, the warning loop) in place of `clr-pulse-micro` on its wrapper; CountdownBar and RestTimerBar read the rest's deadline (`restDeadline`): the low colour, the fill's colour and \"Final 10 seconds\" from ten seconds, the breathe on the rest's timer (not the card) and the edge from five."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-A5D62CC0272B",
+      "change": "The compact SectionHeader reads \"Section N / M · status\" to assistive technology, visually hidden, and its visible \"N / M\" is decoration of the trigger (`aria-hidden`), so the trigger's one name is \"All sections\". Nothing drawn changes."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "Each format clock's warning reads its adapter (EMOM minute, AMRAP window, race cap): held while paused, none once ended. The low colour at ten and the edge at five are as before; the breathe is the change above."
+    },
+    {
+      "file": "src/ui/circuit-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "The circuit's round rest is one whole TimerFrame (the app's Card in the timer role) fed by `circuitRestDeadline`, in place of the package's TimerDisplay whose stepped micro-pulse ran through the last ten seconds. No state compared here draws a circuit; the circuit-round state shows it in the same commit."
+    },
+    {
+      "file": "src/ui/ladder-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "A scheduled ladder's interval countdown is one whole TimerFrame fed by `scheduleIntervalDeadline`. No accepted state draws a schedule."
+    },
+    {
+      "file": "src/ui/movement-countdown.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The movement countdown reads `movementCountdownDeadline`; its warning is unchanged but for the breathe above."
+    },
+    {
+      "file": "src/ui/timer-display.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "CountdownDisplay takes an optional deadline from its consumer; its drawing is unchanged (the route no longer draws it)."
+    },
+    {
+      "file": "src/state/countdown-urgency.ts",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The adapters read only the fields of a view they need, so the route's flow feeds its attempt through them. Nothing drawn changes."
+    },
+    {
+      "file": "src/app/Workout.tsx",
+      "criterion": "TASK-AC-DCFC4C79B85A",
+      "change": "Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading. Not a gallery state."
+    },
+    {
+      "file": "src/ui/workout-navigation.css",
+      "criterion": "TASK-AC-8E1E91D4F4AA",
+      "change": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    }
+  ]
+}

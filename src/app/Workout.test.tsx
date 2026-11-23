@@ -446,6 +446,59 @@ describe('Workout — navigation and progress', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Workout — the active section header', () => {
+  /**
+   * The compact navigator the active section is headed by (TASK-027): no card
+   * of its own, its position and status read by assistive technology. A3
+   * TASK-108 (Round 7, decision 2): it draws no heading of its own; the
+   * section's name is its block's own heading, which follows it.
+   */
+  function activeHeader(name: string): HTMLElement {
+    const heading = screen.getByRole('heading', { level: 2, name })
+    const frame = document.querySelector('[data-section-navigation]')
+    if (!(frame instanceof HTMLElement)) throw new Error(`No navigator heads ${name}`)
+    expect(frame.contains(heading)).toBe(false)
+    expect(frame.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(within(frame).queryByRole('heading')).toBeNull()
+    expect(frame.closest('.clr-card')).toBeNull()
+    return frame
+  }
+
+  /** The open section's first card: the first card frame after its navigator. */
+  function firstCard(name: string): HTMLElement {
+    const navigator = activeHeader(name)
+    const card = [...document.querySelectorAll<HTMLElement>('.clr-card__body')].find(
+      (frame) => navigator.compareDocumentPosition(frame) & Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    if (card === undefined) throw new Error(`No card follows ${name}`)
+    return card
+  }
+
+  it('consolidates status and section count into one compact navigator, with progress above the footer navigation', async () => {
+    await shell()
+
+    const header = within(activeHeader('Primary lift'))
+    expect(header.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    // REQ-018: the bar sits immediately above the paired footer actions.
+    expect(header.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByRole('navigation', { name: 'Workout sections' })).getByRole(
+        'progressbar',
+        { name: 'Section 2 of 3' },
+      ),
+    ).toHaveAttribute('aria-valuenow', '1')
+    // TASK-027 (C54; R35): the block's own card names its format (TASK-003,
+    // AC-C08-01); the navigator repeats no block identity.
+    expect(header.queryByRole('list', { name: 'Structures in this section' })).toBeNull()
+    expect(header.queryByText('EMOM')).toBeNull()
+    expect(header.getByRole('list', { name: 'Sections' })).toBeInTheDocument()
+
+    // No second frame restating the position: one count, one bar, one list.
+    expect(screen.queryByRole('heading', { name: 'Sections' })).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Section 2 \/ 3/)).toHaveLength(1)
+    expect(screen.getAllByRole('progressbar', { name: /^Section / })).toHaveLength(1)
+    expect(screen.getAllByRole('list', { name: 'Sections' })).toHaveLength(1)
+  })
+
   it('consolidates status, section count and structure identity into one header, with progress above the footer navigation', async () => {
     await shell()
 
@@ -496,9 +549,13 @@ describe('Workout — the active section header', () => {
 
     await jumpTo(user, 'Conditioning, not started')
 
-    const heading = screen.getByRole('heading', { level: 2, name: 'Conditioning' })
-    expect(heading).toHaveFocus()
-    // Round 7: the bar states the new position, the jump list the new current.
+    // TASK-027 (owner decision 2026-11-10, option a): the heading is visually
+    // hidden, so the jump lands on the opened section's first card.
+    expect(firstCard('Conditioning')).toHaveFocus()
+    expect(within(activeHeader('Conditioning')).getByText('Section 3 / 3 · Not started'))
+      .toBeInTheDocument()
+    // Round 7's base body of this title read the same moment: the bar states
+    // the new position, the jump list the new current.
     expect(jumpToggle()).toHaveTextContent('3 / 3')
     expect(
       within(sectionNavigation()).getByRole('button', { name: 'Conditioning, not started' }),
@@ -522,7 +579,8 @@ describe('Workout — the active section header', () => {
     await jumpTo(user, 'Primary lift, in progress')
 
     expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.getByRole('heading', { level: 2, name: 'Primary lift' })).toHaveFocus()
+    // TASK-027: the same section's first card, as for any jump.
+    expect(firstCard('Primary lift')).toHaveFocus()
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
   })
@@ -533,7 +591,9 @@ describe('Workout — the active section header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Previous' }))
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Warm-up' })).toHaveFocus()
+    // TASK-027: the heading is visually hidden; Previous lands on the
+    // opened section's first card, as a jump does.
+    expect(firstCard('Warm-up')).toHaveFocus()
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
@@ -545,7 +605,9 @@ describe('Workout — the active section header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Conditioning' })).toHaveFocus()
+    await screen.findByRole('heading', { level: 2, name: 'Conditioning' })
+    // TASK-027: Next lands on the opened section's first card, as a jump does.
+    expect(firstCard('Conditioning')).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Conditioning, not started' })).toHaveAttribute(
       'aria-current',
       'step',
@@ -1700,7 +1762,9 @@ describe('Workout — the session’s one rest', () => {
     const [bar] = restBars()
     expect(bar).toHaveAttribute('data-urgent', 'false')
     expect(bar).not.toHaveClass('clr-pulse-micro')
-    expect(bar).toHaveAttribute('data-loop', 'still')
+    // TASK-008: the rest's timer claims the loop only in its final five seconds.
+    expect(bar).not.toHaveAttribute('data-loop')
+    expect(restTimer()).not.toHaveAttribute('data-loop')
     expect(restBody()).not.toHaveClass('clr-chamfer--timer-low')
     expect(screen.queryByText('Final 10 seconds')).not.toBeInTheDocument()
   })
@@ -1713,23 +1777,13 @@ describe('Workout — the session’s one rest', () => {
 
     const [bar] = restBars()
     expect(restTimer()).toHaveTextContent('00:09')
-    // Low colour and the milestone for the final ten; no pulse or loop yet.
-    expect(restBody()).toHaveClass('clr-chamfer--timer-low')
-    expect(bar).toHaveAttribute('data-urgent', 'false')
-    expect(bar).not.toHaveClass('clr-pulse-micro')
-    expect(bar).toHaveAttribute('data-loop', 'still')
-    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
-    expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
-
-    // The final five: urgent, pulsing, the running loop, and one edge cue.
-    advance(5)
-    returnToForeground()
-    expect(restTimer()).toHaveTextContent('00:04')
     expect(bar).toHaveAttribute('data-urgent', 'true')
-    expect(bar).toHaveClass('clr-pulse-micro')
-    expect(bar).toHaveAttribute('data-loop', 'run')
+    // TASK-008 (C23, R133, R135): the colour at ten seconds is the colour alone
+    // — no stepped micro-pulse on the card, no breathe and no edge before five.
+    expect(bar).not.toHaveClass('clr-pulse-micro')
+    expect(restTimer()).not.toHaveAttribute('data-loop')
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
     expect(restBody()).toHaveClass('clr-chamfer--timer-low')
-    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
     // The milestone is the one thing that speaks; the timers stay labelled
     // and not live.
     expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
@@ -1747,7 +1801,21 @@ describe('Workout — the session’s one rest', () => {
     const session = screen.getByRole('timer', { name: 'Session time' })
     expect(session).not.toHaveClass('clr-chamfer--timer-low')
     expect(session.closest('.clr-pulse-micro')).toBeNull()
-    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+
+    // The final five, as Round 7's base body of this title read it: urgent, the
+    // rest's own warning running (on its timer), one edge cue, still low, and
+    // the milestone still the one thing that speaks.
+    advance(5)
+    returnToForeground()
+    expect(restTimer()).toHaveTextContent('00:04')
+    expect(bar).toHaveAttribute('data-urgent', 'true')
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
+    expect(restBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
+    expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
+    expect(bar.querySelector('.clr-glow')).toBeNull()
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
   })
 
   it.each(['skip', 'expiry'] as const)(
@@ -1759,7 +1827,8 @@ describe('Workout — the session’s one rest', () => {
         exercises: { definition: () => new Promise(() => {}) },
       })
       await logSet('back squat', 1)
-      advance(86)
+      // TASK-008 (C23, C61): the warning holds the loop in the rest's final five.
+      advance(85)
       returnToForeground()
 
       await user.click(screen.getByRole('button', { name: COACHING_PANEL }))
@@ -1770,14 +1839,17 @@ describe('Workout — the session’s one rest', () => {
       if (!wait) throw new Error('no coaching wait')
       expect(wait).toHaveAttribute('aria-busy', 'true')
 
-      // The urgent rest (final five) outranks the wait; the wait is stilled,
-      // not removed. The one running claim is the rest's pulse and its edge cue.
-      expect(restTimer()).toHaveTextContent('00:04')
-      expect(restBars()[0]).toHaveAttribute('data-loop', 'run')
+      // The urgent rest outranks the wait; the wait is stilled, not removed.
+      // What runs is the one warning: the rest's timer and its one aura.
+      expect(restTimer()).toHaveTextContent('00:05')
+      expect(restTimer()).toHaveAttribute('data-loop', 'run')
       expect(wait).toHaveAttribute('data-loop', 'still')
+      expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+        node === restTimer() || node.matches('[data-countdown-edge]'))).toBe(true)
+      expect(document.querySelectorAll('[data-countdown-edge]')).toHaveLength(1)
+      // Exactly those two, as Round 7's base body of this title read them.
       const edges = document.querySelectorAll('[data-countdown-edge]')
-      expect(edges).toHaveLength(1)
-      expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restBars()[0], edges[0]])
+      expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([restTimer(), edges[0]])
 
       // The visible wait must regain the loop; a closed dialog owns no hidden claim.
       if (ending === 'skip') {
@@ -1792,10 +1864,11 @@ describe('Workout — the session’s one rest', () => {
       expect(wait).toHaveAttribute('data-loop', 'run')
       expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
       expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+      expect(document.querySelector('[data-countdown-edge]')).toBeNull()
     },
   )
 
-  it('coordinates a low AMRAP window with the low session rest across navigation', async () => {
+  it('coordinates an urgent AMRAP window with the urgent session rest across navigation: one warning, one edge', async () => {
     const user = userEvent.setup()
     await shell({
       session: activeSession([
@@ -1813,34 +1886,25 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
     await logRound(1)
-    advance(56)
+    advance(55)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
 
-    // Both deadlines are in their final five seconds: both marked urgent.
-    const urgentOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
-    expect(urgentOwners).toHaveLength(2)
-    for (const owner of urgentOwners) {
-      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:04')
-    }
-    // Each pulses through its own loop claim, and only one of them runs.
-    const pulses = urgentOwners.map(
-      (owner) => (owner.matches('.clr-pulse-micro[data-loop]') ? owner : owner.querySelector('.clr-pulse-micro[data-loop]')) as HTMLElement,
-    )
-    expect(pulses.every((pulse) => pulse !== null)).toBe(true)
-    expect(pulses.map((pulse) => pulse.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
-    // The several countdowns share one edge cue, carrying the winner's loop.
+    const urgentTimers = Array.from(document.querySelectorAll('[role="timer"][data-urgent="true"]'))
+    expect(urgentTimers).toHaveLength(2)
+    expect(urgentTimers.map((timer) => timer.getAttribute('data-loop'))).toEqual(['run', 'run'])
+    for (const timer of urgentTimers) expect(timer).toHaveTextContent('00:05')
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
     const edges = document.querySelectorAll('[data-countdown-edge]')
     expect(edges).toHaveLength(1)
-    const winner = pulses.find((pulse) => pulse.getAttribute('data-loop') === 'run')
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([winner, edges[0]].sort(
-      (a, b) => (a!.compareDocumentPosition(b!) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
-    ))
+    expect(edges[0]).toHaveAttribute('data-loop', 'run')
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      urgentTimers.includes(node) || node === edges[0])).toBe(true)
     expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
-    expect(restTimer()).toHaveTextContent('00:04')
+    expect(restTimer()).toHaveTextContent('00:05')
   })
 
-  it('coordinates a low Circuit round rest with the low session rest across navigation', async () => {
+  it('coordinates an urgent Circuit round rest with the urgent session rest across navigation: one warning, one edge', async () => {
     const user = userEvent.setup()
     await shell({
       session: activeSession([
@@ -1864,31 +1928,22 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
     await logRound(1)
-    advance(56)
+    advance(55)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
 
-    // Both deadlines are in their final five seconds: both marked urgent.
-    const urgentOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
-    expect(urgentOwners).toHaveLength(2)
-    for (const owner of urgentOwners) {
-      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:04')
-    }
-    // Each pulses through its own loop claim, and only one of them runs.
-    const pulses = urgentOwners.map(
-      (owner) => (owner.matches('.clr-pulse-micro[data-loop]') ? owner : owner.querySelector('.clr-pulse-micro[data-loop]')) as HTMLElement,
-    )
-    expect(pulses.every((pulse) => pulse !== null)).toBe(true)
-    expect(pulses.map((pulse) => pulse.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
-    // The several countdowns share one edge cue, carrying the winner's loop.
+    const urgentTimers = Array.from(document.querySelectorAll('[role="timer"][data-urgent="true"]'))
+    expect(urgentTimers).toHaveLength(2)
+    expect(urgentTimers.map((timer) => timer.getAttribute('data-loop'))).toEqual(['run', 'run'])
+    for (const timer of urgentTimers) expect(timer).toHaveTextContent('00:05')
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
     const edges = document.querySelectorAll('[data-countdown-edge]')
     expect(edges).toHaveLength(1)
-    const winner = pulses.find((pulse) => pulse.getAttribute('data-loop') === 'run')
-    expect(Array.from(document.querySelectorAll('[data-loop="run"]'))).toEqual([winner, edges[0]].sort(
-      (a, b) => (a!.compareDocumentPosition(b!) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
-    ))
+    expect(edges[0]).toHaveAttribute('data-loop', 'run')
+    expect([...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      urgentTimers.includes(node) || node === edges[0])).toBe(true)
     expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
-    expect(restTimer()).toHaveTextContent('00:04')
+    expect(restTimer()).toHaveTextContent('00:05')
   })
 
   it('groups coaching inside its own card, with every label inside the group', async () => {
@@ -1918,7 +1973,9 @@ describe('Workout — the session’s one rest', () => {
     expect(restTimer()).toHaveTextContent('00:05')
     expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
     expect(restBody()).toHaveClass('clr-chamfer--timer-low')
-    expect(bar).toHaveAttribute('data-loop', 'still')
+    // TASK-008 (C22): the urgent timer and its one aura stay drawn, still at .5.
+    expect(restTimer()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-countdown-edge]')).toHaveAttribute('data-loop', 'still')
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(0)
   })
 
@@ -1987,5 +2044,7 @@ describe('Workout — the session’s one rest', () => {
     expect(double.abandoned()).toEqual([FIXTURE_SESSION_ID])
     expect(restBars()).toEqual([])
     expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
+    // TASK-008 (C24): the urgent rest's aura is cleaned up with it.
+    expect(document.querySelector('[data-countdown-edge]')).toBeNull()
   })
 })

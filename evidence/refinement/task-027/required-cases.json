@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-027",
-  "description": "Compact live navigator preserves section access (REQ-027; C54, G22; R35, R98; AC-C54-01, AC-R027-01; JOURNEY-027). On the real /workout route the live section header is the accepted compact navigator (SectionHeader compact in src/ui/workout-chrome.tsx; reference eded158cfd928d382c9a9409e2c372270312741d, /gallery/refinements?state=cards): All sections with the N / M position over the collapsible, status-bearing jump list, with no section card, visible title, status line or Structures in this section badge list repeating the active card's identity. The section's level-two heading and its Section N / M · status reading stay for assistive technology, visually hidden; the trigger keeps the one name All sections. A jump from the list moves focus to the opened section's first card (owner decision 2026-11-10, option a); Previous and Next keep focusing the section heading. A jump records, corrects, clears and completes nothing, moves no section status and does not reset the session clock or a logged set. The gallery state ?state=cards draws the same consumer before its live cards over a memory-only position. check-01 proves the component, the real route over in-memory doubles and the gallery in jsdom; check-02 proves the route in the browser at 320 and 390 with a contained synthetic started session, touch, keyboard, reduced motion, a failed read and its retry and a reload, and the gallery state. Every declared case must execute and pass.",
+  "description": "Compact live navigator preserves section access (REQ-027; C54, G22; R35, R98; AC-C54-01, AC-R027-01; JOURNEY-027). A3 TASK-108 (round 07; decision 2) carries it onto Round 7's compact SectionHeader bar (src/ui/workout-chrome.tsx): All sections with the N / M position over the collapsible, status-bearing jump list, with no section card, visible title, status line or structure badges; the section's name is each block's own MovementGroupHeader heading, so the navigator draws no second heading, and its Section N / M · status reading is visually hidden for assistive technology; the trigger keeps the one name All sections. Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading (src/app/Workout.tsx). A jump records, corrects, clears and completes nothing, moves no section status and does not reset the session clock or a logged set. check-01 proves the component, the real route over in-memory doubles and the accepted gallery's navigator specimen (GallerySectionHeader) in jsdom; check-02 proves the route in the browser at 320 and 390 with a contained synthetic started session, touch, keyboard, reduced motion, a failed read and its retry and a reload, and the gallery specimen. Every declared case must execute and pass.",
   "checks": {
     "check-01": {
       "runner": "vitest",
@@ -32,7 +32,7 @@
         },
         {
           "file": "src/ui/workout-chrome.test.tsx",
-          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery state ?state=cards draws the route’s own compact navigator before the live cards, jumping a memory-only position with nothing read or written",
+          "name": "TASK-027 compact live navigator preserves section access > AC-C54-01 the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader, jumping a memory-only position with nothing read or written",
           "criterion": "AC-C54-01"
         }
       ]
@@ -71,7 +71,7 @@
         {
           "file": "e2e/refinement/task-027.spec.ts",
           "project": "mobile",
-          "name": "TASK-027 compact live navigator preserves section access > gallery cards phone-320: the accepted state draws the route’s own compact navigator before the live cards and jumps a memory-only position, with nothing read or written",
+          "name": "TASK-027 compact live navigator preserves section access > gallery navigator specimen phone-320: the accepted gallery’s compact navigator specimen draws the route’s own SectionHeader and jumps a memory-only position, with nothing read or written",
           "criterion": "AC-C54-01"
         }
       ]

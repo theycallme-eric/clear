@@ -48,6 +48,7 @@ import {
   FOR_TIME_START,
   type ForTimeView,
 } from '../state/for-time'
+import { NO_DEADLINE, raceCapDeadline } from '../state/countdown-urgency'
 import { exerciseName, prescriptionText } from '../state/prescription'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -156,7 +157,7 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
  * moving.
  */
 function ForTimeClock({ view }: { view: ForTimeView }) {
-  const urgency = useCountdownUrgency(view.phase === 'running' ? view.remainingSeconds : null, view.phase === 'running')
+  const urgency = useCountdownUrgency(view.phase === 'running' ? raceCapDeadline(view) : NO_DEADLINE)
   const low = urgency.low || view.phase === 'capped'
   const loop = urgency.loop
 

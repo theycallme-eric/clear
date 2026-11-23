@@ -167,6 +167,7 @@ import { initialTimedResultDraft, receiptFromRecorded, timedShellOutcome, timedS
 import { AmrapComparison } from './amrap-block'
 import { SET_EFFORT_CHOICES } from './set-effort'
 import { useCountdownUrgency } from './countdown-urgency'
+import { amrapWindowDeadline, emomMinuteDeadline, NO_DEADLINE, raceCapDeadline } from '../state/countdown-urgency'
 import '../styles/timed-workout.css'
 
 /**
@@ -482,8 +483,13 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const clockSeconds = format === 'emom' ? ended ? 0 : minute.secondsRemaining
     : format === 'amrap' ? view.remaining ?? view.elapsed : view.elapsed
   // A schedule's interval countdown carries its own warning (`LadderBlock.IntervalCountdown`).
-  const urgency = useCountdownUrgency(view.phase === 'ready' || ended || schedule !== null ? null
-    : format === 'emom' ? minute.secondsRemaining : view.remaining, view.phase === 'running')
+  // A3 TASK-108 (TASK-008): each format's clock warns on its own deadline,
+  // through its adapter — an EMOM's minute, an AMRAP's window, a race toward
+  // its cap (For Time and the raced ladder) — held while paused, none once ended.
+  const urgency = useCountdownUrgency(ended || schedule !== null ? NO_DEADLINE
+    : format === 'emom' ? emomMinuteDeadline({ phase: minute.phase, paused: view.phase === 'paused', secondsRemaining: minute.secondsRemaining })
+    : format === 'amrap' ? amrapWindowDeadline({ phase: view.phase === 'running' || view.phase === 'paused' ? view.phase : view.phase === 'ready' ? 'ready' : 'complete', capSeconds: cap, remainingSeconds: view.remaining ?? 0 })
+    : raceCapDeadline({ phase: view.phase, remainingSeconds: view.remaining }))
   // A schedule's line is its timing's own (`timingSummary`): its rounds and its interval, no cap.
   const summary = schedule !== null ? timingSummary(schedule, block.timerSeconds) : format === 'ladder'
     ? `${rungs.length} rounds${cap === null ? '' : ` · ${formatElapsed(cap)} cap`}`

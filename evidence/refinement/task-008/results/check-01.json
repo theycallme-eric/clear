@@ -16,7 +16,7 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-008/required-cases.json",
-    "sha256": "8ab5a84b65898841385f556caf15f3c08f4875992a14224399e1a67adde77d96"
+    "sha256": "9378ebe9d6984d4783815f84a1d3457d4bfe638cc930cf201acbab6428ddd275"
   },
   "targets": [
     {
@@ -25,7 +25,7 @@
     },
     {
       "path": "src/ui/countdown-urgency.test.tsx",
-      "sha256": "620e67fee61dbfb45b46a2052758a203ff4326a0caa599f7bfb4d4e8bc773e70"
+      "sha256": "0c4b46a50b4cff3fac38635d860780dde13218e34945f5054236eb17a6d7761c"
     }
   ],
   "requiredCases": [
@@ -91,7 +91,7 @@
     },
     {
       "file": "src/ui/countdown-urgency.test.tsx",
-      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the shared owner: held at 10 and 5, run into its last five, as a count-up cap, under an open native log with one aura in phase, and still",
+      "name": "TASK-008 recovered smooth synchronized countdown warning > AC-R008-02 the urgency gallery state draws the warning through the route’s own flow: an EMOM minute at 10 and at 5 with one aura, a count-up race warning on its cap, held on pause, and a race far from its cap neutral",
       "status": "passed"
     }
   ],

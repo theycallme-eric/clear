@@ -1,0 +1,369 @@
+{
+  "schema": "clear-task-108-parity/v1",
+  "task": "TASK-108",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "urgency",
+  "width": 320,
+  "route": "/workout",
+  "captures": {
+    "gallery:emom-10": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-10-phone-320-gallery.png",
+      "sha256": "980d79886ded36de0699df2567541abf233ec560e3f6cda0d7527598619743a3"
+    },
+    "route:emom-10": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-10-phone-320-route.png",
+      "sha256": "993399810612f6f28c4469da03deb24560db142bd935ca3e4517cb975dc50d92"
+    },
+    "gallery:emom-5": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-5-phone-320-gallery.png",
+      "sha256": "21dda2a2db027b39473eaa5e83caf8a9c50d6d24b3042f19177244f0064377ee"
+    },
+    "route:emom-5": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-5-phone-320-route.png",
+      "sha256": "693c0abc5f4339b64e1c40c267fff438bb0dab7a1a9380f8bebe58429da116a7"
+    },
+    "gallery:for-time-5": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-for-time-5-phone-320-gallery.png",
+      "sha256": "4359d151afa4cb56fd42cd48a0dec2a98ed99486fa714a71c30367978701bb39"
+    },
+    "route:for-time-5": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-for-time-5-phone-320-route.png",
+      "sha256": "5305694599d2253e7da4c535b1312d6c1bd5f6e94ba2ac3531cc59a1357c0971"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "emom-10": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "1",
+        "0",
+        "Minute 1 of 10. 10 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "emom-5": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "0",
+        "5",
+        "Minute 1 of 10. 5 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "for-time-5": [
+        "ELAPSED",
+        "1",
+        "4",
+        ":",
+        "5",
+        "5",
+        "Elapsed. 14 minutes 55 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "PAUSE",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ]
+    },
+    "route": {
+      "emom-10": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "1",
+        "0",
+        "Minute 1 of 10. 10 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "emom-5": [
+        "MINUTE 1 OF 10",
+        "0",
+        "0",
+        ":",
+        "0",
+        "5",
+        "Minute 1 of 10. 5 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "NOW",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "PAUSE",
+        "FINISH EARLY",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "for-time-5": [
+        "ELAPSED",
+        "1",
+        "4",
+        ":",
+        "5",
+        "5",
+        "Elapsed. 14 minutes 55 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "PAUSE",
+        "FINISH",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ]
+    }
+  },
+  "warnings": {
+    "gallery": {
+      "emom-10": {
+        "edges": 0,
+        "breathing": [],
+        "low": [
+          "EMOM time"
+        ],
+        "microPulse": 0
+      },
+      "emom-5": {
+        "edges": 1,
+        "breathing": [
+          "EMOM time"
+        ],
+        "low": [
+          "EMOM time"
+        ],
+        "microPulse": 0
+      },
+      "for-time-5": {
+        "edges": 1,
+        "breathing": [
+          "FOR TIME time"
+        ],
+        "low": [
+          "FOR TIME time"
+        ],
+        "microPulse": 0
+      }
+    },
+    "route": {
+      "emom-10": {
+        "edges": 0,
+        "breathing": [],
+        "low": [
+          "EMOM time"
+        ],
+        "microPulse": 0
+      },
+      "emom-5": {
+        "edges": 1,
+        "breathing": [
+          "EMOM time"
+        ],
+        "low": [
+          "EMOM time"
+        ],
+        "microPulse": 0
+      },
+      "for-time-5": {
+        "edges": 1,
+        "breathing": [
+          "FOR TIME time"
+        ],
+        "low": [
+          "EMOM time",
+          "FOR TIME time"
+        ],
+        "microPulse": 0
+      }
+    }
+  },
+  "differences": {
+    "emom-10": [],
+    "emom-5": [],
+    "for-time-5": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "emom-10": 64,
+        "emom-5": 64,
+        "for-time-5": 63
+      },
+      "route": {
+        "emom-10": 64,
+        "emom-5": 64,
+        "for-time-5": 63
+      }
+    },
+    "parts": {
+      "gallery": {
+        "emom-10": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "emom-5": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "for-time-5": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 381
+        }
+      },
+      "route": {
+        "emom-10": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "emom-5": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 421
+        },
+        "for-time-5": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 381
+        }
+      }
+    },
+    "differences": {
+      "emom-10": [],
+      "emom-5": [],
+      "for-time-5": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/countdown-urgency.tsx",
+      "criterion": "AC-R008-02",
+      "change": "Every urgent timer and the one aura share one warning loop and one phase: each urgent clock claims the view's one urgent loop, every urgent timer breathes while any claim runs (bec4454 stilled a second urgent timer), the first draws the one edge, and each new breathe is pinned to the document timeline's epoch. Fed by each clock's deadline adapter."
+    },
+    {
+      "file": "src/ui/countdown-urgency.css",
+      "criterion": "AC-R008-01",
+      "change": "The urgent timer breathes on the edge's own rule — the same keyframes, 1.5 s period and easing (.2/.8/.2), a steady .5 when still or under reduced motion — in place of the shipped four-second stepped micro-pulse on the timer. The urgency state's urgent clock breathes with its edge; under reduced motion both hold .5."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "TimerFrame carries the breathe on its `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, the warning loop) in place of `clr-pulse-micro` on its wrapper; CountdownBar and RestTimerBar read the rest's deadline (`restDeadline`): the low colour, the fill's colour and \"Final 10 seconds\" from ten seconds, the breathe on the rest's timer (not the card) and the edge from five."
+    },
+    {
+      "file": "src/ui/workout-chrome.tsx",
+      "criterion": "TASK-AC-A5D62CC0272B",
+      "change": "The compact SectionHeader reads \"Section N / M · status\" to assistive technology, visually hidden, and its visible \"N / M\" is decoration of the trigger (`aria-hidden`), so the trigger's one name is \"All sections\". Nothing drawn changes."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "Each format clock's warning reads its adapter (EMOM minute, AMRAP window, race cap): held while paused, none once ended. The low colour at ten and the edge at five are as before; the breathe is the change above."
+    },
+    {
+      "file": "src/ui/circuit-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "The circuit's round rest is one whole TimerFrame (the app's Card in the timer role) fed by `circuitRestDeadline`, in place of the package's TimerDisplay whose stepped micro-pulse ran through the last ten seconds. No state compared here draws a circuit; the circuit-round state shows it in the same commit."
+    },
+    {
+      "file": "src/ui/ladder-block.tsx",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "change": "A scheduled ladder's interval countdown is one whole TimerFrame fed by `scheduleIntervalDeadline`. No accepted state draws a schedule."
+    },
+    {
+      "file": "src/ui/movement-countdown.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The movement countdown reads `movementCountdownDeadline`; its warning is unchanged but for the breathe above."
+    },
+    {
+      "file": "src/ui/timer-display.tsx",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "CountdownDisplay takes an optional deadline from its consumer; its drawing is unchanged (the route no longer draws it)."
+    },
+    {
+      "file": "src/state/countdown-urgency.ts",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "change": "The adapters read only the fields of a view they need, so the route's flow feeds its attempt through them. Nothing drawn changes."
+    },
+    {
+      "file": "src/app/Workout.tsx",
+      "criterion": "TASK-AC-DCFC4C79B85A",
+      "change": "Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading. Not a gallery state."
+    },
+    {
+      "file": "src/ui/workout-navigation.css",
+      "criterion": "TASK-AC-8E1E91D4F4AA",
+      "change": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    }
+  ]
+}
