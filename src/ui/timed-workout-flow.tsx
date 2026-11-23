@@ -105,6 +105,36 @@
  *     the forward action restates it. The draft — counts, answer, face, notes
  *     — survives closing and reopening the log and a failed save.
  *
+ * A3 TASK-117 (F3; TASK-011, TASK-015, TASK-046, TASK-047, TASK-048) wires the
+ * EMOM's end log and every family's per-movement entries through the same
+ * dialog:
+ *
+ *   · **the EMOM's end log** (C31, C32; R40, R43, R84): once the schedule has
+ *     run, or was finished early, the one "Log results" dialog holds
+ *     `TimedResultLog`'s EMOM family — no minutes counter, no completion
+ *     question, each loaded movement's actual load (no amount: the schedule is
+ *     assumed), the effort faces and the notes, where an exception is written.
+ *     The note is saved as the block's notes through the shell's one
+ *     completion path; `minutes_completed` stays null and the clock's record is
+ *     never rewritten by it. While the block's own rest window runs, the clock
+ *     says so (`· Rest`) beside its minute, and the next minute's movement is
+ *     marked Next; Round 7 still draws no Not started or Work caption;
+ *   · **per-movement entries** (C37; TASK-AC-339D1096F660): each movement's
+ *     next-round amount and actual load are written onto the attempt's own
+ *     record as typed (`writeTimedMovements`: the AMRAP's, the For Time's and
+ *     the EMOM's, whose entries are loads only; the ladder's are its durable
+ *     draft's) and restored with it, so a reload brings them back; the log
+ *     clears the amounts when the round count or the answer moves the round,
+ *     and keeps the loads;
+ *   · **save authority for the EMOM** (TASK-AC-D58939F8E091): as for the AMRAP
+ *     and For Time — a refused save is kept on the EMOM's record, a known row
+ *     while this attempt's own richer save had failed reopens the block, and
+ *     the saved row is read back ahead of the local echo;
+ *   · **the one Log results action** (TASK-046): every family's card offers it
+ *     once its attempt has ended, says whether its dialog is open
+ *     (`aria-expanded`), and the draft survives closing, reopening and a
+ *     failed save.
+ *
  * Neither Finish nor Undo completes or leaves the workout. In the gallery the
  * same attempt lives in memory only.
  */
@@ -119,7 +149,7 @@ import { exerciseName, modalityLabel, targetText } from '../state/prescription'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import { SetLoggingContext } from '../state/set-logging'
 import { activeSeconds, EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptFromClock, timedAttemptView, type TimedAttempt } from '../state/timed-attempt'
-import { readTimedAttempt, recordTimedAction, writeForTimeAnswer, writeTimedCounts, writeTimedSaveFailed } from '../state/timed-attempt-records'
+import { readTimedAttempt, recordTimedAction, writeForTimeAnswer, writeTimedCounts, writeTimedMovements, writeTimedSaveFailed } from '../state/timed-attempt-records'
 import { finishLabel, type TimedLifecyclePhase } from '../state/timed-lifecycle'
 import { defaultShellStorage, usePersistedLadder } from '../state/workout-persistence'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
@@ -234,8 +264,10 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   })
   const cap = isLadder ? ladder.attempt.originalCapSeconds : timing?.mode === 'capped_window' ? timing.cap_seconds : block.timerSeconds
   const [restored] = useState(() => recordFormat === null ? null : readTimedAttempt(scope, recordFormat, block))
-  // A3 TASK-116: an AMRAP's and a For Time's save authority, kept on their own records.
-  const savesOnRecord = format === 'amrap' || format === 'for_time'
+  // A3 TASK-116: an AMRAP's and a For Time's save authority, kept on their own records (A3 TASK-117: and an EMOM's).
+  const savesOnRecord = recordFormat !== null
+  // A3 TASK-117 (TASK-AC-339D1096F660): the per-movement entries the attempt's record kept, as typed.
+  const [storedEntries] = useState<TimedResultDraft['measurements']>(() => ({ ...(restored?.movements ?? {}) }))
   // A3 TASK-116 (TASK-010): a For Time race's answer to "Work completed", once the athlete gives it.
   const [answer, setAnswer] = useState<boolean | null>(() => restored?.answer ?? null)
   const [recordSaveFailed, setRecordSaveFailed] = useState(() => restored?.saveFailed ?? false)
@@ -245,7 +277,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const [resultDraft, setResultDraft] = useState<TimedResultDraft | null>(() => {
     const counts = restored?.counts
     if (!counts || (counts.roundsCompleted === null && counts.partialRoundReps === null)) return null
-    return { ...initialTimedResultDraft('amrap', false, 0), count: counts.roundsCompleted, partialReps: counts.partialRoundReps }
+    return { ...initialTimedResultDraft('amrap', false, 0), count: counts.roundsCompleted, partialReps: counts.partialRoundReps, measurements: storedEntries }
   })
   const [editing, setEditing] = useState(false)
   // An attempt that had already ended before this mount does not reopen its log on arrival.
@@ -280,12 +312,17 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
       setAnswer(next.completed)
       writeForTimeAnswer(storage, block, next.completed)
     }
+    // A3 TASK-117: the typed entries go onto the attempt's own record as they change (the log already cleared any
+    // amount a moved round no longer owns); a correction of a saved log keeps them until it saves.
+    if (recordFormat !== null && !editing && next.measurements !== shown.measurements) {
+      writeTimedMovements(storage, recordFormat, block, next.measurements)
+    }
   }
-  /** A3 TASK-116: a refused save of an AMRAP's or For Time's log, or one that has since landed, noted on its record. */
+  /** A3 TASK-116: a refused save of an AMRAP's or For Time's log (A3 TASK-117: or an EMOM's), or one that has since landed, noted on its record. */
   const noteSaveFailed = (failed: boolean) => {
-    if (format !== 'amrap' && format !== 'for_time') return
+    if (recordFormat === null) return
     setRecordSaveFailed(failed)
-    writeTimedSaveFailed(storage, format, block, failed)
+    writeTimedSaveFailed(storage, recordFormat, block, failed)
   }
   const adjustedStart = attempt.startedAt === null ? null : new Date(attempt.startedAt + attempt.pausedMs).toISOString()
   const elapsed = activeSeconds(attempt, now())
@@ -331,8 +368,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   // Incomplete — and the athlete's own answer wins; with no cap, no claim.
   const askCompletion = format !== 'for_time' || cap !== null
   const startDraft: TimedResultDraft = format === 'for_time'
-    ? { ...initialTimedResultDraft('for_time', false, 0), completed: !ended || cap === null ? null : answer ?? view.phase === 'finished' }
-    : initialTimedResultDraft(format, view.phase === 'finished', rungs.length)
+    ? { ...initialTimedResultDraft('for_time', false, 0), completed: !ended || cap === null ? null : answer ?? view.phase === 'finished', measurements: storedEntries }
+    : { ...initialTimedResultDraft(format, view.phase === 'finished', rungs.length), measurements: storedEntries }
   /** The ladder's log draft: the durable draft while unsaved, the correction while a saved log is edited. */
   const ladderShown = logDraftOfLadder(ladderView.draft, ended && ladderView.editable)
   const ladderDraftChange = (next: TimedResultDraft) => {
@@ -439,7 +476,8 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
   const caption = view.phase === 'paused' ? 'Paused' : view.phase === 'capped'
     ? format === 'for_time' || format === 'ladder' ? 'Cap reached' : 'Time complete'
     : view.phase === 'finished' ? endedEarly && shape.minutes !== null ? 'Finished early' : 'Finished'
-    : format === 'emom' ? `Minute ${minute.minute} of ${shape.minutes ?? '—'}`
+    // A3 TASK-117 (TASK-011, AC-R011-01): the block's own rest window inside the minute keeps its word beside the minute.
+    : format === 'emom' ? `Minute ${minute.minute} of ${shape.minutes ?? '—'}${minute.phase === 'rest' ? ' · Rest' : ''}`
     : format === 'for_time' || format === 'ladder' ? 'Elapsed' : 'Remaining'
   const clockSeconds = format === 'emom' ? ended ? 0 : minute.secondsRemaining
     : format === 'amrap' ? view.remaining ?? view.elapsed : view.elapsed
@@ -532,7 +570,7 @@ export function TimedWorkoutFlow({ block, format, now = Date.now }: { block: Blo
         {view.phase === 'running' && format === 'amrap' && <p className="clr-timed-meta">Log when complete</p>}
         {showLog && !sheet && <div ref={logHost}>{log}</div>}
         {showLog && sheet && <>
-          <div className="clr-timed-actions"><Button variant="primary" onClick={() => setLogOpen(true)}>Log results</Button>
+          <div className="clr-timed-actions"><Button variant="primary" aria-expanded={logOpen} onClick={() => setLogOpen(true)}>Log results</Button>
             {canUndoFinish && <Button variant="secondary" onClick={undoFinish}>Resume ladder</Button>}</div>
           <LoggingOverlay title="Log results" open={logOpen} onClose={() => setLogOpen(false)}>
             {log}

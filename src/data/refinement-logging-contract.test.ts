@@ -18,10 +18,23 @@
  *   · **Boundary.** Categorical effort never becomes the legacy 1–10 number,
  *     the reasons a timed partial cannot reuse a set log, and the proposed
  *     per-movement identities derived from the blocks' real outcomes.
+ *
+ * A3 TASK-117 (F3; TASK-AC-A1C737BDC2FB) re-verifies the `timed-entry` row
+ * against the wired behaviour, not only its export: the route's own timed
+ * entry (`BlockSlot` under the product presentation → Round 7's
+ * `TimedWorkoutFlow` → `TimedResultLog` in the one "Log results" dialog) is
+ * driven for all four families, and the case checks the fields the row's
+ * rules state, its null/zero rules, each family's own draft owner, and the
+ * rows the shell's one completion path builds from what Save log hands it
+ * (`timedDraftFromReport` → `timedResultRequest`, as
+ * `BlockCompletionProvider` builds them).
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { act, cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { createElement } from 'react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Constants } from './database.types'
 import type { AuthSession } from './auth'
@@ -41,18 +54,28 @@ import {
   type SourceRef,
 } from './refinement-logging-contract'
 import { amrapOutcome, amrapView, type AmrapState } from '../state/amrap'
-import { blockResultInsert, isPerceivedEffort, type BlockCompletion } from '../state/block-completion'
+import {
+  blockResultInsert,
+  BlockCompletionContext,
+  isPerceivedEffort,
+  type BlockCompletion,
+  type BlockCompletionApi,
+  type BlockOutcome,
+  type TimedResultReport,
+} from '../state/block-completion'
 import { conditioningTrend, likeForLike, type ConditioningSectionRead } from '../state/conditioning'
 import { d5MissedReps } from '../state/deload'
-import { ErrorCode, ok, type Result } from '../state/errors'
+import { ErrorCode, isErr, ok, type Result } from '../state/errors'
 import { forTimeOutcome, forTimeView, type ForTimeState } from '../state/for-time'
 import { ladderRungs } from '../state/ladder'
 import { moodStep } from '../state/mood'
 import { sessionDebriefSchema, setEffortSchema, type SessionSnapshot, type WorkoutExerciseRow } from '../state/schemas'
 import { sessionDetail, type SessionDetailView } from '../state/session-detail'
 import { setObservationMutation } from '../state/set-observation-mutation'
-import { sessionProgress } from '../state/workout-progress'
-import { isRecordedEffort, loggedSetFromRow, setLogViolation, type SetLogEntry } from '../state/set-logging'
+import { readAmrapState, readEmomState, readForTimeState } from '../state/workout-persistence'
+import { sessionProgress, type BlockProgress } from '../state/workout-progress'
+import { timedDraftFromReport, timedResultRequest } from '../state/timed-results'
+import { isRecordedEffort, loggedSetFromRow, SetLoggingContext, setLogViolation, type SetLogEntry, type SetLoggingApi } from '../state/set-logging'
 import {
   BLOCK_MOVEMENT_RESULT_COLUMNS,
   BLOCK_RESULT_COLUMNS,
@@ -64,6 +87,11 @@ import {
   createLoggingDouble,
   type LoggingDouble,
 } from '../test/logging-contract-double'
+import { emomEndLogAcceptance, emomEndLogBlock, emomEndLogSnapshot } from '../test/emom-end-log-fixture'
+import { timedActualsAcceptance, timedActualsBlocks, timedActualsSnapshot } from '../test/timed-actuals-fixture'
+import { BlockSlot } from '../ui/block-renderers'
+import { PRODUCT_PRESENTATION } from '../ui/product-presentation'
+import { WorkoutExperiencePresentationProvider } from '../ui/workout-experience-presentation'
 import { fixtureId, snapshotFixture } from '../test/workout-double'
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..')
@@ -992,4 +1020,221 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
     const [sent] = double.requests[0].body as Record<string, unknown>[]
     expect(Object.keys(sent)).not.toContain('effort')
   })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A3 TASK-117 — the timed-entry row, re-verified on the wired timed entry
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TIMED_ENTRY_TIMEOUT_MS = 30_000
+const TIMED_ENTRY_AT = Date.parse('2026-11-20T09:00:00.000Z')
+
+/** What Round 7's Save log handed the shell's one completion path (`saveTimedLog`). */
+interface HandedSave { readonly blockId: string; readonly outcome: BlockOutcome; readonly report: TimedResultReport }
+
+/**
+ * One timed block as the route draws it — `BlockSlot` under the product
+ * presentation, the profile's unit read — inside a completion seam that names
+ * its session (so the route's own storage keeps each family's draft) and
+ * records what Save log hands the shell.
+ */
+function mountTimedEntry(block: BlockProgress) {
+  const saves: HandedSave[] = []
+  const api: BlockCompletionApi = {
+    reportOutcome: () => undefined,
+    reportTimedResult: () => undefined,
+    isBlockRecorded: () => false,
+    sessionId: 'session-task-117-contract',
+    recordedResult: () => null,
+    saveTimedLog: async (blockId, outcome, report) => {
+      saves.push({ blockId, outcome, report })
+      return ok(null)
+    },
+  }
+  render(createElement(WorkoutExperiencePresentationProvider, {
+    value: PRODUCT_PRESENTATION,
+    children: createElement(SetLoggingContext, { value: { weightUnit: 'kg' } as unknown as SetLoggingApi },
+      createElement(BlockCompletionContext, { value: api }, createElement(BlockSlot, { block }))),
+  }))
+  return saves
+}
+
+/** The open log's number fields, by accessible name, in order. */
+function entryFields(): string[] {
+  const form = document.querySelector<HTMLElement>('dialog[open] form.clr-timed-log')
+  if (form === null) throw new Error('no open timed log')
+  return within(form).queryAllByRole('spinbutton').map((field) => field.getAttribute('aria-label') ?? '')
+}
+
+function entryField(name: string): HTMLElement {
+  return within(document.querySelector<HTMLElement>('dialog[open] form.clr-timed-log')!).getByRole('spinbutton', { name })
+}
+
+/** The rows the shell's one completion path builds from what Save log handed it, as `BlockCompletionProvider` builds them. */
+function shellRequest(block: BlockProgress, save: HandedSave) {
+  const rowIds = Object.fromEntries(block.exercises.map((exercise, index) => [exercise.exerciseId, `00000000-0000-4000-8000-0000000117${String(index).padStart(2, '0')}`]))
+  const request = timedResultRequest(timedDraftFromReport(save.blockId, save.outcome, save.report, rowIds), {
+    block: { id: block.blockId, rounds: block.rounds },
+    movements: block.exercises.map((exercise) => exercise.prescription),
+    ...(save.report.rungCount === undefined ? {} : { rungCount: save.report.rungCount }),
+    weightUnit: 'kg',
+  })
+  if (isErr(request)) throw new Error(`refused: ${JSON.stringify(request.error.details)}`)
+  return request.value
+}
+
+/** Each movement row the request writes, by movement: its round, its measured column and its load. */
+function writtenRows(block: BlockProgress, save: HandedSave) {
+  return Object.fromEntries(shellRequest(block, save).movements.map(({ workoutExerciseId, row }) => [workoutExerciseId, row === null ? null : {
+    round_number: row.round_number, actual_reps: row.actual_reps, actual_duration_seconds: row.actual_duration_seconds,
+    actual_distance: row.actual_distance, weight: row.weight, weight_unit: row.weight_unit,
+  }]))
+}
+
+describe('A3 TASK-117 the timed-entry contract row on the wired timed entry', () => {
+  afterEach(() => {
+    cleanup()
+    vi.restoreAllMocks()
+    localStorage.clear()
+  })
+
+  it('TASK-AC-A1C737BDC2FB timed-entry holds on Round 7’s wired entry for all four families: the fields its rules state, blank unrecorded and 0 kept, the entries on each family’s own draft owner, and the shell’s one completion path building the rows', async () => {
+    let now = TIMED_ENTRY_AT
+    vi.spyOn(Date, 'now').mockImplementation(() => now)
+    const pass = (seconds: number) => {
+      now += seconds * 1000
+      act(() => { window.dispatchEvent(new Event('focus')) })
+    }
+    const user = userEvent.setup()
+
+    // The row and the code it names: Round 7's TimedResultLog, drawn by the
+    // route's TimedWorkoutFlow, reading the very rules the row's basis states.
+    const row = PROPOSED_PATHS.find((path) => path.id === 'timed-entry')!
+    expect(row).toMatchObject({ kind: 'draft', owner: 'TASK-015', ref: { module: 'src/ui/timed-result-log.tsx', name: 'TimedResultLog' } })
+    for (const rule of ['partialRoundFor', 'loadApplies', 'movementActualFromDraft']) expect(row.basis).toContain(rule)
+    const log = read('src/ui/timed-result-log.tsx')
+    expect(log).toMatch(/from '\.\.\/data\/refinement-logging-rules'/)
+    for (const rule of ['partialRoundFor', 'loadApplies', 'movementActualFromDraft', 'movementAmountMax', 'draftsAfterProgressChange']) {
+      expect(log, rule).toMatch(new RegExp(`\\b${rule}\\(`))
+    }
+    expect(read('src/ui/timed-workout-flow.tsx')).toMatch(/import \{ TimedResultLog,[^}]*\} from '\.\/timed-result-log'/)
+    expect(read('src/ui/block-renderers.tsx')).toMatch(/TimedWorkoutFlow/)
+
+    const snapshot = timedActualsSnapshot(timedActualsAcceptance(), { userId: USER_ID, startedAt: new Date(TIMED_ENTRY_AT - 60_000).toISOString() })
+    const { amrap, forTime, ladder, race } = timedActualsBlocks(snapshot)
+
+    // AMRAP (partialRoundFor: the round after the recorded rounds; none before
+    // a count): the loaded swing's load alone, then each movement's next-round
+    // amount; a blank row is not recorded, a typed 0 is a 0; the entries on
+    // AmrapState.movements; the effort a category, never a number.
+    let saves = mountTimedEntry(amrap)
+    const [swing, burpee, rowing] = amrap.exercises.map((exercise) => exercise.exerciseId)
+    await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
+    pass(200)
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    expect(entryFields()).toEqual(['Weight · kettlebell swing'])
+    await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
+    await user.click(screen.getByRole('button', { name: 'Increase rounds completed' }))
+    expect(entryFields()).toEqual(['Next round · kettlebell swing', 'Weight · kettlebell swing', 'Next round · burpee', 'Next round · row'])
+    await user.type(entryField('Next round · kettlebell swing'), '7')
+    await user.type(entryField('Weight · kettlebell swing'), '20')
+    await user.type(entryField('Next round · burpee'), '0')
+    await user.click(screen.getByRole('radio', { name: 'Too hard' }))
+    expect(readAmrapState(localStorage, amrap.blockId)?.movements).toEqual({ [swing]: { amount: '7', weight: '20' }, [burpee]: { amount: '0', weight: '' } })
+    await user.click(screen.getByRole('button', { name: 'Save log' }))
+    expect(saves).toHaveLength(1)
+    expect(saves[0].outcome).toEqual({ elapsedSeconds: 200, roundsCompleted: 2 })
+    expect(saves[0].report).toMatchObject({ family: 'amrap', effort: 'too_hard', weightUnit: 'kg' })
+    expect(shellRequest(amrap, saves[0])).toMatchObject({ partialRound: 3, completion: { outcome: { effort: 'too_hard' }, perceivedEffort: null } })
+    expect(writtenRows(amrap, saves[0])).toEqual({
+      [swing]: { round_number: 3, actual_reps: 7, actual_duration_seconds: null, actual_distance: null, weight: 20, weight_unit: 'kg' },
+      [burpee]: { round_number: 3, actual_reps: 0, actual_duration_seconds: null, actual_distance: null, weight: null, weight_unit: 'kg' },
+    })
+    expect(Object.keys(writtenRows(amrap, saves[0]))).not.toContain(rowing)
+    cleanup()
+
+    // For Time, a single pass (round 1 only when answered Incomplete): loads
+    // only while Complete, then each movement's amount; the row rule refuses a
+    // negative load in the field; the entries on ForTimeState.movements.
+    saves = mountTimedEntry(forTime)
+    const [wallBall, plank] = forTime.exercises.map((exercise) => exercise.exerciseId)
+    await user.click(screen.getByRole('button', { name: 'Start FOR TIME' }))
+    pass(90)
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(entryFields()).toEqual(['Weight · wall ball'])
+    await user.click(screen.getByRole('radio', { name: 'Incomplete' }))
+    expect(entryFields()).toEqual(['Completed · wall ball', 'Weight · wall ball', 'Completed · plank'])
+    await user.type(entryField('Weight · wall ball'), '-1')
+    expect(entryField('Weight · wall ball')).toHaveAttribute('aria-invalid', 'true')
+    await user.clear(entryField('Weight · wall ball'))
+    expect(entryField('Weight · wall ball')).not.toHaveAttribute('aria-invalid')
+    await user.type(entryField('Completed · wall ball'), '28')
+    await user.type(entryField('Completed · plank'), '0')
+    expect(readForTimeState(localStorage, forTime.blockId)?.movements).toEqual({ [wallBall]: { amount: '28', weight: '' }, [plank]: { amount: '0', weight: '' } })
+    await user.click(screen.getByRole('button', { name: 'Save log' }))
+    expect(saves[0].outcome).toEqual({ elapsedSeconds: 90, completedUnderCap: false })
+    expect(shellRequest(forTime, saves[0]).partialRound).toBe(1)
+    expect(writtenRows(forTime, saves[0])).toEqual({
+      [wallBall]: { round_number: 1, actual_reps: 28, actual_duration_seconds: null, actual_distance: null, weight: null, weight_unit: 'kg' },
+      [plank]: { round_number: 1, actual_reps: null, actual_duration_seconds: 0, actual_distance: null, weight: null, weight_unit: 'kg' },
+    })
+    cleanup()
+
+    // For Time of several rounds (no recorded count, so no partial round): loads only, a load-only row.
+    saves = mountTimedEntry(race)
+    const [thruster] = race.exercises.map((exercise) => exercise.exerciseId)
+    await user.click(screen.getByRole('button', { name: 'Start FOR TIME' }))
+    pass(200)
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    await user.click(screen.getByRole('radio', { name: 'Incomplete' }))
+    expect(entryFields()).toEqual(['Weight · thruster'])
+    await user.type(entryField('Weight · thruster'), '35')
+    await user.click(screen.getByRole('button', { name: 'Save log' }))
+    expect(shellRequest(race, saves[0]).partialRound).toBeNull()
+    expect(writtenRows(race, saves[0])).toEqual({
+      [thruster]: { round_number: null, actual_reps: null, actual_duration_seconds: null, actual_distance: null, weight: 35, weight_unit: 'kg' },
+    })
+    cleanup()
+
+    // Ladder (the rung after the stated prefix, bounded by its target): the
+    // entries on LadderDraft.movements, the rung count travelling with the report.
+    saves = mountTimedEntry(ladder)
+    const [goblet, pushUp] = ladder.exercises.map((exercise) => exercise.exerciseId)
+    await user.click(screen.getByRole('button', { name: 'Start ladder' }))
+    await user.click(screen.getByRole('button', { name: 'Complete round 2' }))
+    pass(100)
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(entryFields()).toEqual(['Round 3 · goblet squat', 'Weight · goblet squat', 'Round 3 · push up'])
+    expect(entryField('Round 3 · goblet squat')).toHaveAttribute('max', '6')
+    await user.type(entryField('Round 3 · goblet squat'), '4')
+    const ladderDraft = JSON.parse(localStorage.getItem('clear.workout-ladders') ?? '{}')[ladder.blockId]?.draft
+    expect(ladderDraft?.movements).toEqual({ [goblet]: { amount: '4', weight: '' } })
+    await user.click(screen.getByRole('button', { name: 'Save log' }))
+    expect(saves[0].report.rungCount).toBe(4)
+    expect(saves[0].outcome).toEqual({ highestRung: 2 })
+    expect(writtenRows(ladder, saves[0])).toEqual({
+      [goblet]: { round_number: 3, actual_reps: 4, actual_duration_seconds: null, actual_distance: null, weight: null, weight_unit: 'kg' },
+    })
+    expect(Object.keys(writtenRows(ladder, saves[0]))).not.toContain(pushUp)
+    cleanup()
+
+    // EMOM (never a partial round: the schedule is assumed): the loaded
+    // movement's load alone, kept on EmomState.movements, a load-only row, and
+    // no minutes tally in the outcome.
+    const emom = emomEndLogBlock(emomEndLogSnapshot(emomEndLogAcceptance(), { userId: USER_ID, startedAt: new Date(TIMED_ENTRY_AT).toISOString() }))
+    const [kbSwing] = emom.exercises.map((exercise) => exercise.exerciseId)
+    saves = mountTimedEntry(emom)
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    pass(200)
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    expect(entryFields()).toEqual(['Weight · kb swing'])
+    await user.type(entryField('Weight · kb swing'), '14')
+    expect(readEmomState(localStorage, emom.blockId)?.movements).toEqual({ [kbSwing]: { amount: '', weight: '14' } })
+    await user.click(screen.getByRole('button', { name: 'Save log' }))
+    expect(saves[0].outcome).toEqual({})
+    expect(shellRequest(emom, saves[0])).toMatchObject({ partialRound: null, completion: { outcome: {}, perceivedEffort: null } })
+    expect(writtenRows(emom, saves[0])).toEqual({
+      [kbSwing]: { round_number: null, actual_reps: null, actual_duration_seconds: null, actual_distance: null, weight: 14, weight_unit: 'kg' },
+    })
+  }, TIMED_ENTRY_TIMEOUT_MS)
 })

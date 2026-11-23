@@ -252,9 +252,10 @@ Moments 13–16 write one `block_results` row each through the shell's one write
 
 Today: the end log (`TimedResultLog` EMOM family, TASK-011) reports `{ notes }` for a non-blank
 note, else `{}`; `minutes_completed` stays null for every ending (R84: the schedule is assumed;
-exceptions go in notes). Older rows keep their minutes and read `Minutes N of M`. Draft: the note is
-this mount's memory (kept across a failed save and retry, lost on reload); the clock is
-`clear.workout-emom`. Proposed: block effort (MIG-A) and applicable movement loads (MIG-B, no
+exceptions go in notes). Older rows keep their minutes and read `Minutes N of M`. Draft: the note and
+effort are this mount's memory (kept across close, reopen, a failed save and retry, lost on reload);
+the clock is `clear.workout-emom`, which since A3 TASK-117 also keeps each loaded movement's typed
+load (`EmomState.movements`, no amount) and a failed save of the end log (`saveFailed`). Proposed: block effort (MIG-A) and applicable movement loads (MIG-B, no
 partials — there is no partial round to attach). Owners: TASK-031, TASK-015, TASK-046, TASK-047,
 TASK-019.
 
@@ -501,7 +502,7 @@ completion path once the result file confirmed it.
 | `movement-actuals-writer` | writer | landed: `createWorkoutClients().blockResults.recordMovements` — insert, restate on 23505, delete when cleared, in order; unwired | MIG-B | TASK-031 |
 | `timed-result-save` | writer | landed: `src/state/timed-results.ts` — `timedResultDraft`, `timedResultRequest`, `saveTimedResult` (record → correct on 23505 → recordMovements), `timedSaveSettled` (draft kept on failure); the data provider for TASK-015/019/026/047; adopted by `BlockCompletionProvider` only (TASK-015: `timedDraftFromReport`, `reportedTimedEntries`) | the writers above | TASK-031 |
 | `timed-read-model` | read model | landed: `sessionDetail` → `BlockDetailView.effort` and `movementActuals` (`movementActualReadings`) | MIG-A, MIG-B | TASK-031 |
-| `timed-entry` | draft | landed by TASK-015: per-movement partial and load entry in `TimedResultLog` (AMRAP, For Time and ladder families; labels from the recorded progress; blank unrecorded, 0 kept; the same rule that builds the row refuses inline), the entries on each family's own draft owner, the effort reported and saved as the block's category; saved through the shell's one path | §6; `src/data/refinement-logging-rules.ts` | TASK-015 |
+| `timed-entry` | draft | landed by TASK-015: per-movement partial and load entry in `TimedResultLog` (AMRAP, For Time and ladder families; labels from the recorded progress; blank unrecorded, 0 kept; the same rule that builds the row refuses inline), the entries on each family's own draft owner, the effort reported and saved as the block's category; saved through the shell's one path. Re-verified by A3 TASK-117 on Round 7's wired entry (`TimedWorkoutFlow` → `TimedResultLog`) for all four families; the EMOM's movement rows are load-only (`EmomState.movements`) | §6; `src/data/refinement-logging-rules.ts` | TASK-015 |
 | `ladder-durable-draft` | draft | landed: durable ladder progress, draft, Finish checkpoint and original cap — `usePersistedLadder` (`clear.workout-ladders`) over `src/state/ladder-recovery.ts`; adopted by TASK-013/014/046/048 | `workout-persistence.ts` | TASK-032 |
 | `visible-proof` | read model | Workout → Summary → History save, retry and reload proof on the real test lane (disposable namespaced users) | PRE-001 + `LIVE-PRE-1` | TASK-047 |
 | `LIVE-PRE-1` | live authority | owner decision: apply MIG-A and MIG-B to the hosted project TASK-047's real lane writes to — per the repository's docs, the reused live (production) project | no task in this body is authorised to change a hosted database | owner |

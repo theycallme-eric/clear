@@ -1,0 +1,363 @@
+{
+  "schema": "clear-task-117-parity/v1",
+  "task": "TASK-117",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "for_time",
+  "width": 390,
+  "route": "/workout",
+  "captures": {
+    "galleryReady": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-ready.png",
+      "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441"
+    },
+    "routeReady": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-ready.png",
+      "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d"
+    },
+    "galleryLog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-log.png",
+      "sha256": "27e77d752141dae466b1ac6e9106f7078c0a2a205dbd9e317a68853dbdcea8c4"
+    },
+    "routeLog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-log.png",
+      "sha256": "11e6d14102ecd49ffd5d0b24e908bf2373b5d8bf5ecb06d5586ac160ba54ef0f"
+    },
+    "galleryEntered": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-entered.png",
+      "sha256": "89c95b0ef9961472972de0033161405f354b794e3b523e15f254e7e860dcc447"
+    },
+    "routeEntered": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-entered.png",
+      "sha256": "558cb0a3655714fa8a2e86163977a64ef2bb35c23ffa4795bdd55577a7ae19d8"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "entered": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "CAP REACHED",
+        "1",
+        "5",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 15 minutes 0 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "START FOR TIME",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "log": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "entered": [
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "CAP REACHED",
+        "1",
+        "5",
+        ":",
+        "0",
+        "0",
+        "Cap reached. 15 minutes 0 seconds",
+        "CONDITIONING",
+        "FOR TIME",
+        "15 MIN CAP",
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb",
+        "02 BURPEEbodyweight",
+        "40 reps",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "WORK COMPLETED",
+        "COMPLETE",
+        "INCOMPLETE",
+        "WALL BALL",
+        "COMPLETED",
+        "REPS",
+        "WEIGHT USED",
+        "LB",
+        "BURPEE",
+        "COMPLETED",
+        "REPS",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    }
+  },
+  "differences": {
+    "ready": [],
+    "log": [],
+    "entered": [],
+    "ended": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 65,
+        "log": 78,
+        "entered": 78,
+        "ended": 81
+      },
+      "route": {
+        "ready": 65,
+        "log": 78,
+        "entered": 78,
+        "ended": 81
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 654.5
+        },
+        "entered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 654.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 413
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 654.5
+        },
+        "entered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 334,
+          "height": 654.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 463
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "entered": [],
+      "ended": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "AC-R015-01",
+      "change": "An AMRAP asks no per-movement amount until a rounds count is recorded (TASK-015, `partialRoundFor`), so the amrap state's log past its cap draws only the loaded kb swing's \"Weight used\" group (bec4454 drew \"Completed in next round\" for every movement); a recorded count draws each movement's next-round amount, and a changed count clears the amounts and keeps the loads. Labels stay Round 7's."
+    },
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "AC-C37-01",
+      "change": "A load field only where a load can attach (`loadApplies`, the set logger's rule the saved row also applies); a multi-round For Time asks loads only; a distance amount takes decimals; the row's own rule (`movementActualFromDraft`) says in the field what an entry is refused on. No accepted state draws a refusal, a distance or a multi-round race, and every accepted state's loaded movement keeps its load field."
+    },
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "TASK-AC-FB8AF4D9B641",
+      "change": "AC-C26-01's exact per-movement group list (a group only for the loaded movement before rounds are recorded) is the drawing above; the form keeps its accepted name \"Log section results\" (R7-3)."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "AC-R011-01",
+      "change": "An EMOM's clock caption says \"· Rest\" beside its minute while the block's own rest window runs. The accepted emom state prescribes no rest, so it draws no change."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-8C147E2C148D",
+      "change": "The card's \"Log results\" action states whether its dialog is open (`aria-expanded`); nothing drawn changes."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-339D1096F660",
+      "change": "Each movement's typed amount and load are kept on the attempt's own record (EMOM, AMRAP, For Time) and restored after a reload; the gallery keeps nothing, so it draws no change."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-D58939F8E091",
+      "change": "EMOM save authority, as the AMRAP's and For Time's: a refused save is kept on the EMOM's record and said after a reload; a known row whose richer save failed reopens the block. Nothing the gallery draws changes."
+    }
+  ]
+}

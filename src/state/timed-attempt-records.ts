@@ -45,6 +45,17 @@
  * The per-movement entries (`movements`) are kept on every write and are
  * TASK-117's to fill.
  *
+ * A3 TASK-117 (F3; TASK-015, TASK-047, TASK-048; TASK-AC-339D1096F660,
+ * TASK-AC-D58939F8E091) fills them: each movement's typed next-round amount
+ * and actual load, exactly as typed (`MovementActualDraft`), is written onto
+ * the attempt's own record as the athlete types (`writeTimedMovements`) — the
+ * AMRAP's and For Time's, and the EMOM's, whose entries are loads only — and
+ * read back with the attempt (`RestoredTimedAttempt.movements`), so a reload
+ * brings them back. A changed round count or answer clears the amounts and
+ * keeps the loads before they are written (the log's rule,
+ * `draftsAfterProgressChange`). The EMOM's record also keeps a failed save of
+ * its end log (`saveFailed`), as the AMRAP's and For Time's do.
+ *
  * No React here, and the storage is injected: outside the workout shell (the
  * gallery, a bare mount) the caller passes `null` and nothing is stored.
  */
@@ -56,6 +67,7 @@ import {
 } from './amrap'
 import { clampEmomState, type EmomState } from './emom'
 import { answerForTime, clampForTimeState, type ForTimeState } from './for-time'
+import type { MovementActualDraft } from '../data/refinement-logging-rules'
 import {
   activeSeconds,
   timedAttemptClock,
@@ -91,9 +103,14 @@ export interface RestoredTimedAttempt {
   readonly counts: TimedCounts | null
   /** A3 TASK-116: a For Time race's answer to "Work completed" once given; null before, and for every other format. */
   readonly answer: boolean | null
-  /** A3 TASK-116: a save of this attempt's log failed and none has landed since (AMRAP and For Time). */
+  /** A3 TASK-116: a save of this attempt's log failed and none has landed since (AMRAP and For Time; A3 TASK-117: and EMOM). */
   readonly saveFailed: boolean
+  /** A3 TASK-117: each movement's typed entry as the attempt's record keeps it; empty when none was typed. */
+  readonly movements: Readonly<Record<string, MovementActualDraft>>
 }
+
+/** No movement typed: one frozen object, so a restored attempt with none is the same draft. */
+const NO_MOVEMENTS: Readonly<Record<string, MovementActualDraft>> = Object.freeze({})
 
 /**
  * Where a block's attempt is kept: the shell's storage, and the workout's
@@ -138,12 +155,20 @@ export function readTimedAttempt(
         counts: { roundsCompleted: state.roundsCompleted, partialRoundReps: state.partialRoundReps },
         answer: null,
         saveFailed: state.saveFailed === true,
+        movements: state.movements ?? NO_MOVEMENTS,
       }
     }
     case 'emom': {
       const stored = readEmomState(storage, block.blockId)
       if (stored === null) return null
-      return { attempt: timedAttemptFromClock(clampEmomState(stored)), counts: null, answer: null, saveFailed: false }
+      const state = clampEmomState(stored)
+      return {
+        attempt: timedAttemptFromClock(state),
+        counts: null,
+        answer: null,
+        saveFailed: state.saveFailed === true,
+        movements: state.movements ?? NO_MOVEMENTS,
+      }
     }
     case 'for_time': {
       const stored = readForTimeState(storage, block.blockId)
@@ -154,6 +179,7 @@ export function readTimedAttempt(
         counts: null,
         answer: typeof state.workCompleted === 'boolean' ? state.workCompleted : null,
         saveFailed: state.saveFailed === true,
+        movements: state.movements ?? NO_MOVEMENTS,
       }
     }
   }
@@ -207,7 +233,14 @@ export function writeTimedAttempt(
       return
     }
     case 'emom': {
-      const next: EmomState = { ...stamps, workDoneMinute: null, ...(finishedAt === null ? {} : { finishedAt }) }
+      const previous = readEmomState(storage, block.blockId)
+      const next: EmomState = {
+        ...stamps,
+        workDoneMinute: null,
+        ...(finishedAt === null ? {} : { finishedAt }),
+        ...(previous?.movements === undefined ? {} : { movements: previous.movements }),
+        ...(previous?.saveFailed === true ? { saveFailed: true } : {}),
+      }
       writeEmomState(storage, block.blockId, next)
       return
     }
@@ -259,8 +292,12 @@ function withSaveFailed<T extends { readonly saveFailed?: boolean }>(record: T, 
   return next
 }
 
-/** The formats whose log keeps a failed save on its record (A3 TASK-116); a ladder's is its durable attempt's. */
-export type TimedSaveFormat = 'amrap' | 'for_time'
+/**
+ * The formats whose log keeps a failed save and its typed entries on its
+ * record (A3 TASK-116; the EMOM since A3 TASK-117); a ladder's are its durable
+ * attempt's.
+ */
+export type TimedSaveFormat = 'emom' | 'amrap' | 'for_time'
 
 /**
  * A3 TASK-116 (TASK-AC-8FF68F3F5241): notes on the attempt's own record that a
@@ -282,7 +319,56 @@ export function writeTimedSaveFailed(
     writeAmrapState(storage, block.blockId, withSaveFailed(previous, failed))
     return
   }
+  if (format === 'emom') {
+    const previous = readEmomState(storage, block.blockId)
+    if (previous === null || previous.startedAt === null || (previous.saveFailed === true) === failed) return
+    writeEmomState(storage, block.blockId, withSaveFailed(previous, failed))
+    return
+  }
   const previous = readForTimeState(storage, block.blockId)
   if (previous === null || previous.startedAt === null || (previous.saveFailed === true) === failed) return
   writeForTimeState(storage, block.blockId, withSaveFailed(previous, failed))
+}
+
+/** The same entries, typed alike: no record is rewritten for a draft it already holds. */
+function sameEntries(
+  a: Readonly<Record<string, MovementActualDraft>> | undefined,
+  b: Readonly<Record<string, MovementActualDraft>>,
+): boolean {
+  const kept = a ?? NO_MOVEMENTS
+  const ids = Object.keys(b)
+  if (Object.keys(kept).length !== ids.length) return false
+  return ids.every((id) => kept[id]?.amount === b[id].amount && kept[id]?.weight === b[id].weight)
+}
+
+/**
+ * A3 TASK-117 (TASK-015, TASK-047; TASK-AC-339D1096F660): the attempt's typed
+ * per-movement entries — each movement's next-round amount and actual load,
+ * exactly as typed — written onto its own record, keeping every other field,
+ * so a reload brings them back. The caller has already cleared any amount a
+ * changed round count or answer no longer belongs to. Written only when the
+ * entries change; an attempt that never started has nothing to keep them on.
+ */
+export function writeTimedMovements(
+  storage: ShellStorage | null,
+  format: TimedSaveFormat,
+  block: BlockProgress,
+  movements: Readonly<Record<string, MovementActualDraft>>,
+): void {
+  if (storage === null) return
+  if (format === 'amrap') {
+    const previous = readAmrapState(storage, block.blockId)
+    if (previous === null || previous.startedAt === null || sameEntries(previous.movements, movements)) return
+    writeAmrapState(storage, block.blockId, { ...previous, movements })
+    return
+  }
+  if (format === 'emom') {
+    const previous = readEmomState(storage, block.blockId)
+    if (previous === null || previous.startedAt === null || sameEntries(previous.movements, movements)) return
+    writeEmomState(storage, block.blockId, { ...previous, movements })
+    return
+  }
+  const previous = readForTimeState(storage, block.blockId)
+  if (previous === null || previous.startedAt === null || sameEntries(previous.movements, movements)) return
+  writeForTimeState(storage, block.blockId, { ...previous, movements })
 }

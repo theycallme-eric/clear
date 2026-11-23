@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/timed-result-log.test.tsx",
-      "sha256": "8069b0fd65fad5d70b8b2510711070960f0a45c2c26e360f9fe62a0a7f347cb8"
+      "sha256": "3e9b402f3c782fa7e6a4f004d2cddaf5acf6917ee51f46c23cea9ac3234109d3"
     }
   ],
   "requiredCases": [
@@ -73,10 +73,10 @@
     }
   ],
   "totals": {
-    "total": 19,
+    "total": 26,
     "passed": 9,
     "failed": 0,
-    "skipped": 10,
+    "skipped": 17,
     "todo": 0,
     "executed": 9
   },

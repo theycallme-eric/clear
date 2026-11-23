@@ -1,0 +1,299 @@
+{
+  "schema": "clear-task-117-parity/v1",
+  "task": "TASK-117",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "emom",
+  "width": 320,
+  "route": "/workout",
+  "captures": {
+    "galleryReady": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-ready.png",
+      "sha256": "c21aa3a35fb75fa73165622498a5ecdab502479450feaf9911839538c94d8671"
+    },
+    "routeReady": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-ready.png",
+      "sha256": "12054b4a92a22d1e84b4d788a5f48254dbdfae914fb89c7eb3f7dd529bfcdf43"
+    },
+    "galleryLog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-log.png",
+      "sha256": "bfd236492f338cfb1d9ea0b50f366d7a3f89f855904d55bf1995db0bfa3b7722"
+    },
+    "routeLog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-log.png",
+      "sha256": "b408d64d6b650fcb9391a9128dc449a3120437e84c6ccf39d0b753ba06506bd1"
+    },
+    "galleryEntered": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-entered.png",
+      "sha256": "a509d30adf9db55486066239b4f9b644cb4abb97cb2f53d95fa2a0755c7ee6a5"
+    },
+    "routeEntered": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-entered.png",
+      "sha256": "e05f96faed3e42e1127e501bf06f473c3e90247bd6ec5a3840c05316f2632752"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "ready": [
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "START EMOM",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "entered": [
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ]
+    },
+    "route": {
+      "ready": [
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb",
+        "START EMOM",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "log": [
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "entered": [
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG"
+      ],
+      "ended": [
+        "TIME COMPLETE",
+        "0",
+        "0",
+        ":",
+        "0",
+        "0",
+        "Time complete. 0 seconds",
+        "CONDITIONING",
+        "EMOM",
+        "10 MIN · N+1",
+        "01 KB SWINGkettlebell",
+        "12 reps",
+        "24 lb",
+        "LOG RESULTS",
+        "LOG RESULTS",
+        "KB SWING",
+        "WEIGHT USED",
+        "LB",
+        "EFFORT · OPTIONAL",
+        "TOO HARD",
+        "ABOUT RIGHT",
+        "TOO EASY",
+        "NOTES · OPTIONAL",
+        "SAVE LOG",
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ]
+    }
+  },
+  "differences": {
+    "ready": [],
+    "log": [],
+    "entered": [],
+    "ended": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "tolerancePx": 2,
+    "measured": {
+      "gallery": {
+        "ready": 50,
+        "log": 52,
+        "entered": 52,
+        "ended": 66
+      },
+      "route": {
+        "ready": 50,
+        "log": 52,
+        "entered": 52,
+        "ended": 66
+      }
+    },
+    "parts": {
+      "gallery": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 362.5
+        },
+        "entered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 362.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 375
+        }
+      },
+      "route": {
+        "ready": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 325
+        },
+        "log": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 362.5
+        },
+        "entered": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 264,
+          "height": 362.5
+        },
+        "ended": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 375
+        }
+      }
+    },
+    "differences": {
+      "ready": [],
+      "log": [],
+      "entered": [],
+      "ended": []
+    }
+  },
+  "galleryChanges": [
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "AC-R015-01",
+      "change": "An AMRAP asks no per-movement amount until a rounds count is recorded (TASK-015, `partialRoundFor`), so the amrap state's log past its cap draws only the loaded kb swing's \"Weight used\" group (bec4454 drew \"Completed in next round\" for every movement); a recorded count draws each movement's next-round amount, and a changed count clears the amounts and keeps the loads. Labels stay Round 7's."
+    },
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "AC-C37-01",
+      "change": "A load field only where a load can attach (`loadApplies`, the set logger's rule the saved row also applies); a multi-round For Time asks loads only; a distance amount takes decimals; the row's own rule (`movementActualFromDraft`) says in the field what an entry is refused on. No accepted state draws a refusal, a distance or a multi-round race, and every accepted state's loaded movement keeps its load field."
+    },
+    {
+      "file": "src/ui/timed-result-log.tsx",
+      "criterion": "TASK-AC-FB8AF4D9B641",
+      "change": "AC-C26-01's exact per-movement group list (a group only for the loaded movement before rounds are recorded) is the drawing above; the form keeps its accepted name \"Log section results\" (R7-3)."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "AC-R011-01",
+      "change": "An EMOM's clock caption says \"· Rest\" beside its minute while the block's own rest window runs. The accepted emom state prescribes no rest, so it draws no change."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-8C147E2C148D",
+      "change": "The card's \"Log results\" action states whether its dialog is open (`aria-expanded`); nothing drawn changes."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-339D1096F660",
+      "change": "Each movement's typed amount and load are kept on the attempt's own record (EMOM, AMRAP, For Time) and restored after a reload; the gallery keeps nothing, so it draws no change."
+    },
+    {
+      "file": "src/ui/timed-workout-flow.tsx",
+      "criterion": "TASK-AC-D58939F8E091",
+      "change": "EMOM save authority, as the AMRAP's and For Time's: a refused save is kept on the EMOM's record and said after a reload; a known row whose richer save failed reopens the block. Nothing the gallery draws changes."
+    }
+  ]
+}

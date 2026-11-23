@@ -511,7 +511,7 @@ export const LOGGING_MOMENTS: readonly LoggingMomentContract[] = [
     nullMeans: 'minutes_completed stays null for every ending (no minutes tally; the schedule is assumed); a blank note is not reported',
     zeroMeans: 'no EMOM value is numeric now; older rows keep their minutes_completed, read as Minutes N of M',
     update: BLOCK_UPDATE,
-    draft: 'the end-log note is this mount’s memory (kept across a failed save and retry, lost on reload); the clock is clear.workout-emom',
+    draft: 'the end-log note and effort are this mount’s memory (kept across close, reopen, a failed save and retry, lost on reload); the clock is clear.workout-emom, which since A3 TASK-117 also keeps each loaded movement’s typed load (EmomState.movements, no amount: the schedule is assumed) and a failed save of the end log (saveFailed) until a save lands',
     readback: {
       workout: 'the EMOM card while unsaved; after the save the log steps aside (Block saved)',
       history: 'History shows block notes; Minutes N of M only for an older row that has minutes_completed',
@@ -1012,7 +1012,9 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
       'landed by TASK-015: per-movement partial and load entry in TimedResultLog (AMRAP, For Time and ladder families), labels from ' +
       'the recorded progress, blank unrecorded and 0 kept, the row rule refusing inline; the entries on each family’s own draft owner ' +
       '(AmrapState.movements, ForTimeState.movements, LadderDraft.movements); effort reported and saved as the block’s category; ' +
-      'owner decisions: the AMRAP keeps partial_round_reps beside the amounts, a multi-round For Time takes loads only',
+      'owner decisions: the AMRAP keeps partial_round_reps beside the amounts, a multi-round For Time takes loads only; ' +
+      're-verified by A3 TASK-117 on Round 7’s wired entry (TimedWorkoutFlow → TimedResultLog in the one Log results dialog) for all four ' +
+      'families, the EMOM’s movement rows load-only on EmomState.movements, saved through the shell’s one completion path',
     basis: 'partialRoundFor, loadApplies and movementActualFromDraft (src/data/refinement-logging-rules.ts)',
     ref: { module: TIMED_LOG_MODULE, name: 'TimedResultLog' },
     owner: 'TASK-015',

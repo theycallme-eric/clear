@@ -1,0 +1,559 @@
+{
+ "schema": "clear-task-test-ledger/v1",
+ "task": "TASK-117",
+ "family": "F3 (5b-2: EMOM end log and per-movement partials and loads)",
+ "base": "1aae4fe64df577feff011ac98ad494d614a77ad3",
+ "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+ "source": "The brief (round 07; TASK-AC-A41C06588058, TASK-AC-FB8AF4D9B641, TASK-AC-9E768CEF9953, TASK-AC-F0B7EC06AB4E): the build’s TASK-015 describe block of src/ui/timed-result-log.test.tsx after TASK-116’s blocks (this task then owns the whole file); src/ui/timed-result-dialog.test.tsx carried whole; the TASK-011 EMOM cases in their own block of src/ui/timed-workout-flow.test.tsx (whole file owned); src/data/refinement-logging-contract.test.ts; e2e/refinement/task-011.spec.ts, task-015.spec.ts and task-046.spec.ts; TASK-116’s task-009 and task-010 specs rerun; the new task-117-parity.spec.ts. visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (support-tooling workspace) for the groundwork placement, overridden for amrap-block, emom-block, for-time-block and Workout.test.tsx by round-07 decision R7-1.",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "retired": [
+   {
+    "file": "src/ui/timed-result-log.test.tsx",
+    "test": "TASK-009 … > AC-C26-01 AMRAP rounds and the partial round are one result group …",
+    "assertion": "the dialog’s form has no name of its own (`expect(form).not.toHaveAttribute('aria-label')`, TASK-046)",
+    "reason": "Round-07 decision R7-3 (Eric, chat, 2026-11-20: “Great, go ahead please”): Round 7’s accepted TimedResultLog (gallery bec4454) names its form “Log section results”, and that name stays. The case now reads the accepted name."
+   },
+   {
+    "file": "src/ui/timed-result-dialog.test.tsx",
+    "test": "TASK-046 TimedResultDialog > draws one Log results action …",
+    "assertion": "the form is named by the dialog’s title (`form.getAttribute('aria-labelledby') === title.id`, TASK-046)",
+    "reason": "The same TASK-046 assertion that R7-3 retires in AC-C26-01, retired on the same reason: Round 7’s accepted form name “Log section results” stays. R7-3’s text names the AC-C26-01 case; the owner extended R7-3 to this placement (Eric, chat, 2026-11-22: “Yes, extend R7-3”). On TASK-115’s UAT list."
+   },
+   {
+    "file": "e2e/refinement/task-046.spec.ts",
+    "test": "expectFocusedLog (every TASK-046 case)",
+    "assertion": "the form is named by the dialog’s title (`aria-labelledby` → “Log results”) and carries `data-timed-format`",
+    "reason": "As above (R7-3, which the owner extended to this placement: Eric, chat, 2026-11-22: “Yes, extend R7-3”): the form keeps its accepted name “Log section results”; the family is read from the block’s flow (`data-timed-format`), which Round 7 draws there. On TASK-115’s UAT list."
+   }
+  ],
+  "rewrittenWithOwnerReason": [
+   {
+    "file": "e2e/refinement/task-046.spec.ts",
+    "test": "JOURNEY-019 AMRAP, For Time and ladder phone-320 keyboard reduced motion: …",
+    "reason": "Owner decision 3, 2026-11-16 (“Accept all five”): the ladder log opens only after the attempt ends."
+   },
+   {
+    "file": "src/ui/timed-result-dialog.test.tsx",
+    "test": "TASK-046 TimedResultDialog > a log drawn before its attempt ends takes the secondary action",
+    "reason": "Owner decision 3, 2026-11-16, as above."
+   }
+  ],
+  "resolved": [
+   {
+    "what": "e2e/refinement/task-046.spec.ts expectFocusedLog (every TASK-046 case): the Close log X’s `clr-hit` class and its `.clr-bleed` parent",
+    "how": "Repair 1 (review TASK-117-a1-d3ac491f3038, TASK-AC-41FE9AC96A94): attempt 1 dropped both reads with no reason, so its matchersWeakened:false was wrong. Round 7 still draws both (LoggingOverlay’s design-system IconButton adds `clr-hit` and wraps the button in `span.clr-bleed`; src/ui/logging-overlay.test.tsx asserts the same), so both are restored exactly as the build asserted them: {framed with clr-chamfer, clr-btn and clr-hit; quiet false; bleed true; glyph true}. No product change. TASK-046 check-01 passed 6/6 on two runs."
+   },
+   {
+    "what": "e2e/refinement/task-011.spec.ts › JOURNEY-011 keyboard phone-320: the Tab bound from the log’s X to the notes field",
+    "how": "Repair 1: attempt 1 raised the build’s bound of 5 Tabs to 12 with no reason. Round 7 reaches the notes in 3 Tabs (Weight · kb swing, the effort faces’ one roving radio stop, the notes; measured once with a temporary probe that was then removed), so the build’s bound of 5 is restored unchanged. No product change. TASK-011 check-02 passed 3/3 on two runs. With both reads restored, no inherited matcher is weakened."
+   }
+  ],
+  "deferred": [],
+  "notRestored": [
+   {
+    "what": "Build bodies in src/ui/amrap-block.test.tsx, src/ui/emom-block.test.tsx, src/ui/for-time-block.test.tsx and src/app/Workout.test.tsx",
+    "why": "Round-07 decision R7-1 (TASK-AC-F0B7EC06AB4E): TASK-117 restores no body in these files; TASK-108, TASK-109 and TASK-110 restore, port or retire them. None of these files is changed by TASK-117."
+   },
+   {
+    "what": "src/test/timed-log-dialog.ts (the build’s TASK-046 helper)",
+    "why": "Unused by the carried cases, which read Round 7 through local helpers; left as it is at base."
+   }
+  ],
+  "forTask115": "UAT items: the AMRAP’s amount label stays Round 7’s “Completed in next round” (the build named the round); Round 7 keeps the EMOM’s Now through its rest and marks Next while working and before Start on the movement after the opening minute’s; the EMOM rest caption “Minute N of M · Rest” is new (no accepted state shows a rest window); the R7-3 retirement in timed-result-dialog.test.tsx and task-046.spec.ts, approved by the owner on 2026-11-22 (Eric, chat, 2026-11-22: “Yes, extend R7-3”; R7-3’s list is now six); the dialog’s Save log in place of the build’s “no Save”."
+ },
+ "summary": {
+  "carried": 18,
+  "rewritten": 31,
+  "superseded": 0,
+  "retired": 0,
+  "retiredAssertions": 3,
+  "deferred": 0,
+  "added": 11,
+  "failingBlocked": 0,
+  "failing": 0
+ },
+ "entries": [
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 AMRAP per-movement partial and load fields follow the recorded rounds on the real /workout route: no amount until a rounds count is recorded, an explicit 0 gives round 1, the label names the round after the count, each amount in its movement’s own unit, a load only on a loaded movement, blank unrecorded and 0 kept, the partial reps count kept beside them, and a changed count clears the amounts and keeps the loads",
+   "ledger": "build TASK-015 block → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The AMRAP’s amount field is Round 7’s accepted words, “Completed in next round” (`Next round · <movement>`), where the build wrote “Completed in round N”: the round it names is the one after the recorded count, as the saved row’s round_number and History’s “Round N” read it (the AC-R015-02 cases and task-015.spec.ts assert round 3 after two rounds and round 2 after one); the ladder keeps “Completed in round N” and For Time “Completed”, as Round 7 draws them. Units are Round 7’s field caps (`Reps`, `Seconds`, `Distance (m)`), where the build drew `reps`, `sec`, `m`; the refusal words keep the build’s units (`Enter sec as a whole number, 0 or more`). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. Gating (no amount until a rounds count), an explicit 0 offering the next round, blank and 0 kept on AmrapState.movements, the partial reps count kept beside, and a changed count clearing the amounts and keeping the load are the build’s assertions.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > AC-C37-01 For Time partial and load fields follow the race: a single pass answered Incomplete asks each movement’s completed amount for round 1 in its own unit and a load on the loaded movement, Complete asks loads only and clears the amounts, an invalid value is refused in the field by the row’s own rule, and a multi-round race asks loads only with no partial round and no rounds count",
+   "ledger": "build TASK-015 block → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Units are Round 7’s field caps (`Reps`, `Seconds`, `Distance (m)`), where the build drew `reps`, `sec`, `m`; the refusal words keep the build’s units (`Enter sec as a whole number, 0 or more`). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. The For Time list is `Movements in this FOR TIME` and its Start `Start FOR TIME`; the next section is found by any of Round 7’s headings for it. Single-pass round 1 when Incomplete, Complete clearing amounts and keeping the load, the inline refusals and the multi-round race’s loads only are the build’s assertions.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-01 ladder partial fields name the round after the stated prefix, are bounded by that rung’s target and never filled from it, a change of round clears the amounts and keeps the loads, Complete offers loads only, and the entries live on the durable draft",
+   "ledger": "build TASK-015 block → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Units are Round 7’s field caps (`Reps`, `Seconds`, `Distance (m)`), where the build drew `reps`, `sec`, `m`; the refusal words keep the build’s units (`Enter sec as a whole number, 0 or more`). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. Round 7 names the round on each movement’s amount field (`Completed in round 3`, `Round 3 · goblet squat`) and draws no separate “Any partial work belongs to round 3” line; the live check-off toggle is Round 7’s `Complete round 2`. The bound, the refusal, the change of round and the durable draft are the build’s assertions.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 the partials, loads and effort save through the shell’s one completion path over the migration-transcribed PostgREST: one block row carrying the category as effort and never a number, one movement row per entered movement with its round, modality column and stamped unit, none for a blank movement, a refused movement write keeps every entry with the existing dialog, the retry restates the row and writes the movements once, saved fields read back disabled after a return and a reload, and History reads the entries",
+   "ledger": "build TASK-015 block → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. Once saved, Round 7 reads the log back as “Log saved” with each movement’s entry in words (`kettlebell swing · 7 reps · 20 kg`) and offers its Edit log correction (accepted by TASK-103/TASK-105), where the build reopened the log with the fields disabled; “read back” and “no longer offered” are read there: the entries in words, no Log results action and no field on the card. Every write and row assertion (rows, rounds, columns, units, POST and PATCH counts, the refused write, the retry, the reload and History) is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > AC-R015-02 a save with no new per-movement data behaves exactly as today: a timed log with nothing typed and no effort sends the same bare insert, names no effort column, calls neither the correction nor the movement writer, and a later-typed load reaches the row through the same path",
+   "ledger": "build TASK-015 block → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The For Time card is Round 7’s; every insert-body, PATCH and movement-writer assertion is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 the accepted amrap, for_time and ladder gallery states draw the route’s own per-movement partial and load fields over memory only: the AMRAP’s seeded round-4 entry and load beside its counts, the capped For Time’s round-1 entry, the finished one’s load alone, the ladder’s fields once a round is stated, nothing stored and no network",
+   "ledger": "build TASK-015 block → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. The amrap state’s nothing-counted load field, its next-round fields once counted, a count clearing the amount and keeping the load; for_time’s round-1 entries at the cap and the load alone after a Finish; the ladder’s round-3 fields once round 2 is stated, bounded; nothing stored and no network — the build’s assertions.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-009 AMRAP prescription and concise scoring controls > AC-C26-01 AMRAP rounds and the partial round are one result group under the simple log hierarchy: one Log results title, labels before their counts, no Result, Movements or Feedback group titles",
+   "ledger": "TASK-116 rewritten; two build assertions deferred to TASK-117 (round-07 scan finding S5; decision R7-3)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. TASK-116 carried this case onto Round 7 and deferred two of its build assertions here. TASK-117 restores the build’s exact list of the dialog’s headings, `['Log results', 'kb swing']` — a group only for the loaded movement, because no amount is asked before a rounds count is recorded (TASK-015’s gating, built here) — in place of TASK-116’s interim “each group title is a movement name”. The build’s TASK-046 assertion that the form has no name of its own is retired (rules.retired, decision R7-3) and replaced by a read of the accepted name, `Log section results`.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-log.test.tsx",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > TASK-AC-339D1096F660 per-movement next-round amounts and actual loads are stored with the attempt and survive a reload: the AMRAP’s and the For Time’s entries come back as typed, a changed round count then clears the amounts and keeps the loads, and an EMOM’s movement rows are load-only",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-339D1096F660: the AMRAP’s and For Time’s entries on their records survive a reload; the restored count still clears amounts and keeps loads; the EMOM’s movement rows are load-only, kept on EmomState.movements and restored. Failed at base (no entry was stored on the attempt’s record).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-dialog.test.tsx",
+   "test": "TASK-046 TimedResultDialog > draws one Log results action and no log until it is opened; the log opens in the shared modal titled Log results, named by it, with the framed Close log X focused",
+   "ledger": "build TASK-046 unit suite → TASK-117 (brief: carried whole, rewritten against Round 7)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. The build’s src/ui/refinements/timed-result-dialog.tsx is source material only; the case mounts the route’s EMOM (BlockSlot under the product presentation). Round 7 offers the log once the attempt has ended and opens it itself as it ends (R43), so “no log until it is opened” is read before the end and after the athlete closes it: one primary “Log results” in the card’s `.clr-timed-actions` row, `aria-expanded` false then true (TASK-117 adds the attribute to Round 7’s action). Round 7 draws the native modal inside the block’s flow (the browser lifts it into the top layer), where the build portalled it to the body. The build’s “form named by the dialog’s title” read is retired under decision R7-3 (rules.retired) and replaced by the accepted name `Log section results`. The build’s “no Save is invented” is read as Round 7 draws it: the dialog’s one Save is Round 7’s Save log, which the product binds to the shell’s one completion path (`saveLogThroughShell`, A3 TASK-103) — the seam’s saveTimedLog is called once — so no second writer exists. Opening focus on the framed Close log X is the build’s assertion.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-dialog.test.tsx",
+   "test": "TASK-046 TimedResultDialog > closes by the X or Escape without touching the consumer’s record, and a reopen shows the draft",
+   "ledger": "build TASK-046 unit suite → TASK-117",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. The consumer’s record is Round 7’s flow: what it reports to the shell (its value, since Round 7 re-reports it on every render) and its stored attempt; neither changes on the X or Escape (the native cancel), and a reopen shows the note. Round 7’s close finishes asynchronously in jsdom, so the case waits for the dialog to close.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-dialog.test.tsx",
+   "test": "TASK-046 TimedResultDialog > the ladder’s quiet completion action closes the log in the same act and still runs the consumer’s own handler once",
+   "ledger": "build TASK-046 unit suite → TASK-117",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Round 7’s words are `Undo finish · resume ladder`; its handler is the flow’s own Undo over the ladder’s durable attempt, read as having run once: the same attempt resumed from the same start, its checkpoint spent, the focus on Pause, no log open or offered.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-result-dialog.test.tsx",
+   "test": "TASK-046 TimedResultDialog > a log drawn before its attempt ends takes the secondary action",
+   "ledger": "build TASK-046 unit suite → TASK-117",
+   "disposition": "rewritten",
+   "note": "Rewritten with the owner’s reason: owner decision 3 of 2026-11-16 (Eric, chat, 2026-11-16: “Accept all five”) — the ladder’s log opens only after its attempt ends (Round 7). No log is drawn before then, so the case reads that no Log results action exists while the ladder is ready or running, and that once it ends the log’s action is primary with the attempt’s own secondary action, Round 7’s Resume ladder, beside it.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-01 EMOM removes only the annotated Not started and Work captions on the real /workout route, keeping minute assignment, the rest transition and the actual clock state",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). Round 7 keeps the minute’s movement marked Now through its whole minute, rest included (TASK-104’s carried TASK-006 case reads the same), and marks the next minute’s movement Next — while working too, and before Start the movement after the opening minute’s — where the build marked only Next in the rest and the first movement before Start; the look-ahead (Next and the next turn’s `Min N`) is the build’s assertion. The build’s source read of emom-block.tsx is read on timed-workout-flow.tsx, the route’s owner: no Not started or Work caption, the minute with its rest, Paused.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C32-01 EMOM minute progress and Now/Next stay clear across every boundary, a background and a reload, with no phase caption repeating them",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). Round 7 keeps the minute’s movement marked Now through its whole minute, rest included (TASK-104’s carried TASK-006 case reads the same), and marks the next minute’s movement Next — while working too, and before Start the movement after the opening minute’s — where the build marked only Next in the rest and the first movement before Start; the look-ahead (Next and the next turn’s `Min N`) is the build’s assertion. Every boundary, the end, a background and a reload are the build’s journey.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-C31-01 EMOM end log omits any minutes-completed counter or completion question, assumes the schedule and accepts notes for exceptions",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Restored whole (round-07 scan finding S1). Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). The grouped coaching disclosure is found by Round 7’s accessible name (`Coaching and notes — EMOM: kb swing, burpee`), not the build’s `[data-coaching-group]` hook, and both card-order reads are kept: it follows the Log results action, and it is the last child of the card’s content, `.clr-movement-group` (where BlockCompletionControl draws nothing until the block is saved) — not read on `.clr-card` and not weakened to “after the slot”. Round 7 draws no rest line, so the action is read after the last movement. The one titled group is the loaded swing’s load; the one untitled group with fields holds the effort and the notes; Round 7’s result group is drawn and empty. The flow carries `data-timed-format`. Enter in the log is prevented (navigates nowhere) and is Round 7’s Save log, which saves the note with nothing counted through the shell’s one path, where the build’s form submitted nothing.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM end logging assumes the schedule end to end: no minutes tally in the saved row, the exception note in the block’s existing notes, the actual timing untouched, and History reads it back",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). Back on the saved section the log has stepped aside: no Log results action; Round 7 reads the saved log back (the note) and offers its Edit log correction. History’s block is found by its note (the build found it by its badge). Every row and record assertion is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM finished early or stopped before its last minute is never recorded as a completed full schedule and keeps its actual timing",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). History’s block is found by its note. Every stop, record, row and History assertion is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM a failed save keeps the exception note on screen and the retry writes it once, unchanged",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). After the refusal the EMOM’s record keeps its timing exactly and now also notes the failed save (TASK-AC-D58939F8E091), so the build’s “record unchanged” is read as: the timing unchanged, `saveFailed: true` beside it, the log saying it did not save; once the retry lands the record is the clock’s own again, byte for byte.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > AC-R011-02 EMOM older stored records and older saved rows load and read exactly as before",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). History’s block is found by its note. Every older record and row is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 EMOM gallery emom and cards states draw the actual route EmomBlock: the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption",
+   "ledger": "build TASK-011 block (deferred by TASK-104 to the F3 task) → TASK-117 (brief; TASK-AC-A41C06588058)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. Round 7’s emom state is one EMOM (one kb swing), run past every minute by its own drive; the early finish is the same state finished early by its own controls (minute 1 of 10). The cards state is Round 7’s three LiveFlows, the EMOM a one-movement block: its minute and no caption, and nothing marked Next (every minute is its own movement’s). The “same owner, not a look-alike” read is on the gallery’s sources: TimedWorkoutFlow in gallery-refinement-forms.tsx and LiveFlow in gallery-refinement-scenes.tsx.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/timed-workout-flow.test.tsx",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > TASK-AC-D58939F8E091 EMOM save authority, as the ladder’s: a refused Save log keeps the end log’s draft through close and reopen and says it did not save, the words and the typed load survive a reload until a save lands, the saved row then wins over the local echo, and a known row whose richer save failed reopens the block",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-D58939F8E091: EMOM save authority as TASK-105 holds it for the ladder and TASK-116 for the AMRAP and For Time.",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 inventories exactly the 16 logging moments of the accepted sources, each with schema, validator, writer, identity, null/zero/update meaning, draft and readback",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 every source the matrix names resolves to a real export, every existing column to the generated types, and every proposed one is still absent",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 the published specification states the same moments, fields, statuses, migrations and owners as the typed contract",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: lifts, timed and distance movements, extra sets, supersets and circuit movements save through the one durable set path and read back in Workout and History",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: a saved set is corrected and cleared by ordered mutations that keep its identity, and a retry replays rather than duplicates",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: circuit, EMOM, AMRAP, For Time and ladder outcomes save through the shell’s one block writer, keep null distinct from zero and read back in History",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-01 consumer rehearsal: movement notes, workout feedback and rest days keep their own writers, validators and readers",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-02 categorical block effort is never converted into the legacy 1-10 perceived_effort, which keeps its numeric meaning",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-02 per-movement timed partials and loads cannot reuse exercise_set_logs, so they need their own table",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-03 proposed per-movement identities derive from the block’s recorded outcome, never from planned targets, and keep null distinct from zero",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-03 a For Time partial is in round 1 only for a single-pass block; a multi-round race takes its round from a recorded completed-rounds count, or has none",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "TASK-030 logging field ownership before dependent writes > AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them",
+   "ledger": "carried",
+   "disposition": "carried",
+   "note": "Unchanged; passes on this tree. TASK-117 runs the file whole (check-01).",
+   "result": "passed"
+  },
+  {
+   "file": "src/data/refinement-logging-contract.test.ts",
+   "test": "A3 TASK-117 the timed-entry contract row on the wired timed entry > TASK-AC-A1C737BDC2FB timed-entry holds on Round 7’s wired entry for all four families: the fields its rules state, blank unrecorded and 0 kept, the entries on each family’s own draft owner, and the shell’s one completion path building the rows",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-A1C737BDC2FB: the timed-entry row re-verified on the wired entry for all four families — fields, null/zero rules, draft owners and the rows the shell’s one path builds.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-011.spec.ts",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 touch phone-390 Signal: minute progress and Now/Next without the Not started or Work captions through a boundary, the rest and a pause; the natural end opens the counter-free log; an exception note survives a failed save, is saved once with no minutes tally, and History reads it",
+   "ledger": "build TASK-011 spec → TASK-117 (brief)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). Round 7 keeps the minute’s movement marked Now through its whole minute, rest included (TASK-104’s carried TASK-006 case reads the same), and marks the next minute’s movement Next — while working too, and before Start the movement after the opening minute’s — where the build marked only Next in the rest and the first movement before Start; the look-ahead (Next and the next turn’s `Min N`) is the build’s assertion. Round 7 opens the end log as the schedule ends; the case waits briefly for that (TASK-116’s `ownOpening`) and otherwise opens it from the card’s action; by keyboard, the log Round 7 opened at Finish early is closed with Escape before Tab reaches the card’s action. The coaching disclosure is found by its accessible name. Every timing, record, row and History read is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-011.spec.ts",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 keyboard phone-320 reduced motion: Finish early in minute 3 keeps FINISHED EARLY and the actual stop, never COMPLETE; the counter-free log by keyboard; a reload keeps the stop; the note is saved with no minutes tally or timing",
+   "ledger": "build TASK-011 spec → TASK-117 (brief)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). Round 7 keeps the minute’s movement marked Now through its whole minute, rest included (TASK-104’s carried TASK-006 case reads the same), and marks the next minute’s movement Next — while working too, and before Start the movement after the opening minute’s — where the build marked only Next in the rest and the first movement before Start; the look-ahead (Next and the next turn’s `Min N`) is the build’s assertion. Round 7 opens the end log as the schedule ends; the case waits briefly for that (TASK-116’s `ownOpening`) and otherwise opens it from the card’s action; by keyboard, the log Round 7 opened at Finish early is closed with Escape before Tab reaches the card’s action. The coaching disclosure is found by its accessible name. Every timing, record, row and History read is the build’s. By keyboard the notes are reached from the log’s X within the build’s bound of 5 Tabs, unchanged: Round 7 takes 3 (Weight · kb swing, the effort faces’ one roving radio stop, the notes). Repair 1 restored that bound, which attempt 1 had raised to 12 without a reason.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-011.spec.ts",
+   "test": "TASK-011 EMOM schedule and end logging without a completion counter > JOURNEY-011 gallery emom and cards phone-390: the route’s own EmomBlock — the counter-free end log after every minute and after an early finish, and the ready card with its minute and Next and no caption — with no network",
+   "ledger": "build TASK-011 spec → TASK-117 (brief)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The minute is Round 7’s clock caption (`Minute 3 of 10`), and this task adds `· Rest` beside it while the block’s own rest window runs (AC-R011-01: the rest transition keeps its word); its state words are Round 7’s (`Paused`, `Finished early`, `Time complete`) where the build drew MIN 3 OF 10 with PAUSED, FINISHED EARLY or COMPLETE under it; before Start Round 7 draws no clock, so no caption at all; each movement’s minute is `Min 3 · 12 reps`; rows are named by their movement (`kb swing`). Round 7 keeps the minute’s movement marked Now through its whole minute, rest included (TASK-104’s carried TASK-006 case reads the same), and marks the next minute’s movement Next — while working too, and before Start the movement after the opening minute’s — where the build marked only Next in the rest and the first movement before Start; the look-ahead (Next and the next turn’s `Min N`) is the build’s assertion. Round 7 opens the end log as the schedule ends; the case waits briefly for that (TASK-116’s `ownOpening`) and otherwise opens it from the card’s action; by keyboard, the log Round 7 opened at Finish early is closed with Escape before Tab reaches the card’s action. The coaching disclosure is found by its accessible name. Every timing, record, row and History read is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-015.spec.ts",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 touch phone-390 Signal: a single-pass For Time stopped Incomplete takes each movement’s completed amount in its own unit and the actual load; a reload keeps them; a refused movement write keeps every entry and the existing dialog; the retry restates the row and writes the movement rows once; saved fields read back and are no longer offered; History reads the row",
+   "ledger": "build TASK-015 spec → TASK-117 (brief)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The AMRAP’s amount field is Round 7’s accepted words, “Completed in next round” (`Next round · <movement>`), where the build wrote “Completed in round N”: the round it names is the one after the recorded count, as the saved row’s round_number and History’s “Round N” read it (the AC-R015-02 cases and task-015.spec.ts assert round 3 after two rounds and round 2 after one); the ladder keeps “Completed in round N” and For Time “Completed”, as Round 7 draws them. Units are Round 7’s field caps (`Reps`, `Seconds`, `Distance (m)`), where the build drew `reps`, `sec`, `m`; the refusal words keep the build’s units (`Enter sec as a whole number, 0 or more`). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. Once saved, Round 7 reads the log back as “Log saved” with each movement’s entry in words (`kettlebell swing · 7 reps · 20 kg`) and offers its Edit log correction (accepted by TASK-103/TASK-105), where the build reopened the log with the fields disabled; “read back” and “no longer offered” are read there: the entries in words, no Log results action and no field on the card. Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The gallery’s preview profile states loads in pounds (`PreviewSetLogging`), so its unit is `lb`.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-015.spec.ts",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 keyboard phone-320 reduced motion: the AMRAP’s partial fields appear only once a rounds count is recorded and name the round after it, a load only on the loaded movement, filled by keyboard beside the kept Reps into the next round, and the saved rows carry each round, amount, unit and load with no row for a blank movement",
+   "ledger": "build TASK-015 spec → TASK-117 (brief)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The AMRAP’s amount field is Round 7’s accepted words, “Completed in next round” (`Next round · <movement>`), where the build wrote “Completed in round N”: the round it names is the one after the recorded count, as the saved row’s round_number and History’s “Round N” read it (the AC-R015-02 cases and task-015.spec.ts assert round 3 after two rounds and round 2 after one); the ladder keeps “Completed in round N” and For Time “Completed”, as Round 7 draws them. Units are Round 7’s field caps (`Reps`, `Seconds`, `Distance (m)`), where the build drew `reps`, `sec`, `m`; the refusal words keep the build’s units (`Enter sec as a whole number, 0 or more`). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. Once saved, Round 7 reads the log back as “Log saved” with each movement’s entry in words (`kettlebell swing · 7 reps · 20 kg`) and offers its Edit log correction (accepted by TASK-103/TASK-105), where the build reopened the log with the fields disabled; “read back” and “no longer offered” are read there: the entries in words, no Log results action and no field on the card. Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The gallery’s preview profile states loads in pounds (`PreviewSetLogging`), so its unit is `lb`.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-015.spec.ts",
+   "test": "TASK-015 truthful per-movement partial and actual-load entry > JOURNEY-015 gallery amrap, for_time and ladder phone-390: the route’s own per-movement fields over memory only — the seeded entries read back unlike the plan, loads only where they apply, the ladder’s round-3 fields once round 2 is stated and bounded by its target — with nothing stored and no network",
+   "ledger": "build TASK-015 spec → TASK-117 (brief)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). The AMRAP’s amount field is Round 7’s accepted words, “Completed in next round” (`Next round · <movement>`), where the build wrote “Completed in round N”: the round it names is the one after the recorded count, as the saved row’s round_number and History’s “Round N” read it (the AC-R015-02 cases and task-015.spec.ts assert round 3 after two rounds and round 2 after one); the ladder keeps “Completed in round N” and For Time “Completed”, as Round 7 draws them. Units are Round 7’s field caps (`Reps`, `Seconds`, `Distance (m)`), where the build drew `reps`, `sec`, `m`; the refusal words keep the build’s units (`Enter sec as a whole number, 0 or more`). A movement’s group is read by its title (`.clr-timed-log__group` with its own `.clr-timed-log__group-title`): Round 7 draws no `data-timed-movement` hook, so a group’s identity is read from its movement’s name and from the record its entry is kept under, by `workout_exercises.id`. Once saved, Round 7 reads the log back as “Log saved” with each movement’s entry in words (`kettlebell swing · 7 reps · 20 kg`) and offers its Edit log correction (accepted by TASK-103/TASK-105), where the build reopened the log with the fields disabled; “read back” and “no longer offered” are read there: the entries in words, no Log results action and no field on the card. Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The gallery’s preview profile states loads in pounds (`PreviewSetLogging`), so its unit is `lb`.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-046.spec.ts",
+   "test": "TASK-046 the four timed-result families in the shared focused dialog > JOURNEY-019 EMOM phone-390 touch: the end of the schedule offers a real Log results action that opens the counter-free end log in the modal dialog, close and Escape keep the note, a refused save keeps it and its retry writes it once to the block’s notes through the section’s forward action",
+   "ledger": "build TASK-046 spec → TASK-117 (brief: proves the task-046 suite for all four timed families)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7 opens each log as its attempt ends; the case closes it and opens it from the card’s action, so open, close and reopen are read as the build read them. The focused-dialog read is as in the keyboard case (head; the X read as the build read it, framed with `clr-hit` and inside `.clr-bleed`; R7-3 retirement; Round 7’s Save log). The EMOM’s natural end is Round 7’s `Time complete`; the coaching disclosure is found by its accessible name. Every write and row assertion is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-046.spec.ts",
+   "test": "TASK-046 the four timed-result families in the shared focused dialog > JOURNEY-019 AMRAP, For Time and ladder phone-320 keyboard reduced motion: each log opens from its card into the modal dialog with its own fields, the clock runs on behind it, Undo finish closes it and resumes the ladder, close and Escape keep every entry, a refused save keeps them and its retry writes each block’s row and movement rows once, and the saved log is no longer offered",
+   "ledger": "build TASK-046 spec → TASK-117 (brief: proves the task-046 suite for all four timed families)",
+   "disposition": "rewritten",
+   "note": "Rewritten with the owner’s reason for its ladder part: owner decision 3 of 2026-11-16 (Eric, chat, 2026-11-16: “Accept all five”) — the ladder’s log opens only after its attempt ends (Round 7). The build opened the ladder’s log before Finish (a secondary action beside Start) and read the race clock running behind it; the case now reads that no log is offered on any card before Finish or while the ladder runs, and reads “the clock runs on behind it” on the workout’s own clock (Session time) behind the ladder’s open log after Finish. The rest is Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Each log opens from its card by keyboard (a log Round 7 opened by itself as the attempt ended is closed with Escape first). Round 7’s words: `Complete round 2`, `Undo finish · resume ladder`, `Start FOR TIME`; counts read from Round 7’s `<output>` (a blank one carries `data-empty`). The focused-dialog read (`expectFocusedLog`) reads Round 7’s head (`.clr-logging-overlay__head`) and the X exactly as the build read it — framed (`clr-chamfer`, `clr-btn` and the shared hit area `clr-hit`), inside its `.clr-bleed`, not quiet, a glyph, no words — all of which Round 7’s LoggingOverlay draws through the design-system IconButton (repair 1 restored the `clr-hit` and `.clr-bleed` reads that attempt 1 had dropped without a reason); its “form named by the dialog’s title” read is retired under decision R7-3 and replaced by the accepted name (rules.retired); its “no Save” read becomes Round 7’s one Save log. Back on the saved section the For Time reads back as “Log saved” with its face, offers no Log results, and Round 7’s Edit log opens it at the saved answer, Incomplete, read from the row, where the build showed the chips disabled. Every write and row assertion is the build’s.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-046.spec.ts",
+   "test": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states clear phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+   "ledger": "build TASK-046 spec → TASK-117 (brief: proves the task-046 suite for all four timed families)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7 opens each log as its attempt ends; the case closes it and opens it from the card’s action, so open, close and reopen are read as the build read them. The focused-dialog read is as in the keyboard case (head; the X read as the build read it, framed with `clr-hit` and inside `.clr-bleed`; R7-3 retirement; Round 7’s Save log). Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The amrap state reads a blank count tapped to 1, where the build’s seeded state read 3 tapped to 4.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-046.spec.ts",
+   "test": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states vapour phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+   "ledger": "build TASK-046 spec → TASK-117 (brief: proves the task-046 suite for all four timed families)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7 opens each log as its attempt ends; the case closes it and opens it from the card’s action, so open, close and reopen are read as the build read them. The focused-dialog read is as in the keyboard case (head; the X read as the build read it, framed with `clr-hit` and inside `.clr-bleed`; R7-3 retirement; Round 7’s Save log). Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The amrap state reads a blank count tapped to 1, where the build’s seeded state read 3 tapped to 4.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-046.spec.ts",
+   "test": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states signal phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+   "ledger": "build TASK-046 spec → TASK-117 (brief: proves the task-046 suite for all four timed families)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7 opens each log as its attempt ends; the case closes it and opens it from the card’s action, so open, close and reopen are read as the build read them. The focused-dialog read is as in the keyboard case (head; the X read as the build read it, framed with `clr-hit` and inside `.clr-bleed`; R7-3 retirement; Round 7’s Save log). Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The amrap state reads a blank count tapped to 1, where the build’s seeded state read 3 tapped to 4.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-046.spec.ts",
+   "test": "TASK-046 the four timed-result families in the shared focused dialog > accepted gallery states mono phone-390: emom, amrap, for_time and ladder open the route’s own log from its card into the focused dialog, close and reopen keep the entry, with nothing read or written over the network",
+   "ledger": "build TASK-046 spec → TASK-117 (brief: proves the task-046 suite for all four timed families)",
+   "disposition": "rewritten",
+   "note": "Round 7 look, same asserted behaviour. Read on Round 7’s owners — TimedWorkoutFlow (src/ui/timed-workout-flow.tsx) with its one “Log results” action and LoggingOverlay drawn inside the flow, and TimedResultLog (src/ui/timed-result-log.tsx) inside it — through local helpers (the build’s src/test/timed-log-dialog.ts locators, `[data-timed-log-opener]` and `dialog.clr-accepted-log`, are the build’s and unused here). Round 7 opens each log as its attempt ends; the case closes it and opens it from the card’s action, so open, close and reopen are read as the build read them. The focused-dialog read is as in the keyboard case (head; the X read as the build read it, framed with `clr-hit` and inside `.clr-bleed`; R7-3 retirement; Round 7’s Save log). Round 7’s accepted gallery states are the route’s own TimedWorkoutFlow over the gallery’s block, run past its cap by the state’s own drive (`?state=<id>&open=1`) or finished by its own controls; Round 7 seeds no sample entries (the build’s `data-gallery-amrap=\"early\"` and `data-gallery-race` variants do not exist), so the entries are typed over memory and read back as typed, never the plan’s. The amrap state reads a blank count tapped to 1, where the build’s seeded state read 3 tapped to 4.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 emom phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 emom phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 amrap phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 amrap phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 for_time phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 for_time phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 ladder phone-320: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-117-parity.spec.ts",
+   "test": "TASK-AC-90B334BEA586 ladder phone-390: /workout’s timed card and its Log results dialog match the accepted gallery state, before Start, past the cap and with the same entries",
+   "ledger": "added by TASK-117",
+   "disposition": "added",
+   "note": "TASK-AC-90B334BEA586: route versus accepted gallery state, words and element boxes, 320 and 390 px; zero text and zero layout differences; galleryChanges lists this task’s changes against bec4454, each with its criterion.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-009.spec.ts",
+   "test": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 touch phone-390 Signal: the work precedes the grouped log; the framed counts tap up and down to an explicit zero beside a blank; a reload, a failed save and its retry, the saved row and History keep them apart",
+   "ledger": "TASK-116’s (regression rerun, brief)",
+   "disposition": "carried",
+   "note": "Unchanged (TASK-116’s rewrite); rerun by TASK-117 as a regression check of the logs it adds per-movement groups to.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-009.spec.ts",
+   "test": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 keyboard phone-320 reduced motion: the cap closes the window with nothing entered; the counts are reached and operated by keyboard; blank rounds and an explicit zero partial round are saved as null and 0",
+   "ledger": "TASK-116’s (regression rerun, brief)",
+   "disposition": "carried",
+   "note": "Unchanged (TASK-116’s rewrite); rerun by TASK-117 as a regression check of the logs it adds per-movement groups to.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-009.spec.ts",
+   "test": "TASK-009 AMRAP prescription and concise scoring controls > JOURNEY-009 gallery amrap phone-390: the route’s own AMRAP ended by its cap and ended early, work first, the grouped log and framed counts, blank beside an explicit zero, with no network",
+   "ledger": "TASK-116’s (regression rerun, brief)",
+   "disposition": "carried",
+   "note": "Unchanged (TASK-116’s rewrite); rerun by TASK-117 as a regression check of the logs it adds per-movement groups to.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-010.spec.ts",
+   "test": "TASK-010 completion choices and existing effort faces > JOURNEY-010 touch phone-390 Signal: For Time Finish opens Complete beside Incomplete in one row; the athlete corrects to Incomplete and answers effort with a face; a reload, a refused save and its retry, the saved row and History keep the answer, and effort is never a number",
+   "ledger": "TASK-116’s (regression rerun, brief)",
+   "disposition": "carried",
+   "note": "Unchanged (TASK-116’s rewrite); rerun by TASK-117 as a regression check of the logs it adds per-movement groups to.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-010.spec.ts",
+   "test": "TASK-010 completion choices and existing effort faces > JOURNEY-010 keyboard phone-320 reduced motion: the ladder’s cap opens Incomplete with no rung; Complete and the effort faces are reached and chosen by keyboard; the saved row records the top rung and no effort",
+   "ledger": "TASK-116’s (regression rerun, brief)",
+   "disposition": "carried",
+   "note": "Unchanged (TASK-116’s rewrite); rerun by TASK-117 as a regression check of the logs it adds per-movement groups to.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-010.spec.ts",
+   "test": "TASK-010 completion choices and existing effort faces > JOURNEY-010 gallery for_time and ladder phone-390: the route’s own logs, completion at the route’s starting point and the effort faces unanswered, live over memory only, with no network",
+   "ledger": "TASK-116’s (regression rerun, brief)",
+   "disposition": "carried",
+   "note": "Unchanged (TASK-116’s rewrite); rerun by TASK-117 as a regression check of the logs it adds per-movement groups to.",
+   "result": "passed"
+  }
+ ]
+}

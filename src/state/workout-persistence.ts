@@ -474,7 +474,8 @@ function isOptionalAnswer(value: unknown): boolean {
 /**
  * TASK-015 (C37): the optional per-movement entries a later build added to the
  * AMRAP and For Time records — each movement's typed amount and load, two
- * strings. Absent in older records; anything else is not a record.
+ * strings — and, since A3 TASK-117, the EMOM's (a load only). Absent in older
+ * records; anything else is not a record.
  */
 function isOptionalMovementDrafts(value: unknown): boolean {
   if (value === undefined) return true
@@ -492,7 +493,11 @@ function isEmomState(value: unknown): value is EmomState {
     (record.workDoneMinute === null ||
       (typeof record.workDoneMinute === 'number' && Number.isInteger(record.workDoneMinute))) &&
     isOptionalStamp(record.pausedAt) &&
-    isOptionalStamp(record.finishedAt)
+    isOptionalStamp(record.finishedAt) &&
+    // A3 TASK-117 (TASK-047, R84): each loaded movement's typed load, and a
+    // failed save of the end log kept for the retry (TASK-048).
+    isOptionalMovementDrafts(record.movements) &&
+    isOptionalAnswer(record.saveFailed)
   )
 }
 

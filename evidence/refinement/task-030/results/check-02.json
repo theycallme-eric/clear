@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/data/refinement-logging-contract.test.ts",
-      "sha256": "48f17a0658b36be5bdad2896a51b9fdbcd818849d32f58fd5a359aec62717636"
+      "sha256": "ee7c13e4a7737d676e9cf96530fd95a214e14995556506ae06d9477bfd7e3294"
     }
   ],
   "requiredCases": [
@@ -86,12 +86,12 @@
     }
   ],
   "totals": {
-    "total": 12,
-    "passed": 12,
+    "total": 13,
+    "passed": 13,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 12
+    "executed": 13
   },
   "problems": []
 }
