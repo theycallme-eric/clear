@@ -40,6 +40,7 @@ import {
 import { ErrorCode, isErr, type AppError } from '../state/errors'
 import { todayLocal } from '../state/favorites'
 import { useSessionDetailQuery } from '../state/history-queries'
+import { isPreparationSection, persistedPreparationReading } from '../state/preparation-guide'
 import { reviewHandoff } from '../state/review-handoff'
 import type { SessionReconstruction } from '../state/schemas'
 import { sessionDetail, type SessionDetailView } from '../state/session-detail'
@@ -163,7 +164,7 @@ export function SessionDetail() {
           />
         ) : (
           payload !== null &&
-          view !== null && <SessionDetailBody view={view} />
+          view !== null && <SessionDetailBody view={view} record={payload} onRetry={query.refetch} />
         )}
       </Screen>
     </>
@@ -214,8 +215,14 @@ function SessionDetailErrorAction({
  */
 function SessionDetailBody({
   view,
+  record,
+  onRetry,
 }: {
   view: SessionDetailView
+  /** The reconstruction the view was read from, section for section. */
+  record: SessionReconstruction
+  /** Reads the record again (a malformed preparation row's retry). */
+  onRetry: () => void
 }) {
   const presentation = useWorkoutExperiencePresentation()
   // TASK-004 (AC-C14-01, R20), carried by A3 TASK-103 with the F1 detail
@@ -264,9 +271,19 @@ function SessionDetailBody({
       </Card>
 
       <section aria-label={SESSION_DETAIL_SECTIONS_LABEL} className="clr-stack">
-        {view.sections.map((section) => (
-          presentation?.guides && (section.type === 'warmup' || section.type === 'cooldown') ? <PreparationGuide key={section.id} guide={presentation.guides[section.type]} /> : <SessionSectionCard key={section.id} section={section} />
-        ))}
+        {view.sections.map((section, index) => {
+          // A3 TASK-109 (TASK-022, TASK-034): a Warm-up or Cooldown is
+          // Round 7's concise guide, read from the record's own active rows
+          // (a swap reads in place) — never the gallery's sample. A malformed
+          // row is the guide's error with its retry, never a guessed guide.
+          // `sessionDetail` keeps the record's section order.
+          const entry = record.sections[index]
+          return isPreparationSection(section.type) && entry !== undefined ? (
+            <PreparationGuide key={section.id} reading={persistedPreparationReading(entry, section.type)} type={section.type} onRetry={onRetry} />
+          ) : (
+            <SessionSectionCard key={section.id} section={section} />
+          )
+        })}
       </section>
     </div>
   )

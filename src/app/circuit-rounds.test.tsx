@@ -161,12 +161,16 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     const coaching = screen.getByRole('button', { name: `Coaching and notes — CIRCUIT: ${NAMES.join(', ')}` })
     expect(coaching).toHaveAttribute('aria-expanded', 'false')
     const region = screen.getByRole('region', { name: `Coaching and notes — CIRCUIT: ${NAMES.join(', ')}` })
+    // A3 TASK-109 (round-07 S2; TASK-005, C16): inside the circuit's one
+    // disclosure each movement is its own role="group" named by the movement —
+    // the build's assertion, read by role and accessible name rather than the
+    // build's data-coaching-movement hook (rewritten, same asserted behaviour).
+    expect(NAMES.map((name) => within(region).getByRole('group', { name }))).toHaveLength(3)
     // Round 7 (A3 task 1): the one disclosure sits outside the movement list.
     expect(screen.getAllByRole('button', { name: /^Coaching and notes/ })).toHaveLength(1)
     expect(screen.getByRole('list', { name: 'Movements in this circuit' }).contains(coaching)).toBe(false)
     // Each movement's labelled section, read by its heading in Round 7's
-    // panel once opened. (The build's role="group" per movement is TASK-005's
-    // grouped-coaching markup, which A3 TASK-109 restores; see the ledger.)
+    // panel once opened.
     await userEvent.setup().click(coaching)
     expect(coaching).toHaveAttribute('aria-expanded', 'true')
     for (const name of NAMES) expect(within(region).getByRole('heading', { name })).toBeInTheDocument()

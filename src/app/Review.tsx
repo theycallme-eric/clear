@@ -62,6 +62,7 @@ import {
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
 import { useAuth } from '../state/auth-context'
 import { createError, ErrorCode, isErr, type AppError } from '../state/errors'
+import { composedPreparationGuide } from '../state/preparation-guide'
 import {
   ANCHOR_LABEL,
   DURATION_LABEL,
@@ -140,7 +141,6 @@ export function Review({
   onStarted,
   progression = null,
 }: ReviewProps) {
-  const presentation = useWorkoutExperiencePresentation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { sessions } = useWorkoutClients()
@@ -335,18 +335,26 @@ export function Review({
           />
         ) : null}
 
-        {presentation?.guides && <PreparationGuide guide={presentation.guides.warmup} />}
-        {briefing.sections.filter(section => !presentation?.guides || !['warmup','cooldown'].includes(section.type)).map((section) => (
-          <ReviewSectionCard
-            key={section.key}
-            section={section}
-            suggestions={suggestions}
-            overrides={overrides}
-            onExplain={setExplaining}
-          />
-        ))}
-
-        {presentation?.guides && <PreparationGuide guide={presentation.guides.cooldown} />}
+        {briefing.sections.map((section, index) => {
+          // A3 TASK-109 (TASK-022, TASK-034; C49, R01, R13): a Warm-up or
+          // Cooldown is Round 7's concise guide, in its own place, read by
+          // TASK-034 from the composition Start persists (a swap reads in
+          // place) — never the gallery's sample and never its blocks'
+          // prescriptions. Every other section is its blocks, as before.
+          const composed = personalizedAcceptance.workout.sections[index]
+          const guide = composed === undefined ? null : composedPreparationGuide(composed)
+          return guide === null ? (
+            <ReviewSectionCard
+              key={section.key}
+              section={section}
+              suggestions={suggestions}
+              overrides={overrides}
+              onExplain={setExplaining}
+            />
+          ) : (
+            <PreparationGuide key={section.key} reading={{ status: 'ready', guide }} type={guide.type} />
+          )
+        })}
 
         {/* REQ-006: the way out of this composition, once it has been read.
             Discarding is confirmed and irreversible, so it is a framed button

@@ -1,0 +1,300 @@
+{
+  "schema": "clear-task-109-parity/v1",
+  "task": "TASK-109",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "cards",
+  "width": 320,
+  "route": "/workout",
+  "drive": "each timed card’s disclosure closed, then its trigger pressed: open, its movement’s labelled section, the library’s “no entry” answer and its note opener",
+  "parts": {
+    "disclosure": "the grouped Coaching and notes disclosure, the timed card’s last part"
+  },
+  "captures": {
+    "gallery-emom-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-emom-closed.png",
+      "sha256": "ce0d053363de8cbc05d94338b75c597a2c62d5b126690aff5ebda36c502af1bd"
+    },
+    "route-emom-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-emom-closed.png",
+      "sha256": "6f3f1713bf0036f10e1e282e93dae80bc9e6a264ce2e778905818769890a7f18"
+    },
+    "gallery-emom-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-emom-open.png",
+      "sha256": "0f87228d65e767bc06bcb217e15ee5da99883e903e5db8fb8a5e4f78265c0550"
+    },
+    "route-emom-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-emom-open.png",
+      "sha256": "8ac3be8282082f724f2d0e3cd86ba538370ff831a4e387e2c470d469bbe3cdb7"
+    },
+    "gallery-amrap-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-amrap-closed.png",
+      "sha256": "f46d22c90517c1408c6cd62e1b7b54483f51a61319ac1f5e1b357b79d02bc94f"
+    },
+    "route-amrap-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-amrap-closed.png",
+      "sha256": "e742ca24a618e26dd3198c2773e2872b1eccf47e02ce6e5e35cf9f47b0d85ba7"
+    },
+    "gallery-amrap-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-amrap-open.png",
+      "sha256": "629142d4ae851d4e2aa102c5b318e8fd92da2171978e82d526609662eb2cd844"
+    },
+    "route-amrap-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-amrap-open.png",
+      "sha256": "6b0a2303f7e8e0a1fcc55e2f5dee5904487b75189ab8d7810ac50b0d9ef449d5"
+    },
+    "gallery-for-time-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-for-time-closed.png",
+      "sha256": "e0144ab3648bc84633d8b5f4e860b10c460b71c92f4a3497c28ad47788f0e39b"
+    },
+    "route-for-time-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-for-time-closed.png",
+      "sha256": "46c5002589ad1b20f15eecff899693cbdff6026548f77badd04a2317e364ec5b"
+    },
+    "gallery-for-time-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-for-time-open.png",
+      "sha256": "e313d259269c4226785409489c237e1c8bbd51e032448c9dee33ece8484e7b71"
+    },
+    "route-for-time-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-for-time-open.png",
+      "sha256": "8e9d51d7190fb1aabdc05a793ca7a02c1a81cb5df7fe7830b37594b209d47cde"
+    }
+  },
+  "lines": {
+    "emom-closed": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "ADD NOTE — KB SWING"
+      ]
+    },
+    "emom-open": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — KB SWING"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— EMOM: KB SWING",
+        "KB SWING",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — KB SWING"
+      ]
+    },
+    "amrap-closed": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "ADD NOTE — BURPEE"
+      ]
+    },
+    "amrap-open": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — BURPEE"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— AMRAP: BURPEE",
+        "BURPEE",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — BURPEE"
+      ]
+    },
+    "for-time-closed": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "ADD NOTE — WALL BALL"
+      ]
+    },
+    "for-time-open": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — WALL BALL"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL",
+        "WALL BALL",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — WALL BALL"
+      ]
+    }
+  },
+  "focus": {},
+  "differences": {
+    "emom-closed": [],
+    "emom-open": [],
+    "amrap-closed": [],
+    "amrap-open": [],
+    "for-time-closed": [],
+    "for-time-open": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words (data words that differ by intent read as placeholders)",
+    "tolerancePx": 2,
+    "measured": {
+      "emom-closed": {
+        "gallery": 19,
+        "route": 19
+      },
+      "emom-open": {
+        "gallery": 20,
+        "route": 20
+      },
+      "amrap-closed": {
+        "gallery": 19,
+        "route": 19
+      },
+      "amrap-open": {
+        "gallery": 20,
+        "route": 20
+      },
+      "for-time-closed": {
+        "gallery": 19,
+        "route": 19
+      },
+      "for-time-open": {
+        "gallery": 20,
+        "route": 20
+      }
+    },
+    "parts": {
+      "emom-closed": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 40
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 40
+        }
+      },
+      "emom-open": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 188
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 188
+        }
+      },
+      "amrap-closed": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 40
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 40
+        }
+      },
+      "amrap-open": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 188
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 188
+        }
+      },
+      "for-time-closed": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 40
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 40
+        }
+      },
+      "for-time-open": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 188
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 188
+        }
+      }
+    },
+    "differences": {
+      "emom-closed": [],
+      "emom-open": [],
+      "amrap-closed": [],
+      "amrap-open": [],
+      "for-time-closed": [],
+      "for-time-open": []
+    }
+  }
+}

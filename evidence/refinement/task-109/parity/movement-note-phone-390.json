@@ -1,0 +1,185 @@
+{
+  "schema": "clear-task-109-parity/v1",
+  "task": "TASK-109",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "movement-note",
+  "width": 390,
+  "route": "/workout",
+  "drive": "the superset’s disclosure closed; its trigger; “Add note — one arm row” → Movement note (the gallery’s driver presses the same two controls)",
+  "parts": {
+    "disclosure-closed": "the grouped Coaching and notes disclosure, the block card’s last part, closed",
+    "disclosure-open": "the same disclosure open behind the dialog: a labelled section per movement, the library’s “no entry” answer, each note’s opener",
+    "dialog": "the open Movement note dialog: its title, the field labelled by the movement, Save note"
+  },
+  "captures": {
+    "gallery-disclosure-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-closed.png",
+      "sha256": "4246d745d203b09cbf79b65ea163c07e43cfb5c2c29ec4f37d8124d826b9e840"
+    },
+    "route-disclosure-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-closed.png",
+      "sha256": "2c9c1ac760d1aa6b375bac6c9194c34cb5f15332cc3f5d0db35c9611bcd38074"
+    },
+    "gallery-disclosure-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-open.png",
+      "sha256": "be995f2be0b8a06066db3eda35b269f2d2b1c5c82709c31d32784ce7e7abb0e9"
+    },
+    "route-disclosure-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-open.png",
+      "sha256": "b9c274056eea0a92bc7699c3944969dc01be3cf5f2e26e0c1b4a6e869c0facc6"
+    },
+    "gallery-dialog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-dialog.png",
+      "sha256": "c354d8471f709efda5839b8cb772ad5d011339b2333bcd65ba488fb1f489f9bf"
+    },
+    "route-dialog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-dialog.png",
+      "sha256": "7048eec3a56229d6d2bbca5068a7134d735e7983f4c65c51174ed362fea00c60"
+    }
+  },
+  "lines": {
+    "disclosure-closed": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— SUPERSET: ONE ARM ROW, BICEP CURL",
+        "ONE ARM ROW",
+        "ADD NOTE — ONE ARM ROW",
+        "BICEP CURL",
+        "ADD NOTE — BICEP CURL"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— SUPERSET: ONE ARM ROW, BICEP CURL",
+        "ONE ARM ROW",
+        "ADD NOTE — ONE ARM ROW",
+        "BICEP CURL",
+        "ADD NOTE — BICEP CURL"
+      ]
+    },
+    "disclosure-open": {
+      "gallery": [
+        "COACHING AND NOTES",
+        "— SUPERSET: ONE ARM ROW, BICEP CURL",
+        "ONE ARM ROW",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — ONE ARM ROW",
+        "MOVEMENT NOTE",
+        "ONE ARM ROW",
+        "SAVE NOTE",
+        "BICEP CURL",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — BICEP CURL"
+      ],
+      "route": [
+        "COACHING AND NOTES",
+        "— SUPERSET: ONE ARM ROW, BICEP CURL",
+        "ONE ARM ROW",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — ONE ARM ROW",
+        "MOVEMENT NOTE",
+        "ONE ARM ROW",
+        "SAVE NOTE",
+        "BICEP CURL",
+        "The library has no entry for this movement, so there are no cues or regression.",
+        "ADD NOTE — BICEP CURL"
+      ]
+    },
+    "dialog": {
+      "gallery": [
+        "MOVEMENT NOTE",
+        "ONE ARM ROW",
+        "SAVE NOTE"
+      ],
+      "route": [
+        "MOVEMENT NOTE",
+        "ONE ARM ROW",
+        "SAVE NOTE"
+      ]
+    }
+  },
+  "focus": {
+    "dialog": {
+      "gallery": "Close log",
+      "route": "Close log"
+    }
+  },
+  "differences": {
+    "disclosure-closed": [],
+    "disclosure-open": [],
+    "dialog": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words (data words that differ by intent read as placeholders)",
+    "tolerancePx": 2,
+    "measured": {
+      "disclosure-closed": {
+        "gallery": 28,
+        "route": 28
+      },
+      "disclosure-open": {
+        "gallery": 29,
+        "route": 29
+      },
+      "dialog": {
+        "gallery": 23,
+        "route": 23
+      }
+    },
+    "parts": {
+      "disclosure-closed": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 324,
+          "height": 40
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 324,
+          "height": 40
+        }
+      },
+      "disclosure-open": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 324,
+          "height": 344
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 324,
+          "height": 344
+        }
+      },
+      "dialog": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 284.5
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 366,
+          "height": 284.5
+        }
+      }
+    },
+    "differences": {
+      "disclosure-closed": [],
+      "disclosure-open": [],
+      "dialog": []
+    }
+  }
+}

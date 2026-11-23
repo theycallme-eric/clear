@@ -46,7 +46,9 @@ import {
   type FakeSummaryClient,
 } from '../test/summary-double'
 import {
+  CATALOG_SOURCE_TEXT,
   NO_CUES_TEXT,
+  NO_DEFINITION_TEXT,
   NO_REGRESSION_TEXT,
   NOTE_FAILED_TEXT,
   NOTE_SAVED_TEXT,
@@ -1379,6 +1381,62 @@ describe('Workout — coaching and notes', () => {
     await user.click(toggle)
     expect(squat).toHaveValue('Keep my stance')
     expect(row).toHaveValue('Keep my back stable')
+  })
+
+  // AC-C16-01 (TASK-005; C16, R29) supersedes the per-movement disclosures a
+  // superset drew inside each row: the pair has one bottom Coaching and notes
+  // disclosure with a labelled section per movement. U38 still holds — on
+  // demand, and each movement's cues under its own name.
+  // A3 TASK-109: the build's body, restored beside Round 7's own (above); the
+  // block's card is Round 7's `.clr-movement-group` (no `data-workout-card`).
+  it('opens a superset’s one coaching disclosure on demand, each movement’s cues under its own name, and closes it (U38, C16)', async () => {
+    const user = userEvent.setup()
+    const definition = vi.fn(async (slug: string) =>
+      ok(slug === 'back-squat' ? definitionFixture() : null),
+    )
+    await shell({
+      session: activeSession([{
+        title: 'Accessory',
+        sectionType: 'accessory',
+        blocks: [{
+          structureType: 'superset',
+          rounds: 3,
+          exercises: [
+            { prescription: { exercise_id: 'back-squat' } },
+            { prescription: { exercise_id: 'barbell-row' } },
+          ],
+        }],
+      }]),
+      exercises: { definition },
+    })
+
+    // No disclosure inside either movement's row.
+    expect(screen.queryByRole('button', { name: PANEL })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Coaching and notes — barbell row' })).toBeNull()
+    const GROUP = 'Coaching and notes — SUPERSET: back squat, barbell row'
+    const toggle = screen.getByRole('button', { name: GROUP })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(definition).not.toHaveBeenCalled()
+
+    // The disclosure is the card's last part, after both movements.
+    const card = toggle.closest<HTMLElement>('.clr-movement-group')!
+    expect(card.lastElementChild).toContainElement(toggle)
+    const list = within(card).getByRole('list', { name: 'Movements in this superset' })
+    expect(list).not.toContainElement(toggle)
+
+    await user.click(toggle)
+    const panel = screen.getByRole('region', { name: GROUP })
+    const squat = within(panel).getByRole('group', { name: 'back squat' })
+    const row = within(panel).getByRole('group', { name: 'barbell row' })
+    // Each movement's cues sit in its own labelled section, never the partner's.
+    expect(await within(squat).findByText('Brace before you descend')).toBeInTheDocument()
+    expect(within(squat).getByText(CATALOG_SOURCE_TEXT)).toBeInTheDocument()
+    expect(within(row).queryByText('Brace before you descend')).toBeNull()
+    expect(await within(row).findByText(NO_DEFINITION_TEXT)).toBeInTheDocument()
+
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(panel).toHaveAttribute('data-expanded', 'false')
   })
 
   it('shows no broken panel when the catalog has nothing for a movement', async () => {

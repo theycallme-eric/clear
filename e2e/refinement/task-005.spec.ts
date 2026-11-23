@@ -43,6 +43,17 @@ import { expect, test as scanned } from '../fixtures'
  * attempts are Start's two session calls and the note PATCHes asked for here,
  * answered by this file and never forwarded; no set is logged, no model is
  * called and no real account or row exists to mutate.
+ *
+ * A3 TASK-109: the build's cases, read on Round 7's owners
+ * (`GroupExerciseCoaching` / `ExerciseCoaching`, drawn by `BlockPanel`; the
+ * accepted gallery bec4454). Where Round 7 draws differently the read follows
+ * Round 7, each change listed in `evidence/refinement/task-109/test-ledger.json`:
+ * a block's card is `.clr-movement-group` and the disclosure is its child (no
+ * `data-workout-card` / `data-coaching-group` / `data-coaching-movement`
+ * hooks; sections are found by role and name); the note dialog keeps Round 7's
+ * "Movement note" title and the movement's name labels its field (owner
+ * decision 4); Round 7 keeps the closed dialog in the section, so the note's
+ * status is read as the visible status line beside its opener.
  */
 const OWNER = '00000000-0000-4000-8000-000000000501'
 const PLACE = '00000000-0000-4000-8000-000000000511'
@@ -355,8 +366,14 @@ function sectionOf(region: Locator, name: string): Locator {
   return region.getByRole('group', { name, exact: true })
 }
 
+/** Round 7 (owner decision 4): the movement's name labels the note field. */
 function noteOf(scope: Locator, name: string): Locator {
-  return scope.getByRole('textbox', { name: new RegExp(`^Notes — ${name}`) })
+  return scope.getByRole('textbox', { name, exact: true })
+}
+
+/** The note's own status line, as shown (Round 7 keeps a closed dialog's copy hidden in the section). */
+function noteStatus(scope: Locator, text: string): Locator {
+  return scope.getByRole('status').filter({ hasText: text })
 }
 
 function saveOf(scope: Locator, name: string): Locator {
@@ -366,15 +383,16 @@ function saveOf(scope: Locator, name: string): Locator {
 /**
  * TASK-045: a movement's note is entered in the shared focused logging
  * dialog. Its section keeps one opener, "Add note — <movement>" (or "Edit
- * note — …" once the field holds words); the dialog "Notes — <movement>"
- * holds the field, Save note and, while open, the note's status.
+ * note — …" once the field holds words); the dialog holds the field, Save
+ * note and, while open, the note's status. Round 7: the dialog keeps its fixed
+ * "Movement note" title, and its field carries the movement's name.
  */
 function openerOf(scope: Locator, name: string): Locator {
   return scope.getByRole('button', { name: new RegExp(`^(Add|Edit) note — ${name}$`) })
 }
 
 function noteDialog(scope: Locator, name: string): Locator {
-  return scope.page().getByRole('dialog', { name: `Notes — ${name}`, exact: true })
+  return scope.page().getByRole('dialog', { name: 'Movement note', exact: true }).filter({ has: scope.page().getByRole('textbox', { name, exact: true }) })
 }
 
 /** Opens one movement's note by touch from its own section; answers its dialog. */
@@ -415,16 +433,20 @@ async function readDisclosure(toggle: Locator): Promise<DisclosureGeometry> {
       const rect = node.getBoundingClientRect()
       return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height }
     }
-    const card = button.closest('[data-workout-card]')!
-    const group = button.closest('[data-coaching-group]')!
+    // Round 7: the block's card is its `.clr-movement-group`; the disclosure is
+    // the card's child that holds the trigger; the rows are its movement list's.
+    const card = button.closest('.clr-movement-group')!
+    const group = [...card.children].find((child) => child.contains(button))!
     const region = group.querySelector('[role="region"]')!
     const hidden = button.querySelector('.a11y-hidden')!
     const hiddenStyle = getComputedStyle(hidden)
     const outside = [...card.querySelectorAll('button')].filter((control) => !group.contains(control))
-    const rows = [...card.querySelectorAll('[data-movement-identity]')].filter((row) => !group.contains(row))
+    const rows = [...card.querySelectorAll('[aria-label^="Movements in this"] > li')].filter((row) => !group.contains(row))
+    const grouped = [...card.children].filter((child) =>
+      [...child.querySelectorAll('.clr-collapsible__trigger')].some((trigger) => /^Coaching and notes — [A-Z ]+:/.test(trigger.textContent ?? '')))
     return {
       isLast: card.lastElementChild === group,
-      inCard: card.querySelectorAll('[data-coaching-group]').length,
+      inCard: grouped.length,
       visibleLabel: [...button.childNodes]
         .filter((node) => !(node instanceof Element && node.classList.contains('a11y-hidden')))
         .map((node) => node.textContent ?? '').join('').trim(),
@@ -434,9 +456,9 @@ async function readDisclosure(toggle: Locator): Promise<DisclosureGeometry> {
       rowsBottom: Math.max(...rows.map((row) => row.getBoundingClientRect().bottom)),
       controlsBottom: Math.max(...outside.map((control) => control.getBoundingClientRect().bottom)),
       regionHeight: region.getBoundingClientRect().height,
-      sectionHeadings: [...group.querySelectorAll('[data-coaching-movement]')]
+      sectionHeadings: [...group.querySelectorAll('[role="group"]')]
         .map((section) => section.querySelector('h1, h2, h3, h4, h5, h6')?.textContent ?? ''),
-      sections: [...group.querySelectorAll('[data-coaching-movement]')].map(box),
+      sections: [...group.querySelectorAll('[role="group"]')].map(box),
       transition: getComputedStyle(region).transitionDuration,
       rowDisclosures: [...card.querySelectorAll('.clr-collapsible__trigger')].filter((trigger) => !group.contains(trigger)).length,
     }
@@ -477,11 +499,12 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
 
       // Review: the grouped blocks, planned. Before Start there is no row for a
       // note, so Review offers no disclosure and no field.
-      for (const list of Object.values(COACHING_LISTS.review)) {
-        await expect(page.getByRole('list', { name: list, exact: true })).toBeVisible()
-      }
+      // Round 7's Review lists a grouped block's movements; a standard block is its row.
+      await expect(page.getByRole('list', { name: COACHING_LISTS.review.superset, exact: true })).toBeVisible()
+      await expect(page.getByRole('list', { name: COACHING_LISTS.review.circuit, exact: true })).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Swap back squat', exact: true })).toBeVisible()
       await expect(page.locator('main').getByRole('button', { name: /^Coaching and notes/ })).toHaveCount(0)
-      await expect(page.locator('main').getByRole('textbox', { name: /^Notes — / })).toHaveCount(0)
+      await expect(page.locator('main').getByRole('textbox')).toHaveCount(0)
       await expect(page.locator('main').getByRole('button', { name: /^(Add|Edit) note — / })).toHaveCount(0)
       await noHorizontalOverflow(page)
       await attachCapture(page, `review-${name}`)
@@ -524,7 +547,7 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       await saveOf(dialog, 'dumbbell bench press').tap()
       await expect(dialog.getByText('Note saved')).toBeVisible()
       await closeNote(dialog)
-      await expect(bench.getByText('Note saved')).toBeVisible()
+      await expect(noteStatus(bench, 'Note saved')).toBeVisible()
       expect(app.notes()).toEqual([{ slug: 'dumbbell-bench-press', notes: 'Pause at the bottom', stored: true }])
       await expect(row.getByText('Note saved')).toHaveCount(0)
       dialog = await openNote(row, 'chest supported row')
@@ -544,20 +567,20 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       await expect(noteOf(dialog, 'goblet squat')).toHaveAttribute('aria-invalid', 'true')
       await checkA11y()
       await closeNote(dialog)
-      await expect(goblet.getByText('Not saved')).toBeVisible()
+      await expect(noteStatus(goblet, 'Not saved')).toBeVisible()
       await expect(swing.getByText('Not saved')).toHaveCount(0)
-      await expect(bench.getByText('Note saved')).toBeVisible()
+      await expect(noteStatus(bench, 'Note saved')).toBeVisible()
       await checkA11y()
       await noHorizontalOverflow(page)
-      await attachCard(page, page.locator('[data-workout-card="workout"]').filter({ has: supersetRegion }), `superset-open-${name}`)
-      await attachCard(page, page.locator('[data-workout-card="workout"]').filter({ has: circuitRegion }), `circuit-failed-save-${name}`)
+      await attachCard(page, page.locator('.clr-movement-group').filter({ has: supersetRegion }), `superset-open-${name}`)
+      await attachCard(page, page.locator('.clr-movement-group').filter({ has: circuitRegion }), `circuit-failed-save-${name}`)
 
       dialog = await openNote(goblet, 'goblet squat')
       await saveOf(dialog, 'goblet squat').tap()
       await expect(dialog.getByText('Note saved')).toBeVisible()
       await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toHaveCount(0)
       await closeNote(dialog)
-      await expect(goblet.getByText('Note saved')).toBeVisible()
+      await expect(noteStatus(goblet, 'Note saved')).toBeVisible()
       expect(app.notes()).toEqual([
         { slug: 'dumbbell-bench-press', notes: 'Pause at the bottom', stored: true },
         { slug: 'goblet-squat', notes: 'Heels down', stored: false },
@@ -621,7 +644,7 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
       await expect(scope.getByText(/^(Note saved|Not saved|Saving…)$/)).toHaveCount(0)
     }
     await checkA11y()
-    await attachCard(page, page.locator('[data-workout-card="workout"]').filter({ has: circuitRegion }), 'circuit-guidance-states-phone-390')
+    await attachCard(page, page.locator('.clr-movement-group').filter({ has: circuitRegion }), 'circuit-guidance-states-phone-390')
 
     // Retry reads only the failed movement again, and recovers only it.
     const before = app.reads().length
@@ -702,7 +725,7 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false')
     await page.keyboard.press('Enter')
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    await expect(swing.getByText('Not saved')).toBeVisible()
+    await expect(noteStatus(swing, 'Not saved')).toBeVisible()
     await openerOf(climber, 'mountain climber').focus()
     await page.keyboard.press('Enter')
     await expect(noteOf(climberDialog, 'mountain climber')).toHaveValue('Knees to chest')
@@ -720,7 +743,7 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
     await expect(dialog.getByText('Note saved')).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()
-    await expect(swing.getByText('Note saved')).toBeVisible()
+    await expect(noteStatus(swing, 'Note saved')).toBeVisible()
     await expect(climber.getByText(/^(Note saved|Not saved)$/)).toHaveCount(0)
     expect(app.notes()).toEqual([
       { slug: 'kb-swing', notes: 'Bell felt heavy in round two', stored: false },
@@ -732,6 +755,11 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
     app.assertContained()
   })
 
+  // A3 TASK-109: Round 7's accepted gallery (bec4454) draws its `cards` state as
+  // the live EMOM, AMRAP and For Time cards (no Review/Workout switch, no
+  // superset or circuit there) and the grouped superset in its `movement-note`
+  // state, over a memory library with no entries. The guidance states are read
+  // on the real route above.
   test('gallery cards phone-320: the accepted state draws the actual disclosure at the foot of each grouped live card', async ({ page, visit }) => {
     await page.setViewportSize({ width: 320, height: 568 })
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
@@ -741,23 +769,25 @@ test.describe('TASK-005 one grouped coaching and notes disclosure', () => {
     })
     await visit('/gallery/refinements?state=cards')
     const state = page.locator('[data-refinement-state="cards"]')
-    const review = state.locator('[data-gallery-context="review"]')
-    const workout = state.locator('[data-gallery-context="workout"]')
-    await expect(workout.locator('[data-workout-card="workout"]')).toHaveCount(3)
-
-    await expect(review.getByRole('button', { name: /^Coaching and notes/ })).toHaveCount(0)
-    const supersetNames = ['single arm kettlebell overhead reverse lunge to knee drive', 'push up']
-    const circuitNames = ['kb swing', 'mountain climber', 'plank']
-    for (const [format, names] of [['SUPERSET', supersetNames], ['CIRCUIT', circuitNames]] as const) {
-      expectBottomDisclosure(await readDisclosure(workout.getByRole('button', { name: groupDisclosureName(format, names), exact: true })), names, `gallery ${names[0]}`)
+    await expect(state.locator('.clr-movement-group')).toHaveCount(3)
+    for (const [format, names] of [['EMOM', ['kb swing']], ['AMRAP', ['burpee']], ['FOR TIME', ['wall ball']]] as const) {
+      expectBottomDisclosure(await readDisclosure(state.getByRole('button', { name: groupDisclosureName(format, names), exact: true })), names, `gallery ${format}`)
     }
-    await workout.getByRole('button', { name: groupDisclosureName('CIRCUIT', circuitNames), exact: true }).tap()
-    const region = workout.getByRole('region', { name: groupDisclosureName('CIRCUIT', circuitNames), exact: true })
-    await expect(sectionOf(region, 'kb swing').getByText('Hinge at the hips, not the knees')).toBeVisible()
-    await expect(sectionOf(region, 'plank').getByText('No coaching cues are written for this movement.')).toBeVisible()
-    await expect(sectionOf(region, 'mountain climber').getByText('The library has no entry for this movement, so there are no cues or regression.')).toBeVisible()
     await noHorizontalOverflow(page)
-    await attachCard(page, workout.locator('[data-workout-card="workout"]').nth(2), 'gallery-cards-circuit-open-phone-320')
+    await attachCard(page, state.locator('.clr-movement-group').nth(0), 'gallery-cards-emom-phone-320')
+
+    await visit('/gallery/refinements?state=movement-note')
+    const note = page.locator('[data-refinement-state="movement-note"]')
+    const supersetNames = ['one arm row', 'bicep curl']
+    const toggle = note.getByRole('button', { name: groupDisclosureName('SUPERSET', supersetNames), exact: true })
+    expectBottomDisclosure(await readDisclosure(toggle), supersetNames, 'gallery superset')
+    await toggle.tap()
+    const region = note.getByRole('region', { name: groupDisclosureName('SUPERSET', supersetNames), exact: true })
+    for (const name of supersetNames) {
+      await expect(sectionOf(region, name).getByText('The library has no entry for this movement, so there are no cues or regression.')).toBeVisible()
+    }
+    await noHorizontalOverflow(page)
+    await attachCard(page, note.locator('.clr-movement-group').first(), 'gallery-movement-note-superset-open-phone-320')
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 })

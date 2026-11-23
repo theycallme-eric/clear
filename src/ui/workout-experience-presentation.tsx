@@ -4,7 +4,8 @@
  * The product mounts it at the app root with `PRODUCT_PRESENTATION`
  * (`./product-presentation`): look choices only. The data-bearing inputs are
  * optional and absent in the product
- * until a real source is wired: `guides` (warm-up/cooldown from the session),
+ * until a real source is wired: `guides` (the gallery's sample warm-up and
+ * cooldown; the routes read TASK-034's real guides directly, A3 TASK-109),
  * `suggestedLoads` (absent: the prescription's own load is shown),
  * the training report, and `equipmentSetupDraft` (the review app's
  * onboarding preview, never the product's). The gallery passes sample values.

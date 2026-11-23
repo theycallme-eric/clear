@@ -216,6 +216,7 @@ describe('the coaching panel', () => {
     const alert = await within(panel).findByRole('alert')
     expect(alert).toHaveTextContent('Coaching for back squat didn’t load')
     // The note beside it is still usable: a failed read costs the guidance only.
+    expect(within(panel).getByRole('button', { name: 'Add note — back squat' })).toBeEnabled()
     const note = await openNote(panel)
     expect(within(note).getByRole('textbox', { name: NOTE_FIELD })).toBeEnabled()
     await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
@@ -237,7 +238,14 @@ describe('the coaching panel', () => {
     )
     await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
+    expect(await within(note).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    // Round 7 draws the dialog in the panel, so the base's read holds too.
     expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    // Closed, the panel still says so beside its opener. (Round 7 draws the
+    // closed dialog in place, so the panel's status line is read by its role.)
+    await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: NOTE_DIALOG })).toBeNull())
+    expect(within(panel).getByRole('status')).toHaveTextContent(NOTE_SAVED_TEXT)
     expect(double.savedNotes()).toEqual([
       { exerciseId: exercise.exerciseId, notes: 'Left knee felt tight' },
     ])
@@ -250,7 +258,7 @@ describe('the coaching panel', () => {
 
     await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
-    await within(panel).findByText(NOTE_SAVED_TEXT)
+    await within(note).findByText(NOTE_SAVED_TEXT)
     expect(double.savedNotes()).toEqual([{ exerciseId: exercise.exerciseId, notes: null }])
   })
 
@@ -266,9 +274,21 @@ describe('the coaching panel', () => {
     await userEvent.type(field, 'Grip slipped on set 3')
     await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
+    expect(await within(note).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    expect(within(note).queryByText(NOTE_SAVED_TEXT)).toBeNull()
+    // Round 7 draws the dialog in the panel, so the base's reads hold too.
     expect(await within(panel).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
     expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
     expect(field).toHaveValue('Grip slipped on set 3')
+    // Closed and reopened, the text and the failure are still there.
+    await userEvent.click(within(note).getByRole('button', { name: 'Close log' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: NOTE_DIALOG })).toBeNull())
+    expect(within(panel).getByRole('status')).toHaveTextContent('Not saved')
+    // The kept words make the opener "Edit note" (TASK-045).
+    await userEvent.click(within(panel).getByRole('button', { name: 'Edit note — back squat' }))
+    const reopened = await screen.findByRole('dialog', { name: NOTE_DIALOG })
+    expect(within(reopened).getByRole('textbox', { name: NOTE_FIELD })).toHaveValue('Grip slipped on set 3')
+    expect(within(reopened).getByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
     expect(saveNotes).toHaveBeenCalledTimes(1)
   })
 })
@@ -341,6 +361,8 @@ describe('optional catalog coaching (U38)', () => {
     await userEvent.type(within(note).getByRole('textbox', { name: NOTE_FIELD }), 'Use the safety bars')
     await userEvent.click(within(note).getByRole('button', { name: 'Save note — back squat' }))
 
+    expect(await within(note).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    // Round 7 draws the dialog in the panel, so the base's read holds too.
     expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
     expect(double.savedNotes()).toEqual([
       { exerciseId: exercise.exerciseId, notes: 'Use the safety bars' },
@@ -361,11 +383,15 @@ describe('the panel is one group, with its labels inside', () => {
     const body = cards()[0].querySelector('.clr-card__body') as HTMLElement
     expect(body).toContainElement(screen.getByRole('button', { name: PANEL }))
     expect(body).toContainElement(panel)
+    // TASK-045: the note's opener is in the card; its field is in the focused
+    // logging dialog, never a card inside this one. (Round 7 draws the dialog
+    // in place, in the top layer, rather than portalled to the document.)
     expect(body).toContainElement(screen.getByRole('button', { name: ADD_NOTE }))
-    // The note dialog belongs to the panel, and opening it adds no card.
     const note = await openNote(panel)
     expect(body).toContainElement(note)
     expect(cards()).toHaveLength(1)
+    expect(note).toContainElement(screen.getByRole('textbox', { name: NOTE_FIELD }))
+    expect(note).toContainElement(screen.getByRole('button', { name: 'Save note — back squat' }))
     expect(nestedCards()).toEqual([])
     expect(body).toContainElement(within(note).getByRole('textbox', { name: NOTE_FIELD }))
     expect(body).toContainElement(within(note).getByRole('button', { name: 'Save note — back squat' }))
@@ -528,6 +554,137 @@ describe('the panel’s waits and a low rest keep one loop between them', () => 
     expect(document.querySelector('[data-loop="run"]')).toBeNull()
     expect(within(restBar()).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent(
       '00:08',
+    )
+    expect(within(restBar()).getByText('Final 10 seconds')).toBeInTheDocument()
+  })
+
+  it('shows what was read under reduced motion, with nothing waiting on an animation', async () => {
+    reduceMotion(true)
+    mount({ definitions: { 'back-squat': definitionFixture() } })
+    const panel = await open()
+
+    expect(await within(panel).findByRole('heading', { name: 'Cues' })).toBeInTheDocument()
+    expect(within(panel).getAllByRole('listitem')).toHaveLength(2)
+    expect(within(panel).getByText('Goblet squat')).toBeInTheDocument()
+  })
+})
+
+// TASK-008 (C23, C61): the rest's warning holds the view's loop in its final
+// five seconds (the colour at ten is no loop of its own), so the rest raised
+// here is a five-second one, and what runs is the warning — the rest's timer
+// and its one aura — rather than the card's former stepped micro-pulse.
+//
+// A3 TASK-109: the build's bodies, restored beside Round 7's own "low rest"
+// bodies above (which TASK-108 re-pointed to the rest's timer, decision C1).
+// They agree with TASK-108's merged warning: the rest's timer breathes, with
+// the one aura, on the warning's loop; the rest's card takes no micro-pulse.
+// Round 7's note dialog keeps its "Movement note" title and the movement's
+// name labels its field (owner decision 4, 2026-11-16).
+describe('the panel’s waits and an urgent rest keep one loop between them', () => {
+  /** A rest already at its final five seconds: the urgent warning's window. */
+  function RaiseUrgentRest() {
+    const rest = useRestTimer()
+    return (
+      <button
+        type="button"
+        onClick={() => rest.start({ exerciseId: 'ex-1', label: 'Back Squat', seconds: 5 })}
+      >
+        Raise urgent rest
+      </button>
+    )
+  }
+
+  /** The panel beside the shell’s rest bar, and a control that raises an urgent (five-second) rest. */
+  function besideRest(panel: ReactNode): ReactNode {
+    return (
+      <RestTimerProvider now={() => 1_000_000}>
+        <RaiseUrgentRest />
+        {panel}
+        <RestTimerBar />
+      </RestTimerProvider>
+    )
+  }
+
+  function guidanceWait(panel: HTMLElement): HTMLElement {
+    return within(panel).getByRole('status', { busy: true })
+  }
+
+  function restBar(): HTMLElement {
+    return screen.getByRole('region', { name: 'Rest' })
+  }
+
+  function restTimer(): HTMLElement {
+    return within(restBar()).getByRole('timer', { name: 'Time remaining' })
+  }
+
+  /** Every running loop is the one warning: the rest's timer or its aura. */
+  function onlyTheWarningRuns(): boolean {
+    return [...document.querySelectorAll('[data-loop="run"]')].every((node) =>
+      node === restTimer() || node.matches('[data-countdown-edge]'))
+  }
+
+  it('runs the guidance’s wait until the rest is urgent, then stills it — still busy', async () => {
+    reduceMotion(false)
+    mount({ exercises: { definition: () => never() } }, besideRest)
+    const panel = await open()
+
+    const wait = guidanceWait(panel)
+    expect(wait).toHaveAttribute('data-loop', 'run')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
+
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
+    expect(wait).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('aria-busy', 'true')
+    expect(wait).toHaveTextContent('Reading coaching for back squat')
+    expect(onlyTheWarningRuns()).toBe(true)
+
+    // The rest ends and the wait, which never stopped being one, moves again.
+    await userEvent.click(screen.getByRole('button', { name: 'Skip rest' }))
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    // The timer card and the panel's card stand side by side, never nested.
+    expect(nestedCards()).toEqual([])
+  })
+
+  it('treats a note being saved the same way: one loop, and the button stays busy', async () => {
+    reduceMotion(false)
+    mount({ exercises: { saveNotes: () => never() } }, besideRest)
+    const panel = await open()
+    const note = await openNote(panel)
+    const button = within(note).getByRole('button', { name: 'Save note — back squat' })
+    const row = button.closest('[data-loop]') as HTMLElement
+    expect(row).toHaveAttribute('data-loop', 'still')
+
+    await userEvent.click(button)
+    expect(button).toHaveAttribute('aria-busy', 'true')
+    expect(row).toHaveAttribute('data-loop', 'run')
+    expect(within(note).getByText('Saving…')).toBeInTheDocument()
+
+    // The urgent rest is raised while the note is in flight (a browser's modal
+    // makes the page inert; the loop arbitration is what is under test).
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest', hidden: true }))
+    expect(restTimer()).toHaveAttribute('data-loop', 'run')
+    expect(row).toHaveAttribute('data-loop', 'still')
+    expect(button).toHaveAttribute('aria-busy', 'true')
+    expect(within(note).getByText('Saving…')).toBeInTheDocument()
+    expect(onlyTheWarningRuns()).toBe(true)
+  })
+
+  it('is static under reduced motion and still says everything', async () => {
+    reduceMotion(true)
+    mount({ exercises: { definition: () => never() } }, besideRest)
+    const panel = await open()
+    await userEvent.click(screen.getByRole('button', { name: 'Raise urgent rest' }))
+
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+
+    const wait = guidanceWait(panel)
+    expect(wait).toHaveAttribute('aria-busy', 'true')
+    expect(wait).toHaveTextContent('Reading coaching for back squat')
+    expect(within(panel).getByRole('button', { name: 'Add note — back squat' })).toBeEnabled()
+    expect(within(restBar()).getByRole('timer', { name: 'Time remaining' })).toHaveTextContent(
+      '00:05',
     )
     expect(within(restBar()).getByText('Final 10 seconds')).toBeInTheDocument()
   })
