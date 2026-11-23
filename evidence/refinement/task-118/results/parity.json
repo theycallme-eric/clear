@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-118",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-118-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-118/required-cases.json",
+    "sha256": "92e7844eadf818538e7a4502fb8d44fe9878d280ade7cee7daaf13906404ee4e"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-118-parity.spec.ts",
+      "sha256": "b1a1891efe5a0c9448bdeb17f13274a694b6ea25881a96f52362df02f634e29e"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-118-parity.spec.ts",
+      "name": "TASK-AC-49761FC1B153 overview phone-320: /review’s and /history/:id’s Overview and /summary’s Duration and Streak match the accepted overview state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-118-parity.spec.ts",
+      "name": "TASK-AC-49761FC1B153 assets phone-320: Setup’s equipment, Review’s Required equipment glyph and /review’s and /workout’s equipment labels match the accepted assets state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-118-parity.spec.ts",
+      "name": "TASK-AC-49761FC1B153 overview phone-390: /review’s and /history/:id’s Overview and /summary’s Duration and Streak match the accepted overview state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-118-parity.spec.ts",
+      "name": "TASK-AC-49761FC1B153 assets phone-390: Setup’s equipment, Review’s Required equipment glyph and /review’s and /workout’s equipment labels match the accepted assets state",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}

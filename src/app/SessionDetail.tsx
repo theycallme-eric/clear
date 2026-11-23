@@ -52,7 +52,8 @@ import {
 } from '../state/session-restart'
 import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter, SummaryFacts, SummaryFact } from '../ui/composition'
+import { ActionRow, MetricFrame, MetricGrid, PhoneFooter, SummaryFacts, type SummaryFactReading } from '../ui/composition'
+import { EquipmentSummary } from '../ui/equipment-summary'
 import { HeadingSection } from '../ui/Heading'
 import { MoodReading } from '../ui/mood'
 import { PreparationGuide } from '../ui/preparation-guide'
@@ -227,14 +228,16 @@ function SessionDetailBody({
   const presentation = useWorkoutExperiencePresentation()
   // TASK-004 (AC-C14-01, R20), carried by A3 TASK-103 with the F1 detail
   // tests: the readings the record shares with the plan first, in Review's
-  // Overview order, then the record's own date and status.
-  const facts: readonly (readonly [string, string])[] = [
+  // Overview order, then the record's own date and status. A3 TASK-118: each
+  // carries its kind, so Round 7's `SummaryFacts` gives it Review's glyph,
+  // place and term visibility (C14) over the record's own value (AC-R004-03).
+  const facts: readonly SummaryFactReading[] = [
     // A session nobody timed has no duration, and no term for one.
-    ...(view.duration === null ? [] : [['Duration', view.duration] as const]),
-    ['Focus', view.focus],
-    ['Intensity', String(view.intensity)],
-    ['Date', view.day],
-    ['Status', view.stateLabel],
+    ...(view.duration === null ? [] : [{ kind: 'duration', term: 'Duration', value: view.duration } as const]),
+    { kind: 'focus', term: 'Focus', value: view.focus },
+    { kind: 'intensity', term: 'Intensity', value: String(view.intensity) },
+    { kind: 'date', term: 'Date', value: view.day },
+    { kind: 'status', term: 'Status', value: view.stateLabel },
   ]
 
   return (
@@ -242,14 +245,21 @@ function SessionDetailBody({
       <Card heading={SESSION_DETAIL_OVERVIEW_LABEL}>
         {/* Inside the card `MetricFrame` is a bare readout, so the card is the
             only frame around the facts. */}
-        {presentation ? <SummaryFacts aria-label={SESSION_DETAIL_FACTS_LABEL}>{facts.map(([label,value]) => <SummaryFact key={label} term={label}>{value}</SummaryFact>)}</SummaryFacts> : <MetricGrid as="dl" aria-label={SESSION_DETAIL_FACTS_LABEL} style={{ margin: 0 }}>
-          {facts.map(([label, value]) => (
-            <MetricFrame key={label}>
-              <dt style={LABEL_STYLE}>{label}</dt>
+        {presentation ? <SummaryFacts aria-label={SESSION_DETAIL_FACTS_LABEL} facts={facts} /> : <MetricGrid as="dl" aria-label={SESSION_DETAIL_FACTS_LABEL} style={{ margin: 0 }}>
+          {facts.map(({ term, value }) => (
+            <MetricFrame key={term}>
+              <dt style={LABEL_STYLE}>{term}</dt>
               <dd style={VALUE_STYLE}>{value}</dd>
             </MetricFrame>
           ))}
         </MetricGrid>}
+        {/* A3 TASK-118 (TASK-004: C13, C14, AC-R004-02): the Overview's
+            Required equipment group, Round 7's `EquipmentSummary`, from the
+            record's own rows — each row's saved `equipment_used`, once each,
+            bodyweight excluded, so `None — bodyweight only` is said only of a
+            record whose rows name no equipment. The sections below keep each
+            movement's own equipment. */}
+        <EquipmentSummary equipment={view.equipment} />
         <SessionProvenance provenance={view.provenance} />
 
         {/* The debrief's two answers are ruled sub-groups one level down,

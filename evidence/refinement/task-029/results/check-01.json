@@ -12,17 +12,17 @@
     "run",
     "src/ui/movement-identity.test.tsx",
     "--testNamePattern",
-    "equipment",
+    "^TASK-029 ",
     "--passWithNoTests=false"
   ],
   "manifest": {
     "path": "evidence/refinement/task-029/required-cases.json",
-    "sha256": "7224ea194ac5b46fbe4afeb4944d541ce772ccb57a988a825b7bcf53a72cbff3"
+    "sha256": "32f1f3fad851563a24452f83f84e6a0468dc873480bbbcfb9c39f10a91ca68a2"
   },
   "targets": [
     {
       "path": "src/ui/movement-identity.test.tsx",
-      "sha256": "87052120ba7ffc633625454a5245148260a2160f49035eeb75258422990792f8"
+      "sha256": "a7759ba387977a520f2b86e99c7ef07994f05aa62f8010053b312c8c89a7a8be"
     }
   ],
   "requiredCases": [
@@ -68,12 +68,12 @@
     }
   ],
   "totals": {
-    "total": 19,
-    "passed": 19,
+    "total": 8,
+    "passed": 8,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 19
+    "executed": 8
   },
   "problems": []
 }

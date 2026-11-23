@@ -1,0 +1,117 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-118",
+  "description": "A3 task 10b (F8 part 2; #744): Overview facts, required equipment and equipment assets on Round 7’s owners. /review’s Overview hands its facts with their FactKind (src/state/review.ts) to Round 7’s SummaryFacts (src/ui/composition.tsx), which orders, glyphs and sets the term visibility of each by its kind, not its word (TASK-AC-010B47E192B5); /history/:id’s Overview hands the record’s own facts to the same composition and gains Round 7’s EquipmentSummary built from the saved equipment_used, each item once, bodyweight excluded, None — bodyweight only only when true (TASK-AC-BF12C17FC7BF); the gallery’s per-exercise equipment stays. check-01 runs src/ui/summary-facts.test.tsx, which this task owns whole (TASK-004’s ten carried cases, TASK-AC-A82C56A627E7); TASK-029’s carried block in src/ui/movement-identity.test.tsx is TASK-029 check-01 (anchored name filter). parity compares /review, /history/:id, /summary, /onboarding’s Setup equipment and /workout with the accepted overview and assets states at 320 and 390 (TASK-AC-49761FC1B153). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-118 --check check-01 -- npx vitest run src/ui/summary-facts.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "TASK-AC-010B47E192B5",
+        "TASK-AC-BF12C17FC7BF",
+        "TASK-AC-A82C56A627E7",
+        "AC-C12-01",
+        "AC-C13-01",
+        "AC-C14-01",
+        "AC-C15-01",
+        "AC-R004-01",
+        "AC-R004-02",
+        "AC-R004-03",
+        "JOURNEY-004"
+      ],
+      "files": [
+        "src/ui/summary-facts.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C12-01 /review: every useful fact is a whole glyph-led reading in one wrapping description list, with no carousel, rail or tab stop",
+          "criterion": "AC-C12-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-01 /review: intensity reads its value without \"of 10\", on the unchanged ten-point scale Start persists",
+          "criterion": "AC-R004-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C13-01 /review: Required equipment is one group under a rule, with the glyph-led label and each actual name once as an uppercase element",
+          "criterion": "AC-C13-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 None — bodyweight only appears for an all-bodyweight workout and never beside real equipment",
+          "criterion": "AC-R004-02"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C14-01 /history/:id: the saved Overview draws the same fact composition and equipment group as Review",
+          "criterion": "AC-C14-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-03 /history/:id: saved facts are the record’s own values and meanings, never the planned request",
+          "criterion": "AC-R004-03"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary: Duration and Streak are each the one frame of an equal-height metric cell and fill it",
+          "criterion": "AC-C15-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-C15-01 /summary recovery: a loading, failed or empty streak keeps its card filling the cell beside the recorded duration",
+          "criterion": "AC-C15-01"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery: a failed saved read keeps its error and retry, and shows no invented facts",
+          "criterion": "JOURNEY-004"
+        },
+        {
+          "file": "src/ui/summary-facts.test.tsx",
+          "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 gallery overview: the accepted state draws the Review, Session Detail and Summary consumers",
+          "criterion": "JOURNEY-004"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-118 --check parity -- npx playwright test e2e/refinement/task-118-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-49761FC1B153"
+      ],
+      "files": [
+        "e2e/refinement/task-118-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-118-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-49761FC1B153 overview phone-320: /review’s and /history/:id’s Overview and /summary’s Duration and Streak match the accepted overview state",
+          "criterion": "TASK-AC-49761FC1B153"
+        },
+        {
+          "file": "e2e/refinement/task-118-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-49761FC1B153 assets phone-320: Setup’s equipment, Review’s Required equipment glyph and /review’s and /workout’s equipment labels match the accepted assets state",
+          "criterion": "TASK-AC-49761FC1B153"
+        },
+        {
+          "file": "e2e/refinement/task-118-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-49761FC1B153 overview phone-390: /review’s and /history/:id’s Overview and /summary’s Duration and Streak match the accepted overview state",
+          "criterion": "TASK-AC-49761FC1B153"
+        },
+        {
+          "file": "e2e/refinement/task-118-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-49761FC1B153 assets phone-390: Setup’s equipment, Review’s Required equipment glyph and /review’s and /workout’s equipment labels match the accepted assets state",
+          "criterion": "TASK-AC-49761FC1B153"
+        }
+      ]
+    }
+  }
+}
