@@ -1,0 +1,170 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-121",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "node-test",
+  "runnerVersion": null,
+  "command": [
+    "node",
+    "--test",
+    "scripts/refinement/task-035-definition.test.mjs",
+    "scripts/refinement/task-037-definition.test.mjs",
+    "scripts/refinement/task-038-definition.test.mjs"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-121/required-cases.json",
+    "sha256": "2c45ac96aa7a02c54b507e3b4d54d8a59e6dc5650aa0570f33afb991a43a9d96"
+  },
+  "targets": [
+    {
+      "path": "scripts/refinement/task-035-definition.test.mjs",
+      "sha256": "39d52bf2be39951d4d46419c96f435c2ce312a2126f7236cb50ad986a78ced71"
+    },
+    {
+      "path": "scripts/refinement/task-037-definition.test.mjs",
+      "sha256": "08c3412969a2e43a61bcacafcec735f0f9db74998324e7f45bc8d8dcb4a94cb6"
+    },
+    {
+      "path": "scripts/refinement/task-038-definition.test.mjs",
+      "sha256": "81621d2a0449b2f19d572ae317c7cc12b741fe68a7d1118ada655ed71b9221be"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the record passes the shared definition-record checker with its derived readings, future targets, current surfaces and non-gallery disposition",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 every claim cites a listed source and every listed source is cited",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the identifiers each claim names occur in the sources that claim cites",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 completed observations, derived readings and future targets stay apart",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the remaining owner decision is exact, names its owner and chooses between options none of which is pre-selected",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 no route, chart, metric set, report frequency or editable duplicate profile is invented",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 the follow-up stays visible in source-to-task traceability and the accepted map still records its non-gallery disposition",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "name": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 no report is claimed implemented, and no route at this revision is a report",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the record passes the shared definition-record checker with its inventory, effort, selected-change, proposal, undecided and non-gallery sections",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every claim cites a listed source and every listed source is cited",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every quoted string and identifier occurs in the verified bytes of a source its claim cites",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the inventory covers every route surface with its titles, actions, states and helper messages",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every visible RPE string at this revision is inventoried and Effort keeps numeric historical and categorical meanings apart",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 the terminology and voice proposal is concise, sourced, uses Effort not RPE and is not a complete voice guide",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 undecided items and owner decisions are explicit and none is pre-selected",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "name": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 no product copy is claimed rewritten and the accepted map still records the non-gallery disposition with traceability",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the record passes the shared definition-record checker with its inventory, identity, catalog findings, notes and gallery sections",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every claim cites a listed source and every listed source is cited",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every identifier and quoted string a claim names occurs in a source that claim cites",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the inventory holds every guidance and note state the owner draws, in the owner’s words, with missing content, blank notes, loading and failure apart",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the hide/replacement/content rule is one exact owner decision with no option pre-selected, and nothing is hidden or reworded",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "name": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the follow-up stays in source-to-task traceability, and the accepted cards state draws the actual owner without claiming the inventory",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 25,
+    "passed": 25,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 25
+  },
+  "problems": []
+}
