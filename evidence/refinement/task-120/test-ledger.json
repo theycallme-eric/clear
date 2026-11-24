@@ -1,0 +1,1004 @@
+{
+ "schema": "clear-task-test-ledger/v1",
+ "task": "TASK-120",
+ "family": "A3 task 14b (every logging moment's writers and the effects layer)",
+ "base": "bacf0ca85d6d7a3eb4dd994c8706f0b70764af3e",
+ "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+ "source": "Brief TASK-120-a1; TASK-106 ledger rules.deferred (e2e task-019, 5 cases, deferred here by owner decision 1 of 2026-11-16), TASK-107 ledger rules.deferred (task-019 circuit-round assertions), TASK-111 ledger rules.deferred (e2e task-045 and task-019's feedback/rest-day case); this task owns src/app/visual-effects-journey.test.tsx and src/ui/phosphor-echo.test.tsx whole and the inherited e2e task-033; task-041 is TASK-114's, rerun here.",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "matchersWeakenedNote": "No matcher was replaced by a weaker one on the same read (no toHaveTextContent→toBeInTheDocument, no exact→regex, no queryBy for getBy, no removed `not`, no conditional helper skipping an implicit check). Two exact reads became stronger (the urgency state heading regex → its exact name; the effects-off frame-rear toBe(false) → toEqual({ inDialog: 0, background: null }) plus a no-rear count). Reads dropped, re-pointed or relaxed because Round 7 draws a different scene or markup are each listed in readsDroppedOrRelaxed with the owner decision or the standing rule that places them — among them three relaxations a reviewer should see: the gallery urgency case's urgent-timer count 2 → 1 (Round 7's state has no log with its own timer; the route case still reads two), [data-urgent] → [data-urgent=\"true\"], and the shipped primary glow exempt from the foreground-filter read. Every body-level matcher lost against the base or the build is accounted for in selfCheck.bodies.",
+  "readsDroppedOrRelaxed": [
+   {
+    "file": "e2e/refinement/task-019.spec.ts",
+    "test": "JOURNEY-019 the four timed-result families",
+    "read": "the ladder's own Log results opened while the ladder runs, and its clock read behind it",
+    "now": "no Log results while it runs (new read); the clock read behind the ladder movement's open note, still exactly 30 s",
+    "why": "Owner decision 3 (Eric, chat, 2026-11-16: \"Accept all five\"): Round 7's ladder log opens only after the attempt ends; carried assertions that expect a log during the run are rewritten with this reason."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "JOURNEY-019 movement note",
+    "read": "dialog title \"Notes — back squat\" / \"Notes — push up\" and the field named the same",
+    "now": "title \"Movement note\"; the field named \"back squat\" / \"push up\"",
+    "why": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "accepted gallery states (x4 skins)",
+    "read": "the standard lift's scene in the movement-note state ([data-gallery-logging-moment=\"standard\"], Coaching and notes — back squat)",
+    "now": "not read; Round 7's state is the superset's grouped panel, read in its place",
+    "why": "Round 7's accepted state composes one scene (look the gallery does not draw); the route case proves a standard lift's note. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "accepted gallery states (x4 skins)",
+    "read": "the refused grouped note: \"Your note didn’t save. It is still in the field — try again.\" in the gallery",
+    "now": "the second movement keeps its own note and its text through Escape and Edit note; no refusal read in the gallery",
+    "why": "Round 7's movement-note state composes no refused save (its failure switch exists only on the timed states); the route case proves the refused write, its message, aria-invalid and the retry on workout_exercises. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "accepted gallery states (x4 skins)",
+    "read": "the fresh debrief's read-back status \"feeling 3\" after Save and close",
+    "now": "the dialog closes and reopens with 3 Flat checked",
+    "why": "Round 7's workout-feedback state, composed from Summary's parts, draws no read-back line. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "accepted gallery states (x4 skins)",
+    "read": "the stored debrief (4 Ready checked, its refused Save and close alert and kept notes)",
+    "now": "not read in the gallery",
+    "why": "Round 7's state composes one fresh debrief only; the route case proves the stored draft, the refused save in place and the retry on workout_sessions. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "accepted gallery states (x4 skins)",
+    "read": "the rest-day state's Reason picker focused on open",
+    "now": "the X focused, the Reason at \"rest\"",
+    "why": "Round 7's gallery rest-day scene opens on the X (TASK-111 labelled this difference AC-GAL-05; the route keeps U25's Reason focus, proved by the route case). Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-045.spec.ts",
+    "test": "accepted gallery states (x4 skins)",
+    "read": "the marked rest day's refused reason change (\"The rest day wasn’t saved. Try again.\")",
+    "now": "Change reason reopens at the saved reason (Injured) and the X closes it",
+    "why": "Round 7's rest-day state composes no refused mark; the route case proves it on mark_rest_day. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-033.spec.ts",
+    "test": "JOURNEY-033 gallery urgency, skin cases (x4)",
+    "read": "the dialog frame's own Echo rear (rear first, hidden, pointer-inert, filtered, footprint = frame, ink = frame's role colour)",
+    "now": "no rear inside the dialog (inDialog 0) and the same five reads on a background owner's rear beneath the backdrop",
+    "why": "Round 7's LoggingOverlay is the shared AppDialog, whose surface is not the background (REQ-004, EchoExcluded): the accepted gallery bec4454 draws no Echo on the logging frame, where the build's own dialog wrapped its frame in PhosphorEchoFrame. Look Round 7 does not draw; listed for Eric (UAT) because bec4454's REUSE.md line 21 and the effects contract §2.3 still describe a frame rear. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-033.spec.ts",
+    "test": "JOURNEY-033 gallery urgency",
+    "read": "two urgent timers (\"the warning in the log and behind it\")",
+    "now": "one (the EMOM's, behind the note)",
+    "why": "Round 7's urgency state composes no log with its own timer; the log over the running warning is the note, which draws none. The route case still reads two urgent timers (Countdown and Time remaining) with the log open. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-033.spec.ts",
+    "test": "every composed-dialog read (route, gallery urgency, reduced motion, skins)",
+    "read": "foregroundEffects: any filter inside the open dialog",
+    "now": "the same, except the shipped primary Button's own `.clr-glow` emission: exactly one `drop-shadow(<colour> 0px 0px 6px)` on its package wrapper",
+    "why": "Round 7's logs hold Foundation's primary Button (Save note, Save log), whose package wrapper carries its own 6 px glow; it shadows outside the button and changes none of the dialog's own pixels. Any other filter, and any backdrop filter or opacity below 1, still fails. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   },
+   {
+    "file": "e2e/refinement/task-033.spec.ts",
+    "test": "JOURNEY-033 touch phone-390 /workout",
+    "read": "no [data-urgent] element after the deadlines",
+    "now": "no [data-urgent=\"true\"] element",
+    "why": "Round 7's timers mark the non-urgent state data-urgent=\"false\" (the shipped renderers' marker), so \"nothing urgent is left\" is no \"true\". Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+   }
+  ],
+  "retired": [],
+  "deferred": [],
+  "forTask115": [
+   "Echo on the logging frame: Round 7 (AppDialog, EchoExcluded) draws no Echo rear on any dialog frame; the build’s logging dialog had one, and bec4454’s REUSE.md line 21 and docs/specs/EFFECTS_COMPOSITION_CONTRACT.md §2.3 still say \"the logging frame uses the same Echo kernel\". The inherited reads now take the background owners' rears beneath the backdrop. Eric to confirm at UAT (keep Round 7, or a successor change that echoes the logging frame).",
+   "The shipped primary Button inside a log (Save note, Save log) keeps Foundation’s own 6 px glow; task-033’s \"sharp foreground\" read now exempts exactly that emission.",
+   "Round 7’s urgency gallery state has no log of its own; the log over its running warning is the EMOM movement’s note (one urgent timer behind it, where the build’s demo log drew a second).",
+   "Round 7’s gallery states for notes, feedback and rest day compose one moment each, with no refused-save scenes; the refusals are proved on the real routes only. The gallery rest day opens on the X (TASK-111’s AC-GAL-05).",
+   "Ladder: no Log results while it runs (owner decision 3); its clock is read behind its movement’s note. Round 7 log closes run the shared 200 ms Dialog exit on the page clock (tests that hold the clock run through it).",
+   "docs/specs/EFFECTS_COMPOSITION_CONTRACT.md still describes the eded158-era owners (src/ui/refinements/*, the frame Echo); not edited here (no criterion names it). A docs refresh is successor work."
+  ],
+  "galleryChanges": [],
+  "coverage": [
+   {
+    "context": "anchor",
+    "galleryState": "/gallery/refinements?state=anchor",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseSetLogger → SetLoggingSheet in LoggingOverlay",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§1)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 errors and retry (anchor refused and retried under the same id)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "other lift",
+    "galleryState": "/gallery/refinements?state=other-lift",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseSetLogger → SetLoggingSheet",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§3: weight 70 lb, unit kept on reopen)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "timed movement",
+    "galleryState": "/gallery/refinements?state=timed-movement",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseSetLogger → SetLoggingSheet (Seconds, no load)",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§4: actual_duration_seconds 28)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "distance movement",
+    "galleryState": "/gallery/refinements?state=distance-movement",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseSetLogger → SetLoggingSheet (Weight, Distance)",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§5: actual_distance 35 m, weight 24)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "extra set",
+    "galleryState": "/gallery/refinements?state=extra-set",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseSetLogger → SetLoggingSheet",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§6: set 3 inserted after the prescribed two)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "saved-set correction",
+    "galleryState": "/gallery/refinements?state=set-correction",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseSetLogger Edit set → SetLoggingSheet (Save correction, Clear set)",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id) — operation correct on the saved row",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§7)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 errors and retry (Edit by keyboard, focus back on Edit)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "superset round",
+    "galleryState": "/gallery/refinements?state=superset",
+    "route": "/workout",
+    "roundSevenOwner": "SupersetBlock → SupersetRoundSheet in LoggingOverlay",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id) — only the Performed movements, one set_number per round",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§8: no second rest clock)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 errors and retry (refused round held and retried)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "circuit round / take back",
+    "galleryState": "/gallery/refinements?state=circuit-round",
+    "route": "/workout",
+    "roundSevenOwner": "CircuitBlock \"Round N recorded\" LoggingOverlay (TASK-107)",
+    "writer": "block_results.rounds_completed at the section’s forward action (round times stay in clear.workout-circuits)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§9, and the forward action: rounds_completed 1)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 errors and retry (refused block write kept and retried once)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "circuit movement entry",
+    "galleryState": "/gallery/refinements?state=circuit-movement",
+    "route": "/workout",
+    "roundSevenOwner": "CircuitBlock → SetLoggingSheet (the session’s one rest)",
+    "writer": "mutate_set_observation (exercise_set_logs through the set observation RPC; insert, correct and clear by observation id)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§10)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 errors and retry",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "movement note",
+    "galleryState": "/gallery/refinements?state=movement-note",
+    "route": "/workout",
+    "roundSevenOwner": "ExerciseCoaching / GroupExerciseCoaching → \"Movement note\" LoggingOverlay (TASK-109)",
+    "writer": "workout_exercises.exercise_notes (PATCH by the movement’s row id; exercises.saveNotes)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 set, group and note moments (§2)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 errors and retry (refused, retried)",
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 the four timed-result families (AMRAP and ladder notes over running clocks)",
+     "e2e/refinement/task-045.spec.ts › JOURNEY-019 movement note",
+     "e2e/refinement/task-045.spec.ts › accepted gallery states (x4 skins)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "workout feedback",
+    "galleryState": "/gallery/refinements?state=workout-feedback",
+    "route": "/summary",
+    "roundSevenOwner": "Summary WorkoutFeedback → \"Workout feedback\" LoggingOverlay (TASK-111)",
+    "writer": "workout_sessions mood and session_notes (PATCH by session id; summary saveDebrief)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 workout feedback on /summary and rest day on Home",
+     "e2e/refinement/task-045.spec.ts › JOURNEY-019 workout feedback",
+     "e2e/refinement/task-045.spec.ts › accepted gallery states (x4 skins)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "rest day / reason change",
+    "galleryState": "/gallery/refinements?state=rest-day",
+    "route": "Home (/)",
+    "roundSevenOwner": "Home RestDayControl → \"Log rest day\" LoggingOverlay (TASK-111)",
+    "writer": "mark_rest_day RPC (p_day, p_reason, p_note null)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 workout feedback on /summary and rest day on Home",
+     "e2e/refinement/task-045.spec.ts › JOURNEY-019 rest day and reason change",
+     "e2e/refinement/task-045.spec.ts › accepted gallery states (x4 skins)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "EMOM",
+    "galleryState": "/gallery/refinements?state=emom",
+    "route": "/workout",
+    "roundSevenOwner": "TimedWorkoutFlow → TimedResultLog in LoggingOverlay (\"Log results\", opens itself at the end)",
+    "writer": "block_results (notes, minutes_completed null, effort) through the log’s Save log (TASK-103/116/117)",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 the four timed-result families",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "AMRAP",
+    "galleryState": "/gallery/refinements?state=amrap",
+    "route": "/workout",
+    "roundSevenOwner": "TimedWorkoutFlow → TimedResultLog",
+    "writer": "block_results.rounds_completed (and partial_round_reps) through Save log",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 the four timed-result families (refused Save log kept and retried once)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "For Time",
+    "galleryState": "/gallery/refinements?state=for_time",
+    "route": "/workout",
+    "roundSevenOwner": "TimedWorkoutFlow → TimedResultLog (Work completed only under a cap)",
+    "writer": "block_results.completed_under_cap and effort through Save log",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 the four timed-result families",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   },
+   {
+    "context": "ladder",
+    "galleryState": "/gallery/refinements?state=ladder",
+    "route": "/workout",
+    "roundSevenOwner": "TimedWorkoutFlow (ladder) → TimedResultLog with Rounds completed (TASK-105)",
+    "writer": "block_results.highest_rung through Save log",
+    "provedBy": [
+     "e2e/refinement/task-019.spec.ts › JOURNEY-019 the four timed-result families (no log while it runs, owner decision 3; Undo finish)",
+     "e2e/refinement/task-019.spec.ts › accepted gallery states"
+    ]
+   }
+  ],
+  "effectsComposition": {
+   "owners": {
+    "policy": "src/state/visual-effects.ts",
+    "rootHost": "src/app/RootLayout.tsx",
+    "echoKernel": "src/ui/phosphor-echo.tsx (preset phosphor-echo-preset.ts, eligibility foreground-echo.tsx)",
+    "frontGlass": "src/ui/crt-field/ (preset config.ts at bec4454)",
+    "rasterReferencePort": "src/ui/crt-glass/ (never mounted; scanned by task-033)",
+    "atmosphere": "src/ui/atmosphere.tsx, src/styles/atmosphere.css",
+    "warning": "src/ui/countdown-urgency.tsx + .css (TASK-108; not re-implemented)",
+    "dialog": "src/ui/logging-overlay.tsx on src/ui/app-dialog.tsx"
+   },
+   "findings": [
+    "One glass, the selected preset, in the top layer above every open dialog, never taking input; effects off removes it live and on restores it above the still-open dialog; reduced motion (app or device) holds it still in place (task-033, parity).",
+    "The warning’s one edge moves into the topmost open dialog’s top layer and back to the body, in phase with every urgent timer, steady .5 under reduced motion, removed when the deadline passes (task-033 route, gallery urgency, reduced motion; parity urgency).",
+    "The Balanced backdrop is on the native backdrop only; the dialog foreground carries no filter and no opacity below 1 once Foundation’s 200 ms arrival is through, the shipped primary’s own glow excepted (task-033, parity).",
+    "Round 7 draws no Echo inside a dialog, its frame included (AppDialog, REQ-004); the Echo stays on the background owners beneath the backdrop, in their own role colours. The build echoed the logging frame. Look difference, recorded for UAT; no product change.",
+    "No contrast regression: task-041 (TASK-114) passes unchanged with the effects composed.",
+    "Effects owners equal Round 7’s accepted gallery bec4454 byte for byte; the only effects-owner difference from eded158 is config.ts’s screen-edge blur (owner follow-up in A2)."
+   ]
+  },
+  "galleryChangesLimit": "No product file changed (no src/ change at all), so no gallery state changed: the urgency and ladder-long states, and the sixteen logging states the sweep opened, render the same bytes at the base and here. The parity receipts record the states at 320 and 390 as they are.",
+  "selfCheck": {
+   "method": "TypeScript compiler API (the repository's typescript) over every test file and e2e spec touched since the base (git diff bacf0ca8 plus new files: task-019, task-033, task-045 and the new task-120-parity spec): (a) every test()/it() full title (describe titles joined by \" > \", template titles as written) present at the base and absent at HEAD; (b) each changed or ported body's expect(...)/expect.poll(...) matcher chain compared with 181e580 and the base, by matcher name with `not.` kept, plus every top-level helper added, removed or changed with its own expect count. Script kept outside the repository (scratchpad).",
+   "counts": {
+    "files": 4,
+    "baseTitles": 14,
+    "headTitles": 16,
+    "absentOrRenamed": 0,
+    "changedBodies": 8,
+    "newBodies": 2,
+    "bodiesFewerReadsThanBase": 3,
+    "bodiesFewerReadsThanBuild": 4,
+    "skipOnlyTodoFixmeAdded": 0
+   },
+   "absentOrRenamedAtHead": [],
+   "bodies": [
+    {
+     "file": "e2e/refinement/task-019.spec.ts",
+     "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 the four timed-result families and their clocks on /workout phone-390 touch: EMOM, AMRAP, For Time and ladder open Log results in the same focused log beside no second rest, the block clock keeps running behind an open note or log and stays paused while paused, Undo finish closes the log, close and reopen keep every entry, and a refused save keeps them for the one forward-action writer",
+     "reads": {
+      "build": 43,
+      "base": 49,
+      "head": 53
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "toBeVisible x2",
+      "toHaveAttribute x1"
+     ],
+     "accounted": "Nothing lost against the base (49 → 53 reads: no Log results while the ladder runs, the self-opened log on each Finish, no Log results after Undo). The build-side losses (toBeVisible x2, toHaveAttribute x1) are TASK-106's round 05 rewrite (the build's COMPLETE text, [data-timed-log-opener]), already in its ledger; this task restores none because Round 7 has neither."
+    },
+    {
+     "file": "e2e/refinement/task-033.spec.ts",
+     "test": "TASK-033 final CRT and Phosphor Echo composition > AC-R033-01 one shared kernel: the current effects owners, presets and moved intake paths are the accepted reference's, and no intake snapshot, second runtime owner or October 26 preview pattern is in the app",
+     "reads": {
+      "build": 21,
+      "base": 21,
+      "head": 22
+     },
+     "lostVsBase": [],
+     "lostVsBuild": []
+    },
+    {
+     "file": "e2e/refinement/task-033.spec.ts",
+     "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 touch phone-390 /workout: one front glass over the open log and a native dialog, the warning edge above them in phase, Echo beneath; effects off keeps the warning and the draft, on restores the glass above the dialog; nothing written",
+     "reads": {
+      "build": 32,
+      "base": 32,
+      "head": 32
+     },
+     "lostVsBase": [],
+     "lostVsBuild": []
+    },
+    {
+     "file": "e2e/refinement/task-033.spec.ts",
+     "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 gallery urgency phone-390: the warning under the accepted Balanced LoggingOverlay — glass over the sharp readable frame, its Echo beneath, one in-phase edge in the dialog's top layer, X focus and return; effects off keeps the backdrop and the warning",
+     "reads": {
+      "build": 24,
+      "base": 24,
+      "head": 22
+     },
+     "lostVsBase": [
+      "toHaveCount x1",
+      "toMatchObject x1"
+     ],
+     "lostVsBuild": [
+      "toHaveCount x1",
+      "toMatchObject x1"
+     ],
+     "accounted": "toHaveCount x1: the build's edge-count read after \"Run countdown\" moved into urgentEmom (its one expect, toHaveCount(1)). toMatchObject x1 and the two rear toEqual reads moved into expectEchoBeneath (toBe, toMatchObject, toEqual x2), read on a background owner's rear (Round 7 draws none inside the dialog, readsDroppedOrRelaxed). The frame-rear-off read (toBe(false)) became toEqual({ inDialog: 0, background: null }) plus a no-rear-anywhere count; the heading regex became an exact name; urgent timers toHaveLength(2) → (1) is listed in readsDroppedOrRelaxed (the route case still reads two)."
+    },
+    {
+     "file": "e2e/refinement/task-033.spec.ts",
+     "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 reduced motion phone-320: the app's Reduce motion and the device setting each hold the glass still in place, the edge at a steady .5 and the backdrop without its fade, over the long log and the warning",
+     "reads": {
+      "build": 10,
+      "base": 10,
+      "head": 12
+     },
+     "lostVsBase": [],
+     "lostVsBuild": []
+    },
+    {
+     "file": "e2e/refinement/task-033.spec.ts",
+     "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin ${skin} phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+     "reads": {
+      "build": 7,
+      "base": 7,
+      "head": 6
+     },
+     "lostVsBase": [
+      "toEqual x1"
+     ],
+     "lostVsBuild": [
+      "toEqual x1"
+     ],
+     "accounted": "toEqual x1: the build's rearBox and rearInk toEqual reads moved into expectEchoBeneath (with toMatchObject and toBe), read on a background owner's rear; one toEqual added (the foreground poll after Foundation's arrival)."
+    },
+    {
+     "file": "e2e/refinement/task-045.spec.ts",
+     "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 movement note phone-390 touch: Add note opens Notes for that movement in the modal log beside the one running rest, close and Escape keep the draft, a refused write keeps the text and its retry stores it through the original writer, and a grouped section keeps its own note",
+     "reads": {
+      "build": 37,
+      "base": 37,
+      "head": 37
+     },
+     "lostVsBase": [],
+     "lostVsBuild": []
+    },
+    {
+     "file": "e2e/refinement/task-045.spec.ts",
+     "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states ${skin} phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+     "reads": {
+      "build": 20,
+      "base": 20,
+      "head": 19
+     },
+     "lostVsBase": [
+      "toBeVisible x2",
+      "toContainText x1",
+      "toHaveText x1"
+     ],
+     "lostVsBuild": [
+      "toBeVisible x2",
+      "toContainText x1",
+      "toHaveText x1"
+     ],
+     "accounted": "Each loss is a gallery scene Round 7's accepted state does not compose, listed in readsDroppedOrRelaxed: toBeVisible x2 (the refused grouped note's message; the stored debrief's refused-save alert), toContainText x1 (the \"feeling 3\" read-back line), toHaveText x1 (the refused reason change's alert). Added in their place: the second movement's note kept through Escape and Edit note (toHaveValue x2), the feeling kept on reopen (toBeChecked), the rest day's X focus, Reason values and Change reason at Injured."
+    }
+   ],
+   "helpers": {
+    "e2e/refinement/task-019.spec.ts": {
+     "removed": [],
+     "added": [
+      {
+       "name": "settled",
+       "expects": 0
+      }
+     ],
+     "changed": []
+    },
+    "e2e/refinement/task-033.spec.ts": {
+     "removed": [
+      {
+       "name": "frameEcho",
+       "expects": 0
+      }
+     ],
+     "added": [
+      {
+       "name": "echoReading",
+       "expects": 0
+      },
+      {
+       "name": "expectEchoBeneath",
+       "expects": 4
+      },
+      {
+       "name": "urgentEmom",
+       "expects": 1
+      },
+      {
+       "name": "noteOpener",
+       "expects": 0
+      },
+      {
+       "name": "hold",
+       "expects": 0
+      }
+     ],
+     "changed": [
+      {
+       "name": "compose",
+       "base": 0,
+       "head": 0
+      }
+     ]
+    },
+    "e2e/refinement/task-045.spec.ts": {
+     "removed": [],
+     "added": [],
+     "changed": [
+      {
+       "name": "openLog",
+       "base": 0,
+       "head": 0
+      },
+      {
+       "name": "expectFocusedLog",
+       "base": 11,
+       "head": 11
+      }
+     ]
+    }
+   }
+  }
+ },
+ "summary": {
+  "carried": 38,
+  "rewritten": 16,
+  "added": 4
+ },
+ "entries": [
+  {
+   "file": "e2e/refinement/task-019.spec.ts",
+   "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 set, group and note moments on one /workout phone-390 touch: anchor, other lift, timed and distance movement, extra set, saved-set correction, superset round, circuit round, circuit movement and movement note open the same focused log, keep their own fields and drafts through close and reopen, write only through their original writers and never draw a second rest",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Base body unchanged (TASK-106's round 05 Round 7 rewrite, deferred here by owner decision 1 of 2026-11-16); passes on this candidate, after every family has landed.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-019.spec.ts",
+   "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 errors and retry by keyboard phone-320 reduced motion: a refused set, superset round, circuit movement, note and circuit block write each keep their entry and retry it once under the same identity, every moment opens and closes from the keyboard with focus back on its own control, and nothing animates beyond a hard cut",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Base body unchanged (TASK-106's round 05 Round 7 rewrite, deferred here by owner decision 1 of 2026-11-16); passes on this candidate, after every family has landed.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-019.spec.ts",
+   "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 the four timed-result families and their clocks on /workout phone-390 touch: EMOM, AMRAP, For Time and ladder open Log results in the same focused log beside no second rest, the block clock keeps running behind an open note or log and stays paused while paused, Undo finish closes the log, close and reopen keep every entry, and a refused save keeps them for the one forward-action writer",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Base body (TASK-106's Round 7 rewrite) with the ladder section rewritten for owner decision 3: no Log results is offered while the ladder runs (new read, as the EMOM's); its race clock is read running on behind an open log — the ladder movement's \"Movement note\" (another family's log, as the AMRAP's above; the disclosure's motion is waited out on its animations' finished promises) — with the build's exact 30-second read; on Finish Round 7's ladder log opens itself, is closed with Escape and is reopened from the card's own Log results (as the AMRAP and For Time sections already do), where its chrome, its \"1 of 4 rounds completed\" and Undo finish (log closed, Pause focused, no Log results again) are read as before. Every other step and assertion is the base's.",
+   "result": "passed",
+   "reason": "Owner decision 3 (Eric, chat, 2026-11-16: \"Accept all five\"): Round 7's ladder log opens only after the attempt ends; carried assertions that expect a log during the run are rewritten with this reason."
+  },
+  {
+   "file": "e2e/refinement/task-019.spec.ts",
+   "test": "TASK-019 every logging moment in the shared focused interaction > JOURNEY-019 workout feedback on /summary and rest day on Home phone-320 touch and keyboard reduced motion: each opens the same focused log from its real entry, keeps its own fields, its draft or its existing cancel meaning through close and reopen, keeps the entry through a refused write and saves it once through its original writer on retry",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Base body unchanged (TASK-106's round 05 Round 7 rewrite, deferred here by owner decision 1 of 2026-11-16); passes on this candidate, after every family has landed.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-019.spec.ts",
+   "test": "TASK-019 every logging moment in the shared focused interaction > accepted gallery states clear phone-390: all sixteen logging states open the route’s own moment in the one shared focused log with identical chrome, and the X returns focus to the control that opened it, with nothing read or written over the network",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Base body unchanged (TASK-106's round 05 Round 7 rewrite, deferred here by owner decision 1 of 2026-11-16); passes on this candidate, after every family has landed.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 movement note phone-390 touch: Add note opens Notes for that movement in the modal log beside the one running rest, close and Escape keep the draft, a refused write keeps the text and its retry stores it through the original writer, and a grouped section keeps its own note",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). The note's dialog is Round 7's \"Movement note\" and its field is named by the movement (\"back squat\", \"push up\"), for the build's \"Notes — back squat\" title and field; before it opens, the field is not on the card (the same read, by Round 7's field name). Every other step and assertion (draft through X and Escape, the refused write's message, aria-invalid, kept text and Not saved line, the single retry on workout_exercises, the one running rest, the grouped section's own note) is the build's.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 workout feedback phone-390 keyboard reduced motion: Log workout feedback opens Workout feedback in the modal log with the feeling and notes, close keeps the draft, a refused save keeps it in place and its retry saves both through the original writer and leaves for Home",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). No word changed: Summary's \"Workout feedback\" and Home's \"Log rest day\" are Round 7's LoggingOverlay already (TASK-111). Every step and assertion is the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > JOURNEY-019 rest day and reason change phone-320 touch: Mark Rest Day opens Log rest day in the modal log with the Reason picker focused, the X cancels, a refused save keeps the choice and its retry marks the day with no note; Change reason reopens at the saved reason",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). No word changed: Summary's \"Workout feedback\" and Home's \"Log rest day\" are Round 7's LoggingOverlay already (TASK-111). Every step and assertion is the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states clear phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). Round 7's accepted states (gallery bec4454) are one [data-refinement-state] per page, each composing one moment over memory, read by the route's own controls: movement-note is the superset's grouped panel (Coaching and notes → \"Add note — one arm row\", dialog \"Movement note\", field \"one arm row\", Save note → Note saved; the second movement \"bicep curl\" keeps its own note and its text through Escape and Edit note); workout-feedback is one fresh debrief (five feelings, Notes, 3 Flat, Save and close closes, and the choice is kept on reopen); rest-day is Home's parts on one card (its dialog opens on the X, the Reason at \"rest\"; Injured saved shows \"Today: Injured.\"; Change reason reopens at Injured). Looks Round 7's states do not compose are not read there (listed in readsDroppedOrRelaxed): the build's standard-lift note scene, its refused grouped note, the \"feeling 3\" read-back line, the stored debrief and its refused save, and the refused reason change. The route cases above prove each of those behaviours on the original writers.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states vapour phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). Round 7's accepted states (gallery bec4454) are one [data-refinement-state] per page, each composing one moment over memory, read by the route's own controls: movement-note is the superset's grouped panel (Coaching and notes → \"Add note — one arm row\", dialog \"Movement note\", field \"one arm row\", Save note → Note saved; the second movement \"bicep curl\" keeps its own note and its text through Escape and Edit note); workout-feedback is one fresh debrief (five feelings, Notes, 3 Flat, Save and close closes, and the choice is kept on reopen); rest-day is Home's parts on one card (its dialog opens on the X, the Reason at \"rest\"; Injured saved shows \"Today: Injured.\"; Change reason reopens at Injured). Looks Round 7's states do not compose are not read there (listed in readsDroppedOrRelaxed): the build's standard-lift note scene, its refused grouped note, the \"feeling 3\" read-back line, the stored debrief and its refused save, and the refused reason change. The route cases above prove each of those behaviours on the original writers.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states signal phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). Round 7's accepted states (gallery bec4454) are one [data-refinement-state] per page, each composing one moment over memory, read by the route's own controls: movement-note is the superset's grouped panel (Coaching and notes → \"Add note — one arm row\", dialog \"Movement note\", field \"one arm row\", Save note → Note saved; the second movement \"bicep curl\" keeps its own note and its text through Escape and Edit note); workout-feedback is one fresh debrief (five feelings, Notes, 3 Flat, Save and close closes, and the choice is kept on reopen); rest-day is Home's parts on one card (its dialog opens on the X, the Reason at \"rest\"; Injured saved shows \"Today: Injured.\"; Change reason reopens at Injured). Looks Round 7's states do not compose are not read there (listed in readsDroppedOrRelaxed): the build's standard-lift note scene, its refused grouped note, the \"feeling 3\" read-back line, the stored debrief and its refused save, and the refused reason change. The route cases above prove each of those behaviours on the original writers.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-045.spec.ts",
+   "test": "TASK-045 notes, feedback and rest days in the shared focused dialog > accepted gallery states mono phone-390: movement-note, workout-feedback and rest-day open the route's own entry in the focused log, with nothing read or written over the network",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7 look, same asserted behaviour: the open log is Round 7's LoggingOverlay (src/ui/logging-overlay.tsx) — dialog.clr-logging-overlay[open] and its header .clr-logging-overlay__head — for the build's dialog.clr-accepted-log and [data-logging-head]; Round 7 draws a log in place inside the screen's markup, so the inert-behind check leaves out the open log's own controls (as TASK-106's task-019 rewrite does). Round 7's accepted states (gallery bec4454) are one [data-refinement-state] per page, each composing one moment over memory, read by the route's own controls: movement-note is the superset's grouped panel (Coaching and notes → \"Add note — one arm row\", dialog \"Movement note\", field \"one arm row\", Save note → Note saved; the second movement \"bicep curl\" keeps its own note and its text through Escape and Edit note); workout-feedback is one fresh debrief (five feelings, Notes, 3 Flat, Save and close closes, and the choice is kept on reopen); rest-day is Home's parts on one card (its dialog opens on the X, the Reason at \"rest\"; Injured saved shows \"Today: Injured.\"; Change reason reopens at Injured). Looks Round 7's states do not compose are not read there (listed in readsDroppedOrRelaxed): the build's standard-lift note scene, its refused grouped note, the \"feeling 3\" read-back line, the stored debrief and its refused save, and the refused reason change. The route cases above prove each of those behaviours on the original writers.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > AC-R033-01 one shared kernel: the current effects owners, presets and moved intake paths are the accepted reference's, and no intake snapshot, second runtime owner or October 26 preview pattern is in the app",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same reads on Round 7's accepted reference. The accepted gallery is now bec4454 (A3 update of 2026-11-14; source-08 PINNED-SOURCE): src/ui/crt-field/config.ts is pinned to its bytes (88834e05…, the glass's screen-edge blur 1.6 → 1.2 px, an owner follow-up from the A2 review, commit cd35fd58) and every pinned owner is also read back from the bec4454 commit where it is in the checkout (new read); the staged eded158 reference is still read, every owner matching it except that one, which matches its eded158 hash (3b496b90…), as does SOURCE-MANIFEST's unchangedPresetOwners. The one breathe keyframes are TASK-108's src/ui/countdown-urgency.css (the build read src/ui/refinements/presentation.css; placement review N1). Every other read (selection exports, CRT ids, moved intake bytes, one kernel, one popover promotion, one live glass, one filter, no intake/reference import, no October 26 pattern, no restated glass values) is the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 touch phone-390 /workout: one front glass over the open log and a native dialog, the warning edge above them in phase, Echo beneath; effects off keeps the warning and the draft, on restores the glass above the dialog; nothing written",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same asserted behaviour on Round 7's /workout: the plank's card is its movement section by its heading (the build's [data-workout-card=\"workout\"], which Round 7 does not draw). Round 7's log leaves through the shared Dialog's 200 ms exit timed on the page's clock, which this case holds, so the clock is run 200 ms through it after Close log (as TASK-107 did for its held-clock cases). After the deadlines, nothing urgent is read as no [data-urgent=\"true\"] (Round 7 marks a timer that is not urgent data-urgent=\"false\", the shipped renderers' marker; the build read no [data-urgent] at all). The foreground read exempts the shipped primary Button's own 6 px drop-shadow emission (see readsDroppedOrRelaxed). Every other read — one glass over the open log and the native Abandon dialog by paint, the edge in the dialog's top layer and back on the body, in phase, effects off and on live with the dialog open, the kept draft, cleanup, axe on the composed dialog, nothing written — is the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 gallery urgency phone-390: the warning under the accepted Balanced LoggingOverlay — glass over the sharp readable frame, its Echo beneath, one in-phase edge in the dialog's top layer, X focus and return; effects off keeps the backdrop and the warning",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Round 7's accepted urgency state (gallery bec4454) runs the real TimedWorkoutFlow on the gallery's clock and composes no log of its own (the build's demo had \"Inspect 5 seconds\", \"Run countdown\" and \"Open log over the warning\"; TASK-114 dropped the same read from task-041). The log opened over the running warning is the EMOM movement's note, Round 7's \"Movement note\" (owner decision 4), opened by keyboard: X focused, no visible Close word, the edge moved into its top layer, one glass running, the Balanced backdrop, a filter-free opaque foreground (the primary's own emission exempt), the edge above everything and in phase with the urgent timer. \"EMOM · 5 seconds\" is chosen with the page clock held and the gallery driver stepped until the edge is drawn. The note draws no timer, so one urgent timer is read (the EMOM's behind the log) where the build's demo log drew a second. The Echo: Round 7's AppDialog surface is not the background (REQ-004), so nothing inside the dialog echoes, and a background owner's rear is read beneath the backdrop — first, hidden, pointer-inert, filtered, on its full footprint and in its own role colour — for the build's read of the dialog frame's own rear. Effects off keeps the backdrop and the warning with no rear anywhere; on again restores the glass and the background rear. Escape (run through the 200 ms exit on the held clock) returns focus to the note's opener and the edge to the body; the minute ending cleans the warning up; nothing over the network.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 reduced motion phone-320: the app's Reduce motion and the device setting each hold the glass still in place, the edge at a steady .5 and the backdrop without its fade, over the long log and the warning",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same reads on Round 7's states: the long ladder is Round 7's ladder-long state (the real twelve-round ladder run past its cap; its log opens itself as \"Log results\", for the build's \"Ladder · 12 rounds\") and its header is .clr-logging-overlay__head; the warning under the log is the urgency state's EMOM at five seconds with its movement's \"Movement note\" open (as in the case above), the held clock run through the shared Dialog's 200 ms exit after Escape (with the app's own Reduce motion the Foundation Dialog still times its exit; new hidden read). Every stillness read — glass paused in place, the edge and timers at a steady .5 with no breathe animation, the backdrop fade collapsed, app choice then device setting, then motion allowed again resuming the same glass and the breathe — is the build's.",
+   "result": "passed",
+   "reason": "Owner decision 4 (Eric, chat, 2026-11-16: \"Accept all five\"): the movement-note dialog keeps Round 7's fixed \"Movement note\" title; the movement's name labels its field. Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin clear phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same reads on Round 7's ladder-long state: \"Open Long ladder results\" runs the real ladder past its cap and its log opens itself as \"Log results\" (X focused), header .clr-logging-overlay__head; the foreground read waits for Foundation's 200 ms arrival to finish (expect.poll) and exempts the primary's own emission. The Echo: nothing inside Round 7's dialog echoes (REQ-004, AppDialog), and a background owner's rear is read beneath the backdrop in its own role colour and footprint in each skin, for the build's read of the dialog frame's own rear. One glass over the readable header and axe on the dialog are the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin signal phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same reads on Round 7's ladder-long state: \"Open Long ladder results\" runs the real ladder past its cap and its log opens itself as \"Log results\" (X focused), header .clr-logging-overlay__head; the foreground read waits for Foundation's 200 ms arrival to finish (expect.poll) and exempts the primary's own emission. The Echo: nothing inside Round 7's dialog echoes (REQ-004, AppDialog), and a background owner's rear is read beneath the backdrop in its own role colour and footprint in each skin, for the build's read of the dialog frame's own rear. One glass over the readable header and axe on the dialog are the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin vapour phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same reads on Round 7's ladder-long state: \"Open Long ladder results\" runs the real ladder past its cap and its log opens itself as \"Log results\" (X focused), header .clr-logging-overlay__head; the foreground read waits for Foundation's 200 ms arrival to finish (expect.poll) and exempts the primary's own emission. The Echo: nothing inside Round 7's dialog echoes (REQ-004, AppDialog), and a background owner's rear is read beneath the backdrop in its own role colour and footprint in each skin, for the build's read of the dialog frame's own rear. One glass over the readable header and axe on the dialog are the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-033.spec.ts",
+   "test": "TASK-033 final CRT and Phosphor Echo composition > JOURNEY-033 skin mono phone-390: the long log composed — Balanced backdrop, Echo rear in the frame's own role colour, one glass over a readable foreground",
+   "disposition": "rewritten",
+   "task": "TASK-120",
+   "note": "Same reads on Round 7's ladder-long state: \"Open Long ladder results\" runs the real ladder past its cap and its log opens itself as \"Log results\" (X focused), header .clr-logging-overlay__head; the foreground read waits for Foundation's 200 ms arrival to finish (expect.poll) and exempts the primary's own emission. The Echo: nothing inside Round 7's dialog echoes (REQ-004, AppDialog), and a background owner's rear is read beneath the backdrop in its own role colour and footprint in each skin, for the build's read of the dialog frame's own rear. One glass over the readable header and axe on the dialog are the build's.",
+   "result": "passed",
+   "reason": "Standing test-update rule (Eric, chat, 2026-11-23: \"Yes, approve\"): an old test that expects Round 7 to look or read differently is updated to Round 7, or only the look/wording part is dropped where Round 7 has none; everything else it checks is kept."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 every /workout logging moment phone-390 touch: anchor, other lift, timed and distance movement, extra set, correction, superset round, circuit round and movement, movement notes, ladder, AMRAP, For Time and EMOM each open the selected dialog with the framed icon-only X on the visible title top, exactly the Balanced backdrop and a sharp stationary frame, over an inert workout whose rest and block clocks keep counting, with drafts and focus kept through X, Escape and reopen",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 wrapped titles, Workout feedback on /summary and the rest day on Home phone-320 keyboard reduced motion: a wrapped note title and Workout feedback keep the framed X on the first visible line, every moment opens and closes from the keyboard with visible keyboard focus inside, the rest day keeps its cancel meaning, and nothing is written",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-017 rhythm on /review, /workout and the shared logs phone-390: grouped cards keep each movement together and whole movements further apart, the superset round, For Time and AMRAP logs separate complete movement groups by the movement gap only, every choice legend sits at the field gap, the ladder keeps its Rounds completed heading gap and stands its count apart, and the removed helper paragraph is nowhere while performed and unrecorded entries keep their meaning",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-018 long logs on /workout phone-320 touch and wheel reduced motion: the anchor set, superset round and twelve-round ladder scroll only inside one stationary frame that fills the visible viewport, a control is painted down to the inner lower border mid-scroll, touch and wheel reach Save and Notes, no scrollbar or sideways overflow shows, reopen draws no container outline, and a short note stays content-height without scrolling",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-018 keyboard and focus on /workout phone-390 and desktop-1280: opened by keyboard the X and every Tab stop show their focus brackets inside the log while no container is outlined, each stop is scrolled into the frame up to Save, opened by touch nothing is ringed, a shrinking visible viewport (on-screen keyboard) shrinks the frame with Save still reachable, and long and short forms use the available height at both sizes",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > accepted gallery states clear phone-390: all sixteen logging states, ladder-long with its provider specimen and the route’s own twelve-round ladder, and the urgency demonstration open the one selected dialog with the framed icon-only X on the title’s visible top, the Balanced backdrop and the contained frame, with nothing read or written over the network",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin clear /workout phone-390: the superset round opens with the Balanced backdrop in the clear skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin vapour /workout phone-390: the superset round opens with the Balanced backdrop in the vapour skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin signal /workout phone-390: the superset round opens with the Balanced backdrop in the signal skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 skin mono /workout phone-390: the superset round opens with the Balanced backdrop in the mono skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "TASK-114's file (owner decisions of 2026-11-18, decision 3), unchanged; rerun here as the regression check the brief names, because its contrast checks measure text against the glass and backdrop this task composes. No product file changed, so nothing it measures moved.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: Visual effects off in Settings, then the other screens > restores each field clock at its own saved phase after an off/on unmount",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: Visual effects off in Settings, then the other screens > shows no Echo, no CRT field and no old scans on Settings, Home and /generate; the blobs stay, still",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: Visual effects on again, without a reload > restores the Echo, the field and the atmosphere motion with the same preset identities",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: Visual effects on again, without a reload > falls back to effects on when the stored choice is unknown, and the app still renders",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: OS reduced motion, live > stops blobs, drift and grain together mid-session; the static glass and Echo stay; no atmosphere scan",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: OS reduced motion, live > starts still when reduced motion is already on, with the Echo and the static glass",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: a hidden tab > stops effect work while hidden and resumes the same clocks when shown again",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/app/visual-effects-journey.test.tsx",
+   "test": "JOURNEY-004: a hidden tab > a hidden tab with effects off stays off when shown",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the preset owner > holds the owner-approved live-review preset and nothing else",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the preset owner > is not the earlier geometry-check values",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the preset owner > is separate from geometry, compositing and lifecycle: the module states no number of its own",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the preset owner > offers no per-target blur, strength, offset or colour override",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the kernel > installs one filter matching round-3 phosphor-echo.mjs, primitive by primitive",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the kernel > adds no drop shadow, glow or other primitive anywhere in the module",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the kernel > keeps one definition per document even if a second host mounts",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "the kernel > is what every rear source references, and only rear sources",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "silhouette geometry > is the full filled chamfer footprint round 3 paints",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "rear sources > draw a filled currentColor silhouette behind a framed component, hidden and inert",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "rear sources > follow the whole card, accent bar included",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "rear sources > are pointer-inert and keep the exposed echo unclipped",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "rear sources > duplicate heading text without changing its accessible name",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "rear sources > nest a glyph viewBox inside the filtered CSS-pixel space, never on it",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "rear sources > take no fixed hue: colour is the target’s own painted role colour",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/phosphor-echo.test.tsx",
+   "test": "Visual effects off > leaves no rear source at all, and the real components untouched",
+   "disposition": "carried",
+   "task": "TASK-120",
+   "note": "Build body, unchanged since 181e580 (this task owns the file whole, owner decisions of 2026-11-18, decision 3); passes on Round 7.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-120-parity.spec.ts",
+   "test": "TASK-AC-09E6C2AF216F urgency phone-320: /workout’s EMOM in its final five seconds with the movement note open composes the glass, the one warning edge and the Balanced dialog as the accepted urgency state does",
+   "disposition": "added",
+   "task": "TASK-120",
+   "note": "New look check (TASK-AC-09E6C2AF216F): the route beside its accepted gallery state with matched data, effects composed, every infinite loop held at its start before capture.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-120-parity.spec.ts",
+   "test": "TASK-AC-09E6C2AF216F ladder-long phone-320: /workout’s twelve-round ladder log, open past its cap, composes the glass and the Balanced dialog as the accepted ladder-long state does",
+   "disposition": "added",
+   "task": "TASK-120",
+   "note": "New look check (TASK-AC-09E6C2AF216F): the route beside its accepted gallery state with matched data, effects composed, every infinite loop held at its start before capture.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-120-parity.spec.ts",
+   "test": "TASK-AC-09E6C2AF216F urgency phone-390: /workout’s EMOM in its final five seconds with the movement note open composes the glass, the one warning edge and the Balanced dialog as the accepted urgency state does",
+   "disposition": "added",
+   "task": "TASK-120",
+   "note": "New look check (TASK-AC-09E6C2AF216F): the route beside its accepted gallery state with matched data, effects composed, every infinite loop held at its start before capture.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-120-parity.spec.ts",
+   "test": "TASK-AC-09E6C2AF216F ladder-long phone-390: /workout’s twelve-round ladder log, open past its cap, composes the glass and the Balanced dialog as the accepted ladder-long state does",
+   "disposition": "added",
+   "task": "TASK-120",
+   "note": "New look check (TASK-AC-09E6C2AF216F): the route beside its accepted gallery state with matched data, effects composed, every infinite loop held at its start before capture.",
+   "result": "passed"
+  }
+ ]
+}

@@ -1,0 +1,162 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-120",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/visual-effects-journey.test.tsx",
+    "src/ui/phosphor-echo.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-120/required-cases.json",
+    "sha256": "f20869504369ea066f78fc43388efe0742fb469a3c7d326b96413af7111d6f12"
+  },
+  "targets": [
+    {
+      "path": "src/app/visual-effects-journey.test.tsx",
+      "sha256": "85e209bd35628ce484697d58e8d77dcea1f4abf835f77eef3e2d96a026007ebb"
+    },
+    {
+      "path": "src/ui/phosphor-echo.test.tsx",
+      "sha256": "c9311b8ccc24185be5a3990d4defd68dcda7a6b5a9cc92a938328b9aa76bdb26"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: Visual effects off in Settings, then the other screens > restores each field clock at its own saved phase after an off/on unmount",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: Visual effects off in Settings, then the other screens > shows no Echo, no CRT field and no old scans on Settings, Home and /generate; the blobs stay, still",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: Visual effects on again, without a reload > restores the Echo, the field and the atmosphere motion with the same preset identities",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: Visual effects on again, without a reload > falls back to effects on when the stored choice is unknown, and the app still renders",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: OS reduced motion, live > stops blobs, drift and grain together mid-session; the static glass and Echo stay; no atmosphere scan",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: OS reduced motion, live > starts still when reduced motion is already on, with the Echo and the static glass",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: a hidden tab > stops effect work while hidden and resumes the same clocks when shown again",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/visual-effects-journey.test.tsx",
+      "name": "JOURNEY-004: a hidden tab > a hidden tab with effects off stays off when shown",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the preset owner > holds the owner-approved live-review preset and nothing else",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the preset owner > is not the earlier geometry-check values",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the preset owner > is separate from geometry, compositing and lifecycle: the module states no number of its own",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the preset owner > offers no per-target blur, strength, offset or colour override",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the kernel > installs one filter matching round-3 phosphor-echo.mjs, primitive by primitive",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the kernel > adds no drop shadow, glow or other primitive anywhere in the module",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the kernel > keeps one definition per document even if a second host mounts",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "the kernel > is what every rear source references, and only rear sources",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "silhouette geometry > is the full filled chamfer footprint round 3 paints",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "rear sources > draw a filled currentColor silhouette behind a framed component, hidden and inert",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "rear sources > follow the whole card, accent bar included",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "rear sources > are pointer-inert and keep the exposed echo unclipped",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "rear sources > duplicate heading text without changing its accessible name",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "rear sources > nest a glyph viewBox inside the filtered CSS-pixel space, never on it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "rear sources > take no fixed hue: colour is the target’s own painted role colour",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/phosphor-echo.test.tsx",
+      "name": "Visual effects off > leaves no rear source at all, and the real components untouched",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 24
+  },
+  "problems": []
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-120",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-120-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-120/required-cases.json",
+    "sha256": "f20869504369ea066f78fc43388efe0742fb469a3c7d326b96413af7111d6f12"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-120-parity.spec.ts",
+      "sha256": "4467a2e9807d9c6a3d7c044c476095f525daf9d1c87640c6d9c28e26d20cf137"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-120-parity.spec.ts",
+      "name": "TASK-AC-09E6C2AF216F urgency phone-320: /workout’s EMOM in its final five seconds with the movement note open composes the glass, the one warning edge and the Balanced dialog as the accepted urgency state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-120-parity.spec.ts",
+      "name": "TASK-AC-09E6C2AF216F ladder-long phone-320: /workout’s twelve-round ladder log, open past its cap, composes the glass and the Balanced dialog as the accepted ladder-long state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-120-parity.spec.ts",
+      "name": "TASK-AC-09E6C2AF216F urgency phone-390: /workout’s EMOM in its final five seconds with the movement note open composes the glass, the one warning edge and the Balanced dialog as the accepted urgency state does",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-120-parity.spec.ts",
+      "name": "TASK-AC-09E6C2AF216F ladder-long phone-390: /workout’s twelve-round ladder log, open past its cap, composes the glass and the Balanced dialog as the accepted ladder-long state does",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}
