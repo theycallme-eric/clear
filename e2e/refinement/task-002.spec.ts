@@ -32,10 +32,21 @@ import { expect, test as scanned } from '../fixtures'
  * movement's identity and use the context's action — Swap in Review; Start;
  * then set progress, Rest and set entry on `/workout`. Result, read from the
  * browser at phone widths: equipment is quiet text beside each name, wrapping
- * as a unit; Review offers Swap under static section headers that share the
- * live cards' header face; the workout offers progress, Rest and logging and
- * never Swap. Recovery: a failed alternatives read and a failed Start leave
- * Review as planned; keyboard and touch reach every action; reduced motion.
+ * readably with it; Review offers Swap under static section headers that share
+ * the live cards' header face; the workout offers progress, Rest and logging
+ * and never Swap. Recovery: a failed alternatives read and a failed Start
+ * leave Review as planned; keyboard and touch reach every action; reduced
+ * motion.
+ *
+ * Carried onto Round 7 (gallery bec4454) by A3 TASK-112: each row is
+ * `MovementIdentity` (src/ui/movement-presentation.tsx), which draws the
+ * compact equipment inline in the name's own element, directly after the
+ * name's words, so it flows with them (`equipmentPlacement: 'name'`); a live
+ * group's ordinal (`A1`, `1.`) is part of the name's words. Each block card
+ * opens with the shared static header (`MovementGroupHeader`), whose title
+ * names the section on every card (owner decisions of 2026-11-13, decision 2)
+ * and whose badge names the format alone, with the block's size on the line
+ * under it (decision 6). Review draws a standard block's rows with no list.
  *
  * Synthetic and contained: an intercepted session for a fictional user and
  * synthetic reads. The only writes the app attempts are Start's two session
@@ -252,14 +263,21 @@ interface IdentityGeometry {
   column: Box
   nameLastLine: Box
   nameBox: Box
+  /** The name's words, line by line. */
+  nameFragments: Box[]
   equipmentBox: Box
   equipmentLines: number
+  /** The equipment's line fragments, first to last (Round 7's inline label flows with the name's words). */
+  equipmentFragments: Box[]
+  /** The equipment's own inline gap before it. */
+  equipmentGap: number
   equipmentFont: number
   nameFont: number
   equipmentVisible: boolean
   equipmentGlyphs: number
   equipmentTruncated: boolean
   equipmentInsideName: boolean
+  equipmentAfterWords: boolean
   slot: { kind: string; box: Box; text: string } | null
   overflow: boolean
   card: Box
@@ -276,36 +294,50 @@ async function readIdentities(scope: Locator): Promise<IdentityGeometry[]> {
       range.selectNodeContents(node)
       return [...range.getClientRects()].filter((rect) => rect.width > 0)
     }
-    return [...list.querySelectorAll(':scope > li [data-movement-identity]')].map((identity) => {
+    const LIVE_ORDINAL = /^([A-Z]\d+|\d+\.) /
+    // A named list's rows, or Review's standard group (Round 7: no list).
+    const found = list.tagName === 'OL'
+      ? [...list.querySelectorAll(':scope > li .clr-movement-identity')]
+      : [...list.querySelectorAll('.clr-movement-identity')]
+    return found.map((identity) => {
       const nameRow = identity.querySelector(':scope > [data-movement-name-row]')!
-      const column = nameRow.querySelector(':scope > .clr-movement-identity__title')!
-      const name = column.querySelector(':scope > .clr-movement-identity__name')!
-      const words = name.querySelector('[data-movement-name]')!
-      const equipment = column.querySelector(':scope > [data-movement-context]')
+      // Round 7: the name element is the wrapping column, holding the words and the inline equipment.
+      const name = nameRow.querySelector(':scope > .clr-movement-identity__name')!
+      const column = name
+      const words = name.querySelector(':scope > span:not([data-movement-context])')!
+      const equipment = name.querySelector(':scope > [data-movement-context]')
       if (equipment === null) throw new Error(`No equipment beside ${words.textContent}`)
       const nameLines = lineRects(words)
       const last = nameLines.at(-1)!
       const style = getComputedStyle(equipment)
       const slotElement = nameRow.querySelector(':scope > .clr-movement-identity__action, :scope > .clr-movement-identity__counter')
       const slotTarget = slotElement?.querySelector('button') ?? slotElement
+      const ownWords = [...words.childNodes]
+        .filter((node) => !(node instanceof HTMLElement && node.classList.contains('clr-movement-identity__ordinal')))
+        .map((node) => node.textContent ?? '').join('')
       return {
-        name: words.textContent ?? '',
+        name: ownWords.replace(LIVE_ORDINAL, ''),
         equipment: equipment.textContent ?? '',
-        load: identity.querySelector('[data-movement-load]')?.textContent ?? null,
+        load: identity.querySelector(':scope > [data-movement-detail] > span:nth-child(2)')?.textContent ?? null,
         column: box(column),
         nameLastLine: box(last),
-        nameBox: box(name),
+        nameBox: box(words),
+        nameFragments: nameLines.map(box),
         equipmentBox: box(equipment),
         equipmentLines: new Set(lineRects(equipment).map((rect) => Math.round(rect.top))).size,
+        equipmentFragments: lineRects(equipment).map(box),
+        equipmentGap: parseFloat(style.marginInlineStart),
         equipmentFont: parseFloat(style.fontSize),
         nameFont: parseFloat(getComputedStyle(name).fontSize),
         equipmentVisible: style.visibility === 'visible' && Number(style.opacity) > 0 && style.display !== 'none',
         equipmentGlyphs: equipment.querySelectorAll('svg, img').length,
         equipmentTruncated: equipment.scrollWidth > equipment.clientWidth + 1 || style.textOverflow === 'ellipsis',
         equipmentInsideName: name.contains(equipment),
+        equipmentAfterWords: words.nextElementSibling === equipment && !words.contains(equipment),
+        // The slot's own class (Round 7's counter also wears a text role).
         slot: slotTarget === null || slotTarget === undefined
           ? null
-          : { kind: slotElement!.className, box: box(slotTarget), text: slotElement!.textContent ?? '' },
+          : { kind: [...slotElement!.classList].find((className) => className.startsWith('clr-movement-identity__')) ?? '', box: box(slotTarget), text: slotElement!.textContent ?? '' },
         overflow: column.scrollWidth > column.clientWidth + 1 || identity.scrollWidth > identity.clientWidth + 1,
         card: box(identity.closest('.clr-card') ?? identity),
       }
@@ -315,27 +347,55 @@ async function readIdentities(scope: Locator): Promise<IdentityGeometry[]> {
 
 const TOLERANCE = 1
 
+/** Two boxes share drawn area (beyond the tolerance). */
+function overlaps(a: Box, b: Box) {
+  return a.left < b.right - TOLERANCE && b.left < a.right - TOLERANCE && a.top < b.bottom - TOLERANCE && b.top < a.bottom - TOLERANCE
+}
+
 /**
  * C03, AC-R002-01: the equipment is readable, quiet text beside the name —
- * on the name's last line when it fits, otherwise moved as one unit to the
- * start of the next line inside the name column — never inside the name's own
- * element, never truncated, never an icon alone and never under the slot.
+ * on the name's last line when it fits, otherwise starting the next line
+ * inside the name column — never truncated, never an icon alone and never
+ * under the slot. Round 7 (R132's selected A, `equipmentPlacement: 'name'`)
+ * draws it inside the name's own element, directly after the name's words,
+ * as inline text that flows with them: a label longer than what is left of
+ * the line continues on the next line from the column's start (the build
+ * moved it as one unit). Readable wrapping: every part inside the column, none
+ * clipped, none drawn over the name's words, both legible.
  */
 function expectEquipmentBesideName(movement: IdentityGeometry, label: string) {
   const at = `${label}: ${movement.name}`
   expect(movement.equipmentVisible, `${at}: equipment visible`).toBe(true)
   expect(movement.equipmentGlyphs, `${at}: equipment is text, not a glyph alone`).toBe(0)
   expect(movement.equipmentTruncated, `${at}: equipment is not truncated`).toBe(false)
-  expect(movement.equipmentInsideName, `${at}: the name element holds only the name`).toBe(false)
+  expect(movement.equipmentInsideName, `${at}: in the name's own element (Round 7)`).toBe(true)
+  expect(movement.equipmentAfterWords, `${at}: directly after the name's words, not part of them`).toBe(true)
   expect(movement.equipmentFont, `${at}: equipment readable`).toBeGreaterThanOrEqual(12)
   expect(movement.equipmentFont, `${at}: equipment quieter than the name`).toBeLessThan(movement.nameFont)
-  const { equipmentBox: equipment, nameLastLine: line, column } = movement
-  const besideOnLine = equipment.left >= line.right - TOLERANCE &&
-    equipment.top < line.bottom && equipment.bottom > line.top
-  const wrappedAsUnit = Math.abs(equipment.left - column.left) <= TOLERANCE &&
-    equipment.top >= line.bottom - TOLERANCE && equipment.top - line.bottom < movement.nameFont
-  expect(besideOnLine || wrappedAsUnit, `${at}: beside the name, or wrapped as one unit under it`).toBe(true)
-  expect(movement.equipmentLines, `${at}: equipment wraps as a unit`).toBe(1)
+  const { equipmentBox: equipment, nameLastLine: line, column, equipmentFragments: fragments } = movement
+  expect(fragments.length, `${at}: equipment drawn on at least one line`).toBeGreaterThanOrEqual(1)
+  expect(movement.equipmentLines, `${at}: one equipment fragment per line`).toBe(fragments.length)
+  const [first] = fragments
+  const besideOnLine = first.left >= line.right - TOLERANCE &&
+    first.top < line.bottom && first.bottom > line.top
+  const startsNextLine = Math.abs(first.left - (column.left + movement.equipmentGap)) <= TOLERANCE &&
+    first.top >= line.bottom - TOLERANCE && first.top - line.bottom < movement.nameFont
+  expect(besideOnLine || startsNextLine, `${at}: beside the name, or starting the line under it`).toBe(true)
+  for (const [index, fragment] of fragments.entries()) {
+    expect(fragment.left, `${at}: equipment part ${index + 1} inside the name column`).toBeGreaterThanOrEqual(column.left - TOLERANCE)
+    expect(fragment.right, `${at}: equipment part ${index + 1} inside the name column`).toBeLessThanOrEqual(column.right + TOLERANCE)
+    if (index > 0) {
+      // Each further part continues on the next line, from the column's start.
+      expect(fragment.top, `${at}: equipment part ${index + 1} on the line after`).toBeGreaterThanOrEqual(fragments[index - 1].bottom - TOLERANCE)
+      expect(Math.abs(fragment.left - column.left), `${at}: equipment part ${index + 1} from the column's start`).toBeLessThanOrEqual(TOLERANCE)
+    }
+    for (const word of movement.nameFragments) {
+      expect(overlaps(fragment, word), `${at}: equipment part ${index + 1} never drawn over the name`).toBe(false)
+    }
+    if (movement.slot !== null) {
+      expect(fragment.right, `${at}: equipment never under the ${movement.slot.kind}`).toBeLessThanOrEqual(movement.slot.box.left + TOLERANCE)
+    }
+  }
   expect(equipment.left, `${at}: inside the name column`).toBeGreaterThanOrEqual(column.left - TOLERANCE)
   expect(equipment.right, `${at}: inside the name column`).toBeLessThanOrEqual(column.right + TOLERANCE)
   expect(movement.overflow, `${at}: nothing overflows`).toBe(false)
@@ -379,8 +439,14 @@ interface HeaderGeometry {
 
 const FACE = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textTransform', 'color'] as const
 
+/** Each block card's shared static header (Round 7: the header opening the card's movement group). */
+const CARD_HEADERS: Readonly<Record<Context, string>> = {
+  review: '[data-review-section] .clr-card__body > .clr-movement-group > [data-movement-group-header]',
+  workout: 'main .clr-card__body > .clr-movement-group > [data-movement-group-header]',
+}
+
 async function readHeaders(page: Page, context: Context): Promise<HeaderGeometry[]> {
-  return page.locator(`[data-workout-card="${context}"] > [data-movement-group-header]`).evaluateAll((headers, face) =>
+  return page.locator(CARD_HEADERS[context]).evaluateAll((headers, face) =>
     headers.map((header) => {
       const box = (node: Element) => {
         const rect = node.getBoundingClientRect()
@@ -448,7 +514,10 @@ async function attachCapture(page: Page, name: string) {
 }
 
 function contextList(page: Page, context: Context, structure: ContextStructure): Locator {
-  return page.getByRole('list', { name: CONTEXT_LISTS[context][structure], exact: true })
+  if (context === 'workout' || structure !== 'standard') return page.getByRole('list', { name: CONTEXT_LISTS[context][structure], exact: true })
+  // Round 7's Review draws a standard block's rows straight in its card's movement group, with no list.
+  return page.locator('[data-review-section] .clr-movement-group:not(:has(ol)):not(:has(.clr-movement-group))')
+    .filter({ has: page.locator('.clr-movement-identity') })
 }
 
 async function noHorizontalOverflow(page: Page) {
@@ -491,7 +560,8 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
       // TASK-003 (AC-C08-01): the badge names the format; the rounds are the
       // header's details line below it.
       expect(reviewHeaders.map((header) => header.badge)).toEqual([null, 'SUPERSET', 'CIRCUIT'])
-      await expect(page.locator('[data-workout-card="review"] [data-structure-meta]')).toHaveText(['3 ROUNDS', '2 ROUNDS'])
+      // Round 7 reads each card's size on the line directly under its header; the standard card's states none.
+      await expect(page.locator('[data-review-section] .clr-movement-group > [data-movement-group-header] + .clr-timed-meta')).toHaveText(['', '3 ROUNDS', '2 ROUNDS'])
       const main = page.locator('main')
       await expect(main.getByRole('button', { name: /^Rest( for .+)?$/ })).toHaveCount(0)
       await expect(main.getByRole('button', { name: /^Log\b/ })).toHaveCount(0)
@@ -500,8 +570,10 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
         await expect(main, `planned ${planned} stays in Review`).toContainText(planned)
       }
 
-      // Tapping a section header changes nothing: it is not a control.
-      const heading = page.getByRole('heading', { level: 2, name: CONTEXT_SECTION })
+      // Tapping a section header changes nothing: it is not a control. Round 7
+      // names the section on every card's header, so the first is tapped.
+      await expect(page.getByRole('heading', { level: 2, name: CONTEXT_SECTION })).toHaveCount(3)
+      const heading = page.getByRole('heading', { level: 2, name: CONTEXT_SECTION }).first()
       const size = async () => {
         const box = await contextList(page, 'review', 'standard').boundingBox()
         return box === null ? null : { width: box.width, height: box.height }
@@ -511,8 +583,8 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
       await expect(contextList(page, 'review', 'standard')).toBeVisible()
       // The section's content keeps its full size: nothing collapsed or toggled.
       expect(await size()).toEqual(before)
-      await expect(page.locator('[data-workout-card="review"] [aria-expanded]')).toHaveCount(
-        await page.locator('[data-workout-card="review"] .clr-collapsible__trigger').count(),
+      await expect(page.locator('[data-review-section] [aria-expanded]')).toHaveCount(
+        await page.locator('[data-review-section] .clr-collapsible__trigger').count(),
       )
 
       // Review's contextual action by touch: Swap opens this slot's alternatives; Keep returns.
@@ -538,7 +610,8 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
       const liveHeaders = await readHeaders(page, 'workout')
       expect(liveHeaders).toHaveLength(3)
       liveHeaders.forEach((header, index) => expectStaticHeader(header, `Workout header ${index + 1} @${name}`))
-      expect(liveHeaders[0].tag).toBe('SPAN')
+      // Round 7 (decision 2): the live card's header is the same heading.
+      expect(liveHeaders[0].tag).toBe('H2')
       for (const property of FACE) {
         expect(liveHeaders[0].face[property], `C07: header ${property} shared by Review and Workout`).toBe(reviewHeaders[0].face[property])
       }
@@ -691,25 +764,26 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
     await expect(state).toBeVisible()
     await settle(page)
 
-    for (const composition of ['Standard, superset and circuit', 'EMOM, AMRAP and For Time']) {
-      await state.getByRole('radio', { name: new RegExp(composition) }).click()
-      await settle(page)
-      for (const context of ['review', 'workout'] as const) {
-        const scope = state.locator(`[data-gallery-context="${context}"]`)
-        const lists = scope.locator('ol.clr-movement-list')
-        const count = await lists.count()
-        expect(count).toBeGreaterThan(0)
-        for (let index = 0; index < count; index += 1) {
-          for (const movement of await readIdentities(lists.nth(index))) {
-            expectEquipmentBesideName(movement, `Gallery ${context} ${composition}`)
-            if (context === 'review') expectSlot(movement, 'review', `Gallery ${context}`, false)
-            else expect(movement.slot?.kind ?? null).not.toBe('clr-movement-identity__action')
-          }
-        }
-        const headers = await scope.locator('[data-workout-card] > [data-movement-group-header]').count()
-        expect(headers).toBe(await scope.locator('[data-workout-card]').count())
-        await expect(scope.locator('[data-movement-group-header] button, [data-movement-group-header] [aria-expanded]')).toHaveCount(0)
+    // Round 7's state draws the live cards before Start (EMOM, AMRAP and For
+    // Time, through `TimedWorkoutFlow` and `BlockPanel`), each opening with the
+    // static header; Review's cards are read on the real /review route above.
+    const lists = state.locator('ol.clr-movement-list')
+    await expect(lists).toHaveCount(3)
+    const count = await lists.count()
+    expect(count).toBeGreaterThan(0)
+    for (let index = 0; index < count; index += 1) {
+      const movements = await readIdentities(lists.nth(index))
+      expect(movements.length).toBeGreaterThan(0)
+      for (const movement of movements) {
+        expectEquipmentBesideName(movement, 'Gallery workout')
+        expectSlot(movement, 'workout', 'Gallery workout', false)
+        expect(movement.slot?.kind ?? null).not.toBe('clr-movement-identity__action')
       }
     }
+    const cards = state.locator('.clr-card').filter({ has: page.locator(':scope > .clr-card__body > .clr-movement-group > [data-movement-group-header]') })
+    await expect(cards).toHaveCount(3)
+    await expect(state.locator('.clr-card__body > .clr-movement-group > [data-movement-group-header]')).toHaveCount(3)
+    const scope = state
+    await expect(scope.locator('[data-movement-group-header] button, [data-movement-group-header] [aria-expanded]')).toHaveCount(0)
   })
 })

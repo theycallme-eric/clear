@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-002",
-  "description": "Context-specific actions with compact equipment (REQ-002; C03, C06, C07) delivered through MovementIdentity / WorkoutCard / ReviewMovement / LiveMovement (src/ui/refinements/movement.tsx, src/ui/refinements/workout-card.tsx), adopted by BlockPanel and the Review section on the real /review and /workout routes (JOURNEY-002), with the accepted gallery state /gallery/refinements?state=cards (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "description": "Context-specific actions with compact equipment (REQ-002; C03, C06, C07) on the real /review and /workout routes (JOURNEY-002). A3 update (TASK-112, 2026-11-23): delivered through Round 7's MovementIdentity with the equipment inline on the name line (PRODUCT_PRESENTATION equipmentPlacement 'name'), MovementGroupHeader and MovementList (src/ui/movement-presentation.tsx), drawn by ReviewExerciseRow and Review's section cards on /review and by BlockPanel on /workout, with the accepted gallery state /gallery/refinements?state=cards (gallery commit bec4454; the eded158 reference and src/ui/refinements/* owners are historical). check-01 runs src/ui/movement-identity.test.tsx whole, which also holds TASK-029's block. Every declared case must execute and pass.",
   "checks": {
     "check-01": {
       "runner": "vitest",

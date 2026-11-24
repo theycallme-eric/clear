@@ -1,0 +1,193 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-112",
+  "description": "A3 task 12a (F10; #735): the old build's TASK-001 and TASK-002 Review-row checks carried onto Round 7's movement rows on /review and /workout — ReviewExerciseRow (src/ui/review-exercise-row.tsx) and BlockPanel.Movement/TimedWorkoutFlow over MovementIdentity, MovementList and MovementGroupHeader (src/ui/movement-presentation.tsx): equipment inline on the name line, Swap only in Review, expanded sections under static semantic headings with no toggle, separators only between peers. Only the tests come back; no product file changes. check-01 runs the two files this task owns whole (owner decisions of 2026-11-18, decision 3) and declares every case in them: src/ui/movement-list.test.tsx (created here with the build's TASK-001 block) and src/ui/movement-identity.test.tsx (TASK-118's carried TASK-029 block, then the build's TASK-002 block added here); TASK-001 and TASK-002 check-01/check-02 (their task-001 and task-002 e2e suites) prove JOURNEY-001 and JOURNEY-002 on the routes. parity compares /review's and /workout's movement rows with the accepted cards state at 320 and 390 (TASK-AC-1AFEF9A3EE07). Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-112 --check check-01 -- npx vitest run src/ui/movement-list.test.tsx src/ui/movement-identity.test.tsx --passWithNoTests=false",
+      "criteria": [
+        "AC-C01-01",
+        "AC-C02-01",
+        "AC-C04-01",
+        "AC-R001-01",
+        "AC-R001-02",
+        "AC-C03-01",
+        "AC-C06-01",
+        "AC-C07-01",
+        "AC-R002-01",
+        "AC-R002-02",
+        "AC-R002-03",
+        "JOURNEY-001",
+        "JOURNEY-002",
+        "TASK-AC-63636175440D",
+        "TASK-AC-6B0080C44D10",
+        "TASK-AC-B9CCCC0B4C0D",
+        "TASK-AC-69303F9F347F"
+      ],
+      "files": [
+        "src/ui/movement-list.test.tsx",
+        "src/ui/movement-identity.test.tsx"
+      ],
+      "cases": [
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C01-01 Review and Workout lead with the prominent name, readable prescription and load, quiet equipment and their own action or progress slot",
+          "criterion": "AC-C01-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C02-01 shows no Last-performance row in either context while the prescribed load stays visible",
+          "criterion": "AC-C02-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-C04-01 separates peers only between two movements, never after the last, with no inner grouping rail",
+          "criterion": "AC-C04-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-01 standard, superset and circuit cards keep peer-only separators in both contexts and retain history data",
+          "criterion": "AC-R001-01"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 long names and multi-digit ordinals wrap inside the name column without covering the action or progress slot",
+          "criterion": "AC-R001-02"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 opens Review, starts that same workout and shows the same hierarchy on Workout",
+          "criterion": "JOURNEY-001"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "TASK-001 shared movement hierarchy and peer grouping > renders the accepted gallery state cards through the Review and Workout consumers",
+          "criterion": "AC-C04-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 preserves the verified equipment inventory: the 75 shipped icons unchanged, Dumbbell and WeightPlate the only equipment glyphs, and Setup’s 16 equipment ids",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 keeps the equipment wanted list in step with the inventory: every Setup id’s glyph status and next step, the medicine ball as a review label",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 preserves the approved round effort faces: only Frown, Meh, Smile and SmilePlus are round, and Effort still reuses Frown, Meh and Smile",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 reads the Wall ball’s medicine ball as composed equipment without inventing a medicine-ball setup id",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment offers exactly the 16 Setup equipment choices, each named in words, and no medicine ball",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > AC-R029-02 JOURNEY-029 reads every equipment kind as a readable label beside its name in Review and Workout, glyph or none, and Review’s Required equipment in words",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery: a failed Start keeps Review’s equipment labels and Required equipment as they were and records no work",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-029 equipment asset inventory and readable fallback > renders the accepted gallery state assets: the shared equipment inventory, then the routes’ own Review, Workout and Setup equipment as readable labels",
+          "criterion": "TASK-AC-B9CCCC0B4C0D"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-C03-01 shows the compact equipment beside each movement name in Review and Workout, as readable wrapping text",
+          "criterion": "AC-C03-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-C06-01 offers Swap in Review’s movement slot and set progress, Rest and logging in Workout’s, never the other way round",
+          "criterion": "AC-C06-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-C07-01 heads Review’s block cards with the live cards’ static header: the section identity and the badge, in the same face",
+          "criterion": "AC-C07-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-01 says a duplicate Bodyweight once, by the equipment, in both contexts and never hides an actual prescribed load",
+          "criterion": "AC-R002-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keeps Review’s sections open under static semantic headings, with no toggle, chevron or hit area, and keeps the separate disclosures",
+          "criterion": "AC-R002-02"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > AC-R002-03 keeps planned sets, reps, rounds and rest in Review, keeps live counters and Rest or log controls out of it, and keeps Swap out of Workout",
+          "criterion": "AC-R002-03"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 opens Review, uses Swap, starts that same workout and uses Rest on Workout without recording work",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed formats show the same equipment beside each name in Review and in the live EMOM, AMRAP and For Time blocks",
+          "criterion": "AC-C03-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read or a failed Start keeps Review as planned and records no work",
+          "criterion": "JOURNEY-002"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > renders the shared owners with each context’s own slot",
+          "criterion": "AC-C06-01"
+        },
+        {
+          "file": "src/ui/movement-identity.test.tsx",
+          "name": "TASK-002 context-specific actions with compact equipment > renders the accepted gallery state cards through WorkoutCard with static headers and each context’s slot",
+          "criterion": "AC-C07-01"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-112 --check parity -- npx playwright test e2e/refinement/task-112-parity.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-1AFEF9A3EE07",
+        "TASK-AC-84124186DC4C"
+      ],
+      "files": [
+        "e2e/refinement/task-112-parity.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-112-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-1AFEF9A3EE07 cards phone-320: /review’s and /workout’s EMOM, AMRAP and For Time movement rows match the accepted cards state",
+          "criterion": "TASK-AC-1AFEF9A3EE07"
+        },
+        {
+          "file": "e2e/refinement/task-112-parity.spec.ts",
+          "project": "mobile",
+          "name": "TASK-AC-1AFEF9A3EE07 cards phone-390: /review’s and /workout’s EMOM, AMRAP and For Time movement rows match the accepted cards state",
+          "criterion": "TASK-AC-1AFEF9A3EE07"
+        }
+      ]
+    }
+  }
+}

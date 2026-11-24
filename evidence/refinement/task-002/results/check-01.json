@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-002/required-cases.json",
-    "sha256": "01f085e068b230a7c9a12a451867586aa8c58157b038d3ed0118623fc4c05c09"
+    "sha256": "f905cf6af5b6e66a8b88d9593498ab80f291ba688c3ce6577610d6d57bb7e521"
   },
   "targets": [
     {
       "path": "src/ui/movement-identity.test.tsx",
-      "sha256": "87052120ba7ffc633625454a5245148260a2160f49035eeb75258422990792f8"
+      "sha256": "e6988f4779f0bdcf3684f928c9e0509d5465ca3a039359ac46f3139880122c30"
     }
   ],
   "requiredCases": [

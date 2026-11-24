@@ -1,0 +1,49 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-112",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-112-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-112/required-cases.json",
+    "sha256": "c37486220185cd7446d7148dab9f570fd5e31f45125a87f68646868ab5d5935b"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-112-parity.spec.ts",
+      "sha256": "d8e9b6656135bb7359729b67a0edd2f181f3e77f476e8d510e4a40a2cd33d9dd"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-112-parity.spec.ts",
+      "name": "TASK-AC-1AFEF9A3EE07 cards phone-320: /review’s and /workout’s EMOM, AMRAP and For Time movement rows match the accepted cards state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-112-parity.spec.ts",
+      "name": "TASK-AC-1AFEF9A3EE07 cards phone-390: /review’s and /workout’s EMOM, AMRAP and For Time movement rows match the accepted cards state",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 2
+  },
+  "problems": []
+}
