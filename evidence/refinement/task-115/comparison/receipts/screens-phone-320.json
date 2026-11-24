@@ -8,16 +8,16 @@
   "primaryOwner": "TASK-119",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/screens-phone-320-gallery.png",
-    "sha256": "bd4aa2a4da50e2956b5421eb94bca31ab091d3c6791888ba5384eb338fb9e764",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/screens-phone-320-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/screens-phone-320-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {
       "task": "TASK-119",
       "primary": true,
       "receipt": "evidence/refinement/task-119/parity/screens-phone-320.json",
-      "receiptSha256": "9599d093cb2a7f8d21088809acc1a768fce0779ef0c727f5081931b4972bf5cf",
-      "provenance": "taken by its own task run; receipt bytes as committed at c1beb5eb",
+      "receiptSha256": "70f13788f58491e8fdaaedc15c7333551168b3bdb0f6270da818ff7b4ee29f92",
+      "provenance": "taken by its own task run; receipt bytes as committed at cca35346",
       "route": "/generate",
       "moments": [
         {
@@ -102,7 +102,7 @@
             {
               "key": "gallery-focus-open",
               "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus-open.png",
-              "sha256": "48b083d5a413ab102b1eeb2344ebe1dc4debfd4df9f7ce386f946b59b030c891",
+              "sha256": "47ba09571659ce00321ea2594d1c7150203a9f3656ddc0c289bd5245dbd0504e",
               "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus-open.png"
             }
           ],

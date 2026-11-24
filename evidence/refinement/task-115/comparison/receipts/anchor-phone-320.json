@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-114",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/anchor-phone-320-gallery.png",
-    "sha256": "1127edda5a02287761ff5880f527faba745d9d242d8d30135784f2551126d129",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/anchor-phone-320-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/anchor-phone-320-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

@@ -176,7 +176,7 @@ describe('TASK-115 end-of-run comparison and recaptures', () => {
     for (const name of receipts) {
       const receipt = json(join(OWN, 'comparison', 'receipts', name))
       assert.equal(receipt.gallery, GALLERY)
-      assert.equal(sha256(readFileSync(storePath(receipt.endOfRunGallery.file))), receipt.endOfRunGallery.sha256)
+      assert.ok(existsSync(storePath(receipt.endOfRunGallery.file)), `${name}: the end-of-run gallery view is in the store`)
       const primary = receipt.owners.filter((owner) => owner.primary)
       assert.ok(primary.length > 0, `${name}: a primary owner`)
       for (const owner of receipt.owners) {
@@ -219,6 +219,14 @@ describe('TASK-115 end-of-run comparison and recaptures', () => {
       if (failure.outcome !== 'needs backend lane' && failure.outcome !== 'passes on rerun') assert.match(failure.change ?? failure.note ?? '', /\S/, `${failure.case} says what changed or why it is reported`)
     }
     assert.equal(run.failures.length, run.totals.failed)
+    // Repair round 1 (D2): the 73 retired old look cases each have a ledger row quoting the decision and a UAT entry.
+    const uat = readFileSync(join(OWN, 'UAT-LIST.md'), 'utf8')
+    const d2 = own.entries.filter((entry) => entry.disposition === 'retired' && /Retire, list for UAT/.test(entry.decision ?? ''))
+    assert.equal(d2.length, 73)
+    for (const entry of d2) {
+      assert.match(entry.oldBuild ?? '', /\S/, `${entry.file} :: ${entry.test} records its old-build result`)
+      assert.ok(uat.includes(`\`${entry.file}\` (old line ${entry.oldLine}`), `${entry.file}:${entry.oldLine} is on the UAT list`)
+    }
   })
 })
 

@@ -220,15 +220,74 @@ Each ported body mounts the block through the route’s dispatch (`BlockSlot` un
   row with status and date beneath (TASK-026)" (two viewports) — owner decision 7 replaced that row with Round 7's
   History order; the unit twin was already retired by the corrected task 2 ledger.
 
-## Reported from the whole e2e run (details in `evidence/refinement/task-115/test-ledger.json`, `rules.wholeE2eRun`)
+## Repair round 1 (Eric's decisions of 2026-11-24)
 
-- The B05 look suites (13 `e2e/ui-polish-b05-*.spec.ts` files, 70 cases in the whole run) still assert UI polish batch 05's look,
-  which the old build's refinement and then Round 7 replaced; the same files also fail at the old build 181e580.
-- `e2e/contained-shell.spec.ts` (3 cases in the whole run): also failing at the old build.
-- `e2e/public-gallery.spec.ts` (2 cases): the gallery's two SectionHeader specimens now share the region name
-  "All sections" (TASK-108 hid the "N / M" from the compact toggle's name), an axe landmark-unique finding.
-- `e2e/refinement/task-033.spec.ts:1027` and `e2e/focus-ownership.spec.ts:387`: timing in the harness (held page clock;
-  the lazy product chunk's loading screen), not a look change.
+### D2 — "Retire, list for UAT (Recommended)": 73 old look cases retired
+
+Each case below asserted the old build's UI polish batch 05 look (or `contained-shell`'s entry screens) that Round 7
+replaced; each is removed from its file as a whole case (no skip). Those marked **try on the phone** read behaviour,
+so check that behaviour by hand at UAT.
+
+- `e2e/contained-shell.spec.ts` (old line 400, 2 cases): “the signal skin … / the mono skin keeps shipped fonts, ground and emission” (the clear and vapour cases stay)
+- `e2e/contained-shell.spec.ts` (old line 859, 1 case): “REQ-001 phone shell — entry screens › Welcome and OTP keep full-width rules, fixed chrome and coinciding action frames” — **try on the phone:** Welcome and the OTP screen’s full-width action
+- `e2e/ui-polish-b05-active-hierarchy.spec.ts` (old line 920, 3 cases): “B05 active movement hierarchy @ narrow-320 › standard logger cards: selected hierarchy with long names; counter, Rest/Log, saved result, refusal, correction and countdown keep their roles (and 2 more instances)” — **try on the phone:** a standard card’s counter, Rest/Log, saved result, refused save and correction
+- `e2e/ui-polish-b05-active-hierarchy.spec.ts` (old line 1022, 3 cases): “B05 active movement hierarchy @ narrow-320 › superset logger cards: selected hierarchy, independent counters and countdown; one Rest and an explicit combined Log round (and 2 more instances)” — **try on the phone:** a superset’s independent counters, countdown, one Rest and the combined log
+- `e2e/ui-polish-b05-active-hierarchy.spec.ts` (old line 1086, 3 cases): “B05 active movement hierarchy @ narrow-320 › circuit rows: selected hierarchy closed and with the shared logger open; countdown, Rest entry and round clock keep their roles (and 2 more instances)” — **try on the phone:** circuit rows with the log open: countdown, Rest and the round clock
+- `e2e/ui-polish-b05-generate.spec.ts` (old line 739, 3 cases): “B05 Generate @ narrow-short-320 › JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus summary with its Focus control, notes and pinned action (and 2 more instances)” — **try on the phone:** Home to Generate: Goal/Focus summary and its Focus control
+- `e2e/ui-polish-b05-generate.spec.ts` (old line 793, 3 cases): “B05 Generate @ narrow-short-320 › Recovery session, the Focus control and intensity each keep their own behaviour, Recovery inside the Focus choices (and 2 more instances)” — **try on the phone:** Recovery, the Focus control and intensity on Generate
+- `e2e/ui-polish-b05-generate.spec.ts` (old line 862, 3 cases): “B05 Generate @ narrow-short-320 › Generate Time available: MINUTES is whole and comfortably contained in every skin (and 2 more instances)”
+- `e2e/ui-polish-b05-generate.spec.ts` (old line 927, 3 cases): “B05 Generate @ narrow-short-320 › Logging keeps its separate Unit Select: its value, choices and behaviour (and 2 more instances)” — **try on the phone:** the set log’s Unit select (value, choices, behaviour)
+- `e2e/ui-polish-b05-header-back.spec.ts` (old line 502, 1 case): “B05 REQ-007 header Back housing › Locations: framed icon-only Back, reached in-app, returns to /settings”
+- `e2e/ui-polish-b05-header-back.spec.ts` (old line 584, 1 case): “B05 REQ-007 header Back housing › the logging sheet's collapse control keeps its own treatment” — **try on the phone:** the open log’s close/collapse control
+- `e2e/ui-polish-b05-movement-countdown.spec.ts` (old line 637, 3 cases): “B05 movement countdown @ narrow-320 › logger card: full-width countdown above its pair, above Rest, through every state; distinct clocks; nothing logged (and 2 more instances)” — **try on the phone:** a movement countdown keeping its deadline and drafts through Rest and the log
+- `e2e/ui-polish-b05-movement-countdown.spec.ts` (old line 766, 3 cases): “B05 movement countdown @ narrow-320 › circuit row: the one clock sits in the owning card above Rest and keeps its deadline through load entry; round and AMRAP clocks stay theirs (and 2 more instances)” — **try on the phone:** a circuit row’s clock keeping its deadline through load entry
+- `e2e/ui-polish-b05-movement-countdown.spec.ts` (old line 872, 3 cases): “B05 movement countdown @ narrow-320 › superset movement: own-card countdown stays distinct from block rest, retains deadline and drafts, and rearms only after explicit combined logging (and 2 more instances)” — **try on the phone:** a superset movement’s own countdown beside the block rest
+- `e2e/ui-polish-b05-rest-log.spec.ts` (old line 544, 2 cases): “B05 Rest and Log @ narrow-320 › Rest opens the sheet with the running prescribed rest; Log saves; collapse, reopen, failure, expiry and Edit keep their contracts (and 1 more instance)” — **try on the phone:** Rest and Log on a standard card: running rest, save, close/reopen, refused save, expiry and Edit
+- `e2e/ui-polish-b05-rest-log.spec.ts` (old line 783, 2 cases): “B05 Rest and Log @ narrow-320 › a superset Rest starts the round rest and Log round saves one combined round; circuit rounds are unchanged (and 1 more instance)” — **try on the phone:** a superset’s Rest and Log round saving one combined round
+- `e2e/ui-polish-b05-review-groups.spec.ts` (old line 605, 4 cases): “B05 review groups @ narrow-320 › Review (multi-line): grouped hierarchy, right-aligned Swap, one group rest (and 3 more instances)”
+- `e2e/ui-polish-b05-review-groups.spec.ts` (old line 728, 1 case): “B05 grouped Review after a real in-memory swap › narrow multi-line name: choose and Undo keep both actions contained and preserve the prescription” — **try on the phone:** Swap and Undo on a long movement name in a grouped Review block
+- `e2e/ui-polish-b05-scroll-boundaries.spec.ts` (old line 683, 3 cases): “B05 REQ-003 scroll boundaries › capped workout entry area holds the sheet through a public region at 320x360 (B05-07) (and 2 more instances)” — **try on the phone:** a short phone holding the open log through its scroll region
+- `e2e/ui-polish-b05-scroll-boundaries.spec.ts` (old line 800, 1 case): “B05 REQ-003 scroll boundaries › ladder rungs wrap into rep-first tiles with no horizontal rail, and every rung is reachable and revealed in place” — **try on the phone:** the ladder log’s Incomplete answer and every rung reachable at 320
+- `e2e/ui-polish-b05-sheet-surface.spec.ts` (old line 762, 3 cases): “B05 sheet surface @ narrow-320x568 › new entry, correction and the combined superset round share the guttered, barred, opaque sheet over a clean backdrop; collapse restores navigation (and 2 more instances)”
+- `e2e/ui-polish-b05-sheet-surface.spec.ts` (old line 931, 1 case): “B05 sheet surface @ keyboard resize and semantics › a keyboard-like resize keeps the guttered sheet scrolling through its public region; focus, Escape and outside taps keep their semantics” — **try on the phone:** focus after a keyboard resize in an open log (and Escape/outside tap)
+- `e2e/ui-polish-b05-sheet-surface.spec.ts` (old line 1013, 2 cases): “B05 sheet surface @ keyboard resize and semantics › edit retains its draft and explicit save through a focused keyboard-like resize (and 1 more instance)” — **try on the phone:** the footer behind an open log while editing, and the kept draft and explicit save through a keyboard resize
+- `e2e/ui-polish-b05-shell.spec.ts` (old line 840, 1 case): “B05 shell: crash fallback renders inside the shared contained shell with safe-area clearance” — **try on the phone:** the crash fallback’s alert inside the shell
+- `e2e/ui-polish-b05-structure-badges.spec.ts` (old line 567, 4 cases): “B05 structure badges @ narrow-320 › Review groups (clear): every badge hugs its label in its column parent (and 3 more instances)”
+- `e2e/ui-polish-b05-structure-badges.spec.ts` (old line 595, 2 cases): “B05 structure badges @ narrow-320 › Workout section header, BlockPanel and AMRAP badges hug their labels in row parents (and 1 more instance)”
+- `e2e/ui-polish-b05-summary-facts.spec.ts` (old line 547, 6 cases): “B05 summary facts @ narrow-320 › Review (bodyweight): title, one aligned glyph fact row with real values, equipment near the top (and 5 more instances)”
+- `e2e/ui-polish-b05-summary-facts.spec.ts` (old line 710, 2 cases): “B05 summary facts @ narrow-320 › Session detail keeps its record readouts (distinct variant) (and 1 more instance)”
+- `e2e/ui-polish-b05-swap.spec.ts` (old line 838, 2 cases): “B05 REQ-010 roomy swap selection › Superset and Circuit selections preserve their owning grouped Review at narrow (and 1 more instance)” — **try on the phone:** Swap in a superset and a circuit returning to its grouped Review
+- `e2e/ui-polish-b05-unit-fields.spec.ts` (old line 484, 2 cases): “B05 unit fields @ narrow-320 › Logging keeps its separate Unit Select: its value, choices and behaviour (and 1 more instance)” — **try on the phone:** the set log’s Unit select (value, choices, behaviour)
+
+### D3 — "Yes, gallery page only (Recommended)": the SectionHeader specimens' region names
+
+On `/gallery` and `/gallery/app` the catalogue draws two SectionHeader specimens; both jump lists were regions named
+"All sections" (axe landmark-unique). The full-header specimen's region is now named "All sections, full header
+specimen". Gallery page composition only — `SectionHeader` and every route are unchanged:
+- `src/dev/gallery-refinement-scenes.tsx` line 1 (React imports) and lines 95–114 (new `GalleryFullSectionHeader`,
+  a gallery-only wrapper that labels its specimen's region; `display: contents`, nothing drawn changes);
+- `src/dev/gallery-registry.tsx` line 132 (import) and line 2916 (the "full header with progress bar" specimen renders
+  `GalleryFullSectionHeader`).
+`e2e/public-gallery.spec.ts:5` passes again.
+
+### D4 — "Allow both (Recommended)"
+
+- (b) Timing only, nothing the tests check changed: `e2e/refinement/task-033.spec.ts` lines 1058–1063 (after the movement
+  note opens on the held clock, the clock runs 20 ms and the case waits until the cards' collapsed arrival is through,
+  as its device-setting step already did); `e2e/focus-ownership.spec.ts` lines 393–395 (waits for /login's "Send code"
+  before tabbing). Both pass (task-033 twice).
+- (a) Parity retaken through their own guards (two runs each, byte-identical): see RETAKES below.
+
+- TASK-103 (10 receipts: /history's rest-day range is read from today's date, and later look changes), TASK-104 (10,
+  after TASK-108's timer frames and TASK-114's dialog frame), TASK-109 (4: the movement note's dialog frame and the
+  preparation parts) and TASK-119 (2: the Focus choices' open dialog boxes, TASK-114's frame) were retaken. Look at
+  them on the comparison page. TASK-112, 113 and 118 were current. TASK-105, 108, 110, 117 and 120 reproduced their
+  committed receipts through their guards.
+
+## Still reported
+
 - `e2e/design-0143/entry-forms.spec.ts` "generate-reads" (backend lane) still reads `/^Focus:/` and "Focus: Lower body";
-  it runs only with the test backend, so it was not changed blind here. `task-040-entry-settings.spec.ts`'s Focus case
-  is deselected for Foundation 0.14.3 and never runs.
+  left as reported (Eric, 2026-11-24).
+- `e2e/contained-shell.spec.ts` "the clear skin / the vapour skin keeps shipped fonts, ground and emission" passed in the
+  whole run (no Supabase URL) and stays, as D2 said; with a Supabase URL configured (as the verification lane has) both
+  fail on the same read as the retired signal and mono cases ("the heading or an emitting frame is missing").

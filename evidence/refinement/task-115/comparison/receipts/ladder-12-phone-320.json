@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-105",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/ladder-12-phone-320-gallery.png",
-    "sha256": "c8601673a7ec216ed4b206d6ffa7b9f1565e8444d80e7dfc132b9701786ff23f",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/ladder-12-phone-320-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/ladder-12-phone-320-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

@@ -363,32 +363,25 @@ function captureDir(): { dir: string; identity: string } {
 }
 
 /**
- * The state as it first draws at the delivered revision, captured whole. A page load is drawn
- * again until two loads in a row give the same bytes (up to four loads), so a stray first paint
- * never becomes the receipt's capture.
+ * The state as it first draws at the delivered revision, captured whole, for the page. It is
+ * a supplementary view, not proof: the proof is the owners' hash-bound matched-data pairs.
+ * Its bytes are not recorded in the receipt, because the anti-aliasing of an icon's corner
+ * (5 pixels of the cards state at 320) varied between otherwise identical runs; the receipt
+ * names the file only, so it stays byte-identical run to run.
  */
-async function keep(page: Page, visit: (path: string) => Promise<void>, id: string, title: string, name: string): Promise<LabelledCapture> {
-  const draw = async () => {
-    await page.clock.setFixedTime(ENTRY)
-    await visit(`/gallery/refinements?state=${id}`)
-    const state = page.locator(`[data-refinement-state="${id}"]`)
-    await expect(state).toBeVisible()
-    await expect(state.getByRole('heading').first()).toHaveText(title)
-    await page.waitForLoadState('networkidle')
-    await settle(page)
-    await page.mouse.move(0, 0)
-    return wholePart(state)
-  }
-  let bytes = await draw()
-  for (let load = 0; load < 3; load += 1) {
-    const again = await draw()
-    if (again.equals(bytes)) break
-    bytes = again
-  }
+async function keep(page: Page, visit: (path: string) => Promise<void>, id: string, title: string, name: string) {
+  await page.clock.setFixedTime(ENTRY)
+  await visit(`/gallery/refinements?state=${id}`)
+  const state = page.locator(`[data-refinement-state="${id}"]`)
+  await expect(state).toBeVisible()
+  await expect(state.getByRole('heading').first()).toHaveText(title)
+  await settle(page)
+  await page.mouse.move(0, 0)
+  const bytes = await wholePart(state)
   const { dir, identity } = captureDir()
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, `${name}.png`), bytes)
-  return { key: 'end-of-run', file: `${identity}/${name}.png`, sha256: createHash('sha256').update(bytes).digest('hex'), path: join(dir, `${name}.png`) }
+  return { file: `${identity}/${name}.png`, path: join(dir, `${name}.png`) }
 }
 
 const sha = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex')
@@ -403,23 +396,6 @@ const fromPage = (path: string) => relative(COMPARISON, path).split('\\').join('
 // ─────────────────────────────────────────────────────────────────────────────
 // One case per state and width
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * The dev server compiles each module on its first request, so every state is
- * opened once before any capture: the first case then draws on a warm server
- * like every later one (a cold first draw of the cards state differed run to run).
- */
-test.beforeAll(async ({ browser, syntheticOrigin }) => {
-  test.setTimeout(240_000)
-  const context = await browser.newContext({ baseURL: syntheticOrigin ?? e2e.baseURL, viewport: { width: 320, height: 568 } })
-  const page = await context.newPage()
-  for (const [id] of STATES) {
-    await page.goto(`/gallery/refinements?state=${id}`)
-    await expect(page.locator(`[data-refinement-state="${id}"]`)).toBeVisible({ timeout: 60_000 })
-    await page.waitForLoadState('networkidle')
-  }
-  await context.close()
-})
 
 for (const [id, title] of STATES) {
   for (const { name, width, viewport } of VIEWPORTS) {
@@ -461,7 +437,7 @@ for (const [id, title] of STATES) {
         title,
         width,
         primaryOwner: PRIMARY[id].task,
-        endOfRunGallery: { file: fresh.file, sha256: fresh.sha256, page: fromPage(fresh.path) },
+        endOfRunGallery: { file: fresh.file, page: fromPage(fresh.path), hashBound: false },
         owners: pairs.map((pair) => ({
           task: pair.task,
           primary: pair.primary,
@@ -492,7 +468,7 @@ const escape = (text: string) => text.replace(/[&<>"]/g, (char) => ({ '&': '&amp
 
 type Receipt = {
   state: string; title: string; width: number; primaryOwner: string
-  endOfRunGallery: { file: string; sha256: string; page: string }
+  endOfRunGallery: { file: string; page: string }
   owners: Array<{ task: string; primary: boolean; receipt: string; provenance: string; route: string
     moments: Array<{ moment: string; gallery: Array<{ key: string; file: string; page: string }>; route: Array<{ key: string; file: string; page: string }> }> }>
   labelled: Array<{ task: string; criterion: string; text: string }>

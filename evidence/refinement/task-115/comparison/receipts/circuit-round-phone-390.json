@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-114",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/circuit-round-phone-390-gallery.png",
-    "sha256": "005372a56c962e98f2430204d034c1711be068cc93799af30184c6346184c7a0",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/circuit-round-phone-390-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/circuit-round-phone-390-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

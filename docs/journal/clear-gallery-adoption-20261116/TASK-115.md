@@ -103,3 +103,36 @@ the approved B05 sources were copied there for the run and removed afterwards.
 ## Next action
 
 Controller verification; Eric's UAT with `evidence/refinement/task-115/UAT-LIST.md`.
+
+## Repair round 1 (2026-11-24)
+
+Verify 1 timed out on `npx playwright test e2e/refinement --project=mobile` (one CI worker needs about 80 minutes;
+the body's limit was 20; Eric raised it to 120 through a separate V2 change). Every other check passed. Verify 1's
+partial run also rewrote `task-115/comparison/receipts/cards-phone-320.json` (the second drawing of the cards state).
+Eric's decisions (chat, 2026-11-24): D2 "Retire, list for UAT (Recommended)"; D3 "Yes, gallery page only
+(Recommended)"; D4 "Allow both (Recommended)"; entry-forms left as reported.
+
+- **D2.** The 73 failing old look cases (70 in 13 ui-polish-b05-* files, 3 in contained-shell) are retired as whole
+  cases (28 definitions removed; contained-shell's signal/mono skins and header-back's Locations instance dropped from
+  their loops). Helpers and imports lint then reported unused went with them (TS-AST pruning; lint clean). Each case
+  has a ledger row (reason, D2 quoted, old-build result) and a UAT entry; 21 that read behaviour are flagged "try on
+  the phone".
+- **D3.** `src/dev/gallery-refinement-scenes.tsx` 1 and 95–114 (`GalleryFullSectionHeader`) and
+  `src/dev/gallery-registry.tsx` 132 and 2916: the full-header specimen's region is named for itself.
+  `public-gallery.spec.ts` passes; task-027 and TASK-108's parity (which read the specimens) pass unchanged.
+- **D4(b).** task-033:1058–1063 (run the held clock 20 ms, then wait until the foreground is clear) and
+  focus-ownership:393–395 (wait for Send code). The first try (`runFor(1)` alone) still failed; the readiness wait
+  passes twice. TASK-033 check-01 refreshed through its guard.
+- **D4(a).** Whole e2e/refinement run (parallel): 389 passed, 10 failed (task-033 before its fix, 4 backend lane,
+  task-041 ×5 under load — 10/10 alone). It rewrote receipts of TASK-103 (10), 104 (10), 109 (4), 119 (2) — stale — and
+  one capture hash each of 105, 108, 110, 117 and 120 (load). 103/104/109/119 retaken twice each through their guards,
+  byte-identical; 105/108/110/117/120 reproduced their committed receipts through their guards. TASK-103's /history
+  rest-day range ("… – Mon 23 Nov 2026 · N rest days") is read from today's date, so its receipts drift daily.
+- **Comparison.** The end-of-run gallery view is no longer hash-bound in the receipts (its 5-pixel icon anti-aliasing
+  varied, and verify 1 rewrote the receipt); the warm-up and second load were dropped. Owner pairs stay hash-bound.
+  The pair run twice was byte-identical (622 labelled differences, none unintended).
+- **Body ledger** rerun at cca35346: identical rows (the tool reads no e2e file, so the e2e retirements are recorded in
+  TASK-115's own ledger); unplaced 0.
+- **Root rerun** (placeholder Supabase URL, references staged and removed afterwards): 110 passed, 4 skipped, 2 failed —
+  contained-shell's clear and vapour skins fail with a Supabase URL configured, on the same read as the retired skins
+  (they passed in the whole run without one). Reported, not retired (D2 named only the failing cases).

@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-114",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/emom-phone-320-gallery.png",
-    "sha256": "efc7ca714f27d8c251f84c3cfe1035f6c77b2a4e1f7110d1c6524d82a585831a",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/emom-phone-320-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/emom-phone-320-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

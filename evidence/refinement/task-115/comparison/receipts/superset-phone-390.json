@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-114",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/superset-phone-390-gallery.png",
-    "sha256": "c78ff0ca5fb82d06e9703aca757149cffb28af4ed2100ecabe35a29cb9bb835b",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/superset-phone-390-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/superset-phone-390-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

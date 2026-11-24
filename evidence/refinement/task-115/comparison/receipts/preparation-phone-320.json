@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-119",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/preparation-phone-320-gallery.png",
-    "sha256": "641d0a39633e2c13cdbe6bac13b1e2ca4a1a04eedfa8e18c9c349e8a4b270cf5",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/preparation-phone-320-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/preparation-phone-320-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

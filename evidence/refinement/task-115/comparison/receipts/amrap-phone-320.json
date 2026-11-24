@@ -8,8 +8,8 @@
   "primaryOwner": "TASK-114",
   "endOfRunGallery": {
     "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/amrap-phone-320-gallery.png",
-    "sha256": "a7ee68c6364180da6533d3039c00b52aac8baad2f6aa9998a5e5b3d68623dd9b",
-    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/amrap-phone-320-gallery.png"
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/amrap-phone-320-gallery.png",
+    "hashBound": false
   },
   "owners": [
     {

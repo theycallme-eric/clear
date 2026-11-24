@@ -4,9 +4,9 @@
  "ranAt": {
   "base": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
   "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
-  "now": "5955ed416321848d3ab4ee560c0623c745fcb571"
+  "now": "cca35346c50f1ff77ea1bea6e4ea1e354e741803"
  },
- "command": "node a3-test-ledger.mjs --repo <worktree> --base 03087f7488bee8d7e927534b1b5e656378fe9cb3 --build 181e5808e5264ab3041a186ca16a8d9f845fe072 --now 5955ed416321848d3ab4ee560c0623c745fcb571 --files evidence/refinement/task-115/body-ledger-inputs/files.json --notes evidence/refinement/task-115/body-ledger-inputs/notes.json --out <out>",
+ "command": "node a3-test-ledger.mjs --repo <worktree> --base 03087f7488bee8d7e927534b1b5e656378fe9cb3 --build 181e5808e5264ab3041a186ca16a8d9f845fe072 --now cca35346c50f1ff77ea1bea6e4ea1e354e741803 --files evidence/refinement/task-115/body-ledger-inputs/files.json --notes evidence/refinement/task-115/body-ledger-inputs/notes.json --out <out>",
  "inputs": {
   "files": {
    "path": "evidence/refinement/task-115/body-ledger-inputs/files.json",
