@@ -18,7 +18,7 @@
   "targets": [
     {
       "path": "scripts/refinement/task-037-definition.test.mjs",
-      "sha256": "b93d6424de3f7b2d44407cea648ccf3ce0eb28f656aa21fcd531261a61250302"
+      "sha256": "08c3412969a2e43a61bcacafcec735f0f9db74998324e7f45bc8d8dcb4a94cb6"
     }
   ],
   "requiredCases": [

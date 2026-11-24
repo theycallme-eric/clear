@@ -43,7 +43,7 @@ quote.
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/REUSE.md` sha256 `9f6b702c6daa40626c2ca3c47740be1862b538c72b0edfec18834aac36f8ce46`. S06: shared owners, and missing-coaching rules kept as open definition work.
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md` sha256 `ab9d7ff1ccb10ec0dd6bb19c351369b0b06dde708c9f54246ae87a4a7a214a7f`. S07: the Movement note row (its own save and error ownership).
 - `ref:accepted-gallery/src/ui/refinements/workout-card.tsx` sha256 `af52bde796d22a67b976deb78c846ac196984376f3fb8170427edb01596325f9`. S08: the accepted card's Coaching and notes disclosure (a note field per movement).
-- `repo:src/ui/exercise-coaching.tsx` sha256 `abdba65a824c40c2a3d6225a12de542913e61ac50086709d27401b81dfd6c0f9`. S09: the Coaching and notes owner: guidance states, note field, writer status and their words.
+- `repo:src/ui/exercise-coaching.tsx` sha256 `5a811256a70aa995e4ac6e48dd3fd2341493d07722bfb83a568d13cbcd4e17d7`. S09: the Coaching and notes owner: guidance states, note field, writer status and their words.
 - `base:src/state/exercise-queries.ts` sha256 `3dfb934c8e5810522d01ee6eea0d29a03fca98c9bb457bf082df1d639bfddc1c`. S10: the catalog read by slug and the note writer's cache.
 - `base:src/data/exercises.ts` sha256 `c185de4f83eb6c2943e5794b1f52b7c99d1e2847036faee686b197a090091685`. S11: the catalog read (zero rows answer null) and the note update.
 - `base:src/ui/view-state.tsx` sha256 `74d050a3ccabff78c14c19f861213832df6355865b7c9093f5494810ea12d8f1`. S12: the shared loading and error views.
@@ -53,17 +53,19 @@ quote.
 - `base:supabase/seed/README.md` sha256 `b5ca166a1c73c6b4f6b15dca973adfb7398455cfc92c021d92afd61285fcb8ae`. S16: the seed is what the database is given; the repair migrations only add tags.
 - `repo:src/dev/gallery-refinement-cards-data.ts` sha256 `af11d792ca463da0bc92cbba9ece1bd3d3894638110d835a88f0eab2683974f1`. S17: the cards state's synthetic blocks and their movement slugs.
 - `repo:src/dev/gallery-refinement-coaching-data.ts` sha256 `7024eaa2eb94e1d57e1360cf7f3096d14daf1f14abdca655e0578df6b57e46a5`. S18: the gallery's in-memory library answers.
-- `repo:src/dev/gallery-refinement-coaching.tsx` sha256 `27afcffed0fc252b92621e6e2992e1e7f12e0ba0f0c5e8bd7d5bfacfdc5bf441`. S19: the gallery's memory-only clients and the register's states specimen.
-- `repo:src/dev/gallery-refinement-cards.tsx` sha256 `5cb80b11b5f968bca0b0ab8ef7d627b29729421917d561235f17b1d719f2ca55`. S20: the cards state draws the actual grouped owner.
+- `repo:src/dev/gallery-refinement-runtime.tsx` sha256 `d5b91ed60b068a4c82c5ea0ae64d5f82e4f756ef8aab4924c1d28f8e7fe6b434`. S19: the gallery's memory-only clients (`GalleryRuntime`; the removed `src/dev/gallery-refinement-coaching.tsx` held them, with the register's states specimen, before).
+- `repo:src/dev/gallery-refinement-scenes.tsx` sha256 `621ecdfb33a7b76f22b2dbec5824346a64a276b730d5be74316b7c6addce0e78`. S20: the cards state (`GalleryMovementCards`) draws the real timed cards (the removed `src/dev/gallery-refinement-cards.tsx` drew the old cards state).
 - `repo:src/test/grouped-coaching-fixture.ts` sha256 `49d4499d789d50e12bdd7b4b122e853c48dd87ae286bef5573c63aab37c458d9`. S21: the shared test fixture's per-slug library answers.
-- `repo:src/ui/group-exercise-coaching.test.tsx` sha256 `12c13e7061b21f807d58105b6993d529d8f3980ea4f6877eec2f6329563f6712`. S22: TASK-005's grouped-disclosure cases.
-- `repo:src/ui/exercise-coaching.test.tsx` sha256 `af5ce47ef5fb775ef4dce62cdbf16872accc7dfc80564e7f1d74f53b74dbd1b6`. S23: the standalone panel's cases.
-- `repo:src/data/refinement-logging-contract.ts` sha256 `bc692cc7eb8a101da9368dc3212a8cd0f16078feb723f44f62c89fd7556aec1b`. S24: the movement-note field contract.
-- `repo:src/app/SessionDetail.tsx` sha256 `23db5e9b9221ccd1a51adc153f0371448caf49a940f38438b9d7085b47385274`. S25: the History detail's session notes reading.
-- `repo:src/state/session-detail.ts` sha256 `07271dd91550f21dd675b384692dfc0bc58dc2ee9aa18b2ccbe9352c01eaa3dc`. S26: the History detail read model.
-- `repo:src/ui/refinements/workout-card.tsx` sha256 `4836740f53c52919166339966b1caa5e4af5e4ae151be810d6944875d6d2cc5d`. S27: the app's `WorkoutCard` and its `coaching` slot.
-- `repo:src/ui/refinements/movement.tsx` sha256 `47d9b1cf73f6f1d5ff567278a87ff376eac46716960db5e69811f33cfb00afa0`. S28: the shared movement identity owner.
-- `repo:docs/definitions/clear-refinement-20261103/TASK-037.md` sha256 `b8f25e30a0175048adc91e12d270f31cd53bd1d86117da88da2e0bbdcfc12f38`. S29: the copy inventory and the COPY-VOICE owner decision.
+- `repo:src/ui/group-exercise-coaching.test.tsx` sha256 `28c929c187071a0d7dc43fb4c630063e38ef8c94ba7778eab4bff49bfa2e826d`. S22: TASK-005's grouped-disclosure cases.
+- `repo:src/ui/exercise-coaching.test.tsx` sha256 `20a6fa9b0b819e0ae0964b956304b16a0e777237c84e6dc9fbe61873e09b2a65`. S23: the standalone panel's cases.
+- `repo:src/data/refinement-logging-contract.ts` sha256 `89fc44b234cc4f18657ebed72424c002df055dd920597c4b8598b103196704ae`. S24: the movement-note field contract.
+- `repo:src/app/SessionDetail.tsx` sha256 `593c238b0a82a362bbf6de1af421f8335312eaa14cab8b489d3358b22a59c661`. S25: the History detail's session notes reading.
+- `repo:src/state/session-detail.ts` sha256 `1e54a74e51df2fa24d26cc5d9c2c31862db626f9ddf6a7452c4bea01f88a7da2`. S26: the History detail read model.
+- `repo:src/ui/block-renderers-frame.tsx` sha256 `d44ded12720b67b315b7a53d0932d315e6e12c551afeda18ba6e8fb33c0f61e4`. S27: the app's block card (`BlockPanel`), which places the grouped disclosure after a grouped block's content (the removed `src/ui/refinements/workout-card.tsx`'s `coaching` slot held it before).
+- `repo:src/ui/movement-presentation.tsx` sha256 `ad751fcdcfdadc168082303e099bf9d8e4fa6f5583d842602dbc9243a381fe89`. S28: the shared movement identity owner (`MovementIdentity`; the removed `src/ui/refinements/movement.tsx` held it before).
+- `repo:docs/definitions/clear-refinement-20261103/TASK-037.md` sha256 `474fc8d8bf7bf3025b945c845820fc1e300965c980541f6e7dd90dbe2888d627`. S29: the copy inventory and the COPY-VOICE owner decision.
+- `repo:src/dev/gallery-refinement-flow.tsx` sha256 `e0f2f30a92a93a06c54e20739b4f7c4c78de8bb55d06abc745ed5b3105b899d3`. S30: `LiveFlow`, which mounts the real `TimedWorkoutFlow` on the gallery's memory-only clients.
+- `repo:src/ui/timed-workout-flow.tsx` sha256 `d58b19f707cf92093953616fbff57b55d869964ba88aecdfb5d5f002684f007f`. S31: the route's timed card (`TimedWorkoutFlow`), which draws the grouped disclosure for a single-movement timed block.
 
 ## Current observations
 
@@ -106,8 +108,11 @@ beside any note state [S09].
   `Taking longer than usual` once slow [S09] [S12].
 - **I7** Failure. `Coaching for` the movement `didn’t load`, with the error's message and a
   `Try again` action that reads again, inside that movement's section only [S09] [S12].
-- **I8** Blank user note. With no stored note the field `Notes — ` the movement is empty and the
-  status line says nothing; there is no "no note" sentence inside the disclosure [S09] [S24].
+- **I8** Blank user note. With no stored note the status line says nothing, and there is no "no
+  note" sentence inside the disclosure. Under the product presentation the note opens from `Add note`
+  (`Edit note` once the field holds words) into the `Movement note` dialog, whose field, labelled
+  with the movement's name, is empty; without that presentation the field `Notes — ` the movement is
+  drawn in the section, empty [S09] [S24].
 - **I9** Stored note. The field holds the stored note: the last successful save, otherwise the
   note the session row carried [S09] [S10].
 - **I10** Saving. `Saving…` while the button stays busy [S09].
@@ -116,7 +121,9 @@ beside any note state [S09].
   field — try again.`, keeping the typed text [S09] [S22].
 - **I13** Repetition. Each section states its own answer, so movements that give the same answer
   repeat the same sentence once each; no hide or replacement rule was selected [S09] [S02]. In the
-  gallery cards state the ten-station circuit repeats I4 ten times (F2) [S17] [S18] [S20].
+  gallery cards state the EMOM, AMRAP and For Time cards each answer I4 for their one movement, so I4
+  shows three times: the gallery runtime's library has no entry for any movement [S20] [S30] [S31]
+  [S19].
 - **I14** Adjacent, different field. The History detail's `No notes` is the session's own note,
   read from `session_notes`; the History read model does not read a movement's note [S25] [S26].
   It is listed so the two are not confused, not as a Coaching and notes state [S24].
@@ -132,8 +139,10 @@ catalog gaps requires later verification") [S02].
   entry cannot be removed from under it [S14]. So a persisted prescription always has a catalog row
   its section can read: I4 cannot arise on `/workout` from the real catalog, and a read that fails
   is I7, not I4 [S11] [S13] [S14].
-- **F2** The gallery cards state's library (`GALLERY_CATALOG`) [S17] [S18] [S15]. Its answers are
-  synthetic, per slug, and only three of its slugs are catalog ids:
+- **F2** `GALLERY_CATALOG`, the library the old cards state read, kept in the gallery's data [S17]
+  [S18] [S15]. No Round 7 gallery state reads it: Round 7's cards state reads the gallery runtime's
+  library, which has no entry for any movement (I13) [S19] [S20]. Its answers are synthetic, per slug,
+  and only three of its slugs are catalog ids:
   - `back-squat`: in the catalog; library answer: no entry.
   - `romanian-deadlift`: not in the catalog (catalog row `rdl`); library answer: no entry.
   - `single-arm-kettlebell-overhead-reverse-lunge-to-knee-drive`: not in the catalog; library
@@ -149,7 +158,8 @@ catalog gaps requires later verification") [S02].
     no entry.
   - The nine `station-` movements of the ten-station circuit: not in the catalog; library answer:
     no entry.
-- **F3** The register's states specimen (`STATES_CATALOG`, the circuit) [S18] [S19] [S15]:
+- **F3** `STATES_CATALOG`, the circuit's library in the old register's states specimen, kept in the
+  gallery's data; no Round 7 gallery page reads it [S18] [S15]:
   - `kb-swing`: not in the catalog (catalog row `swing`); library answer: written.
   - `mountain-climber`: not in the catalog (catalog row `mountain-climbers`); library answer: blank.
   - `plank`: in the catalog; library answer: read fails.
@@ -199,8 +209,9 @@ Diagnosed only after F1 to F7, and only from the catalog rows themselves [S15].
   case `AC-R005-01 keeps the note of a movement the library has no entry for, and saves it` and the
   panel's case `still saves a note for a movement the library has no entry for` prove it [S22]
   [S23].
-- **N3** The accepted card draws a note field for every movement of its Coaching and notes
-  disclosure, with no guidance condition [S08] [S27].
+- **N3** Round 7's grouped disclosure, drawn after a grouped block's content and at the foot of a
+  single-movement timed card, gives every movement section its note with no guidance condition [S27]
+  [S31] [S09]; the accepted card drew a note field for every movement the same way [S08].
 
 ## Options
 
@@ -256,11 +267,14 @@ Constraints every option keeps:
   inventory and rules remain definition work.` [S03] [S04].
 - The original crosswalk says the complete inventory and the unresolved rule "are not proven by
   gallery examples" [S05].
-- The cards state already draws the actual `GroupExerciseCoaching` in `WorkoutCard`'s `coaching`
-  slot, through memory-only clients [S19] [S20] [S27]. This task changes no gallery state, owner,
-  CSS or token: no rule is selected, so nothing new can be demonstrated [S05] [S06].
-- The shared owners were read and kept unchanged: `WorkoutCard` places the slot, and the grouped
-  sections are labelled by the movement's name rather than by `MovementIdentity` [S27] [S28] [S09].
+- Round 7's cards state (`GalleryMovementCards`) draws three real timed cards through `LiveFlow`,
+  each ending with the actual `GroupExerciseCoaching`, which `TimedWorkoutFlow` draws for a
+  single-movement card, on the gallery's memory-only clients [S20] [S30] [S31] [S19].
+  This task changes no gallery state, owner, CSS or token: no rule is selected, so nothing new can be
+  demonstrated [S05] [S06].
+- Round 7's owners were read and kept unchanged: `BlockPanel` places the disclosure after a grouped
+  block's content, and the grouped sections are labelled by the movement's name rather than by
+  `MovementIdentity` [S27] [S28] [S09].
 
 ## Limitations
 

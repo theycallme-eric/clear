@@ -40,7 +40,7 @@ left out of the quote.
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/gallery-crosswalk.md` sha256 `dda789929a52e84671ac1a2cf810567630f6d98e44199511d0d778eae3a6de36`. S05: the #664 / TASK-037 row ("not applicable to gallery") and the #665 / TASK-038 row.
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md` sha256 `ab9d7ff1ccb10ec0dd6bb19c351369b0b06dde708c9f54246ae87a4a7a214a7f`. S06: session Feeling is distinct from categorical Effort.
 - `ref:accepted-gallery/docs/design/library/refinements-2026-11-04/REUSE.md` sha256 `9f6b702c6daa40626c2ca3c47740be1862b538c72b0edfec18834aac36f8ce46`. S07: copy/content definitions stay with native tasks; gallery fixtures do not close them.
-- `repo:docs/specs/LOGGING_FIELD_CONTRACT.md` sha256 `25bf03de94af58c8aac53af87ebf715f7b3b7fe150f1f6c817414cac07492048`. S08: §1 rule 3 and §4, the four stored efforts and feeling, none derived from another.
+- `repo:docs/specs/LOGGING_FIELD_CONTRACT.md` sha256 `cd0bc780c72f5ef364abffb395b9cfc85c42f98c7fd1608836c330f14e0b0f99`. S08: §1 rule 3 and §4, the four stored efforts and feeling, none derived from another.
 - `base:supabase/migrations/20260921000004_execution_domain.sql` sha256 `cdc028af8c6debd036e97df199ac9a47b944a9b99cebc054552f7826d33138f0`. S09: `rpe` and `perceived_effort`, each 1 to 10 or null.
 - `base:supabase/migrations/20261027000027_set_effort.sql` sha256 `98ac45e92134e5433592e8f79924dd205fa90588680574a9fc5d7e6825176db9`. S10: the `set_effort` categories, stored beside and never inside `rpe`.
 - `repo:supabase/migrations/20261110000029_block_result_effort.sql` sha256 `a3fa275c07e6ead54403e2abbbe25ea4bd91b7f2572942b1d8a933090053207e`. S11: MIG-A, categorical block effort beside `perceived_effort`.
@@ -51,56 +51,64 @@ left out of the quote.
 - `base:src/app/guards.tsx` sha256 `7b666f9528e60ee09b5a74e53442dbf7c9fb0b9b226ea4474cc5d174cf91cf78`. S16: the session and account guards.
 - `base:src/app/Welcome.tsx` sha256 `04a29a640203a31b5d7ecef27ff670793ade1771c9269feb0fcda44f2405eda9`. S17: Welcome.
 - `base:src/app/Login.tsx` sha256 `99014df73cf831f394929da64baf37493020b914b328c04569231c7ae2aa1467`. S18: sign-in.
-- `repo:src/app/Onboarding.tsx` sha256 `648d6d2ab85414f28ac2f4604cedb3dba6b2a570084061e6b6367a57f626e67b`. S19: Setup.
+- `repo:src/app/Onboarding.tsx` sha256 `97ae44b7c9b0bb4e0cdf88c31c38f60aedc632cb65c23083dfc674db3605d61f`. S19: Setup.
 - `base:src/app/Home.tsx` sha256 `d15265d119cfdc3af46fe1dd810fb26b08a0112ee9dcf6027caea74e7251347a`. S20: Home.
 - `base:src/app/ActiveSessionPrompt.tsx` sha256 `ec19f728831cf3287071ca8d6bf699395cc6ea7dec1ef8769cc54d55d005df94`. S21: the workout-in-progress prompt.
 - `base:src/ui/favorite-list.tsx` sha256 `e4634982ae44e0e7364f0133d7d86235a0fae71a7536b62e52b0153e2e0dc740`. S22: Home favorites.
-- `repo:src/app/Generate.tsx` sha256 `d30bb9f342399d2c4aacd13fdc8da6072a6432373b4362fa6f54fe2887163f26`. S23: Generate at this revision.
+- `repo:src/app/Generate.tsx` sha256 `acbe668f35582711704f1421e2f8ae5c89ab141480f1c779d5a8eaa53c9f0c22`. S23: Generate at this revision.
 - `base:src/ui/deload-banner.tsx` sha256 `979d2053babfb3fd7345a119ab31a293dc0c1d96843f90ce290e016e9e7da273`. S24: the deload banner.
 - `base:src/state/deload.ts` sha256 `0f93e63cccda6bf08d7298336ce6ef84cc1474521ae020759622243512df27fb`. S25: deload reasons.
-- `repo:src/app/Review.tsx` sha256 `2dfd4c1bd8965b649e31fe146ebaaebb59aea38bb65d3918312fc5bcd6f66424`. S26: Review.
+- `repo:src/app/Review.tsx` sha256 `d280eeee78e61db584cae7ac207eff57e07c589e343cb9b5231f8b9b5d6ed1e9`. S26: Review.
 - `base:src/app/ReviewRoute.tsx` sha256 `36535e2f066ce138e6148b2ce124c66b14cb601c88ee25ebfdf7a10b0a020578`. S27: Review's route states.
 - `base:src/ui/exercise-swap.tsx` sha256 `07e6e1852a69b6dc039d4f36e71175b64f09368fc4009cecd9719f39fe061548`. S28: Swap.
 - `repo:src/ui/load-suggestion.tsx` sha256 `5afbc9f602169f59ac5bc65be70db8aa0fd1e72b40c720feae9f3e0e9abcd0dc`. S29: the suggested weight and its "why this number" dialog.
 - `repo:src/state/load-suggestions.ts` sha256 `1ade2ebed06d0d4f8466de5c8901ac970ee8320435da8a24849c2225712271d2`. S30: the dialog's set and effort readings.
 - `base:src/state/progression.ts` sha256 `261096e9d08346eba95cbf1641eaceea0455b23a2ce31708b3c34b95872a5745`. S31: the rule reads shown as the applied rule.
-- `repo:src/ui/refinements/overview.tsx` sha256 `c716b4491fe7ac42ddba69bd2d423f9436897b967d1dba0ef159b3e337c72558`. S32: Overview equipment.
-- `repo:src/ui/workout-chrome.tsx` sha256 `8725f51798f1526309b4deeff4edc37c0cf632af57c41a4b6c507ee3e60acae1`. S33: the workout shell.
-- `repo:src/app/Workout.tsx` sha256 `c884dc3afb8cfe9cb96859b84f8b3a59713badb51c4cd9dde99e4a1524f88586`. S34: the workout route states.
-- `repo:src/ui/set-logger.tsx` sha256 `be0db9f76679ef9b9c139931a02162095fa2b139290498f354b5fe38795842df`. S35: set logging at this revision.
-- `repo:src/ui/set-logging-sheet.tsx` sha256 `a2c4fec9ef32b9896267271e52cd6de3ba3ac1a58a068ba965988c83ae2b6e39`. S36: the set sheet and its confirmation title.
+- `repo:src/ui/equipment-summary.tsx` sha256 `b03488945f5c8c8e7eb2dd09dd1234c4e734e7928ca58beaeab169891947e616`. S32: Overview equipment (Round 7's `EquipmentSummary`; the removed `src/ui/refinements/overview.tsx` held it before).
+- `repo:src/ui/workout-chrome.tsx` sha256 `1d12d0f336aaa30b73df6bef93fbcaaaf805ab07ecf641622e865ec46bcbb8d0`. S33: the workout shell.
+- `repo:src/app/Workout.tsx` sha256 `b3c23871510f48a7758d41bbee39d9c8ddda4778870f4e5feb9d86b426473b07`. S34: the workout route states.
+- `repo:src/ui/set-logger.tsx` sha256 `0df2b9f6a970c614eabd5c3595d6781c847692abe433b4fd76a7fb1b9c28a77e`. S35: set logging at this revision.
+- `repo:src/ui/set-logging-sheet.tsx` sha256 `df44b2d302417bdf5254ee8a4cac1d0573bdc9a85870a5db5885f2ef8d0ff91c`. S36: the set sheet and its confirmation title.
 - `base:src/ui/set-sync-notice.tsx` sha256 `414e89956d10d2c384c8bc048256c696348c9919b3a7c6fb3ca6b9210358f164`. S37: the sync notice.
-- `repo:src/ui/set-effort.tsx` sha256 `241ad4f21916ea296e6812f324b53daa36472d9fc3161a30758a48056f89a911`. S38: the three-face Effort control.
-- `repo:src/ui/emom-block.tsx` sha256 `e9dbba9d59eda6dc63588371c898e240800958f60e50814e2966ab1c4ab1962a`. S39: EMOM at this revision.
-- `repo:src/ui/amrap-block.tsx` sha256 `44c14ed983c2265e4969ef0bcab1df50fb8a188767bcd0e2a07199a83fb1ac17`. S40: AMRAP.
-- `repo:src/ui/block-renderers-frame.tsx` sha256 `92af03a7761471a81dc043ea6a63495abfa746aa322386ee842af9dcd136bb40`. S41: the Now and Next markers.
-- `repo:src/ui/for-time-block.tsx` sha256 `d487b364737ef6dfb06bc233ef07040dabe7ff4a131cf55af6be087dcf4229b1`. S42: For Time.
-- `repo:src/ui/ladder-block.tsx` sha256 `ea83e8305bfca48454548be25c06e9bbf417b1ef1d03ee00ad3b681c3124df02`. S43: the ladder at this revision.
-- `repo:src/ui/refinements/ladder.tsx` sha256 `4f21728452d29e58e0463a4276b2bd9c984e218f0e8d6f32da29016451b76f50`. S44: the compact ladder presentation.
-- `repo:src/state/ladder.ts` sha256 `ed9ed551cde8c373d3122f2196534bd2fd68acf90e6e715e0d382e2cd3b0367b`. S45: the rung notation.
-- `repo:src/ui/circuit-block.tsx` sha256 `ea380b9764afae3a44b16d07280534238f11a0bc483b8bb3d2991cff8f989742`. S46: circuits.
-- `repo:src/ui/refinements/timed-result-log.tsx` sha256 `25e0e0052423f4bb6deafc2ad9c6e91a6ab9222a15525be99fbd7fe38b5e469f`. S47: the timed results log.
-- `repo:src/ui/refinements/logging-overlay.tsx` sha256 `0e2c8ee2360e42fcb532c8f15e14d8ac86bcec612670dbb272535fe485e62066`. S48: the logging dialog.
-- `repo:src/ui/preparation-guide.tsx` sha256 `f697c744833e6335c1caa3d022347d4e2346d4e3839fe1c04a98c4ff841ebf20`. S49: the warm-up and cooldown guide.
-- `repo:src/app/Summary.tsx` sha256 `a6440aa38ee917f4c50c049f4a33ad5a998209ec0c116b631b167fcf2b23e701`. S50: Summary.
+- `repo:src/ui/set-effort.tsx` sha256 `4f9b17b85443b9eb665f9a225c860c4c27ee7e6ac4fb146d8d6c68deb27b0dbf`. S38: the three-face Effort control.
+- `repo:src/ui/emom-block.tsx` sha256 `3b929c38ca991d37d426d4de3ff4a90de9d58ba795d0dc98f94cd6796e720279`. S39: EMOM at this revision.
+- `repo:src/ui/amrap-block.tsx` sha256 `54eef7218f47f13e2a418d72a492499b96fa95fb820f3e7c849d2d268073f2f7`. S40: AMRAP.
+- `repo:src/ui/block-renderers-frame.tsx` sha256 `d44ded12720b67b315b7a53d0932d315e6e12c551afeda18ba6e8fb33c0f61e4`. S41: the Now and Next markers.
+- `repo:src/ui/for-time-block.tsx` sha256 `5dd4fcd667b942b8f0bf93b77cb24af8c35cd337a3fa7d29cb74419e85c4eeae`. S42: For Time.
+- `repo:src/ui/ladder-block.tsx` sha256 `78a23f06057779b25a13e58f57e675f4cc1c230e77c292a1d582259a3e970247`. S43: the ladder at this revision.
+- `repo:src/ui/ladder-rungs.tsx` sha256 `7a0ecba22af4a15c532004161ae2b6ca7eeb20277f1523f7389996ca3b8196b8`. S44: the compact ladder presentation (Round 7's `LadderPrescription`, which the route's ladder draws; the removed `src/ui/refinements/ladder.tsx` held it before).
+- `repo:src/state/ladder.ts` sha256 `653d4f44b8f1f0371247fd97b9b8b644e0f779503a9b43f8ec0a5a8a18cdf3ce`. S45: the rung notation.
+- `repo:src/ui/circuit-block.tsx` sha256 `60136f826ff63c26490209c6582921300215f959029a71796465acfe62000c90`. S46: circuits.
+- `repo:src/ui/timed-result-log.tsx` sha256 `a3c614a1dbfb31c726f02cc2ab10f72434f919cc1bee7a5f4dad3d38594ae634`. S47: the timed results log (Round 7's owner; the removed `src/ui/refinements/timed-result-log.tsx` held it before).
+- `repo:src/ui/logging-overlay.tsx` sha256 `1ded9a9605f06fe941f4877cdc872c06cf70e938d783e75643bb8f4c219d0894`. S48: the logging dialog (Round 7's owner; the removed `src/ui/refinements/logging-overlay.tsx` held it before).
+- `repo:src/ui/preparation-guide.tsx` sha256 `9323010a217b139faab44812cbca1ddba15c45de9f730c6c33c073c326d930d3`. S49: the warm-up and cooldown guide.
+- `repo:src/app/Summary.tsx` sha256 `a41368374d043ff3243c4de5d8cd08f1692d73eece8d210f352c42be1fa08fdd`. S50: Summary.
 - `base:src/ui/feeling-row.tsx` sha256 `df3d9da71bf2b6211a89ce7c9244bff4edf9c572c64984f8ba37fd8e2e19a777`. S51: the session Feeling question.
 - `base:src/app/FavoriteToggle.tsx` sha256 `08f5f055ce37f2fe7a3de586e8a6279332c99e333a12699309d34947d6721d83`. S52: Save as favorite.
-- `repo:src/app/History.tsx` sha256 `04225641303cc5377c9104858e5367388b73591453c11d4db93241c9e22cbb42`. S53: History.
+- `repo:src/app/History.tsx` sha256 `937227e98c293266cdaa904d9ea38bc42f9a3032c431746b56f5d6aaf1d526e5`. S53: History.
 - `repo:src/state/history.ts` sha256 `eacbce2a9ce0a825a3a0f949e2a0b2ed7c1b7a0602a8e31d77c28a5090f206b8`. S54: History status and filter words.
-- `repo:src/app/SessionDetail.tsx` sha256 `23db5e9b9221ccd1a51adc153f0371448caf49a940f38438b9d7085b47385274`. S55: the History detail route.
+- `repo:src/app/SessionDetail.tsx` sha256 `593c238b0a82a362bbf6de1af421f8335312eaa14cab8b489d3358b22a59c661`. S55: the History detail route.
 - `base:src/ui/session-detail.tsx` sha256 `5d8699ad52d6cf3b7dae1ee6720ed92b7bccdf04123b83e7ce5873bda8e7a014`. S56: the History detail block and set table.
-- `repo:src/state/session-detail.ts` sha256 `07271dd91550f21dd675b384692dfc0bc58dc2ee9aa18b2ccbe9352c01eaa3dc`. S57: the History detail readings.
+- `repo:src/state/session-detail.ts` sha256 `1e54a74e51df2fa24d26cc5d9c2c31862db626f9ddf6a7452c4bea01f88a7da2`. S57: the History detail readings.
 - `base:src/app/Settings.tsx` sha256 `e55f5ecbe56c6f03c1da56ce6164d34043dd33c8b4becdb3e232b5ebcc6225c3`. S58: Settings.
 - `base:src/app/LocationSettings.tsx` sha256 `2939d5d9a8794e60dd0c15f5ea5ba971dc718baa6f951edceb0b28917d4d6c87`. S59: places and equipment.
 - `repo:src/app/FormatPreview.tsx` sha256 `37f79f6bddc86c6525008a0f5340671fcf5b150e8e95a59e4a6d0c49686e7e77`. S60: the read-only format preview.
-- `repo:src/ui/exercise-coaching.tsx` sha256 `abdba65a824c40c2a3d6225a12de542913e61ac50086709d27401b81dfd6c0f9`. S61: coaching and notes.
+- `repo:src/ui/exercise-coaching.tsx` sha256 `5a811256a70aa995e4ac6e48dd3fd2341493d07722bfb83a568d13cbcd4e17d7`. S61: coaching and notes.
 - `base:src/ui/block-effort.tsx` sha256 `b18e157bd3047649898e52ecfddda73fdea9d57e5ae95d1e67771abafde91d9d`. S62: the numeric block-effort dialog.
 - `base:src/state/conditioning.ts` sha256 `254d7db113b73e89fb2600a34aaf35d9ab8149bc0d2d0ae89ef7e3276f335286`. S63: the conditioning directive reasons.
-- `repo:src/data/refinement-logging-contract.ts` sha256 `bc692cc7eb8a101da9368dc3212a8cd0f16078feb723f44f62c89fd7556aec1b`. S64: the logging contract's field descriptions.
+- `repo:src/data/refinement-logging-contract.ts` sha256 `89fc44b234cc4f18657ebed72424c002df055dd920597c4b8598b103196704ae`. S64: the logging contract's field descriptions.
 - `base:src/app/Generate.tsx` sha256 `bb8b8ccce8ffbf077fd8cb8444eb3b290934f8234d39399e1abdc8eb0218afcc`. S65: Generate at the base.
 - `base:src/ui/emom-block.tsx` sha256 `2f8377a684d9d39efaeb2f5ce11f523a7df8ce504364d2762c158009a2687974`. S66: EMOM at the base.
 - `base:src/ui/ladder-block.tsx` sha256 `5515b505ade2a6a3f5a157968abd6ea6110be598a74051ff60d5c1c941671045`. S67: the ladder at the base.
 - `base:src/ui/set-logger.tsx` sha256 `23558fedda919b98413867528656f1af137955a7019dfff3c2ba50f8e9793dd1`. S68: set logging at the base.
+- `repo:src/ui/timed-workout-flow.tsx` sha256 `d58b19f707cf92093953616fbff57b55d869964ba88aecdfb5d5f002684f007f`. S69: `TimedWorkoutFlow`, which draws the EMOM, AMRAP, For Time and ladder on `/workout`: their clocks, captions, markers, notes and the one Log results action.
+- `repo:src/ui/block-renderers.tsx` sha256 `23e696d24b1a5fe2fd193c5f81e2d8e812c626f1524f5d76420b7c1b80d2eadb`. S70: `BlockSlot`, which hands every timed format to `TimedWorkoutFlow` under the product presentation.
+- `repo:src/state/emom.ts` sha256 `7fdd8c588595e98c203f3bd9e668f37d180b4bbe55c76ad2d44dca1bd9e074cf`. S71: the EMOM minute and its movement labels, which `TimedWorkoutFlow` draws.
+- `repo:src/app/AppRuntime.tsx` sha256 `490732740ee9dcc8c3f26a02b5900af54c891aa288bc64469fe79ed7d5016685`. S72: the app root, which mounts the product presentation for every route.
+- `repo:src/ui/product-presentation.ts` sha256 `17a5127e9ad97655c791a17a3bc03a4eaac151940af2b025353a89499cb95c9b`. S73: the product presentation (`PRODUCT_PRESENTATION`) and its real timed save.
+- `repo:src/state/workout-progress.ts` sha256 `80d6aeb631351e163b7ccdc0e369ec5addae42610b1ad2b1ae2fbf83681e43a4`. S74: each block's structure label (`structureIdentity`), which the timed cards' Start words carry.
+- `repo:src/ui/timed-workout-flow.test.tsx` sha256 `94f81611c0d72365c4cd7a9e1ce9807527b497e6a77022d6e8f88b1fcf9cc108`. S75: the timed cards' tests, which read each card's Start words exactly as drawn.
+- `repo:src/design-system/css/foundation.css` sha256 `7326b43e7adde389ae2ce39e749036d3b58de3cd98197c06273ece471a326cd1`. S76: Foundation 0.14.3's button style, which draws a button's words in capitals.
 
 ## Current observations
 
@@ -156,20 +164,25 @@ helper messages from the cited files. It is representative, not a dump of every 
   `Sets waiting to sync`, `Warmup`. Helpers: `Enter a weight of zero or more`, `Enter zero or more`,
   `Nothing is lost — they’ll be sent when the connection returns, and logging the next set still
   works.` Effort words: `Effort`, `Too hard`, `About right`, `Too easy`.
-- **I9** EMOM and AMRAP (`/workout`) [S39] [S40] [S41]. Actions: `Start EMOM`, `Start AMRAP`.
-  States: `PAUSED`, `FINISHED EARLY`, `COMPLETE`, `REST`, `NO CLOCK`, `MIN ${view.minute} OF
-  ${view.minutes}`, `Now`, `Next`, `Paused`, `AMRAP complete`, `Cap reached`. Helpers: `Continue when
-  you are ready.`, `Nothing to enter now. Record your rounds afterwards if you like.`, `As many rounds
-  as possible. This block prescribes no window, so it ends when you do.`, `No window prescribed — the
-  clock is yours, and it reads`.
-- **I10** For Time, ladder and circuit (`/workout`) [S42] [S43] [S44] [S46]. Actions: `Start For
-  Time`, `Start ladder`, `Start schedule`, `Undo finish · Resume ladder`, `Start round`, `Finish
-  round`, `Take back a round`. States: `Ready`, `Racing the clock`, `Finished under cap`, `Finished`,
-  `NOT STARTED`, `ON THE CLOCK`, `No rounds marked yet`, `rounds completed`, `No rounds recorded`,
-  `Every prescribed round is recorded.`. Helpers: `Each round starts on the clock. Whatever is left
-  of its interval is your rest.`, `Start each round when you finish the last. Nothing here moves on
-  by itself — you say how far you got.`, `Any partial work belongs to round`, `The clock has run every
-  scheduled round. Say how the block ended below.`
+- **I9** EMOM and AMRAP (`/workout`), both drawn by `TimedWorkoutFlow` [S69] [S70] [S71] [S41] [S74]
+  [S75]. Actions: `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` over the
+  structure labels `EMOM` and `AMRAP`, drawn as `Start EMOM` and `Start AMRAP`, then `Pause`,
+  `Resume`, `Log results`, `Edit log`. States: `Minute ${minute.minute} of
+  ${shape.minutes ?? '—'}`, ` · Rest`, `ODD MIN`, `EVEN MIN`, `Now`, `Next`, `Paused`, `Finished
+  early`, `Time complete`, `Remaining`, `Log saved`. Helpers: `Log when complete`, `s rest at the
+  end of each minute`, `Finished early, in minute ${minute.minute} of ${shape.minutes}. Continue when
+  you are ready.`
+- **I10** For Time, ladder and circuit (`/workout`): For Time and the ladder are drawn by
+  `TimedWorkoutFlow`, the ladder's rounds by `LadderPrescription` and a scheduled ladder's status by
+  `LadderBlock`; the circuit by `CircuitBlock` [S69] [S44] [S43] [S46] [S74] [S75]. Actions:
+  `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` over the structure label
+  `FOR TIME`, drawn as `Start FOR TIME` and `Start ladder`, or `Start schedule` for a scheduled
+  ladder, then `Pause`, `Resume`, `Log results`, `Resume ladder`, `Undo finish · resume ladder`,
+  `Start round`, `Finish round`, `Take back a round`. States: `Elapsed`, `Cap reached`,
+  `Finished`, `NOT STARTED`, `ON THE CLOCK`, `No rounds marked yet`, `rounds completed`, `No rounds
+  recorded`, `Every prescribed round is recorded.`. Helpers: `Each round starts on the clock. Whatever is left of its
+  interval is your rest.`, `This ladder prescribes no rungs — perform the movements as written.`,
+  `The clock has run every scheduled round. Say how the block ended below.`
 - **I11** Timed results and the preparation guide (`/workout`, `/review`) [S47] [S48] [S49]. Titles:
   `Log results`, `Rounds completed`, `Reps into the next round`, `Work completed`. Actions:
   `Complete`, `Incomplete`, `Close log`, `Start`, `Pause`, `Add`. States: `Completed in round`,
@@ -238,25 +251,37 @@ numeric values into categories [S02]. These items are observations at this revis
 ## Selected copy changes
 
 Each explicitly selected change, with its status at this revision, read from the string literals of
-the cited files. Applied changes were applied by the named earlier tasks, not by this record.
+the cited files. Where Round 7 draws the copy through other code than the old build, the cited file
+is the code that draws it on the route today, and a change read under the product presentation reads
+only what that presentation draws. Applied changes were applied by the named earlier tasks, not by
+this record.
 
 - **X1** R09, Effort not RPE [S02]. Status: not applied. `<HeaderCell>RPE</HeaderCell>` remains in
   the History set table [S56], and E4 to E6 remain. The numeric reading under Effort is decision
   EFFORT-NUMERIC-READING [S02].
 - **X2** R23, Generate helpers [S02]. Status: applied (TASK-024). `Uses this place’s equipment.` and
-  `Optional, today only. Ongoing limits go in Settings.` were copy at the base [S65] and are not copy
-  now [S23].
+  `Optional, today only. Ongoing limits go in Settings.` were copy at the base [S65]. Round 7's
+  Generate keeps them only for a screen without the product presentation, and the app root mounts
+  `PRODUCT_PRESENTATION` for every route, so neither is drawn [S23] [S72] [S73].
 - **X3** R40, EMOM captions [S02] [S01]. Status: applied (TASK-011). `NOT STARTED` and `WORK` were
-  EMOM captions at the base [S66] and are not now; the minute `MIN ${view.minute} OF ${view.minutes}`
-  and the `Now` and `Next` markers stay [S39] [S41].
+  EMOM captions at the base [S66] and are not copy in `TimedWorkoutFlow`, which draws the EMOM on
+  `/workout` [S69] [S71] [S70]; the minute `Minute ${minute.minute} of ${shape.minutes ?? '—'}` and
+  the `Now` and `Next` markers stay [S69]. The presentation-less `EmomBlock` still holds both
+  captions, and no route draws it [S39] [S70]. On `/workout` only a scheduled ladder's own status
+  still says `NOT STARTED`, which R40 did not select (U4) [S43] [S69].
 - **X4** R43, natural-end sentence [S02]. Status: applied (TASK-011). `The clock has run every
-  prescribed minute. Continue when you are ready.` was copy at the base [S66]; the log replaces it
-  [S39].
-- **X5** R50, running helper [S02]. Status: not applied. `Nothing to enter now. Record your rounds
-  afterwards if you like.` is still copy [S40]. The requested wording is `log when complete`; its
-  casing was left to this pass [S02] and G20 writes `Log when complete` [S01].
+  prescribed minute. Continue when you are ready.` was copy at the base [S66] and is not copy in
+  `TimedWorkoutFlow` [S69] [S71]; its `Log results` dialog replaces it [S69] [S47]. The
+  presentation-less `EmomBlock` still holds it, and no route draws it [S39] [S70].
+- **X5** R50, running helper [S02]. Status: not applied in `AmrapBlock`, where `Nothing to enter now.
+  Record your rounds afterwards if you like.` is still copy [S40]. No route draws `AmrapBlock`: the
+  AMRAP that `TimedWorkoutFlow` draws on `/workout` says `Log when complete` while it runs [S69]
+  [S70]. The requested wording is `log when complete`; its casing was left to this pass [S02] and G20
+  writes `Log when complete` [S01].
 - **X6** R70, ladder suffix [S02]. Status: applied (TASK-012). `— same every round` was copy at the
-  base [S67] and is not copy now [S44].
+  base [S67] and is not copy in the route's ladder rounds, which `LadderPrescription` draws from
+  `ladderRoundReadings` [S44] [S45] [S69]. The presentation-less `LadderBlock` still holds it in its
+  own rounds, which no route draws [S43] [S70].
 - **X7** R71, ladder instruction paragraph [S02]. Status: applied (TASK-012). `Move through the
   rounds at your own pace inside the cap.` was copy at the base [S67] and is not now [S43]. Two
   sibling pacing sentences remain (U5) [S43].
@@ -303,15 +328,21 @@ Each is open: no answer is chosen here.
 
 - **U1** Retry wording: `Retry` [S14] [S23] [S53] and `Try again` [S16] [S34] [S61] name the same
   action.
-- **U2** Status caption case: `PAUSED` and `FINISHED EARLY` [S39], `ON THE CLOCK` [S43], against
-  `Paused` and `Racing the clock` [S42].
-- **U3** Ending words: `COMPLETE` [S39], `AMRAP complete` [S40], `Finished under cap` [S42],
-  `Finished` [S43], `Finished under the cap` and `Stopped at the cap` [S57].
+- **U2** Status caption case: the timed cards write `Paused`, `Finished early` and `Elapsed` [S69],
+  which the timer frame draws in capitals (`textTransform: 'uppercase'`) [S33], while a scheduled
+  ladder writes `NOT STARTED`, `ON THE CLOCK` and `COMPLETE` in capitals [S43]. The Start words
+  differ the same way, `Start FOR TIME` against `Start ladder` [S75]; the button draws both in
+  capitals (`text-transform: uppercase`), so the difference is in the written words, not on screen
+  [S76].
+- **U3** Ending words: `Time complete`, `Cap reached`, `Finished early` and `Finished` [S69], a
+  scheduled ladder's `COMPLETE` [S43], and History's `Finished under the cap` and `Stopped at the
+  cap` [S57].
 - **U4** The ladder's `NOT STARTED` caption [S43]; R40 named only the EMOM captions [S02].
 - **U5** Explanatory sentences not selected for removal: `Each round starts on the clock. Whatever
-  is left of its interval is your rest.`, `Start each round when you finish the last.` [S43],
-  `Continue when you are ready.` [S39], `No window prescribed — the clock is yours, and it reads`
-  [S40].
+  is left of its interval is your rest.` and `Start each round when you finish the last.` [S43], the
+  second drawn by the format preview's for-time ladder (`PACING_NOTES[ladder.timing.mode]`) [S60],
+  `Continue when you are ready.` [S69], and `No window prescribed — the clock is yours, and it
+  reads`, which only the presentation-less `AmrapBlock` holds and no route draws [S40] [S70].
 - **U6** `Clear` the verb [S38] [S51] and `Clear set` [S36] beside the name in `Set up CLEAR` [S19]
   and `Return to CLEAR` [S15].
 - **U7** Consequence verbs: `Abandon` [S33], `Discard and regenerate` [S26], `Remove` [S22],
@@ -324,8 +355,8 @@ Each is open: no answer is chosen here.
 - **U11** Feeling or Mood: `How do you feel?` [S51] against `Mood` [S55].
 - **U12** Optional marker on the set sheet: `Effort` [S38] against `Effort · optional` [S47].
 - **U13** Copy added by this body's tasks and accepted only with them: `Completed in round`, `Weight
-  used` [S47], `No movements are left in this` [S49], `No rounds marked yet`, `Any partial work
-  belongs to round` [S44], `Undo finish · Resume ladder` [S43], `logged` [S36].
+  used` [S47], `No movements are left in this` [S49], `No rounds marked yet` [S44], `Undo finish ·
+  resume ladder` [S69], `logged` [S36].
 - **U14** R50's casing: `log when complete` [S02] or `Log when complete` [S01].
 - **U15** The dormant numeric capture `How hard was that?` [S62], beside the categorical faces
   [S38].
@@ -373,6 +404,17 @@ No option is selected. These are inputs for the owner decisions below, not a des
   [S01] [S02].
 - The inventory is representative per surface; only the `RPE` sweep is complete, and check-01 scans
   the frontend for it [S12] [S02].
+- Round 7 draws some copy only without its product presentation, which the app root mounts for every
+  route [S72] [S73]. The inventory reads the words written in each source, so a word behind such a
+  branch is not drawn on the route: for example the set sheet's `Minimize` [S36] and Generate's
+  `Uses this place’s equipment.` [S23]. No route draws the presentation-less `EmomBlock`,
+  `AmrapBlock` or `ForTimeBlock`, because `BlockSlot` hands every timed format to
+  `TimedWorkoutFlow`, so words only they write are not drawn; `TimedWorkoutFlow` still draws
+  `AmrapComparison` from the AMRAP's module and writes some of the same words itself [S70] [S69] [S39]
+  [S40] [S42].
+- Words are quoted as each source writes them. The timer frame's caption and the Foundation button
+  draw theirs in capitals (`textTransform: 'uppercase'`, `text-transform: uppercase`), so the screen
+  shows `Paused` as PAUSED and `Start ladder` as START LADDER [S33] [S69] [S76].
 - Gallery fixtures are not inventoried: the gallery draws the route owners and does not close copy
   definitions [S07]. Server-side generation text is not frontend copy [S63].
 - Empty states and missing coaching rules belong to TASK-038 (G21) [S01] [S05].

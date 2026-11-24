@@ -1,0 +1,526 @@
+{
+  "schema": "clear-task-test-ledger/v1",
+  "task": "TASK-121",
+  "family": "A3 task 15a (re-record the retained definition records TASK-035, TASK-037, TASK-038 on the Round 7 tree)",
+  "base": "0b65357d1329887fd1acb06cf8a0a235617b488f",
+  "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+  "source": "Brief TASK-121-a1; rehearsal findings of 2026-11-18, findings 1, 6 and 7; owner decisions of 2026-11-18 (decisions 5 and 7). This task owns none of the three test files; it edits only the named old-build assertions of finding 6 in task-037 and task-038 (task-035 unchanged) and reruns each owner’s check-01 to refresh its receipt.",
+  "summary": {
+    "carried": 20,
+    "rewritten": 5,
+    "retired": 0,
+    "added": 0
+  },
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "matchersWeakenedNote": "No matcher was replaced by a weaker one on the same read: no exact read became a regex (exact `.includes` reads stay exact on their new targets), no count was dropped, no negative read was removed (two were added), and every changed body has more reads than the base and the build. One read is narrowed by form and is listed in readsDroppedOrRelaxed: X2 now reads what Generate draws under the product presentation (the presentation-less branch is not read), with a whole-frontend scan and the app-root read added. The X-check reads that used one `now` file now apply per `now` file (a removed string must be copy in none, a kept one in one); for the five unchanged items `now` is still one file and the reads are identical. Sixteen mutations of the product files (scratch, restored from Git) were each caught by the re-pointed reads.",
+    "readsDroppedOrRelaxed": [
+      {
+        "file": "scripts/refinement/task-037-definition.test.mjs",
+        "test": "AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+        "read": "X2: no string literal anywhere in src/app/Generate.tsx holds either helper",
+        "now": "no text Generate draws under the product presentation holds either; no other frontend file holds either as copy or names PLACE_HELPER/NOTES_HELPER; the app root mounts PRODUCT_PRESENTATION",
+        "why": "Owner decision 4 of 2026-11-13 hides the helpers under Round 7’s presentation; the literals stay in the branch no route draws. Named in the brief (finding 6: \"the now paths, and where needed the form of the check\")."
+      },
+      {
+        "file": "scripts/refinement/task-038-definition.test.mjs",
+        "test": "AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+        "read": "the coaching page draws STATES_CATALOG over CIRCUIT_BLOCK",
+        "now": "not read: no Round 7 page draws them; the runtime library and the absence of any reader are read instead",
+        "why": "Round 7 has no coaching gallery page and this task adds none (brief)."
+      }
+    ],
+    "rePointed": [
+      {
+        "file": "scripts/refinement/task-037-definition.test.mjs",
+        "test": "AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+        "item": "X2 (R23, Generate helpers)",
+        "old": "no string literal of src/app/Generate.tsx holds \"Uses this place’s equipment.\" or \"Optional, today only. Ongoing limits go in Settings.\"",
+        "new": "no text src/app/Generate.tsx draws under the product presentation holds either (productLiterals: in `presentation ? a : b` only `a`, where `presentation` is the file’s useWorkoutExperiencePresentation(); a module constant counts where it is used), no other frontend file holds either as copy or names PLACE_HELPER/NOTES_HELPER, and the app root mounts PRODUCT_PRESENTATION for every route",
+        "why": "Round 7’s Generate keeps both helpers for a screen without the product presentation (owner decision 4 of 2026-11-13: \"Generate hides the Place/Notes helper text\"); the product always mounts it (src/app/AppRuntime.tsx), so the strings are left in a branch no route draws. The old form reads every literal in the file and cannot tell the branches apart."
+      },
+      {
+        "file": "scripts/refinement/task-037-definition.test.mjs",
+        "test": "AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+        "item": "X3 (R40, EMOM captions)",
+        "old": "now src/ui/emom-block.tsx: \"NOT STARTED\" and \"WORK\" absent; \"MIN ${…} OF ${…}\" present",
+        "new": "now src/ui/timed-workout-flow.tsx and src/state/emom.ts: \"NOT STARTED\" and \"WORK\" absent from both; Round 7’s minute \"Minute ${…} of ${…}${…}\" and the \"Now\" and \"Next\" markers present; BlockSlot hands every timed format to TimedWorkoutFlow under the product presentation, and /workout draws every block through BlockSlot",
+        "why": "On Round 7’s /workout TimedWorkoutFlow draws the EMOM (with its minute labels from state/emom.ts); EmomBlock, which still holds both captions, is drawn by no route. Never re-pointed to ladder-block.tsx: its scheduled-ladder status still says NOT STARTED, which R40 did not select (U4). The kept minute reads in Round 7’s words (standing test-update rule, Eric, 2026-11-23: \"Yes, approve\")."
+      },
+      {
+        "file": "scripts/refinement/task-037-definition.test.mjs",
+        "test": "AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+        "item": "X4 (R43, natural-end sentence)",
+        "old": "now src/ui/emom-block.tsx: \"The clock has run every prescribed minute. Continue when you are ready.\" absent",
+        "new": "now src/ui/timed-workout-flow.tsx and src/state/emom.ts: the sentence absent from both (same route-owner reads as X3)",
+        "why": "TimedWorkoutFlow draws the EMOM on /workout; EmomBlock still holds the sentence and no route draws it."
+      },
+      {
+        "file": "scripts/refinement/task-037-definition.test.mjs",
+        "test": "AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+        "item": "X6 (R70, ladder suffix)",
+        "old": "now src/ui/refinements/ladder.tsx (removed by Round 7): \"— same every round\" absent",
+        "new": "now src/ui/ladder-rungs.tsx and src/state/ladder.ts: \"— same every round\" absent from both; TimedWorkoutFlow draws the ladder through LadderPrescription, which draws ladderRoundReadings",
+        "why": "Round 7 removed src/ui/refinements/ladder.tsx and draws the route’s ladder rounds with LadderPrescription from the ladder readings. LadderBlock’s own LadderRound still holds the suffix; no route draws it (BlockSlot hands ladders to TimedWorkoutFlow, which uses only LadderBlock.IntervalCountdown and ScheduleStatus)."
+      },
+      {
+        "file": "scripts/refinement/task-038-definition.test.mjs",
+        "test": "AC-R038-01 the record passes the shared definition-record checker with its inventory, identity, catalog findings, notes and gallery sections",
+        "item": "required record sources",
+        "old": "Sources lists src/ui/refinements/movement.tsx and src/ui/refinements/workout-card.tsx",
+        "new": "Sources lists src/ui/movement-presentation.tsx (MovementIdentity) and src/ui/block-renderers-frame.tsx (BlockPanel, which places the grouped disclosure)",
+        "why": "Round 7 removed both files; no ref:accepted-gallery or base: blob holds their bytes (eded158’s versions differ; 03087f7 has neither), so the record cites the Round 7 owners of the same roles."
+      },
+      {
+        "file": "scripts/refinement/task-038-definition.test.mjs",
+        "test": "AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+        "item": "coaching gallery page (fixture and catalog identity)",
+        "old": "src/dev/gallery-refinement-coaching.tsx draws <GalleryCoachingClients catalog={STATES_CATALOG} and <LiveCard block={CIRCUIT_BLOCK}",
+        "new": "the library Round 7’s cards state reads is the gallery runtime’s (src/dev/gallery-refinement-runtime.tsx: definition: async () => ok(null), so no entry for any movement), mounted under the real TimedWorkoutFlow by LiveFlow; no src/dev file other than the data file names GALLERY_CATALOG or STATES_CATALOG",
+        "why": "Round 7 has no coaching gallery page and this task adds none; the old specimen pairing (STATES_CATALOG over CIRCUIT_BLOCK) is drawn by nothing. The identity of what the gallery draws now rests on the runtime library, and F2/F3 are recorded as kept but unread fixtures; their per-slug identity lines are still recomputed from the fixture files (unchanged reads)."
+      },
+      {
+        "file": "scripts/refinement/task-038-definition.test.mjs",
+        "test": "AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt",
+        "item": "CoachingMovementSection guidance shape",
+        "old": "CoachingMovementSection and CoachingPanel each match {opened ? ( … ) : null} with <Guidance inside, no ExerciseNotesField inside, and <ExerciseNotesField exercise={exercise} name={name} /> after it",
+        "new": "CoachingMovementSection matches {opened ? <Guidance … /> : null} (one self-closing Guidance, no parentheses) and CoachingPanel keeps {opened ? ( … ) : null}; the same three reads follow for each; plus GroupCoachingPanel draws one CoachingMovementSection per movement with opened={opened}",
+        "why": "Round 7’s per-movement owner (A3 TASK-109) writes the condition without parentheses. The asserted behaviour — guidance only once opened, the note never inside it and drawn unconditionally after it — is read unchanged; the added read binds the section to the grouped disclosure."
+      },
+      {
+        "file": "scripts/refinement/task-038-definition.test.mjs",
+        "test": "AC-R038-02 the follow-up stays in source-to-task traceability, and the accepted cards state draws the actual owner without claiming the inventory",
+        "item": "cards gallery page and WorkoutCard slot",
+        "old": "src/dev/gallery-refinement-cards.tsx imports GroupExerciseCoaching from ../ui/exercise-coaching and draws coaching={grouped ? <GroupExerciseCoaching ; src/ui/refinements/workout-card.tsx declares coaching?: ReactNode",
+        "new": "GalleryMovementCards (src/dev/gallery-refinement-scenes.tsx) draws LiveFlow emom, amrap and for_time; TimedWorkoutFlow imports GroupExerciseCoaching from ./exercise-coaching and draws it for a single-movement card; BlockPanel imports it, sets groupedCoaching for a non-standard block of more than one movement and draws it right after {children}",
+        "why": "Round 7 removed both files. Its accepted cards state still draws the actual owner: each of its three single-movement timed cards ends with GroupExerciseCoaching on the gallery runtime’s memory-only clients (A3 TASK-109’s cards parity reads it), and the real route’s block card places the same owner after a grouped block’s content (the brief’s src/ui/block-renderers-frame.tsx)."
+      }
+    ],
+    "retired": [],
+    "retiredClaims": [
+      {
+        "record": "TASK-037.md",
+        "claim": "I10 and U13 quote `Any partial work belongs to round` [S44]",
+        "reason": "No Round 7 file holds it: it was the removed src/ui/refinements/ladder.tsx’s copy, and Round 7’s ladder log says `Completed in round` / `Completed in next round` (timed-result-log.tsx). Dropped from both items; nothing replaces it."
+      },
+      {
+        "record": "TASK-037.md",
+        "claim": "I9, I10, U2 and U3 quoted words that only the presentation-less EmomBlock, AmrapBlock and ForTimeBlock write as /workout copy: `NO CLOCK`, `MIN ${view.minute} OF ${view.minutes}`, `AMRAP complete`, For Time’s `Ready` state, `Racing the clock`, `Finished under cap` and `As many rounds as possible. This block prescribes no window, so it ends when you do.`",
+        "reason": "No route draws those components (BlockSlot hands every timed format to TimedWorkoutFlow), and no other route code writes these words (grep of src outside tests, dev and the three components): Round 7’s EMOM minute reads `Minute ${minute.minute} of ${shape.minutes ?? '—'}`, a no-window EMOM reads `Minute N of —`, the AMRAP and For Time end on `Time complete`, `Cap reached` or `Finished`, History says `Finished under the cap`, and the For Time card draws no state word before Start (no timer frame while ready). Replaced in I9, I10, U2 and U3 by the words TimedWorkoutFlow and its parts draw; U5 keeps AmrapBlock’s `No window prescribed — …` and says no route draws it.",
+        "repairRound1": "Repair round 1 removed from this retirement the words Round 7 still draws: the Start words (`Start ${format === 'ladder' ? 'ladder' : block.identity.label}`, timed-workout-flow.tsx:469, over the structure labels of workout-progress.ts: Start EMOM, Start AMRAP, Start FOR TIME, Start ladder; now in I9 and I10, with the FOR TIME / ladder casing in U2); `Paused`, `Finished early` and ` · Rest`, which the timer frame draws in capitals (workout-chrome.tsx labelStyle, textTransform uppercase), so the screen still reads PAUSED, FINISHED EARLY and REST (I9, U2, Limitations); and the for-time ladder’s pacing sentence `Start each round when you finish the last. …`, drawn by the format preview (FormatPreview.tsx, mode for_time; U5). The earlier statement that `PAUSED`, `FINISHED EARLY` and `Start ladder` were gone was wrong for the screen and is withdrawn."
+      },
+      {
+        "record": "TASK-038.md",
+        "claim": "I13: \"In the gallery cards state the ten-station circuit repeats I4 ten times (F2) [S17] [S18] [S20]\"",
+        "reason": "Round 7’s cards state has no circuit and does not read GALLERY_CATALOG (the removed src/dev/gallery-refinement-cards.tsx drew it). Replaced by Round 7’s fact: its EMOM, AMRAP and For Time cards each answer I4 for their one movement, because the gallery runtime has no entry for any movement."
+      },
+      {
+        "record": "TASK-038.md",
+        "claim": "F3: \"The register’s states specimen (`STATES_CATALOG`, the circuit)\" as a drawn specimen [S19]",
+        "reason": "The removed src/dev/gallery-refinement-coaching.tsx drew it; Round 7 has no coaching gallery page and this task adds none. F3 now records STATES_CATALOG as a kept, unread fixture; its identity lines are unchanged and still recomputed."
+      }
+    ],
+    "recordChanges": [
+      {
+        "record": "TASK-035.md",
+        "change": "rehashed",
+        "items": [
+          "S13 docs/specs/LOGGING_FIELD_CONTRACT.md (additive amendments: TASK-117 EMOM draft, §14 TASK-047)",
+          "S16 src/state/session-detail.ts (equipment added)"
+        ],
+        "claims": "none changed; every claim checked against Round 7 (V3’s score line is still drawn on /workout through AmrapComparison in TimedWorkoutFlow; no route is a report; TrainingProgressReport draws nothing under PRODUCT_PRESENTATION)."
+      },
+      {
+        "record": "TASK-037.md",
+        "change": "rehashed 23 repo: sources; re-pointed 4 removed; added 8",
+        "items": [
+          "S32 src/ui/refinements/overview.tsx -> src/ui/equipment-summary.tsx",
+          "S44 src/ui/refinements/ladder.tsx -> src/ui/ladder-rungs.tsx",
+          "S47 src/ui/refinements/timed-result-log.tsx -> src/ui/timed-result-log.tsx",
+          "S48 src/ui/refinements/logging-overlay.tsx -> src/ui/logging-overlay.tsx",
+          "added S69 src/ui/timed-workout-flow.tsx, S70 src/ui/block-renderers.tsx, S71 src/state/emom.ts, S72 src/app/AppRuntime.tsx, S73 src/ui/product-presentation.ts; in repair round 1, S74 src/state/workout-progress.ts (structure labels), S75 src/ui/timed-workout-flow.test.tsx (the four Start words as drawn), S76 src/design-system/css/foundation.css (the button draws its words in capitals)"
+        ],
+        "claims": "I9 and I10 re-recorded to the copy TimedWorkoutFlow, LadderPrescription, LadderBlock’s schedule status and CircuitBlock draw on /workout, including each card’s Start (Start EMOM, Start AMRAP, Start FOR TIME, Start ladder; restored in repair round 1); X2, X3, X4, X5 and X6 re-recorded with the route owner (X3 also says a scheduled ladder still shows NOT STARTED, U4); U2 (caption and Start casing: written words differ, the timer frame and the button draw them in capitals), U3, U5 (the for-time pacing sentence is drawn on the format preview) and U13 re-recorded to Round 7’s drawn words; two Limitations bullets (copy behind the product presentation and the presentation-less timed blocks are not drawn; words are quoted as written, and the timer frame and button draw theirs in capitals); the Selected copy changes lead says how a re-pointed change is read."
+      },
+      {
+        "record": "TASK-038.md",
+        "change": "rehashed 7 repo: sources (S29 is TASK-037.md); re-pointed 4 removed; added 2",
+        "items": [
+          "S19 src/dev/gallery-refinement-coaching.tsx -> src/dev/gallery-refinement-runtime.tsx",
+          "S20 src/dev/gallery-refinement-cards.tsx -> src/dev/gallery-refinement-scenes.tsx",
+          "S27 src/ui/refinements/workout-card.tsx -> src/ui/block-renderers-frame.tsx",
+          "S28 src/ui/refinements/movement.tsx -> src/ui/movement-presentation.tsx",
+          "added S30 src/dev/gallery-refinement-flow.tsx, S31 src/ui/timed-workout-flow.tsx"
+        ],
+        "claims": "I8 states the product path (Add note / Edit note into the Movement note dialog, field labelled by the movement; Notes — <movement> without the presentation); I13’s gallery sentence re-recorded (three single-movement cards each answer I4); F2 and F3 leads say no Round 7 gallery page reads GALLERY_CATALOG or STATES_CATALOG (per-slug lines unchanged); N3 and the two Gallery disposition bullets name BlockPanel, TimedWorkoutFlow and the gallery runtime instead of WorkoutCard and the removed pages."
+      }
+    ],
+    "forTask115": [
+      "TASK-121 re-points (rehearsal finding 6), for Eric to confirm with the round-06 allowance: task-037 X2 (Generate’s two helpers read only where the product presentation draws, plus a whole-frontend scan), X3 and X4 (EmomBlock -> TimedWorkoutFlow + state/emom.ts; the kept minute now in Round 7’s words \"Minute N of M\", plus Now/Next), X6 (removed refinements/ladder.tsx -> ladder-rungs.tsx + state/ladder.ts); task-038 required sources (-> movement-presentation.tsx, block-renderers-frame.tsx), the coaching gallery page reads (-> the gallery runtime’s library; no page reads GALLERY_CATALOG/STATES_CATALOG), the CoachingMovementSection shape (unparenthesised, plus GroupCoachingPanel draws it per movement), the cards page and WorkoutCard slot (-> GalleryMovementCards -> LiveFlow -> TimedWorkoutFlow’s GroupExerciseCoaching; BlockPanel places it after a grouped block’s content). Rows: test-ledger rules.rePointed.",
+      "TASK-121 retired record claims (no Round 7 source), for Eric to confirm: TASK-037 `Any partial work belongs to round` (I10, U13); words only the presentation-less EmomBlock, AmrapBlock and ForTimeBlock write (`NO CLOCK`, `MIN ${view.minute} OF ${view.minutes}`, `AMRAP complete`, For Time’s `Ready`, `Racing the clock`, `Finished under cap`, `As many rounds as possible…`) dropped from I9, I10, U2 and U3; TASK-038 I13’s ten-station-circuit sentence and F3’s drawn \"register’s states specimen\". Not retired, because Round 7 still draws them: the Start words (Start EMOM, Start AMRAP, Start FOR TIME, Start ladder; in I9/I10), PAUSED, FINISHED EARLY and REST (written Paused, Finished early, · Rest and drawn in capitals by the timer frame), and the for-time ladder’s pacing sentence on the format preview (U5). Rows: test-ledger rules.retiredClaims.",
+      "Brief premise: Round 7’s accepted cards state does draw coaching. Its three single-movement timed cards each end with the real GroupExerciseCoaching, which TimedWorkoutFlow draws (timed-workout-flow.tsx:615) on the gallery runtime’s memory clients, every movement answering \"The library has no entry for this movement, so there are no cues or regression.\" (A3 TASK-109’s cards parity reads it). The brief said it \"draws no coaching\"; the re-point follows the code, and no gallery state changed.",
+      "X5 (R50, not on the named list, assertion unchanged): Round 7’s /workout AMRAP says \"Log when complete\" while it runs (TimedWorkoutFlow), the requested R50 wording, while the presentation-less AmrapBlock keeps \"Nothing to enter now. Record your rounds afterwards if you like.\". The record keeps \"Status: not applied in AmrapBlock\" (the unchanged check requires it) and states the route fact; COPY-APPLY still names X5. Eric to decide whether X5 should be recorded as applied by Round 7 (a successor change to X5’s assertion).",
+      "U4 stays undecided and true on Round 7: a scheduled ladder still shows `NOT STARTED` / `ON THE CLOCK` / `COMPLETE` (LadderBlock.ScheduleStatus inside TimedWorkoutFlow). R40 named only the EMOM captions.",
+      "base: sources left unchanged (the criterion allows only repo: changes): TASK-037 S20 Home.tsx, S56 session-detail.tsx and S58 Settings.tsx, and seven of TASK-035’s base: sources, differ from Round 7’s files. Every token their claims quote is still in Round 7’s files (scratch audit), so no claim is false, but they pin 03087f7 bytes; a later re-record may move them to repo:.",
+      "TASK-037’s inventory reads the words written in each source; Round 7 gates some of them on the product presentation (e.g. the set sheet’s `Minimize`, Generate’s helpers), now stated in its Limitations. A presentation-aware copy inventory is COPY-VOICE work, not this task’s.",
+      "src/dev/gallery-refinement-coaching-data.ts’s doc comment still names the removed gallery-refinement-coaching.tsx (no src/dev change was allowed)."
+    ],
+    "galleryChanges": [],
+    "galleryChangesLimit": "No src/ file changed (no product, gallery or src/dev change); gallery-owned files are byte-identical to the base.",
+    "selfCheck": {
+      "method": "TypeScript compiler API (the repository’s typescript) over every test file touched since the base (git diff 0b65357d: scripts/refinement/task-037-definition.test.mjs and task-038-definition.test.mjs; task-035 untouched): (a) every test() full title (describe > test) at the base absent at HEAD; (b) each changed body’s assert.<matcher>(…) calls compared, by matcher and source text, with the base and with 181e580 (both files are byte-identical at the base and at 181e580), plus every top-level helper added, removed or changed. Script kept outside the repository (scratchpad).",
+      "counts": {
+        "files": 2,
+        "baseTitles": 17,
+        "headTitles": 17,
+        "absentOrRenamed": 0,
+        "changedBodies": 5,
+        "unchangedBodies": 12,
+        "skipOnlyTodoAdded": 0,
+        "bodiesFewerReadsThanBase": 0,
+        "bodiesFewerReadsThanBuild": 0,
+        "lostReadsAccounted": 9
+      },
+      "absentOrRenamedAtHead": [],
+      "bodies": [
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+          "reads": {
+            "build": 15,
+            "base": 15,
+            "head": 24
+          },
+          "lostVsBase": [
+            "assert.ok(nowId, `${change.id} cites ${change.now} as it is now`)",
+            "assert.equal(sources.get(nowId).kind, 'repo', `${change.id} reads ${change.now} at this revision, not at the base`)",
+            "assert.ok(!now.some((literal) => literal.includes(value)), `${change.id}: \"${value}\" is still copy in ${change.now}`)",
+            "assert.ok(now.some((literal) => literal.includes(value)), `${change.id}: \"${value}\" is copy in ${change.now}`)"
+          ],
+          "addedVsBase": [
+            "assert.ok(nowId, `${change.id} cites ${path} as it is now`)",
+            "assert.equal(sources.get(nowId).kind, 'repo', `${change.id} reads ${path} at this revision, not at the base`)",
+            "assert.ok(!literals.some((literal) => literal.includes(value)), `${change.id}: \"${value}\" is still copy in ${path}`)",
+            "assert.ok( nows.some(({ literals }) => literals.some((literal) => literal.includes(value))), `${change.id}: \"${value}\" is copy in ${nows.map(({ path }) => path).join(' or ')}`, )",
+            "assert.ok(!literals.some((literal) => literal.includes(value)), `${change.id}: \"${value}\" is copy in ${file}`)",
+            "assert.doesNotMatch(source, new RegExp(`\\\\b${name}\\\\b`), `${change.id}: ${file} draws ${name}`)",
+            "assert.match(file('src/app/AppRuntime.tsx'), /<WorkoutExperiencePresentationProvider value=\\{PRODUCT_PRESENTATION\\}>/, 'the app root mounts the product presentation for every route')",
+            "assert.match(file('src/ui/product-presentation.ts'), /saveResult: saveLogThroughShell/, 'the product presentation carries the real timed save')",
+            "assert.match(file('src/app/Workout.tsx'), /<BlockSlot key=\\{block\\.blockId\\} block=\\{block\\} \\/>/, '/workout draws every block through BlockSlot')",
+            "assert.match( file('src/ui/block-renderers.tsx'), /if \\(presentation\\?\\.timedWorkflows\\?\\.saveResult\\) \\{[\\s\\S]*?if \\(format !== null\\) return <TimedWorkoutFlow block=\\{block\\} format=\\{format\\} \\/>/, 'BlockSlot hands every timed format to TimedWorkoutFlow under the product presentation', )",
+            "assert.match(flow, /import \\{ emomShape, emomView, minuteAssignment, scheduledMinuteFor, targetForMinute \\} from '\\.\\.\\/state\\/emom'/, 'TimedWorkoutFlow draws the EMOM minute from state/emom.ts')",
+            "assert.match(flow, /format === 'ladder' \\? <LadderPrescription /, 'the route’s ladder rounds are LadderPrescription’s')",
+            "assert.match(file('src/ui/ladder-rungs.tsx'), /const readings = ladderRoundReadings\\(exercises, rounds\\)/, 'LadderPrescription draws the ladder readings')"
+          ],
+          "accounted": "Each lost read is a named old-build read re-pointed in rules.rePointed (same matcher on the Round 7 target; X-check reads are the same reads per `now` path). The build equals the base for this file, so nothing is lost against 181e580 beyond the same rows."
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the record passes the shared definition-record checker with its inventory, identity, catalog findings, notes and gallery sections",
+          "reads": {
+            "build": 8,
+            "base": 8,
+            "head": 8
+          },
+          "lostVsBase": [],
+          "addedVsBase": [],
+          "accounted": "Nothing lost against the base or the build (identical here)."
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+          "reads": {
+            "build": 25,
+            "base": 25,
+            "head": 27
+          },
+          "lostVsBase": [
+            "assert.ok(read('src/dev/gallery-refinement-coaching.tsx').includes('<GalleryCoachingClients catalog={STATES_CATALOG}'))",
+            "assert.ok(read('src/dev/gallery-refinement-coaching.tsx').includes('<LiveCard block={CIRCUIT_BLOCK}'))"
+          ],
+          "addedVsBase": [
+            "assert.ok(read('src/dev/gallery-refinement-runtime.tsx').includes('definition: async () => ok(null),'))",
+            "assert.ok(read('src/dev/gallery-refinement-flow.tsx').includes('<GalleryRuntime clock={clock} presentation={presentation}><TimedWorkoutFlow block={block} format={kind} now={clock.now} /></GalleryRuntime>'))",
+            "assert.ok(devFiles.length > 0)",
+            "assert.doesNotMatch(read(`src/dev/${name}`), /\\b(GALLERY_CATALOG|STATES_CATALOG)\\b/, `src/dev/${name} reads no old gallery library`)"
+          ],
+          "accounted": "Each lost read is a named old-build read re-pointed in rules.rePointed (same matcher on the Round 7 target; X-check reads are the same reads per `now` path). The build equals the base for this file, so nothing is lost against 181e580 beyond the same rows."
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt",
+          "reads": {
+            "build": 12,
+            "base": 12,
+            "head": 13
+          },
+          "lostVsBase": [],
+          "addedVsBase": [
+            "assert.match( functionBody(owner, 'GroupCoachingPanel'), /\\{exercises\\.map\\(\\(exercise, index\\) => \\(\\s*<CoachingMovementSection\\s+key=\\{exercise\\.exerciseId\\}\\s+exercise=\\{exercise\\}\\s+name=\\{names\\[index\\]\\}\\s+opened=\\{opened\\}\\s*\\/>\\s*\\)\\)\\}/, 'the grouped disclosure draws one CoachingMovementSection per movement', )"
+          ],
+          "accounted": "Nothing lost against the base or the build (identical here)."
+        },
+        {
+          "file": "scripts/refinement/task-038-definition.test.mjs",
+          "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the follow-up stays in source-to-task traceability, and the accepted cards state draws the actual owner without claiming the inventory",
+          "reads": {
+            "build": 16,
+            "base": 16,
+            "head": 19
+          },
+          "lostVsBase": [
+            "assert.ok(cards.includes(\"import { GroupExerciseCoaching } from '../ui/exercise-coaching'\"))",
+            "assert.match(cards, /coaching=\\{grouped \\? <GroupExerciseCoaching /)",
+            "assert.match(read('src/ui/refinements/workout-card.tsx'), /coaching\\?: ReactNode/)"
+          ],
+          "addedVsBase": [
+            "assert.match( read('src/dev/gallery-refinement-scenes.tsx'), /export function GalleryMovementCards\\(\\) \\{\\s*return <div className=\"clr-stack\">\\s*<LiveFlow kind=\"emom\" \\/>\\s*<LiveFlow kind=\"amrap\" \\/>\\s*<LiveFlow kind=\"for_time\" \\/>/, )",
+            "assert.ok(flow.includes(\"import { GroupExerciseCoaching } from './exercise-coaching'\"))",
+            "assert.match(flow, /\\{block\\.exercises\\.length === 1 && <GroupExerciseCoaching format=\\{block\\.identity\\.format\\} exercises=\\{block\\.exercises\\} \\/>\\}/)",
+            "assert.ok(frame.includes(\"import { GroupCoachingContext, GroupExerciseCoaching } from './exercise-coaching'\"))",
+            "assert.match(frame, /const groupedCoaching = block\\.structureType !== 'standard' && block\\.exercises\\.length > 1/)",
+            "assert.match(frame, /\\{children\\}\\s*\\{groupedCoaching && <GroupExerciseCoaching format=\\{block\\.identity\\.format\\} exercises=\\{block\\.exercises\\} \\/>\\}/)"
+          ],
+          "accounted": "Each lost read is a named old-build read re-pointed in rules.rePointed (same matcher on the Round 7 target; X-check reads are the same reads per `now` path). The build equals the base for this file, so nothing is lost against 181e580 beyond the same rows."
+        }
+      ],
+      "helpers": [
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "helper": "moduleConstants",
+          "change": "added",
+          "asserts": 0
+        },
+        {
+          "file": "scripts/refinement/task-037-definition.test.mjs",
+          "helper": "productLiterals",
+          "change": "added",
+          "asserts": 1
+        }
+      ]
+    },
+    "proofs": {
+      "TASK-AC-4095401A2268": "No product change: src/ui/product-presentation.ts supplies neither showTrainingReport nor report, so TrainingProgressReport (src/ui/training-progress-report.tsx, drawn on History) returns null in production; TASK-035’s record claims no report and its check-01 passes (no report route, every implementation sentence negated).",
+      "TASK-AC-F67720A97571": "src/ui/exercise-coaching.tsx is unchanged; task-038 still reads NO_DEFINITION_TEXT, NO_CUES_TEXT and NO_REGRESSION_TEXT defined and drawn, and inventories every *_TEXT word; no new string.",
+      "TASK-AC-005829C27F44": "git diff 0b65357d -- src is empty.",
+      "TASK-AC-34ACEEAB17B6": "No product code path changed; the records cite the gallery runtime’s memory library only as gallery fixture identity."
+    },
+    "repairRound1": {
+      "finding": "Review rejected TASK-AC-D170E278DE09: retired claim 2 and its UAT line said Start EMOM, Start AMRAP, Start FOR TIME and Start ladder no longer reach /workout, and I9/I10 had dropped them, although TimedWorkoutFlow draws `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` (timed-workout-flow.tsx:469; labels EMOM, AMRAP, FOR TIME in workout-progress.ts:321-323; checked by timed-workout-flow.test.tsx:203-205).",
+      "fixed": [
+        "I9 and I10: the Start actions restored as Round 7 draws them, citing S69 (template), S74 (structure labels) and S75 (exact strings), with the FOR TIME / ladder casing recorded (also in U2).",
+        "Retired claim 2 and its UAT line: the Start words, PAUSED / FINISHED EARLY / REST (drawn in capitals from Paused, Finished early, · Rest) and the format preview’s for-time pacing sentence taken out; only words with no Round 7 drawing remain.",
+        "Same check over every re-recorded I, U and X item: U2 now states the caption casing as drawn; U5 says the for-time pacing sentence is drawn on the format preview; X3 says a scheduled ladder’s status still says NOT STARTED (U4); the Limitations bullet no longer reads as if every AmrapBlock word were undrawn (TimedWorkoutFlow still draws AmrapComparison)."
+      ],
+      "testsChanged": false
+    }
+  },
+  "entries": [
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the record passes the shared definition-record checker with its derived readings, future targets, current surfaces and non-gallery disposition",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 every claim cites a listed source and every listed source is cited",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the identifiers each claim names occur in the sources that claim cites",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 completed observations, derived readings and future targets stay apart",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 the remaining owner decision is exact, names its owner and chooses between options none of which is pre-selected",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-01 no route, chart, metric set, report frequency or editable duplicate profile is invented",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 the follow-up stays visible in source-to-task traceability and the accepted map still records its non-gallery disposition",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-035-definition.test.mjs",
+      "test": "TASK-035 adaptive-training and progress report definition (R03) > AC-R035-02 no report is claimed implemented, and no route at this revision is a report",
+      "disposition": "carried",
+      "task": "TASK-035",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the record passes the shared definition-record checker with its inventory, effort, selected-change, proposal, undecided and non-gallery sections",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every claim cites a listed source and every listed source is cited",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every quoted string and identifier occurs in the verified bytes of a source its claim cites",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 the inventory covers every route surface with its titles, actions, states and helper messages",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every visible RPE string at this revision is inventoried and Effort keeps numeric historical and categorical meanings apart",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-01 every explicitly selected copy change keeps its verified status: removed where applied, still present where not",
+      "disposition": "rewritten",
+      "task": "TASK-037",
+      "note": "Base body (byte-identical at the base and at 181e580) with the named old-build reads re-pointed: X2 (R23, Generate helpers); X3 (R40, EMOM captions); X4 (R43, natural-end sentence); X6 (R70, ladder suffix). Every other read is the base's. Reads: build 15, base 15, head 24.",
+      "result": "passed",
+      "reason": "Rehearsal findings of 2026-11-18, finding 6, as approved in the round-06 plan (TASK-121 criterion TASK-AC-162D1EF0739A): the named old-build assertions may be re-pointed to the Round 7 code that draws the same copy or carries the same behaviour, asserting the same thing; each is listed for Eric to confirm (TASK-115 UAT)."
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 the terminology and voice proposal is concise, sourced, uses Effort not RPE and is not a complete voice guide",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 undecided items and owner decisions are explicit and none is pre-selected",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-037-definition.test.mjs",
+      "test": "TASK-037 platform language and terminology audit (G20) > AC-R037-02 no product copy is claimed rewritten and the accepted map still records the non-gallery disposition with traceability",
+      "disposition": "carried",
+      "task": "TASK-037",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the record passes the shared definition-record checker with its inventory, identity, catalog findings, notes and gallery sections",
+      "disposition": "rewritten",
+      "task": "TASK-038",
+      "note": "Base body (byte-identical at the base and at 181e580) with the named old-build reads re-pointed: required record sources. Every other read is the base's. Reads: build 8, base 8, head 8.",
+      "result": "passed",
+      "reason": "Rehearsal findings of 2026-11-18, finding 6, as approved in the round-06 plan (TASK-121 criterion TASK-AC-162D1EF0739A): the named old-build assertions may be re-pointed to the Round 7 code that draws the same copy or carries the same behaviour, asserting the same thing; each is listed for Eric to confirm (TASK-115 UAT)."
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every claim cites a listed source and every listed source is cited",
+      "disposition": "carried",
+      "task": "TASK-038",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 every identifier and quoted string a claim names occurs in a source that claim cites",
+      "disposition": "carried",
+      "task": "TASK-038",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 the inventory holds every guidance and note state the owner draws, in the owner’s words, with missing content, blank notes, loading and failure apart",
+      "disposition": "carried",
+      "task": "TASK-038",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-01 fixture and catalog identity is recomputed from the fixtures and the seeded catalog, and is recorded before any catalog gap is diagnosed",
+      "disposition": "rewritten",
+      "task": "TASK-038",
+      "note": "Base body (byte-identical at the base and at 181e580) with the named old-build reads re-pointed: coaching gallery page (fixture and catalog identity). Every other read is the base's. Reads: build 25, base 25, head 27.",
+      "result": "passed",
+      "reason": "Rehearsal findings of 2026-11-18, finding 6, as approved in the round-06 plan (TASK-121 criterion TASK-AC-162D1EF0739A): the named old-build assertions may be re-pointed to the Round 7 code that draws the same copy or carries the same behaviour, asserting the same thing; each is listed for Eric to confirm (TASK-115 UAT)."
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt",
+      "disposition": "rewritten",
+      "task": "TASK-038",
+      "note": "Base body (byte-identical at the base and at 181e580) with the named old-build reads re-pointed: CoachingMovementSection guidance shape. Every other read is the base's. Reads: build 12, base 12, head 13.",
+      "result": "passed",
+      "reason": "Rehearsal findings of 2026-11-18, finding 6, as approved in the round-06 plan (TASK-121 criterion TASK-AC-162D1EF0739A): the named old-build assertions may be re-pointed to the Round 7 code that draws the same copy or carries the same behaviour, asserting the same thing; each is listed for Eric to confirm (TASK-115 UAT)."
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the hide/replacement/content rule is one exact owner decision with no option pre-selected, and nothing is hidden or reworded",
+      "disposition": "carried",
+      "task": "TASK-038",
+      "note": "Body unchanged (byte-identical at the base and at 181e580); passes on the re-recorded record.",
+      "result": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-038-definition.test.mjs",
+      "test": "TASK-038 coaching and empty-state content inventory (G21) > AC-R038-02 the follow-up stays in source-to-task traceability, and the accepted cards state draws the actual owner without claiming the inventory",
+      "disposition": "rewritten",
+      "task": "TASK-038",
+      "note": "Base body (byte-identical at the base and at 181e580) with the named old-build reads re-pointed: cards gallery page and WorkoutCard slot. Every other read is the base's. Reads: build 16, base 16, head 19.",
+      "result": "passed",
+      "reason": "Rehearsal findings of 2026-11-18, finding 6, as approved in the round-06 plan (TASK-121 criterion TASK-AC-162D1EF0739A): the named old-build assertions may be re-pointed to the Round 7 code that draws the same copy or carries the same behaviour, asserting the same thing; each is listed for Eric to confirm (TASK-115 UAT)."
+    }
+  ]
+}

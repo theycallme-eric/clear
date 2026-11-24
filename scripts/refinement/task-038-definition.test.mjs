@@ -252,7 +252,9 @@ describe('TASK-038 coaching and empty-state content inventory (G21)', () => {
     for (const kind of ['repo', 'base', 'ref']) {
       assert.ok([...sources.values()].some((source) => source.kind === kind), `at least one ${kind}: source`)
     }
-    for (const path of [OWNER, SEED, 'src/ui/refinements/movement.tsx', 'src/ui/refinements/workout-card.tsx']) sourceId(path)
+    // A3 TASK-121 (finding 6): Round 7's movement identity and block card owners stand in for the
+    // removed src/ui/refinements/movement.tsx and src/ui/refinements/workout-card.tsx.
+    for (const path of [OWNER, SEED, 'src/ui/movement-presentation.tsx', 'src/ui/block-renderers-frame.tsx']) sourceId(path)
   })
 
   test('AC-R038-01 every claim cites a listed source and every listed source is cited', () => {
@@ -361,8 +363,17 @@ describe('TASK-038 coaching and empty-state content inventory (G21)', () => {
     assert.ok(fixtures.cardsData.includes('`station-${index + 1}-${LONG_MOVEMENT_ID}`'))
     assert.ok(![...rows.keys()].some((id) => id.startsWith('station-')), 'no catalog id is a station')
     assert.match(squash(sectionText('Fixture and catalog identity')), /The nine `station-` movements of the ten-station circuit: not in the catalog; library answer: no entry\./)
-    assert.ok(read('src/dev/gallery-refinement-coaching.tsx').includes('<GalleryCoachingClients catalog={STATES_CATALOG}'))
-    assert.ok(read('src/dev/gallery-refinement-coaching.tsx').includes('<LiveCard block={CIRCUIT_BLOCK}'))
+    // A3 TASK-121 (finding 6): Round 7 has no coaching gallery page. The library its cards state
+    // reads is the gallery runtime's, which has no entry for any movement, and no gallery page reads
+    // the old GALLERY_CATALOG or STATES_CATALOG that F2 and F3 identify.
+    assert.ok(read('src/dev/gallery-refinement-runtime.tsx').includes('definition: async () => ok(null),'))
+    assert.ok(read('src/dev/gallery-refinement-flow.tsx').includes('<GalleryRuntime clock={clock} presentation={presentation}><TimedWorkoutFlow block={block} format={kind} now={clock.now} /></GalleryRuntime>'))
+    const devFiles = readdirSync(resolve(repo, 'src/dev'), { withFileTypes: true }).filter((entry) => entry.isFile())
+    assert.ok(devFiles.length > 0)
+    for (const { name } of devFiles) {
+      if (name === 'gallery-refinement-coaching-data.ts') continue
+      assert.doesNotMatch(read(`src/dev/${name}`), /\b(GALLERY_CATALOG|STATES_CATALOG)\b/, `src/dev/${name} reads no old gallery library`)
+    }
 
     // F5, F6: catalog ids in fixtures still answer synthetically; regressions are ids.
     for (const slug of ['back-squat', 'plank', 'goblet-squat']) assert.ok(rows.get(slug).cues.length > 0, `the catalog's ${slug} has written cues`)
@@ -385,9 +396,20 @@ describe('TASK-038 coaching and empty-state content inventory (G21)', () => {
 
   test('AC-R038-02 movement notes stay outside every guidance state in the owner, and the behavioural proof is a current passing receipt', () => {
     const owner = read(OWNER)
+    // A3 TASK-121 (finding 6): Round 7's grouped disclosure draws one CoachingMovementSection per
+    // movement, which writes its guidance condition without parentheses; CoachingPanel keeps them.
+    assert.match(
+      functionBody(owner, 'GroupCoachingPanel'),
+      /\{exercises\.map\(\(exercise, index\) => \(\s*<CoachingMovementSection\s+key=\{exercise\.exerciseId\}\s+exercise=\{exercise\}\s+name=\{names\[index\]\}\s+opened=\{opened\}\s*\/>\s*\)\)\}/,
+      'the grouped disclosure draws one CoachingMovementSection per movement',
+    )
+    const GUIDANCE_CONDITION = {
+      CoachingMovementSection: /\{opened \? (<Guidance [^>]*\/>) : null\}/,
+      CoachingPanel: /\{opened \? \(([\s\S]*?)\) : null\}/,
+    }
     for (const name of ['CoachingMovementSection', 'CoachingPanel']) {
       const body = functionBody(owner, name)
-      const guidance = /\{opened \? \(([\s\S]*?)\) : null\}/.exec(body)
+      const guidance = GUIDANCE_CONDITION[name].exec(body)
       assert.ok(guidance, `${name} reads guidance only once opened`)
       assert.match(guidance[1], /<Guidance /)
       assert.doesNotMatch(guidance[1], /ExerciseNotesField/, `${name}'s note is not inside the guidance condition`)
@@ -465,10 +487,20 @@ describe('TASK-038 coaching and empty-state content inventory (G21)', () => {
     assert.match(texts.get('S05'), /\/ TASK-038 \| REQ-038 \|/)
 
     // The cards state draws the actual grouped owner in the card's coaching slot.
-    const cards = read('src/dev/gallery-refinement-cards.tsx')
-    assert.ok(cards.includes("import { GroupExerciseCoaching } from '../ui/exercise-coaching'"))
-    assert.match(cards, /coaching=\{grouped \? <GroupExerciseCoaching /)
-    assert.match(read('src/ui/refinements/workout-card.tsx'), /coaching\?: ReactNode/)
+    // A3 TASK-121 (finding 6): Round 7's cards state draws the real timed cards on the gallery's
+    // memory-only clients; the timed card draws the actual owner for its one movement, and the
+    // route's block card places it after a grouped block's content.
+    assert.match(
+      read('src/dev/gallery-refinement-scenes.tsx'),
+      /export function GalleryMovementCards\(\) \{\s*return <div className="clr-stack">\s*<LiveFlow kind="emom" \/>\s*<LiveFlow kind="amrap" \/>\s*<LiveFlow kind="for_time" \/>/,
+    )
+    const flow = read('src/ui/timed-workout-flow.tsx')
+    assert.ok(flow.includes("import { GroupExerciseCoaching } from './exercise-coaching'"))
+    assert.match(flow, /\{block\.exercises\.length === 1 && <GroupExerciseCoaching format=\{block\.identity\.format\} exercises=\{block\.exercises\} \/>\}/)
+    const frame = read('src/ui/block-renderers-frame.tsx')
+    assert.ok(frame.includes("import { GroupCoachingContext, GroupExerciseCoaching } from './exercise-coaching'"))
+    assert.match(frame, /const groupedCoaching = block\.structureType !== 'standard' && block\.exercises\.length > 1/)
+    assert.match(frame, /\{children\}\s*\{groupedCoaching && <GroupExerciseCoaching format=\{block\.identity\.format\} exercises=\{block\.exercises\} \/>\}/)
     assert.match(sectionText('Gallery disposition'), /This task changes no gallery state, owner,\s+CSS or token/)
   })
 })
