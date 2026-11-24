@@ -108,11 +108,19 @@ describe('TASK-115 consumes TASK-121’s definition-record receipts', () => {
   test('TASK-AC-99A513AC101C TASK-121’s receipt and the three definition-record checks are current and passing at the end', () => {
     assert.deepEqual(receiptProblems('TASK-121', 'check-01'), [])
     for (const task of DEFINITION_TASKS) assert.deepEqual(receiptProblems(task, 'check-01'), [], `${task} check-01`)
-    // This task re-records nothing: no record, checker or definition test changed after TASK-121's merge.
-    const changed = git(['diff', '--name-only', '9a1569b1580c1fa5ffe26b0fb1d0d401259249bf', 'HEAD', '--',
-      'docs/definitions', 'scripts/refinement/verify-definition-record.mjs', 'scripts/refinement/lib',
+    // No checker or definition test changed after TASK-121's merge. The only record change is the one re-record
+    // TASK-121's rules allow (a repo: hash): TASK-038 pins src/dev/gallery-refinement-scenes.tsx, which the D3
+    // gallery fix (repair round 1) changed.
+    const checkers = git(['diff', '--name-only', '9a1569b1580c1fa5ffe26b0fb1d0d401259249bf', 'HEAD', '--',
+      'scripts/refinement/verify-definition-record.mjs', 'scripts/refinement/lib',
       ...DEFINITION_TASKS.map((task) => `scripts/refinement/${task.toLowerCase()}-definition.test.mjs`)])
-    assert.equal(changed, '')
+    assert.equal(checkers, '')
+    const records = git(['diff', '-U0', '9a1569b1580c1fa5ffe26b0fb1d0d401259249bf', 'HEAD', '--', 'docs/definitions'])
+      .split('\n').filter((line) => /^[-+]/.test(line) && !/^(---|\+\+\+) /.test(line))
+    assert.deepEqual(records.map((line) => line.replace(/sha256 `[0-9a-f]{64}`/, 'sha256 `…`')), [
+      '-- `repo:src/dev/gallery-refinement-scenes.tsx` sha256 `…`. S20: the cards state (`GalleryMovementCards`) draws the real timed cards (the removed `src/dev/gallery-refinement-cards.tsx` drew the old cards state).',
+      '+- `repo:src/dev/gallery-refinement-scenes.tsx` sha256 `…`. S20: the cards state (`GalleryMovementCards`) draws the real timed cards (the removed `src/dev/gallery-refinement-cards.tsx` drew the old cards state).',
+    ])
   })
 
   test('TASK-AC-8E85988C2B58 the UAT list names Q-007, every record claim TASK-121 retired and every definition-test assertion it re-pointed', () => {

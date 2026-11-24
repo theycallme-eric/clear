@@ -136,3 +136,6 @@ Eric's decisions (chat, 2026-11-24): D2 "Retire, list for UAT (Recommended)"; D3
 - **Root rerun** (placeholder Supabase URL, references staged and removed afterwards): 110 passed, 4 skipped, 2 failed —
   contained-shell's clear and vapour skins fail with a Supabase URL configured, on the same read as the retired skins
   (they passed in the whole run without one). Reported, not retired (D2 named only the failing cases).
+- **Definition record.** TASK-038's record pins `src/dev/gallery-refinement-scenes.tsx`; after D3 its check was
+  REJECTED (source hash mismatch). Re-recorded the `repo:` hash only (line 57, TASK-121's rules); TASK-038 and TASK-121
+  check-01 PASSED (receipts unchanged). The closure test now accepts exactly that one record line.

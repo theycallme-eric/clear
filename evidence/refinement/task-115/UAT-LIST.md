@@ -268,7 +268,8 @@ specimen". Gallery page composition only — `SectionHeader` and every route are
   a gallery-only wrapper that labels its specimen's region; `display: contents`, nothing drawn changes);
 - `src/dev/gallery-registry.tsx` line 132 (import) and line 2916 (the "full header with progress bar" specimen renders
   `GalleryFullSectionHeader`).
-`e2e/public-gallery.spec.ts:5` passes again.
+`e2e/public-gallery.spec.ts:5` passes again. TASK-038's definition record pins `gallery-refinement-scenes.tsx`, so its
+`repo:` hash was re-recorded (line 57; hash only, TASK-121's editing rules).
 
 ### D4 — "Allow both (Recommended)"
 
