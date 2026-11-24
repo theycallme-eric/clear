@@ -213,3 +213,73 @@ overwritten). The route has 89 s to load before `pauseAt` would fail; the slowes
 
 **Next action.** Controller verification; Eric's UAT with `evidence/refinement/task-115/UAT-LIST.md` (D6 and D7 are
 listed there).
+
+## Repair round 3 (2026-11-24)
+
+**What failed.** V2 verification of repair 2 (2900d605) passed all 19 commands and the TASK-104 fix held. The
+independent review did not accept it (`reviews/TASK-115-a1-r2-pending.json`): TASK-AC-C8FAD22523F1 and
+TASK-AC-9691375B8163 not met. The root e2e cases that need the test backend never ran anywhere, and the ledger said they
+run "in V2 verification", which runs only `e2e/refinement`. UAT-LIST.md also attributed "entry-forms left as reported"
+to Eric; that was the controller's instruction, not an owner decision.
+
+**Correction to earlier entries of this note.** The first section's "20 cases need the backend lane … Verification
+runs them" and the round-1 "Root rerun … the verification lane has" were wrong for the root specs: V2 verification
+runs only `e2e/refinement`, where task-047/048's four backend cases did run with the test lane and pass (verify logs
+d1ca1e0d, a88f1b23, d5a56ca9: 399 passed). No root backend-lane case ran anywhere in this build.
+
+**Owner decision.** D8, Eric, chat, 2026-11-24: "Accept unrun, list for UAT (Recommended)". Asked: "TASK-115: about 240
+old end-to-end tests that need the test backend never ran in this build. That's mainly core workout flows, entry forms
+and 98 database-permission tests. The build's agents have no backend access, and only two test suites were approved to
+use it. Its criterion says every old test passes or is retired. How should TASK-115 close?" Option: recorded as not
+run, with your answer, listed for UAT; running them becomes a follow-up.
+
+**What changed.**
+- `test-ledger.json` `rules.wholeE2eRun`: the exact count is 227 cases in 27 files under D8 (211 of the 220 the whole
+  run did not run, and the 16 design-0143 failures that failed only for the missing backend), each with the outcome
+  "not run: no backend lane; accepted unrun by the owner (D8)" and D8 quoted. The 4 task-047/048 failures are now
+  "passes in V2 verification (backend lane, PRE-001)" with the logs cited. Of the other 9 not run: focus-ownership's 8
+  were skipped because the app had no Supabase URL and passed on round 1's placeholder reruns ("passes on rerun"), and
+  crt-source-graphic-proof's 1 is a flag-gated diagnostic. New `notRun` (all 220, by file and outcome) and `d8`.
+  Totals corrected to 390 + 131 + 219 + 1 = 741 (the ledger had 220 skipped plus 1 did not run; Playwright's summary
+  says 219 and 1, and its JSON report failed to write, so the one did-not-run case cannot be told apart).
+  `byOutcome` recounted. Every "the verification lane supplies them" claim is removed. `rules.repairRound1.decisions
+  .entryForms` now says it was not an owner decision. `rules.repairRound3` records this round.
+- `UAT-LIST.md`: owner item 7 and a D8 section listing the 27 files with counts (rls 98, core-loop, entry-forms,
+  optional-feedback, task-040-home-review, the six design-0143 workout files, history-detail, accessibility and the
+  rest), the stale `/^Focus:/` read at `entry-forms.spec.ts:1059/1063`, and running them as a follow-up. The "Still
+  reported" entry-forms line is corrected. "Coverage and follow-ups" says plainly that they did not run.
+- `scripts/refinement/task-115-closure.test.mjs` (same case names): "needs backend lane" and "reported for Eric" are no
+  longer accepted. D8's outcome is accepted only on rows quoting D8, and the V2 outcome only on task-047/048 rows citing
+  the logs. The totals and both outcome tallies must add up, every not-run case needs its own outcome, no old-build file
+  outcome rests on the backend lane alone, and the UAT list must quote D8 and name every D8 file with its count.
+- TASK-103 (D4, timing only): `e2e/refinement/task-103-parity.spec.ts` lines 124–131 (`SCREENS_TODAY`,
+  2026-11-24T12:00:00Z, and its comment) and line 710 (`page.clock.install({ time: SCREENS_TODAY })` before the screens
+  case's first visit). /history's rest-day range ran up to yesterday by the real date; it is now fixed. Its 10 parity
+  receipts are unchanged; the guard receipt re-records the spec hash.
+- Self-check: 27 files, 10 changed bodies (task-103's screens case added), nothing weakened.
+
+**Exact verification.**
+- `run-required-check --task TASK-103 --check parity -- npx playwright test e2e/refinement/task-103-parity.spec.ts
+  --project=mobile`: PASSED twice (10/10 each, 16:27 and 16:29 CST, before the 18:00 roll-over). Run 1's 10 parity
+  receipts are byte-identical to the committed ones. Run 2's receipts, guard receipt (d1a00a65…) and 36 store captures
+  are byte-identical to run 1's. Dates left in the receipts: Sun 1, Mon 2 and Tue 3 Nov 2026 (fixtures and the derived
+  rest day), and "Wed 4 Nov 2026 – Mon 23 Nov 2026 · 20 rest days" (up to the day before the fixed instant). None comes
+  from the real clock.
+- `run-required-check --task TASK-115 --check check-01 -- node --test scripts/refinement/task-115-closure.test.mjs`:
+  PASSED twice, 13/13; receipt identical (3ad5a8ff…). Negative checks of the tightened case (ledger mutated, then
+  restored byte for byte): a bare "needs backend lane" row fails it, and so does a D8 row without the quote.
+- `run-required-check --task TASK-115 --check parity -- npx playwright test e2e/refinement/task-115-comparison.spec.ts
+  --project=mobile`: PASSED twice, 53/53; comparison files and the parity receipt byte-identical to the committed ones
+  and across the two runs.
+- The brief's body-ledger `node -e`: exit 0 (not rerun; no build test changed). `git merge-base --is-ancestor a6cd01c9
+  HEAD`: exit 0.
+- `verify-delivery-evidence.mjs --body clear-gallery-adoption-20261113 --mode final --tasks <the 18>`: PASSED (18
+  current and passing, TASK-103 included).
+- TASK-035, TASK-037, TASK-038 check-01 through the guard: PASSED; receipts unchanged.
+- `npm run typecheck`: exit 0. CI chain: exit 0 (lint 0 errors, 175 warnings as before; 279 files, 6,516 tests).
+- The whole `e2e/refinement` was not run here (V2's verification runs it).
+
+**Open assumptions.** None new. D8's 227 cases are unproved on Round 7 until they are run against the test backend.
+
+**Next action.** Controller verification. Then Eric's UAT with `evidence/refinement/task-115/UAT-LIST.md` (owner items 6
+and 7). Running the D8 cases is a follow-up.

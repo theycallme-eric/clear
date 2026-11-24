@@ -222,11 +222,39 @@ describe('TASK-115 end-of-run comparison and recaptures', () => {
     const run = own.rules.wholeE2eRun
     assert.equal(run.oldBuildE2eFiles.length, 63)
     for (const file of run.oldBuildE2eFiles) assert.match(file.outcome, /\S/, file.path)
+    // Repair round 3 (D8): a case not run is accepted only where the row quotes Eric's decision; the backend lane in V2
+    // verification runs only task-047/048 (PRE-001), and a row says so only with the verification logs.
+    const D8 = 'not run: no backend lane; accepted unrun by the owner (D8)'
+    const V2_LANE = 'passes in V2 verification (backend lane, PRE-001)'
+    const DIAGNOSTIC = 'not run: diagnostic only (skipped unless CLEAR_RUN_SOURCEGRAPHIC_DIAGNOSTIC=1)'
+    const accepted = (row) => {
+      if (row.outcome === D8) assert.match(row.decision ?? '', /"Accept unrun, list for UAT \(Recommended\)"/, `${row.case} quotes D8`)
+      if (row.outcome === V2_LANE) {
+        assert.match(row.case, /^e2e\/refinement\/task-04[78]\.spec\.ts:/, `${row.case}: only task-047/048 run in the backend lane`)
+        assert.match(row.note ?? '', /verify\.log/, `${row.case} cites the verification logs`)
+      }
+      if (row.outcome === DIAGNOSTIC) assert.match(row.case, /^e2e\/effects\/crt-source-graphic-proof\.spec\.ts:/, row.case)
+    }
     for (const failure of run.failures) {
-      assert.ok(['passes after update', 'passes on rerun', 'needs backend lane', 'retired with a reason', 'reported for Eric'].includes(failure.outcome), `${failure.case}: ${failure.outcome}`)
-      if (failure.outcome !== 'needs backend lane' && failure.outcome !== 'passes on rerun') assert.match(failure.change ?? failure.note ?? '', /\S/, `${failure.case} says what changed or why it is reported`)
+      assert.ok(['passes after update', 'passes on rerun', 'retired with a reason', D8, V2_LANE].includes(failure.outcome), `${failure.case}: ${failure.outcome}`)
+      accepted(failure)
+      if (failure.outcome !== 'passes on rerun') assert.match(failure.change ?? failure.note ?? '', /\S/, `${failure.case} says what changed or why it is reported`)
     }
     assert.equal(run.failures.length, run.totals.failed)
+    // The totals and the outcome counts add up; every case the run did not run has its own outcome.
+    const tally = (rows) => rows.reduce((counts, row) => ({ ...counts, [row.outcome]: (counts[row.outcome] ?? 0) + 1 }), {})
+    assert.equal(run.totals.passed + run.totals.failed + run.totals.skipped + run.totals.didNotRun, run.totals.cases)
+    assert.deepEqual(tally(run.failures), run.byOutcome)
+    assert.equal(run.notRun.cases.length, run.totals.skipped + run.totals.didNotRun)
+    assert.deepEqual(tally(run.notRun.cases), run.notRun.totals.byOutcome)
+    for (const row of run.notRun.cases) {
+      assert.ok([D8, 'passes on rerun', DIAGNOSTIC].includes(row.outcome), `${row.case}: ${row.outcome}`)
+      accepted(row)
+      assert.match(row.note ?? '', /\S/, `${row.case} says why`)
+    }
+    for (const file of run.oldBuildE2eFiles) {
+      assert.doesNotMatch(file.outcome, /skipped \(backend lane\)|needs backend lane(?!; accepted unrun, D8)/, `${file.path}: no case rests on the backend lane alone`)
+    }
     // Repair round 1 (D2): the 73 retired old look cases each have a ledger row quoting the decision and a UAT entry.
     const uat = readFileSync(join(OWN, 'UAT-LIST.md'), 'utf8')
     const d2 = own.entries.filter((entry) => entry.disposition === 'retired' && /Retire, list for UAT/.test(entry.decision ?? ''))
@@ -235,6 +263,10 @@ describe('TASK-115 end-of-run comparison and recaptures', () => {
       assert.match(entry.oldBuild ?? '', /\S/, `${entry.file} :: ${entry.test} records its old-build result`)
       assert.ok(uat.includes(`\`${entry.file}\` (old line ${entry.oldLine}`), `${entry.file}:${entry.oldLine} is on the UAT list`)
     }
+    // Repair round 3 (D8): the UAT list quotes D8 and names every file it covers, with its count.
+    assert.ok(uat.includes('"Accept unrun, list for UAT (Recommended)"'), 'D8 is quoted on the UAT list')
+    const d8Files = tally([...run.notRun.cases, ...run.failures].filter((row) => row.outcome === D8).map((row) => ({ outcome: row.case.split(':')[0] })))
+    for (const [file, count] of Object.entries(d8Files)) assert.ok(uat.includes(`\`${file}\`: ${count}`), `${file} (${count}) is on the UAT list`)
     // Repair round 2 (D6): contained-shell's clear and vapour skin cases, retired on D2's terms.
     const d6 = own.entries.filter((entry) => entry.disposition === 'retired' && /Yes, retire both \(Recommended\)/.test(entry.decision ?? ''))
     assert.equal(d6.length, 2)

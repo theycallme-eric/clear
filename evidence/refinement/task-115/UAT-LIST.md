@@ -48,6 +48,8 @@ are read from the evidence store).
    effect. Eric, chat, 2026-11-24: "Accept as is (Recommended)". Asked: "TASK-115: the hash update for TASK-038's
    record landed one commit after the gallery change. Its criterion asks for the same commit. The final code passes
    every check, and there's no product effect. Accept it as is, listed for UAT?" Confirm at UAT.
+7. **The root backend-lane e2e cases did not run** (D8, accepted unrun): 227 old end-to-end cases that need the test
+   backend never ran in this build (listed in full at the end). Running them is a follow-up.
 
 
 ## Look and wording to check on a phone (320 and 390)
@@ -129,6 +131,8 @@ are read from the evidence store).
 - task-019's timed case uses about 2.4 of its 5 minutes locally; on CI's Preview E2E it could time out.
 - EMOM per-movement loads and AMRAP partial reps rest on TASK-117's tests and the backend-lane task-047/048, which run
   only in V2 verification (the disposable test lane, PRE-001).
+- **The root backend-lane e2e cases did not run** (227 cases in 27 files, accepted unrun under D8; listed in full at the
+  end). Only e2e/refinement's task-047/048 ran with the test backend. Running the rest is a follow-up.
 - After the build: talk about paring down the inherited old-build tests (Eric, 2026-11-23); tighten
   `task-011.spec.ts:446`; rewrite the old "nothing is Now during an EMOM rest" check to Round 7's behaviour; make the
   EMOM "saved row wins" case check the typed load is absent. `docs/specs/EFFECTS_COMPOSITION_CONTRACT.md` and the
@@ -298,8 +302,9 @@ D3 change 6ca3dc5f, not in the same commit as TASK-AC-99A513AC101C asks; Eric ac
 
 ## Still reported
 
-- `e2e/design-0143/entry-forms.spec.ts` "generate-reads" (backend lane) still reads `/^Focus:/` and "Focus: Lower body";
-  left as reported (Eric, 2026-11-24).
+- `e2e/design-0143/entry-forms.spec.ts` "generate-reads" (backend lane) still reads `/^Focus:/` and "Focus: Lower body".
+  Correction: this was never an owner decision. Repair round 1 recorded it as "left as reported (Eric, 2026-11-24)", but
+  that wording came from the controller's instruction. It is part of the D8 set (below): not run, accepted unrun.
 - (Resolved in repair round 2.) `e2e/contained-shell.spec.ts` "the clear skin / the vapour skin keeps shipped fonts,
   ground and emission" passed in the whole run (no Supabase URL); with a Supabase URL configured both failed on the same
   read as the retired signal and mono cases. Retired under D6; see below.
@@ -323,3 +328,61 @@ so /workout's header clock, drawn over the top of the tall cards' captures, read
 Five of its receipts changed only in their route running, paused and ended captures (the header clock reads a fixed
 time): amrap, For Time, ladder-4 and ladder-12 at 320, and ladder-12 at 390. Nothing the check reads changed. The
 captures are in the evidence store under `clear-gallery-adoption-v2-20261116/task-104/captures/`.
+
+## Repair round 3 (Eric's decision of 2026-11-24)
+
+### D8 — "Accept unrun, list for UAT (Recommended)": the root backend-lane e2e cases did not run
+
+Asked: "TASK-115: about 240 old end-to-end tests that need the test backend never ran in this build. That's mainly core
+workout flows, entry forms and 98 database-permission tests. The build's agents have no backend access, and only two
+test suites were approved to use it. Its criterion says every old test passes or is retired. How should TASK-115
+close?" Option: recorded as not run, with your answer, listed for UAT; running them becomes a follow-up.
+
+The exact count is 227 cases in 27 files: 211 skipped for no backend and 16 design-0143 cases that failed only for the
+missing backend. None of them ran anywhere in this build. V2 verification runs only e2e/refinement; there, task-047 and
+task-048's four backend cases did run with the test lane and pass. Earlier records said the root cases "run in V2
+verification"; that was wrong and is corrected. **Running them is a follow-up.** Until then, nothing they check is
+proved for Round 7: the core workout flows on the six design-0143 workout files, the entry forms, the database
+permissions, History detail and the signed-in accessibility checks.
+
+Known stale read: `e2e/design-0143/entry-forms.spec.ts:1059` and `:1063` ("generate-reads") still click and read
+`/^Focus:/`, where Round 7 names the control "Change focus" (owner item 2). It will fail when the cases are run until it
+is updated under the test-update rule.
+
+Not run, by file (cases):
+- `e2e/rls.spec.ts`: 98 — the database-permission (row-level security) cases
+- `e2e/core-loop.spec.ts`: 1 — a new user from sign-up to Home on every screen of the path (REQ-010; also needs the live model)
+- `e2e/design-0143/entry-forms.spec.ts`: 7 — onboarding, Generate (including "generate-reads"), loading, boot and routing
+- `e2e/design-0143/optional-feedback.spec.ts`: 2 — the no-feedback journey (TASK-030, JOURNEY-028)
+- `e2e/design-0143/task-040-home-review.spec.ts`: 3 — Home and Review before-state journeys (REQ-007, REQ-011)
+- `e2e/design-0143/workout-amrap.spec.ts`: 2 — AMRAP save to Summary (JOURNEY-024)
+- `e2e/design-0143/workout-circuit.spec.ts`: 7 — circuit save, footer and menu at 320 and 390 (JOURNEY-014, 015, 025)
+- `e2e/design-0143/workout-emom.spec.ts`: 1 — EMOM save to Summary (JOURNEY-023)
+- `e2e/design-0143/workout-formats.spec.ts`: 1 — every format in one session to Summary (REQ-016)
+- `e2e/design-0143/workout-ladder.spec.ts`: 1 — timed ladders save (JOURNEY-029)
+- `e2e/design-0143/workout-lifecycle.spec.ts`: 6 — Review, the seven renderers, recovery and Summary across widths and skins
+- `e2e/history-detail.spec.ts`: 5 — History to Review or Session detail, Favorites, and another user's session
+- `e2e/design-0143/accessibility.spec.ts`: 15 — protected and public routes, JOURNEY-002/003/020, onboarding, reduced motion, focus, forced colours, dialog and toast
+- `e2e/generation-database-lane.spec.ts`: 25
+- `e2e/auth-otp.spec.ts`: 8
+- `e2e/design-0143/collections-settings.spec.ts`: 7
+- `e2e/settings-locations.spec.ts`: 7
+- `e2e/d6-swap-persistence.spec.ts`: 6
+- `e2e/auth-boundaries.spec.ts`: 4
+- `e2e/design-0143/format-preview.spec.ts`: 4
+- `e2e/auth-screen.spec.ts`: 3
+- `e2e/contained-shell.spec.ts`: 3
+- `e2e/generation-browser-new-user.spec.ts`: 3
+- `e2e/generation-persistence.spec.ts`: 3
+- `e2e/generation-browser-returning-user.spec.ts`: 2
+- `e2e/session-continuity.spec.ts`: 2
+- `e2e/settings-appearance.spec.ts`: 1
+
+Also not run in the whole run, outside D8: `e2e/focus-ownership.spec.ts` (8; skipped because the app had no Supabase
+URL, not for a backend; they passed on round 1's reruns with placeholder values) and
+`e2e/effects/crt-source-graphic-proof.spec.ts` (1; a diagnostic that runs only when its flag is set).
+
+### D4 — TASK-103's History receipts no longer follow the run date
+
+TASK-103's look check of /history now holds the browser clock at 24 Nov 2026 (it read the real date, so the rest-day
+range "… – Mon 23 Nov 2026" changed every day). Its receipts are unchanged.
