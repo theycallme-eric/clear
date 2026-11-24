@@ -52,6 +52,29 @@ import { expect, test as scanned } from '../fixtures'
  * results; the ladder's live rounds are "Complete round N" in "Prescribed
  * ladder rounds" (TASK-105); the accepted gallery states are Round 7's
  * (`[data-refinement-state]`, gallery bec4454).
+ *
+ * A3 TASK-114 (owner of this suite, owner decisions 2026-11-16 and
+ * 2026-11-18) proves it on the merged families. Its changes, each in
+ * evidence/refinement/task-114/test-ledger.json:
+ *   · paint is read once the shared Dialog's 200 ms phosphor arrival has run
+ *     (read mid-arrival, the frame's flicker decided the "visible top");
+ *   · owner decision 4 (2026-11-16): the movement note keeps Round 7's fixed
+ *     one-line "Movement note" title and the movement's name labels its field,
+ *     so the wrapped-title reads become a one-line title over the long name;
+ *   · owner decision (2026-11-16): the ladder's log opens only after the
+ *     attempt ends, so its clock is read running on behind the ladder's own
+ *     movement note, and no Log results is offered while it runs;
+ *   · Round 7's rhythm is read from Round 7's own declared gaps (the build's
+ *     --movement-peer-gap, --movement-tier-gap and --logging-movement-field-gap
+ *     do not exist in Round 7), and Review's standard rows, which Round 7 draws
+ *     without a list, are read as rows;
+ *   · Round 7's anchor log fits a 320 × 568 phone, so it is read as a short
+ *     form there (the superset round and the twelve-round ladder are the long
+ *     ones), and the gallery's long ladder is read Incomplete through round 7,
+ *     the build's long specimen, because Round 7's twelve-round log with no
+ *     rounds stated fits a 390 × 844 phone;
+ *   · the accepted gallery has no urgency log (its urgency state draws the
+ *     live flows only), so that one gallery reading is left out.
  */
 const OWNER = '00000000-0000-4000-8000-000000004101'
 const PLACE = '00000000-0000-4000-8000-000000004111'
@@ -468,10 +491,7 @@ interface Tokens {
   labelGap: number
   fieldGap: number
   movementGap: number
-  movementFieldGap: number
   countGap: number
-  peerGap: number
-  tierGap: number
   backdropTint: string
   backdropEdge: string
   /** The Balanced backdrop's two paints, resolved exactly as the token recipe declares them. */
@@ -504,10 +524,7 @@ async function readTokens(page: Page): Promise<Tokens> {
       labelGap: length('var(--logging-label-gap)'),
       fieldGap: length('var(--spacing-200)'),
       movementGap: length('var(--logging-movement-gap)'),
-      movementFieldGap: length('var(--logging-movement-field-gap)'),
       countGap: length('var(--logging-count-gap)'),
-      peerGap: length('var(--movement-peer-gap)'),
-      tierGap: length('var(--movement-tier-gap)'),
       backdropTint: root.getPropertyValue('--logging-backdrop-tint').trim(),
       backdropEdge: root.getPropertyValue('--logging-backdrop-edge-tint').trim(),
       balancedColor: colour('color-mix(in srgb, var(--base) var(--logging-backdrop-tint), transparent)'),
@@ -792,6 +809,7 @@ interface Inspected {
 async function inspect(page: Page, tokens: Tokens, moment: string, title: string, options: { route: string; focusX?: boolean; shot?: boolean }) {
   const dialog = page.getByRole('dialog', { name: title, exact: true })
   await expect(dialog).toBeVisible()
+  await settled(dialog)
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal')), `${moment}: native modal`).toBe(true)
   const head = dialog.locator('.clr-logging-overlay__head')
@@ -813,6 +831,19 @@ async function inspect(page: Page, tokens: Tokens, moment: string, title: string
   const reading: Inspected = { moment, route: options.route, viewport, title: frame.titleText, titleLines: frame.titleLines, titleTop: tops.title, xFrameTop: tops.x,
     closeTop: frame.close.top, kind, frame: frame.frame, scrollHeight: frame.maxScroll + frame.scroll.height - 2 * frame.border }
   return { dialog, frame, reading }
+}
+
+/**
+ * A3 TASK-114: Round 7's log is the shared Dialog, which plays its 200 ms
+ * phosphor arrival as it opens. Paint is read once every finite animation in
+ * it has run; read mid-arrival, the frame's flicker, not the title, decided
+ * where the "visible top" was. Endless ones (an urgent rest's breathing) are
+ * not waited for.
+ */
+async function settled(dialog: Locator) {
+  await dialog.evaluate((node) => Promise.all(node.getAnimations({ subtree: true })
+    .filter((animation) => Number.isFinite(Number(animation.effect?.getComputedTiming().endTime ?? Infinity)))
+    .map((animation) => animation.finished.then(() => undefined, () => undefined))))
 }
 
 /** The delivered revision the images were taken from (HEAD plus the working tree it names). */
@@ -867,6 +898,10 @@ async function expandCoaching(page: Page, name: RegExp) {
   const trigger = content(page).getByRole('button', { name }).first()
   await trigger.evaluate((node) => node.scrollIntoView({ block: 'center' }))
   if ((await trigger.getAttribute('aria-expanded')) !== 'true') await trigger.tap()
+  // A3 TASK-114: with motion not reduced the disclosure animates open; a tap
+  // aimed before it has settled landed where the note's button had been, and
+  // no note opened (seen twice in guard runs). Wait for its motion to finish.
+  await settled(content(page))
 }
 
 // ── JOURNEY-018 scrolling ──
@@ -1026,6 +1061,8 @@ async function readGroups(dialog: Locator) {
         inner,
         before: previous === undefined ? null : rect.top - previous.getBoundingClientRect().bottom,
         parentGap: parseFloat(getComputedStyle(group.parentElement!).rowGap) || 0,
+        // A3 TASK-114: Round 7 declares each group's own field rhythm (its row gap); the build's --logging-movement-field-gap does not exist.
+        ownGap: parseFloat(getComputedStyle(group).rowGap) || 0,
       }
     })
   })
@@ -1069,7 +1106,7 @@ function expectGroups(groups: Awaited<ReturnType<typeof readGroups>>, tokens: To
     if (names !== null) expect(group.text.toLowerCase(), `${label}: group ${index + 1} names its own movement`).toContain(name)
     expect(group.fields, `${label}: ${name} keeps its measurements in its group`).toBeGreaterThan(0)
     for (const gap of group.inner) {
-      expect(gap, `${label}: inside ${name} the fields keep their own rhythm`).toBeLessThanOrEqual(tokens.movementFieldGap + EXACT)
+      expect(gap, `${label}: inside ${name} the fields keep their own rhythm`).toBeLessThanOrEqual(group.ownGap + EXACT)
     }
     if (group.before !== null) {
       expect(Math.abs(group.before - (group.parentGap + tokens.movementGap)), `${label}: ${name} sits the movement gap further out (${group.before})`).toBeLessThanOrEqual(EXACT)
@@ -1090,10 +1127,18 @@ function expectLabelRhythm(gaps: Awaited<ReturnType<typeof readLabelGaps>>, toke
   }
 }
 
-/** Card peer grouping (G01 / R111): whole movements further apart than the tiers inside one. */
-async function readCardPeers(list: Locator) {
-  return list.evaluate((ol) => {
-    const items = [...ol.children] as HTMLElement[]
+/**
+ * Card peer grouping (G01 / R111): whole movements further apart than the
+ * tiers inside one. A3 TASK-114: the rows are a list's items or, for Review's
+ * standard card (which Round 7 draws without a list), the group's rows; the
+ * gaps are Round 7's own declared ones — a movement's tiers its identity's row
+ * gap, peers the list's (or group's) row gap — in place of the build's
+ * --movement-tier-gap and --movement-peer-gap, which Round 7 does not have.
+ */
+async function readCardPeers(container: Locator) {
+  return container.evaluate((parent) => {
+    const items = ([...parent.children] as HTMLElement[]).filter((item) => item.querySelector('.clr-movement-identity') !== null)
+    const peerGap = parseFloat(getComputedStyle(parent).rowGap) || 0
     return items.map((item, index) => {
       const identity = item.querySelector('.clr-movement-identity')!
       const nameRow = identity.querySelector(':scope > [data-movement-name-row]')!.getBoundingClientRect()
@@ -1101,9 +1146,13 @@ async function readCardPeers(list: Locator) {
       const previous = items[index - 1]
       const previousEnd = previous === undefined ? null
         : Math.max(...[...previous.children].map((child) => child.getBoundingClientRect().bottom))
+      const separated = previous !== undefined && parseFloat(getComputedStyle(previous).borderBlockEndWidth) > 0
       return {
         name: identity.querySelector('.clr-movement-identity__name')?.textContent ?? '',
         tier: detail.top - nameRow.bottom,
+        tierGap: parseFloat(getComputedStyle(identity).rowGap) || 0,
+        peerGap,
+        separated,
         between: previousEnd === null ? null : identity.getBoundingClientRect().top - previousEnd,
       }
     })
@@ -1307,7 +1356,10 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     const addLong = page.getByRole('button', { name: `Add note — ${LONG_NAME}`, exact: true })
     await tapOpen(addLong)
     log = await at('movement-note-wrapped', NOTE_TITLE)
-    expect(log.frame.titleLines, 'the long note title wraps on a phone').toBeGreaterThan(1)
+    // Owner decision 4 (2026-11-16): the note keeps Round 7's fixed one-line
+    // title, and the long movement name labels its field.
+    expect(log.frame.titleLines, 'the note keeps its fixed one-line title (owner decision 4)').toBe(1)
+    await expect(log.dialog.getByRole('textbox', { name: LONG_NAME, exact: true })).toBeVisible()
     await closeByX(page, addLong)
 
     // ── Circuit round, then circuit movement entry ──
@@ -1328,16 +1380,23 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await page.getByRole('button', { name: 'Next section', exact: true }).tap()
     await expect(page.getByRole('heading', { name: 'Conditioning', exact: true }).first()).toBeVisible()
 
-    // Ladder: its race clock keeps running behind its own open log.
+    // Ladder: its race clock keeps running behind an open log. Owner decision
+    // (2026-11-16): the ladder's Log results opens only after the attempt
+    // ends, so none is offered while it runs; the log open over the running
+    // ladder is its own movement note.
     const ladder = timedCard(page, 'ladder')
     const ladderOpener = timedOpener(ladder)
     await tapOpen(ladder.getByRole('button', { name: 'Start ladder', exact: true }))
     await page.clock.runFor(40_000)
+    await expect(ladderOpener, 'no ladder log while the attempt runs (owner decision 2026-11-16)').toHaveCount(0)
+    await expandCoaching(page, /^Coaching and notes — LADDER/)
+    const ladderNote = ladder.getByRole('button', { name: 'Add note — push up', exact: true })
+    await tapOpen(ladderNote)
+    await at('ladder-running', NOTE_TITLE)
+    // Read with the note open, so only the ten seconds behind it are counted.
     const race = seconds(await clockOf(ladder).textContent())
-    await tapOpen(ladderOpener)
-    await at('ladder-running', LOG_RESULTS)
     await page.clock.runFor(10_000)
-    await closeByX(page, ladderOpener)
+    await closeByX(page, ladderNote)
     const ran = Math.abs(seconds(await clockOf(ladder).textContent()) - race)
     // Ten seconds behind the log (whole-second readout: 10, or 11 across a tick boundary).
     expect(ran >= 10 && ran <= 11, `the ladder clock ran on behind its log (${ran}s)`).toBe(true)
@@ -1407,7 +1466,9 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await press(addLong)
     let log = await inspect(page, tokens, 'movement-note-wrapped', NOTE_TITLE, { route: '/workout' })
     readings.push(log.reading)
-    expect(log.frame.titleLines, 'the title wraps over several lines at 320').toBeGreaterThanOrEqual(3)
+    // Owner decision 4 (2026-11-16): Round 7's fixed one-line title; the long name labels the field.
+    expect(log.frame.titleLines, 'the note keeps its fixed one-line title at 320 (owner decision 4)').toBe(1)
+    await expect(log.dialog.getByRole('textbox', { name: LONG_NAME, exact: true })).toBeVisible()
     expect(log.frame.activeVisible, 'opened by keyboard, the X shows keyboard focus').toBe(true)
     await expectBracketsOn(page, log.dialog.getByRole('button', { name: 'Close log' }), 'wrapped note X')
     await log.dialog.getByRole('textbox', { name: LONG_NAME, exact: true }).fill('Short steps')
@@ -1467,19 +1528,25 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     await visit('/review')
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Synthetic TASK-041 route rhythm workout')
     const tokens = await readTokens(page)
-    const expectPeers = async (context: string, list: string) => {
-      const peers = await readCardPeers(page.getByRole('list', { name: list, exact: true }))
+    // A3 TASK-114: Review's standard card is Round 7's rows without a list (TASK-112's C04 note); its rows are read in their group.
+    const standardRows = (name: string) => content(page).getByRole('button', { name: `Swap ${name}`, exact: true })
+      .locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " clr-movement-group ")][1]')
+    const expectPeers = async (context: string, list: string, container: Locator = page.getByRole('list', { name: list, exact: true })) => {
+      const peers = await readCardPeers(container)
       expect(peers.length, `${context} ${list}`).toBeGreaterThanOrEqual(2)
       for (const peer of peers) {
-        expect(Math.abs(peer.tier - tokens.tierGap), `${context} ${list}: ${peer.name}'s own tiers stay together`).toBeLessThanOrEqual(EXACT)
+        expect(peer.tierGap, `${context} ${list}: Round 7 declares a tier gap`).toBeGreaterThan(0)
+        expect(Math.abs(peer.tier - peer.tierGap), `${context} ${list}: ${peer.name}'s own tiers stay together`).toBeLessThanOrEqual(EXACT)
         if (peer.between !== null) {
-          expect(peer.between, `${context} ${list}: ${peer.name} starts a whole peer gap either side of the separator`).toBeGreaterThanOrEqual(2 * tokens.peerGap)
+          // A whole peer gap either side of a separator; Round 7's Review standard rows have none, so one gap there.
+          expect(peer.between, `${context} ${list}: ${peer.name} starts a whole peer gap either side of the separator`).toBeGreaterThanOrEqual((peer.separated ? 2 : 1) * peer.peerGap)
           expect(peer.between, `${context} ${list}: complete movements further apart than tiers`).toBeGreaterThan(peer.tier)
         }
       }
       report[`${context} ${list}`] = peers
     }
-    for (const list of ['Movements in this block', 'superset, 2 rounds', 'circuit, 2 rounds']) await expectPeers('review', list)
+    await expectPeers('review', 'Movements in this block', standardRows('back squat'))
+    for (const list of ['superset, 2 rounds', 'circuit, 2 rounds']) await expectPeers('review', list)
     await expect(page.getByText(HELPER_WORDS)).toHaveCount(0)
     await attachShot(page, 'review-grouped-cards')
 
@@ -1624,18 +1691,23 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     const tokens = await readTokens(page)
     const report: Record<string, unknown> = {}
 
-    // The anchor's set log is long on a 320 × 568 phone: touch reaches Log set 1.
+    // A3 TASK-114: Round 7's anchor set log fits a 320 × 568 phone, so it is a
+    // short form here — content-height, Log set 1 inside the frame without
+    // scrolling; the superset round and the twelve-round ladder are the long forms.
     const squatRest = movement(page, 'back squat').getByRole('button', { name: 'Rest', exact: true })
     await tapOpen(squatRest)
     let log = await inspect(page, tokens, 'anchor-320', 'Log set 1', { route: '/workout' })
-    expect(log.reading.kind).toBe('long')
-    report.anchor = await expectContainedScroll(page, tokens, 'touch', log.dialog.getByRole('button', { name: 'Log set 1', exact: true }), 'anchor 320 touch')
+    expect(log.reading.kind, 'Round 7’s anchor log fits a 320 × 568 phone').toBe('short')
+    const logSet = (await log.dialog.getByRole('button', { name: 'Log set 1', exact: true }).boundingBox())!
+    expect(logSet.y, 'Log set 1 inside the frame').toBeGreaterThanOrEqual(log.frame.scroll.top - EXACT)
+    expect(logSet.y + logSet.height, 'Log set 1 inside the frame, above its end gap').toBeLessThanOrEqual(log.frame.scroll.bottom - log.frame.bodyPaddingBottom + 1)
+    report.anchor = log.reading
     await closeByX(page, squatRest)
     // Reopen by touch: focus on the X without a visible ring, no container outline.
     await tapOpen(squatRest)
     let frame = await readFrame(page)
     expect({ active: frame.active, visible: frame.activeVisible }).toEqual({ active: 'Close log', visible: false })
-    expectFrame(frame, tokens, 'long', 'anchor reopened')
+    expectFrame(frame, tokens, 'short', 'anchor reopened')
     await closeByX(page, squatRest)
 
     // The superset round: the wheel reaches Log round 1.
@@ -1777,8 +1849,12 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
     // read here, as on the route. Round 7's ladder-long state is the route's
     // own twelve-round ladder (TimedWorkoutFlow); the build's separate provider
     // specimen of it has no Round 7 counterpart, so both build readings are
-    // this one state. The urgency demonstration is read with the build's words.
-    const states: readonly { id: string; open: string; before?: readonly string[]; ready?: string; title: string; focusX?: boolean; long?: boolean }[] = [
+    // this one state. A3 TASK-114: Round 7's twelve-round log with no rounds
+    // stated fits a 390 × 844 phone, so ladder-long is read as the build's long
+    // specimen, Incomplete through round 7; and the accepted gallery has no
+    // urgency log (its urgency state draws the live flows only), so the build's
+    // urgency reading is left out.
+    const states: readonly { id: string; open: string; before?: readonly string[]; ready?: string; title: string; focusX?: boolean; long?: boolean; through?: number }[] = [
       { id: 'anchor', open: 'Rest', title: 'Log set 1' },
       { id: 'other-lift', open: 'Rest', title: 'Log set 1' },
       { id: 'timed-movement', open: 'Rest', title: 'Log set 1' },
@@ -1795,8 +1871,7 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
       { id: 'amrap', ready: 'Open AMRAP results', open: LOG_RESULTS, title: LOG_RESULTS },
       { id: 'for_time', ready: 'Open For Time results', open: LOG_RESULTS, title: LOG_RESULTS },
       { id: 'ladder', ready: 'Open Ladder results', open: LOG_RESULTS, title: LOG_RESULTS },
-      { id: 'ladder-long', ready: 'Open Long ladder results', open: LOG_RESULTS, title: LOG_RESULTS, long: true },
-      { id: 'urgency', open: 'Open log over the warning', title: 'Log set' },
+      { id: 'ladder-long', ready: 'Open Long ladder results', open: LOG_RESULTS, title: LOG_RESULTS, long: true, through: 7 },
     ]
     let tokens: Tokens | null = null
     const readings: Inspected[] = []
@@ -1816,9 +1891,14 @@ test.describe('TASK-041 adopted dialog and form rhythm in the actual route consu
       await opener.evaluate((node) => node.scrollIntoView({ block: 'center' }))
       await opener.click()
       const moment = `gallery-${state.id}`
-      const log = await inspect(page, tokens, moment, state.title, { route: `/gallery/refinements?state=${state.id}`, focusX: state.focusX })
+      let log = await inspect(page, tokens, moment, state.title, { route: `/gallery/refinements?state=${state.id}`, focusX: state.focusX })
       readings.push(log.reading)
-      // R104: no visible Close word or text close button anywhere in the log, the urgency demonstration included.
+      if (state.through !== undefined) {
+        await log.dialog.getByRole('button', { name: new RegExp(`^Round ${state.through}:`) }).click()
+        log = await inspect(page, tokens, `${moment}-through-${state.through}`, state.title, { route: `/gallery/refinements?state=${state.id}`, focusX: false })
+        readings.push(log.reading)
+      }
+      // R104: no visible Close word or text close button anywhere in the log.
       await expect(log.dialog.getByText(/^\s*close( log)?\s*$/i)).toHaveCount(0)
       await expect(log.dialog.getByRole('button', { name: /^close\b/i })).toHaveCount(1)
       if (state.long === true) {
