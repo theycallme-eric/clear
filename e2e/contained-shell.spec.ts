@@ -396,7 +396,9 @@ test('reduced motion holds the atmosphere still without removing its depth', asy
   }
 })
 
-for (const skin of ['clear', 'vapour', 'signal', 'mono'] as const) {
+// TASK-115 retired the signal and mono cases of this check: superseded by Round 7
+// (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name them.
+for (const skin of ['clear', 'vapour'] as const) {
   test(`the ${skin} skin keeps shipped fonts, ground and emission`, async ({
     page,
     visit,
@@ -856,35 +858,8 @@ async function backgroundAndReturn(page: Page) {
 }
 
 test.describe('REQ-001 phone shell — entry screens', () => {
-  test('Welcome and OTP keep full-width rules, fixed chrome and coinciding action frames', async ({
-    page,
-    visit,
-  }) => {
-    await page.setViewportSize(PHONE)
-    const frames: string[] = []
-    const rules: string[] = []
-    const chrome: string[] = []
-
-    for (const [where, path] of [['Welcome', '/welcome'], ['OTP', '/login'], ['OTP create', '/login?mode=create']] as const) {
-      await visit(path)
-      for (const viewport of PHONE_WIDTHS) {
-        await page.setViewportSize(viewport)
-        const { failures, measured } = await actionMismatches(page, `${where} ${viewport.width}px`)
-        expect(measured, `${where} has a full-width action`).toBeGreaterThan(0)
-        frames.push(...failures)
-      }
-      await page.setViewportSize(PHONE)
-      const measuredRules = await ruleMismatches(page, where)
-      // U13: Welcome's one entry is inside its centred card, not pinned.
-      expect(measuredRules.counted.foot, `${where} pins its actions`).toBe(where === 'Welcome' ? 0 : 1)
-      rules.push(...measuredRules.failures)
-      chrome.push(...(await chromeMismatches(page, where)))
-    }
-
-    expect.soft(frames, 'U04 — surface, frame, label and hit area coincide').toEqual([])
-    expect.soft(rules, 'U01 — page and pinned rules span the viewport').toEqual([])
-    expect.soft(chrome, 'U02 — fixed chrome, one scroll owner').toEqual([])
-  })
+  // TASK-115 retired the case 'Welcome and OTP keep full-width rules, fixed chrome and coinciding action frames' (old line 859): superseded by Round 7
+  // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 
   test('an open keyboard leaves the focused field and the pinned action reachable', async ({
     page,

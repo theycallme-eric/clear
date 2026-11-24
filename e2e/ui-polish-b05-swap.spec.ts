@@ -102,7 +102,6 @@ function groupedAcceptance(firstSupersetId = 'kb-swing'): SessionAcceptance {
   })
 }
 
-const GROUPED_ACCEPTANCE = groupedAcceptance()
 const GROUPED_INVOCATIONS = [
   { list: 'superset, 3 rounds', slotName: 'kb swing', section: 'accessory', equipment: 'KETTLEBELL',
     rest: 'Rest 90s between rounds' },
@@ -451,26 +450,6 @@ function expectRoomyRows(state: Composition) {
   expect(state.scroller!.bottom).toBeLessThanOrEqual(state.keep!.top + TOLERANCE)
   expect(state.scroller!.left).toBeCloseTo(state.list!.left, 0)
   expect(state.scroller!.right).toBeCloseTo(state.list!.right, 0)
-}
-
-/**
- * The real grouped row readings, excluding only the movement that a pick replaces.
- *
- * TASK-002: the structure badge is read from the group's card header (AC-C07-01,
- * the static header Review shares with the live cards), and each member's
- * compact equipment from beside its name (AC-C03-01), not from a separate line.
- */
-async function groupReadings(list: Locator) {
-  return list.evaluate((ol) => ({
-    badge: ol.closest('[data-workout-card]')
-      ?.querySelector(':scope > [data-movement-group-header] .clr-movement-group-header__badge')?.textContent ?? null,
-    rest: ol.parentElement!.lastElementChild!.textContent,
-    members: [...ol.children].map((item) => ({
-      ordinal: item.querySelector('[data-movement-ordinal]')?.textContent ?? null,
-      prescription: item.querySelector('[data-movement-detail]')?.textContent ?? null,
-      equipment: item.querySelector('[data-movement-context]')?.textContent ?? null,
-    })),
-  }))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -831,111 +810,8 @@ test.describe('B05 REQ-010 roomy swap selection', () => {
     app.assertNoWrites()
   })
 
-  for (const { name, viewport } of [
-    { name: 'phone', viewport: PHONE },
-    { name: 'narrow', viewport: NARROW },
-  ]) {
-    test(`Superset and Circuit selections preserve their owning grouped Review at ${name}`, async ({ page, visit, checkA11y }, testInfo) => {
-      await page.setViewportSize(viewport)
-      const app = await syntheticReview(page, { kind: 'ready', names: LONG_LIST }, 'vapour', {
-        acceptance: GROUPED_ACCEPTANCE, candidateSets: groupedCandidateSets(LONG_LIST),
-      })
-      await openReview(page, visit, GROUPED_ACCEPTANCE)
-      const chosenIndex = LONG_LIST.length - 3
-      const chosen = LONG_LIST[chosenIndex]!
-      expect(LONG_NAMES).toContain(chosen)
-
-      for (const invocation of GROUPED_INVOCATIONS) {
-        const group = page.getByRole('list', { name: invocation.list, exact: true })
-        const owner = group.locator('xpath=..')
-        const first = group.getByRole('listitem').first()
-        const other = page.getByRole('list', {
-          name: GROUPED_INVOCATIONS.find((entry) => entry.list !== invocation.list)!.list, exact: true,
-        })
-        const original = first.getByRole('button', { name: `Swap ${invocation.slotName}`, exact: true })
-        await expect(original).toBeEnabled()
-        const beforeText = await owner.innerText()
-        const beforeReadings = await groupReadings(group)
-        // The readings are real, so their equality after a pick and Undo is not
-        // vacuous: the header's badge names this group (TASK-002 AC-C07-01) and
-        // every member reads its ordinal, prescription and equipment (AC-C03-01).
-        expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · '))
-        expect(beforeReadings.members.length).toBeGreaterThan(1)
-        for (const member of beforeReadings.members) {
-          expect(member.ordinal).toMatch(/^\d{2}$/)
-          expect(member.prescription).toBeTruthy()
-          expect(member.equipment).toBeTruthy()
-        }
-        const otherText = await other.innerText()
-        const siblingLabels = await group.getByRole('button', { name: /^Swap / })
-          .evaluateAll((buttons) => buttons.slice(1).map((button) => button.getAttribute('aria-label')))
-        await expect(owner.getByText(invocation.rest, { exact: true })).toHaveCount(1)
-
-        const { dialog } = await openSwap(page, invocation.slotName)
-        await expect(dialog.getByRole('list', { name: 'Alternatives' }).getByRole('button')).toHaveCount(LONG_LIST.length)
-        const state = await composition(dialog)
-        expectRoomyFrame(state)
-        expectRoomyRows(state)
-        expect(state.region!.scrollHeight).toBeGreaterThan(state.region!.clientHeight)
-        await compareWithReference(page, testInfo, `swap-grouped-${invocation.section}-${name}`, state, {
-          consumer: `Review ${invocation.list} → SwapDialog`, state: 'grouped long-list selection',
-          skin: 'vapour', criteria: ['AC-030', 'AC-049', 'AC-065'],
-        })
-        await checkA11y()
-
-        const choice = dialog.getByRole('list', { name: 'Alternatives' })
-          .getByRole('button', { name: new RegExp(`^${chosen}\\s*${invocation.equipment}$`) })
-        await choice.scrollIntoViewIfNeeded()
-        const visible = await composition(dialog)
-        const choiceBox = (await choice.boundingBox())!
-        expect(choiceBox.y).toBeGreaterThanOrEqual(visible.scroller!.top - TOLERANCE)
-        expect(choiceBox.y + choiceBox.height).toBeLessThanOrEqual(visible.scroller!.bottom + TOLERANCE)
-        expect(visible.keep!.bottom).toBeLessThanOrEqual(viewport.height + TOLERANCE)
-        await choice.click()
-        await expect(dialog).toBeHidden()
-        await expect(page.locator('dialog[open]')).toHaveCount(0)
-        await expect(page).toHaveURL(/\/review$/)
-        await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(GROUPED_ACCEPTANCE.workout.title)
-
-        const replacementName = `synthetic ${invocation.section} ${chosenIndex + 1}`
-        const replacement = first.getByRole('button', { name: `Swap ${replacementName}`, exact: true })
-        const undo = first.getByRole('button', { name: `Undo swap — back to ${invocation.slotName}`, exact: true })
-        await expect(replacement).toBeEnabled()
-        await expect(replacement).toBeFocused()
-        await expect(undo).toBeEnabled()
-        await expect(undo).toHaveText('Undo swap')
-        await expect(original).toHaveCount(0)
-        expect(await groupReadings(group)).toEqual(beforeReadings)
-        expect(await group.getByRole('button', { name: /^Swap / })
-          .evaluateAll((buttons) => buttons.slice(1).map((button) => button.getAttribute('aria-label')))).toEqual(siblingLabels)
-        expect(await other.innerText()).toBe(otherText)
-        const toast = page.locator('[data-clear-toast-host]')
-        await expect(toast.getByRole('status')).toHaveText(`Swapped in ${chosen}.`)
-        await toast.getByRole('button', { name: 'Dismiss', exact: true }).click()
-        await expect(toast).toHaveCount(0)
-        await first.scrollIntoViewIfNeeded()
-        await capture(page, testInfo, `swap-grouped-${invocation.section}-${name}-chosen`, {
-          consumer: `Review ${invocation.list}`, state: 'intended member replaced, complete Undo available',
-          criteria: ['AC-031', 'AC-049'], readings: await groupReadings(group),
-        })
-
-        await undo.click()
-        await expect(original).toBeEnabled()
-        await expect(original).toBeFocused()
-        await expect(undo).toHaveCount(0)
-        await expect(replacement).toHaveCount(0)
-        expect(await owner.innerText()).toBe(beforeText)
-        expect(await groupReadings(group)).toEqual(beforeReadings)
-        expect(await other.innerText()).toBe(otherText)
-        await checkA11y()
-        await capture(page, testInfo, `swap-grouped-${invocation.section}-${name}-restored`, {
-          consumer: `Review ${invocation.list}`, state: 'Undo restored original member and all group readings',
-          criteria: ['AC-031', 'AC-049'], readings: beforeReadings,
-        })
-      }
-      app.assertNoWrites()
-    })
-  }
+  // TASK-115 retired the case `Superset and Circuit selections preserve their owning grouped Review at ${name}` (old line 838): superseded by Round 7
+  // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 
   test('390x320 long current title and long choices keep the full return reachable', async ({ page, visit }, testInfo) => {
     await page.setViewportSize(LANDSCAPE_SHORT)

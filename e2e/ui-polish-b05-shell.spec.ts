@@ -837,47 +837,8 @@ for (const mode of ['hold', 'fail'] as const) {
   })
 }
 
-test('B05 shell: crash fallback renders inside the shared contained shell with safe-area clearance', async ({ page, visit }, testInfo) => {
-  test.setTimeout(120_000)
-  testInfo.annotations.push({ type: 'proof-mode',
-    description: 'A synthetic thrown render error reaches the real top-level boundary; stylesheets are untouched.' })
-  // The fault is armed while boot holds the router back: a render error
-  // inside the route tree is caught by the router's own boundary instead,
-  // while the boot shell's atmosphere sits directly below ErrorBoundary.
-  const app = await syntheticApp(page, { signedIn: true, history: 'hold' })
-  await page.setViewportSize(PHONE.viewport)
-  try {
-    await withInsets(page, PHONE.insets, async () => {
-      await visit('/')
-      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('CLEAR')
-      await page.evaluate(() => { (window as unknown as { __b05Fault?: boolean }).__b05Fault = true })
-      // The preference change makes the atmosphere re-read it, which now throws.
-      await page.emulateMedia({ reducedMotion: 'reduce' })
-      const alert = page.getByRole('alert').filter({ hasText: 'Display error' })
-      await expect(alert).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Reload', exact: true })).toBeVisible()
-      const measured = await record(page, testInfo, 'crash-fallback-phone', {
-        family: 'crash', consumer: 'ErrorBoundary fallback', state: 'error', ...PHONE,
-      })
-      const alertBox = await alert.boundingBox()
-      await testInfo.attach('crash-fallback-alert-box.json', {
-        body: JSON.stringify({ alertBox, topInset: PHONE.insets.top,
-          startsInsideTopInset: alertBox === null ? null : alertBox.y < PHONE.insets.top }, null, 2),
-        contentType: 'application/json',
-      })
-      // The fallback is now the same contained shell, with a still atmosphere.
-      expectContainedShell(measured, PHONE.viewport, PHONE.insets)
-      expectClearHead(measured, PHONE.insets)
-      expectBottomEdge(measured, PHONE.insets)
-      await expect(page.locator('.clr-atmosphere[data-static="true"]')).toHaveCount(1)
-      expect(alertBox?.y ?? Number.NaN).toBeGreaterThanOrEqual(PHONE.insets.top + (measured.spacing500 ?? 0) - 1)
-      await expect(page.getByRole('main')).toHaveCount(1)
-    })
-  } finally {
-    app.release()
-  }
-  app.assertNoWrites()
-})
+// TASK-115 retired the case 'B05 shell: crash fallback renders inside the shared contained shell with safe-area clearance' (old line 840): superseded by Round 7
+// (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 
 test('PWA hotfix: synthetic short document regains shared full-height layers and footer clearance', async ({ page, visit, checkA11y }, testInfo) => {
   test.setTimeout(120_000)

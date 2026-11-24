@@ -499,7 +499,9 @@ test.describe('B05 REQ-007 header Back housing', () => {
   for (const entry of CONSUMERS) {
     const slug = entry.consumer.toLowerCase().replace(/\s+/g, '-')
 
-    test(`${entry.consumer}: framed icon-only Back, reached in-app, returns to ${entry.withHistory.lands}`, async ({ page, visit }, testInfo) => {
+    // TASK-115 retired this check's Locations case: superseded by Round 7 (D2, Eric, chat, 2026-11-24:
+    // "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
+    if (entry.consumer !== 'Locations') test(`${entry.consumer}: framed icon-only Back, reached in-app, returns to ${entry.withHistory.lands}`, async ({ page, visit }, testInfo) => {
       await page.setViewportSize(PHONE)
       const app = await syntheticApp(page)
       const home = await establishedHousing(page, visit, testInfo)
@@ -581,23 +583,6 @@ test.describe('B05 REQ-007 header Back housing', () => {
     app.assertNoWrites()
   })
 
-  test("the logging sheet's collapse control keeps its own treatment", async ({ page, visit }, testInfo) => {
-    await page.setViewportSize(PHONE)
-    const app = await syntheticApp(page, { activeWorkout: true })
-    await visit('/workout')
-    const content = page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-    await content.getByRole('button', { name: /^(log set|rest)/i }).first().click()
-    const sheet = page.locator('.clr-set-sheet')
-    await expect(sheet).toBeVisible()
-    const collapse = sheet.getByRole('button', { name: 'Minimize', exact: true })
-    await expect(collapse).toHaveAttribute('aria-expanded', 'true')
-    await expect(collapse).toHaveText('')
-    // Not a Back action: no arrow-left glyph, and its own name and role remain.
-    expect(await collapse.locator('svg').count()).toBe(1)
-    await capture(page, testInfo, 'workout-sheet-collapse', {
-      consumer: 'SetLoggingSheet collapse (unchanged)', state: 'sheet open' })
-    await collapse.click()
-    await expect(sheet).toBeHidden()
-    app.assertNoWrites()
-  })
+  // TASK-115 retired the case "the logging sheet's collapse control keeps its own treatment" (old line 584): superseded by Round 7
+  // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 })
