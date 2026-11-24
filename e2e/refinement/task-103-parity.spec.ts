@@ -121,6 +121,15 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
 test.describe.configure({ mode: 'default' })
 test.use({ timezoneId: 'UTC' })
 
+/**
+ * The browser's clock for the screens case (timing only; TASK-115 repair 3,
+ * owner decision D4 of 2026-11-24). /history derives its leading run of rest
+ * days up to yesterday from today's date, so on the real clock its receipts
+ * changed with the run date (at 00:00 UTC). Held from this fixed instant, the
+ * day the receipts were last taken, the range reads the same on every run.
+ */
+const SCREENS_TODAY = Date.parse('2026-11-24T12:00:00.000Z')
+
 const VIEWPORTS = [
   { name: 'phone-320', viewport: { width: 320, height: 568 } },
   { name: 'phone-390', viewport: { width: 390, height: 844 } },
@@ -698,6 +707,7 @@ for (const { name, viewport } of VIEWPORTS) {
     test.setTimeout(180_000)
     await page.setViewportSize(viewport)
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
+    await page.clock.install({ time: SCREENS_TODAY })
     await visit('/gallery/refinements?state=screens')
     const scene = page.locator('[data-refinement-state="screens"]')
     // The History card: the nearest ancestor of its rows that carries its heading.
