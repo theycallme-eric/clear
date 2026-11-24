@@ -1,0 +1,168 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "movement-note",
+  "label": "Movement note",
+  "width": 390,
+  "height": 844,
+  "route": "/workout",
+  "drive": "Coaching and notes → Add note — one arm row — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-390-gallery.png",
+      "sha256": "d187899103d0b218e388d8467012c7a2c8187105601952180b1956807eceecda"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-390-route.png",
+      "sha256": "acbdd38bb5e76804e1df3ca337fe9b9ad74f23147f380d1a227cf0251faa0755"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "MOVEMENT NOTE",
+      "ONE ARM ROW",
+      "SAVE NOTE"
+    ],
+    "route": [
+      "MOVEMENT NOTE",
+      "ONE ARM ROW",
+      "SAVE NOTE"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 299.75,
+        "left": 12,
+        "right": 12,
+        "width": 366,
+        "height": 244.5
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 362,
+        "height": 240.5,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 334,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 152.59,
+        "width": 197.41,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Movement note"
+      },
+      "x": {
+        "top": 16,
+        "left": 310,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [],
+      "groups": [],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 299.75,
+        "left": 12,
+        "right": 12,
+        "width": 366,
+        "height": 244.5
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 362,
+        "height": 240.5,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 334,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 152.59,
+        "width": 197.41,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Movement note"
+      },
+      "x": {
+        "top": 16,
+        "left": 310,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [],
+      "groups": [],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

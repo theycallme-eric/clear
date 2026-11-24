@@ -1,0 +1,200 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "workout-feedback",
+  "label": "Workout feedback",
+  "width": 320,
+  "height": 568,
+  "route": "/summary",
+  "drive": "Log workout feedback — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-gallery.png",
+      "sha256": "4c07c5c68ddfdf04022a754f5f1af019643a82a28f3eb87703f92bab338a7f11"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-route.png",
+      "sha256": "31d5cb33fa4564727b4c67f4996ca48120d09d48847e761ea72e4e3dcd17e013"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "WORKOUT FEEDBACK",
+      "HOW DO YOU FEEL?",
+      "1",
+      "1, SPENT",
+      "2",
+      "2, WORN",
+      "3",
+      "3, FLAT",
+      "4",
+      "4, READY",
+      "5",
+      "5, PEAK",
+      "NOTES · OPTIONAL",
+      "SAVE AND CLOSE"
+    ],
+    "route": [
+      "WORKOUT FEEDBACK",
+      "HOW DO YOU FEEL?",
+      "1",
+      "1, SPENT",
+      "2",
+      "2, WORN",
+      "3",
+      "3, FLAT",
+      "4",
+      "4, READY",
+      "5",
+      "5, PEAK",
+      "NOTES · OPTIONAL",
+      "SAVE AND CLOSE"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 120.75,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 326.5
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 322.5,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 52
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 68,
+        "width": 212,
+        "height": 52,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Workout feedback"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "How do you feel?",
+          "gap": 8
+        }
+      ],
+      "groups": [],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 120.75,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 326.5
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 322.5,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 52
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 68,
+        "width": 212,
+        "height": 52,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Workout feedback"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "How do you feel?",
+          "gap": 8
+        }
+      ],
+      "groups": [],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

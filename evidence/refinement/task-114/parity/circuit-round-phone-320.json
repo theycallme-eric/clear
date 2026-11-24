@@ -1,0 +1,180 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "circuit-round",
+  "label": "Circuit round / take back",
+  "width": 320,
+  "height": 568,
+  "route": "/workout",
+  "drive": "Start round 1 → 32.6 s → Finish round 1 — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/circuit-round-phone-320-gallery.png",
+      "sha256": "26145f18263cca17a92250220f965c3cce6203888613332abdc500c53a252536"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/circuit-round-phone-320-route.png",
+      "sha256": "d87cc3c3f8e73047529522ccc65567b8867296da7c8f93afec9878f5c0216869"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "ROUND 1 RECORDED",
+      "00:32 round time recorded",
+      "0",
+      "0",
+      ":",
+      "4",
+      "5",
+      "45 seconds left",
+      "TAKE BACK THIS ROUND"
+    ],
+    "route": [
+      "ROUND 1 RECORDED",
+      "00:32 round time recorded",
+      "0",
+      "0",
+      ":",
+      "4",
+      "5",
+      "45 seconds left",
+      "TAKE BACK THIS ROUND"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 167,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 234
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 230,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 52
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 68,
+        "width": 212,
+        "height": 52,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Round 1 recorded"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [],
+      "groups": [],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 167,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 234
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 230,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 52
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 68,
+        "width": 212,
+        "height": 52,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Round 1 recorded"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [],
+      "groups": [],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

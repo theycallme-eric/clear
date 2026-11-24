@@ -1,0 +1,212 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "amrap",
+  "label": "AMRAP results",
+  "width": 320,
+  "height": 568,
+  "route": "/workout",
+  "drive": "Start → past the cap (the log opens itself) — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/amrap-phone-320-gallery.png",
+      "sha256": "644ae986971ceadc22d89a441c33a342767159a672ae1d1ab6df9d1813537fe5"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/amrap-phone-320-route.png",
+      "sha256": "18fa783e27f9f278cfd8666e4ac4a25f327a789bb9530ad2d9f3da0eae1cdc9e"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "LOG RESULTS",
+      "ROUNDS COMPLETED",
+      "—",
+      "REPS INTO THE NEXT ROUND",
+      "—",
+      "KB SWING",
+      "WEIGHT USED",
+      "LB",
+      "EFFORT · OPTIONAL",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "NOTES · OPTIONAL",
+      "SAVE LOG"
+    ],
+    "route": [
+      "LOG RESULTS",
+      "ROUNDS COMPLETED",
+      "—",
+      "REPS INTO THE NEXT ROUND",
+      "—",
+      "KB SWING",
+      "WEIGHT USED",
+      "LB",
+      "EFFORT · OPTIONAL",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "NOTES · OPTIONAL",
+      "SAVE LOG"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 20,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 528
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 524,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": true
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 124.81,
+        "width": 155.19,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log results"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Effort · optional",
+          "gap": 8
+        }
+      ],
+      "groups": [
+        {
+          "label": "kb swing",
+          "before": null,
+          "ownGap": "16px"
+        }
+      ],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 20,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 528
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 524,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": true
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 124.81,
+        "width": 155.19,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log results"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Effort · optional",
+          "gap": 8
+        }
+      ],
+      "groups": [
+        {
+          "label": "kb swing",
+          "before": null,
+          "ownGap": "16px"
+        }
+      ],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

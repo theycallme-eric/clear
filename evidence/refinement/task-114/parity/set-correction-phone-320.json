@@ -1,0 +1,202 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "set-correction",
+  "label": "Saved-set correction",
+  "width": 320,
+  "height": 568,
+  "route": "/workout",
+  "drive": "Edit set 1 — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/set-correction-phone-320-gallery.png",
+      "sha256": "ce784c7e4a2702e3bef91a9daf81ba017ad4d338244a384cb24ce14a794da88d"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/set-correction-phone-320-route.png",
+      "sha256": "2a70fcbff40f7262eabbc8f7eb20b7497c554156e39ac2f6108e136d0e0c1c26"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "EDIT SET 1",
+      "BENCH PRESS · 3 × 5 REPS · BARBELL",
+      "WEIGHT",
+      "UNIT",
+      "kg",
+      "lb",
+      "REPS",
+      "EFFORT",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "CLEAR",
+      "CLEAR SET",
+      "CANCEL",
+      "SAVE CORRECTION"
+    ],
+    "route": [
+      "EDIT SET 1",
+      "BENCH PRESS · 3 × 5 REPS · BARBELL",
+      "WEIGHT",
+      "UNIT",
+      "kg",
+      "lb",
+      "REPS",
+      "EFFORT",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "CLEAR",
+      "CLEAR SET",
+      "CANCEL",
+      "SAVE CORRECTION"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 76,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 416
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 412,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 163.03,
+        "width": 116.97,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Edit set 1"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Effort",
+          "gap": 8
+        }
+      ],
+      "groups": [],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 76,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 416
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 412,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 163.03,
+        "width": 116.97,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Edit set 1"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Effort",
+          "gap": 8
+        }
+      ],
+      "groups": [],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

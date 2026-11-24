@@ -1,0 +1,238 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "for_time",
+  "label": "For Time results",
+  "width": 320,
+  "height": 568,
+  "route": "/workout",
+  "drive": "Start → past the cap (the log opens itself) — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/for_time-phone-320-gallery.png",
+      "sha256": "fad39467d9a6fb6b7cf0c906708adae17198dc8041836ac5d0fd366b9c5eeacd"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/for_time-phone-320-route.png",
+      "sha256": "e586adf680c8b2620509c5317a1b4fc87ebba6b6229973b03859ac89a8f9fbb3"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "LOG RESULTS",
+      "WORK COMPLETED",
+      "COMPLETE",
+      "INCOMPLETE",
+      "WALL BALL",
+      "COMPLETED",
+      "REPS",
+      "WEIGHT USED",
+      "LB",
+      "BURPEE",
+      "COMPLETED",
+      "REPS",
+      "EFFORT · OPTIONAL",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "NOTES · OPTIONAL",
+      "SAVE LOG"
+    ],
+    "route": [
+      "LOG RESULTS",
+      "WORK COMPLETED",
+      "COMPLETE",
+      "INCOMPLETE",
+      "WALL BALL",
+      "COMPLETED",
+      "REPS",
+      "WEIGHT USED",
+      "LB",
+      "BURPEE",
+      "COMPLETED",
+      "REPS",
+      "EFFORT · OPTIONAL",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "NOTES · OPTIONAL",
+      "SAVE LOG"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 20,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 528
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 524,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": true
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 124.81,
+        "width": 155.19,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log results"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Work completed",
+          "gap": 8
+        },
+        {
+          "label": "Effort · optional",
+          "gap": 8
+        }
+      ],
+      "groups": [
+        {
+          "label": "wall ball",
+          "before": null,
+          "ownGap": "16px"
+        },
+        {
+          "label": "burpee",
+          "before": 36,
+          "ownGap": "16px"
+        }
+      ],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 20,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 528
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 524,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": true
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 124.81,
+        "width": 155.19,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log results"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Work completed",
+          "gap": 8
+        },
+        {
+          "label": "Effort · optional",
+          "gap": 8
+        }
+      ],
+      "groups": [
+        {
+          "label": "wall ball",
+          "before": null,
+          "ownGap": "16px"
+        },
+        {
+          "label": "burpee",
+          "before": 36,
+          "ownGap": "16px"
+        }
+      ],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

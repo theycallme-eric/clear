@@ -1,0 +1,214 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "other-lift",
+  "label": "Other lift",
+  "width": 390,
+  "height": 844,
+  "route": "/workout",
+  "drive": "Rest — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/other-lift-phone-390-gallery.png",
+      "sha256": "bf5400849bf38c5124237d7bdf5f5c3b95c3073fed03455c44696d2d525df2c8"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/other-lift-phone-390-route.png",
+      "sha256": "937536ea9bc159e633341a28d42ba74fd7509b9f8e5e14a1d27ed17128841a55"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "LOG SET 1",
+      "BICEP CURL · 3 × 10 REPS · DUMBBELL",
+      "REST AFTER BICEP CURL",
+      "0",
+      "1",
+      ":",
+      "0",
+      "0",
+      "1 minute 0 seconds left",
+      "ADD 30S",
+      "SKIP REST",
+      "WEIGHT",
+      "UNIT",
+      "kg",
+      "lb",
+      "REPS",
+      "EFFORT",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "LOG SET 1"
+    ],
+    "route": [
+      "LOG SET 1",
+      "BICEP CURL · 3 × 10 REPS · DUMBBELL",
+      "REST AFTER BICEP CURL",
+      "0",
+      "1",
+      ":",
+      "0",
+      "0",
+      "1 minute 0 seconds left",
+      "ADD 30S",
+      "SKIP REST",
+      "WEIGHT",
+      "UNIT",
+      "kg",
+      "lb",
+      "REPS",
+      "EFFORT",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "LOG SET 1"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 203.52,
+        "left": 12,
+        "right": 12,
+        "width": 366,
+        "height": 436.95
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 362,
+        "height": 432.95,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 334,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 239.08,
+        "width": 110.92,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log set 1"
+      },
+      "x": {
+        "top": 16,
+        "left": 310,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Effort",
+          "gap": 8
+        }
+      ],
+      "groups": [],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 203.52,
+        "left": 12,
+        "right": 12,
+        "width": 366,
+        "height": 436.95
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 362,
+        "height": 432.95,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 334,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 239.08,
+        "width": 110.92,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log set 1"
+      },
+      "x": {
+        "top": 16,
+        "left": 310,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [
+        {
+          "label": "Effort",
+          "gap": 8
+        }
+      ],
+      "groups": [],
+      "ladder": null
+    }
+  },
+  "differences": []
+}
