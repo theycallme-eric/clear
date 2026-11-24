@@ -934,8 +934,11 @@ describe('Home’s one next-workout entry (REQ-007, U20)', () => {
 
     await openGenerate(user)
     expect(minutes()).toHaveValue(20)
-    // Round 7 offers Recovery among the choices Change focus opens.
-    await user.click(screen.getByRole('button', { name: 'Change focus' }))
+    // TASK-024: Recovery is reached inside the Focus choices, which open closed.
+    // (A3 TASK-119, round-07 finding S4: Round 7 names the Focus control Change focus.)
+    const focus = screen.getByRole('button', { name: 'Change focus' })
+    expect(focus).toHaveAttribute('aria-expanded', 'false')
+    await user.click(focus)
     expect(screen.getByRole('button', { name: 'Recovery session' })).toHaveAttribute(
       'aria-pressed',
       'false',

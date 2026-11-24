@@ -15,10 +15,13 @@ import { expect, test as scanned } from '../fixtures'
 /**
  * TASK-023 (REQ-023; C50, G15; R05; AC-C50-01; JOURNEY-023) — on the real
  * `/review` route, Regenerate follows all workout content, including the
- * Cooldown, with its behaviour and navigation unchanged. Accepted gallery
- * reference eded158cfd928d382c9a9409e2c372270312741d,
- * `/gallery/refinements?state=preparation`, which draws Review's own
- * `ReviewRegenerateAction` after its Cooldown.
+ * Cooldown, with its behaviour and navigation unchanged. Carried onto Round 7
+ * by A3 TASK-119: Round 7's Review.tsx draws its Regenerate row after every
+ * section, the Cooldown's concise guide (`PreparationGuide`,
+ * `[data-preparation-guide="Cooldown"]`) included. Accepted gallery reference
+ * bec4454, `/gallery/refinements?state=preparation`, which draws the Warm-up
+ * guide, the live For Time card and the Cooldown guide in Review order and no
+ * Review screen (its Regenerate reads are retired for Eric to confirm).
  *
  * Entry: a generated workout with a Warm-up, a worked section and a Cooldown
  * reaches `/review` through the existing hand-off, behind the existing auth
@@ -305,11 +308,12 @@ async function readPlacement(page: Page): Promise<Placement> {
       if ((node.textContent ?? '').trim() !== '') lastWords = node
     }
     const top = regenerate.getBoundingClientRect().top
-    const sections = [...scroller.querySelectorAll<HTMLElement>('[data-review-section]')]
-    const cooldownNames = [...scroller.querySelectorAll<HTMLElement>('[data-preparation-guide="cooldown"] li')]
+    // Round 7: a work section is `[data-review-section]`, a guide `[data-preparation-guide]` by its title.
+    const sections = [...scroller.querySelectorAll<HTMLElement>('[data-review-section], [data-preparation-guide]')]
+    const cooldownNames = [...scroller.querySelectorAll<HTMLElement>('[data-preparation-guide="Cooldown"] li')]
     const start = [...document.querySelectorAll('main button')].find((button) => button.textContent?.trim() === startLabel)
     return {
-      sections: sections.map((section) => section.dataset.reviewSection ?? ''),
+      sections: sections.map((section) => section.dataset.preparationGuide ?? 'work'),
       lastItem: row.parentElement?.lastElementChild === row,
       lastWords: lastWords?.textContent?.trim() ?? '',
       lastButton: buttons.at(-1)?.textContent?.trim() ?? '',
@@ -322,9 +326,12 @@ async function readPlacement(page: Page): Promise<Placement> {
   }, { regenerateLabel: REGENERATE, startLabel: START })
 }
 
+/** The composed sections as Round 7 marks them: a guide by its title, any other section as work. */
+const GUIDE_TITLES: Partial<Record<string, string>> = { warmup: 'Warm-up', cooldown: 'Cooldown' }
+
 function expectRegenerateLast(placement: Placement, acceptance: SessionAcceptance, label: string) {
-  expect(placement.sections, `${label}: every section, in composed order`).toEqual(acceptance.workout.sections.map((section) => section.section_type))
-  expect(placement.sections.at(-1), `${label}: the Cooldown is the last section`).toBe('cooldown')
+  expect(placement.sections, `${label}: every section, in composed order`).toEqual(acceptance.workout.sections.map((section) => GUIDE_TITLES[section.section_type] ?? 'work'))
+  expect(placement.sections.at(-1), `${label}: the Cooldown is the last section`).toBe('Cooldown')
   expect(placement.lastItem, `${label}: Regenerate is the list's last item`).toBe(true)
   expect(placement.lastWords, `${label}: nothing readable follows Regenerate`).toBe(REGENERATE)
   expect(placement.lastButton, `${label}: the last control in the scrolling content`).toBe(REGENERATE)
@@ -358,7 +365,7 @@ test.describe('TASK-023 Review Regenerate follows the entire workout', () => {
 
       // Read through the whole workout: the Cooldown and its last movement, then Regenerate.
       expectRegenerateLast(await readPlacement(page), acceptance, `review @${name}`)
-      const cooldown = page.locator('[data-preparation-guide="cooldown"]')
+      const cooldown = page.locator('[data-preparation-guide="Cooldown"]')
       await expect(cooldown.getByRole('listitem')).toHaveText([...PREPARATION_NAMES.cooldown])
       await scrollToEnd(page)
       const regenerate = regenerateOf(page.locator('main'))
@@ -464,6 +471,11 @@ test.describe('TASK-023 Review Regenerate follows the entire workout', () => {
     app.assertContained({ writes: ['persist_session'] })
   })
 
+  // A3 TASK-119: Round 7's preparation state (bec4454) draws the Warm-up guide,
+  // the live For Time card and the Cooldown guide in Review order, and ends
+  // with the Cooldown: it draws no Review screen and so no Regenerate. Review's
+  // own Regenerate after the Cooldown is proved on /review above; the build's
+  // reads of a Regenerate in the state are retired for Eric to confirm.
   test('gallery preparation phone-320: the accepted state draws Review’s own Regenerate after the Cooldown, which only asks, with nothing read or written', async ({ page, visit }) => {
     await page.setViewportSize({ width: 320, height: 568 })
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
@@ -473,35 +485,32 @@ test.describe('TASK-023 Review Regenerate follows the entire workout', () => {
     })
     await visit('/gallery/refinements?state=preparation')
     const state = page.locator('[data-refinement-state="preparation"]')
-    const review = state.locator('[data-gallery-context="review"]')
-    const regenerate = regenerateOf(review)
-    await expect(regenerate).toBeVisible()
-    const order = await review.evaluate((node, label) => {
-      const items = [...node.children] as HTMLElement[]
-      const last = items.at(-1)!
-      const cooldown = node.querySelector('[data-preparation-guide="cooldown"]')!
-      const names = [...cooldown.querySelectorAll('li')]
-      const button = [...node.querySelectorAll('button')].at(-1)!
-      return {
-        lastIsRegenerate: last.querySelector('button')?.textContent?.trim() === label,
-        lastButton: button.textContent?.trim(),
-        belowCooldown: names.at(-1)!.getBoundingClientRect().bottom <= button.getBoundingClientRect().top + 0.5,
+    const cooldown = state.locator('[data-preparation-guide="Cooldown"]')
+    await expect(cooldown).toBeVisible()
+    const order = await state.evaluate((node) => {
+      const parts = [...node.querySelectorAll<HTMLElement>('[data-preparation-guide], .clr-movement-group')]
+        .filter((part) => part.parentElement?.closest('[data-preparation-guide], .clr-movement-group') == null)
+      const guide = node.querySelector('[data-preparation-guide="Cooldown"]')!
+      const names = [...guide.querySelectorAll('li')]
+      const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT)
+      let last: Node | null = null
+      for (let text = walker.nextNode(); text !== null; text = walker.nextNode()) {
+        if ((text.textContent ?? '').trim() !== '') last = text
       }
-    }, REGENERATE)
-    expect(order).toEqual({ lastIsRegenerate: true, lastButton: REGENERATE, belowCooldown: true })
-    await expect(review.locator('[data-preparation-guide="cooldown"] li')).toHaveText([...PREPARATION_NAMES.cooldown])
+      const bottom = Math.max(...parts.slice(0, -1).map((part) => part.getBoundingClientRect().bottom))
+      return {
+        parts: parts.map((part) => part.dataset.preparationGuide ?? 'work'),
+        lastWordsInCooldown: last !== null && guide.contains(last),
+        cooldownBelowWork: names.length > 0 && guide.getBoundingClientRect().top >= bottom - 0.5,
+      }
+    })
+    expect(order).toEqual({ parts: ['Warm-up', 'work', 'Cooldown'], lastWordsInCooldown: true, cooldownBelowWork: true })
+    // The state's own sample Cooldown (src/dev/gallery-refinement-runtime.tsx); the route reads TASK-034's.
+    await expect(cooldown.locator('li')).toHaveText(['Chest stretch', 'Thoracic rotation', 'Child’s pose'])
+    await expect(regenerateOf(state)).toHaveCount(0)
     await noHorizontalOverflow(page)
-    await test.info().attach('gallery-review-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
-
-    // It asks with Review's own confirmation; the gallery then discards nothing and goes nowhere.
-    await regenerate.tap()
-    const dialog = page.getByRole('dialog', { name: DISCARD_DIALOG })
-    await expect(dialog).toBeVisible()
-    await dialog.getByRole('button', { name: 'Discard and regenerate', exact: true }).tap()
-    await expect(dialog).toBeHidden()
+    await test.info().attach('gallery-preparation-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     await expect(page).toHaveURL(/\/gallery\/refinements\?state=preparation$/)
-    await expect(review.locator('[data-preparation-guide="cooldown"]')).toBeVisible()
-    await expect(regenerate).toBeVisible()
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 })
