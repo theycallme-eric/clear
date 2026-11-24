@@ -286,6 +286,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     expect(focusLine()).toHaveTextContent('Lower body')
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await openFocus(user)
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
 
@@ -414,6 +415,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted, router } = journey
     const INTENT = { goal: 'strength', focus: 'upper_body' }
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await openFocus(user)
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
 
@@ -479,6 +481,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted } = journey
     const RECOVERY = { goal: 'active_recovery', focus: 'lower_body' }
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await openFocus(user)
     await user.click(recovery())
 

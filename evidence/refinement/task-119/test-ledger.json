@@ -6,7 +6,7 @@
   "build": "181e580 (source material only)",
   "source": "Brief NB2/briefs/TASK-119-a1.md; running summary; round-07 placement review; TASK-109/110/111/112/118 ledgers (TASK-109 rules.crossFile/forTask119, TASK-111 rules.deferred S4, TASK-112 rules.forTask119); visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (F10: 65 waiting tests in this task's four files; e2e task-023/024 specs); the build's bodies of the four files, Home.test.tsx and the two e2e specs. Bodies compared with the build and the base by a TypeScript compiler API extractor.",
   "summary": {
-    "rewritten": 56,
+    "rewritten": 60,
     "carried": 21,
     "added": 6
   },
@@ -32,7 +32,7 @@
       "test": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for %s",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body; repair round 1 adds, before `chooseRecovery`, the read that a first workout has no Focus control (`CHANGE_FOCUS_LABEL` absent), so the helper's open branch cannot run and its click is the base's plain Recovery click (Recovery in the Anchor field). Its helpers read Round 7's Change focus naming (round-07 S4).",
       "result": "passed"
     },
     {
@@ -64,7 +64,7 @@
       "test": "REQ-007 — a Focus for this workout only > restores the recommendation on %s",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's; its second row's label is the build's ('dismissing the choices with the Focus control'), so the runtime case 'restores the recommendation on dismissing the choices' (the base's row label) is now named '… with the Focus control' — the same press of the Focus value (Change focus). Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "Body identical to the build's; its second row's label is the build's ('dismissing the choices with the Focus control'), so the runtime case 'restores the recommendation on dismissing the choices' (the base's row label) is now named '… with the Focus control' — the same press of the Focus value (Change focus). Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -72,7 +72,7 @@
       "test": "REQ-008 — a Recovery session for this workout only > sends active_recovery with the requested intensity unchanged and says it is composed at 1–3",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body with the explicit `aria-expanded` reads of repair round 1. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -80,7 +80,7 @@
       "test": "REQ-008 — a Recovery session for this workout only > keeps Power visible and disabled, with the refusal in text",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body with the explicit `aria-expanded` reads of repair round 1. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -88,7 +88,7 @@
       "test": "REQ-008 — a Recovery session for this workout only > clears a recommended Power rather than substituting it, and waits for another Focus",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body with the explicit `aria-expanded` reads of repair round 1. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -96,7 +96,7 @@
       "test": "REQ-008 — a Recovery session for this workout only > keeps Recovery when Loading is cancelled, and restores it from that URL",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body with the explicit `aria-expanded` reads of repair round 1. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -104,7 +104,7 @@
       "test": "REQ-008 — a Recovery session for this workout only > returns to the standing Goal when Recovery is switched off",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body with the explicit `aria-expanded` reads of repair round 1. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -112,7 +112,7 @@
       "test": "REQ-008 — a Recovery session for this workout only > opens a fresh visit on the standing Goal, and never wrote the profile",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's (collapsed on a fresh visit, then opened and closed again). Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body (its second visit already reads `aria-expanded=false` before `openFocus`) with repair round 1's `aria-expanded=false` before the first visit's `chooseRecovery`. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -184,7 +184,7 @@
       "test": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > says it is lighter, and sends the recovery goal, requested intensity and focus unchanged",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Build body with `chooseRecovery` (Round 7 naming); the build's `getByText(/^Goal:/)` 'Goal: Strength' is the base's Round 7 read `summaryItem('Goal')` /^Goal\\s*Strength$/ (anchored; Round 7 draws a term span and the value, no ': ').",
+      "note": "Build body with `chooseRecovery` (Round 7 naming), preceded by repair round 1's `aria-expanded=false` read; the build's `getByText(/^Goal:/)` 'Goal: Strength' is the base's Round 7 read `summaryItem('Goal')` /^Goal\\s*Strength$/ (anchored; Round 7 draws a term span and the value, no ': ').",
       "result": "passed"
     },
     {
@@ -192,7 +192,7 @@
       "test": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > drops the note when Recovery is switched off",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "note": "The build's body with the explicit `aria-expanded` reads of repair round 1. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4). Repair round 1: the helpers open the choices only when they are closed, so each call is preceded by an explicit read — `aria-expanded=false` before the first (Round 7 opens a fresh draft's choices closed), `aria-expanded=true` before a second Recovery press made with the choices still open — restoring the base's implicit 'opens closed' check (rules.conditionalHelpers).",
       "result": "passed"
     },
     {
@@ -512,7 +512,7 @@
       "test": "REQ-016 — the six Goal/Focus journeys > journey 2: Change focus overrides the request and the stored session, and leaves Settings alone",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's; `openFocus`/`focusControl` read Round 7's Change focus (build: `Focus: <value>`).",
+      "note": "The build's body; `openFocus`/`focusControl` read Round 7's Change focus (build: `Focus: <value>`). Repair round 1: `aria-expanded=false` before `openFocus` (the base clicked Change focus outright).",
       "result": "passed"
     },
     {
@@ -520,7 +520,7 @@
       "test": "REQ-016 — the six Goal/Focus journeys > journey 5: cancel, retry and regenerate keep the resolved Goal and Focus, one call per generation",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's; `openFocus` on Round 7's Change focus.",
+      "note": "The build's body; `openFocus` on Round 7's Change focus. Repair round 1: `aria-expanded=false` before `openFocus`.",
       "result": "passed"
     },
     {
@@ -528,7 +528,7 @@
       "test": "REQ-016 — the six Goal/Focus journeys > journey 6: a Recovery session generates and regenerates as active_recovery without Power, and a fresh visit is the standing Goal",
       "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
       "disposition": "rewritten",
-      "note": "Body identical to the build's; `openFocus`/`focusControl` on Round 7's Change focus.",
+      "note": "The build's body (the fresh visit already reads `aria-expanded=false`); `openFocus`/`focusControl` on Round 7's Change focus. Repair round 1: `aria-expanded=false` before the first `openFocus`.",
       "result": "passed"
     },
     {
@@ -553,6 +553,38 @@
       "ledger": "round-07 scan finding S4, decision R7-5 (TASK-111 owns the file; TASK-119:check-02 name filter)",
       "disposition": "rewritten",
       "note": "TASK-111 kept Round 7's body and deferred the build's Focus-disclosure reads here. Restored on that case, rewritten to Round 7's naming where only the name differs: the Focus control is `getByRole('button', { name: 'Change focus' })` (build: `{ name: /^Focus:/ }`), it opens closed (`aria-expanded=false`, verbatim) and Recovery session is among the choices it opens, unpressed (verbatim). The Home part is unchanged. Run only through TASK-119:check-02's name filter; TASK-111 check-01 (the whole file) also passes on it.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-009 — the same Goal and Focus however the draft is reached > cancels from Loading back to the draft with Recovery, the override and the intensity kept",
+      "ledger": "groundwork ledger carried (body unchanged) → TASK-119 (its describe-level helper is the build's)",
+      "disposition": "rewritten",
+      "note": "Body unchanged from the base and the build; it calls the describe's `composeRecoveryOverride`, now the build's (`chooseRecovery` for the base's two plain clicks), which repair round 1 opens with `aria-expanded=false` (every caller starts on a fresh draft, so the base's implicit 'opens closed' check holds).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-009 — the same Goal and Focus however the draft is reached > resolves the same request from a refresh of the cancelled draft’s address",
+      "ledger": "groundwork ledger carried (body unchanged) → TASK-119 (its describe-level helper is the build's)",
+      "disposition": "rewritten",
+      "note": "Body unchanged from the base and the build; it calls the describe's `composeRecoveryOverride`, now the build's (`chooseRecovery` for the base's two plain clicks), which repair round 1 opens with `aria-expanded=false` (every caller starts on a fresh draft, so the base's implicit 'opens closed' check holds).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-009 — the same Goal and Focus however the draft is reached > resends the same Goal and Focus on Retry after a typed failure, once",
+      "ledger": "groundwork ledger carried (body unchanged) → TASK-119 (its describe-level helper is the build's)",
+      "disposition": "rewritten",
+      "note": "Body unchanged from the base and the build; it calls the describe's `composeRecoveryOverride`, now the build's (`chooseRecovery` for the base's two plain clicks), which repair round 1 opens with `aria-expanded=false` (every caller starts on a fresh draft, so the base's implicit 'opens closed' check holds).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-009 — the same Goal and Focus however the draft is reached > starts one run for a Recovery draft however often the submit is pressed",
+      "ledger": "groundwork ledger carried (body unchanged) → TASK-119 (its describe-level helper is the build's)",
+      "disposition": "rewritten",
+      "note": "Body unchanged from the base and the build; it calls the describe's `composeRecoveryOverride`, now the build's (`chooseRecovery` for the base's two plain clicks), which repair round 1 opens with `aria-expanded=false` (every caller starts on a fresh draft, so the base's implicit 'opens closed' check holds).",
       "result": "passed"
     },
     {
@@ -679,7 +711,7 @@
   "rules": {
     "skipOnlyTodoAdded": false,
     "matchersWeakened": false,
-    "matchersWeakenedNote": "No matcher is loosened. Every build read not verbatim at HEAD (97 body-level; the 24 base reads are the e2e reads, base = build there) is (a) the same read on Round 7's locator or naming — the Focus value named Change focus with its exact text for `Focus: <value>`, `.clr-v4-program-summary`/its items for `.clr-intent-summary`/`[data-intent-fact]`/`[data-generate-intent]`, what the control opens for `[data-generate-focus-choices]`, `.clr-timed-meta` under the header for `[data-structure-meta]`, Round 7's block cards for `[data-workout-card=\"review\"]`, guides by title for `data-review-section`/`\"cooldown\"`, `.clr-movement-identity` and its name element, the prescription's second reading for `[data-movement-load]`; (b) a Round 7 look or wording rewrite under the owner's 2026-11-23 rule (no ': ' or ' — ' joins in the Goal/Focus summary, '… — no rest between movements', the recipe file and chevron cue, a DIV prescription row; rules.forTask115); (c) an owner decision Round 7 implements (2026-11-13 decision 2: a heading per block card; decision 6: format-only badges, the size under the header); or (d) a read of a gallery state Round 7 does not draw, retired and proved on the real route (rules.retiredAssertions). Where a build string (substring) became Round 7 text, it is anchored at both ends or paired with an exact `textContent` read. No getBy became queryBy, no count was dropped (counts were added), no `not` read was removed, no toHaveTextContent became toBeInTheDocument, and every same-title base body that changed keeps all of its base reads (base reads not verbatim in the unit files: 0).",
+    "matchersWeakenedNote": "No matcher is loosened. Every build read not verbatim at HEAD (97 body-level; the 24 base reads are the e2e reads, base = build there) is (a) the same read on Round 7's locator or naming — the Focus value named Change focus with its exact text for `Focus: <value>` (the accessible name no longer carries the value — a recorded accessibility loss, rules.focusAccessibleName), `.clr-v4-program-summary`/its items for `.clr-intent-summary`/`[data-intent-fact]`/`[data-generate-intent]`, what the control opens for `[data-generate-focus-choices]`, `.clr-timed-meta` under the header for `[data-structure-meta]`, Round 7's block cards for `[data-workout-card=\"review\"]`, guides by title for `data-review-section`/`\"cooldown\"`, `.clr-movement-identity` and its name element, the prescription's second reading for `[data-movement-load]`; (b) a Round 7 look or wording rewrite under the owner's 2026-11-23 rule (no ': ' or ' — ' joins in the Goal/Focus summary, '… — no rest between movements', the recipe file and chevron cue, a DIV prescription row; rules.forTask115); (c) an owner decision Round 7 implements (2026-11-13 decision 2: a heading per block card; decision 6: format-only badges, the size under the header); or (d) a read of a gallery state Round 7 does not draw, retired and proved on the real route (rules.retiredAssertions). Where a build string (substring) became Round 7 text, it is anchored at both ends or paired with an exact `textContent` read. No getBy became queryBy, no count was dropped (counts were added), no `not` read was removed, no toHaveTextContent became toBeInTheDocument, and every same-title base body that changed keeps all of its base reads (base reads not verbatim in the unit files: 0).",
     "testUpdateRule": "Eric, chat, 2026-11-23: \"Yes, approve\" — tests may be updated to Round 7's look and wording, each change listed (rules.forTask115); behaviour or saved data Round 7 lacks would stop the build (none found).",
     "constantsRePointed": "GENERATE_TITLE, GENERATE_ACTION_LABEL, HOME_BACK_LABEL and FOCUS_TERM are not exported by Round 7's Generate.tsx; they are test-local constants equal to Round 7's literals ('Generate', 'Generate workout', the IconButton label 'Home', the summary term 'Focus'), and the build's tautological `expect(CONST).toBe(…)` reads became reads of the product (the five Screen titles in Generate.tsx, the CTA's accessible name).",
     "retiredAssertions": [
@@ -734,16 +766,103 @@
     ],
     "forTask115": [
       "TASK-119 / decision 4 (2026-11-18): with a recommended Focus and Recovery on, collapsing Change focus now keeps the pressed Recovery session chip in view, below its note. Turning Recovery off from that closed state removes the chip and its note together (focus falls back to the page, as the existing 'Use the recommended focus' action does). Check on a phone at 320/390 (captures screens-*-route-recovery-closed).",
-      "TASK-119: Round 7 names the Focus value 'Change focus' (its text is the value); the build named it 'Focus: <value>'. Tests read the new name plus the exact value text (round-07 S4). A screen reader hears 'Change focus, collapsed' with the 'Focus' term before it; confirm at UAT.",
+      "TASK-119 / accessibility loss for Eric to decide at UAT (not a wording change): Round 7 names the Focus control 'Change focus', so a screen reader no longer hears the current Focus value — the visible value (e.g. 'Lower body') is not in the accessible name, unlike the build's 'Focus: <value>' and the accepted gallery bec4454's value-named button. WCAG 2.5.3 (label in name). Accepted by the approved criterion (round-07 S4, 'rewritten to Round 7's Change focus naming where only the name differs'); Generate.tsx's name is unchanged here (rules.focusAccessibleName).",
       "TASK-119 retirements for Eric to confirm (rules.retiredAssertions): the screens state's expanded-state, four-Anchor/Recovery-apart, Notes and first-workout reads; the preparation state's Regenerate reads; the build's 'STANDARD' word on Review. Each is proved on the real route or retired by decision 6.",
       "TASK-119: Round 7's screens state lists Recovery as a fourth Focus choice (no Power) and names its Back 'Back to Home'; /generate keeps Recovery as its own session toggle apart from the four focuses (R10.1) and names Back 'Home' (R10.5). Gallery-only illustration; confirm it need not change.",
       "TASK-119: Round 7's preparation state stops at the Cooldown; Review's Regenerate after it is route-only (C50). Parity `preparation` records a 16 px gap from the Cooldown card to Regenerate at 320 and 390.",
       "TASK-119: Round 7 heads every Review block card with its section's name (decision 2 of 2026-11-13, already TASK-112's UAT item); the build's 'exactly one heading per section' reads are taken per card.",
-      "TASK-119 (found, not fixed here): carried e2e specs outside this task still read the build's `/^Focus:/` Focus name — e2e/ui-polish-b05-generate.spec.ts (lines 195, 388), e2e/ui-polish-home.spec.ts (298, 356), e2e/design-0143/entry-forms.spec.ts (1059, 1063), e2e/design-0143/task-040-entry-settings.spec.ts (569, 573) — and e2e/library-error-role.spec.ts names the build's owners. They are the pre-UAT cross-cutting suite (TASK-115's whole-e2e run)."
+      "TASK-119 (found, not caused): four carried e2e specs still look for a `/^Focus:/` button, which Round 7 never draws, and were already failing at the base — e2e/ui-polish-b05-generate.spec.ts:195,388; e2e/ui-polish-home.spec.ts:298,356; e2e/design-0143/entry-forms.spec.ts:1059,1063; e2e/design-0143/task-040-entry-settings.spec.ts:569,573. Not changed here; for TASK-115's whole-e2e run. (Base failure as reported by the review; this task did not run them.)"
     ],
+    "conditionalHelpers": {
+      "finding": "Review (repair round 1): `openFocus`/`chooseRecovery` (the build's helpers) open the choices only when they are closed, so where they replaced the base's plain Change focus click a body lost its implicit 'opens closed' check.",
+      "handling": "Every call in a base body is now preceded by an explicit read: `aria-expanded=false` before the call that opens the choices (Round 7 opens them closed on every one of these drafts), `aria-expanded=true` before a second Recovery press made while they are still open (turning Recovery on keeps them open), and, on a first workout, the read that no Focus control exists. No body needed the helper's already-open path without saying so.",
+      "bodies": [
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for %s",
+          "handling": "first workout: Change focus absent, then the helper's plain Recovery click"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-008 — … > sends active_recovery with the requested intensity unchanged and says it is composed at 1–3",
+          "handling": "aria-expanded=false, then chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-008 — … > keeps Power visible and disabled, with the refusal in text",
+          "handling": "aria-expanded=false, then chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-008 — … > clears a recommended Power rather than substituting it, and waits for another Focus",
+          "handling": "aria-expanded=false, then chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-008 — … > keeps Recovery when Loading is cancelled, and restores it from that URL",
+          "handling": "aria-expanded=false, then chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-008 — … > returns to the standing Goal when Recovery is switched off",
+          "handling": "aria-expanded=false, chooseRecovery; aria-expanded=true, chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-008 — … > opens a fresh visit on the standing Goal, and never wrote the profile",
+          "handling": "aria-expanded=false before the first visit's chooseRecovery (the second visit's openFocus already followed the build's explicit read)"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-009 — … > cancels from Loading back to the draft with Recovery, the override and the intensity kept",
+          "handling": "through composeRecoveryOverride: aria-expanded=false, then chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-009 — … > resolves the same request from a refresh of the cancelled draft’s address",
+          "handling": "through composeRecoveryOverride (as above)"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-009 — … > resends the same Goal and Focus on Retry after a typed failure, once",
+          "handling": "through composeRecoveryOverride (as above)"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "REQ-009 — … > starts one run for a Recovery draft however often the submit is pressed",
+          "handling": "through composeRecoveryOverride (as above)"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "U29 — … > says it is lighter, and sends the recovery goal, requested intensity and focus unchanged",
+          "handling": "aria-expanded=false, then chooseRecovery"
+        },
+        {
+          "file": "src/app/Generate.test.tsx",
+          "test": "U29 — … > drops the note when Recovery is switched off",
+          "handling": "aria-expanded=false, chooseRecovery; aria-expanded=true, chooseRecovery"
+        },
+        {
+          "file": "src/test/goal-focus-journeys.test.tsx",
+          "test": "REQ-016 — … > journey 2: Change focus overrides the request and the stored session, and leaves Settings alone",
+          "handling": "aria-expanded=false, then openFocus"
+        },
+        {
+          "file": "src/test/goal-focus-journeys.test.tsx",
+          "test": "REQ-016 — … > journey 5: cancel, retry and regenerate keep the resolved Goal and Focus, one call per generation",
+          "handling": "aria-expanded=false, then openFocus"
+        },
+        {
+          "file": "src/test/goal-focus-journeys.test.tsx",
+          "test": "REQ-016 — … > journey 6: a Recovery session generates and regenerates as active_recovery without Power, and a fresh visit is the standing Goal",
+          "handling": "aria-expanded=false before the first openFocus (the fresh visit's already followed the build's explicit read)"
+        }
+      ]
+    },
+    "focusAccessibleName": "Known accessibility loss, accepted by the approved criterion and for Eric to decide at UAT: Round 7's Focus control is named ‘Change focus’ (aria-label), so a screen reader no longer hears the current Focus value — the visible value (for example ‘Lower body’) is not in the accessible name, unlike the build's ‘Focus: <value>’ button and the accepted gallery bec4454's value-named button (‘Upper body’). That is a WCAG 2.5.3 label-in-name gap. The approved criterion (round-07 S4: ‘rewritten to Round 7's Change focus naming where only the name differs’) accepts it; this task does not change Generate.tsx's name. The tests read the name Change focus plus the exact value text.",
     "crossFile": "TASK-109's seven cross-file bodies (Review.test.tsx 6, review-screen.test.tsx 1) are kept: five unchanged; 'is the last control in the scrolling content, after every section' (TASK-023's primary case, same title as the build's) keeps every TASK-109 read and gains the build's; the three shape/tempo bodies equal the build's reads (TASK-109's comment only). Round 7's own titles the build renamed stay beside the build's restored ones (round-07 S5 precedent): Generate 'puts Goal and Focus first, said alike…', 'keeps Recovery a lone action…', Round 7's U28 block; Review 'keeps ordered sections…', 'uses static shared headers…', 'states the round count in the badge…', 'keeps Review sections visible…', 'offers a swap on every movement…'; review-screen 'states movement, then prescription, then equipment…', '%s: name row with Swap at its end…', '…, and says bodyweight once'.",
     "selfCheck": {
-      "when": "2026-11-23, A3 TASK-119 attempt 1, before hand-back",
+      "when": "2026-11-23, A3 TASK-119 attempt 1, before hand-back; recounted in repair round 1",
       "method": "Mechanical: every test file and e2e spec touched since 41dc9aa7 (8: four owned files, Home.test.tsx, task-023/024 specs, the new parity spec) parsed with the TypeScript compiler API; full titles (describe > … > it/test, template titles as written) at the base, the build (181e580) and this tree; a body counts as changed when its text differs from the base; the outermost expect(…) chains of each changed body were printed canonically and compared, as sets, with the build's and the base's body of the same title; the same comparison over every expect(…) in the file (helpers included). The 65 groundwork-waiting tests were also compared with the build whether or not their body changed. Each read not present verbatim was read and classified (matchersWeakenedNote, entries, retiredAssertions).",
       "counts": {
         "files": 8,
@@ -751,15 +870,19 @@
         "buildTitlesGone": 0,
         "runtimeCaseNamesRenamed": 1,
         "bodiesChanged": 64,
+        "bodiesChangedThroughHelperOnly": 4,
+        "conditionalHelperBodies": 16,
+        "explicitExpandedReadsAddedInRepair1": 15,
         "buildReadsNotVerbatim": 97,
         "baseReadsNotVerbatim": 24,
         "fileLevelBuildReadsAbsent": 92,
         "fileLevelBaseReadsAbsent": 20,
         "waitingTests": 65,
-        "waitingIdenticalToBuild": 22,
-        "waitingRewritten": 32,
+        "waitingIdenticalToBuild": 11,
+        "waitingRewritten": 43,
         "waitingBaseBodyHoldsBuildReads": 11
       },
+      "repair1Recount": "Repair round 1 (2026-11-23): 15 explicit reads added before the conditional helpers in 16 base bodies (13 in Generate.test.tsx — 4 of them REQ-009 bodies reached only through `composeRecoveryOverride`, whose text is unchanged — and 3 in goal-focus-journeys.test.tsx). Body-level counts after the recount: titles gone 0/0; bodies changed 64 by text plus those 4 through the helper (68); build reads not verbatim 97 (file level 92), base reads not verbatim 24 (all e2e, base = build there; unit files 0); of the 65 waiting tests, 11 identical to the build, 43 rewritten, 11 Round 7 base bodies holding every build read. No read was removed or loosened by the repair.",
       "runtimeCaseNamesRenamed": [
         "src/app/Generate.test.tsx: 'REQ-007 — a Focus for this workout only > restores the recommendation on dismissing the choices' (the base's it.each row) is 'restores the recommendation on dismissing the choices with the Focus control' (the build's row label; same press)."
       ],
@@ -874,7 +997,8 @@
         "Review: one heading per block and guide card (count) beside the deduplicated five; 'Warm-up' once and 'Primary lift' once per block card as level-2 headings",
         "review-screen: the headings' runs count the composed sections; the preparation state's Cooldown names read exactly (the state's sample)",
         "task-024.spec: the Goal term beside its value",
-        "task-023.spec: the preparation state's Cooldown names exactly"
+        "task-023.spec: the preparation state's Cooldown names exactly",
+        "repair round 1: an explicit aria-expanded read before every conditional openFocus/chooseRecovery call in 16 base bodies (rules.conditionalHelpers)"
       ]
     },
     "ownerDecisions": [

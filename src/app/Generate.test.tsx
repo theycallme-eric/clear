@@ -319,7 +319,11 @@ describe('goal → intensity (v3 delta §2.2, REQ-009 U27)', () => {
     async (goal) => {
       const recovering = goal === 'active_recovery'
       const { user } = renderGenerate({ goal: recovering ? 'strength' : goal })
-      if (recovering) await chooseRecovery(user)
+      if (recovering) {
+        // A first workout: no Focus control to open; Recovery sits in the Anchor field.
+        expect(screen.queryByRole('button', { name: CHANGE_FOCUS_LABEL })).not.toBeInTheDocument()
+        await chooseRecovery(user)
+      }
 
       expect(slider()).toHaveAttribute('min', '1')
       expect(slider()).toHaveAttribute('max', '10')
@@ -1519,6 +1523,8 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('sends active_recovery with the requested intensity unchanged and says it is composed at 1–3', async () => {
     const { user, generation, url } = renderDraft()
 
+    // Recovery is reached inside the choices, which open closed.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
@@ -1541,6 +1547,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('keeps Power visible and disabled, with the refusal in text', async () => {
     const { user } = renderDraft()
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
 
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
@@ -1552,6 +1559,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
 
     expect(focusLine()).toHaveTextContent('Power')
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
 
     expect(cta()).toBeDisabled()
@@ -1571,6 +1579,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('keeps Recovery when Loading is cancelled, and restores it from that URL', async () => {
     const first = renderDraft()
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(first.user)
     await first.user.click(cta())
     await first.user.click(screen.getByRole('button', { name: 'Cancel' }))
@@ -1593,7 +1602,10 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('returns to the standing Goal when Recovery is switched off', async () => {
     const { user, generation, url } = renderDraft()
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
+    // Turning Recovery on keeps the choices open, so the second press is Recovery's alone.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'true')
     await chooseRecovery(user)
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
@@ -1608,6 +1620,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('opens a fresh visit on the standing Goal, and never wrote the profile', async () => {
     const first = renderDraft()
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(first.user)
     await first.user.click(cta())
     expect(first.generation.calls[0]).toMatchObject({ goal: 'active_recovery' })
@@ -1640,6 +1653,8 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
 
   /** A Recovery session on an overridden Focus, at an intensity of the athlete's own. */
   async function composeRecoveryOverride(user: ReturnType<typeof userEvent.setup>) {
+    // Every caller starts on a fresh draft: the choices open closed.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
     fireEvent.change(slider(), { target: { value: '2' } })
@@ -2043,6 +2058,7 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
   it('says it is lighter, and sends the recovery goal, requested intensity and focus unchanged', async () => {
     const { user, generation } = renderDraft()
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
 
     expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
@@ -2074,7 +2090,9 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
   it('drops the note when Recovery is switched off', async () => {
     const { user } = renderDraft()
 
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     await chooseRecovery(user)
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'true')
     await chooseRecovery(user)
 
     expect(screen.queryByText(new RegExp(RECOVERY_NOTE))).not.toBeInTheDocument()

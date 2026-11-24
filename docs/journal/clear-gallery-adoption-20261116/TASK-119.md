@@ -89,11 +89,50 @@ build's did. Port 5173 free before and after each browser run.
 
 ## Open assumptions
 
+- Accessibility loss, for Eric to decide at UAT: Round 7 names the Focus control "Change focus", so a screen reader no
+  longer hears the current Focus value — the visible value (for example "Lower body") is not in the accessible name,
+  unlike the build's "Focus: <value>" and the accepted gallery bec4454's value-named button (WCAG 2.5.3, label in
+  name). The approved criterion (round-07 S4: "rewritten to Round 7's 'Change focus' naming where only the name
+  differs") accepts it; Generate.tsx's name is not changed here. Ledger `rules.focusAccessibleName` and `forTask115`.
 - Turning Recovery off from the closed summary removes the chip and its note together (decision 4 covers "while
   Recovery is on"); focus then falls back to the page, as the existing "Use the recommended focus" action does. UAT.
 - Round 7's screens state lists Recovery as a fourth Focus choice and names its Back "Back to Home"; the route keeps R10.1
   and R10.5. Gallery-only illustration, not changed (no criterion names it); retirements listed for Eric.
 - Round 7's preparation state draws no Regenerate; C50 is proved on /review only.
+
+## Repair round 1 (2026-11-23, tests and evidence only)
+
+The review met all 21 criteria and both journeys; two non-blocking scope items were this task's.
+
+1. Ledger accuracy: the Focus name is now recorded as a known accessibility loss, not a wording change
+   (`rules.focusAccessibleName`, `forTask115`, open assumptions above). Generate.tsx unchanged.
+2. Conditional helpers: `openFocus`/`chooseRecovery` (the build's) open the choices only when closed, so where they
+   replaced the base's plain Change focus click a body lost its implicit "opens closed" check. Every call in a base body
+   is now preceded by an explicit read: `aria-expanded=false` before the opening call, `aria-expanded=true` before a
+   second Recovery press made while the choices are open, and on a first workout the read that no Focus control
+   exists. 16 bodies: Generate.test.tsx 13 (offers the same 1–10 choice; REQ-008 ×6; REQ-009 ×4 through
+   `composeRecoveryOverride`; U29 ×2) and goal-focus-journeys.test.tsx 3 (journeys 2, 5, 6); 15 reads added. Round 7
+   opens the choices closed on every one of these drafts, so none keeps an unexplained conditional. Listed in the
+   ledger (`rules.conditionalHelpers`, the bodies' rows).
+3. `forTask115`: the four carried e2e specs that look for a `/^Focus:/` button (ui-polish-b05-generate.spec.ts:195,388;
+   ui-polish-home.spec.ts:298,356; design-0143/entry-forms.spec.ts:1059,1063; task-040-entry-settings.spec.ts:569,573)
+   recorded as found, not caused (already failing at the base per the review; not run or changed here).
+
+Self-check (b) recounted: titles gone 0/0; bodies changed 64 by text plus 4 through the helper; build reads not
+verbatim 97, base reads 24 (e2e only); waiting tests 11 identical to the build, 43 rewritten, 11 base bodies holding
+every build read. No read removed or loosened.
+
+Repair verification:
+
+| Command | Result |
+| --- | --- |
+| TASK-119 check-01 | PASSED, 249/249 |
+| TASK-119 check-02 | PASSED, 1 executed (42 filtered); receipt unchanged |
+| TASK-024 check-01 | PASSED, 129/129 |
+| `verify-delivery-evidence --mode final --body clear-refinement-20261103 --tasks TASK-023,TASK-024,TASK-111,TASK-119` | PASSED (current passing receipts for all four) |
+| `npm test` | 279 files, 6,500/6,500 passed |
+
+No e2e spec changed, so no browser run was needed; port 5173 was not used.
 
 ## Next action
 
