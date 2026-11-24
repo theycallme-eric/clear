@@ -18,7 +18,7 @@
   "targets": [
     {
       "path": "scripts/refinement/task-115-closure.test.mjs",
-      "sha256": "5bc8cf9daf9febf9c6fcb25e186a2ba42966fd90009b663fa686323b8f640633"
+      "sha256": "fd3c7f28ed1ac8bf4fc69535c69d830b35d531c263391a86d275ec80355d850f"
     }
   ],
   "requiredCases": [
