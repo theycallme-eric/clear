@@ -29,6 +29,14 @@ import { expect, test as scanned } from '../fixtures'
  * and loads, quiet equipment, a separate action/progress slot that the name
  * never covers, separators only between peers and no inner grouping rail.
  *
+ * Carried onto Round 7 (gallery bec4454) by A3 TASK-112: each row is
+ * `MovementIdentity` (src/ui/movement-presentation.tsx), whose name element is
+ * the wrapping column (the compact equipment is inline in it, after the name's
+ * words) and whose action or progress slot is the name's sibling; a live
+ * group's ordinal (`A1`, `10.`) is part of the name's words, Review's is its
+ * own element. Review draws a standard block's rows straight in its card's
+ * movement group, with no list and no rule between them.
+ *
  * Synthetic and contained: an intercepted session for a fictional user and
  * synthetic reads. The only writes the app attempts are Start's two session
  * calls, which are answered here and never forwarded; no model is called and
@@ -115,8 +123,13 @@ const VIEWPORTS: ReadonlyArray<{ name: string; viewport: Viewport }> = [
   { name: 'desktop-1280', viewport: { width: 1280, height: 800 } },
 ]
 
+/**
+ * Each structure's movements by context. Every Workout block and every grouped
+ * Review block is a named list; Round 7's Review draws a standard block's rows
+ * straight in its card's movement group, with no list around them (`null`).
+ */
 const LISTS = {
-  review: { standard: 'Movements in this block', superset: 'superset, 3 rounds', circuit: 'circuit, 2 rounds' },
+  review: { standard: null, superset: 'superset, 3 rounds', circuit: 'circuit, 2 rounds' },
   workout: { standard: 'Movements in this block', superset: 'Movements in this superset', circuit: 'Movements in this circuit' },
 } as const
 type Context = keyof typeof LISTS
@@ -139,6 +152,13 @@ const EXPECTED: Readonly<Record<Structure, ReadonlyArray<{ name: string; equipme
     { name: 'plank', equipment: 'bodyweight', load: null },
   ],
 }
+
+/** The cards state's lists (`LiveFlow`: the gallery's own timed blocks) and what each peer reads. */
+const GALLERY_PEERS: ReadonlyArray<readonly [string, ReadonlyArray<{ name: string; equipment: string; load: string | null }>]> = [
+  ['Movements in this EMOM', [{ name: 'kb swing', equipment: 'kettlebell', load: '24 lb' }]],
+  ['Movements in this AMRAP', [{ name: 'burpee', equipment: 'bodyweight', load: null }]],
+  ['Movements in this FOR TIME', [{ name: 'wall ball', equipment: 'medicine ball', load: '9 lb' }]],
+]
 
 const LAST_PERFORMANCE = /\bLast\b\s*(:|session|time|performed|performance)/i
 
@@ -267,6 +287,8 @@ interface MovementGeometry {
 }
 
 interface ListGeometry {
+  /** A named list (`ol`), or Review's standard group (Round 7: no list). */
+  listed: boolean
   itemRules: { width: number; style: string }[]
   rails: { element: string; width: number; style: string }[]
   movements: MovementGeometry[]
@@ -275,6 +297,7 @@ interface ListGeometry {
 
 async function readList(list: Locator): Promise<ListGeometry> {
   return list.evaluate((ol) => {
+    const LIVE_ORDINAL = /^([A-Z]\d+|\d+\.) /
     const box = (node: Element) => {
       const rect = node.getBoundingClientRect()
       return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height }
@@ -288,22 +311,28 @@ async function readList(list: Locator): Promise<ListGeometry> {
       const style = getComputedStyle(element)
       return { element: label, width: parseFloat(style.borderLeftWidth), style: style.borderLeftStyle }
     }
-    const items = [...ol.children]
+    const listed = ol.tagName === 'OL'
+    // Review's standard group (Round 7): each row is the stack around one identity.
+    const items = listed ? [...ol.children] : [...ol.children].filter((child) => child.querySelector('.clr-movement-identity') !== null)
     const rails = [rail(ol, 'list'), rail(ol.parentElement!, 'group'), ...items.map((item, index) => rail(item, `item ${index + 1}`))]
     const movements = items.map((item) => {
-      const identity = item.querySelector('[data-movement-identity]')!
+      const identity = item.querySelector('.clr-movement-identity')!
       const nameRow = identity.querySelector(':scope > [data-movement-name-row]')!
-      const column = nameRow.querySelector('.clr-movement-identity__title')!
-      const name = column.querySelector('.clr-movement-identity__name')!
-      const words = column.querySelector('[data-movement-name]')!
-      const ordinal = column.querySelector('[data-movement-ordinal]')
-      const equipment = column.querySelector('[data-movement-context]')!
+      // Round 7: the name element is the wrapping column; the equipment is inline in it.
+      const column = nameRow.querySelector(':scope > .clr-movement-identity__name')!
+      const name = column
+      const words = column.querySelector(':scope > span:not([data-movement-context])')!
+      const ordinal = column.querySelector('.clr-movement-identity__ordinal')
+      const equipment = column.querySelector(':scope > [data-movement-context]')!
       const prescription = identity.querySelector(':scope > [data-movement-detail]')!
-      const load = prescription.querySelector('[data-movement-load]')
+      const load = prescription.querySelector(':scope > span:nth-child(2)')
       const slotElement = nameRow.querySelector(':scope > .clr-movement-identity__action, :scope > .clr-movement-identity__counter')
       const slotTarget = slotElement?.querySelector('button') ?? slotElement
+      const ownWords = [...words.childNodes]
+        .filter((node) => !(node instanceof HTMLElement && node.classList.contains('clr-movement-identity__ordinal')))
+        .map((node) => node.textContent ?? '').join('')
       return {
-        name: words.textContent ?? '',
+        name: ownWords.replace(LIVE_ORDINAL, ''),
         equipment: equipment.textContent ?? '',
         load: load?.textContent ?? null,
         nameFont: parseFloat(getComputedStyle(name).fontSize),
@@ -315,15 +344,17 @@ async function readList(list: Locator): Promise<ListGeometry> {
         column: box(column),
         ordinal: ordinal === null ? null : box(ordinal),
         nameLines: lines(words),
+        // The slot's own class (Round 7's counter also wears a text role).
         slot: slotTarget === null || slotTarget === undefined
           ? null
-          : { kind: slotElement!.className, box: box(slotTarget) },
+          : { kind: [...slotElement!.classList].find((name) => name.startsWith('clr-movement-identity__')) ?? '', box: box(slotTarget) },
         slotsInsideColumn: column.querySelector('.clr-movement-identity__action, .clr-movement-identity__counter') !== null,
         prescription: box(prescription),
         overflow: column.scrollWidth > column.clientWidth + 1 || identity.scrollWidth > identity.clientWidth + 1,
       }
     })
     return {
+      listed,
       itemRules: items.map((item) => {
         const style = getComputedStyle(item)
         return { width: parseFloat(style.borderBottomWidth), style: style.borderBottomStyle }
@@ -337,10 +368,17 @@ async function readList(list: Locator): Promise<ListGeometry> {
 
 const TOLERANCE = 0.75
 
-/** C04 + AC-R001-01: a rule after every peer but the last; no rail anywhere. */
+/**
+ * C04 + AC-R001-01: a rule after every peer but the last; no rail anywhere.
+ * Round 7's Review standard block is not a list: its rows are spaced by the
+ * group's gap, with no rule after any of them (so none after the last).
+ */
 function expectPeerOnlySeparators(geometry: ListGeometry, label: string) {
+  expect(geometry.itemRules.length, `${label}: peers`).toBeGreaterThan(0)
   geometry.itemRules.forEach((rule, index) => {
-    if (index < geometry.itemRules.length - 1) {
+    if (!geometry.listed) {
+      expect(rule.style === 'none' || rule.width === 0, `${label}: no rule after Review's standard row ${index + 1} (Round 7)`).toBe(true)
+    } else if (index < geometry.itemRules.length - 1) {
       expect(rule.style, `${label}: separator after peer ${index + 1}`).toBe('solid')
       expect(rule.width, `${label}: separator after peer ${index + 1}`).toBeGreaterThan(0)
     } else {
@@ -381,7 +419,20 @@ function expectHierarchy(geometry: ListGeometry, context: Context, label: string
 }
 
 function list(page: Page, context: Context, structure: Structure): Locator {
-  return page.getByRole('list', { name: LISTS[context][structure], exact: true })
+  const name = LISTS[context][structure]
+  if (name !== null) return page.getByRole('list', { name, exact: true })
+  return page.locator('[data-review-section] .clr-movement-group:not(:has(ol)):not(:has(.clr-movement-group))')
+    .filter({ has: page.locator('.clr-movement-identity') })
+}
+
+/** The movement whose ordinal reads exactly this: Review's own element, or a live name's leading words (Round 7). */
+async function ordinalCount(page: Page, ordinal: string): Promise<number> {
+  return page.locator('main .clr-movement-identity__name > span:not([data-movement-context])').evaluateAll((words, wanted) =>
+    words.filter((node) => {
+      const element = node.querySelector('.clr-movement-identity__ordinal')
+      const drawn = element !== null ? (element.textContent ?? '').trim() : /^([A-Z]\d+|\d+\.) /.exec(node.textContent ?? '')?.[1] ?? null
+      return drawn === wanted
+    }).length, ordinal)
 }
 
 async function readContext(page: Page, context: Context) {
@@ -475,7 +526,7 @@ test.describe('TASK-001 shared movement hierarchy and peer grouping', () => {
         // On a phone the long names genuinely wrap, and still clear Swap.
         expect(Math.max(...reviewTen.movements.map((movement) => movement.nameLines))).toBeGreaterThan(1)
       }
-      await expect(page.locator('[data-movement-ordinal]').filter({ hasText: /^10$/ })).toHaveCount(1)
+      expect(await ordinalCount(page, '10')).toBe(1)
 
       await startWorkout(page, checkA11y)
       const liveTen = await readList(list(page, 'workout', 'circuit'))
@@ -484,7 +535,7 @@ test.describe('TASK-001 shared movement hierarchy and peer grouping', () => {
       expectHierarchy(liveTen, 'workout', `Workout ten stations @${name}`)
       const livePair = await readList(list(page, 'workout', 'superset'))
       expectHierarchy(livePair, 'workout', `Workout superset @${name}`)
-      await expect(page.locator('[data-movement-ordinal]').filter({ hasText: /^10\.$/ })).toHaveCount(1)
+      expect(await ordinalCount(page, '10.')).toBe(1)
       // Neither the shared header nor the surrounding group layout draws a rail.
       const headerRails = await page.locator('[data-movement-group-header]').evaluateAll((headers) =>
         headers.map((header) => {
@@ -504,14 +555,15 @@ test.describe('TASK-001 shared movement hierarchy and peer grouping', () => {
     const state = page.locator('[data-refinement-state="cards"]')
     await expect(state).toBeVisible()
     await settle(page)
-    for (const context of ['review', 'workout'] as const) {
-      const scope = state.locator(`[data-gallery-context="${context}"]`)
-      for (const structure of STRUCTURES) {
-        const geometry = await readList(scope.getByRole('list', { name: LISTS[context][structure], exact: true }))
-        expectPeerOnlySeparators(geometry, `Gallery ${context} ${structure}`)
-        expectHierarchy(geometry, context, `Gallery ${context} ${structure}`)
-        expect(readings(geometry)).toEqual(EXPECTED[structure])
-      }
+    // Round 7's state draws the live consumer (`TimedWorkoutFlow`'s EMOM,
+    // AMRAP and For Time cards before Start, over the gallery's own blocks, in
+    // pounds); Review's consumer is read on the real /review route above.
+    await expect(state.locator('ol.clr-movement-list')).toHaveCount(GALLERY_PEERS.length)
+    for (const [name, expected] of GALLERY_PEERS) {
+      const geometry = await readList(state.getByRole('list', { name, exact: true }))
+      expectPeerOnlySeparators(geometry, `Gallery workout ${name}`)
+      expectHierarchy(geometry, 'workout', `Gallery workout ${name}`)
+      expect(readings(geometry)).toEqual(expected)
     }
   })
 })

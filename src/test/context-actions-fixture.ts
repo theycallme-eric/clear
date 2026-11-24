@@ -97,10 +97,15 @@ export const CONTEXT_EXPECTED: Readonly<Record<ContextStructure, readonly Contex
   ],
 }
 
-/** The timed lists by context, and the equipment beside each name. */
+/**
+ * The timed lists by context, and the equipment beside each name. Round 7's
+ * live timed card (`TimedWorkoutFlow`) names each list by its format, For
+ * Time's included (A3 TASK-112; the build's For Time list was "Movements in
+ * this block").
+ */
 export const TIMED_LISTS = {
   review: ['emom', 'amrap', 'for time'],
-  workout: ['Movements in this EMOM', 'Movements in this AMRAP', 'Movements in this block'],
+  workout: ['Movements in this EMOM', 'Movements in this AMRAP', 'Movements in this FOR TIME'],
 } as const
 export const TIMED_EQUIPMENT: readonly (readonly string[])[] = [
   ['kettlebell', 'bodyweight'],

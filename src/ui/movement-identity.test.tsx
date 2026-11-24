@@ -5,16 +5,18 @@
  * TASK-029 (REQ-029; C56; R122, R132; JOURNEY-029), carried onto Round 7
  * (gallery bec4454) by A3 TASK-118: the verified equipment asset inventory and
  * its readable fallback on the real `/review`, `/workout` and Setup equipment
- * surfaces. TASK-112 adds TASK-002's block (context-specific actions with
- * compact equipment) to this file and reuses the shared route harness and
- * `expectCompactEquipment` below unchanged.
+ * surfaces. A3 TASK-112 adds TASK-002's block (REQ-002; C03, C06, C07;
+ * JOURNEY-002: context-specific actions with compact equipment) after it and
+ * reuses the shared route harness and `expectCompactEquipment` below
+ * unchanged; the few readings TASK-002 adds sit beside them.
  *
  * Review is the actual `/review` route (router, guard, handoff and briefing);
  * Workout is the actual `/workout` route the Start handoff navigates to, with
  * the same composition persisted and started through the session client seam.
  * The shared stylesheets are applied to the document so the declared face and
  * wrapping contract are read from the cascade, not from inline styles. Browser
- * geometry is `e2e/refinement/task-029.spec.ts`.
+ * geometry is `e2e/refinement/task-029.spec.ts` and
+ * `e2e/refinement/task-002.spec.ts`.
  *
  * Synthetic data only: in-memory doubles, no account and no network.
  */
@@ -26,7 +28,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import type { CandidatesClient } from '../data/candidates'
 import type { SessionsClient } from '../data/sessions'
@@ -43,8 +45,14 @@ import { QueryClient } from '../state/query'
 import { reviewHandoff } from '../state/review-handoff'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
 import {
+  CONTEXT_EXPECTED,
   CONTEXT_LISTS,
+  CONTEXT_SECTION,
   CONTEXT_STRUCTURES,
+  contextActionsAcceptance,
+  timedContextAcceptance,
+  TIMED_EQUIPMENT,
+  TIMED_LISTS,
   type ContextStructure,
 } from '../test/context-actions-fixture'
 import { peerGroupingSnapshot } from '../test/peer-grouping-fixture'
@@ -60,7 +68,13 @@ import {
   SHIPPED_ICON_COUNT,
   WANTED_REVIEW_LABELS,
 } from './refinements/equipment-assets'
+import { prescribedLoadReading } from './refinements/movement-readings'
+import { BlockPanel } from './block-renderers-frame'
+import { Card } from './card'
+import { MovementGroupHeader, MovementIdentity } from './movement-presentation'
+import { PRODUCT_PRESENTATION } from './product-presentation'
 import { SET_EFFORT_CHOICES } from './set-effort'
+import { WorkoutExperiencePresentationProvider } from './workout-experience-presentation'
 
 const ROOT = resolve(import.meta.dirname, '../..')
 
@@ -465,5 +479,452 @@ describe('TASK-029 equipment asset inventory and readable fallback', () => {
     expect(scenes).toMatch(/import \{ EQUIPMENT, ONBOARDING_STEPS \} from '\.\.\/state\/onboarding'/)
     expect(scenes).toMatch(/<EquipmentSummary equipment=/)
     expect(scenes).toMatch(/<Dumbbell aria-hidden="true" \/> Dumbbell · shipped/)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-002 (REQ-002; C03, C06, C07; JOURNEY-002) — context-specific actions
+// with compact equipment, on the real /review and /workout routes, carried onto
+// Round 7 by A3 TASK-112. Composition: `src/test/context-actions-fixture.ts`
+// (standard, superset and circuit; and the timed formats). It reuses the route
+// harness and `expectCompactEquipment` above unchanged; the readings below are
+// TASK-002's own. Browser geometry is `e2e/refinement/task-002.spec.ts`.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const contextAcceptance = () => contextActionsAcceptance()
+const SECTION = CONTEXT_SECTION
+const EXPECTED = CONTEXT_EXPECTED
+
+/**
+ * A live group's ordinal is part of the name's words in Round 7 (`A1 push
+ * up`, `1. kb swing`), so `nameOf` reads it there; Review's is its own
+ * element, which `nameOf` already leaves out.
+ */
+const LIVE_ORDINAL = /^([A-Z]\d+|\d+\.) /
+
+/** The movement's own name in either context: `nameOf` without a live ordinal. */
+function movementName(identity: HTMLElement): string {
+  return nameOf(identity).replace(LIVE_ORDINAL, '')
+}
+
+/** The prescribed load: the prescription's second reading, when there is one (Round 7). */
+function loadOf(identity: HTMLElement): string | null {
+  return identity.querySelector(':scope > [data-movement-detail] > span:nth-child(2)')?.textContent ?? null
+}
+
+function readings(scope: HTMLElement) {
+  return identities(scope).map((identity) => ({
+    name: movementName(identity),
+    equipment: identity.querySelector('[data-movement-context]')!.textContent,
+    load: loadOf(identity),
+  }))
+}
+
+/**
+ * A context's block cards: each Round 7 card whose movement group opens with
+ * the shared static header (`MovementGroupHeader`) — Review's section cards,
+ * and Workout's block cards.
+ */
+function cards(context: Context): HTMLElement[] {
+  const scope = context === 'review' ? '[data-review-section] .clr-card' : 'main .clr-card'
+  return [...document.querySelectorAll<HTMLElement>(scope)]
+    .filter((card) => card.querySelector(':scope > .clr-card__body > .clr-movement-group > [data-movement-group-header]') !== null)
+}
+
+function headerOf(card: HTMLElement) {
+  const header = card.querySelector<HTMLElement>(':scope > .clr-card__body > .clr-movement-group > [data-movement-group-header]')!
+  return {
+    header,
+    title: header.querySelector<HTMLElement>('.clr-movement-group-header__title'),
+    badge: header.querySelector<HTMLElement>('.clr-movement-group-header__badge'),
+  }
+}
+
+/** The line directly under a card's header that states the block's size (Round 7's `clr-timed-meta`). */
+function metaOf(card: HTMLElement): HTMLElement | null {
+  const next = headerOf(card).header.nextElementSibling
+  return next !== null && next.classList.contains('clr-timed-meta') ? next as HTMLElement : null
+}
+
+const LIVE_ACTION = /^Rest( for .+)?$/
+const LIVE_PROGRESS = /^(Set \d+\/\d+|Extra set \d+)$/
+
+describe('TASK-002 context-specific actions with compact equipment', () => {
+  // The group header's face is the design system's label face (`.label`) over
+  // its heading element's own face, both from foundation.css, as the browser
+  // receives them before the app's own sheets. Only those rules: the rest of
+  // foundation.css hides the scroll region until it is measured, which jsdom
+  // never does. Added for this block only, so TASK-029's block reads the
+  // cascade it did.
+  const foundation = document.createElement('style')
+  beforeAll(() => {
+    const source = readFileSync(resolve(ROOT, 'src/design-system/css/foundation.css'), 'utf8')
+    const faces = [...source.matchAll(/^([^{}@/]+)\{[^{}]*\}/gm)]
+      .filter(([, selectors]) => selectors.split(',').some((name) => ['h1', 'h2', 'h3', 'h4', 'h5', '.label'].includes(name.trim())))
+      .map(([rule]) => rule)
+    expect(faces, 'the heading faces and the label face').toHaveLength(7)
+    foundation.dataset.movementIdentity = 'src/design-system/css/foundation.css (heading and label faces)'
+    foundation.textContent = faces.join('\n')
+    document.head.prepend(foundation)
+  })
+  afterAll(() => foundation.remove())
+
+  it('AC-C03-01 shows the compact equipment beside each movement name in Review and Workout, as readable wrapping text', async () => {
+    const { router } = await openReview(contextAcceptance())
+    for (const structure of STRUCTURES) {
+      const review = identities(rows('review', structure))
+      expect(review).toHaveLength(EXPECTED[structure].length)
+      review.forEach((identity, index) =>
+        expectCompactEquipment(identity, EXPECTED[structure][index].equipment))
+    }
+
+    await startWorkout(router, LISTS.workout.superset)
+    for (const structure of STRUCTURES) {
+      const live = identities(list('workout', structure))
+      expect(live).toHaveLength(EXPECTED[structure].length)
+      live.forEach((identity, index) =>
+        expectCompactEquipment(identity, EXPECTED[structure][index].equipment))
+    }
+    // The live heading names the movement alone; its equipment is beside it.
+    expect(screen.getByRole('heading', { name: 'back squat' })).toBeInTheDocument()
+  })
+
+  it('AC-C06-01 offers Swap in Review’s movement slot and set progress, Rest and logging in Workout’s, never the other way round', async () => {
+    const user = userEvent.setup()
+    const { router } = await openReview(contextAcceptance())
+    for (const structure of STRUCTURES) {
+      for (const identity of identities(rows('review', structure))) {
+        const nameRow = identity.querySelector(':scope > [data-movement-name-row]')!
+        const slots = [...nameRow.children].slice(1)
+        expect(slots.map((slot) => slot.className)).toEqual(['clr-movement-identity__action'])
+        const name = nameOf(identity)
+        expect(within(slots[0] as HTMLElement).getByRole('button', { name: `Swap ${name}` })).toBeInTheDocument()
+      }
+    }
+    const main = within(screen.getByRole('main'))
+    expect(main.queryAllByRole('button', { name: LIVE_ACTION })).toEqual([])
+    expect(main.queryAllByText(LIVE_PROGRESS)).toEqual([])
+
+    await startWorkout(router, LISTS.workout.superset)
+    for (const structure of ['standard', 'superset'] as const) {
+      for (const identity of identities(list('workout', structure))) {
+        const nameRow = identity.querySelector(':scope > [data-movement-name-row]')!
+        const slots = [...nameRow.children].slice(1)
+        // Round 7's counter wears the shared data text role beside its own class.
+        expect(slots.map((slot) => slot.className)).toEqual(['clr-movement-identity__counter clr-text-data-xs'])
+        expect(slots[0]).toHaveTextContent(LIVE_PROGRESS)
+      }
+    }
+    // Rest and set logging: the standard movements' own, the superset's one,
+    // and each circuit station's entry.
+    const live = within(screen.getByRole('main'))
+    expect(live.getAllByRole('button', { name: 'Rest' })).toHaveLength(EXPECTED.standard.length + 1)
+    expect(live.getAllByRole('button', { name: /^Rest for / })).toHaveLength(EXPECTED.circuit.length)
+    expect(live.queryAllByRole('button', { name: /^Swap / })).toEqual([])
+    expect(document.querySelectorAll('.clr-movement-identity__action')).toHaveLength(0)
+
+    // The live action is real: Rest opens the set-logging sheet for that set.
+    const [squatRest] = within(list('workout', 'standard')).getAllByRole('button', { name: 'Rest' })
+    await user.click(squatRest)
+    expect(await screen.findByRole('form', { name: 'Log set 1 of back squat' })).toBeInTheDocument()
+  })
+
+  it('AC-C07-01 heads Review’s block cards with the live cards’ static header: the section identity and the badge, in the same face', async () => {
+    const { router } = await openReview(contextAcceptance())
+    const review = cards('review')
+    expect(review).toHaveLength(3)
+    const reviewHeaders = review.map(headerOf)
+    for (const { title, header } of reviewHeaders) {
+      expect(title).toHaveTextContent(SECTION)
+      expect(header.querySelector('button, [aria-expanded], .clr-collapsible__glyph')).toBeNull()
+    }
+    // The grouped blocks are named by their badge. TASK-003 (AC-C08-01,
+    // AC-C09-01) supersedes the right-hand, rounds-in-badge reading: the badge
+    // names the format below the title, and the rounds are read below it —
+    // in Round 7, on the line directly under the header.
+    expect(reviewHeaders[1].badge).toHaveTextContent(/^SUPERSET$/)
+    expect(reviewHeaders[2].badge).toHaveTextContent(/^CIRCUIT$/)
+    expect(metaOf(review[1])).toHaveTextContent(/^3 ROUNDS$/)
+    expect(metaOf(review[2])).toHaveTextContent(/^2 ROUNDS$/)
+    const reviewTitle = reviewHeaders[0].title!
+    expect(reviewTitle.tagName).toBe('H2')
+
+    await startWorkout(router, LISTS.workout.superset)
+    const live = cards('workout').map(headerOf)
+    expect(live).toHaveLength(3)
+    const liveTitle = live[0].title!
+    expect(liveTitle).toHaveTextContent(SECTION)
+    expect(live[1].badge).toHaveTextContent(/^SUPERSET/)
+    // One header vocabulary: the same owner, classes and declared face.
+    expect([...liveTitle.classList]).toEqual([...reviewTitle.classList])
+    for (const property of ['font-family', 'font-size', 'letter-spacing', 'text-transform', 'color', 'font-weight', 'line-height', 'margin']) {
+      expect(declared(reviewTitle, property), property).toBe(declared(liveTitle, property))
+    }
+    // Round 7's header face is the shared label face (`.label`).
+    expect(declared(liveTitle, 'font-size')).toBe('var(--label-sm-size)')
+    expect(declared(liveTitle, 'text-transform')).toBe('uppercase')
+    // The heading keeps the label's face, as the live label does, rather than
+    // the heading element's own display face.
+    for (const [property, label] of [['font-family', 'var(--font-data)'], ['line-height', 'var(--label-sm-line-height)'], ['letter-spacing', 'var(--tracking-data)']] as const) {
+      expect(declared(reviewTitle, property), property).toBe(label)
+    }
+  })
+
+  it('AC-R002-01 says a duplicate Bodyweight once, by the equipment, in both contexts and never hides an actual prescribed load', async () => {
+    expect(prescribedLoadReading('Bodyweight', 'bodyweight')).toBeNull()
+    expect(prescribedLoadReading('Bodyweight', 'pull up bar')).toBe('Bodyweight')
+    expect(prescribedLoadReading('24 kg', 'kettlebell')).toBe('24 kg')
+    expect(prescribedLoadReading('75% 1RM', 'barbell')).toBe('75% 1RM')
+    expect(prescribedLoadReading(null, 'bodyweight')).toBeNull()
+
+    const { router } = await openReview(contextAcceptance())
+    const review = STRUCTURES.map((structure) => readings(rows('review', structure)))
+    expect(review).toEqual(STRUCTURES.map((structure) => EXPECTED[structure]))
+    for (const structure of STRUCTURES) {
+      for (const identity of identities(rows('review', structure))) {
+        expect(identity.textContent?.match(/bodyweight/gi)?.length ?? 0).toBeLessThanOrEqual(1)
+      }
+    }
+
+    await startWorkout(router, LISTS.workout.superset)
+    expect(STRUCTURES.map((structure) => readings(list('workout', structure)))).toEqual(review)
+    const [, airSquat] = identities(list('workout', 'standard'))
+    expect(airSquat.querySelector(':scope > [data-movement-detail]')!.textContent).not.toMatch(/bodyweight/i)
+  })
+
+  it('AC-R002-02 keeps Review’s sections open under static semantic headings, with no toggle, chevron or hit area, and keeps the separate disclosures', async () => {
+    const user = userEvent.setup()
+    const { router } = await openReview(contextAcceptance())
+    const review = cards('review')
+    const headings = screen
+      .getAllByRole('heading', { level: 2 })
+      .filter((heading) => review.some((card) => card.contains(heading)))
+    // Round 7 (owner decisions of 2026-11-13, decision 2): the section's name
+    // is each block's group heading, so every card's header names it.
+    expect(headings.map((heading) => heading.textContent)).toEqual(review.map(() => SECTION))
+    expect(headings).toHaveLength(3)
+    expect(headings[0]).toHaveClass('clr-movement-group-header__title')
+    expect(headings[0].closest('button')).toBeNull()
+    expect(headings[0]).not.toHaveAttribute('tabindex')
+    for (const heading of headings.slice(1)) {
+      expect(heading).toHaveClass('clr-movement-group-header__title')
+      expect(heading.closest('button')).toBeNull()
+      expect(heading).not.toHaveAttribute('tabindex')
+    }
+    expect(screen.queryByRole('button', { name: new RegExp(SECTION) })).toBeNull()
+    // Pressing the header changes nothing: there is no state to change.
+    await user.click(headings[0])
+    for (const block of review.map((card) => card.querySelector('.clr-movement-group')!)) {
+      expect(block.closest('.clr-collapsible')).toBeNull()
+      expect(block.closest('[data-expanded]')).toBeNull()
+    }
+    expect(within(rows('review', 'standard')).getByText('back squat')).toBeVisible()
+
+    // The section's optional tempo detail is its own disclosure and stays one.
+    const tempo = screen.getByRole('button', { name: 'Tempo' })
+    expect(tempo).toHaveAttribute('aria-expanded', 'false')
+    await user.click(tempo)
+    expect(tempo).toHaveAttribute('aria-expanded', 'true')
+    expect(within(screen.getByRole('region', { name: 'Tempo' })).getByText('3-1-1-0')).toBeInTheDocument()
+
+    // The Coaching and notes disclosure remains, separate, on the live cards.
+    await startWorkout(router, LISTS.workout.superset)
+    const coaching = screen.getByRole('button', { name: 'Coaching and notes — back squat' })
+    expect(coaching).toHaveAttribute('aria-expanded', 'false')
+    await user.click(coaching)
+    expect(coaching).toHaveAttribute('aria-expanded', 'true')
+    await user.click(coaching)
+    expect(coaching).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('AC-R002-03 keeps planned sets, reps, rounds and rest in Review, keeps live counters and Rest or log controls out of it, and keeps Swap out of Workout', async () => {
+    const { router } = await openReview(contextAcceptance())
+    const main = screen.getByRole('main')
+    const text = main.textContent ?? ''
+    // Planned work stays: sets × reps, the movement's own rest, the rounds,
+    // the one-round sequence and the group's rest. TASK-003 (AC-C08-01): the
+    // rounds are read beside the format badge rather than inside it.
+    for (const planned of ['3 × 5 reps', 'Rest 120s', '2 × 15 reps', 'Rest 45s', '3 ROUNDS', 'One round: 01 → 02', 'Rest 90s between rounds', '2 ROUNDS', 'Rest 60s between rounds', '15 reps']) {
+      expect(text, planned).toContain(planned)
+    }
+    // Round 7 states each card's size on the line under its header; the
+    // standard block's line states none.
+    expect(cards('review').map((card) => metaOf(card)?.textContent ?? null)).toEqual(['', '3 ROUNDS', '2 ROUNDS'])
+    // Nothing live leaks in.
+    expect(main.querySelectorAll('.clr-movement-identity__counter')).toHaveLength(0)
+    expect(within(main).queryAllByText(LIVE_PROGRESS)).toEqual([])
+    expect(within(main).queryAllByRole('button', { name: LIVE_ACTION })).toEqual([])
+    expect(within(main).queryAllByRole('button', { name: /^Log\b/ })).toEqual([])
+    expect(within(main).queryAllByRole('timer')).toEqual([])
+    expect(within(main).getAllByRole('button', { name: /^Swap / })).toHaveLength(7)
+
+    await startWorkout(router, LISTS.workout.superset)
+    const live = screen.getByRole('main')
+    expect(within(live).queryAllByRole('button', { name: /^Swap / })).toEqual([])
+    expect(within(live).queryAllByRole('button', { name: /^Undo swap/ })).toEqual([])
+    expect(live.querySelectorAll('.clr-movement-identity__counter').length).toBeGreaterThan(0)
+  })
+
+  it('JOURNEY-002 opens Review, uses Swap, starts that same workout and uses Rest on Workout without recording work', async () => {
+    const user = userEvent.setup()
+    const { router, calls } = await openReview(contextAcceptance())
+    const before = STRUCTURES.map((structure) => readings(rows('review', structure)))
+
+    // Review's contextual action: Swap opens the alternatives for that slot.
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    const keep = await screen.findByRole('button', { name: 'Keep back squat' })
+    expect(await screen.findByText('Nothing else fits this slot')).toBeInTheDocument()
+    await user.click(keep)
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Keep back squat' })).toBeNull())
+    expect(STRUCTURES.map((structure) => readings(rows('review', structure)))).toEqual(before)
+
+    await startWorkout(router, LISTS.workout.superset)
+    expect(calls.accepted).toHaveLength(1)
+    expect(calls.started).toHaveLength(1)
+    expect(STRUCTURES.map((structure) => readings(list('workout', structure)))).toEqual(before)
+
+    // Workout's contextual action: Rest opens the set entry; nothing is logged
+    // until Log set, and collapsing keeps the session as it was.
+    await user.click(within(list('workout', 'standard')).getAllByRole('button', { name: 'Rest' })[0])
+    const form = await screen.findByRole('form', { name: 'Log set 1 of back squat' })
+    expect(form).toBeInTheDocument()
+    const [squat] = identities(list('workout', 'standard'))
+    expect(squat.querySelector('.clr-movement-identity__counter')).toHaveTextContent('Set 1/3')
+    expect(screen.queryByRole('button', { name: /^Swap / })).toBeNull()
+  })
+
+  it('JOURNEY-002 timed formats show the same equipment beside each name in Review and in the live EMOM, AMRAP and For Time blocks', async () => {
+    const { router } = await openReview(timedContextAcceptance())
+    const reviewLists = TIMED_LISTS.review.map((name) => screen.getByRole('list', { name }))
+    const equipment = (scope: HTMLElement) =>
+      identities(scope).map((identity) => identity.querySelector('[data-movement-context]')?.textContent ?? null)
+    const expected = TIMED_EQUIPMENT
+    expect(reviewLists.map(equipment)).toEqual(expected)
+    for (const scope of reviewLists) {
+      for (const identity of identities(scope)) expectCompactEquipment(identity, identity.querySelector('[data-movement-context]')!.textContent!)
+    }
+    for (const card of cards('review')) expect(headerOf(card).title).toHaveTextContent(SECTION)
+
+    await startWorkout(router, TIMED_LISTS.workout[0])
+    const liveLists = TIMED_LISTS.workout.map((name) => screen.getByRole('list', { name }))
+    expect(liveLists.map(equipment)).toEqual(expected)
+    for (const scope of liveLists) {
+      for (const identity of identities(scope)) expectCompactEquipment(identity, identity.querySelector('[data-movement-context]')!.textContent!)
+    }
+    expect(screen.queryAllByRole('button', { name: /^Swap / })).toEqual([])
+  })
+
+  it('JOURNEY-002 recovery: a failed alternatives read or a failed Start keeps Review as planned and records no work', async () => {
+    const user = userEvent.setup()
+    let reads = 0
+    const { router, calls } = await openReview(contextAcceptance(), {
+      acceptFails: true,
+      candidates: {
+        async retrieve() {
+          reads += 1
+          return err(createError(ErrorCode.NETWORK_OFFLINE))
+        },
+      },
+    })
+    const before = STRUCTURES.map((structure) => readings(rows('review', structure)))
+
+    await user.click(screen.getByRole('button', { name: 'Swap push up' }))
+    expect(await screen.findByText('Alternatives didn’t load')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+    await waitFor(() => expect(reads).toBe(2))
+    await user.click(await screen.findByRole('button', { name: 'Keep push up' }))
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Keep push up' })).toBeNull())
+    expect(STRUCTURES.map((structure) => readings(rows('review', structure)))).toEqual(before)
+
+    await user.click(screen.getByRole('button', { name: 'Start workout' }))
+    expect(await screen.findByText('Couldn’t start this workout')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(REVIEW_PATH)
+    expect(calls.accepted).toHaveLength(1)
+    expect(calls.started).toEqual([])
+    // Review is unchanged behind the error: same static headers, same Swap.
+    expect(STRUCTURES.map((structure) => readings(rows('review', structure)))).toEqual(before)
+    expect(cards('review')).toHaveLength(3)
+    expect(screen.getAllByRole('button', { name: /^Swap / }).length).toBeGreaterThan(0)
+  })
+
+  it('renders the shared owners with each context’s own slot', () => {
+    // Round 7's shared owners, as each context composes them: Review's card is
+    // the static header over a movement with its action (`ReviewExerciseRow`'s
+    // own `MovementIdentity`), Workout's the same header over the live
+    // movement with its progress (`BlockPanel.Movement`).
+    render(
+      <WorkoutExperiencePresentationProvider value={PRODUCT_PRESENTATION}>
+        <div data-context="review">
+          <Card><div className="clr-movement-group">
+            <MovementGroupHeader title="Conditioning" />
+            <MovementIdentity name="kb swing" equipment="kettlebell" prescription="15 reps" action={<button type="button">Swap kb swing</button>} />
+          </div></Card>
+        </div>
+        <div data-context="workout">
+          <Card><div className="clr-movement-group">
+            <MovementGroupHeader title="Conditioning" />
+            <BlockPanel.Movement title="kb swing" context="kettlebell" detail="15 reps" counter="Set 1/2" />
+          </div></Card>
+        </div>
+      </WorkoutExperiencePresentationProvider>,
+    )
+    const review = document.querySelector<HTMLElement>('[data-context="review"]')!
+    const live = document.querySelector<HTMLElement>('[data-context="workout"]')!
+    expect(review.querySelector('.clr-movement-identity__action')).toHaveTextContent('Swap kb swing')
+    expect(review.querySelector('.clr-movement-identity__counter')).toBeNull()
+    expect(review.querySelector('.clr-movement-identity__name')!.tagName).toBe('P')
+    expect(live.querySelector('.clr-movement-identity__counter')).toHaveTextContent('Set 1/2')
+    expect(live.querySelector('.clr-movement-identity__action')).toBeNull()
+    expect(within(live).getByRole('heading', { name: 'kb swing' })).toBeInTheDocument()
+    expect(within(review).getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    // Round 7 (owner decisions of 2026-11-13, decision 2): the live card's
+    // header is the same heading, not a label.
+    expect(within(live).getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    for (const scope of [review, live]) expectCompactEquipment(identities(scope)[0], 'kettlebell')
+  })
+
+  it('renders the accepted gallery state cards through WorkoutCard with static headers and each context’s slot', () => {
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=cards']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const state = document.querySelector<HTMLElement>('[data-refinement-state="cards"]')!
+    expect(state).not.toBeNull()
+    // Round 7's state draws the live cards before Start (EMOM, AMRAP and For
+    // Time, through `TimedWorkoutFlow` and `BlockPanel`): each card opens with
+    // the static header and holds the live slot; Review's own cards are read on
+    // the real /review route by the cases above.
+    const liveCards = [...state.querySelectorAll<HTMLElement>('.clr-card')]
+      .filter((card) => card.querySelector(':scope > .clr-card__body > .clr-movement-group > [data-movement-group-header]') !== null)
+    expect(liveCards).toHaveLength(3)
+    for (const card of liveCards) {
+      const { header, title, badge } = headerOf(card)
+      expect(title!.tagName).toMatch(/^H\d$/)
+      expect(badge).not.toBeNull()
+      expect(header.querySelector('button, [aria-expanded], .clr-collapsible__glyph')).toBeNull()
+    }
+    expect(liveCards.map((card) => headerOf(card).badge!.textContent)).toEqual(['EMOM', 'AMRAP', 'FOR TIME'])
+    const live = identities(state)
+    expect(live).toHaveLength(3)
+    for (const identity of live) {
+      expect(identity.querySelector('.clr-movement-identity__action')).toBeNull()
+      expectCompactEquipment(identity, identity.querySelector('[data-movement-context]')!.textContent!)
+    }
+    // No section toggle: no chevron or control in any of the state's headers
+    // (the live cards' own Coaching and notes disclosure stays below them).
+    expect(state.querySelector('[data-movement-group-header] .clr-collapsible__glyph, [data-movement-group-header] button')).toBeNull()
+    const workout = state
+    expect(within(workout).getByRole('list', { name: 'Movements in this EMOM' })).toBeInTheDocument()
+
+    // The gallery draws the owners the routes draw (GAL-02, GAL-06).
+    const gallery = readFileSync(resolve(ROOT, 'src/dev/gallery-refinement-flow.tsx'), 'utf8')
+    expect(gallery).toMatch(/<TimedWorkoutFlow block=\{block\}/)
+    expect(readFileSync(resolve(ROOT, 'src/dev/gallery-refinement-scenes.tsx'), 'utf8')).toMatch(/import \{ LiveFlow \} from '\.\/gallery-refinement-flow'/)
+    for (const consumer of ['src/ui/block-renderers-frame.tsx', 'src/ui/timed-workout-flow.tsx', 'src/ui/review-exercise-row.tsx']) {
+      expect(readFileSync(resolve(ROOT, consumer), 'utf8')).toMatch(/from '\.\/movement-presentation'/)
+    }
+    expect(readFileSync(resolve(ROOT, 'src/app/Review.tsx'), 'utf8')).toMatch(/import \{ ReviewExerciseRow \} from '\.\.\/ui\/review-exercise-row'/)
+    expect(readFileSync(resolve(ROOT, 'src/ui/review-exercise-row.tsx'), 'utf8')).toMatch(/<MovementIdentity\b/)
   })
 })
