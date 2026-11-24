@@ -22,7 +22,7 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-running.png",
-      "sha256": "fa23088234a144d993f0c8883306085edab304a08e444c0a16fa90aeb501111d"
+      "sha256": "7a7ba644af2609b8d5bc63ced96ea496ba563e63e2bd7dd642809d580e039929"
     },
     "gallery-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-paused.png",
@@ -30,7 +30,7 @@
     },
     "route-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-paused.png",
-      "sha256": "f7553fc46adcd76023a137f0dcefb40abc6dc20cbb7e27041c7a9c5d8a2d9987"
+      "sha256": "8e982febe98cd103df3d91018d78fd38678bfd199a87e5828b526ae4fe9b8b64"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ended.png",
@@ -38,15 +38,15 @@
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ended.png",
-      "sha256": "afd1c964b68bcb2b5b32fa069cae847883486db38e19f45bdbe06ef9c46922fc"
+      "sha256": "7e2625fe301c78c1aaf18581604e9195f3873cf1083f936f559ead7b2df3e675"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-log.png",
-      "sha256": "794cc4f9de2f01ddb13f79d5a5e3fc79973b6b78001c4dfe39a301b2325fa93f"
+      "sha256": "fc3c217f6c0a8f6a53fa7de4d3df16e5a7c23ef58c24f0c5ba245c853461ad6d"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-log.png",
-      "sha256": "18342fc2718078748b140ad2ead3ff7029529b626707b79afea4d786bb4bce0f"
+      "sha256": "7ed15186b0d3fcdee82d6131cdceddf6e9ec342c52c2ef355486128c0f0bf51c"
     }
   },
   "lines": {
@@ -261,17 +261,17 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 50,
-        "running": 73,
-        "paused": 73,
-        "ended": 67,
+        "ready": 53,
+        "running": 76,
+        "paused": 76,
+        "ended": 70,
         "log": 52
       },
       "route": {
-        "ready": 50,
-        "running": 73,
-        "paused": 73,
-        "ended": 67,
+        "ready": 53,
+        "running": 76,
+        "paused": 76,
+        "ended": 70,
         "log": 52
       }
     },

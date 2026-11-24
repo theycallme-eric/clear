@@ -12,15 +12,15 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-gallery-log.png",
-      "sha256": "c93a01fa6d3d7b7a6d5da3aa99d63fbd41427089fe68a4b5d9eea549b4005884"
+      "sha256": "997c2d2b4c1877f13a4080ce7c954e9317db28b3f7a1e0e5f544013b0e9d39d4"
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-route-ready.png",
-      "sha256": "a005385a9d84772c5a2387d331c4804faf590815fcdc28991c14de8ef799ec29"
+      "sha256": "5885bbdf8e1a60dcfec6488787541b05b2d39e9ce8e09c766aabf6f54ef98e34"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-route-log.png",
-      "sha256": "e15ac31c2662a4c40c06de3a01d3178cba7933b08a6baa2b2e32496a43c0c38a"
+      "sha256": "18fa783e27f9f278cfd8666e4ac4a25f327a789bb9530ad2d9f3da0eae1cdc9e"
     }
   },
   "lines": {
@@ -36,6 +36,7 @@
         "24 lb",
         "START AMRAP",
         "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
         "BURPEE",
         "ADD NOTE — BURPEE",
         "KB SWING",
@@ -46,12 +47,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -83,12 +79,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -98,6 +89,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
         "BURPEE",
         "ADD NOTE — BURPEE",
         "KB SWING",
@@ -116,6 +108,7 @@
         "24 lb",
         "START AMRAP",
         "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
         "BURPEE",
         "ADD NOTE — BURPEE",
         "KB SWING",
@@ -126,12 +119,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -163,12 +151,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -178,6 +161,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— AMRAP: BURPEE, KB SWING",
         "BURPEE",
         "ADD NOTE — BURPEE",
         "KB SWING",
@@ -195,14 +179,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 64,
-        "log": 91,
-        "ended": 80
+        "ready": 71,
+        "log": 77,
+        "ended": 87
       },
       "route": {
-        "ready": 64,
-        "log": 91,
-        "ended": 80
+        "ready": 71,
+        "log": 77,
+        "ended": 87
       }
     },
     "parts": {
@@ -219,7 +203,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 584.5
         },
         "ended": {
           "key": "(part)#0",
@@ -242,7 +226,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 584.5
         },
         "ended": {
           "key": "(part)#0",

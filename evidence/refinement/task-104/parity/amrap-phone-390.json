@@ -42,11 +42,11 @@
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-gallery-log.png",
-      "sha256": "6a09221f9236e3a7379e4b624e21e3b7119bcff2eb9a087cf1a2f303a9bf7b8d"
+      "sha256": "939f1a4cd821c1722326d9b7ac947623a15479e2139503cae7630d4ef9a8f807"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-390-route-log.png",
-      "sha256": "03d4650dc450c38e19af92ba215459d85820f2a530bdf1208fb3dd20868390e9"
+      "sha256": "64943d8bfbb0966d2f35baf20fb31f6ab913978832f6b9a595cf101a21597dcc"
     }
   },
   "lines": {
@@ -148,12 +148,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -262,12 +257,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -307,18 +297,18 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
-        "running": 88,
-        "paused": 87,
-        "ended": 81,
-        "log": 91
+        "ready": 71,
+        "running": 94,
+        "paused": 93,
+        "ended": 87,
+        "log": 77
       },
       "route": {
-        "ready": 65,
-        "running": 88,
-        "paused": 87,
-        "ended": 81,
-        "log": 91
+        "ready": 71,
+        "running": 94,
+        "paused": 93,
+        "ended": 87,
+        "log": 77
       }
     },
     "parts": {
@@ -356,7 +346,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 788.5
+          "height": 584.5
         }
       },
       "route": {
@@ -393,7 +383,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 788.5
+          "height": 584.5
         }
       }
     },

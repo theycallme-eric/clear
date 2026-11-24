@@ -71,19 +71,19 @@
     },
     "gallery-disclosure-open": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-open.png",
-      "sha256": "082b51b7c02d1c73b9bc12d459fdb81e84fa1c0d1259ded1db7e28d93a89bcfe"
+      "sha256": "e7cf9f6d67933979688307fdbc36e01f4bf2ae76275d7fd9d4621b8ea513ba02"
     },
     "route-disclosure-open": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-open.png",
-      "sha256": "347edfda66f70f783affa22b23b22b8b57cb8c7f839c2aa361a33e2c8ca23256"
+      "sha256": "b7191d09f74879e4843d8ffa9c121a5db8eba9704aa81bcd5c54c2fddbfc1a32"
     },
     "gallery-dialog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-dialog.png",
-      "sha256": "dc9e90aaa05f5b5329abfc54c921386ecf634af57adddb9d3f9dc0226e85d86d"
+      "sha256": "48f056d17c0fee9ac6daeaca3ce113672e14f04dbd71be49d6975239ebbb317f"
     },
     "route-dialog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-dialog.png",
-      "sha256": "7c0a50e87e3d2538f1a38c633afe25d7a3733f0efc390d8e87763568b72c7c0f"
+      "sha256": "06d369c5ba5c563084cda73b27f90a8620363148da874f6e9516283c20a0eb71"
     }
   },
   "lines": {
@@ -214,14 +214,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 284.5
+          "height": 244.5
         },
         "route": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 284.5
+          "height": 244.5
         }
       }
     },

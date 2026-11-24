@@ -10,43 +10,43 @@
   "captures": {
     "gallery-ready": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-gallery-ready.png",
-      "sha256": "75359da176d1c350fe7e227efafe7b0c0d23cdb67b14ad2924af984102165ac2"
+      "sha256": "16b13aaa1349e5d4361c2b13db5203b963c7619553b473c50281533c115458b2"
     },
     "route-ready": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-route-ready.png",
-      "sha256": "f01724bab2f3d40ffdb7f3d277baccf351616c5e41727f5b4032e878b84d6d55"
+      "sha256": "12876b4bdcdb14a38fbbc65f7a2c1bae6c3671be6a3ef82dbc0d9e8c1f40fc17"
     },
     "gallery-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-gallery-running.png",
-      "sha256": "2b332d54d72843fa98ab2fe8aa2653ed023389b8c1ace833d532f6119330badf"
+      "sha256": "7d1e3010c9b1af0a2285b0bdcb3237fbdb6af001eae9baa19fb241a60c105a7b"
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-route-running.png",
-      "sha256": "a883aaf986d25046a8ace3c634eca8de61c2bdecb103e8b8b02af3f1e4f0a249"
+      "sha256": "b3155addae07e48f78ec56c24faf562154523ce8f7e52eb95cf75be9b52d1de1"
     },
     "gallery-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-gallery-paused.png",
-      "sha256": "ca69b5284b93612b17f1be719c67bb0a8afb0439b59b0daff16a17511f3b3956"
+      "sha256": "d0f0d53641adce7f39b3b5a5a14df3437a0c4be6edcc59d3a569ecf7e53504d8"
     },
     "route-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-route-paused.png",
-      "sha256": "c68929eb8624aa6a539160966f169815fead11ccff694caec833e8b424fba50e"
+      "sha256": "ae83b2b6bab3d684f29b37aa9e619d0ab861c4384e7e4d1c7c3e30f31d309ca7"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-gallery-ended.png",
-      "sha256": "ef95153f8bf13345323a00466d918179329903d4e9472b6ecf0254fafaa996bd"
+      "sha256": "ad15016eaead6d275a100624f68464064a3110da6b3cdae7c941131616f08b14"
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-route-ended.png",
-      "sha256": "168610d60ed876752fcad3a25a4dcdbe4933e62e2c19c0487d58d62c0a3b3262"
+      "sha256": "12ed83a12f0636db67b920f73a3a2559da174f8235dd9c379ba3b38ab3c7b1a7"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-gallery-log.png",
-      "sha256": "d2e11eea40d197809c906175b3f5d21ca647a39a9f123c9d9b038d5735c6674c"
+      "sha256": "053c65e53589f4e0088a22bc792f2e89e419320fa3ae4e715c4d88e8cde69e1a"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-4-phone-320-route-log.png",
-      "sha256": "5c92c69137c079bad382446c0437bf2b7218517aebabe51ab477c936912d6a03"
+      "sha256": "6a45dde39bccb9337e4b427538df6a740af22480f5c7cd80c1eb345810f2e125"
     }
   },
   "lines": {
@@ -59,17 +59,29 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × push up",
+        "push up, 2 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R2",
+        "ROUND 2",
         "4 × push up",
+        "push up, 4 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R3",
+        "ROUND 3",
         "6 × push up",
+        "push up, 6 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R4",
+        "ROUND 4",
         "8 × push up",
+        "push up, 8 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "COACHING AND NOTES",
         "— LADDER: PUSH UP, BURPEE",
         "PUSH UP",
@@ -93,18 +105,30 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × PUSH UP",
+        "PUSH UP, 2 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R2",
+        "ROUND 2",
         "4 × PUSH UP",
+        "PUSH UP, 4 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R3",
+        "ROUND 3",
         "6 × PUSH UP",
+        "PUSH UP, 6 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R4",
+        "ROUND 4",
         "8 × PUSH UP",
+        "PUSH UP, 8 REPS",
         "4 × BURPEE",
-        "0 of 4 rounds completed",
+        "BURPEE, 4 REPS",
+        "No rounds marked yet",
         "COACHING AND NOTES",
         "— LADDER: PUSH UP, BURPEE",
         "PUSH UP",
@@ -128,18 +152,30 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × PUSH UP",
+        "PUSH UP, 2 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R2",
+        "ROUND 2",
         "4 × PUSH UP",
+        "PUSH UP, 4 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R3",
+        "ROUND 3",
         "6 × PUSH UP",
+        "PUSH UP, 6 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R4",
+        "ROUND 4",
         "8 × PUSH UP",
+        "PUSH UP, 8 REPS",
         "4 × BURPEE",
-        "0 of 4 rounds completed",
+        "BURPEE, 4 REPS",
+        "No rounds marked yet",
         "COACHING AND NOTES",
         "— LADDER: PUSH UP, BURPEE",
         "PUSH UP",
@@ -161,17 +197,29 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × push up",
+        "push up, 2 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R2",
+        "ROUND 2",
         "4 × push up",
+        "push up, 4 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R3",
+        "ROUND 3",
         "6 × push up",
+        "push up, 6 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R4",
+        "ROUND 4",
         "8 × push up",
+        "push up, 8 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "LOG RESULTS",
         "RESUME LADDER",
         "COACHING AND NOTES",
@@ -199,13 +247,7 @@
         "R4",
         "8",
         "REPS",
-        "0 of 4 rounds completed",
-        "PUSH UP",
-        "COMPLETED IN ROUND 1",
-        "REPS",
-        "BURPEE",
-        "COMPLETED IN ROUND 1",
-        "REPS",
+        "No rounds marked yet",
         "EFFORT · OPTIONAL",
         "TOO HARD",
         "ABOUT RIGHT",
@@ -223,17 +265,29 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × push up",
+        "push up, 2 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R2",
+        "ROUND 2",
         "4 × push up",
+        "push up, 4 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R3",
+        "ROUND 3",
         "6 × push up",
+        "push up, 6 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R4",
+        "ROUND 4",
         "8 × push up",
+        "push up, 8 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "COACHING AND NOTES",
         "— LADDER: PUSH UP, BURPEE",
         "PUSH UP",
@@ -257,18 +311,30 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × PUSH UP",
+        "PUSH UP, 2 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R2",
+        "ROUND 2",
         "4 × PUSH UP",
+        "PUSH UP, 4 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R3",
+        "ROUND 3",
         "6 × PUSH UP",
+        "PUSH UP, 6 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R4",
+        "ROUND 4",
         "8 × PUSH UP",
+        "PUSH UP, 8 REPS",
         "4 × BURPEE",
-        "0 of 4 rounds completed",
+        "BURPEE, 4 REPS",
+        "No rounds marked yet",
         "COACHING AND NOTES",
         "— LADDER: PUSH UP, BURPEE",
         "PUSH UP",
@@ -292,18 +358,30 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × PUSH UP",
+        "PUSH UP, 2 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R2",
+        "ROUND 2",
         "4 × PUSH UP",
+        "PUSH UP, 4 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R3",
+        "ROUND 3",
         "6 × PUSH UP",
+        "PUSH UP, 6 REPS",
         "4 × BURPEE",
+        "BURPEE, 4 REPS",
         "R4",
+        "ROUND 4",
         "8 × PUSH UP",
+        "PUSH UP, 8 REPS",
         "4 × BURPEE",
-        "0 of 4 rounds completed",
+        "BURPEE, 4 REPS",
+        "No rounds marked yet",
         "COACHING AND NOTES",
         "— LADDER: PUSH UP, BURPEE",
         "PUSH UP",
@@ -325,17 +403,29 @@
         "PUSH UP · 2 → 8 reps · +2 per round",
         "BURPEE · 4 reps",
         "R1",
+        "ROUND 1",
         "2 × push up",
+        "push up, 2 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R2",
+        "ROUND 2",
         "4 × push up",
+        "push up, 4 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R3",
+        "ROUND 3",
         "6 × push up",
+        "push up, 6 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "R4",
+        "ROUND 4",
         "8 × push up",
+        "push up, 8 reps",
         "4 × burpee",
+        "burpee, 4 reps",
         "LOG RESULTS",
         "RESUME LADDER",
         "COACHING AND NOTES",
@@ -363,13 +453,7 @@
         "R4",
         "8",
         "REPS",
-        "0 of 4 rounds completed",
-        "PUSH UP",
-        "COMPLETED IN ROUND 1",
-        "REPS",
-        "BURPEE",
-        "COMPLETED IN ROUND 1",
-        "REPS",
+        "No rounds marked yet",
         "EFFORT · OPTIONAL",
         "TOO HARD",
         "ABOUT RIGHT",
@@ -407,18 +491,18 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 72,
-        "running": 99,
-        "paused": 99,
-        "ended": 90,
-        "log": 103
+        "ready": 102,
+        "running": 129,
+        "paused": 129,
+        "ended": 120,
+        "log": 87
       },
       "route": {
-        "ready": 72,
-        "running": 99,
-        "paused": 99,
-        "ended": 90,
-        "log": 103
+        "ready": 102,
+        "running": 129,
+        "paused": 129,
+        "ended": 120,
+        "log": 87
       }
     },
     "parts": {
@@ -428,35 +512,35 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 523
+          "height": 507
         },
         "running": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 699
+          "height": 619
         },
         "paused": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 699
+          "height": 619
         },
         "ended": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 591
+          "height": 575
         },
         "log": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 794.5
+          "height": 538.5
         }
       },
       "route": {
@@ -465,35 +549,35 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 523
+          "height": 507
         },
         "running": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 699
+          "height": 619
         },
         "paused": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 699
+          "height": 619
         },
         "ended": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 591
+          "height": 575
         },
         "log": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 794.5
+          "height": 538.5
         }
       }
     },

@@ -12,7 +12,7 @@
     },
     "route": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-390-route.png",
-      "sha256": "98cd0ab66a501f613ddadf2808ac775b02d73d340d1f88f1ba8f5a41f444c6ff"
+      "sha256": "c7fd17efbe033aee0f781b8866a4842b7c46495a46ddc524194d6ff1276d2437"
     }
   },
   "lines": {
@@ -29,7 +29,7 @@
       "WORKOUT HISTORY",
       "SHOW",
       "Completed",
-      "Wed 4 Nov 2026 – Sun 15 Nov 2026 · 12 rest days",
+      "Wed 4 Nov 2026 – Mon 23 Nov 2026 · 20 rest days",
       "REST",
       "UPPER-BODY STRENGTH",
       "COMPLETED",
@@ -121,7 +121,7 @@
     },
     {
       "side": "route only",
-      "text": "Wed 4 Nov 2026 – Sun 15 Nov 2026 · 12 rest days",
+      "text": "Wed 4 Nov 2026 – Mon 23 Nov 2026 · 20 rest days",
       "criterion": "TASK-AC-6BFF651DF237",
       "reason": "Rest days are still listed under All entries (TASK-026); the gallery sample has none."
     },

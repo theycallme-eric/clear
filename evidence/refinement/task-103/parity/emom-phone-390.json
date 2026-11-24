@@ -12,7 +12,7 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-gallery-log.png",
-      "sha256": "a20503776edbce1c0226547334b26c123a0cd61e464462db6daf14eec0970b34"
+      "sha256": "6f9409f40d6807ec6e92b5e9a2a0b701a61965d0023ba3bbe48ac8e12cb6ac8b"
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-route-ready.png",
@@ -20,7 +20,7 @@
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-route-log.png",
-      "sha256": "be88e26bc1ea6197b8ee64c5f43a9966ca84c33d308f089f92de218628c9d3f5"
+      "sha256": "5ebada08cb4cd99fdb34eae53c6d336f1286ed586e5135656d9f389b3e6b392a"
     }
   },
   "lines": {
@@ -34,6 +34,7 @@
         "24 lb",
         "START EMOM",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -74,6 +75,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ]
@@ -88,6 +90,7 @@
         "24 lb",
         "START EMOM",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ],
@@ -128,6 +131,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— EMOM: KB SWING",
         "KB SWING",
         "ADD NOTE — KB SWING"
       ]
@@ -143,14 +147,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 49,
+        "ready": 53,
         "log": 52,
-        "ended": 65
+        "ended": 69
       },
       "route": {
-        "ready": 49,
+        "ready": 53,
         "log": 52,
-        "ended": 65
+        "ended": 69
       }
     },
     "parts": {
