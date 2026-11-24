@@ -139,3 +139,12 @@ Eric's decisions (chat, 2026-11-24): D2 "Retire, list for UAT (Recommended)"; D3
 - **Definition record.** TASK-038's record pins `src/dev/gallery-refinement-scenes.tsx`; after D3 its check was
   REJECTED (source hash mismatch). Re-recorded the `repo:` hash only (line 57, TASK-121's rules); TASK-038 and TASK-121
   check-01 PASSED (receipts unchanged). The closure test now accepts exactly that one record line.
+- **Key check.** The whole `e2e/refinement` with one worker and two retries (CI=1's settings) at 971ae643:
+  10:43:06–11:51:26, 4,100 s (68 min). 395 passed, 4 failed — the four backend-lane cases (task-047:1121/1132,
+  task-048:1253/1264), which need the disposable test lane. `git status` after the run: clean. A first start with
+  `CI=1` was stopped after 14 s so it could run detached; that left its dev server (npm run e2e:server, vite on 5173)
+  orphaned, and stopping it was refused by the permission check, so the key run reused it (CI=1 never reuses a
+  server, which is why the flags were set by hand). The orphan had exited by the end of the run; port 5173 is free.
+- **Daily drift (not changed).** TASK-103's screens receipts hold /history's rest-day range up to yesterday
+  ("Wed 4 Nov 2026 – Mon 23 Nov 2026 · 20 rest days"), so a run on another day rewrites them. A fixed page clock in
+  that spec would end it; it is another task's spec and timing outside D4(b), so it is reported, not changed.

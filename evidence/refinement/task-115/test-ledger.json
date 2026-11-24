@@ -1883,14 +1883,23 @@
    ],
    "rootRerun": "contained-shell, focus-ownership and the 13 B05 files with placeholder Supabase URL/key and the B05 references staged for the run: 110 passed, 4 skipped, 2 failed — contained-shell “the clear skin / the vapour skin keeps shipped fonts, ground and emission” (the same old read as the retired signal/mono cases; they passed in the no-backend whole run and stay, reported).",
    "loadSensitive": "task-041 failed 5 cases under the parallel whole run (backdrop tint token read empty) and passed 10/10 alone.",
-   "ciRun": "PENDING",
+   "ciRun": {
+    "command": "npx playwright test e2e/refinement --project=mobile --workers=1 --retries=2 (CI=1’s one worker and two retries; CI=1 itself could not start because an earlier interrupted start of mine had left its dev server on 5173 and CI=1 does not reuse a server, so this run reused it)",
+    "head": "971ae643",
+    "start": "10:43:06",
+    "end": "11:51:26",
+    "duration": "4,100 s (68 min 20 s)",
+    "result": "395 passed, 4 failed: the four backend-lane cases (task-047:1121, task-047:1132, task-048:1253, task-048:1264; “Needs SUPABASE_URL …”, each after 2 retries). No other failure, nothing flaky.",
+    "gitStatusAfter": "clean (0 lines)"
+   },
    "definitionReRecord": {
     "record": "docs/definitions/clear-refinement-20261103/TASK-038.md",
     "line": 57,
     "change": "repo:src/dev/gallery-refinement-scenes.tsx sha256 621ecdfb… → 91f26a57… (hash only, TASK-121’s editing rules; the S20 citation still holds: GalleryMovementCards is unchanged)",
     "why": "D3 changed that pinned source; TASK-038 check-01 was REJECTED until re-recorded, then PASSED; TASK-121 check-01 PASSED (receipt unchanged).",
     "commit": "in the commit after the D3 change (6ca3dc5f), within the same repair candidate"
-   }
+   },
+   "tasks041": "task-041 passed in the one-worker run."
   }
  },
  "summary": {
