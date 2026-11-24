@@ -1,0 +1,55 @@
+{
+  "schema": "clear-refinement-staged-reference/v1",
+  "id": "a3-authority",
+  "role": "A3 gallery adoption authority, owner decisions of 2026-11-13/14 and the corrected task 2 groundwork ledger (the body-ledger rerun input)",
+  "identity": {
+    "kind": "approved-source",
+    "roots": [
+      "sources/source-07-a3-gallery-adoption-authority",
+      "sources/source-09-a3-supporting-evidence"
+    ]
+  },
+  "approvedSource": {
+    "inventorySha256": "b86b6eb8ef326403dee477d3232b9a67c03ae7c029c8744754b9fd73f00e011f"
+  },
+  "manifest": {
+    "format": "inline"
+  },
+  "guides": {
+    "adoptionAuthority": "a3/A3-GALLERY-ADOPTION-AUTHORITY.md",
+    "criterionChanges": "a3/A3-CRITERION-CHANGES.json",
+    "groundworkLedger": "a3/2026-11-14-a3-task2-groundwork-ledger.json"
+  },
+  "files": [
+    {
+      "path": "a3/A3-GALLERY-ADOPTION-AUTHORITY.md",
+      "bytes": 6962,
+      "sha256": "d62727caaf8b2e781087ee432f0ace5822f0e5d6520ee2bde8d5dfab594d3cc5",
+      "approvedPath": "sources/source-07-a3-gallery-adoption-authority/A3-GALLERY-ADOPTION-AUTHORITY.md"
+    },
+    {
+      "path": "a3/A3-CRITERION-CHANGES.json",
+      "bytes": 10740,
+      "sha256": "e07332a1195bc2c5f9439d07ca099b5877c47a8c5d1430c59115e357ac57387a",
+      "approvedPath": "sources/source-07-a3-gallery-adoption-authority/A3-CRITERION-CHANGES.json"
+    },
+    {
+      "path": "a3/OWNER-DECISIONS-2026-11-13-14.md",
+      "bytes": 4311,
+      "sha256": "cdadec260e62404a79e690a430db2f10871ec3a841cd26be2c73ba5f37c951f9",
+      "approvedPath": "sources/source-09-a3-supporting-evidence/OWNER-DECISIONS-2026-11-13-14.md"
+    },
+    {
+      "path": "a3/2026-11-14-a3-task2-groundwork-ledger.json",
+      "bytes": 759991,
+      "sha256": "37daf630cb92a3faae27193416977c65d6adcbda463bd8eeb668175ea8391ca9",
+      "approvedPath": "sources/source-09-a3-supporting-evidence/2026-11-14-a3-task2-groundwork-ledger.json"
+    },
+    {
+      "path": "a3/2026-11-14-a3-task2-groundwork-ledger.md",
+      "bytes": 26912,
+      "sha256": "cf551c7cdb52dedcebbb6127279b165ff89277b2c5c64daa48bf3481f5e52521",
+      "approvedPath": "sources/source-09-a3-supporting-evidence/2026-11-14-a3-task2-groundwork-ledger.md"
+    }
+  ]
+}

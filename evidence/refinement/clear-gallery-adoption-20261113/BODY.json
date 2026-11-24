@@ -1,0 +1,58 @@
+{
+  "schema": "clear-refinement-body/v1",
+  "body": "clear-gallery-adoption-20261113",
+  "requirementsSet": "b86b6eb8ef326403dee477d3232b9a67c03ae7c029c8744754b9fd73f00e011f",
+  "integrationBase": {
+    "commit": "a6cd01c926d516b3c72770b32443ea0dadfe47a9",
+    "role": "selected implementation baseline: A3 tasks 1–2 with the task 2 review fixes (a6cd01c9 on 2f023b9), cut from the accepted gallery bec4454"
+  },
+  "acceptedGallery": {
+    "commit": "bec44545eb982f6dc136a583400f7e314c306d1d",
+    "reference": "accepted-gallery"
+  },
+  "foundation": {
+    "path": "src/design-system",
+    "version": "0.14.3"
+  },
+  "historicalComparisons": [
+    {
+      "id": "effects-delivered-main",
+      "commit": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+      "role": "historical-comparison",
+      "expectAncestorOfBase": true,
+      "note": "effects-delivered main; the old body’s baseline, history here"
+    },
+    {
+      "id": "superseded-gallery",
+      "commit": "eded158cfd928d382c9a9409e2c372270312741d",
+      "role": "historical-comparison",
+      "expectAncestorOfBase": true,
+      "note": "gallery eded158, superseded by bec4454"
+    },
+    {
+      "id": "old-build",
+      "commit": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+      "role": "historical-comparison",
+      "note": "build/clear-refinement-2026-11-04: source material only, never merged"
+    }
+  ],
+  "notesDir": "docs/journal/clear-gallery-adoption-20261116",
+  "taskEvidence": "evidence/refinement/task-NNN",
+  "objectStore": {
+    "policy": "staged reference objects are kept outside Git in one project-level store shared by all CLEAR bodies (owner decisions 2026-11-09); only these hash manifests are committed; no body-level fallback",
+    "layout": "<project>/runner-v2/<runner body>/worktrees/<task> -> <project>/evidence-store/<body>/references/<id>/objects/<sha256>",
+    "override": "CLEAR_REFINEMENT_EVIDENCE_DIR"
+  },
+  "references": [
+    {
+      "id": "accepted-gallery",
+      "record": "references/accepted-gallery/REFERENCE.json",
+      "sha256": "05f58ba70d4abd44b99f3c93b995c232b4244864ef6edc149d142322b213f4de"
+    },
+    {
+      "id": "a3-authority",
+      "record": "references/a3-authority/REFERENCE.json",
+      "sha256": "322a3087250b2829c0777ef46e15eae168f03259defdef522df6422739a0e963"
+    }
+  ]
+}
