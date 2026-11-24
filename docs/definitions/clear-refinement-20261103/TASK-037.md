@@ -106,6 +106,9 @@ left out of the quote.
 - `repo:src/state/emom.ts` sha256 `7fdd8c588595e98c203f3bd9e668f37d180b4bbe55c76ad2d44dca1bd9e074cf`. S71: the EMOM minute and its movement labels, which `TimedWorkoutFlow` draws.
 - `repo:src/app/AppRuntime.tsx` sha256 `490732740ee9dcc8c3f26a02b5900af54c891aa288bc64469fe79ed7d5016685`. S72: the app root, which mounts the product presentation for every route.
 - `repo:src/ui/product-presentation.ts` sha256 `17a5127e9ad97655c791a17a3bc03a4eaac151940af2b025353a89499cb95c9b`. S73: the product presentation (`PRODUCT_PRESENTATION`) and its real timed save.
+- `repo:src/state/workout-progress.ts` sha256 `80d6aeb631351e163b7ccdc0e369ec5addae42610b1ad2b1ae2fbf83681e43a4`. S74: each block's structure label (`structureIdentity`), which the timed cards' Start words carry.
+- `repo:src/ui/timed-workout-flow.test.tsx` sha256 `94f81611c0d72365c4cd7a9e1ce9807527b497e6a77022d6e8f88b1fcf9cc108`. S75: the timed cards' tests, which read each card's Start words exactly as drawn.
+- `repo:src/design-system/css/foundation.css` sha256 `7326b43e7adde389ae2ce39e749036d3b58de3cd98197c06273ece471a326cd1`. S76: Foundation 0.14.3's button style, which draws a button's words in capitals.
 
 ## Current observations
 
@@ -161,19 +164,23 @@ helper messages from the cited files. It is representative, not a dump of every 
   `Sets waiting to sync`, `Warmup`. Helpers: `Enter a weight of zero or more`, `Enter zero or more`,
   `Nothing is lost — they’ll be sent when the connection returns, and logging the next set still
   works.` Effort words: `Effort`, `Too hard`, `About right`, `Too easy`.
-- **I9** EMOM and AMRAP (`/workout`), both drawn by `TimedWorkoutFlow` [S69] [S70] [S71] [S41].
-  Actions: `Pause`, `Resume`, `Log results`, `Edit log`. States: `Minute ${minute.minute} of
+- **I9** EMOM and AMRAP (`/workout`), both drawn by `TimedWorkoutFlow` [S69] [S70] [S71] [S41] [S74]
+  [S75]. Actions: `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` over the
+  structure labels `EMOM` and `AMRAP`, drawn as `Start EMOM` and `Start AMRAP`, then `Pause`,
+  `Resume`, `Log results`, `Edit log`. States: `Minute ${minute.minute} of
   ${shape.minutes ?? '—'}`, ` · Rest`, `ODD MIN`, `EVEN MIN`, `Now`, `Next`, `Paused`, `Finished
   early`, `Time complete`, `Remaining`, `Log saved`. Helpers: `Log when complete`, `s rest at the
   end of each minute`, `Finished early, in minute ${minute.minute} of ${shape.minutes}. Continue when
   you are ready.`
 - **I10** For Time, ladder and circuit (`/workout`): For Time and the ladder are drawn by
   `TimedWorkoutFlow`, the ladder's rounds by `LadderPrescription` and a scheduled ladder's status by
-  `LadderBlock`; the circuit by `CircuitBlock` [S69] [S44] [S43] [S46]. Actions: `Start schedule`,
-  `Pause`, `Resume`, `Log results`, `Resume ladder`, `Undo finish · resume ladder`, `Start round`,
-  `Finish round`, `Take back a round`. States: `Elapsed`, `Cap reached`, `Finished`, `NOT STARTED`,
-  `ON THE CLOCK`, `No rounds marked yet`, `rounds completed`, `No rounds recorded`, `Every
-  prescribed round is recorded.`. Helpers: `Each round starts on the clock. Whatever is left of its
+  `LadderBlock`; the circuit by `CircuitBlock` [S69] [S44] [S43] [S46] [S74] [S75]. Actions:
+  `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` over the structure label
+  `FOR TIME`, drawn as `Start FOR TIME` and `Start ladder`, or `Start schedule` for a scheduled
+  ladder, then `Pause`, `Resume`, `Log results`, `Resume ladder`, `Undo finish · resume ladder`,
+  `Start round`, `Finish round`, `Take back a round`. States: `Elapsed`, `Cap reached`,
+  `Finished`, `NOT STARTED`, `ON THE CLOCK`, `No rounds marked yet`, `rounds completed`, `No rounds
+  recorded`, `Every prescribed round is recorded.`. Helpers: `Each round starts on the clock. Whatever is left of its
   interval is your rest.`, `This ladder prescribes no rungs — perform the movements as written.`,
   `The clock has run every scheduled round. Say how the block ended below.`
 - **I11** Timed results and the preparation guide (`/workout`, `/review`) [S47] [S48] [S49]. Titles:
@@ -260,7 +267,8 @@ this record.
   EMOM captions at the base [S66] and are not copy in `TimedWorkoutFlow`, which draws the EMOM on
   `/workout` [S69] [S71] [S70]; the minute `Minute ${minute.minute} of ${shape.minutes ?? '—'}` and
   the `Now` and `Next` markers stay [S69]. The presentation-less `EmomBlock` still holds both
-  captions, and no route draws it [S39] [S70].
+  captions, and no route draws it [S39] [S70]. On `/workout` only a scheduled ladder's own status
+  still says `NOT STARTED`, which R40 did not select (U4) [S43] [S69].
 - **X4** R43, natural-end sentence [S02]. Status: applied (TASK-011). `The clock has run every
   prescribed minute. Continue when you are ready.` was copy at the base [S66] and is not copy in
   `TimedWorkoutFlow` [S69] [S71]; its `Log results` dialog replaces it [S69] [S47]. The
@@ -320,14 +328,19 @@ Each is open: no answer is chosen here.
 
 - **U1** Retry wording: `Retry` [S14] [S23] [S53] and `Try again` [S16] [S34] [S61] name the same
   action.
-- **U2** Status caption case: `Paused`, `Finished early` and `Elapsed` [S69] against a scheduled
-  ladder's `NOT STARTED`, `ON THE CLOCK` and `COMPLETE` [S43].
+- **U2** Status caption case: the timed cards write `Paused`, `Finished early` and `Elapsed` [S69],
+  which the timer frame draws in capitals (`textTransform: 'uppercase'`) [S33], while a scheduled
+  ladder writes `NOT STARTED`, `ON THE CLOCK` and `COMPLETE` in capitals [S43]. The Start words
+  differ the same way, `Start FOR TIME` against `Start ladder` [S75]; the button draws both in
+  capitals (`text-transform: uppercase`), so the difference is in the written words, not on screen
+  [S76].
 - **U3** Ending words: `Time complete`, `Cap reached`, `Finished early` and `Finished` [S69], a
   scheduled ladder's `COMPLETE` [S43], and History's `Finished under the cap` and `Stopped at the
   cap` [S57].
 - **U4** The ladder's `NOT STARTED` caption [S43]; R40 named only the EMOM captions [S02].
 - **U5** Explanatory sentences not selected for removal: `Each round starts on the clock. Whatever
-  is left of its interval is your rest.` and `Start each round when you finish the last.` [S43],
+  is left of its interval is your rest.` and `Start each round when you finish the last.` [S43], the
+  second drawn by the format preview's for-time ladder (`PACING_NOTES[ladder.timing.mode]`) [S60],
   `Continue when you are ready.` [S69], and `No window prescribed — the clock is yours, and it
   reads`, which only the presentation-less `AmrapBlock` holds and no route draws [S40] [S70].
 - **U6** `Clear` the verb [S38] [S51] and `Clear set` [S36] beside the name in `Set up CLEAR` [S19]
@@ -394,9 +407,14 @@ No option is selected. These are inputs for the owner decisions below, not a des
 - Round 7 draws some copy only without its product presentation, which the app root mounts for every
   route [S72] [S73]. The inventory reads the words written in each source, so a word behind such a
   branch is not drawn on the route: for example the set sheet's `Minimize` [S36] and Generate's
-  `Uses this place’s equipment.` [S23]. The presentation-less `EmomBlock`, `AmrapBlock` and
-  `ForTimeBlock` hold copy that no route draws, because `BlockSlot` hands every timed format to
-  `TimedWorkoutFlow` [S70] [S69] [S39] [S40] [S42].
+  `Uses this place’s equipment.` [S23]. No route draws the presentation-less `EmomBlock`,
+  `AmrapBlock` or `ForTimeBlock`, because `BlockSlot` hands every timed format to
+  `TimedWorkoutFlow`, so words only they write are not drawn; `TimedWorkoutFlow` still draws
+  `AmrapComparison` from the AMRAP's module and writes some of the same words itself [S70] [S69] [S39]
+  [S40] [S42].
+- Words are quoted as each source writes them. The timer frame's caption and the Foundation button
+  draw theirs in capitals (`textTransform: 'uppercase'`, `text-transform: uppercase`), so the screen
+  shows `Paused` as PAUSED and `Start ladder` as START LADDER [S33] [S69] [S76].
 - Gallery fixtures are not inventoried: the gallery draws the route owners and does not close copy
   definitions [S07]. Server-side generation text is not frontend copy [S63].
 - Empty states and missing coaching rules belong to TASK-038 (G21) [S01] [S05].

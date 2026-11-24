@@ -106,8 +106,9 @@
       },
       {
         "record": "TASK-037.md",
-        "claim": "I9, I10, U2 and U3 quote EmomBlock/AmrapBlock/ForTimeBlock words as /workout copy (`Start EMOM`, `Start AMRAP`, `Start For Time`, `PAUSED`, `FINISHED EARLY`, `NO CLOCK`, `REST`, `MIN ${view.minute} OF ${view.minutes}`, `AMRAP complete`, `Ready`, `Racing the clock`, `Finished under cap`, `As many rounds as possible…`, `Start each round when you finish the last. Nothing here moves on by itself — you say how far you got.`)",
-        "reason": "No route draws those blocks (BlockSlot hands every timed format to TimedWorkoutFlow); `PAUSED`, `FINISHED EARLY` and `Start ladder` are no longer in their files at all. Replaced by the words TimedWorkoutFlow and its parts draw; U5 keeps AmrapBlock’s `No window prescribed — …` and says no route draws it."
+        "claim": "I9, I10, U2 and U3 quoted words that only the presentation-less EmomBlock, AmrapBlock and ForTimeBlock write as /workout copy: `NO CLOCK`, `MIN ${view.minute} OF ${view.minutes}`, `AMRAP complete`, For Time’s `Ready` state, `Racing the clock`, `Finished under cap` and `As many rounds as possible. This block prescribes no window, so it ends when you do.`",
+        "reason": "No route draws those components (BlockSlot hands every timed format to TimedWorkoutFlow), and no other route code writes these words (grep of src outside tests, dev and the three components): Round 7’s EMOM minute reads `Minute ${minute.minute} of ${shape.minutes ?? '—'}`, a no-window EMOM reads `Minute N of —`, the AMRAP and For Time end on `Time complete`, `Cap reached` or `Finished`, History says `Finished under the cap`, and the For Time card draws no state word before Start (no timer frame while ready). Replaced in I9, I10, U2 and U3 by the words TimedWorkoutFlow and its parts draw; U5 keeps AmrapBlock’s `No window prescribed — …` and says no route draws it.",
+        "repairRound1": "Repair round 1 removed from this retirement the words Round 7 still draws: the Start words (`Start ${format === 'ladder' ? 'ladder' : block.identity.label}`, timed-workout-flow.tsx:469, over the structure labels of workout-progress.ts: Start EMOM, Start AMRAP, Start FOR TIME, Start ladder; now in I9 and I10, with the FOR TIME / ladder casing in U2); `Paused`, `Finished early` and ` · Rest`, which the timer frame draws in capitals (workout-chrome.tsx labelStyle, textTransform uppercase), so the screen still reads PAUSED, FINISHED EARLY and REST (I9, U2, Limitations); and the for-time ladder’s pacing sentence `Start each round when you finish the last. …`, drawn by the format preview (FormatPreview.tsx, mode for_time; U5). The earlier statement that `PAUSED`, `FINISHED EARLY` and `Start ladder` were gone was wrong for the screen and is withdrawn."
       },
       {
         "record": "TASK-038.md",
@@ -132,15 +133,15 @@
       },
       {
         "record": "TASK-037.md",
-        "change": "rehashed 23 repo: sources; re-pointed 4 removed; added 5",
+        "change": "rehashed 23 repo: sources; re-pointed 4 removed; added 8",
         "items": [
           "S32 src/ui/refinements/overview.tsx -> src/ui/equipment-summary.tsx",
           "S44 src/ui/refinements/ladder.tsx -> src/ui/ladder-rungs.tsx",
           "S47 src/ui/refinements/timed-result-log.tsx -> src/ui/timed-result-log.tsx",
           "S48 src/ui/refinements/logging-overlay.tsx -> src/ui/logging-overlay.tsx",
-          "added S69 src/ui/timed-workout-flow.tsx, S70 src/ui/block-renderers.tsx, S71 src/state/emom.ts, S72 src/app/AppRuntime.tsx, S73 src/ui/product-presentation.ts"
+          "added S69 src/ui/timed-workout-flow.tsx, S70 src/ui/block-renderers.tsx, S71 src/state/emom.ts, S72 src/app/AppRuntime.tsx, S73 src/ui/product-presentation.ts; in repair round 1, S74 src/state/workout-progress.ts (structure labels), S75 src/ui/timed-workout-flow.test.tsx (the four Start words as drawn), S76 src/design-system/css/foundation.css (the button draws its words in capitals)"
         ],
-        "claims": "I9 and I10 re-recorded to the copy TimedWorkoutFlow, LadderPrescription, LadderBlock’s schedule status and CircuitBlock draw on /workout (their old words were EmomBlock/AmrapBlock/ForTimeBlock copy no route draws, several no longer in those files); X2, X3, X4, X5 and X6 re-recorded with the route owner; U2, U3, U5 and U13 re-recorded to Round 7’s drawn words; one Limitations bullet added (copy behind the product presentation is not drawn; the presentation-less timed blocks are drawn by no route); the Selected copy changes lead says how a re-pointed change is read."
+        "claims": "I9 and I10 re-recorded to the copy TimedWorkoutFlow, LadderPrescription, LadderBlock’s schedule status and CircuitBlock draw on /workout, including each card’s Start (Start EMOM, Start AMRAP, Start FOR TIME, Start ladder; restored in repair round 1); X2, X3, X4, X5 and X6 re-recorded with the route owner (X3 also says a scheduled ladder still shows NOT STARTED, U4); U2 (caption and Start casing: written words differ, the timer frame and the button draw them in capitals), U3, U5 (the for-time pacing sentence is drawn on the format preview) and U13 re-recorded to Round 7’s drawn words; two Limitations bullets (copy behind the product presentation and the presentation-less timed blocks are not drawn; words are quoted as written, and the timer frame and button draw theirs in capitals); the Selected copy changes lead says how a re-pointed change is read."
       },
       {
         "record": "TASK-038.md",
@@ -157,7 +158,7 @@
     ],
     "forTask115": [
       "TASK-121 re-points (rehearsal finding 6), for Eric to confirm with the round-06 allowance: task-037 X2 (Generate’s two helpers read only where the product presentation draws, plus a whole-frontend scan), X3 and X4 (EmomBlock -> TimedWorkoutFlow + state/emom.ts; the kept minute now in Round 7’s words \"Minute N of M\", plus Now/Next), X6 (removed refinements/ladder.tsx -> ladder-rungs.tsx + state/ladder.ts); task-038 required sources (-> movement-presentation.tsx, block-renderers-frame.tsx), the coaching gallery page reads (-> the gallery runtime’s library; no page reads GALLERY_CATALOG/STATES_CATALOG), the CoachingMovementSection shape (unparenthesised, plus GroupCoachingPanel draws it per movement), the cards page and WorkoutCard slot (-> GalleryMovementCards -> LiveFlow -> TimedWorkoutFlow’s GroupExerciseCoaching; BlockPanel places it after a grouped block’s content). Rows: test-ledger rules.rePointed.",
-      "TASK-121 retired record claims (no Round 7 source), for Eric to confirm: TASK-037 `Any partial work belongs to round` (I10, U13); the presentation-less timed blocks’ words quoted as /workout copy (I9, I10, U2, U3); TASK-038 I13’s ten-station-circuit sentence and F3’s drawn \"register’s states specimen\". Rows: test-ledger rules.retiredClaims.",
+      "TASK-121 retired record claims (no Round 7 source), for Eric to confirm: TASK-037 `Any partial work belongs to round` (I10, U13); words only the presentation-less EmomBlock, AmrapBlock and ForTimeBlock write (`NO CLOCK`, `MIN ${view.minute} OF ${view.minutes}`, `AMRAP complete`, For Time’s `Ready`, `Racing the clock`, `Finished under cap`, `As many rounds as possible…`) dropped from I9, I10, U2 and U3; TASK-038 I13’s ten-station-circuit sentence and F3’s drawn \"register’s states specimen\". Not retired, because Round 7 still draws them: the Start words (Start EMOM, Start AMRAP, Start FOR TIME, Start ladder; in I9/I10), PAUSED, FINISHED EARLY and REST (written Paused, Finished early, · Rest and drawn in capitals by the timer frame), and the for-time ladder’s pacing sentence on the format preview (U5). Rows: test-ledger rules.retiredClaims.",
       "Brief premise: Round 7’s accepted cards state does draw coaching. Its three single-movement timed cards each end with the real GroupExerciseCoaching, which TimedWorkoutFlow draws (timed-workout-flow.tsx:615) on the gallery runtime’s memory clients, every movement answering \"The library has no entry for this movement, so there are no cues or regression.\" (A3 TASK-109’s cards parity reads it). The brief said it \"draws no coaching\"; the re-point follows the code, and no gallery state changed.",
       "X5 (R50, not on the named list, assertion unchanged): Round 7’s /workout AMRAP says \"Log when complete\" while it runs (TimedWorkoutFlow), the requested R50 wording, while the presentation-less AmrapBlock keeps \"Nothing to enter now. Record your rounds afterwards if you like.\". The record keeps \"Status: not applied in AmrapBlock\" (the unchanged check requires it) and states the route fact; COPY-APPLY still names X5. Eric to decide whether X5 should be recorded as applied by Round 7 (a successor change to X5’s assertion).",
       "U4 stays undecided and true on Round 7: a scheduled ladder still shows `NOT STARTED` / `ON THE CLOCK` / `COMPLETE` (LadderBlock.ScheduleStatus inside TimedWorkoutFlow). R40 named only the EMOM captions.",
@@ -304,6 +305,15 @@
       "TASK-AC-F67720A97571": "src/ui/exercise-coaching.tsx is unchanged; task-038 still reads NO_DEFINITION_TEXT, NO_CUES_TEXT and NO_REGRESSION_TEXT defined and drawn, and inventories every *_TEXT word; no new string.",
       "TASK-AC-005829C27F44": "git diff 0b65357d -- src is empty.",
       "TASK-AC-34ACEEAB17B6": "No product code path changed; the records cite the gallery runtime’s memory library only as gallery fixture identity."
+    },
+    "repairRound1": {
+      "finding": "Review rejected TASK-AC-D170E278DE09: retired claim 2 and its UAT line said Start EMOM, Start AMRAP, Start FOR TIME and Start ladder no longer reach /workout, and I9/I10 had dropped them, although TimedWorkoutFlow draws `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` (timed-workout-flow.tsx:469; labels EMOM, AMRAP, FOR TIME in workout-progress.ts:321-323; checked by timed-workout-flow.test.tsx:203-205).",
+      "fixed": [
+        "I9 and I10: the Start actions restored as Round 7 draws them, citing S69 (template), S74 (structure labels) and S75 (exact strings), with the FOR TIME / ladder casing recorded (also in U2).",
+        "Retired claim 2 and its UAT line: the Start words, PAUSED / FINISHED EARLY / REST (drawn in capitals from Paused, Finished early, · Rest) and the format preview’s for-time pacing sentence taken out; only words with no Round 7 drawing remain.",
+        "Same check over every re-recorded I, U and X item: U2 now states the caption casing as drawn; U5 says the for-time pacing sentence is drawn on the format preview; X3 says a scheduled ladder’s status still says NOT STARTED (U4); the Limitations bullet no longer reads as if every AmrapBlock word were undrawn (TimedWorkoutFlow still draws AmrapComparison)."
+      ],
+      "testsChanged": false
     }
   },
   "entries": [

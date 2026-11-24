@@ -93,6 +93,36 @@ assertions of rehearsal finding 6 (task-038: required sources, the coaching gall
 - X5 (not on the named list): Round 7's AMRAP says `Log when complete` while it runs; the record keeps "Status: not
   applied in `AmrapBlock`" and states the route fact. Eric decides whether X5 is recorded as applied (successor work).
 
+## Repair round 1 (records and ledger only)
+
+- Finding (review, TASK-AC-D170E278DE09): retired claim 2 and its UAT line said `Start EMOM`, `Start AMRAP`,
+  `Start For Time` and `Start ladder` no longer reach /workout, and the re-recorded I9/I10 had dropped them. Round 7
+  draws all four: `Start ${format === 'ladder' ? 'ladder' : block.identity.label}` (`timed-workout-flow.tsx:469`)
+  over the structure labels `EMOM`, `AMRAP`, `FOR TIME` (`workout-progress.ts:321-323`), checked by
+  `timed-workout-flow.test.tsx:203-205`. Cause: I compared the old block files' literals with the flow's literals
+  and missed the template that composes them.
+- Same check over every word the re-record called gone (grep of `src` outside tests, `src/dev`, `src/test` and the
+  three presentation-less blocks, then the styles that draw them) turned up three more: the timer frame draws its
+  caption in capitals (`workout-chrome.tsx` `labelStyle`, `textTransform: 'uppercase'`), so `Paused`,
+  `Finished early` and ` · Rest` still show as PAUSED, FINISHED EARLY and REST; and the format preview's for-time
+  ladder (`FormatPreview.tsx`, mode `for_time`) still draws `Start each round when you finish the last. …`.
+- TASK-037.md: I9 and I10 carry the Start actions as drawn (template [S69], labels [S74], exact strings
+  `Start EMOM`, `Start AMRAP`, `Start FOR TIME`, `Start ladder` [S75]); U2 records the casing (written words differ;
+  the timer frame and the Foundation button draw them in capitals [S33] [S76]); U5 says the for-time pacing sentence
+  is drawn on the format preview [S60]; X3 says a scheduled ladder's status still shows `NOT STARTED` (U4); the
+  Limitations bullet says the components are undrawn (not every word in their files), and a new bullet says words
+  are quoted as written. Sources added: S74 `src/state/workout-progress.ts`, S75 `src/ui/timed-workout-flow.test.tsx`,
+  S76 `src/design-system/css/foundation.css` (unchanged since the base). TASK-038.md: S29 (TASK-037.md) rehashed.
+- Ledger: retired claim 2 now holds only words with no Round 7 drawing (`NO CLOCK`, `MIN ${view.minute} OF
+  ${view.minutes}`, `AMRAP complete`, For Time's `Ready`, `Racing the clock`, `Finished under cap`, `As many rounds
+  as possible…`), with a `repairRound1` note; the UAT line and the TASK-037 record-change summary match;
+  `rules.repairRound1` added. No test assertion, `src` file, verifier or `base:` line changed.
+- Verification: `node --test` of the three files 25/25; a token audit of every claim against Round 7's files: no
+  quoted token missing. Guards TASK-121 (25), TASK-035 (8), TASK-037 (9), TASK-038 (8) check-01: exit 0, every
+  receipt rewritten byte-identical. `verify-definition-record` TASK-035/037/038: PASSED (41, 76, 31 sources).
+  `verify-delivery-evidence --mode final --tasks TASK-035,TASK-037,TASK-038,TASK-121`: PASSED. `npm test`
+  (once, this tree): 279 files, 6516 tests passed.
+
 ## Next action
 
 Controller verification and merge; TASK-115 carries the UAT items in the ledger's `rules.forTask115`.

@@ -63,7 +63,7 @@ quote.
 - `repo:src/state/session-detail.ts` sha256 `1e54a74e51df2fa24d26cc5d9c2c31862db626f9ddf6a7452c4bea01f88a7da2`. S26: the History detail read model.
 - `repo:src/ui/block-renderers-frame.tsx` sha256 `d44ded12720b67b315b7a53d0932d315e6e12c551afeda18ba6e8fb33c0f61e4`. S27: the app's block card (`BlockPanel`), which places the grouped disclosure after a grouped block's content (the removed `src/ui/refinements/workout-card.tsx`'s `coaching` slot held it before).
 - `repo:src/ui/movement-presentation.tsx` sha256 `ad751fcdcfdadc168082303e099bf9d8e4fa6f5583d842602dbc9243a381fe89`. S28: the shared movement identity owner (`MovementIdentity`; the removed `src/ui/refinements/movement.tsx` held it before).
-- `repo:docs/definitions/clear-refinement-20261103/TASK-037.md` sha256 `2a3e52bd08cd0e18d22df69681554d877280d9f5aafad71e66dc705db58b6449`. S29: the copy inventory and the COPY-VOICE owner decision.
+- `repo:docs/definitions/clear-refinement-20261103/TASK-037.md` sha256 `474fc8d8bf7bf3025b945c845820fc1e300965c980541f6e7dd90dbe2888d627`. S29: the copy inventory and the COPY-VOICE owner decision.
 - `repo:src/dev/gallery-refinement-flow.tsx` sha256 `e0f2f30a92a93a06c54e20739b4f7c4c78de8bb55d06abc745ed5b3105b899d3`. S30: `LiveFlow`, which mounts the real `TimedWorkoutFlow` on the gallery's memory-only clients.
 - `repo:src/ui/timed-workout-flow.tsx` sha256 `d58b19f707cf92093953616fbff57b55d869964ba88aecdfb5d5f002684f007f`. S31: the route's timed card (`TimedWorkoutFlow`), which draws the grouped disclosure for a single-movement timed block.
 
