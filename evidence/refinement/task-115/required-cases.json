@@ -1,0 +1,428 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-115",
+  "description": "A3 task 15b (#738; REQ-039, REQ-040): the pre-UAT closure of the body clear-gallery-adoption-20261113; no feature. check-01 runs scripts/refinement/task-115-closure.test.mjs (node:test): the A3 body record evidence/refinement/clear-gallery-adoption-20261113/BODY.json (integration base a6cd01c9, the task 2 review fixes on 2f023b9; accepted gallery bec4454; Foundation 0.14.3; main 03087f7, gallery eded158 and the old build 181e580 as history only) and the shared checker in final mode over the receipts of TASK-103 to TASK-114 and TASK-116 to TASK-121; the ancestry (HEAD descends from a6cd01c9, 181e580 never merged, main carries none of this body); TASK-121's receipt and the TASK-035/037/038 definition-record receipts current and passing; the body-level ledger (the A3 test ledger tool rerun with --now; every build test carried, rewritten, ported or retired with a note, none unplaced), its helper recheck and the eleven S6 bodies; the comparison page and its 52 receipts with every capture re-hashed from the evidence store; the eight recaptured owners' parity receipts; the whole e2e run record; and the UAT list for Eric (Q-007, the Focus control name, the Echo inside dialogs, X5, every R7-2 and R7-3 retirement, the carried “does not call an early finish a cap” body, TASK-121's retired claims and re-points). parity runs e2e/refinement/task-115-comparison.spec.ts: for each of the 26 accepted states at 320 and 390, its primary owner's end-of-run matched-data pair (gallery state and real route at the same moment over the same data) with every capture hash-checked in the store, the other end-of-run owners' pairs for the same state, every recorded difference labelled with its criterion or listed as unintended, and the state drawn again at the delivered revision (reduced motion, fixed clock, animations disabled, captured whole with TASK-110's wholePart); receipts in evidence/refinement/task-115/comparison/receipts/, captures in the evidence store under clear-gallery-adoption-v2-20261120/task-115/captures/; the last case writes evidence/refinement/task-115/comparison/index.html and opens it, every image loading. Every declared case must execute and pass.",
+  "checks": {
+    "check-01": {
+      "runner": "node-test",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-115 --check check-01 -- node --test scripts/refinement/task-115-closure.test.mjs",
+      "criteria": [
+        "AC-GAL-07",
+        "AC-R039-02",
+        "TASK-AC-495C349983AC",
+        "TASK-AC-5BC37E04FCFD",
+        "TASK-AC-8E85446CC848",
+        "TASK-AC-8E85988C2B58",
+        "TASK-AC-99A513AC101C",
+        "TASK-AC-B1417172F706",
+        "TASK-AC-B1DAECFD68F1",
+        "TASK-AC-B43450BD688A",
+        "TASK-AC-C8FAD22523F1"
+      ],
+      "files": [
+        "scripts/refinement/task-115-closure.test.mjs"
+      ],
+      "cases": [
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 A3 body record and aggregate evidence closure > TASK-AC-B1DAECFD68F1 the A3 body record names base a6cd01c9, gallery bec4454, Foundation 0.14.3, and main 03087f7, gallery eded158 and the old build 181e580 as history only",
+          "criterion": "TASK-AC-B1DAECFD68F1"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 A3 body record and aggregate evidence closure > AC-GAL-07 TASK-AC-B1DAECFD68F1 the final evidence check consumes the receipts of TASK-103 to TASK-114 and TASK-116 to TASK-121",
+          "criterion": "AC-GAL-07"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 A3 body record and aggregate evidence closure > TASK-AC-8E85446CC848 AC-R040-01 the branch still descends from a6cd01c9; the old build 181e580 is not merged and main carries none of this body",
+          "criterion": "TASK-AC-8E85446CC848"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 consumes TASK-121’s definition-record receipts > TASK-AC-99A513AC101C TASK-121’s receipt and the three definition-record checks are current and passing at the end",
+          "criterion": "TASK-AC-99A513AC101C"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 consumes TASK-121’s definition-record receipts > TASK-AC-8E85988C2B58 the UAT list names Q-007, every record claim TASK-121 retired and every definition-test assertion it re-pointed",
+          "criterion": "TASK-AC-8E85988C2B58"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 body-level ledger rerun > TASK-AC-B1417172F706 every build test on 181e580 is carried, rewritten, ported or retired, none pending, deferred or unplaced, at a recorded tip",
+          "criterion": "TASK-AC-B1417172F706"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 body-level ledger rerun > TASK-AC-B1417172F706 each shared helper a carried test reaches that differs from the build’s is rechecked and recorded with its result",
+          "criterion": "TASK-AC-B1417172F706"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 body-level ledger rerun > TASK-AC-B43450BD688A the eleven S6 bodies dropped nothing the later task owns",
+          "criterion": "TASK-AC-B43450BD688A"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 end-of-run comparison and recaptures > TASK-AC-495C349983AC the comparison page shows all 26 states at 320 and 390 beside their real routes, each capture re-hashed and every difference labelled or listed as unintended",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 end-of-run comparison and recaptures > AC-R039-02 the recaptured owners’ parity receipts are current and passing, and every capture they name is in the store with its hash",
+          "criterion": "AC-R039-02"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 end-of-run comparison and recaptures > TASK-AC-C8FAD22523F1 the whole e2e run is recorded: every one of the 63 old-build e2e files and every failure has an outcome",
+          "criterion": "TASK-AC-C8FAD22523F1"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 UAT list for Eric > TASK-AC-5BC37E04FCFD the UAT list names every R7-2 and R7-3 retirement with what supersedes it, and the carried “does not call an early finish a cap” body",
+          "criterion": "TASK-AC-5BC37E04FCFD"
+        },
+        {
+          "file": "scripts/refinement/task-115-closure.test.mjs",
+          "name": "TASK-115 UAT list for Eric > TASK-AC-8E85988C2B58 the UAT list carries the owner items first: the Focus control’s name, the Echo inside dialogs, X5 and the retirements to confirm",
+          "criterion": "TASK-AC-8E85988C2B58"
+        }
+      ]
+    },
+    "parity": {
+      "runner": "playwright",
+      "purpose": "delivery",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-115 --check parity -- npx playwright test e2e/refinement/task-115-comparison.spec.ts --project=mobile",
+      "criteria": [
+        "TASK-AC-495C349983AC",
+        "AC-GAL-07",
+        "AC-R039-02"
+      ],
+      "files": [
+        "e2e/refinement/task-115-comparison.spec.ts"
+      ],
+      "cases": [
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC cards phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC cards phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC overview phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC overview phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC preparation phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC preparation phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC screens phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC screens phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder-4 phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder-4 phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder-12 phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder-12 phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder-long phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder-long phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC urgency phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC urgency phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC errors phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC errors phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC assets phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC assets phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC anchor phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC anchor phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC other-lift phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC other-lift phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC timed-movement phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC timed-movement phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC distance-movement phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC distance-movement phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC extra-set phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC extra-set phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC set-correction phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC set-correction phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC superset phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC superset phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC circuit-round phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC circuit-round phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC circuit-movement phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC circuit-movement phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC movement-note phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC movement-note phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC workout-feedback phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC workout-feedback phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC rest-day phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC rest-day phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC emom phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC emom phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC amrap phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC amrap phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC for_time phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC for_time phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC ladder phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        },
+        {
+          "file": "e2e/refinement/task-115-comparison.spec.ts",
+          "name": "TASK-AC-495C349983AC comparison page: all 26 accepted gallery states at 320 and 390 beside their real routes, every image loads and every difference is labelled or listed as unintended",
+          "project": "mobile",
+          "criterion": "TASK-AC-495C349983AC"
+        }
+      ]
+    }
+  }
+}

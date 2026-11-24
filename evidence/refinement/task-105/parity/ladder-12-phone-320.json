@@ -96,11 +96,11 @@
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-log.png",
-      "sha256": "2ae0d343aba483bb4b33dab0571cce7ecddb55932f4a03d2791d9a5cc893d15c"
+      "sha256": "a9e52da34f4ea1d333ce0fcba624bded8f02947c4df1d6caddf3bc4b00160499"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-log.png",
-      "sha256": "161f636e0b4bef8b1bfd4bbfdfccd1bc090f1538ade23bd18c61802c956a4af1"
+      "sha256": "912ca61c10376d6a369d906acb79daf96f09b66c979d46d7e2c2d0437450ada2"
     },
     "gallery-undone": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-undone.png",
@@ -1216,20 +1216,20 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 184,
-        "running": 219,
-        "paused": 219,
+        "ready": 190,
+        "running": 225,
+        "paused": 225,
         "log": 151,
-        "undone": 219,
-        "ended": 202
+        "undone": 225,
+        "ended": 208
       },
       "route": {
-        "ready": 184,
-        "running": 219,
-        "paused": 219,
+        "ready": 190,
+        "running": 225,
+        "paused": 225,
         "log": 151,
-        "undone": 219,
-        "ended": 202
+        "undone": 225,
+        "ended": 208
       }
     },
     "parts": {
@@ -1260,7 +1260,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 978.5
+          "height": 990.5
         },
         "undone": {
           "key": "(part)#0",
@@ -1304,7 +1304,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 978.5
+          "height": 990.5
         },
         "undone": {
           "key": "(part)#0",

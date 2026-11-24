@@ -18,19 +18,19 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-open.png",
-      "sha256": "05f2d9db13870ae1f8c7af341e517ea325c318763b6364d84a00ee0f11f8708b"
+      "sha256": "227aa9ef99bef1ee37478d9adeff895c884dfe96bbdcc92e587a67dbff7618f7"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-open.png",
-      "sha256": "2dac74505231a32800b676e3faee43877d897e01eecd076df0ba4c48592323e1"
+      "sha256": "47dc6a74bec07f0a357a436f056155621a67e210364e2af279c405ac34b20406"
     },
     "gallery-saved": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-saved.png",
-      "sha256": "5ba17025328d44eae5d8c651251961a61ca101edaf2296676faca6fc636932ab"
+      "sha256": "1d6e05037e3279722617d794928e91886fbff69682800a92982b65465638b99c"
     },
     "route-saved": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-saved.png",
-      "sha256": "46fb7b956f19dddae71c4b7982b8d664271f734613b50bb594a71a888fe5777d"
+      "sha256": "12235ec9182bff8dbb8011f7f6490ac940a3e2f02de2800cc1057ed4667185d9"
     }
   },
   "lines": {
@@ -207,12 +207,12 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "card": 62,
+        "card": 68,
         "open": 166,
         "saved": 55
       },
       "route": {
-        "card": 62,
+        "card": 68,
         "open": 166,
         "saved": 55
       }
@@ -231,14 +231,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 568
+          "height": 528
         },
         "saved": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 421
+          "height": 381
         }
       },
       "route": {
@@ -254,14 +254,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 568
+          "height": 528
         },
         "saved": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 421
+          "height": 381
         }
       }
     },

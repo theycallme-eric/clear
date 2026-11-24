@@ -24,19 +24,19 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-390-gallery-open.png",
-      "sha256": "4eb7103310086886b8aaedab9a55300a06a7891ceb2dc83d0eb8440973c21249"
+      "sha256": "ce992194984a94ef97e841fb83bf6ebfa9226c36233e66e6eb83848612d895bc"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-390-route-open.png",
-      "sha256": "12f5425ad626fcbd6e93fbf57995c38272892e58628203e60d16bd147cdfbea0"
+      "sha256": "397d2d43527e336fd2bb7118c307117d9ad0cd6fa9aa5415654199dd3dd18362"
     },
     "gallery-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-390-gallery-reopened.png",
-      "sha256": "296d50ef15677161cda2b52c240395679a2c270e45944117e8e96118abbfee54"
+      "sha256": "5ff1c5ba977fea6e48f7c1b9d80320a557cb3b5dc9878221f2edf021dbae8c13"
     },
     "route-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-390-route-reopened.png",
-      "sha256": "52bdbaa44c732cfb394646f4b7a3c0e493ec66cb38843fcbc20586a9c278025a"
+      "sha256": "b73d56a96c54225d58236b8a45a7ea558e2660ab7fbad10ec7362880c225adb6"
     }
   },
   "lines": {
@@ -171,14 +171,14 @@
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 354.5
+          "height": 314.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 410.5
+          "height": 370.5
         }
       },
       "route": {
@@ -194,14 +194,14 @@
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 354.5
+          "height": 314.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 410.5
+          "height": 370.5
         }
       }
     },

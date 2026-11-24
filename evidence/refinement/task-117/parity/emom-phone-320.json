@@ -16,19 +16,19 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-log.png",
-      "sha256": "bfd236492f338cfb1d9ea0b50f366d7a3f89f855904d55bf1995db0bfa3b7722"
+      "sha256": "c38537267ebe2295bb94823ecad8de97a56f84ec5c31f25ca5922cbcec4e74fe"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-log.png",
-      "sha256": "b408d64d6b650fcb9391a9128dc449a3120437e84c6ccf39d0b753ba06506bd1"
+      "sha256": "cfabbc3a59b74252ade4d2d481b17821a8489db81a741e1f8f53735712982945"
     },
     "galleryEntered": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-entered.png",
-      "sha256": "a509d30adf9db55486066239b4f9b644cb4abb97cb2f53d95fa2a0755c7ee6a5"
+      "sha256": "7ede0e6a8df24ff1ed4d875a09ad328729bb38cdf7528bf5a582461c3caf9e27"
     },
     "routeEntered": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-entered.png",
-      "sha256": "e05f96faed3e42e1127e501bf06f473c3e90247bd6ec5a3840c05316f2632752"
+      "sha256": "0f0b2df672663efc794edd4b7884dedb362d6d728e483c28ad74672032c9e7a7"
     }
   },
   "lines": {
@@ -178,16 +178,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 50,
+        "ready": 53,
         "log": 52,
         "entered": 52,
-        "ended": 66
+        "ended": 69
       },
       "route": {
-        "ready": 50,
+        "ready": 53,
         "log": 52,
         "entered": 52,
-        "ended": 66
+        "ended": 69
       }
     },
     "parts": {

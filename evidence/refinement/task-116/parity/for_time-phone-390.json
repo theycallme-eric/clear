@@ -16,19 +16,19 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-log.png",
-      "sha256": "27e77d752141dae466b1ac6e9106f7078c0a2a205dbd9e317a68853dbdcea8c4"
+      "sha256": "5ea83f9e19acbd1f3e7cbc9690a51c24bc10db581e0920035a0bf8d727423875"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-log.png",
-      "sha256": "11e6d14102ecd49ffd5d0b24e908bf2373b5d8bf5ecb06d5586ac160ba54ef0f"
+      "sha256": "1153bfd1c6e74986e1005ddb9b037d9a742f573788b42255f185a5cb67679691"
     },
     "galleryAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-answered.png",
-      "sha256": "eaa2fc673d9f4c0025a5c5b44966a5aee9a7f41ec7c416f9c5723d87ccd9c816"
+      "sha256": "29fa7c211d68a48cfc29f28ffb209c3b738e0a01630718732bd707d681d5adee"
     },
     "routeAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-answered.png",
-      "sha256": "343e3c20f0a2a11dfd3fcd034a77e911a7cd629e0b5979e50cf1f09b1cbef0b2"
+      "sha256": "4dca3d75b85ec72e2ce5d4a4b0c6501506018951d00b9e965d104a600efb2466"
     }
   },
   "lines": {
@@ -234,16 +234,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
+        "ready": 71,
         "log": 78,
         "answered": 67,
-        "ended": 81
+        "ended": 87
       },
       "route": {
-        "ready": 65,
+        "ready": 71,
         "log": 78,
         "answered": 67,
-        "ended": 81
+        "ended": 87
       }
     },
     "parts": {
@@ -260,7 +260,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 654.5
+          "height": 666.5
         },
         "answered": {
           "key": "(part)#0",
@@ -290,7 +290,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 654.5
+          "height": 666.5
         },
         "answered": {
           "key": "(part)#0",

@@ -996,7 +996,9 @@ for (const { name, viewport } of VIEWPORTS) {
     has('ready', /^Each round starts on the clock\./)
     has('running', new RegExp(`^ROUND 2 OF ${SCHEDULED_ROUNDS}$`, 'i'))
     has('running', /^ON THE CLOCK$/i)
-    has('running', new RegExp(`^${at(SCHEDULED_INTERVAL - 10)}$`))
+    // TASK-108 draws the interval as a Round 7 TimerFrame: its digits are one decorative
+    // cell per character, read as drawn (TASK-115, 2026-11-23 test-update rule).
+    expect(reading.running.lines.join(' '), `running @${name}: ${at(SCHEDULED_INTERVAL - 10)}`).toContain(at(SCHEDULED_INTERVAL - 10).split('').join(' '))
     has('log', /^No rounds marked yet$/)
     has('ended', /^COMPLETE$/i)
     has('ended', /^The clock has run every scheduled round\./)

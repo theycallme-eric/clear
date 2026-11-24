@@ -80,11 +80,11 @@
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-log.png",
-      "sha256": "c4d35d805c82d1897381c7f080406a07f8212fa577cabfc63649d1f4c9575536"
+      "sha256": "b6db1d740665c92b78ef353b514aec5c21f4c1680c034fbcf06d4bb0703545dd"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-log.png",
-      "sha256": "0afe025ff8ab36140a1fddde8d1f59c6db5b3ac6397159260687f2b201701e93"
+      "sha256": "e67b244cc3afd2415cbb9740340c3e672c33daaa2479fd001ff2207d29ff4f18"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-ended.png",
@@ -591,14 +591,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 184,
+        "ready": 190,
         "log": 132,
-        "ended": 200
+        "ended": 206
       },
       "route": {
-        "ready": 184,
+        "ready": 190,
         "log": 132,
-        "ended": 200
+        "ended": 206
       }
     },
     "parts": {

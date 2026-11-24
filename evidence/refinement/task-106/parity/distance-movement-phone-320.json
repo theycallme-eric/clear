@@ -18,11 +18,11 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-open.png",
-      "sha256": "99690b26d59e7dab8b910a951263f0d0d07eae288442f519eca6b71627e01ae1"
+      "sha256": "b7cdaf3853416ec5930fb1a74cc99f5c63b2f524ef6372650901f404c9a5bcb0"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-open.png",
-      "sha256": "98d3a0782c07b93dc65c2e5f3a3070a411cde1fe7c24b5011058d294120bfa47"
+      "sha256": "366354a92f75e7ee8447f2fb44bcd77a194a328807cadb57e9da55a1927ec8a0"
     }
   },
   "lines": {
@@ -146,7 +146,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 553
+          "height": 513
         }
       },
       "route": {
@@ -162,7 +162,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 553
+          "height": 513
         }
       }
     },

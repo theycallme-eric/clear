@@ -145,14 +145,7 @@
   "galleryAgainstBase": {
     "card": {
       "base": "evidence/refinement/task-107/parity/circuit-round-phone-390.json#lines.gallery.card",
-      "differences": [
-        {
-          "side": "tree only",
-          "line": "3 ROUNDS",
-          "criterion": "TASK-AC-2E6734369AC5, TASK-AC-9A47DF868BD4",
-          "reason": "The circuit's badge names its format alone, and its prescribed rounds are read on the line under the header."
-        }
-      ]
+      "differences": []
     }
   }
 }

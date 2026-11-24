@@ -76,15 +76,15 @@
     },
     "route-ready": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ready.png",
-      "sha256": "bb6f78ef89c1b9326c4d3c75559883e67f1d386cf565f31b767556bff49e3dc0"
+      "sha256": "de0d12f1a7231b8a20678455e47f608c0aa9e9662c79c6aa75f752b0cc7d22e5"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-log.png",
-      "sha256": "3cbe1eaa789f371f2fcd1aa9cebd3dc28cd38c20cbe69abec115b2409752458d"
+      "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-log.png",
-      "sha256": "dfa58bdbe30ad04a5b902cb3b2f96c1c3de96959c520af6e7c367dbe3c95966a"
+      "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ended.png",
@@ -92,7 +92,7 @@
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ended.png",
-      "sha256": "1057f892b9ec4ed878aa8acc42f9ada35aa8e5968bbce6eaa30f6a9dfb96cb80"
+      "sha256": "8590ba6a15cc4bd024ddef9a144ec15fa9ad7f694a9c0857c9f2daec0a1ecdee"
     }
   },
   "lines": {
@@ -351,14 +351,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 96,
+        "ready": 102,
         "log": 84,
-        "ended": 112
+        "ended": 118
       },
       "route": {
-        "ready": 96,
+        "ready": 102,
         "log": 84,
-        "ended": 112
+        "ended": 118
       }
     },
     "parts": {

@@ -16,19 +16,19 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-log.png",
-      "sha256": "14a8813483f6171d3a02f599138cdb6af659b5b696533c63e8ea1390cff6b5cd"
+      "sha256": "6b6ce97a7517730ec3bf1c70d3c595f8f89d9e053c5f9bef494974ada1eb8b5a"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-log.png",
-      "sha256": "0d603be565ebc582c14cc470fda2ae5fcf3fe0e036882677ae2622688f538b06"
+      "sha256": "64943d8bfbb0966d2f35baf20fb31f6ab913978832f6b9a595cf101a21597dcc"
     },
     "galleryEntered": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-entered.png",
-      "sha256": "840f56097eadc7da37304e177eaee482cd19f22a0b965b74c8aac1594f34f616"
+      "sha256": "2ce5fa53f09bcdc70d7bad134ddd4c649d53b49abc9e0808aefa79b160bde8ba"
     },
     "routeEntered": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-entered.png",
-      "sha256": "f07c0c917a62630fabbffc6d09b5f9795e1a4361b63059a9994a4ef194c53365"
+      "sha256": "ebde4c6991aef42d43f7cca54698206d84118065f4b85b0351e5280c5e9312c9"
     }
   },
   "lines": {
@@ -228,16 +228,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
+        "ready": 71,
         "log": 77,
         "entered": 91,
-        "ended": 81
+        "ended": 87
       },
       "route": {
-        "ready": 65,
+        "ready": 71,
         "log": 77,
         "entered": 91,
-        "ended": 81
+        "ended": 87
       }
     },
     "parts": {
@@ -261,7 +261,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 788.5
+          "height": 800.5
         },
         "ended": {
           "key": "(part)#0",
@@ -291,7 +291,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 788.5
+          "height": 800.5
         },
         "ended": {
           "key": "(part)#0",

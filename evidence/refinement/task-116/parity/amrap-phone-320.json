@@ -12,23 +12,23 @@
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-route-ready.png",
-      "sha256": "36d321cab22451d54b3b7417d90dd608df373186fc1f6dee1d5f1e8dd2a54319"
+      "sha256": "e6c6f08e8bc48d0c62de1d1b7957cb751b9324faf83f268e31430b67633282b2"
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-gallery-log.png",
-      "sha256": "8fa90e251118c60b82ebe00694487cad3ed8b75a95b21c5313c533e00e3b8ad6"
+      "sha256": "997c2d2b4c1877f13a4080ce7c954e9317db28b3f7a1e0e5f544013b0e9d39d4"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-route-log.png",
-      "sha256": "b040ed34c9bef113bd9768a9fd3ced451a06f76f3d31a6b7faa6d215b9797672"
+      "sha256": "18fa783e27f9f278cfd8666e4ac4a25f327a789bb9530ad2d9f3da0eae1cdc9e"
     },
     "galleryAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-gallery-answered.png",
-      "sha256": "970d4dcfcdac288cce6892046c549b0044ba0d16b0dcec70d3ce234a156cb82a"
+      "sha256": "0f22ef66eee72053e86216d842081d014368e08ec98da6fa35a8b8bd2b4d99e0"
     },
     "routeAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-320-route-answered.png",
-      "sha256": "a91c8fe5e698e6d82d4911ce47615fd27cbc0b73e866152771fbadedc3ff6e95"
+      "sha256": "a948009d750bce998c85eb154707aa608cf5f35cedb9436166b21ab9f94e970c"
     }
   },
   "lines": {
@@ -55,12 +55,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -113,12 +108,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -158,12 +148,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -216,12 +201,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -250,16 +230,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
-        "log": 91,
+        "ready": 71,
+        "log": 77,
         "answered": 94,
-        "ended": 81
+        "ended": 87
       },
       "route": {
-        "ready": 65,
-        "log": 91,
+        "ready": 71,
+        "log": 77,
         "answered": 94,
-        "ended": 81
+        "ended": 87
       }
     },
     "parts": {
@@ -276,14 +256,14 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 584.5
         },
         "answered": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 800.5
         },
         "ended": {
           "key": "(part)#0",
@@ -306,14 +286,14 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 584.5
         },
         "answered": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 800.5
         },
         "ended": {
           "key": "(part)#0",

@@ -12,23 +12,23 @@
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-320-route-ready.png",
-      "sha256": "6706ebf1f4286008ba6456a9bcdedc998bbb2b72fe6b8553b9d507282404e350"
+      "sha256": "ab0cadba0b8a0d935169a1b8c24dc00e6db53cbdfdda871e2233a4bf8a424213"
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-320-gallery-log.png",
-      "sha256": "9f81eadd72cc101623e62010aeacbe419210d7705cc93eddce889b11a40a51f6"
+      "sha256": "78a2b4e251d861a18fc102efef3c787e56be545e13c6e927a7afa2b3634566ec"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-320-route-log.png",
-      "sha256": "5f62e96e036056d22ab3a83f198e0420074d9c7703495d579c75e778dea5b238"
+      "sha256": "e586adf680c8b2620509c5317a1b4fc87ebba6b6229973b03859ac89a8f9fbb3"
     },
     "galleryAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-320-gallery-answered.png",
-      "sha256": "ce3155923aab22047aed85d3dd144f34109ba58fcfd27cefe79d05e58af651c9"
+      "sha256": "01b17c5959b6fbda7d3110f81d38a16f393bbb9c1f500a28790456853df8a17f"
     },
     "routeAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-320-route-answered.png",
-      "sha256": "3be6bb409a4bcd02713d0c5dddffc95be9e8201b17e22c5d30d1eddf414cff88"
+      "sha256": "c0f5e95bfff8dd31f2a02fbbe889899657967a9697519809391e428e6410cb55"
     }
   },
   "lines": {
@@ -234,16 +234,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
+        "ready": 71,
         "log": 78,
         "answered": 67,
-        "ended": 81
+        "ended": 87
       },
       "route": {
-        "ready": 65,
+        "ready": 71,
         "log": 78,
         "answered": 67,
-        "ended": 81
+        "ended": 87
       }
     },
     "parts": {
@@ -260,7 +260,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 654.5
+          "height": 666.5
         },
         "answered": {
           "key": "(part)#0",
@@ -290,7 +290,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 654.5
+          "height": 666.5
         },
         "answered": {
           "key": "(part)#0",

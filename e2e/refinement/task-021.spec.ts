@@ -701,13 +701,16 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
     // motion, its one edge above the log.
     await page.clock.runFor((ROUND_REST - SCAN_SECONDS - 3) * 1000)
     expect(await restLeft(page)).toBe(3)
-    // Round 7's CountdownDisplay carries the shared urgency on its log
-    // timer: urgent (its micro pulse class) and, under reduced motion, still.
+    // The log's rest is Round 7's timer card (TASK-108): the shared urgency is
+    // carried by its timer element — urgent (the shared breathe class) and,
+    // under reduced motion, still (TASK-115, 2026-11-23 test-update rule; the
+    // base read the old CountdownDisplay's micro pulse class on its wrapper).
     const logTimer = openLog(page).locator('.clr-log-timer').filter({
       has: page.getByRole('timer', { name: 'Time remaining', exact: true }),
     })
-    await expect(logTimer).toHaveClass(/\bclr-pulse-micro\b/)
-    await expect(logTimer).toHaveAttribute('data-loop', 'still')
+    const urgentTimer = logTimer.getByRole('timer', { name: 'Time remaining', exact: true })
+    await expect(urgentTimer).toHaveClass(/\bclr-countdown-breathe\b/)
+    await expect(urgentTimer).toHaveAttribute('data-loop', 'still')
     await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)
     expect(await page.locator('[data-countdown-edge]').evaluate((edge) => edge.parentElement?.matches('dialog.clr-logging-overlay[open]'))).toBe(true)
     await attachScreen(page, 'round-1-final-seconds-reduced-motion-phone-320')

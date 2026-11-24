@@ -18,19 +18,19 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-open.png",
-      "sha256": "cd2f1861dfad57c71011508374c93cb1a7e7f7c7c7dc1b97b000c4f02cd8d730"
+      "sha256": "bcd6d033de114b458723b1d3dc067390cac2748a39643c62ae9f132b9a54b80c"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-open.png",
-      "sha256": "58e7169c3daccd98d1e059f07991eeb22e2b2044ca2b651fbc37be7f02abf1e5"
+      "sha256": "b4e8a2926d8112b872077206bb48b6d04dfaa617f37e8b20398112bbcfa4abd6"
     },
     "gallery-saved": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-gallery-saved.png",
-      "sha256": "ae5b5ba0042370f9a3eb61917c8828b2310447cfee242ad1faec159d01ab97da"
+      "sha256": "7ac60b33bdb3181a2fd773204cce52b8f080abdedc31155bd759e648a284b3db"
     },
     "route-saved": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-320-route-saved.png",
-      "sha256": "e6fcfbe62fdddd909184762c2e6eb2f4510960ce5a22d943d562a6a2ac51544d"
+      "sha256": "5c80f1e3719180d2d16b4dba2f796a12c7cb3af4f0fb7b57572ce29f5283132b"
     }
   },
   "lines": {
@@ -174,14 +174,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 537
+          "height": 497
         },
         "saved": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 369
+          "height": 329
         }
       },
       "route": {
@@ -197,14 +197,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 537
+          "height": 497
         },
         "saved": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 369
+          "height": 329
         }
       }
     },
