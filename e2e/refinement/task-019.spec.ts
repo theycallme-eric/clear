@@ -664,6 +664,17 @@ async function expectHardCut(dialog: Locator) {
   }
 }
 
+/**
+ * A3 TASK-120: every running finite motion inside a part has finished — a
+ * real readiness condition (each animation's `finished` promise), not a sleep.
+ * (A paused motion never finishes, so only running ones are waited on.)
+ */
+async function settled(part: Locator) {
+  await part.evaluate((node) => Promise.all(node.getAnimations({ subtree: true })
+    .filter((animation) => animation.playState === 'running' && Number.isFinite(Number(animation.effect?.getComputedTiming().endTime ?? Infinity)))
+    .map((animation) => animation.finished.then(() => undefined, () => undefined))))
+}
+
 async function noHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 }
@@ -1233,29 +1244,50 @@ test.describe('TASK-019 every logging moment in the shared focused interaction',
     expect(await chosen(log.dialog.getByRole('group', { name: 'Work completed', exact: true }))).toEqual(['Incomplete'])
     await closeByEscape(page, forTimeOpener)
 
-    // ── Ladder: its race clock runs on behind its own open log; Undo finish
+    // ── Ladder: its race clock runs on behind an open log; Undo finish
     // closes the log and resumes ──
+    // A3 TASK-120, owner decision 3 (Eric, 2026-11-16, "Accept all five"):
+    // Round 7's ladder offers its log only once the attempt has ended, so no
+    // Log results is offered while it runs, and the log open over the running
+    // ladder is its own movement's note (another family's log, as the AMRAP's
+    // above). On Finish the log opens itself (Round 7); it is closed, and the
+    // card's own Log results is the opener read from then on.
     const ladder = timedCard(page, 'ladder')
     const ladderOpener = timedOpener(ladder)
     await ladder.getByRole('button', { name: 'Start ladder', exact: true }).tap()
     await page.clock.runFor(40_000)
+    await expect(ladderOpener).toHaveCount(0)
+    const ladderCoaching = ladder.getByRole('button', { name: /^Coaching and notes/ }).first()
+    await ladderCoaching.scrollIntoViewIfNeeded()
+    await ladderCoaching.tap()
+    // The disclosure animates open (motion is not reduced here): the note's
+    // button is tapped once its motion has finished, where it settles.
+    await settled(ladder)
+    const ladderNote = ladder.getByRole('button', { name: 'Add note — push up', exact: true })
     before = seconds(await clockOf(ladder).textContent())
-    await ladderOpener.tap()
-    log = await expectFocusedLog(page, LOG_RESULTS)
-    chromes.ladder = log.chrome
+    await ladderNote.tap()
+    await expectFocusedLog(page, NOTE_TITLE)
     await page.clock.runFor(30_000)
-    await closeByX(page, ladderOpener, 'tap')
+    await closeByX(page, ladderNote, 'tap')
     expect(Math.abs(seconds(await clockOf(ladder).textContent()) - before)).toBe(30)
     await ladder.getByRole('list', { name: LADDER_ROUNDS, exact: true }).getByRole('button', { name: 'Complete round 1', exact: true }).tap()
     await ladder.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await expectFocusedLog(page, LOG_RESULTS)
+    await page.keyboard.press('Escape')
+    await expect(openLog(page)).toHaveCount(0)
     await ladderOpener.tap()
     log = await expectFocusedLog(page, LOG_RESULTS)
+    chromes.ladder = log.chrome
     await expect(log.dialog.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('status')).toHaveText(/^1 of 4 rounds completed/)
     await log.dialog.getByRole('button', { name: UNDO_FINISH, exact: true }).tap()
     await expect(openLog(page)).toHaveCount(0)
     await expect(ladder.getByRole('button', { name: 'Pause', exact: true })).toBeFocused()
+    await expect(ladderOpener).toHaveCount(0)
     await page.clock.runFor(10_000)
     await ladder.getByRole('button', { name: 'Finish', exact: true }).tap()
+    await expectFocusedLog(page, LOG_RESULTS)
+    await page.keyboard.press('Escape')
+    await expect(openLog(page)).toHaveCount(0)
     await ladderOpener.tap()
     log = await expectFocusedLog(page, LOG_RESULTS)
     await expect(log.dialog.getByRole('group', { name: 'Rounds completed', exact: true }).getByRole('status')).toHaveText(/^1 of 4 rounds completed/)

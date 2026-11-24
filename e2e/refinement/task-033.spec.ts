@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { createServer, type AddressInfo } from 'node:net'
@@ -46,6 +46,24 @@ import { expect, test as scanned } from '../fixtures'
  * breathe and the glass's two clocks run on the browser's real timelines.
  * Synthetic and contained: an intercepted session for a fictional user; no
  * set, block result or session call is made.
+ *
+ * A3 TASK-120 (REQ-033; JOURNEY-033; the standing test-update rule of
+ * 2026-11-23): ported to Round 7, every composition read kept where Round 7
+ * draws it. The accepted reference is Round 7's gallery, commit bec4454 (the
+ * eded158 pin is historical): its one changed effects owner is
+ * `crt-field/config.ts` (screen-edge blur 1.6 -> 1.2 px, an owner follow-up
+ * from the A2 review). The warning is TASK-108's shared owner
+ * (`src/ui/countdown-urgency.tsx` + `.css`: `useCountdownUrgency`, the urgent
+ * timer's `.clr-countdown-breathe`, one `[data-countdown-edge]`); the focused
+ * dialog is Round 7's `LoggingOverlay` on the shared `AppDialog`
+ * (`dialog.clr-logging-overlay`, header `.clr-logging-overlay__head`), whose
+ * surface is not the background (REQ-004), so its frame has no Echo rear: the
+ * Echo is read beneath the backdrop on the background owners. Round 7's
+ * accepted urgency state runs the real timed flow (no log of its own); the log
+ * opened over its running warning is the EMOM movement's note, Round 7's
+ * "Movement note" (owner decision 4, 2026-11-16). The long ladder's log is
+ * Round 7's "Log results", opened by running the real ladder past its cap.
+ * Each change is listed in `evidence/refinement/task-120/test-ledger.json`.
  */
 const OWNER = '00000000-0000-4000-8000-000000003301'
 const PLACE = '00000000-0000-4000-8000-000000003311'
@@ -142,7 +160,10 @@ type Skin = (typeof SKINS)[number]
  */
 const EFFECTS_OWNERS: Readonly<Record<string, string>> = {
   'src/ui/crt-field/crt-field.tsx': '551817b6f2702c0b0255e42262442237830c0bccee625240cb609d8a6c410f7f',
-  'src/ui/crt-field/config.ts': '3b496b905467ecf0ee014dce56a057ebb6941e61c40a74f08127593c172cf0fe',
+  // A3 TASK-120: the accepted Round 7 gallery (bec4454, PINNED-SOURCE source-08)
+  // changed one value here, the glass's screen-edge blur 1.6 -> 1.2 px, an owner
+  // follow-up from the A2 review (cd35fd58). The eded158 bytes are kept below.
+  'src/ui/crt-field/config.ts': '88834e0514fb38d230a7f1afd6972ac94046a777ce8d9604d1ec721d51ba2c54',
   'src/ui/crt-field/crt-field.css': '47754035619fc6c2a7260b43348a2076d078d8ab516f33cbce54a5204bb47695',
   'src/ui/phosphor-echo.tsx': 'd82e4e0541355e9f22b94f999ef016a834490ad7be88fd9e159fc32e195fd741',
   'src/ui/phosphor-echo.css': '1c47dda923cab0a023570656adc3af4ea0033c709622b4e4a9745a36c7b0cc11',
@@ -151,6 +172,16 @@ const EFFECTS_OWNERS: Readonly<Record<string, string>> = {
   'src/state/visual-effects.ts': '2c02ad5a0555a81d4dcf04394ece84f76143426048b2d4872cf0e90a47763e15',
   'src/app/RootLayout.tsx': 'aae7480981a85e611db84cb55a84d2fcb0a87e3d08c7ce59dd830e437613c2f6',
   'src/styles/atmosphere.css': 'dfe2d7071f029743ad176f40f2c47e7af8348452f0ffa2ee0c2417e08d5dcf7b',
+}
+
+/**
+ * A3 TASK-120: the accepted gallery is now Round 7's, commit bec4454 (the A3
+ * update of 2026-11-14 makes the eded158 pin historical). Every owner above is
+ * that commit's bytes. eded158's own bytes differ in one owner only.
+ */
+const ACCEPTED_GALLERY = 'bec44545eb982f6dc136a583400f7e314c306d1d'
+const EDED158_CHANGED_OWNERS: Readonly<Record<string, string>> = {
+  'src/ui/crt-field/config.ts': '3b496b905467ecf0ee014dce56a057ebb6941e61c40a74f08127593c172cf0fe',
 }
 
 /** Where #596's preserved intake moved to, and its public fixture copy. */
@@ -334,7 +365,13 @@ async function compose(page: Page): Promise<Composition> {
         // final brightness(1) saturate(1)) changes no pixel; anything else would.
         const identity = (value: string) => value === 'none' ||
           value.replace(/(?:brightness|saturate|contrast|opacity)\(1\)|(?:blur)\(0px\)|(?:grayscale|sepia|invert)\(0\)|hue-rotate\(0deg\)/g, '').trim() === ''
-        if (!identity(style.filter) || style.backdropFilter !== 'none') foregroundEffects.push(describe(node, style))
+        // A3 TASK-120: Round 7's logs hold the shipped primary Button, whose
+        // package wrapper (`.clr-bleed.clr-glow`) carries Foundation's own
+        // emission — one 6 px drop-shadow around the button, no offset — which
+        // changes none of the dialog's own pixels. That is the component's look,
+        // not an effect on the foreground; any other filter still counts.
+        const emission = node.classList.contains('clr-glow') && /^drop-shadow\((?:color|rgba?)\([^()]*\) 0px 0px 6px\)$/.test(style.filter)
+        if ((!identity(style.filter) && !emission) || style.backdropFilter !== 'none') foregroundEffects.push(describe(node, style))
       }
       const labelled = top.getAttribute('aria-labelledby')
       const title = (labelled ? document.getElementById(labelled) : null) ?? top.querySelector('h2')
@@ -580,14 +617,21 @@ function expectGlassOver(reading: GlassReading, label: string) {
   expect(reading.meanDelta, `${label}: restrained, readable glass`).toBeLessThan(32)
 }
 
-/** The Echo rear of the dialog's outer frame: beneath it, its full footprint, in its own role colour. */
-async function frameEcho(page: Page) {
+/**
+ * The Echo in Round 7's composition (A3 TASK-120). Round 7's logging dialog is
+ * the shared `AppDialog`, whose surface is not the background (REQ-004:
+ * `EchoExcluded`), so nothing inside an open dialog has a rear — its frame
+ * included, where the build's own dialog echoed its frame. The Echo stays on
+ * the background owners beneath the backdrop: the first echoed frame outside
+ * any dialog is read — its rear first, hidden, pointer-inert, on its full
+ * footprint and in its own painted role colour.
+ */
+async function echoReading(page: Page) {
   return page.evaluate(() => {
-    const dialog = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].at(-1)
-    const wrapper = dialog?.querySelector<HTMLElement>(':scope > .clr-echo')
-    const rear = wrapper?.querySelector<SVGSVGElement>(':scope > .clr-echo__rear') ?? null
-    const frame = dialog?.querySelector<HTMLElement>('[data-logging-frame]')
-    if (!dialog || !frame) return null
+    const dialog = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].at(-1) ?? null
+    const rears = [...document.querySelectorAll('.clr-echo__rear, .clr-echo-text__rear')]
+    const wrapper = [...document.querySelectorAll<HTMLElement>('.clr-echo[data-echo="frame"]')]
+      .find((node) => node.closest('dialog') === null && node.querySelector(':scope > .clr-echo__rear') !== null) ?? null
     // A colour as the 8-bit sRGB channels it paints, alpha set to 1 (as the
     // silhouette is drawn): resolved by the browser, never by parsing text.
     const canvas = new OffscreenCanvas(1, 1).getContext('2d', { willReadFrequently: true })!
@@ -604,20 +648,79 @@ async function frameEcho(page: Page) {
       const r = node.getBoundingClientRect()
       return [r.left, r.top, r.width, r.height].map(Math.round)
     }
-    const reading = {
-      rear: rear !== null,
-      rearFirst: rear !== null && wrapper?.firstElementChild === rear,
-      rearHidden: rear?.getAttribute('aria-hidden') ?? null,
-      rearPointer: rear ? getComputedStyle(rear).pointerEvents : null,
-      rearBox: rear ? box(rear) : null,
-      frameBox: box(frame),
-      rearInk: rear ? channels(getComputedStyle(rear).color) : null,
-      frameInk: channels(getComputedStyle(frame, '::after').backgroundColor),
-      filtered: rear?.querySelector('.clr-echo__source') ? getComputedStyle(rear.querySelector('.clr-echo__source')!).filter : null,
+    let background = null
+    if (wrapper !== null) {
+      const rear = wrapper.querySelector<SVGSVGElement>(':scope > .clr-echo__rear')!
+      const frame = wrapper.querySelector<HTMLElement>('.clr-chamfer')!
+      const card = frame.closest('.clr-card')
+      const outline = card !== null && wrapper.contains(card) ? card : frame
+      background = {
+        rearFirst: wrapper.firstElementChild === rear,
+        rearHidden: rear.getAttribute('aria-hidden'),
+        rearPointer: getComputedStyle(rear).pointerEvents,
+        rearBox: box(rear),
+        frameBox: box(outline),
+        rearInk: channels(getComputedStyle(rear).color),
+        frameInk: channels(getComputedStyle(frame, '::after').backgroundColor),
+        filtered: rear.querySelector('.clr-echo__source') ? getComputedStyle(rear.querySelector('.clr-echo__source')!).filter : null,
+      }
     }
     probe.remove()
-    return reading
+    return {
+      inDialog: dialog === null ? null : rears.filter((rear) => dialog.contains(rear)).length,
+      background,
+    }
   })
+}
+
+/** The Echo composed with an open dialog: none inside it, a background owner's beneath it in its own role colour. */
+function expectEchoBeneath(reading: Awaited<ReturnType<typeof echoReading>>, label: string) {
+  expect(reading.inDialog, `${label}: nothing inside the dialog echoes (REQ-004)`).toBe(0)
+  expect(reading.background, `${label}: a background owner's Echo beneath the backdrop`).toMatchObject({
+    rearFirst: true, rearHidden: 'true', rearPointer: 'none', filtered: 'url("#clr-phosphor-echo")',
+  })
+  expect(reading.background!.rearBox, `${label}: the rear on its owner's full footprint`).toEqual(reading.background!.frameBox)
+  expect(reading.background!.rearInk, `${label}: the rear is its owner's own role colour`).toEqual(reading.background!.frameInk)
+}
+
+/**
+ * A3 TASK-120: Round 7's accepted urgency state (gallery bec4454) runs the real
+ * `TimedWorkoutFlow` on the gallery's clock; each choice starts the flow and
+ * moves its clock to that moment, and the countdown then runs on the page's
+ * clock. "EMOM · 5 seconds" is the minute's final five. With the page clock
+ * held, the gallery's driver (a 40 ms interval) is stepped until the warning
+ * is drawn.
+ */
+async function urgentEmom(page: Page, state: Locator) {
+  await state.getByRole('button', { name: 'EMOM · 5 seconds', exact: true }).click()
+  for (let tick = 0; tick < 50 && await page.locator('[data-countdown-edge]').count() === 0; tick += 1) await page.clock.runFor(40)
+  await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)
+}
+
+/**
+ * The log open over the running warning in Round 7's urgency state: the EMOM
+ * movement's note. Round 7's state composes no log of its own (the build's
+ * demo had "Open log over the warning"), and a timed block's own log opens only
+ * once its attempt has ended (Round 7; owner decision 3, 2026-11-16, for the
+ * ladder). The disclosure's motion finishes before the note's button is used.
+ */
+async function noteOpener(state: Locator): Promise<Locator> {
+  const coaching = state.getByRole('button', { name: /^Coaching and notes/ }).first()
+  if ((await coaching.getAttribute('aria-expanded')) !== 'true') await tap(coaching)
+  await state.evaluate((node) => Promise.all(node.getAnimations({ subtree: true })
+    .filter((animation) => animation.playState === 'running' && Number.isFinite(Number(animation.effect?.getComputedTiming().endTime ?? Infinity)))
+    .map((animation) => animation.finished.then(() => undefined, () => undefined))))
+  return state.getByRole('button', { name: 'Add note — kb swing', exact: true })
+}
+
+/** Round 7's timed log, the long ladder's included (TimedWorkoutFlow's one "Log results" dialog). */
+const LADDER_LOG = 'Log results'
+/** Round 7's movement-note dialog title (owner decision 4, 2026-11-16). */
+const NOTE_TITLE = 'Movement note'
+
+/** The page's own clock, held one second ahead of where it is now. */
+async function hold(page: Page) {
+  await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1_000)
 }
 
 async function dialogA11y(page: Page) {
@@ -632,6 +735,16 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     // The current owners are byte-identical to the accepted reference's.
     const current = Object.fromEntries(Object.keys(EFFECTS_OWNERS).map((path) => [path, fileHash(path)]))
     expect(current).toEqual(EFFECTS_OWNERS)
+    // A3 TASK-120: the accepted reference is Round 7's gallery commit; where it
+    // is in this checkout's history, the same bytes are read back from it.
+    const galleryPresent = spawnSync('git', ['cat-file', '-e', `${ACCEPTED_GALLERY}^{commit}`], { cwd: REPO_ROOT }).status === 0
+    if (galleryPresent) {
+      for (const path of Object.keys(EFFECTS_OWNERS)) {
+        const bytes = execFileSync('git', ['cat-file', 'blob', `${ACCEPTED_GALLERY}:${path}`], { cwd: REPO_ROOT })
+        expect(sha256(bytes), `${path} at bec4454`).toBe(EFFECTS_OWNERS[path])
+      }
+    }
+    test.info().annotations.push({ type: 'accepted-gallery', description: galleryPresent ? `read back from ${ACCEPTED_GALLERY}` : 'absent from this checkout: in-repo pins only' })
 
     // Where the reference object store is present (the Runner V2 layout), the
     // same bytes are read back from the accepted reference by identity.
@@ -640,12 +753,13 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
       const verified = verifyReferences({ cwd: REPO_ROOT, evidenceRoot: resolve(REPO_ROOT, 'evidence/refinement'), body: 'clear-refinement-20261103', only: 'accepted-gallery', store })
       expect(verified.problems).toEqual([])
       const pinned = verified.references[0].result.files as Map<string, { sha256: string }>
-      for (const [path, hash] of Object.entries(EFFECTS_OWNERS)) expect(pinned.get(path)?.sha256, `${path} at eded158c…`).toBe(hash)
+      // The historical eded158 reference: every owner its bytes, but for the one Round 7 changed.
+      for (const [path, hash] of Object.entries(EFFECTS_OWNERS)) expect(pinned.get(path)?.sha256, `${path} at eded158c…`).toBe(EDED158_CHANGED_OWNERS[path] ?? hash)
       const manifest = JSON.parse((verified.references[0].result.files as Map<string, { bytes: Buffer }>)
         .get('docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json')!.bytes.toString('utf8')) as { unchangedPresetOwners: { path: string; sha256: string }[] }
       expect(manifest.unchangedPresetOwners).toEqual([
         { path: 'src/ui/phosphor-echo-preset.ts', sha256: EFFECTS_OWNERS['src/ui/phosphor-echo-preset.ts'] },
-        { path: 'src/ui/crt-field/config.ts', sha256: EFFECTS_OWNERS['src/ui/crt-field/config.ts'] },
+        { path: 'src/ui/crt-field/config.ts', sha256: EDED158_CHANGED_OWNERS['src/ui/crt-field/config.ts'] },
       ])
     }
     test.info().annotations.push({ type: 'reference-store', description: store.problem ? `absent: in-repo pins only (${store.problem})` : `verified at ${store.source}` })
@@ -687,7 +801,8 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     expect(containing(imports('crt-glass/')).filter((path) => !path.startsWith('ui/crt-glass/')), 'the raster reference port is never mounted').toEqual([])
     expect(containing(imports('intake/phosphor-echo|effects-reference|round-3|crt-glass-motion|\\.mjs')), 'no intake snapshot or reference host imported').toEqual([])
     expect(containing(/polish-comparison-2026-10-26|cue-edge/), 'no October 26 preview pattern').toEqual([])
-    expect(containing(/@keyframes\s+clr-deadline-breathe/), 'the warning keyframes, once').toEqual(['ui/refinements/presentation.css'])
+    // A3 TASK-108 moved the one breathe into Round 7's shared warning owner (the build read it from src/ui/refinements/presentation.css).
+    expect(containing(/@keyframes\s+clr-deadline-breathe/), 'the warning keyframes, once').toEqual(['ui/countdown-urgency.css'])
     expect(containing(/clr-crt-line|--clr-crt-/).filter((path) => !/^ui\/crt-(?:field|glass)\//.test(path)), 'no restated glass values').toEqual([])
   })
 
@@ -710,7 +825,8 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     // The hold runs; Rest opens the log with its 20-second rest.
     await tap(hold.getByRole('button', { name: 'Start' }))
     await pass(page, 13)
-    const holdCard = page.locator('[data-workout-card="workout"]').filter({ has: hold })
+    // A3 TASK-120: Round 7's movement card is the movement's own section (the build's [data-workout-card="workout"]).
+    const holdCard = page.locator('main#main section').filter({ has: page.getByRole('heading', { name: 'plank', exact: true }) }).last()
     await tap(holdCard.getByRole('button', { name: 'Rest', exact: true }))
     const log = page.getByRole('form', { name: /^Log set 1 of plank$/i })
     await expect(log).toBeVisible()
@@ -737,6 +853,9 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     // behind the modal log is inert); the one edge returns to the body, in phase.
     await tap(page.getByRole('button', { name: 'Close log' }))
     await expect(log).toHaveCount(0)
+    // A3 TASK-120: Round 7's log leaves through the shared Dialog's 200 ms exit,
+    // timed on the page's clock, which this case holds: it is run through it.
+    await page.clock.runFor(200)
     await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('body')
     frame = await compose(page)
     expectOneGlass(frame, 'log closed', 'running')
@@ -796,7 +915,9 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     // Cleanup: the deadlines run out; nothing urgent is left, the glass is still one.
     await pass(page, 5)
     await expect(page.locator('[data-countdown-edge]')).toHaveCount(0)
-    await expect(page.locator('[data-urgent]')).toHaveCount(0)
+    // Round 7 marks a timer that is not urgent with data-urgent="false" (the
+    // shipped renderers' marker), so nothing urgent is no "true" left.
+    await expect(page.locator('[data-urgent="true"]')).toHaveCount(0)
     frame = await compose(page)
     expectOneGlass(frame, 'after the deadlines', 'running')
     expect(await storageSnapshot(page)).toEqual(before)
@@ -828,74 +949,78 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     await page.clock.install({ time: ENTRY })
     await visit('/gallery/refinements?state=urgency')
     const state = page.locator('[data-refinement-state="urgency"]')
-    await expect(state.getByRole('heading', { name: /^Countdown warning and whole timer frames/ })).toBeVisible()
-    const demo = state.locator('[data-gallery-deadline-warning]')
-    const opener = demo.getByRole('button', { name: 'Open log over the warning' })
-    const dialog = page.getByRole('dialog', { name: 'Log set' })
+    // Round 7's state: the real timed flow at each warning moment (A3 TASK-120).
+    await expect(state.getByRole('heading', { name: 'Soft deadline warning · synchronized', exact: true })).toBeVisible()
+    const dialog = page.getByRole('dialog', { name: NOTE_TITLE })
 
     // The composed dialog's accessibility first, while the clock still runs
-    // (axe schedules its own timers): held at five, nothing urgent yet.
-    await tap(demo.getByRole('button', { name: 'Inspect 5 seconds' }))
+    // (axe schedules its own timers).
+    const opener = await noteOpener(state)
     await tap(opener)
     await expect(dialog).toBeVisible()
     await expect(page.locator('.clr-crt-field')).toHaveCount(1)
     await dialogA11y(page)
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()
-    await page.clock.pauseAt(ENTRY + 10_000)
+    await hold(page)
 
-    await tap(demo.getByRole('button', { name: 'Inspect 5 seconds' }))
-    await tap(demo.getByRole('button', { name: 'Run countdown' }))
-    await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)
-    await opener.focus()
+    await urgentEmom(page, state)
+    const urgentOpener = await noteOpener(state)
+    await urgentOpener.focus()
     await page.keyboard.press('Enter')
     await expect(dialog).toBeVisible()
     await expect(dialog.getByRole('button', { name: 'Close log' })).toBeFocused()
     await expect(dialog.getByText('Close log', { exact: true })).toHaveCount(0)
     await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('dialog:open')
+    // Foundation's 200 ms phosphor entry settles to the sharp, opaque frame.
+    await expect.poll(async () => (await compose(page)).foregroundEffects).toEqual([])
 
     let frame = await compose(page)
     expectOneGlass(frame, 'log over the warning', 'running')
-    expectBalancedBackdrop(frame, 'Log set', 'log over the warning')
+    expectBalancedBackdrop(frame, NOTE_TITLE, 'log over the warning')
     expectOneEdge(frame, 'dialog:open', 'log over the warning')
-    expect(frame.urgentTimers, 'the warning in the log and behind it').toHaveLength(2)
+    // Round 7's note draws no timer of its own: the warning is the EMOM's, behind the log.
+    expect(frame.urgentTimers, 'the warning behind the log').toHaveLength(1)
     expect(await edgeIsTopmost(page), 'the edge paints above the frame').toEqual([true, true, true, true, true, true])
-    const echo = await frameEcho(page)
-    expect(echo).toMatchObject({ rear: true, rearFirst: true, rearHidden: 'true', rearPointer: 'none', filtered: 'url("#clr-phosphor-echo")' })
-    expect(echo!.rearBox).toEqual(echo!.frameBox)
-    expect(echo!.rearInk, 'the rear is the frame\'s own role colour').toEqual(echo!.frameInk)
-    const overFrame = await glassOver(page, dialog.locator('[data-logging-frame] p').first())
+    const echo = await echoReading(page)
+    expectEchoBeneath(echo, 'log over the warning')
+    const overFrame = await glassOver(page, dialog.locator('.clr-logging-overlay__head'))
     expectGlassOver(overFrame, 'log frame')
     await attach(page, 'gallery-urgency-log-composed-phone-390')
 
-    // Effects off: the glass and the rear go; the Balanced backdrop and the warning stay.
+    // Effects off: the glass and the rears go; the Balanced backdrop and the warning stay.
     await setEffects(page, 'off')
     await expect(page.locator('.clr-crt-field')).toHaveCount(0)
     frame = await compose(page)
     expectEffectsOff(frame, 'gallery effects off')
-    expectBalancedBackdrop(frame, 'Log set', 'gallery effects off')
+    expectBalancedBackdrop(frame, NOTE_TITLE, 'gallery effects off')
     expectOneEdge(frame, 'dialog:open', 'gallery effects off')
-    expect((await frameEcho(page))?.rear).toBe(false)
+    expect(await echoReading(page)).toEqual({ inDialog: 0, background: null })
+    expect(await page.locator('.clr-echo__rear').count(), 'no Echo rear with effects off').toBe(0)
     await attach(page, 'gallery-urgency-log-effects-off-phone-390')
     await setEffects(page, 'on')
     await expect(page.locator('.clr-crt-field')).toHaveCount(1)
-    expectGlassOver(await glassOver(page, dialog.locator('[data-logging-frame] p').first()), 'gallery effects on again')
-    await expect.poll(async () => (await frameEcho(page))?.rear).toBe(true)
+    expectGlassOver(await glassOver(page, dialog.locator('.clr-logging-overlay__head')), 'gallery effects on again')
+    await expect.poll(async () => (await echoReading(page)).background !== null).toBe(true)
+    expectEchoBeneath(await echoReading(page), 'gallery effects on again')
 
     // Escape closes the log: focus returns to its opener, the edge to the body, one glass remains.
+    // (Round 7's log leaves through the shared Dialog's 200 ms exit, timed on
+    // the page's clock, which this case holds: it is run through it.)
     await page.keyboard.press('Escape')
+    await page.clock.runFor(200)
     await expect(dialog).toBeHidden()
-    await expect(opener).toBeFocused()
+    await expect(urgentOpener).toBeFocused()
     await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('body')
     frame = await compose(page)
     expectOneGlass(frame, 'log closed', 'running')
     expectOneEdge(frame, 'body', 'log closed')
     expect(frame.urgentTimers, 'a closed log holds no second warning').toHaveLength(1)
 
-    // Run out: the warning cleans up.
+    // Run out: the minute ends and the warning cleans up.
     await pass(page, 6)
     await expect(page.locator('[data-countdown-edge]')).toHaveCount(0)
-    await attachJson('gallery-glass-reading', { overFrame })
+    await attachJson('gallery-glass-reading', { overFrame, echo })
     expect(gallery.requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
 
@@ -905,37 +1030,42 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     const gallery = await galleryVisit(page, { appReduceMotion: true })
     await page.clock.install({ time: ENTRY })
 
-    // The app's own Reduce motion: the long ladder log.
+    // The app's own Reduce motion: the long ladder log. Round 7's state
+    // (gallery bec4454) runs the real twelve-round ladder past its cap, and its
+    // log opens itself as "Log results" (the build's "Ladder · 12 rounds").
     await visit('/gallery/refinements?state=ladder-long')
     await expect(page.locator('html')).toHaveAttribute('data-reduce-motion', '')
-    await tap(page.getByRole('button', { name: 'Open long ladder results' }))
-    const ladder = page.getByRole('dialog', { name: 'Ladder · 12 rounds' })
+    await tap(page.getByRole('button', { name: 'Open Long ladder results', exact: true }))
+    const ladder = page.getByRole('dialog', { name: LADDER_LOG })
     await expect(ladder).toBeVisible()
     let frame = await compose(page)
     expectOneGlass(frame, 'app reduce motion', 'paused')
-    expectBalancedBackdrop(frame, 'Ladder · 12 rounds', 'app reduce motion', true)
-    expectGlassOver(await glassOver(page, ladder.locator('[data-logging-head]')), 'long log header')
+    expectBalancedBackdrop(frame, LADDER_LOG, 'app reduce motion', true)
+    expectGlassOver(await glassOver(page, ladder.locator('.clr-logging-overlay__head')), 'long log header')
     await attach(page, 'gallery-ladder-long-reduced-phone-320')
     await page.keyboard.press('Escape')
     await expect(ladder).toBeHidden()
 
     // The warning under the log: still, everywhere.
     await visit('/gallery/refinements?state=urgency')
-    await page.clock.pauseAt(ENTRY + 10_000)
-    const demo = page.locator('[data-gallery-deadline-warning]')
-    await tap(demo.getByRole('button', { name: 'Inspect 5 seconds' }))
-    await tap(demo.getByRole('button', { name: 'Run countdown' }))
-    await tap(demo.getByRole('button', { name: 'Open log over the warning' }))
-    await expect(page.getByRole('dialog', { name: 'Log set' })).toBeVisible()
+    const state = page.locator('[data-refinement-state="urgency"]')
+    await hold(page)
+    await urgentEmom(page, state)
+    const opener = await noteOpener(state)
+    await tap(opener)
+    await expect(page.getByRole('dialog', { name: NOTE_TITLE })).toBeVisible()
     await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('dialog:open')
     frame = await compose(page)
     expectOneGlass(frame, 'reduced warning', 'paused')
-    expectBalancedBackdrop(frame, 'Log set', 'reduced warning', true)
+    expectBalancedBackdrop(frame, NOTE_TITLE, 'reduced warning', true)
     expectOneEdge(frame, 'dialog:open', 'reduced warning', true)
     expect(await page.evaluate(() => document.getAnimations()
       .filter((animation) => (animation as CSSAnimation).animationName === 'clr-deadline-breathe').length)).toBe(0)
     await attach(page, 'gallery-urgency-reduced-phone-320')
     await page.keyboard.press('Escape')
+    // The app's own choice leaves the shared Dialog's 200 ms exit timed on the held clock: run through it.
+    await page.clock.runFor(200)
+    await expect(page.getByRole('dialog', { name: NOTE_TITLE })).toBeHidden()
 
     // The device setting alone (the app choice cleared): the same stillness.
     await page.evaluate(() => {
@@ -944,11 +1074,14 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     })
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await expect(page.locator('html')).not.toHaveAttribute('data-reduce-motion', '')
-    await tap(demo.getByRole('button', { name: 'Open log over the warning' }))
+    await tap(opener)
     await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('dialog:open')
+    // Under the device setting Foundation's arrival is collapsed to a hard cut
+    // (a11y.css), which still paints its first frame once: read once it is through.
+    await expect.poll(async () => (await compose(page)).foregroundEffects).toEqual([])
     frame = await compose(page)
     expectOneGlass(frame, 'device reduced motion', 'paused')
-    expectBalancedBackdrop(frame, 'Log set', 'device reduced motion', true)
+    expectBalancedBackdrop(frame, NOTE_TITLE, 'device reduced motion', true)
     expectOneEdge(frame, 'dialog:open', 'device reduced motion', true)
 
     // Motion allowed again: the same glass resumes in place and the warning breathes.
@@ -967,18 +1100,20 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
       const gallery = await galleryVisit(page, { skin })
       await visit('/gallery/refinements?state=ladder-long')
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
-      await tap(page.getByRole('button', { name: 'Open long ladder results' }))
-      const ladder = page.getByRole('dialog', { name: 'Ladder · 12 rounds' })
+      await tap(page.getByRole('button', { name: 'Open Long ladder results', exact: true }))
+      const ladder = page.getByRole('dialog', { name: LADDER_LOG })
       await expect(ladder).toBeVisible()
       await expect(ladder.getByRole('button', { name: 'Close log' })).toBeFocused()
+      // Foundation's 200 ms phosphor entry settles to the sharp, opaque frame.
+      await expect.poll(async () => (await compose(page)).foregroundEffects).toEqual([])
       const frame = await compose(page)
       expectOneGlass(frame, skin, 'running')
-      expectBalancedBackdrop(frame, 'Ladder · 12 rounds', skin)
-      await expect.poll(async () => (await frameEcho(page))?.rear).toBe(true)
-      const echo = await frameEcho(page)
-      expect(echo!.rearBox).toEqual(echo!.frameBox)
-      expect(echo!.rearInk, `${skin}: the rear is the frame's own role colour`).toEqual(echo!.frameInk)
-      const overHeader = await glassOver(page, ladder.locator('[data-logging-head]'))
+      expectBalancedBackdrop(frame, LADDER_LOG, skin)
+      // Round 7: no rear inside the dialog; a background owner's rear in its own role colour (REQ-004).
+      await expect.poll(async () => (await echoReading(page)).background !== null).toBe(true)
+      const echo = await echoReading(page)
+      expectEchoBeneath(echo, skin)
+      const overHeader = await glassOver(page, ladder.locator('.clr-logging-overlay__head'))
       expectGlassOver(overHeader, `${skin} header`)
       await dialogA11y(page)
       await attach(page, `gallery-ladder-long-${skin}-phone-390`)
