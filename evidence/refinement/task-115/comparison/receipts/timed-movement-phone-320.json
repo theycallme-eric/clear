@@ -1,0 +1,95 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "timed-movement",
+  "title": "Timed movement",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/timed-movement-phone-320-gallery.png",
+    "sha256": "fcaad59151be898cf29fd4fd234602a1542b9c8151caae93b8b38941168c46d3",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/timed-movement-phone-320-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/timed-movement-phone-320.json",
+      "receiptSha256": "37da842e003dbface823afd6a4b57526106729d13f85c14f133e48292f7908d8",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-320-gallery.png",
+              "sha256": "39e16fa69c87f2c2771480b4d917753ca7170eed7a570694a3435b79e2b48667",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-320-route.png",
+              "sha256": "fdf45f615bc993759175736652c370842e1b8b0da05c91899a3f2b3c9cff37f1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/timed-movement-phone-320.json",
+      "receiptSha256": "85d75e48f5b2e8310a245b5c3016db305483fbf9b1a7b39c6f720c3221108e9f",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-gallery-card.png",
+              "sha256": "580f5ec0d2a7f9b0211fb36b93490da4fef905ede346db1c2cb448d86ffa7c72",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-route-card.png",
+              "sha256": "347192ea97f90e5e0e7348c36efdc4bb1a057333788c17b77365c95c5cb45605",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-gallery-open.png",
+              "sha256": "2bee0dab2a0d32faa8b0d520a701b4354d1040a87b759d65ccfc1814a2511a71",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-route-open.png",
+              "sha256": "e72240308a8633b34876fd5b5c04804a2408d670757b41f1d4507603ddfde04a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

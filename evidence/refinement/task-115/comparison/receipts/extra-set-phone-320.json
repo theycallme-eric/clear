@@ -1,0 +1,95 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "extra-set",
+  "title": "Extra set",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/extra-set-phone-320-gallery.png",
+    "sha256": "8548c08d03f6a703b6449b22747cab75c22e1bc17d1f9a58287fcb782c198264",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/extra-set-phone-320-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/extra-set-phone-320.json",
+      "receiptSha256": "9038aa78c611562817c0da8d47d8a16df0727fce202f3140456af61df61fc7f5",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/extra-set-phone-320-gallery.png",
+              "sha256": "c21b3b11bffaf6395ea0859cba2299bd1a979ebfa18985fb76c2d181c00d9e36",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/extra-set-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/extra-set-phone-320-route.png",
+              "sha256": "30d1716419275637356553e1b5679afaa44221e259afddb4294073beec0adee5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/extra-set-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/extra-set-phone-320.json",
+      "receiptSha256": "cf9037008381a09eb8378712c2865cdc72ae3f4b6a2156fab729c454df6c510e",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-gallery-card.png",
+              "sha256": "52c32245cdd674b86a2021749991acbdb28f7c932bf15c7bb3dba2fbbf8e8ae1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-route-card.png",
+              "sha256": "2d86e7b8dc42187edbc25dea1a0a6ceadb82bed3323b313a40ec5e24851c54f6",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-gallery-open.png",
+              "sha256": "932c852b1366a0a16ad80d0b3d6557447e0af0dd5ab3d97761d795698defb1e2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-route-open.png",
+              "sha256": "cc744564a1e6088af757643e8e54950972b20d64f73f48acedb2658232730d28",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-320-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

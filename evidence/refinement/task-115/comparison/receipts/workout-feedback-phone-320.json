@@ -1,0 +1,114 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "workout-feedback",
+  "title": "Workout feedback",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/workout-feedback-phone-320-gallery.png",
+    "sha256": "88b75c8f81d4ff55c1de1d718f203a618aa4defd006c9a97916773938997ce0d",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/workout-feedback-phone-320-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/workout-feedback-phone-320.json",
+      "receiptSha256": "ca65d856afbb41e74b052f8d61127a4764d0f67c9b5b8fc2c96631a9d9420064",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/summary",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-gallery.png",
+              "sha256": "4c07c5c68ddfdf04022a754f5f1af019643a82a28f3eb87703f92bab338a7f11",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-route.png",
+              "sha256": "31d5cb33fa4564727b4c67f4996ca48120d09d48847e761ea72e4e3dcd17e013",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-111",
+      "primary": false,
+      "receipt": "evidence/refinement/task-111/parity/workout-feedback-phone-320.json",
+      "receiptSha256": "2ce3eb76ddb1a664e4ea0decdfb17a0ddc903ad048404887cbd4b113dd688be4",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/summary",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-card.png",
+              "sha256": "965234aaa103a21c8f5c95b9848e1394a285b6b7cc8d7ec83223d82a96559329",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-card.png",
+              "sha256": "8a3f26493e4e03d8444543245b0485270cb922cef6338f578410d132a2f8f819",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-open.png",
+              "sha256": "4c07c5c68ddfdf04022a754f5f1af019643a82a28f3eb87703f92bab338a7f11",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-open.png",
+              "sha256": "f0b54636d24b40c9eb75dec0a87a2462592d5026708712907eb8367debbfd7c9",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "reopened",
+          "gallery": [
+            {
+              "key": "gallery-reopened",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-reopened.png",
+              "sha256": "229fe5b96f1f1f3968a066143a32647fd59be177d18427281bc24d79014c4bc4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-reopened.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-reopened",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-reopened.png",
+              "sha256": "b2cdfc5a2edf0063b2386141a09080725f361cff39335ee6d78ad919be9daacf",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-reopened.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

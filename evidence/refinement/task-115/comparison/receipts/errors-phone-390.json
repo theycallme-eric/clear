@@ -1,0 +1,215 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "errors",
+  "title": "Released error semantics",
+  "width": 390,
+  "primaryOwner": "TASK-113",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/errors-phone-390-gallery.png",
+    "sha256": "0594abc6e20c16b0b7d9b29b87f149cf6be838acac999dded752c54625c8019c",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/errors-phone-390-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-113",
+      "primary": true,
+      "receipt": "evidence/refinement/task-113/parity/errors-clear-phone-390.json",
+      "receiptSha256": "3fa3140879679ef12dbcfb0891f42eac3e8c06f8f7d7b4e65ade1b03ef967b29",
+      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "route": "/summary",
+      "moments": [
+        {
+          "moment": "state",
+          "gallery": [
+            {
+              "key": "gallery",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-clear-phone-390-gallery.png",
+              "sha256": "75bb76f821a6650196b7f13f8bc61cfd60ec6338a57cefc8ab2900d06e9d7cc7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-clear-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-clear-phone-390-route.png",
+              "sha256": "8188cfd42a590280ba87fea4243e2ac1d68c0645c0b56fb0bdbc5c8bb3d96dc2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-clear-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-113",
+      "primary": true,
+      "receipt": "evidence/refinement/task-113/parity/errors-vapour-phone-390.json",
+      "receiptSha256": "b429783dbf94fb07a1b3959dd065f12e434b30c264f8a0b6c5f836271f6ce3c5",
+      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "route": "/summary",
+      "moments": [
+        {
+          "moment": "state",
+          "gallery": [
+            {
+              "key": "gallery",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-vapour-phone-390-gallery.png",
+              "sha256": "647519e404f4cde3e557cabbb906c2a55138ea4e01bfe2f6ff2e596d69e07643",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-vapour-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-vapour-phone-390-route.png",
+              "sha256": "409c02a0f00126ea83fd1d59e654e8c48259b2558c542f6c3eef3cb905b8f5e2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-vapour-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-113",
+      "primary": true,
+      "receipt": "evidence/refinement/task-113/parity/errors-signal-phone-390.json",
+      "receiptSha256": "8b4eb433a7674b6458b5891cd13bd2cb1f75945b65569e5b58fd962638cef330",
+      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "route": "/summary",
+      "moments": [
+        {
+          "moment": "state",
+          "gallery": [
+            {
+              "key": "gallery",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-signal-phone-390-gallery.png",
+              "sha256": "a538f312325f6d0a3807e8b32aa9dc9d9727a074ef83bedaacdef49503ed4f66",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-signal-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-signal-phone-390-route.png",
+              "sha256": "97ea4056b25958c059a2b025690f111fdd36848ca3185d7ab1567bd5b670ea73",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-signal-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-113",
+      "primary": true,
+      "receipt": "evidence/refinement/task-113/parity/errors-mono-phone-390.json",
+      "receiptSha256": "c14b50b220f4b9b4eccb0209e6281a1ac0367c32095ae162e67c60476621e826",
+      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "route": "/summary",
+      "moments": [
+        {
+          "moment": "state",
+          "gallery": [
+            {
+              "key": "gallery",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-mono-phone-390-gallery.png",
+              "sha256": "031b1eb347884bd68b68803a4cb68b79f92702385f8ebc45937d86656e4c152a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-mono-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/errors-mono-phone-390-route.png",
+              "sha256": "3b98610fffc3d17d59fd9cdea6fd5a9e969f3a297c12ad88e84bb09edb5be0c5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/errors-mono-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "gallery only — Request failed — The owner’s default title on the gallery sample. A real route names what failed (ErrorView: “never Oops”), here Summary’s session read; the error/retry meaning is kept, not weakened."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "gallery only — Request timed out. Try again. — The gallery’s sample failure (NETWORK_TIMEOUT). Real data only: the route says the failure it actually met — the read answered 503, a server error — and no route read produces a timeout to match."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "route only — That session didn’t load — Summary’s own title for its failed session read, passed to the one shared ErrorView."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — Server error. Try again later. — The real failure’s own message (NETWORK_SERVER_ERROR for the 503 the read met)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "gallery only — Request failed — The owner’s default title on the gallery sample. A real route names what failed (ErrorView: “never Oops”), here Summary’s session read; the error/retry meaning is kept, not weakened."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "gallery only — Request timed out. Try again. — The gallery’s sample failure (NETWORK_TIMEOUT). Real data only: the route says the failure it actually met — the read answered 503, a server error — and no route read produces a timeout to match."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "route only — That session didn’t load — Summary’s own title for its failed session read, passed to the one shared ErrorView."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — Server error. Try again later. — The real failure’s own message (NETWORK_SERVER_ERROR for the 503 the read met)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "gallery only — Request failed — The owner’s default title on the gallery sample. A real route names what failed (ErrorView: “never Oops”), here Summary’s session read; the error/retry meaning is kept, not weakened."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "gallery only — Request timed out. Try again. — The gallery’s sample failure (NETWORK_TIMEOUT). Real data only: the route says the failure it actually met — the read answered 503, a server error — and no route read produces a timeout to match."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "route only — That session didn’t load — Summary’s own title for its failed session read, passed to the one shared ErrorView."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — Server error. Try again later. — The real failure’s own message (NETWORK_SERVER_ERROR for the 503 the read met)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "gallery only — Request failed — The owner’s default title on the gallery sample. A real route names what failed (ErrorView: “never Oops”), here Summary’s session read; the error/retry meaning is kept, not weakened."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "gallery only — Request timed out. Try again. — The gallery’s sample failure (NETWORK_TIMEOUT). Real data only: the route says the failure it actually met — the read answered 503, a server error — and no route read produces a timeout to match."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-R028-01",
+      "text": "route only — That session didn’t load — Summary’s own title for its failed session read, passed to the one shared ErrorView."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — Server error. Try again later. — The real failure’s own message (NETWORK_SERVER_ERROR for the 503 the read met)."
+    }
+  ],
+  "unintended": []
+}

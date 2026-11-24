@@ -1,0 +1,47 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "movement-note",
+  "title": "Movement note",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/movement-note-phone-320-gallery.png",
+    "sha256": "50c903d7f0e3abc693e15a76d93372b843d0576eb39d26774575ad269bca86bc",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/movement-note-phone-320-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/movement-note-phone-320.json",
+      "receiptSha256": "436aa365ef260f1d90d03fdc794bece13a6db4779edb86b95dd83cb2204717d3",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-320-gallery.png",
+              "sha256": "84ba0602fb872d6d8c2d5902ad6e15ef7e029305de43bdde7543b14e969a6000",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-320-route.png",
+              "sha256": "a462838df3d2dcf0f3b1df5b39d5fff9dfb618c1cda6799c6a6cca64beec1145",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

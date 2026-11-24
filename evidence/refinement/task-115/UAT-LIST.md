@@ -204,6 +204,31 @@ Each ported body mounts the block through the route’s dispatch (`BlockSlot` un
 - CoachingMovementSection guidance shape (`scripts/refinement/task-038-definition.test.mjs`): was CoachingMovementSection and CoachingPanel each match {opened ? ( … ) : null} with <Guidance inside, no ExerciseNotesField inside, and <ExerciseNotesField exercise={exercise} name={name} /> after it; now CoachingMovementSection matches {opened ? <Guidance … /> : null} (one self-closing Guidance, no parentheses) and CoachingPanel keeps {opened ? ( … ) : null}; the same three reads follow for each; plus GroupCoachingPanel draws one CoachingMovementSection per movement with opened={opened}. Why: Round 7’s per-movement owner (A3 TASK-109) writes the condition without parentheses. The asserted behaviour — guidance only once opened, the note never inside it and drawn unconditionally after it — is read unchanged; the added read binds the section to the grouped disclosure.
 - cards gallery page and WorkoutCard slot (`scripts/refinement/task-038-definition.test.mjs`): was src/dev/gallery-refinement-cards.tsx imports GroupExerciseCoaching from ../ui/exercise-coaching and draws coaching={grouped ? <GroupExerciseCoaching ; src/ui/refinements/workout-card.tsx declares coaching?: ReactNode; now GalleryMovementCards (src/dev/gallery-refinement-scenes.tsx) draws LiveFlow emom, amrap and for_time; TimedWorkoutFlow imports GroupExerciseCoaching from ./exercise-coaching and draws it for a single-movement card; BlockPanel imports it, sets groupedCoaching for a non-standard block of more than one movement and draws it right after {children}. Why: Round 7 removed both files. Its accepted cards state still draws the actual owner: each of its three single-movement timed cards ends with GroupExerciseCoaching on the gallery runtime’s memory-only clients (A3 TASK-109’s cards parity reads it), and the real route’s block card places the same owner after a grouped block’s content (the brief’s src/ui/block-renderers-frame.tsx).
 
-## TASK-115's own test updates (2026-11-23 rule)
+## TASK-115's own test updates (2026-11-23 rule) and retirement
 
-(Filled in after the whole e2e run.)
+- `e2e/refinement/task-021.spec.ts` (JOURNEY-021 keyboard, final seconds in the log): the urgent rest's warning is
+  read on its timer — the shared breathe class `clr-countdown-breathe` (TASK-108) where the base read the old
+  `clr-pulse-micro`; the build's `data-urgent` read is restored and the still loop kept.
+- `e2e/refinement/task-105-parity.spec.ts` (scheduled ladder) and `task-107-parity.spec.ts` (circuit round): Round 7's
+  TimerFrame draws a clock's digits one cell per character, so `01:05`, `00:45` and `00:44` are read cell by cell.
+- `e2e/ui-polish-home.spec.ts` (JOURNEY-003): the Focus control is read by Round 7's name "Change focus" (see owner
+  item 2).
+- `e2e/uat-batch-01.spec.ts` (Generate and Settings rulings): "Goal:" is read as Round 7's term "Goal".
+- `e2e/ui-polish-pwa-viewport.spec.ts` (JOURNEY-002): the rest-day dialog's scroll owner is Round 7's
+  `.clr-logging-overlay__scroll`.
+- Retired, for Eric to confirm: `e2e/ui-polish-b05-recent-rows.spec.ts` "History chronology puts the title on its own
+  row with status and date beneath (TASK-026)" (two viewports) — owner decision 7 replaced that row with Round 7's
+  History order; the unit twin was already retired by the corrected task 2 ledger.
+
+## Reported from the whole e2e run (details in `evidence/refinement/task-115/test-ledger.json`, `rules.wholeE2eRun`)
+
+- The B05 look suites (13 `e2e/ui-polish-b05-*.spec.ts` files, 70 cases in the whole run) still assert UI polish batch 05's look,
+  which the old build's refinement and then Round 7 replaced; the same files also fail at the old build 181e580.
+- `e2e/contained-shell.spec.ts` (3 cases in the whole run): also failing at the old build.
+- `e2e/public-gallery.spec.ts` (2 cases): the gallery's two SectionHeader specimens now share the region name
+  "All sections" (TASK-108 hid the "N / M" from the compact toggle's name), an axe landmark-unique finding.
+- `e2e/refinement/task-033.spec.ts:1027` and `e2e/focus-ownership.spec.ts:387`: timing in the harness (held page clock;
+  the lazy product chunk's loading screen), not a look change.
+- `e2e/design-0143/entry-forms.spec.ts` "generate-reads" (backend lane) still reads `/^Focus:/` and "Focus: Lower body";
+  it runs only with the test backend, so it was not changed blind here. `task-040-entry-settings.spec.ts`'s Focus case
+  is deselected for Foundation 0.14.3 and never runs.

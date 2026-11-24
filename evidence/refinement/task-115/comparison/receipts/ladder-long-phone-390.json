@@ -1,0 +1,203 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "ladder-long",
+  "title": "Long ladder results · final scrolling",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/ladder-long-phone-390-gallery.png",
+    "sha256": "03e0fe3f53b67438bc5fe90fa0428d8e1d656bdd3521ac29c66c62b88ca64775",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/ladder-long-phone-390-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/ladder-long-phone-390.json",
+      "receiptSha256": "24af4795d007ec30e0a01f75f155b2d2bcfdbb8f9f5b47bc15d957f754d6536f",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/ladder-long-phone-390-gallery.png",
+              "sha256": "b6db1d740665c92b78ef353b514aec5c21f4c1680c034fbcf06d4bb0703545dd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/ladder-long-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/ladder-long-phone-390-route.png",
+              "sha256": "c5b30b1d480c7eb25e5be83a7845056ea91c95d914360c320dba181b14ffd2df",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/ladder-long-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-105",
+      "primary": false,
+      "receipt": "evidence/refinement/task-105/parity/ladder-long-phone-390.json",
+      "receiptSha256": "6edeb2aca3d8870a57a726edc920d262fb9e386a0cf733d87e7decae80cc595e",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-ready.png",
+              "sha256": "5f25d3077d9354b3f0022dbdb3d5adc1f066702ecd1c349a1391f60c06b56405",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-ready.png",
+              "sha256": "d5f52e133cc344f44a3e9782b2a205066beb9da9550407ef6abfbbae6eb3125c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-log.png",
+              "sha256": "b6db1d740665c92b78ef353b514aec5c21f4c1680c034fbcf06d4bb0703545dd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-log.png",
+              "sha256": "e67b244cc3afd2415cbb9740340c3e672c33daaa2479fd001ff2207d29ff4f18",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-ended.png",
+              "sha256": "20020a713b4568621d33cabdab8983fb3c475cec5d2440388bce6749854103ec",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-ended.png",
+              "sha256": "c827341c9de927a4fdc047aef1976b7fc59702ba61cfc334ddf2677ac1ab5f48",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-long-phone-390-route-ended.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-120",
+      "primary": false,
+      "receipt": "evidence/refinement/task-120/parity/ladder-long-phone-390.json",
+      "receiptSha256": "0174d881aebd5cb8012555f9e2b4c9321f21264dc9ab0608e99295403438458e",
+      "provenance": "taken by its own task run; receipt bytes as committed at 710f7fae",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "dialog",
+          "gallery": [
+            {
+              "key": "gallery-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-gallery-dialog.png",
+              "sha256": "4e5d2afc0a5dfc4d24bd2252dbaa1c7305eef41bb9a8ec655386f0283a2fdbf4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-gallery-dialog.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-route-dialog.png",
+              "sha256": "77380b32862becc1ff6c8cdaa599c010d38a1145ec8bdca2dac97199686601ad",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-route-dialog.png"
+            }
+          ]
+        },
+        {
+          "moment": "viewport",
+          "gallery": [
+            {
+              "key": "gallery-viewport",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-gallery-viewport.png",
+              "sha256": "4a61bcd2192b353629db25ced6c4275999ca17cb3a9e293ee64b3286033ff20c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-gallery-viewport.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-viewport",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-route-viewport.png",
+              "sha256": "14b5047fdb49b2584ee5209e3838fb614223cc96c1f3bd2b6dc6ef37965d4064",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-390-route-viewport.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C34-01, TASK-AC-C021DADA60B8",
+      "text": "A ladder whose rounds nobody has marked yet reads \"No rounds marked yet\" (live count and the log's count), not \"0 of N rounds completed\": nothing stated is not zero; an explicit zero still reads \"0 of N\"."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
+      "text": "Undo finish · resume ladder keeps its quiet style, its control height and the small button's own inline padding (`var(--spacing-300)`, so its focus frame clears the first letter); its row gives that padding back outside the box with a negative inline margin (`calc(var(--spacing-300) * -1)`), so its text starts at the rounds-completed count's left edge."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01, AC-R013-03, TASK-AC-C021DADA60B8",
+      "text": "The ladder log asks each movement's next-round amount only once a round is stated (zero included): with nothing stated there is no \"Completed in round 1\" field."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01",
+      "text": "A tap inside the live check-off's selection leaves only the rounds before it (the log tiles' rule), where it used to select through it."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "JOURNEY-012 (readable wrapping), AC-R013-02",
+      "text": "A live round tile keeps the read-only tile's declared inset (`var(--spacing-200)`) instead of the Chip's wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "text": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C33-01, AC-R013-02",
+      "text": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
+      "text": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder."
+    }
+  ],
+  "unintended": []
+}

@@ -1,0 +1,232 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "amrap",
+  "title": "AMRAP results",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/amrap-phone-390-gallery.png",
+    "sha256": "52c18f0725989930683c0edf81130b838541f26ecad720619300ce1bb76316e7",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/amrap-phone-390-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/amrap-phone-390.json",
+      "receiptSha256": "2e77d945635305a0a1b6c876f7a088116fd375d045811fdb62c6a606f4d275a2",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/amrap-phone-390-gallery.png",
+              "sha256": "358fdbf42053f6e900ae3aa14ef36f01728af3d212f339109647037d612717a0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/amrap-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/amrap-phone-390-route.png",
+              "sha256": "64943d8bfbb0966d2f35baf20fb31f6ab913978832f6b9a595cf101a21597dcc",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/amrap-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-116",
+      "primary": false,
+      "receipt": "evidence/refinement/task-116/parity/amrap-phone-390.json",
+      "receiptSha256": "268c28667da2ca4401d51216c207f423df00f5211765587cbae93c3c58160631",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-gallery-ready.png",
+              "sha256": "19d142ff38fd1726b4de65065cd5d7e809290244f20f59ea8b2e8c6ed4b794e7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-route-ready.png",
+              "sha256": "4aad4e620701cd38b8baffa2edc1e4db6cd949dd1a6eff49d550d80c3eca9e67",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-gallery-log.png",
+              "sha256": "6b6ce97a7517730ec3bf1c70d3c595f8f89d9e053c5f9bef494974ada1eb8b5a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-route-log.png",
+              "sha256": "64943d8bfbb0966d2f35baf20fb31f6ab913978832f6b9a595cf101a21597dcc",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "answered",
+          "gallery": [
+            {
+              "key": "galleryAnswered",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-gallery-answered.png",
+              "sha256": "d46ad64e58c2b34b622b1563b6574d19e1e4a52970c5d07d85dd7b275c459e1a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-gallery-answered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeAnswered",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-route-answered.png",
+              "sha256": "7c79c2e76f3c2ce7548f1ce50b3e6f7b80a788d4bc80879858f6d8bed0b57b42",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/amrap-phone-390-route-answered.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-117",
+      "primary": false,
+      "receipt": "evidence/refinement/task-117/parity/amrap-phone-390.json",
+      "receiptSha256": "7f16f3dd58e8d07537f7e4454e9d5e3a1c122f2dae81b3c8287f4aa57037ef83",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-ready.png",
+              "sha256": "19d142ff38fd1726b4de65065cd5d7e809290244f20f59ea8b2e8c6ed4b794e7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-ready.png",
+              "sha256": "4aad4e620701cd38b8baffa2edc1e4db6cd949dd1a6eff49d550d80c3eca9e67",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-log.png",
+              "sha256": "6b6ce97a7517730ec3bf1c70d3c595f8f89d9e053c5f9bef494974ada1eb8b5a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-log.png",
+              "sha256": "64943d8bfbb0966d2f35baf20fb31f6ab913978832f6b9a595cf101a21597dcc",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "entered",
+          "gallery": [
+            {
+              "key": "galleryEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-entered.png",
+              "sha256": "2ce5fa53f09bcdc70d7bad134ddd4c649d53b49abc9e0808aefa79b160bde8ba",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-gallery-entered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-entered.png",
+              "sha256": "ebde4c6991aef42d43f7cca54698206d84118065f4b85b0351e5280c5e9312c9",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/amrap-phone-390-route-entered.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-116",
+      "criterion": "TASK-AC-85F76FF493AB",
+      "text": "`askCompletion`: a For Time with no cap is not asked \"Work completed\"; a For Time's amounts belong to a race answered Incomplete, never to one nobody answered."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "AC-R010-01",
+      "text": "For Time starts where the race ended and keeps only the athlete's answer (`workCompleted`); with no cap nothing is asked or claimed."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "TASK-AC-8FF68F3F5241",
+      "text": "AMRAP and For Time save authority: a refused save is kept on the attempt's record and said after a reload; a known row whose richer save failed reopens the block."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R015-01",
+      "text": "An AMRAP asks no per-movement amount until a rounds count is recorded (TASK-015, `partialRoundFor`), so the amrap state's log past its cap draws only the loaded kb swing's \"Weight used\" group (bec4454 drew \"Completed in next round\" for every movement); a recorded count draws each movement's next-round amount, and a changed count clears the amounts and keeps the loads. Labels stay Round 7's."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-C37-01",
+      "text": "A load field only where a load can attach (`loadApplies`, the set logger's rule the saved row also applies); a multi-round For Time asks loads only; a distance amount takes decimals; the row's own rule (`movementActualFromDraft`) says in the field what an entry is refused on. No accepted state draws a refusal, a distance or a multi-round race, and every accepted state's loaded movement keeps its load field."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-FB8AF4D9B641",
+      "text": "AC-C26-01's exact per-movement group list (a group only for the loaded movement before rounds are recorded) is the drawing above; the form keeps its accepted name \"Log section results\" (R7-3)."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R011-01",
+      "text": "An EMOM's clock caption says \"· Rest\" beside its minute while the block's own rest window runs. The accepted emom state prescribes no rest, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-8C147E2C148D",
+      "text": "The card's \"Log results\" action states whether its dialog is open (`aria-expanded`); nothing drawn changes."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-339D1096F660",
+      "text": "Each movement's typed amount and load are kept on the attempt's own record (EMOM, AMRAP, For Time) and restored after a reload; the gallery keeps nothing, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-D58939F8E091",
+      "text": "EMOM save authority, as the AMRAP's and For Time's: a refused save is kept on the EMOM's record and said after a reload; a known row whose richer save failed reopens the block. Nothing the gallery draws changes."
+    }
+  ],
+  "unintended": []
+}

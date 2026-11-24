@@ -1,0 +1,143 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "circuit-movement",
+  "title": "Circuit movement entry",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/circuit-movement-phone-320-gallery.png",
+    "sha256": "c65c478292b6ca702be64834240369f43eeff65b0ccca32472bab0660f5ad8bf",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/circuit-movement-phone-320-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/circuit-movement-phone-320.json",
+      "receiptSha256": "d97950fde7c06d93942d2a4c4065aac867b52f0fc9e5092ed7e266e59a00b787",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/circuit-movement-phone-320-gallery.png",
+              "sha256": "0e77d3553ad7985babbdcf8eb38eeceb409b0392eaf5fd5d4a7fa029c273d8f8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/circuit-movement-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/circuit-movement-phone-320-route.png",
+              "sha256": "191688480f47c7413847a54115aae01610c602e19d60aa411196a66612cc42a1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/circuit-movement-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/circuit-movement-phone-320.json",
+      "receiptSha256": "ac7862f02a9d9928d76fe1bd71c1cfac41886943b4deac9046761ea3fe6734b0",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-gallery-card.png",
+              "sha256": "4e2cb4af3ef0b2d4067d4cdc8f53271483dc679efcfa85b0d9e31da129453fbd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-route-card.png",
+              "sha256": "7be68a47cafcbc67ffa6799e6d195f2642ac19276be91c030d5625344eb202a8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-gallery-open.png",
+              "sha256": "3fb76b0389963cbc655df60d7a659c2744580e951bc513811679ad25058ca034",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-route-open.png",
+              "sha256": "34d618b0c10dda361df1bbbcb792d7c34b1443abb3b205bdc1f7542f0854791b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/circuit-movement-phone-320-route-open.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-107",
+      "primary": false,
+      "receipt": "evidence/refinement/task-107/parity/circuit-movement-phone-320.json",
+      "receiptSha256": "b873a464c7de13f448ce7b2daa76afb435bfcfb9a93ee2cef1875fbdc7c289fe",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-gallery-card.png",
+              "sha256": "4e2cb4af3ef0b2d4067d4cdc8f53271483dc679efcfa85b0d9e31da129453fbd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-route-card.png",
+              "sha256": "7be68a47cafcbc67ffa6799e6d195f2642ac19276be91c030d5625344eb202a8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-gallery-open.png",
+              "sha256": "3fb76b0389963cbc655df60d7a659c2744580e951bc513811679ad25058ca034",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-route-open.png",
+              "sha256": "34d618b0c10dda361df1bbbcb792d7c34b1443abb3b205bdc1f7542f0854791b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-movement-phone-320-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

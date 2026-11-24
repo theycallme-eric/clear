@@ -1,0 +1,43 @@
+{
+  "schema": "clear-task-115-comparison-page/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "page": "evidence/refinement/task-115/comparison/index.html",
+  "pageSha256": "2d08f13e21c120ac409e5806572adc9d0c163135e7edb6f3cd32c5ae692b7b66",
+  "states": 26,
+  "widths": [
+    320,
+    390
+  ],
+  "images": 550,
+  "labelledDifferences": 622,
+  "unintendedDifferences": [],
+  "primaryOwners": {
+    "cards": "TASK-110",
+    "overview": "TASK-118",
+    "preparation": "TASK-119",
+    "screens": "TASK-119",
+    "ladder-4": "TASK-105",
+    "ladder-12": "TASK-105",
+    "ladder-long": "TASK-114",
+    "urgency": "TASK-120",
+    "errors": "TASK-113",
+    "assets": "TASK-118",
+    "anchor": "TASK-114",
+    "other-lift": "TASK-114",
+    "timed-movement": "TASK-114",
+    "distance-movement": "TASK-114",
+    "extra-set": "TASK-114",
+    "set-correction": "TASK-114",
+    "superset": "TASK-114",
+    "circuit-round": "TASK-114",
+    "circuit-movement": "TASK-114",
+    "movement-note": "TASK-114",
+    "workout-feedback": "TASK-114",
+    "rest-day": "TASK-114",
+    "emom": "TASK-114",
+    "amrap": "TASK-114",
+    "for_time": "TASK-114",
+    "ladder": "TASK-114"
+  }
+}

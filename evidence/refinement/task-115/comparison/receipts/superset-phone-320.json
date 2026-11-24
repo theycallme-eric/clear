@@ -1,0 +1,130 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "superset",
+  "title": "Superset round",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/superset-phone-320-gallery.png",
+    "sha256": "6be8b86a555d93bbac41dd3144168c00935ef59d375fdc3b7258c887df6fc487",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/superset-phone-320-gallery.png"
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/superset-phone-320.json",
+      "receiptSha256": "26ba818854775afd3b4b04cc025697753c73edd11f96c505cba253160e26cc9a",
+      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/superset-phone-320-gallery.png",
+              "sha256": "3d31f48232138dff7bce3712543f29ada74797ccfcb2c709360bec9499a34759",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/superset-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/superset-phone-320-route.png",
+              "sha256": "47dc6a74bec07f0a357a436f056155621a67e210364e2af279c405ac34b20406",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/superset-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/superset-phone-320.json",
+      "receiptSha256": "2162efd32665252b2501d06ca31f603ddb065be27eba7cdf2cd362070ebccc84",
+      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-card.png",
+              "sha256": "2af5d0bf03eeb2a1916d25daf8a4259980789d24f20a34a9d958d9669997f103",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-card.png",
+              "sha256": "c0cf24ce05a0082ed01903f4bac8bbc8f66a4f17049bafeba43c0a42adcb0d4b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-open.png",
+              "sha256": "227aa9ef99bef1ee37478d9adeff895c884dfe96bbdcc92e587a67dbff7618f7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-open.png",
+              "sha256": "47dc6a74bec07f0a357a436f056155621a67e210364e2af279c405ac34b20406",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "saved",
+          "gallery": [
+            {
+              "key": "gallery-saved",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-saved.png",
+              "sha256": "1d6e05037e3279722617d794928e91886fbff69682800a92982b65465638b99c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-gallery-saved.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-saved",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-saved.png",
+              "sha256": "12235ec9182bff8dbb8011f7f6490ac940a3e2f02de2800cc1057ed4667185d9",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/superset-phone-320-route-saved.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "gallery only — ACCESSORIES — The gallery scene labels its accessory sections with a sample string (“Accessories”); the product labels a section by its type (“Accessory”), from the session row (real data only)."
+    },
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "route only — ACCESSORY — The gallery scene labels its accessory sections with a sample string (“Accessories”); the product labels a section by its type (“Accessory”), from the session row (real data only)."
+    },
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "h.clr-movement-group-header__title|accessory#0 — The section label’s own box is as wide as its word: the gallery’s sample “Accessories” against the product’s “Accessory” (real data only)."
+    }
+  ],
+  "unintended": []
+}

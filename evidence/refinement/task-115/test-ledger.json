@@ -1,0 +1,2089 @@
+{
+ "schema": "clear-task-test-ledger/v1",
+ "task": "TASK-115",
+ "family": "A3 task 15b (end-of-run comparison, old e2e suites and evidence closure before UAT)",
+ "base": "9a1569b1580c1fa5ffe26b0fb1d0d401259249bf",
+ "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+ "source": "Brief TASK-115-a1; RUNNING-SUMMARY “UAT items so far” and every merged task’s rules.forTask115 / rules.retiredAssertions; round-07 placement review (N8, N10, N11) and scan finding S6; the corrected task 2 groundwork ledger (e2e table: the 63 old-build e2e files).",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher).",
+  "testUpdateRule": "Eric, chat, 2026-11-23: “Yes, approve” — a test that expects Round 7 to look or read differently is updated to Round 7 (or only its look/wording part dropped where Round 7 has none); everything else it checks is kept, and each change is listed for UAT (evidence/refinement/task-115/UAT-LIST.md). A test that expects behaviour or saved data Round 7 lacks is reported, not changed.",
+  "bodyLedger": {
+   "path": "evidence/refinement/task-115/body-ledger.json",
+   "ranAt": {
+    "base": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+    "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+    "now": "9a1569b1580c1fa5ffe26b0fb1d0d401259249bf"
+   },
+   "summary": {
+    "buildTestDefinitionsInChangedFiles": 1826,
+    "dispositions": {
+     "carried": 1457,
+     "rewritten": 309,
+     "retired": 13,
+     "ported": 47
+    },
+    "pendingByTask": {
+     "TASK-121": 5,
+     "TASK-119": 50,
+     "A3 task 2": 4,
+     "TASK-111,TASK-119": 1,
+     "TASK-113": 4,
+     "TASK-109,TASK-119": 4,
+     "TASK-111": 4,
+     "TASK-110": 35,
+     "TASK-108": 51,
+     "TASK-109": 17,
+     "TASK-107,TASK-109": 1,
+     "TASK-107": 13,
+     "TASK-106": 31,
+     "TASK-104,TASK-110": 14,
+     "TASK-116": 20,
+     "TASK-107,TASK-110": 2,
+     "TASK-104,TASK-108": 1,
+     "TASK-105": 21,
+     "TASK-106,TASK-114": 22,
+     "TASK-106,TASK-111,TASK-114": 2,
+     "TASK-112,TASK-118": 12,
+     "TASK-112": 5,
+     "TASK-106,TASK-116": 1,
+     "TASK-118": 5,
+     "TASK-117": 10,
+     "TASK-116,TASK-117": 1,
+     "TASK-104": 9,
+     "TASK-104,TASK-117": 8,
+     "TASK-104,TASK-105": 15,
+     "TASK-108,TASK-110": 1
+    },
+    "unplaced": 0
+   }
+  },
+  "helperRecheck": {
+   "path": "evidence/refinement/task-115/body-ledger.json#helperRecheck",
+   "changedHelpers": 80,
+   "carriedTestsChecked": 1457,
+   "carriedTestsReachingAChangedHelper": 371,
+   "verdicts": {
+    "kept": 16,
+    "kept (Round 7 locator or wording)": 18,
+    "recorded by its task": 46
+   }
+  },
+  "s6Recheck": [
+   {
+    "file": "src/ui/ladder-block.test.tsx",
+    "test": "the ladder states its structure identity like every other block > names the structure, its cap and its scheme, and the block’s size",
+    "recordedBy": "TASK-105 (rewritten)",
+    "laterTask": "TASK-003 → TASK-110 (format-only badges)",
+    "droppedLaterTaskWork": false,
+    "result": "The badge read `LADDER` (TASK-003, AC-C08-01) and the block-size read `1 movement` are kept; the build’s one detail read `8 MIN CAP · LADDER DOWN` is now Round 7’s meta line `3 rounds · 08:00 cap` and the scheme on the movement line `kettlebell swing · 15 → 9 reps · −3 per round` (rounds, cap and scheme readable outside the badge, AC-R003-01). Nothing TASK-110 owns was dropped; wording under the 2026-11-23 rule."
+   },
+   {
+    "file": "src/ui/set-logging-sheet.test.tsx",
+    "test": "AC-026: heading, counter, prescription and equipment > puts a subordinate Set X/Y counter in the name row beside the heading and equipment, then prescription",
+    "recordedBy": "TASK-106 (rewritten)",
+    "laterTask": "TASK-001 → TASK-112 (movement list order)",
+    "droppedLaterTaskWork": false,
+    "result": "Same five reads; the order read takes the heading’s name text (`back squat`) rather than the heading element, because Round 7’s heading also holds the counter. Name → equipment → prescription order still asserted. Nothing TASK-112 owns dropped."
+   },
+   {
+    "file": "src/ui/set-logging-sheet.test.tsx",
+    "test": "AC-035: borders and the countdown > frames the entry with the dialog’s one frame and the X with the action border (TASK-043)",
+    "recordedBy": "TASK-106 (rewritten)",
+    "laterTask": "TASK-018 → TASK-114 (dialog frame)",
+    "droppedLaterTaskWork": false,
+    "result": "Seven reads at both revisions: the build’s frame class `clr-accepted-log__frame` and `.clr-set-log` inside are Round 7’s `clr-chamfer--lg` frame containing the sheet’s body. One frame, the X on the action border: kept. TASK-114’s frame work (C44/C57–C59) is asserted in its own logging-overlay cases; nothing dropped."
+   },
+   {
+    "file": "src/ui/superset-block.test.tsx",
+    "test": "a superset keeps its movements in the order the rows prescribe > labels them A1 and A2 by order_index, not by the order they arrived in",
+    "recordedBy": "TASK-106 (rewritten)",
+    "laterTask": "TASK-005 → TASK-109 (grouped coaching)",
+    "droppedLaterTaskWork": false,
+    "result": "The build’s `movementHeadings()` equal to ['A1 romanian deadlift', 'A2 back squat'] is `expectNamed(movementHeadingElements(), […])` with the same two names, in order (count and each accessible name). The TASK-005 link was the build helper’s exclusion of the coaching disclosure; Round 7 reads headings inside the movement list only. Nothing TASK-109 owns dropped."
+   },
+   {
+    "file": "src/ui/superset-block.test.tsx",
+    "test": "a superset whose movements were swapped out > still states the block’s rest and its remaining movement when one survives",
+    "recordedBy": "TASK-106 (rewritten)",
+    "laterTask": "TASK-005 → TASK-109",
+    "droppedLaterTaskWork": false,
+    "result": "As above: ['A1 romanian deadlift'] through expectNamed; the rest and no-pairing reads are kept. Nothing dropped."
+   },
+   {
+    "file": "src/ui/timed-result-log.test.tsx",
+    "test": "TASK-010 completion choices and existing effort faces > AC-C29-01 Complete and Incomplete share one row in the For Time and ladder logs on the real /workout",
+    "recordedBy": "TASK-116 (rewritten)",
+    "laterTask": "TASK-015 → TASK-117 (per-movement partials)",
+    "droppedLaterTaskWork": false,
+    "result": "30 build reads, 31 at the tip: the five CSS rule reads are the same rules with unquoted attribute selectors; `Start For Time` is Round 7’s `Start FOR TIME`; `form.dataset.timedFormat` is read on the flow’s scope (Round 7 puts it there); one read added (no ladder log before its attempt ends). Nothing TASK-117 owns dropped."
+   },
+   {
+    "file": "src/ui/timed-result-log.test.tsx",
+    "test": "TASK-010 completion choices and existing effort faces > AC-C30-01 effort is optional and unanswered stays null: the existing three faces with no default",
+    "recordedBy": "TASK-116 (rewritten)",
+    "laterTask": "TASK-015 → TASK-117",
+    "droppedLaterTaskWork": false,
+    "result": "27 reads at both revisions; the only change is Round 7’s wording `Clear effort for this section` (was `… for this block`). Nothing dropped."
+   },
+   {
+    "file": "src/ui/timed-result-log.test.tsx",
+    "test": "TASK-010 completion choices and existing effort faces > AC-R010-01 a failed save keeps the completion answer and the effort on screen, and the retry writes them",
+    "recordedBy": "TASK-116 (rewritten)",
+    "laterTask": "TASK-015 → TASK-117",
+    "droppedLaterTaskWork": false,
+    "result": "12 reads at both revisions; the failed dialog is now found by its name (/didn’t save/), a stricter read. Nothing dropped."
+   },
+   {
+    "file": "src/ui/timed-workout-flow.test.tsx",
+    "test": "TASK-013 rep-first ordered live ladder progress and result handoff > AC-R013-01 selecting a completed rung selects its preceding prefix and partial work belongs to the next round",
+    "recordedBy": "TASK-105 (rewritten)",
+    "laterTask": "TASK-015 → TASK-117",
+    "droppedLaterTaskWork": false,
+    "result": "21 reads at both revisions. The build’s `Any partial work belongs to round N` line (a removed ladder.tsx string, retired as a record claim by TASK-121) is read as Round 7’s per-movement amount field `Completed in round N` through partialRound() (TASK-015’s identity, at most one partial round): rounds 5, 7, 1 and none are still asserted, and the stored draft reads are the same on Round 7’s record name. Nothing TASK-117 owns dropped."
+   },
+   {
+    "file": "src/ui/ladder-block.test.tsx",
+    "test": "a scheduled ladder runs on its own clock, restored from wall-clock time > marks the live round from the stored start, survives a remount, and records nothing on its own",
+    "recordedBy": "TASK-105 (rewritten)",
+    "laterTask": "“TASK-033” (helper memoryStorage; older numbering) → TASK-120",
+    "droppedLaterTaskWork": false,
+    "result": "Every build read kept; one added (Incomplete chosen before the log’s save). The TASK-033 link was the build’s memoryStorage helper; Round 7 reads the real localStorage the route uses. Nothing TASK-120 owns dropped (TASK-120 changed no product)."
+   },
+   {
+    "file": "src/ui/ladder-block.test.tsx",
+    "test": "free-paced For Time never infers progress from elapsed time > $rounds rounds: no live round and no schedule, however long passes",
+    "recordedBy": "TASK-105 (rewritten)",
+    "laterTask": "“TASK-033” (helper memoryStorage) → TASK-120",
+    "droppedLaterTaskWork": false,
+    "result": "16 reads at both revisions: storage reads on the real localStorage; `${rounds} rounds · for time, at your pace · cap` is Round 7’s `${rounds} rounds · cap` (the removed pacing words, R71); the timer `Block time` is `Ladder time`. Nothing dropped."
+   }
+  ],
+  "wholeE2eRun": {
+   "command": "npx playwright test --project=mobile <every e2e spec except the other tasks’ parity specs, which ran through their own guards> (whole run, no backend credentials); reruns with placeholder SUPABASE_URL/SUPABASE_ANON_KEY for the specs that draw the app on the shared dev server; the same root specs at the old build 181e580 for comparison",
+   "totals": {
+    "cases": 741,
+    "passed": 390,
+    "failed": 131,
+    "skipped": 220,
+    "didNotRun": 1,
+    "files": 102
+   },
+   "byOutcome": {
+    "reported for Eric": 77,
+    "passes on rerun": 24,
+    "needs backend lane": 20,
+    "passes after update": 8,
+    "retired with a reason": 2
+   },
+   "oldBuildE2eFiles": [
+    {
+     "path": "e2e/contained-shell.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "14 passed; 3 skipped (backend lane); failures: 3 reported for Eric"
+    },
+    {
+     "path": "e2e/core-loop.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; 1 skipped (backend lane)"
+    },
+    {
+     "path": "e2e/design-0143/accessibility.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "1 passed; 15 skipped (backend lane)"
+    },
+    {
+     "path": "e2e/design-0143/entry-forms.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; 7 skipped (backend lane); failures: 1 passes on rerun"
+    },
+    {
+     "path": "e2e/design-0143/optional-feedback.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; 1 skipped (backend lane); failures: 1 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/task-040-entry-settings.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 1 passes on rerun"
+    },
+    {
+     "path": "e2e/design-0143/task-040-home-review.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 3 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/task-040-lifecycle-gaps.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "deselected for Foundation 0.14.3 by playwright.config.ts browserTestsForTarget (BEFORE-state captures); no case runs"
+    },
+    {
+     "path": "e2e/design-0143/task-040-lifecycle.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "deselected for Foundation 0.14.3 by playwright.config.ts browserTestsForTarget (BEFORE-state captures); no case runs"
+    },
+    {
+     "path": "e2e/design-0143/workout-amrap.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 2 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/workout-circuit.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 7 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/workout-emom.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 1 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/workout-formats.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 1 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/workout-ladder.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 1 needs backend lane"
+    },
+    {
+     "path": "e2e/design-0143/workout-lifecycle.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; 6 skipped (backend lane)"
+    },
+    {
+     "path": "e2e/history-detail.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "1 passed; 5 skipped (backend lane)"
+    },
+    {
+     "path": "e2e/refinement/task-001.spec.ts",
+     "expectedTask": "F10",
+     "outcome": "9 passed"
+    },
+    {
+     "path": "e2e/refinement/task-002.spec.ts",
+     "expectedTask": "F10",
+     "outcome": "7 passed"
+    },
+    {
+     "path": "e2e/refinement/task-003.spec.ts",
+     "expectedTask": "F8",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-004.spec.ts",
+     "expectedTask": "F8",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-005.spec.ts",
+     "expectedTask": "F7",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-006.spec.ts",
+     "expectedTask": "F2",
+     "outcome": "7 passed"
+    },
+    {
+     "path": "e2e/refinement/task-007.spec.ts",
+     "expectedTask": "F6",
+     "outcome": "7 passed"
+    },
+    {
+     "path": "e2e/refinement/task-008.spec.ts",
+     "expectedTask": "F6",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-009.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "3 passed"
+    },
+    {
+     "path": "e2e/refinement/task-010.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "3 passed"
+    },
+    {
+     "path": "e2e/refinement/task-011.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "3 passed"
+    },
+    {
+     "path": "e2e/refinement/task-012.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-013.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-014.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-015.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "3 passed"
+    },
+    {
+     "path": "e2e/refinement/task-019.spec.ts",
+     "expectedTask": "F4",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-020.spec.ts",
+     "expectedTask": "F4",
+     "outcome": "3 passed"
+    },
+    {
+     "path": "e2e/refinement/task-021.spec.ts",
+     "expectedTask": "F5",
+     "outcome": "5 passed; failures: 1 passes after update"
+    },
+    {
+     "path": "e2e/refinement/task-022.spec.ts",
+     "expectedTask": "F7",
+     "outcome": "4 passed"
+    },
+    {
+     "path": "e2e/refinement/task-023.spec.ts",
+     "expectedTask": "F10",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-024.spec.ts",
+     "expectedTask": "F10",
+     "outcome": "6 passed"
+    },
+    {
+     "path": "e2e/refinement/task-025.spec.ts",
+     "expectedTask": "F10",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-026.spec.ts",
+     "expectedTask": "F10",
+     "outcome": "5 passed"
+    },
+    {
+     "path": "e2e/refinement/task-027.spec.ts",
+     "expectedTask": "F6",
+     "outcome": "4 passed"
+    },
+    {
+     "path": "e2e/refinement/task-028.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "11 passed"
+    },
+    {
+     "path": "e2e/refinement/task-029.spec.ts",
+     "expectedTask": "F8",
+     "outcome": "13 passed"
+    },
+    {
+     "path": "e2e/refinement/task-033.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "7 passed; failures: 1 reported for Eric"
+    },
+    {
+     "path": "e2e/refinement/task-041.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "10 passed"
+    },
+    {
+     "path": "e2e/refinement/task-043.spec.ts",
+     "expectedTask": "F4",
+     "outcome": "7 passed"
+    },
+    {
+     "path": "e2e/refinement/task-044.spec.ts",
+     "expectedTask": "F4",
+     "outcome": "7 passed"
+    },
+    {
+     "path": "e2e/refinement/task-045.spec.ts",
+     "expectedTask": "F9",
+     "outcome": "7 passed"
+    },
+    {
+     "path": "e2e/refinement/task-046.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "6 passed"
+    },
+    {
+     "path": "e2e/refinement/task-047.spec.ts",
+     "expectedTask": "F1",
+     "outcome": "3 passed; failures: 2 needs backend lane"
+    },
+    {
+     "path": "e2e/refinement/task-048.spec.ts",
+     "expectedTask": "F3",
+     "outcome": "4 passed; failures: 2 needs backend lane"
+    },
+    {
+     "path": "e2e/rls.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "2 passed; 98 skipped (backend lane)"
+    },
+    {
+     "path": "e2e/support/task035-release-case.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "support module (no tests); imported by the backend-lane specs that run it"
+    },
+    {
+     "path": "e2e/ui-polish-b05-active-hierarchy.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "1 passed; failures: 9 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-b05-generate.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "4 passed; failures: 12 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-b05-movement-countdown.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "1 passed; failures: 9 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-b05-recent-rows.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "4 passed; failures: 2 retired with a reason"
+    },
+    {
+     "path": "e2e/ui-polish-b05-rest-log.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "1 passed; failures: 4 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-b05-scroll-boundaries.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "7 passed; failures: 1 passes on rerun, 4 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-b05-structure-badges.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "4 passed; failures: 6 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-b05-swap.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "19 passed; failures: 2 reported for Eric"
+    },
+    {
+     "path": "e2e/ui-polish-home.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 2 passes after update, 2 passes on rerun"
+    },
+    {
+     "path": "e2e/ui-polish-integrated.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 5 passes on rerun"
+    },
+    {
+     "path": "e2e/ui-polish-pwa-viewport.spec.ts",
+     "expectedTask": "pre-UAT run",
+     "outcome": "0 passed; failures: 4 passes after update, 2 passes on rerun"
+    }
+   ],
+   "failures": [
+    {
+     "case": "e2e/contained-shell.spec.ts:400 › the signal skin keeps shipped fonts, ground and emission",
+     "outcome": "reported for Eric",
+     "classification": "pre-existing at the old build (not caused by A3)",
+     "note": "Error: page.evaluate: Error: the heading or an emitting frame is missing — read ",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (410:const facesLoaded = await page.evaluate(() =>)"
+    },
+    {
+     "case": "e2e/contained-shell.spec.ts:400 › the mono skin keeps shipped fonts, ground and emission",
+     "outcome": "reported for Eric",
+     "classification": "pre-existing at the old build (not caused by A3)",
+     "note": "Error: page.evaluate: Error: the heading or an emitting frame is missing — read ",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (410:const facesLoaded = await page.evaluate(() =>)"
+    },
+    {
+     "case": "e2e/contained-shell.spec.ts:859 › REQ-001 phone shell — entry screens › Welcome and OTP keep full-width rules, fixed chrome and coinciding action frames",
+     "outcome": "reported for Eric",
+     "classification": "pre-existing at the old build (not caused by A3)",
+     "note": "Error: OTP create has a full-width action — read 873:expect(measured, `${where} has a full-width action`).toBeGreaterThan(0)",
+     "oldBuild": "fails at the old build 181e580 at the same line (873:expect(measured, `${where} has a full-width action`).toBeGreaterThan(0))"
+    },
+    {
+     "case": "e2e/design-0143/entry-forms.spec.ts:481 › welcome-auth: Welcome, credentials, code errors, busy and disabled states",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/design-0143/optional-feedback.spec.ts:230 › REQ-016 no-feedback journey (TASK-030, JOURNEY-028) › the saved setup is customized and returning, not a fresh default",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/task-040-entry-settings.spec.ts:276 › entry: Welcome and OTP validation, busy, typed failure and cooldown",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/design-0143/task-040-home-review.spec.ts:727 › TASK-040 — Home and Review additive before-state artifacts › REQ-011 Review: type labels, ordered groups, adjacent shared rest and tempo detail into Workout",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/task-040-home-review.spec.ts:802 › TASK-040 — Home and Review additive before-state artifacts › REQ-007 Home: rest day reason trigger, Cancel discards, keyboard Save and aligned actions",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/task-040-home-review.spec.ts:932 › TASK-040 — Home and Review additive before-state artifacts › REQ-007 Home: first use guidance, one next workout entry and prefilled Generate without generating",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-amrap.spec.ts:501 › JOURNEY-024: the AMRAP window is hands-off, the optional result is compared like-for-like, and an edited result survives refresh and save recovery into Summary",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-amrap.spec.ts:640 › JOURNEY-024: a result left blank never blocks completion and is stored as null, not zero",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:588 › JOURNEY-025: the full ordered circuit runs hands-off, records only observed rounds, survives background and refresh, and saves to Summary",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:736 › JOURNEY-025: an untouched circuit saves with no inferred rounds and skipping it never blocks progression",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:764 › JOURNEY-014: paired footer labels and layout fit at 320x568, with sheet occlusion and restored reachability after Minimize",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:764 › JOURNEY-014: paired footer labels and layout fit at 390x844, with sheet occlusion and restored reachability after Minimize",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:817 › JOURNEY-015: the icon-only workout menu and abandon confirmation stay reachable at 320x568, with safe dismissal and restored focus",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:817 › JOURNEY-015: the icon-only workout menu and abandon confirmation stay reachable at 390x844, with safe dismissal and restored focus",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-circuit.spec.ts:905 › JOURNEY-015: menu abandon failure preserves an explicitly logged set, and retry lands Home with the same observation retained",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-emom.spec.ts:392 › JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive background and refresh, and save to Summary without fabricated work",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-formats.spec.ts:88 › REQ-016 all formats, one session (TASK-030) › every format section progresses in order to Finish, Summary and a saved session",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/design-0143/workout-ladder.spec.ts:547 › JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progress observed, show the cap, and save to Summary",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/focus-ownership.spec.ts:387 › forced colours return focus geometry to the operating system",
+     "outcome": "reported for Eric",
+     "classification": "flaky (harness race)",
+     "note": "The spec’s visit() accepts the lazy product chunk’s Suspense fallback (“Loading CLEAR…”, an h1 “CLEAR”), then tabs 20 times before /login has rendered, so no main button takes focus; on the cold dev server Round 7’s larger chunk loads more slowly. Passes at the old build; unchanged file since main. Not changed.",
+     "oldBuild": "passes at the old build 181e580 (same placeholder lane)"
+    },
+    {
+     "case": "e2e/public-gallery.spec.ts:5 › public library: Library overview opens without account traffic",
+     "outcome": "reported for Eric",
+     "classification": "another task’s work (TASK-108)",
+     "note": "axe landmark-unique on /gallery and /gallery/app: the SectionHeader specimens “compact navigator” and “full header with progress bar” both draw a CollapsibleSection region named “All sections”; TASK-108 made the compact label’s “N / M” aria-hidden (9b7fc41e), so both regions now share one name. Only the gallery page draws two navigators. Fixing it changes SectionHeader’s accessible name (behaviour) or the gallery composition (gallery-owned): reported.",
+     "oldBuild": "fails at the old build 181e580 at the same line (43:).toEqual([]))"
+    },
+    {
+     "case": "e2e/public-gallery.spec.ts:5 › public library: App-composed opens without account traffic",
+     "outcome": "reported for Eric",
+     "classification": "another task’s work (TASK-108)",
+     "note": "axe landmark-unique on /gallery and /gallery/app: the SectionHeader specimens “compact navigator” and “full header with progress bar” both draw a CollapsibleSection region named “All sections”; TASK-108 made the compact label’s “N / M” aria-hidden (9b7fc41e), so both regions now share one name. Only the gallery page draws two navigators. Fixing it changes SectionHeader’s accessible name (behaviour) or the gallery composition (gallery-owned): reported.",
+     "oldBuild": "fails at the old build 181e580 at the same line (43:).toEqual([]))"
+    },
+    {
+     "case": "e2e/refinement/task-021.spec.ts:670 › TASK-021 circuit round, Undo and measurement behaviour › JOURNEY-021 keyboard phone-320 reduced motion Signal: Enter records the round into the log with focus on its X, Tab reaches Take back this round, Escape returns to the round clock, the final seconds stay still in the log, and a reload mid-rest comes back to the card and its rest, never to the log",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/refinement/task-021.spec.ts:709 — the urgent rest is read on its timer (Round 7’s breathe class, the build’s data-urgent, the loop) instead of the old CountdownDisplay micro-pulse class (TASK-108’s TimerFrame)."
+    },
+    {
+     "case": "e2e/refinement/task-033.spec.ts:1027 › TASK-033 final CRT and Phosphor Echo composition › JOURNEY-033 reduced motion phone-320: the app's Reduce motion and the device setting each hold the glass still in place, the edge at a steady .5 and the backdrop without its fade, over the long log and the warning",
+     "outcome": "reported for Eric",
+     "classification": "flaky (harness timing)",
+     "note": "Cards in the movement note dialog mount while the case holds the page clock, so their Foundation phosphor-in entrance (collapsed to 0.01 ms by the app’s Reduce motion) sits at its first frame (opacity 0, brightness(1.03) saturate(0)) when compose() reads the foreground; TASK-120’s run of the same product code passed. Failed 3 of 3 here (whole run, alone, debug copy). Not changed (not a look/wording update). A one-line harness fix would run the held clock a frame after the dialog opens (page.clock.runFor(1)).",
+     "oldBuild": "passes at the old build 181e580 (same placeholder lane)"
+    },
+    {
+     "case": "e2e/refinement/task-047.spec.ts:1121 › TASK-047 visible timed-result persistence and History readback › JOURNEY-031 backend lane touch phone-390 Signal: the four timed families’ partials, loads, categorical effort and notes save through the real writers with block, round and movement identity; a refused movement write keeps every entry and the athlete on the section; the retry writes each row once; Summary is reached and History reads back the actual entries, not the plan, before and after a reload",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/refinement/task-047.spec.ts:1132 › TASK-047 visible timed-result persistence and History readback › JOURNEY-031 backend lane keyboard phone-320 reduced motion: a block write and a movement write whose answers are lost are restated on the retry with the values corrected since, never duplicated; an entered zero is kept and a blank movement and an unreported count stay unrecorded; History reads back the corrected entries before and after a reload",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/refinement/task-048.spec.ts:1253 › TASK-048 visible ladder recovery and accidental-Finish restoration › JOURNEY-032 backend lane touch phone-390: a running and a paused ladder’s ordered progress, whole draft and accidental Finish recover across reloads; Undo resumes from the original start inside the original cap with nothing granted; a refused save keeps the draft and Undo and says so across a reload; the retry writes each row once, Undo is gone, and the saved row is read back after a reload",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/refinement/task-048.spec.ts:1264 › TASK-048 visible ladder recovery and accidental-Finish restoration › JOURNEY-032 backend lane keyboard phone-320 reduced motion: a save whose block row landed while its movement write was refused is not hidden behind Block saved after a reload — the draft, Undo and failure are kept and the retry restates the row once; a just-saved ladder shows its saved result while a later block’s save fails; both are read back from their rows after a reload",
+     "outcome": "needs backend lane",
+     "classification": "environment (PRE-001 disposable test lane; credentials only in V2 verification)"
+    },
+    {
+     "case": "e2e/uat-batch-01.spec.ts:77 › onboarding holds each step in one card with a pinned footer action",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/uat-batch-01.spec.ts:177 › Generate and Settings follow the contained-form and measured-footer rulings",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/uat-batch-01.spec.ts:191 — “Goal:” → the term “Goal” (Round 7 states it over its value, no colon)."
+    },
+    {
+     "case": "e2e/uat-batch-01.spec.ts:263 › Generate loading and failure remain honest at every supported width",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/uat-batch-01.spec.ts:326 › Home renders one ordered card hierarchy with no empty active-session surface",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-action-glow.spec.ts:242 › JOURNEY-004: clear reuses Generate glow on Home controls and preserves focus, navigation and pending save",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-action-glow.spec.ts:242 › JOURNEY-004: vapour reuses Generate glow on Home controls and preserves focus, navigation and pending save",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-action-glow.spec.ts:242 › JOURNEY-004: signal reuses Generate glow on Home controls and preserves focus, navigation and pending save",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-action-glow.spec.ts:242 › JOURNEY-004: mono reuses Generate glow on Home controls and preserves focus, navigation and pending save",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:920 › B05 active movement hierarchy @ phone-390 › standard logger cards: selected hierarchy with long names; counter, Rest/Log, saved result, refusal, correction and countdown keep their roles",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:1022 › B05 active movement hierarchy @ phone-390 › superset logger cards: selected hierarchy, independent counters and countdown; one Rest and an explicit combined Log round",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:1086 › B05 active movement hierarchy @ phone-390 › circuit rows: selected hierarchy closed and with the shared logger open; countdown, Rest entry and round clock keep their roles",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:920 › B05 active movement hierarchy @ narrow-320 › standard logger cards: selected hierarchy with long names; counter, Rest/Log, saved result, refusal, correction and countdown keep their roles",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:1022 › B05 active movement hierarchy @ narrow-320 › superset logger cards: selected hierarchy, independent counters and countdown; one Rest and an explicit combined Log round",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:1086 › B05 active movement hierarchy @ narrow-320 › circuit rows: selected hierarchy closed and with the shared logger open; countdown, Rest entry and round clock keep their roles",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:920 › B05 active movement hierarchy @ short-390x480 › standard logger cards: selected hierarchy with long names; counter, Rest/Log, saved result, refusal, correction and countdown keep their roles",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:1022 › B05 active movement hierarchy @ short-390x480 › superset logger cards: selected hierarchy, independent counters and countdown; one Rest and an explicit combined Log round",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-active-hierarchy.spec.ts:1086 › B05 active movement hierarchy @ short-390x480 › circuit rows: selected hierarchy closed and with the shared logger open; countdown, Rest entry and round clock keep their roles",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'. — read e2e/ui-polish-b05-active-hierarchy.spec.ts:876",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (893:expect(roles.h1, JSON.stringify(roles)).toBe(roles.h1Token))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:739 › B05 Generate @ phone-430 › JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus summary with its Focus control, notes and pinned action",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:793 › B05 Generate @ phone-430 › Recovery session, the Focus control and intensity each keep their own behaviour, Recovery inside the Focus choices",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (564:expect(ink.bands, pixelDetail).toHaveLength(lines))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:862 › B05 Generate @ phone-430 › Generate Time available: MINUTES is whole and comfortably contained in every skin",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:927 › B05 Generate @ phone-430 › Logging keeps its separate Unit Select: its value, choices and behaviour",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 933:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (933:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:739 › B05 Generate @ phone-390 › JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus summary with its Focus control, notes and pinned action",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:793 › B05 Generate @ phone-390 › Recovery session, the Focus control and intensity each keep their own behaviour, Recovery inside the Focus choices",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (564:expect(ink.bands, pixelDetail).toHaveLength(lines))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:862 › B05 Generate @ phone-390 › Generate Time available: MINUTES is whole and comfortably contained in every skin",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:927 › B05 Generate @ phone-390 › Logging keeps its separate Unit Select: its value, choices and behaviour",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 933:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (933:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:739 › B05 Generate @ narrow-short-320 › JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus summary with its Focus control, notes and pinned action",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:793 › B05 Generate @ narrow-short-320 › Recovery session, the Focus control and intensity each keep their own behaviour, Recovery inside the Focus choices",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (564:expect(ink.bands, pixelDetail).toHaveLength(lines))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:862 › B05 Generate @ narrow-short-320 › Generate Time available: MINUTES is whole and comfortably contained in every skin",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveText(expected) failed — read 426:await expect(focusLine(page)).toHaveText('Focus: Lower body')",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-generate.spec.ts:927 › B05 Generate @ narrow-short-320 › Logging keeps its separate Unit Select: its value, choices and behaviour",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 933:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (933:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-header-back.spec.ts:535 › B05 REQ-007 header Back housing › Generate: Back without in-app history keeps its fallback to /",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-b05-header-back.spec.ts:535 › B05 REQ-007 header Back housing › History: Back without in-app history keeps its fallback to /",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-b05-header-back.spec.ts:502 › B05 REQ-007 header Back housing › Locations: framed icon-only Back, reached in-app, returns to /settings",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toBeLessThanOrEqual(expected) — read 400:expect(Math.abs(back.pixels.frameTop - home.pixels.frameTop)).toBeLessThanOrEqual(12)",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (399:expect(chromaDistance).toBeLessThanOrEqual(0.05))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-header-back.spec.ts:584 › B05 REQ-007 header Back housing › the logging sheet's collapse control keeps its own treatment",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 591:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (591:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:637 › B05 movement countdown @ phone-390 › logger card: full-width countdown above its pair, above Rest, through every state; distinct clocks; nothing logged",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: phone-390 logger ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9989711934156379,\"timerAbovePair\":true,\"timerToPairHeight\":1.0256410256410255,\"pairHalves\":2, — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:766 › B05 movement countdown @ phone-390 › circuit row: the one clock sits in the owning card above Rest and keeps its deadline through load entry; round and AMRAP clocks stay theirs",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: phone-390 circuit closed ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9989711934156379,\"timerAbovePair\":true,\"timerToPairHeight\":1.0256410256410255,\"pairHa — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:872 › B05 movement countdown @ phone-390 › superset movement: own-card countdown stays distinct from block rest, retains deadline and drafts, and rearms only after explicit combined logging",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: phone-390 superset ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9989711934156379,\"timerAbovePair\":true,\"timerToPairHeight\":1.0512820512820513,\"pairHalves\": — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:637 › B05 movement countdown @ narrow-320 › logger card: full-width countdown above its pair, above Rest, through every state; distinct clocks; nothing logged",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: narrow-320 logger ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9986876640419947,\"timerAbovePair\":true,\"timerToPairHeight\":1.0085470085470085,\"pairHalves\":2 — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:766 › B05 movement countdown @ narrow-320 › circuit row: the one clock sits in the owning card above Rest and keeps its deadline through load entry; round and AMRAP clocks stay theirs",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: narrow-320 circuit closed ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9986876640419947,\"timerAbovePair\":true,\"timerToPairHeight\":1.0085470085470085,\"pairH — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:872 › B05 movement countdown @ narrow-320 › superset movement: own-card countdown stays distinct from block rest, retains deadline and drafts, and rearms only after explicit combined logging",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: narrow-320 superset ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9986876640419947,\"timerAbovePair\":true,\"timerToPairHeight\":1.0085470085470085,\"pairHalves\" — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:637 › B05 movement countdown @ short-390x480 › logger card: full-width countdown above its pair, above Rest, through every state; distinct clocks; nothing logged",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: short-390x480 logger ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9989711934156379,\"timerAbovePair\":true,\"timerToPairHeight\":1.0427350427350428,\"pairHalves — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:766 › B05 movement countdown @ short-390x480 › circuit row: the one clock sits in the owning card above Rest and keeps its deadline through load entry; round and AMRAP clocks stay theirs",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: short-390x480 circuit closed ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9989711934156379,\"timerAbovePair\":true,\"timerToPairHeight\":1.017094017094017,\"pai — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-movement-countdown.spec.ts:872 › B05 movement countdown @ short-390x480 › superset movement: own-card countdown stays distinct from block rest, retains deadline and drafts, and rearms only after explicit combined logging",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: short-390x480 superset ready: {\"actual\":{\"blocks\":2,\"timerSpan\":0.9989711934156379,\"timerAbovePair\":true,\"timerToPairHeight\":1.0427350427350428,\"pairHalv — read 260:expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-recent-rows.spec.ts:416 › B05 recent rows @ phone-390 › History chronology puts the title on its own row with status and date beneath (TASK-026)",
+     "outcome": "retired with a reason",
+     "classification": "look replaced by an owner decision",
+     "change": "Retired under owner decision 7 (2026-11-13): it asserted TASK-026’s chronology row (title alone, status and date beneath), which Round 7’s History row order replaced; its unit twin was retired by the corrected task 2 ledger, and History.test.tsx “U44: every row puts its title, then status with the context, then metrics” checks Round 7’s order. For Eric to confirm."
+    },
+    {
+     "case": "e2e/ui-polish-b05-recent-rows.spec.ts:416 › B05 recent rows @ narrow-320 › History chronology puts the title on its own row with status and date beneath (TASK-026)",
+     "outcome": "retired with a reason",
+     "classification": "look replaced by an owner decision",
+     "change": "Retired under owner decision 7 (2026-11-13): it asserted TASK-026’s chronology row (title alone, status and date beneath), which Round 7’s History row order replaced; its unit twin was retired by the corrected task 2 ledger, and History.test.tsx “U44: every row puts its title, then status with the context, then metrics” checks Round 7’s order. For Eric to confirm."
+    },
+    {
+     "case": "e2e/ui-polish-b05-rest-log.spec.ts:544 › B05 Rest and Log @ phone-390 › Rest opens the sheet with the running prescribed rest; Log saves; collapse, reopen, failure, expiry and Edit keep their contracts",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 571:await expect(sheet(page).getByRole('region', { name: 'Rest', exact: true })).toBeVisible()",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-rest-log.spec.ts:783 › B05 Rest and Log @ phone-390 › a superset Rest starts the round rest and Log round saves one combined round; circuit rounds are unchanged",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 453:await expect(frame).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (825:expect(combined.bands).toBeGreaterThan(ref.sheet.bands))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-rest-log.spec.ts:544 › B05 Rest and Log @ narrow-320 › Rest opens the sheet with the running prescribed rest; Log saves; collapse, reopen, failure, expiry and Edit keep their contracts",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 571:await expect(sheet(page).getByRole('region', { name: 'Rest', exact: true })).toBeVisible()",
+     "oldBuild": "old build inconclusive: its spec stops earlier on `git rev-parse` in the scratch extraction (no git metadata)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-rest-log.spec.ts:783 › B05 Rest and Log @ narrow-320 › a superset Rest starts the round rest and Log round saves one combined round; circuit rounds are unchanged",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 453:await expect(frame).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (825:expect(combined.bands).toBeGreaterThan(ref.sheet.bands))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-review-groups.spec.ts:605 › B05 review groups @ phone-390 › Review (pictured): grouped hierarchy, right-aligned Swap, one group rest",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: TypeError: Cannot read properties of null (reading 'firstElementChild') — read e2e/ui-polish-b05-review-groups.spec.ts:346",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-review-groups.spec.ts:605 › B05 review groups @ phone-390 › Review (multi-line): grouped hierarchy, right-aligned Swap, one group rest",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: TypeError: Cannot read properties of null (reading 'firstElementChild') — read e2e/ui-polish-b05-review-groups.spec.ts:346",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-review-groups.spec.ts:605 › B05 review groups @ narrow-320 › Review (pictured): grouped hierarchy, right-aligned Swap, one group rest",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: TypeError: Cannot read properties of null (reading 'firstElementChild') — read e2e/ui-polish-b05-review-groups.spec.ts:346",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-review-groups.spec.ts:605 › B05 review groups @ narrow-320 › Review (multi-line): grouped hierarchy, right-aligned Swap, one group rest",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: TypeError: Cannot read properties of null (reading 'firstElementChild') — read e2e/ui-polish-b05-review-groups.spec.ts:346",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-review-groups.spec.ts:728 › B05 grouped Review after a real in-memory swap › narrow multi-line name: choose and Undo keep both actions contained and preserve the prescription",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: TypeError: Cannot read properties of null (reading 'firstElementChild') — read e2e/ui-polish-b05-review-groups.spec.ts:346",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-scroll-boundaries.spec.ts:438 › B05 REQ-003 scroll boundaries › page region: the header is the pinned head and the top streak lights on its rule (B05-01.2)",
+     "outcome": "passes on rerun",
+     "classification": "flaky under the whole run’s load (it has its own synthetic origin); passed in the rerun of its file"
+    },
+    {
+     "case": "e2e/ui-polish-b05-scroll-boundaries.spec.ts:683 › B05 REQ-003 scroll boundaries › capped workout entry area holds the sheet through a public region at 320x360 (B05-07)",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 691:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (691:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-scroll-boundaries.spec.ts:683 › B05 REQ-003 scroll boundaries › capped workout entry area holds the sheet through a public region at 390x480 (B05-07)",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 691:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (691:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-scroll-boundaries.spec.ts:683 › B05 REQ-003 scroll boundaries › capped workout entry area holds the sheet through a public region at 390x844 (B05-07)",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 691:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (691:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-scroll-boundaries.spec.ts:800 › B05 REQ-003 scroll boundaries › ladder rungs wrap into rep-first tiles with no horizontal rail, and every rung is reachable and revealed in place",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.check: Test timeout of 90000ms exceeded. — read 817:await page.getByRole('radio', { name: 'Incomplete', exact: true }).check()",
+     "oldBuild": "fails at the old build 181e580 at the same line (817:await page.getByRole('radio', { name: 'Incomplete', exact: true }).check())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-sheet-surface.spec.ts:762 › B05 sheet surface @ phone-390x844 › new entry, correction and the combined superset round share the guttered, barred, opaque sheet over a clean backdrop; collapse restores navigation",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toContain(expected) // indexOf — read 774:expect(cardLines).toContain('repeating-linear-gradient')",
+     "oldBuild": "fails at the old build 181e580 at the same line (774:expect(cardLines).toContain('repeating-linear-gradient'))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-sheet-surface.spec.ts:762 › B05 sheet surface @ narrow-320x568 › new entry, correction and the combined superset round share the guttered, barred, opaque sheet over a clean backdrop; collapse restores navigation",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toContain(expected) // indexOf — read 774:expect(cardLines).toContain('repeating-linear-gradient')",
+     "oldBuild": "fails at the old build 181e580 at the same line (774:expect(cardLines).toContain('repeating-linear-gradient'))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-sheet-surface.spec.ts:762 › B05 sheet surface @ short-390x480 › new entry, correction and the combined superset round share the guttered, barred, opaque sheet over a clean backdrop; collapse restores navigation",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toContain(expected) // indexOf — read 774:expect(cardLines).toContain('repeating-linear-gradient')",
+     "oldBuild": "fails at the old build 181e580 at the same line (774:expect(cardLines).toContain('repeating-linear-gradient'))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-sheet-surface.spec.ts:931 › B05 sheet surface @ keyboard resize and semantics › a keyboard-like resize keeps the guttered sheet scrolling through its public region; focus, Escape and outside taps keep their semantics",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeFocused() failed — read 939:await expect(title).toBeFocused()",
+     "oldBuild": "fails at the old build 181e580 at the same line (939:await expect(title).toBeFocused())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-sheet-surface.spec.ts:1013 › B05 sheet surface @ keyboard resize and semantics › edit retains its draft and explicit save through a focused keyboard-like resize",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).not.toHaveAttribute() failed — read 674:await expect(page.locator('.clr-workout-footer__content')).not.toHaveAttribute('inert')",
+     "oldBuild": "fails at the old build 181e580 at the same line (674:await expect(page.locator('.clr-workout-footer__content')).not.toHaveAttribute('inert'))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-sheet-surface.spec.ts:1013 › B05 sheet surface @ keyboard resize and semantics › superset retains its draft and explicit save through a focused keyboard-like resize",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveAttribute(expected) failed — read 706:await expect(region).toHaveAttribute('data-measured', '')",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (711:expect(scroll.scroll).toBeGreaterThan(scroll.client))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-shell.spec.ts:840 › B05 shell: crash fallback renders inside the shared contained shell with safe-area clearance",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 857:await expect(alert).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (857:await expect(alert).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-structure-badges.spec.ts:567 › B05 structure badges @ phone-390 › Review groups (clear): every badge hugs its label in its column parent",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toEqual(expected) // deep equality — read 576:expect(labels).toEqual(expect.arrayContaining([",
+     "oldBuild": "fails at the old build 181e580 at the same line (576:expect(labels).toEqual(expect.arrayContaining([)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-structure-badges.spec.ts:567 › B05 structure badges @ phone-390 › Review groups (vapour): every badge hugs its label in its column parent",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toEqual(expected) // deep equality — read 576:expect(labels).toEqual(expect.arrayContaining([",
+     "oldBuild": "fails at the old build 181e580 at the same line (576:expect(labels).toEqual(expect.arrayContaining([)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-structure-badges.spec.ts:595 › B05 structure badges @ phone-390 › Workout section header, BlockPanel and AMRAP badges hug their labels in row parents",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 608:await expect(content.getByText('AMRAP · 8 MIN · INVERSE', { exact: true }).first()).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (608:await expect(content.getByText('AMRAP · 8 MIN · INVERSE', { exact: true }).first()).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-structure-badges.spec.ts:567 › B05 structure badges @ narrow-320 › Review groups (clear): every badge hugs its label in its column parent",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toEqual(expected) // deep equality — read 576:expect(labels).toEqual(expect.arrayContaining([",
+     "oldBuild": "fails at the old build 181e580 at the same line (576:expect(labels).toEqual(expect.arrayContaining([)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-structure-badges.spec.ts:567 › B05 structure badges @ narrow-320 › Review groups (vapour): every badge hugs its label in its column parent",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toEqual(expected) // deep equality — read 576:expect(labels).toEqual(expect.arrayContaining([",
+     "oldBuild": "fails at the old build 181e580 at the same line (576:expect(labels).toEqual(expect.arrayContaining([)"
+    },
+    {
+     "case": "e2e/ui-polish-b05-structure-badges.spec.ts:595 › B05 structure badges @ narrow-320 › Workout section header, BlockPanel and AMRAP badges hug their labels in row parents",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 608:await expect(content.getByText('AMRAP · 8 MIN · INVERSE', { exact: true }).first()).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at an earlier line (43:).toEqual([]))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:547 › B05 summary facts @ phone-390 › Review (pictured): title, one aligned glyph fact row with real values, equipment near the top",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: Error: Facts require their contained horizontal viewport — read e2e/ui-polish-b05-summary-facts.spec.ts:300",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:547 › B05 summary facts @ phone-390 › Review (widest): title, one aligned glyph fact row with real values, equipment near the top",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: Error: Facts require their contained horizontal viewport — read e2e/ui-polish-b05-summary-facts.spec.ts:300",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:547 › B05 summary facts @ phone-390 › Review (bodyweight): title, one aligned glyph fact row with real values, equipment near the top",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: Error: Facts require their contained horizontal viewport — read e2e/ui-polish-b05-summary-facts.spec.ts:300",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:710 › B05 summary facts @ phone-390 › Session detail keeps its record readouts (distinct variant)",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveCount(expected) failed — read 715:await expect(facts.locator('.clr-metric-frame')).toHaveCount(5)",
+     "oldBuild": "fails at the old build 181e580 at the same line (715:await expect(facts.locator('.clr-metric-frame')).toHaveCount(5))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:547 › B05 summary facts @ narrow-320 › Review (pictured): title, one aligned glyph fact row with real values, equipment near the top",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: Error: Facts require their contained horizontal viewport — read e2e/ui-polish-b05-summary-facts.spec.ts:300",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:547 › B05 summary facts @ narrow-320 › Review (widest): title, one aligned glyph fact row with real values, equipment near the top",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: Error: Facts require their contained horizontal viewport — read e2e/ui-polish-b05-summary-facts.spec.ts:300",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:547 › B05 summary facts @ narrow-320 › Review (bodyweight): title, one aligned glyph fact row with real values, equipment near the top",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: locator.evaluate: Error: Facts require their contained horizontal viewport — read e2e/ui-polish-b05-summary-facts.spec.ts:300",
+     "oldBuild": "fails at the old build 181e580 at the same line ()"
+    },
+    {
+     "case": "e2e/ui-polish-b05-summary-facts.spec.ts:710 › B05 summary facts @ narrow-320 › Session detail keeps its record readouts (distinct variant)",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toHaveCount(expected) failed — read 715:await expect(facts.locator('.clr-metric-frame')).toHaveCount(5)",
+     "oldBuild": "fails at the old build 181e580 at the same line (715:await expect(facts.locator('.clr-metric-frame')).toHaveCount(5))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-swap.spec.ts:838 › B05 REQ-010 roomy swap selection › Superset and Circuit selections preserve their owning grouped Review at phone",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toBe(expected) // Object.is equality — read 862:expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · '))",
+     "oldBuild": "fails at the old build 181e580 at the same line (862:expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · ')))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-swap.spec.ts:838 › B05 REQ-010 roomy swap selection › Superset and Circuit selections preserve their owning grouped Review at narrow",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(received).toBe(expected) // Object.is equality — read 862:expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · '))",
+     "oldBuild": "fails at the old build 181e580 at the same line (862:expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · ')))"
+    },
+    {
+     "case": "e2e/ui-polish-b05-unit-fields.spec.ts:484 › B05 unit fields @ phone-390 › Logging keeps its separate Unit Select: its value, choices and behaviour",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 490:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (490:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-b05-unit-fields.spec.ts:484 › B05 unit fields @ narrow-320 › Logging keeps its separate Unit Select: its value, choices and behaviour",
+     "outcome": "reported for Eric",
+     "classification": "B05 look superseded (TASK-115’s own unfinished work under the rule, too large for attempt 1)",
+     "note": "Error: expect(locator).toBeVisible() failed — read 490:await expect(sheet).toBeVisible()",
+     "oldBuild": "fails at the old build 181e580 at the same line (490:await expect(sheet).toBeVisible())"
+    },
+    {
+     "case": "e2e/ui-polish-home.spec.ts:246 › JOURNEY-003: Home recent rows retain readable hierarchy and explicit Generate at 390x844",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/ui-polish-home.spec.ts:298 — /^Focus:/ → the button named “Change focus” (Round 7, TASK-119 S4)."
+    },
+    {
+     "case": "e2e/ui-polish-home.spec.ts:313 › JOURNEY-003: abandoned-only history returns normally without inventing a completed request at 390x844",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-home.spec.ts:246 › JOURNEY-003: Home recent rows retain readable hierarchy and explicit Generate at 320x568",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/ui-polish-home.spec.ts:298 — /^Focus:/ → the button named “Change focus” (Round 7, TASK-119 S4)."
+    },
+    {
+     "case": "e2e/ui-polish-home.spec.ts:313 › JOURNEY-003: abandoned-only history returns normally without inventing a completed request at 320x568",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-integrated.spec.ts:567 › JOURNEY-017: integrated sheet, effort, correction, clocks and paired navigation at 390x844",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-integrated.spec.ts:845 › JOURNEY-017: long-list swap returns to Review by touch at 390x844",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-integrated.spec.ts:567 › JOURNEY-017: integrated sheet, effort, correction, clocks and paired navigation at 320x568",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-integrated.spec.ts:845 › JOURNEY-017: long-list swap returns to Review by touch at 320x568",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-integrated.spec.ts:879 › JOURNEY-017: a combined superset and optional circuit entry keep their observations and clocks independent",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-pwa-viewport.spec.ts:376 › JOURNEY-002: phone keeps Home controls safe with CSS env insets, touch scroll and viewport resize",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/ui-polish-pwa-viewport.spec.ts:404 — the rest-day dialog’s scroll owner [data-logging-scroll] → Round 7’s .clr-logging-overlay__scroll (TASK-114)."
+    },
+    {
+     "case": "e2e/ui-polish-pwa-viewport.spec.ts:376 › JOURNEY-002: narrow phone keeps Home controls safe with CSS env insets, touch scroll and viewport resize",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/ui-polish-pwa-viewport.spec.ts:404 — the rest-day dialog’s scroll owner [data-logging-scroll] → Round 7’s .clr-logging-overlay__scroll (TASK-114)."
+    },
+    {
+     "case": "e2e/ui-polish-pwa-viewport.spec.ts:376 › JOURNEY-002: short phone keeps Home controls safe with CSS env insets, touch scroll and viewport resize",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/ui-polish-pwa-viewport.spec.ts:404 — the rest-day dialog’s scroll owner [data-logging-scroll] → Round 7’s .clr-logging-overlay__scroll (TASK-114)."
+    },
+    {
+     "case": "e2e/ui-polish-pwa-viewport.spec.ts:376 › JOURNEY-002: landscape phone keeps Home controls safe with CSS env insets, touch scroll and viewport resize",
+     "outcome": "passes after update",
+     "classification": "look/wording (2026-11-23 test-update rule)",
+     "change": "e2e/ui-polish-pwa-viewport.spec.ts:404 — the rest-day dialog’s scroll owner [data-logging-scroll] → Round 7’s .clr-logging-overlay__scroll (TASK-114)."
+    },
+    {
+     "case": "e2e/ui-polish-pwa-viewport.spec.ts:452 › JOURNEY-002: a focused Generate text draft survives a reduced viewport and exits Home without a request",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-pwa-viewport.spec.ts:505 › JOURNEY-002: the real swap toast and its dismissal remain inside simulated portrait and landscape safe areas",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-swap-selection.spec.ts:185 › JOURNEY-016: actual touch scroll selects the last synthetic swap and returns to Review at 390x844",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-swap-selection.spec.ts:185 › JOURNEY-016: actual touch scroll selects the last synthetic swap and returns to Review at 320x568",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    },
+    {
+     "case": "e2e/ui-polish-swap-selection.spec.ts:185 › JOURNEY-016: actual touch scroll selects the last synthetic swap and returns to Review at 390x320",
+     "outcome": "passes on rerun",
+     "classification": "environment: the spec draws the app on the shared dev server, which needs a Supabase URL and anon key (the verification lane supplies them); with placeholder values and no backend it passes"
+    }
+   ]
+  },
+  "recaptures": [
+   {
+    "task": "TASK-105",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-105 --check parity -- npx playwright test e2e/refinement/task-105-parity.spec.ts --project=mobile",
+    "why": "RUNNING-SUMMARY: re-capture TASK-105’s “Log results” dialog states on the merged code; TASK-114’s dialog change.",
+    "result": "First run: 10 of 12 passed; the two scheduled-ladder cases failed on `^01:05$` because TASK-108 draws the interval as a TimerFrame (digit cells). Read updated under the test-update rule; then 12 of 12 passed.",
+    "captures": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ (the spec’s own folder)"
+   },
+   {
+    "task": "TASK-106",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-106 --check parity -- npx playwright test e2e/refinement/task-106-parity.spec.ts --project=mobile",
+    "why": "TASK-114: parity images taken before its dialog change.",
+    "result": "16 of 16 passed; results/parity.json byte-identical; the 16 parity receipts carry the new capture hashes."
+   },
+   {
+    "task": "TASK-107",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-107 --check parity -- npx playwright test e2e/refinement/task-107-parity.spec.ts --project=mobile",
+    "why": "TASK-108 and TASK-110: recapture the circuit-round receipts (TimerFrame rest; CIRCUIT badge with its rounds line); TASK-114’s dialog change.",
+    "result": "First run: circuit-movement 2 of 2 passed; circuit-round 0 of 2 failed on `00:45` (the rest’s TimerFrame digit cells). Read updated under the test-update rule; then 4 of 4 passed."
+   },
+   {
+    "task": "TASK-108",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-108 --check parity -- npx playwright test e2e/refinement/task-108-parity.spec.ts --project=mobile",
+    "why": "TASK-114: parity images taken before its dialog change.",
+    "result": "8 of 8 passed; results/parity.json byte-identical."
+   },
+   {
+    "task": "TASK-110",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-110 --check parity -- npx playwright test e2e/refinement/task-110-parity.spec.ts --project=mobile",
+    "why": "TASK-114: parity images taken before its dialog change.",
+    "result": "4 of 4 passed; results/parity.json byte-identical."
+   },
+   {
+    "task": "TASK-111",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-111 --check parity -- npx playwright test e2e/refinement/task-111-parity.spec.ts --project=mobile",
+    "why": "TASK-114: parity images taken before its dialog change.",
+    "result": "4 of 4 passed; results/parity.json byte-identical."
+   },
+   {
+    "task": "TASK-116",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-116 --check parity -- npx playwright test e2e/refinement/task-116-parity.spec.ts --project=mobile",
+    "why": "TASK-117: recapture TASK-116’s amrap parity; TASK-114’s dialog change.",
+    "result": "6 of 6 passed; results/parity.json byte-identical."
+   },
+   {
+    "task": "TASK-117",
+    "check": "parity",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-117 --check parity -- npx playwright test e2e/refinement/task-117-parity.spec.ts --project=mobile",
+    "why": "TASK-114: parity images taken before its dialog change.",
+    "result": "8 of 8 passed; results/parity.json byte-identical."
+   }
+  ],
+  "receiptsRefreshed": [
+   {
+    "task": "TASK-021",
+    "check": "check-02",
+    "why": "e2e/refinement/task-021.spec.ts changed (test-update rule)",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-021 --check check-02 -- npx playwright test e2e/refinement/task-021.spec.ts --project=mobile",
+    "result": "PASSED"
+   },
+   {
+    "task": "TASK-105",
+    "check": "parity",
+    "why": "recapture, and e2e/refinement/task-105-parity.spec.ts changed",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-105 --check parity -- npx playwright test e2e/refinement/task-105-parity.spec.ts --project=mobile",
+    "result": "PASSED (parity receipts byte-identical across the two passing runs)"
+   },
+   {
+    "task": "TASK-107",
+    "check": "parity",
+    "why": "recapture, and e2e/refinement/task-107-parity.spec.ts changed",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-107 --check parity -- npx playwright test e2e/refinement/task-107-parity.spec.ts --project=mobile",
+    "result": "PASSED (parity receipts byte-identical across the two passing runs)"
+   },
+   {
+    "task": "TASK-106, TASK-108, TASK-110, TASK-111, TASK-116, TASK-117",
+    "check": "parity",
+    "why": "recapture",
+    "result": "PASSED; results/parity.json byte-identical to the committed receipts"
+   },
+   {
+    "scan": "every evidence/refinement/*/required-cases.json was scanned for checks whose targets TASK-115 changed: e2e/refinement/task-021.spec.ts (TASK-021 check-02), task-105-parity.spec.ts (TASK-105 parity), task-107-parity.spec.ts (TASK-107 parity). The root e2e specs updated here (ui-polish-home, uat-batch-01, ui-polish-pwa-viewport, ui-polish-b05-recent-rows) are no check’s target."
+   }
+  ],
+  "definitionRecords": "TASK-121’s check-01 receipt and the TASK-035/037/038 check-01 receipts are consumed (current and passing; the closure test re-verifies them). TASK-115 changes no record, checker or definition test.",
+  "uatList": "evidence/refinement/task-115/UAT-LIST.md",
+  "selfCheck": {
+   "method": "Every test file and e2e spec touched since the base 9a1569b1 (git diff 9a1569b1 HEAD -- e2e src scripts, plus new files): (a) every test()/it() full title present at the base and absent or renamed at HEAD; (b) each changed body's expect/read calls compared with the build (181e580) and the base, line by line.",
+   "files": [
+    "e2e/refinement/task-021.spec.ts",
+    "e2e/refinement/task-105-parity.spec.ts",
+    "e2e/refinement/task-107-parity.spec.ts",
+    "e2e/ui-polish-home.spec.ts",
+    "e2e/uat-batch-01.spec.ts",
+    "e2e/ui-polish-pwa-viewport.spec.ts",
+    "e2e/ui-polish-b05-recent-rows.spec.ts",
+    "e2e/refinement/task-115-comparison.spec.ts (new)",
+    "scripts/refinement/task-115-closure.test.mjs (new)"
+   ],
+   "counts": {
+    "files": 9,
+    "baseTitlesAbsentOrRenamedAtHead": 1,
+    "changedBodies": 6,
+    "newBodies": 66,
+    "bodiesFewerReadsThanBase": 0,
+    "bodiesFewerReadsThanBuild": 0,
+    "skipOnlyTodoFixmeAdded": 0
+   },
+   "absentOrRenamedAtHead": [
+    {
+     "file": "e2e/ui-polish-b05-recent-rows.spec.ts",
+     "test": "B05 recent rows @ ${size} › History chronology puts the title on its own row with status and date beneath (TASK-026)",
+     "ledgerRow": "retired (owner decision 7, 2026-11-13; on the UAT list for Eric to confirm)"
+    }
+   ],
+   "bodies": [
+    {
+     "file": "e2e/refinement/task-021.spec.ts",
+     "test": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 keyboard phone-320 … (the round-1 recorded log’s final seconds)",
+     "build": "timer `Time remaining`: data-urgent=true, data-loop=still; edge parent dialog.clr-accepted-log[open]",
+     "base": "wrapper .clr-log-timer: class clr-pulse-micro, data-loop=still; edge parent dialog.clr-logging-overlay[open]",
+     "head": "timer `Time remaining` inside .clr-log-timer: data-urgent=true (the build’s read, restored), class clr-countdown-breathe (Round 7’s shared breathe, TASK-108), data-loop=still; edge parent dialog.clr-logging-overlay[open]",
+     "lost": []
+    },
+    {
+     "file": "e2e/refinement/task-105-parity.spec.ts",
+     "test": "TASK-AC-FAEE8BA2A650 scheduled phone-320 / phone-390 …",
+     "build": "(file absent at the build)",
+     "base": "a line reading exactly `01:05` (has('running', /^01:05$/))",
+     "head": "the digits `0`,`1`,`:`,`0`,`5` as consecutive drawn lines (Round 7’s TimerFrame draws one cell per character; no line reads the whole clock)",
+     "lost": []
+    },
+    {
+     "file": "e2e/refinement/task-107-parity.spec.ts",
+     "test": "TASK-AC-2FA21EDA32B4 circuit-round phone-320 / phone-390 …",
+     "build": "(file absent at the build)",
+     "base": "joined text contains `00:45` (in the dialog) and `00:44` (beside the card)",
+     "head": "the cells `0`,`0`,`:`,`4`,`5` and `0`,`0`,`:`,`4`,`4` as consecutive drawn lines, on both sides",
+     "lost": []
+    },
+    {
+     "file": "e2e/ui-polish-home.spec.ts",
+     "test": "JOURNEY-003: Home recent rows retain readable hierarchy and explicit Generate at ${w}x${h}",
+     "build": "button named /^Focus:/ visible",
+     "base": "the same (the base body is the build’s)",
+     "head": "button named exactly “Change focus” visible (Round 7’s name)",
+     "lost": []
+    },
+    {
+     "file": "e2e/uat-batch-01.spec.ts",
+     "test": "Generate and Settings follow the contained-form and measured-footer rulings",
+     "build": "formCard text “Goal:” visible",
+     "base": "the same",
+     "head": "formCard text “Goal” (exact) visible",
+     "lost": []
+    },
+    {
+     "file": "e2e/ui-polish-pwa-viewport.spec.ts",
+     "test": "JOURNEY-002: ${name} keeps Home controls safe with CSS env insets, touch scroll and viewport resize",
+     "build": "one [data-logging-scroll] in the rest-day dialog",
+     "base": "the same",
+     "head": "one .clr-logging-overlay__scroll in the rest-day dialog",
+     "lost": []
+    }
+   ],
+   "matchersWeakened": false,
+   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher)."
+  },
+  "galleryChanges": [],
+  "galleryChangesNote": "No gallery-owned or src/ file changed."
+ },
+ "summary": {
+  "added": 66,
+  "rewritten": 6,
+  "retired": 1
+ },
+ "entries": [
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 A3 body record and aggregate evidence closure > TASK-AC-B1DAECFD68F1 the A3 body record names base a6cd01c9, gallery bec4454, Foundation 0.14.3, and main 03087f7, gallery eded158 and the old build 181e580 as history only",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-B1DAECFD68F1).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 A3 body record and aggregate evidence closure > AC-GAL-07 TASK-AC-B1DAECFD68F1 the final evidence check consumes the receipts of TASK-103 to TASK-114 and TASK-116 to TASK-121",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (AC-GAL-07).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 A3 body record and aggregate evidence closure > TASK-AC-8E85446CC848 AC-R040-01 the branch still descends from a6cd01c9; the old build 181e580 is not merged and main carries none of this body",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-8E85446CC848).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 consumes TASK-121’s definition-record receipts > TASK-AC-99A513AC101C TASK-121’s receipt and the three definition-record checks are current and passing at the end",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-99A513AC101C).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 consumes TASK-121’s definition-record receipts > TASK-AC-8E85988C2B58 the UAT list names Q-007, every record claim TASK-121 retired and every definition-test assertion it re-pointed",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-8E85988C2B58).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 body-level ledger rerun > TASK-AC-B1417172F706 every build test on 181e580 is carried, rewritten, ported or retired, none pending, deferred or unplaced, at a recorded tip",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-B1417172F706).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 body-level ledger rerun > TASK-AC-B1417172F706 each shared helper a carried test reaches that differs from the build’s is rechecked and recorded with its result",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-B1417172F706).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 body-level ledger rerun > TASK-AC-B43450BD688A the eleven S6 bodies dropped nothing the later task owns",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-B43450BD688A).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 end-of-run comparison and recaptures > TASK-AC-495C349983AC the comparison page shows all 26 states at 320 and 390 beside their real routes, each capture re-hashed and every difference labelled or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 end-of-run comparison and recaptures > AC-R039-02 the recaptured owners’ parity receipts are current and passing, and every capture they name is in the store with its hash",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (AC-R039-02).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 end-of-run comparison and recaptures > TASK-AC-C8FAD22523F1 the whole e2e run is recorded: every one of the 63 old-build e2e files and every failure has an outcome",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-C8FAD22523F1).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 UAT list for Eric > TASK-AC-5BC37E04FCFD the UAT list names every R7-2 and R7-3 retirement with what supersedes it, and the carried “does not call an early finish a cap” body",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-5BC37E04FCFD).",
+   "result": "passed"
+  },
+  {
+   "file": "scripts/refinement/task-115-closure.test.mjs",
+   "test": "TASK-115 UAT list for Eric > TASK-AC-8E85988C2B58 the UAT list carries the owner items first: the Focus control’s name, the Echo inside dialogs, X5 and the retirements to confirm",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 check-01 required case (TASK-AC-8E85988C2B58).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC cards phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC cards phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC overview phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC overview phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC preparation phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC preparation phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC screens phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC screens phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder-4 phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder-4 phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder-12 phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder-12 phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder-long phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder-long phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC urgency phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC urgency phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC errors phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC errors phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC assets phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC assets phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC anchor phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC anchor phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC other-lift phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC other-lift phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC timed-movement phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC timed-movement phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC distance-movement phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC distance-movement phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC extra-set phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC extra-set phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC set-correction phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC set-correction phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC superset phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC superset phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC circuit-round phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC circuit-round phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC circuit-movement phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC circuit-movement phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC movement-note phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC movement-note phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC workout-feedback phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC workout-feedback phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC rest-day phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC rest-day phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC emom phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC emom phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC amrap phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC amrap phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC for_time phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC for_time phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder phone-320: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC ladder phone-390: the accepted gallery state beside its real route from its owner’s end-of-run matched-data pair, each capture hash-checked, every visible difference labelled with its criterion or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-115-comparison.spec.ts",
+   "test": "TASK-AC-495C349983AC comparison page: all 26 accepted gallery states at 320 and 390 beside their real routes, every image loads and every difference is labelled or listed as unintended",
+   "ledger": "new (TASK-115, brief)",
+   "disposition": "added",
+   "note": "TASK-115 parity required case (TASK-AC-495C349983AC).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-021.spec.ts",
+   "test": "TASK-021 circuit round, Undo and measurement behaviour > JOURNEY-021 keyboard phone-320 … (the final seconds in the log)",
+   "ledger": "whole e2e run (TASK-021 check-02; file owned by the old body’s TASK-021)",
+   "disposition": "rewritten",
+   "note": "Round 7 look or wording, same asserted behaviour (2026-11-23 test-update rule; listed for UAT). The urgent rest’s warning is read on its timer: data-urgent=true (the build’s read, restored), Round 7’s clr-countdown-breathe class (TASK-108) where the base read clr-pulse-micro on the old CountdownDisplay wrapper, and data-loop=still. TASK-021 check-02 refreshed through its guard.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-105-parity.spec.ts",
+   "test": "TASK-AC-FAEE8BA2A650 scheduled phone-320 / phone-390: /workout’s scheduled ladder, which no accepted gallery state draws, kept for the look check before Start, on its clock and once its schedule has run out, with its log",
+   "ledger": "recapture (RUNNING-SUMMARY; TASK-105 owns the file)",
+   "disposition": "rewritten",
+   "note": "Round 7 look or wording, same asserted behaviour (2026-11-23 test-update rule; listed for UAT). The running interval `01:05` is read as Round 7’s TimerFrame draws it, one digit cell per line in order (TASK-108 made the interval a TimerFrame), where the base read a whole `01:05` line. TASK-105 parity refreshed through its guard.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-107-parity.spec.ts",
+   "test": "TASK-AC-2FA21EDA32B4 circuit-round phone-320 / phone-390: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state, drawn alike",
+   "ledger": "recapture (TASK-108, TASK-110 forTask115; TASK-107 owns the file)",
+   "disposition": "rewritten",
+   "note": "Round 7 look or wording, same asserted behaviour (2026-11-23 test-update rule; listed for UAT). The rest `00:45` in the dialog and `00:44` beside the card are read as consecutive TimerFrame digit cells, on both sides, where the base read a substring of the joined text. TASK-107 parity refreshed through its guard.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/ui-polish-home.spec.ts",
+   "test": "JOURNEY-003: Home recent rows retain readable hierarchy and explicit Generate at 390x844 / 320x568",
+   "ledger": "whole e2e run (pre-UAT run; TASK-119 found it failing at the base)",
+   "disposition": "rewritten",
+   "note": "Round 7 look or wording, same asserted behaviour (2026-11-23 test-update rule; listed for UAT). /^Focus:/ → the button named “Change focus” (Round 7’s name, TASK-119 S4; the value is the control’s text). Owner item on the UAT list (the Focus name).",
+   "result": "passed (placeholder Supabase URL; the verification lane supplies the real one)"
+  },
+  {
+   "file": "e2e/uat-batch-01.spec.ts",
+   "test": "Generate and Settings follow the contained-form and measured-footer rulings",
+   "ledger": "whole e2e run (pre-UAT run)",
+   "disposition": "rewritten",
+   "note": "Round 7 look or wording, same asserted behaviour (2026-11-23 test-update rule; listed for UAT). “Goal:” → the term “Goal” (Round 7 states the Goal as a term over its value, no colon; TASK-119).",
+   "result": "passed (placeholder Supabase URL)"
+  },
+  {
+   "file": "e2e/ui-polish-pwa-viewport.spec.ts",
+   "test": "JOURNEY-002: phone / narrow phone / short phone / landscape phone keeps Home controls safe with CSS env insets, touch scroll and viewport resize",
+   "ledger": "whole e2e run (pre-UAT run)",
+   "disposition": "rewritten",
+   "note": "Round 7 look or wording, same asserted behaviour (2026-11-23 test-update rule; listed for UAT). The rest-day dialog’s one scroll owner is read as Round 7’s .clr-logging-overlay__scroll (TASK-114) where the build’s frame carried data-logging-scroll; the count of one is kept.",
+   "result": "passed (placeholder Supabase URL)"
+  },
+  {
+   "file": "e2e/ui-polish-b05-recent-rows.spec.ts",
+   "test": "B05 recent rows @ phone-390 / narrow-320 › History chronology puts the title on its own row with status and date beneath (TASK-026)",
+   "ledger": "whole e2e run (pre-UAT run)",
+   "disposition": "retired",
+   "note": "Owner decision 7 (2026-11-13) replaced TASK-026’s chronology row with Round 7’s History row order; the corrected task 2 ledger retired the unit twin (“U44, AC-C53-01 …”) on the same decision, and History.test.tsx “U44: every row puts its title, then status with the context, then metrics” checks Round 7’s order. Its helper chronologyRowGeometry went with it. For Eric to confirm (UAT list).",
+   "result": "retired"
+  }
+ ]
+}
