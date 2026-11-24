@@ -22,7 +22,7 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-390-route-running.png",
-      "sha256": "6de22238d723c73ca93e1d944c5d61cf9985213102956d36f734ed21416e1d2d"
+      "sha256": "a78a7b0bed3cf224233d9d9e17d9652e1d314896f074a739046ac1b0253b1cec"
     },
     "gallery-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-390-gallery-paused.png",
@@ -30,7 +30,7 @@
     },
     "route-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-390-route-paused.png",
-      "sha256": "15f169df5138ae28799f6bb2e8cedee3ac01f1865b7152a09fe2ab9505b4ad8b"
+      "sha256": "5d4a282574f7a95925af1c71ae8ad58623e7fc4e6f1737d362a1039778f0419e"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-390-gallery-ended.png",
@@ -38,7 +38,7 @@
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-390-route-ended.png",
-      "sha256": "e5a4e953161e9cb9a784811329cdaebfc20d93826564c67e6bba30e7cfec67a4"
+      "sha256": "e2a154aed9d9588673f2b75a8736effa9a7e236fd7a3612004e1158527c79e0e"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-390-gallery-log.png",

@@ -22,7 +22,7 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-running.png",
-      "sha256": "43a0f1705cd08b950f774bf3ecdf276232697d2b8422afa29a456facb415198e"
+      "sha256": "5caec55d223cd59a92a69609f52b749b2a9d419e289b91994b1d37f46b1d832f"
     },
     "gallery-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-paused.png",
@@ -30,7 +30,7 @@
     },
     "route-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-paused.png",
-      "sha256": "41b6dfe75f01289a3e883d1663df74712cc5c31b85e4f4351d174fc6c7e6ee75"
+      "sha256": "2555838dd0bf428ab3a7657483eaa38963a176e7a1918f083adc6349d3e7f15e"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-ended.png",
@@ -38,7 +38,7 @@
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-ended.png",
-      "sha256": "647b9d0a215787eb1d7aeb9e757856b08b704fbe96f345b0de47e8571ad2a769"
+      "sha256": "2e34eb315c42ed444d4c8b869ec912f4e5f1b2d37d9ce953cf7740e9a5890f27"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-log.png",
