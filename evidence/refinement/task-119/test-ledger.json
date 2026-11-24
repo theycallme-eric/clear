@@ -1,0 +1,892 @@
+{
+  "schema": "clear-refinement-test-ledger/v1",
+  "task": "TASK-119",
+  "family": "F10 (A3 task 12b): Generate and Review’s order and Regenerate on Round 7, with the Recovery chip kept visible",
+  "base": "41dc9aa7b00c099a2dc06abe89305a5c24ff1cd6",
+  "build": "181e580 (source material only)",
+  "source": "Brief NB2/briefs/TASK-119-a1.md; running summary; round-07 placement review; TASK-109/110/111/112/118 ledgers (TASK-109 rules.crossFile/forTask119, TASK-111 rules.deferred S4, TASK-112 rules.forTask119); visual-review/round7-vs-gallery/2026-11-14-a3-task2-groundwork-ledger.json (F10: 65 waiting tests in this task's four files; e2e task-023/024 specs); the build's bodies of the four files, Home.test.tsx and the two e2e specs. Bodies compared with the build and the base by a TypeScript compiler API extractor.",
+  "summary": {
+    "rewritten": 56,
+    "carried": 21,
+    "added": 6
+  },
+  "entries": [
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "the screen’s composition (Form Screen template) > puts Goal and Focus first on one row, the Focus value its change control, with no paired Recovery action (C51, superseding B05-02.6/02.7)",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Round 7 Goal/Focus summary (decision 4 of 2026-11-13): `.clr-v4-program-summary` for the build's `.clr-intent-summary`; the summary is the card stack's first child (the build's `[data-generate-intent]` read, made exact); the Focus fact reads `Focus` then `Lower body` (anchored, no ': ' — Round 7 draws a term span and the value control) and the control's text is exactly `Lower body`; 'no Change focus button' becomes 'the one button named Change focus is the Focus value' (Round 7 names the value Change focus). Every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "the screen’s composition (Form Screen template) > keeps Recovery beside the Anchor choices when there is no Focus to change",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "No Focus control: `CHANGE_FOCUS_LABEL` for the build's `/^Focus:/` name; Recovery and the Anchor group share the Anchor field (`group('Anchor').parentElement`, Round 7's FormField) for the build's `[data-generate-focus-choices]`; Recovery outside the group and no action group verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for %s",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-005 — a manual Focus before the first completed workout, or on stale history > recommends on the next visit once one of them is completed",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Build's `aria-expanded=false` read restored on Round 7's Change focus; the build's `getByText(/^Focus:/)` is the base's `focusLine()` (Round 7's Focus summary item) and the base's Change focus read is kept.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-006 — a history read that fails or is still in flight > reads again on Retry, and shows the recommendation when the read succeeds",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body (Round 7's) unchanged: the build's one read `findByText(/^Focus:/)` → /^Focus: Lower body$/ is the base's two Round 7 reads (the Focus term found in the summary, then the fact anchored /^Focus\\s*Lower body$/).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-006 — a history read that fails or is still in flight > keeps a Focus already chosen by hand when Retry succeeds",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: the build's `Power — this workout only` is the base's anchored /^Focus\\s*Power\\s*this workout only$/ (Round 7 draws no ' — ').",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-007 — a Focus for this workout only > restores the recommendation on %s",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's; its second row's label is the build's ('dismissing the choices with the Focus control'), so the runtime case 'restores the recommendation on dismissing the choices' (the base's row label) is now named '… with the Focus control' — the same press of the Focus value (Change focus). Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-008 — a Recovery session for this workout only > sends active_recovery with the requested intensity unchanged and says it is composed at 1–3",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-008 — a Recovery session for this workout only > keeps Power visible and disabled, with the refusal in text",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-008 — a Recovery session for this workout only > clears a recommended Power rather than substituting it, and waits for another Focus",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-008 — a Recovery session for this workout only > keeps Recovery when Loading is cancelled, and restores it from that URL",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-008 — a Recovery session for this workout only > returns to the standing Goal when Recovery is switched off",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "REQ-008 — a Recovery session for this workout only > opens a fresh visit on the standing Goal, and never wrote the profile",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's (collapsed on a fresh visit, then opened and closed again). Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U26 — the goal, plainly, and first-workout guidance only when needed > states a standing %s goal as its label alone",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: the build's /^Goal: …$/ is the base's /^Goal\\s*…$/ on Round 7's summary item (no ': ').",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U26 — the goal, plainly, and first-workout guidance only when needed > guides a first request under another goal the same way",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: the build's 'Goal: Conditioning' is the base's anchored /^Goal\\s*Conditioning$/.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > says minutes in full beside the time, never min",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "The build's U28/R23 block (TASK-024's migration, AC-R024-07) restored verbatim — body and its helpers (`expectFieldsWithoutHelpers`, `REMOVED_HELPERS`) identical to the build's; Round 7 draws neither helper line (decision 4 of 2026-11-13). Round 7's own U28 block ('U28 — minutes spelled out, short helper copy that keeps each field clear', 6 cases) stays beside it unchanged (round-07 S5 precedent).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > AC-R024-07 removes the Place and Notes helper lines and leaves no description wired to either field",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "The build's U28/R23 block (TASK-024's migration, AC-R024-07) restored verbatim — body and its helpers (`expectFieldsWithoutHelpers`, `REMOVED_HELPERS`) identical to the build's; Round 7 draws neither helper line (decision 4 of 2026-11-13). Round 7's own U28 block ('U28 — minutes spelled out, short helper copy that keeps each field clear', 6 cases) stays beside it unchanged (round-07 S5 precedent).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > shows no helpers on an empty time and empty notes, with no error before submit",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "The build's U28/R23 block (TASK-024's migration, AC-R024-07) restored verbatim — body and its helpers (`expectFieldsWithoutHelpers`, `REMOVED_HELPERS`) identical to the build's; Round 7 draws neither helper line (decision 4 of 2026-11-13). Round 7's own U28 block ('U28 — minutes spelled out, short helper copy that keeps each field clear', 6 cases) stays beside it unchanged (round-07 S5 precedent).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > says the time error on the field, with the unit still there and no helper returning",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "The build's U28/R23 block (TASK-024's migration, AC-R024-07) restored verbatim — body and its helpers (`expectFieldsWithoutHelpers`, `REMOVED_HELPERS`) identical to the build's; Round 7 draws neither helper line (decision 4 of 2026-11-13). Round 7's own U28 block ('U28 — minutes spelled out, short helper copy that keeps each field clear', 6 cases) stays beside it unchanged (round-07 S5 precedent).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > sends a valid time as the minutes typed, and the chosen place",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "The build's U28/R23 block (TASK-024's migration, AC-R024-07) restored verbatim — body and its helpers (`expectFieldsWithoutHelpers`, `REMOVED_HELPERS`) identical to the build's; Round 7 draws neither helper line (decision 4 of 2026-11-13). Round 7's own U28 block ('U28 — minutes spelled out, short helper copy that keeps each field clear', 6 cases) stays beside it unchanged (round-07 S5 precedent).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > keeps the notes limit with a note at the length limit, and sends it whole",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "The build's U28/R23 block (TASK-024's migration, AC-R024-07) restored verbatim — body and its helpers (`expectFieldsWithoutHelpers`, `REMOVED_HELPERS`) identical to the build's; Round 7 draws neither helper line (decision 4 of 2026-11-13). Round 7's own U28 block ('U28 — minutes spelled out, short helper copy that keeps each field clear', 6 cases) stays beside it unchanged (round-07 S5 precedent).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > says it is lighter, and sends the recovery goal, requested intensity and focus unchanged",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Build body with `chooseRecovery` (Round 7 naming); the build's `getByText(/^Goal:/)` 'Goal: Strength' is the base's Round 7 read `summaryItem('Goal')` /^Goal\\s*Strength$/ (anchored; Round 7 draws a term span and the value, no ': ').",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > drops the note when Recovery is switched off",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's. Its helpers read Round 7: `focusControl`/`changeFocus` is the Focus value named Change focus (CHANGE_FOCUS_LABEL; the build named it `Focus: <value>`), `openFocus` opens it, `chooseRecovery` opens it when there is one and presses Recovery session — the build's helpers on Round 7's naming (round-07 S4).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 keeps Goal and Focus first with an interactive Focus value, Recovery inside its choices, the minutes unit, the Generate title and the icon-only Home back, and no Place or Notes helper",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Round 7 locators: the summary (`.clr-v4-program-summary`) is the card stack's first child (build `[data-generate-intent]`); the Focus value is named Change focus with the text exactly `Lower body` and follows the `Focus` term (build: accessible name `Focus: Lower body`); Recovery is inside what the control opens (`choicesRegion().parentElement`: Round 7's aria-controls names the four-focus group itself, which must not hold Recovery, R10.1). Title, Back, unit, helpers and placeholder verbatim (GENERATE_TITLE/HOME_BACK_LABEL re-pointed to Round 7's literals).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-01 Recovery is its own session toggle inside the focus choices, never a fifth focus value, and no detached or paired change action remains",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "'No Change focus button' becomes 'the one Change focus button is the Focus value in the Focus summary item' (Round 7 naming); `choicesRegion()` → what the control opens (`choices()`), group-not-containing-Recovery verbatim; the Focus line reads `Focus` + `Lower body` anchored and the control's text exactly. Closing keeps the note (verbatim); decision 4's chip read is the new TASK-119 case.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-02 Goal and Focus share the summary’s larger type, and the Focus value is a keyboard disclosure with its name and expanded state",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Round 7's summary recipe (src/ui/workout-experience-presentation.css): the Goal value `.clr-v4-program-value` and the Focus value `.clr-v4-focus-value` share the heading-h5 size and bold weight in one two-column row, read from the stylesheet as the build read its presentation.css; the chevron cue is the text action's own `::after` '›' (foundation.css) for the build's `.clr-intent-summary__cue svg`; the control is a BUTTON type=button, not `.clr-btn`, plus `.clr-text-action`. Keyboard path verbatim; the build's accessible names `Focus: Upper body`/`Focus: Lower body` are Round 7's name Change focus plus the exact text `Upper body`/`Lower body`; `choicesRegion()` is the group itself (exact) and sits in what the control opens.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-03 the minutes unit is the public Input unit end cap fitted by the shared contract, with nothing Generate-specific sizing it",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Every read verbatim except the recipe file: Round 7's summary recipe is src/ui/workout-experience-presentation.css (the build's src/ui/refinements/presentation.css), which sizes no field.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-04 the page title is Generate, and the generation action keeps its name",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "GENERATE_TITLE/GENERATE_ACTION_LABEL are not exported by Round 7's Generate.tsx (re-pointed as test-local literals): `expect(GENERATE_TITLE).toBe('Generate')` becomes a read of the product — every `<Screen title=…>` in src/app/Generate.tsx is 'Generate' (5) — and `expect(GENERATE_ACTION_LABEL).toBe(…)` becomes the CTA's accessible name; heading, no 'Generate Workout', document title and CTA text verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-05 Back is the shared framed icon-only control named Home, and it goes Home",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Body identical to the build's; HOME_BACK_LABEL is re-pointed to Round 7's IconButton label 'Home' (test-local).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-06 a first workout opens as a normal session: Recovery is offered unselected and recommended nowhere, and can still be chosen",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Body identical to the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-08 #286 is kept: a first workout requires one of four Anchors; history shows its Focus collapsed with the choices behind it, a different one for this workout only; the stored Goal; Intensity 1–10",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Goal reads on Round 7's summary item (`/^Goal\\s*Balanced$/`, `/^Goal\\s*Strength$/` for the build's `/^Goal: …$/`); the override line `Focus` `Full body` `this workout only` anchored (Round 7 draws no ' — ') plus the control's exact text `Full body`. Every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 the accepted gallery state ?state=screens draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, and sends nothing",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Reads Round 7's screens state (bec4454), a composed Generate card: title as a `.label` 'Generate' (build: heading); framed icon-only Back named 'Back to Home' (build: 'Home'); the goal label 'Build strength' above the Focus value 'Upper body' (build: 'Goal: Balanced' / 'Focus: Full body' in `.clr-intent-summary`); its Focus dialog lists Upper, Lower, Full body and Recovery (the state's own choices); MINUTES unit class; no helper; Generate workout enabled; decision 4: a chosen Recovery stays in view. Reads the state cannot meet are retired (rules.retiredAssertions) and proved on the route.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > gives every block its own card under its section’s static header, and nests no card anywhere",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Round 7 locators: block cards are `.clr-card`s in `[data-review-section]` whose movement group opens with the shared header (build `[data-workout-card=\"review\"]`); a guide's card is inside `[data-preparation-guide]` (build: the attribute inside the card). Counts, bars, header-not-a-trigger, tempo-only disclosure, no nested card and the closing Regenerate row verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > renders every section, in the order it will be performed, under its type’s label",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Decision 2 of 2026-11-13: Round 7 heads each of a section's block cards with the section's name, so the build's exact five headings are read as the headings' runs (the same five, in order) plus a count of one heading per block card and per guide card; headings scoped to `[data-review-section], [data-preparation-guide]`; no expanded button verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > states the round count beside the badge, the one-round sequence, and the shared rest after it",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Decision 6: the badge names the format alone (verbatim) and the round count is Round 7's `.clr-timed-meta` directly under the header (build: `[data-structure-meta]` inside it), with a new read that the header itself says no ROUNDS; sequence, rest and count verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > drops the STANDARD badge that says nothing, and keeps one that names a scheme",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "The base's Round 7 reads kept; the build's 'exactly one badged standard block' restored on Round 7's cards (a card with no `ol` is a standard block), which Round 7 badges by its format LADDER (decision 6; build: STANDARD), with LADDER UP on the line under its header (build `[data-structure-meta]`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > renders every structure type the database admits",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "The base's Round 7 reads kept and the build's '15 MIN CAP' restored; the build's 'STANDARD' label is retired (decision 6: Round 7 draws no STANDARD word; the base asserts none).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > renders each target kind as its own shape",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body (TASK-109's cross-file update) unchanged: its reads are the build's verbatim; it differs only by TASK-109's comment.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > renders time and distance as themselves rather than as reps",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body (TASK-109's) unchanged: reads verbatim the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > moves tempo off the rows into an optional, collapsed detail that keeps it",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body (TASK-109's) unchanged: reads verbatim the build's.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "all generated content renders > keeps every section open, with no toggle, chevron or hit area on its header",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Round 7 has no `[data-review-block]`: each block card's movement group is read as not inside a disclosure (count > 0 added). Every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "no generated overview or section introduction (REQ-010) > keeps every label and all structured work, timers and prescriptions",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "The build's exact level-2 heading per label is read per card: 'Warm-up' once (its guide) and 'Primary lift' once per block card (decision 2 of 2026-11-13: Round 7 heads each card). Base reads kept.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "no generated overview or section introduction (REQ-010) > opens the overview card on its facts, with no paragraph above them",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "The build's 'no paragraph in the card' becomes 'no paragraph above the facts': Round 7's Required equipment group (TASK-118, EquipmentSummary) labels itself with one `p` after them, read exactly as EQUIPMENT_LABEL. Base read kept.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "the intensity / anchor / goal header > states the four facts the workout was composed under",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: reads verbatim the build's (the build adds a comment).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "swapping a movement happens in Review, under the original constraints (U37) > offers a swap on every prescribed movement, named for the movement",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Body identical to the build's (TASK-022's reading: the Warm-up guide has no Swap). Round 7's own 'offers a swap on every movement' (TASK-109's cross-file update) stays beside it unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "test": "the suggested load, its confidence, and why > offers the suggestion as a text action inside its section’s card",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "The build's `[data-workout-card=\"review\"]` is one of Round 7's block cards (`reviewBlockCards()`); not inside a disclosure verbatim; base reads kept.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-019: required equipment near the top, before Start, without prose > lists each piece of equipment once, in the overview, before the first section",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Base reads kept; the build's `precedes(list, sectionHeadings()[0])` restored with `sectionHeadings()` scoped to Round 7's sections and guides.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-021: Regenerate sits at the end of the scrolling content > is the last control in the scrolling content, after every section",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "TASK-109's cross-file body kept whole and the build's TASK-023 reads added: every section heading precedes Regenerate; the headings' runs count the five sections (decision 2: a heading per block card; build: exactly five headings); the last heading is the Cooldown guide's (`[data-preparation-guide=\"Cooldown\"]`, Round 7 marks a guide by title; build 'cooldown'); `expectRegenerateLast` (row is the content list's last item, nothing readable follows, every section and the Cooldown's last movement precede it) on Round 7's `[data-review-section], [data-preparation-guide]`.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 follows the whole workout — Warm-up, the work and the Cooldown guide down to its last movement — and nothing readable follows it",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Build body over `preparationAcceptance()` with and without a Cooldown; the composed order is read as Round 7 marks it — a guide by its title and a work section as work, and each part's first level-2 heading against the briefing's section titles (build: `data-review-section` = section_type). `expectRegenerateLast`, last button and the Cooldown's names verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 after the Cooldown its behaviour is unchanged: Keep it keeps the workout, Discard and regenerate runs the same flow once, and it is held while Start is in flight",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Build body; the Cooldown guide is `[data-preparation-guide=\"Cooldown\"]` (build 'cooldown'). Every behaviour read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 the accepted gallery state ?state=preparation draws Review’s own Regenerate after the Cooldown, and it only asks",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Reads Round 7's preparation state: the Warm-up guide, the live work and the Cooldown guide in Review order, the Cooldown the state's last readable part with its own sample names exactly; the state draws no Review screen and no Regenerate, so the build's Regenerate reads in the state are retired (rules.retiredAssertions) and proved on /review.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-022: numbered one-round sequences under a heading with the round count > heads a superset with its structure glyph and rounds, and its one-round sequence",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Base reads kept; the build's reads restored: the badge in the card's shared header (`cardHeader` = Round 7's `.clr-card`'s header), format alone, glyph, the rounds on Round 7's line under the header (`metaUnder`; build `[data-structure-meta]` inside it), the sequence leads the group; the build's `/^One round: 01 → 02$/` is Round 7's wording '… — no rest between movements' (base read).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-022: numbered one-round sequences under a heading with the round count > states movement with its equipment beside it, then the prescription, on each numbered row",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Body identical to the build's. Round 7's own 'states movement, then prescription, then equipment on each numbered row' stays beside it unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-022: numbered one-round sequences under a heading with the round count > follows the group’s own movement and round count rather than a fixed layout",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Base reads kept; the build's header reads restored (badge CIRCUIT, 5 ROUNDS under the header, glyph); the build's 'One round: 01 → 02 → 03' is Round 7's wording with ' — no rest between movements' (base read, exact and as the group's first child).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-023: grouped movements read as consecutive within each round > keeps the whole prescription where a superset’s round count is unknown",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: the build's 'One round: 01 → 02' is Round 7's wording '… — no rest between movements' (exact).",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-024: no trailing divider, the rest beside its group, no repeat description > rules between movements and never after the final one",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Base reads kept; the build's 'no inner grouping rail' (`borderInlineStart` '') restored.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "AC-024: no trailing divider, the rest beside its group, no repeat description > keeps the blue rest reading, with its glyph, inside the group it follows",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: it holds every build read verbatim, and three more.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "REQ-008: the compact workout-facts row under the workout title > keeps the workout title as the page title, the facts first, then the equipment",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Base reads kept; the build's `precedes(equipment, sectionHeadings()[0])` restored.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "REQ-009: grouped Review movement hierarchy and one group rest > %s: name row with equipment beside the name and Swap at its end, then prescription",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Build body on Round 7's MovementIdentity: the identity is `.clr-movement-identity` (build: the item's first child); Round 7's name element `.clr-movement-identity__name` holds the words then the equipment (R132), so the build's 'name text has the __name class' reads the element and the words as its first child; equipment `__equipment-inline` (build `__equipment`); the prescription row is a `DIV` with `data-movement-detail` (build `P`). Round 7's own '%s: name row with Swap at its end, then prescription, then equipment' stays beside it unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "REQ-009: grouped Review movement hierarchy and one group rest > keeps only Swap by the name and the full Undo after the readings following a real choice",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "carried",
+      "note": "Base body unchanged: it holds every build read (on Round 7's `.clr-movement-identity` locator) and two more.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "REQ-009: grouped Review movement hierarchy and one group rest > leaves a standard movement’s own rest where it was and says its Bodyweight once",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Round 7 draws a standard block's rows straight in its card's movement group, with no 'Movements in this block' list (TASK-112's reading): `standardRows()`. Every read verbatim on that row. Round 7's own '…, and says bodyweight once' stays beside it unchanged.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "test": "REQ-009: grouped Review movement hierarchy and one group rest > keeps an actual Bodyweight load beside other equipment",
+      "ledger": "groundwork ledger build-test-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "On `standardRows()` (no list in Round 7); the load is Round 7's prescription second reading (TASK-112's `loadOf`; build `data-movement-load`), read as that exact element; the equipment's `data-movement-context` verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "test": "REQ-016 — the six Goal/Focus journeys > journey 2: Change focus overrides the request and the stored session, and leaves Settings alone",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's; `openFocus`/`focusControl` read Round 7's Change focus (build: `Focus: <value>`).",
+      "result": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "test": "REQ-016 — the six Goal/Focus journeys > journey 5: cancel, retry and regenerate keep the resolved Goal and Focus, one call per generation",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's; `openFocus` on Round 7's Change focus.",
+      "result": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "test": "REQ-016 — the six Goal/Focus journeys > journey 6: a Recovery session generates and regenerates as active_recovery without Power, and a fresh visit is the standing Goal",
+      "ledger": "groundwork ledger build-edit-pending (F10) → TASK-119 (brief; owner decisions of 2026-11-18, decision 3)",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's; `openFocus`/`focusControl` on Round 7's Change focus.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-119 — the Recovery chip stays in view (owner decision 4, 2026-11-18) > TASK-AC-8C58C464BAD0 with a recommended Focus, Recovery on and Change focus collapsed, the Recovery chip and its note stay visible",
+      "ledger": "new under owner decision 4 of 2026-11-18 (“P1. Recommendations fine.”, Q-005)",
+      "disposition": "added",
+      "note": "TASK-AC-8C58C464BAD0: a recommended Focus (Lower body), Recovery on, Change focus collapsed — the pressed Recovery chip and its note (RECOVERY_NOTE + POWER_REFUSAL) stay visible, the four focuses close, the request is active_recovery on the recommended focus. Red on the base's Generate.tsx (the chip was hidden with the choices), green after (`recoveryKept`). The second case: a Recovery opened from its address stays in view once collapsed; turning it off from there removes the chip and its note together and sends the standing Goal.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "test": "TASK-119 — the Recovery chip stays in view (owner decision 4, 2026-11-18) > TASK-AC-8C58C464BAD0 a Recovery restored from its address stays in view once Change focus is collapsed, and turning it off there leaves the plain summary",
+      "ledger": "new under owner decision 4 of 2026-11-18 (“P1. Recommendations fine.”, Q-005)",
+      "disposition": "added",
+      "note": "TASK-AC-8C58C464BAD0: a recommended Focus (Lower body), Recovery on, Change focus collapsed — the pressed Recovery chip and its note (RECOVERY_NOTE + POWER_REFUSAL) stay visible, the four focuses close, the request is active_recovery on the recommended focus. Red on the base's Generate.tsx (the chip was hidden with the choices), green after (`recoveryKept`). The second case: a Recovery opened from its address stays in view once collapsed; turning it off from there removes the chip and its note together and sends the standing Goal.",
+      "result": "passed"
+    },
+    {
+      "file": "src/app/Home.test.tsx",
+      "test": "Home’s one next-workout entry (REQ-007, U20) > recovery: says the last one was Recovery, and the next opens as an ordinary day",
+      "ledger": "round-07 scan finding S4, decision R7-5 (TASK-111 owns the file; TASK-119:check-02 name filter)",
+      "disposition": "rewritten",
+      "note": "TASK-111 kept Round 7's body and deferred the build's Focus-disclosure reads here. Restored on that case, rewritten to Round 7's naming where only the name differs: the Focus control is `getByRole('button', { name: 'Change focus' })` (build: `{ name: /^Focus:/ }`), it opens closed (`aria-expanded=false`, verbatim) and Recovery session is among the choices it opens, unpressed (verbatim). The Home part is unchanged. Run only through TASK-119:check-02's name filter; TASK-111 check-01 (the whole file) also passes on it.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "test": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 phone-320: Review reads the Warm-up, the work and the Cooldown, then Regenerate last; it asks first, Keep it keeps the workout, and confirming runs the existing regeneration",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "`readPlacement`/`expectRegenerateLast` read Round 7's sections (`[data-review-section], [data-preparation-guide]`, a guide by its title, other sections as work) against the composed sections mapped the same way (build: `data-review-section` = section_type; 'cooldown' → 'Cooldown'); the Cooldown guide `[data-preparation-guide=\"Cooldown\"]`. Every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "test": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 phone-390: Review reads the Warm-up, the work and the Cooldown, then Regenerate last; it asks first, Keep it keeps the workout, and confirming runs the existing regeneration",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "As phone-320.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "test": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 keyboard, reduced motion and reopen phone-390: Regenerate is the next stop after the Cooldown, Escape keeps the workout, and a reload keeps the same order",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's; its placement helper reads Round 7's sections as above.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "test": "TASK-023 Review Regenerate follows the entire workout > JOURNEY-023 recovery phone-390: a failed Start keeps the workout with Regenerate still last and enabled, and with nothing to review there is no Regenerate",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Body identical to the build's; its placement helper reads Round 7's sections as above.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-023.spec.ts",
+      "test": "TASK-023 Review Regenerate follows the entire workout > gallery preparation phone-320: the accepted state draws Review’s own Regenerate after the Cooldown, which only asks, with nothing read or written",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Reads Round 7's preparation state: Warm-up guide, the live work, the Cooldown guide in order; the Cooldown last (its words the state's last, below the work) with the state's own sample names exactly (build: PREPARATION_NAMES of the build's composed state); nothing read or written; no overflow. The state draws no Regenerate: the build's Regenerate reads are retired (rules.retiredAssertions) and proved on /review above.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "test": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 phone-320: a returning athlete reads Goal and Focus, opens the Focus choices, turns on Recovery inside them and generates",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Round 7 locators: Goal term and value on the summary item (build `[data-intent-fact=\"goal\"]` 'Goal: Balanced'), the Focus control named Change focus with the text `Lower body` (build: name `Focus: Lower body`); `readScreen` reads the Goal value's size in Round 7's summary and counts any Change focus button that is not the Focus value (build: buttons whose text said Change focus); `readChoices` reads what the control opens (Round 7's aria-controls names the four-focus group). Added: decision 4 — the choices closed, the pressed Recovery chip and its note stay in view (`generate-recovery-closed-<width>` capture). Every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "test": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 phone-390: a returning athlete reads Goal and Focus, opens the Focus choices, turns on Recovery inside them and generates",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "As phone-320.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "test": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 first workout phone-390: a normal session — the four Anchors are required, Recovery is offered unselected, and it generates the chosen Focus",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Recovery found by its words (build `[data-generate-recovery] button`); every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "test": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 keyboard, reduced motion and reopen phone-390: the Focus control opens and closes from the keyboard, an override survives a reload, and Back goes Home",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Change focus name plus the exact value text for the build's `Focus: <value>` names; the scope marker on Round 7's Focus summary item. Keyboard order, reload and Back verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "test": "TASK-024 Generate hierarchy, focus interaction and exact copy > JOURNEY-024 recovery phone-320: a failed generation keeps the draft — the override, Recovery inside the choices and a note — with the accepted screen intact",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "As the keyboard case; every other read verbatim.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-024.spec.ts",
+      "test": "TASK-024 Generate hierarchy, focus interaction and exact copy > gallery screens phone-320: the accepted state draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, with nothing read or written",
+      "ledger": "groundwork ledger: e2e spec added by the build (F10) → TASK-119",
+      "disposition": "rewritten",
+      "note": "Reads Round 7's screens state: its Generate card's label title, framed icon-only 'Back to Home', 'Build strength' and the Focus value 'Upper body', the MINUTES unit whole, no helper, Generate workout enabled, its Focus dialog's four choices (Upper, Lower, Full body, Recovery) with Upper body checked, and decision 4 (a chosen Recovery stays in view); nothing read or written. Retired reads: rules.retiredAssertions.",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "test": "TASK-AC-807B9EE9EECD screens phone-320: /generate’s Back, title, Goal and Focus, the choices it opens, Recovery kept in view closed, the minutes field and Generate workout match the accepted screens state",
+      "ledger": "not in the groundwork ledger (this task's look check)",
+      "disposition": "added",
+      "note": "TASK-AC-807B9EE9EECD look check; receipts evidence/refinement/task-119/parity/, captures in the evidence store (clear-gallery-adoption-v2-20261120/task-119/captures/); the accepted state is compared with the base's (gallery-base-*.json).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "test": "TASK-AC-807B9EE9EECD screens phone-390: /generate’s Back, title, Goal and Focus, the choices it opens, Recovery kept in view closed, the minutes field and Generate workout match the accepted screens state",
+      "ledger": "not in the groundwork ledger (this task's look check)",
+      "disposition": "added",
+      "note": "TASK-AC-807B9EE9EECD look check; receipts evidence/refinement/task-119/parity/, captures in the evidence store (clear-gallery-adoption-v2-20261120/task-119/captures/); the accepted state is compared with the base's (gallery-base-*.json).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "test": "TASK-AC-807B9EE9EECD preparation phone-320: /review draws the Warm-up and Cooldown guides as the accepted preparation state does, the work between them, and Regenerate after the Cooldown",
+      "ledger": "not in the groundwork ledger (this task's look check)",
+      "disposition": "added",
+      "note": "TASK-AC-807B9EE9EECD look check; receipts evidence/refinement/task-119/parity/, captures in the evidence store (clear-gallery-adoption-v2-20261120/task-119/captures/); the accepted state is compared with the base's (gallery-base-*.json).",
+      "result": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "test": "TASK-AC-807B9EE9EECD preparation phone-390: /review draws the Warm-up and Cooldown guides as the accepted preparation state does, the work between them, and Regenerate after the Cooldown",
+      "ledger": "not in the groundwork ledger (this task's look check)",
+      "disposition": "added",
+      "note": "TASK-AC-807B9EE9EECD look check; receipts evidence/refinement/task-119/parity/, captures in the evidence store (clear-gallery-adoption-v2-20261120/task-119/captures/); the accepted state is compared with the base's (gallery-base-*.json).",
+      "result": "passed"
+    }
+  ],
+  "rules": {
+    "skipOnlyTodoAdded": false,
+    "matchersWeakened": false,
+    "matchersWeakenedNote": "No matcher is loosened. Every build read not verbatim at HEAD (97 body-level; the 24 base reads are the e2e reads, base = build there) is (a) the same read on Round 7's locator or naming — the Focus value named Change focus with its exact text for `Focus: <value>`, `.clr-v4-program-summary`/its items for `.clr-intent-summary`/`[data-intent-fact]`/`[data-generate-intent]`, what the control opens for `[data-generate-focus-choices]`, `.clr-timed-meta` under the header for `[data-structure-meta]`, Round 7's block cards for `[data-workout-card=\"review\"]`, guides by title for `data-review-section`/`\"cooldown\"`, `.clr-movement-identity` and its name element, the prescription's second reading for `[data-movement-load]`; (b) a Round 7 look or wording rewrite under the owner's 2026-11-23 rule (no ': ' or ' — ' joins in the Goal/Focus summary, '… — no rest between movements', the recipe file and chevron cue, a DIV prescription row; rules.forTask115); (c) an owner decision Round 7 implements (2026-11-13 decision 2: a heading per block card; decision 6: format-only badges, the size under the header); or (d) a read of a gallery state Round 7 does not draw, retired and proved on the real route (rules.retiredAssertions). Where a build string (substring) became Round 7 text, it is anchored at both ends or paired with an exact `textContent` read. No getBy became queryBy, no count was dropped (counts were added), no `not` read was removed, no toHaveTextContent became toBeInTheDocument, and every same-title base body that changed keeps all of its base reads (base reads not verbatim in the unit files: 0).",
+    "testUpdateRule": "Eric, chat, 2026-11-23: \"Yes, approve\" — tests may be updated to Round 7's look and wording, each change listed (rules.forTask115); behaviour or saved data Round 7 lacks would stop the build (none found).",
+    "constantsRePointed": "GENERATE_TITLE, GENERATE_ACTION_LABEL, HOME_BACK_LABEL and FOCUS_TERM are not exported by Round 7's Generate.tsx; they are test-local constants equal to Round 7's literals ('Generate', 'Generate workout', the IconButton label 'Home', the summary term 'Focus'), and the build's tautological `expect(CONST).toBe(…)` reads became reads of the product (the five Screen titles in Generate.tsx, the CTA's accessible name).",
+    "retiredAssertions": [
+      {
+        "file": "src/app/Generate.test.tsx",
+        "test": "TASK-024 … > AC-C51-01 the accepted gallery state ?state=screens …",
+        "assertion": "the Focus control reports aria-expanded=true once pressed",
+        "reason": "Round 7's screens state opens its choices in a dialog from a quiet button with no expanded state; the route's Focus value is the disclosure with its expanded state (AC-R024-02 case and task-024.spec.ts)."
+      },
+      {
+        "file": "src/app/Generate.test.tsx",
+        "test": "(same)",
+        "assertion": "the choices are exactly the four Anchors (Upper, Lower, Full body, Power) and Recovery is a chip apart from them, pressed when chosen, with Full body still pressed",
+        "reason": "Round 7's screens state lists Recovery as a fourth Focus choice and no Power (its own illustration); R10.1 and #286 are proved on the route (AC-R024-01, AC-R024-08; task-024.spec.ts). The state's own four choices are read instead."
+      },
+      {
+        "file": "src/app/Generate.test.tsx",
+        "test": "(same)",
+        "assertion": "the Notes field keeps its placeholder",
+        "reason": "Round 7's screens state has no Notes field; proved on the route (AC-R024-07 cases)."
+      },
+      {
+        "file": "src/app/Generate.test.tsx",
+        "test": "(same)",
+        "assertion": "the First workout switch shows the four required Anchors, Recovery unselected and Generate workout disabled",
+        "reason": "Round 7's screens state has no first-workout switch; proved on the route (AC-R024-06, AC-R024-08; task-024.spec.ts first workout case)."
+      },
+      {
+        "file": "e2e/refinement/task-024.spec.ts",
+        "test": "gallery screens phone-320: …",
+        "assertion": "the same reads in the browser (aria-expanded true; the four Anchors; Recovery pressed with Full body pressed; the First workout switch's Anchors, Recovery unselected and disabled Generate workout)",
+        "reason": "As above: Round 7's screens state does not draw them; the JOURNEY-024 cases prove them on /generate."
+      },
+      {
+        "file": "src/app/review-screen.test.tsx",
+        "test": "AC-021 … > AC-C50-01 the accepted gallery state ?state=preparation …",
+        "assertion": "Review's own Regenerate in the state, not primary and not a text action, after the Cooldown, the last item and button; it asks, and the gallery discards nothing",
+        "reason": "Round 7's preparation state draws the Warm-up guide, the live For Time card and the Cooldown guide, and no Review screen or Regenerate. C50 is proved on /review (the AC-021 cases, task-023.spec.ts, parity `preparation`)."
+      },
+      {
+        "file": "e2e/refinement/task-023.spec.ts",
+        "test": "gallery preparation phone-320: …",
+        "assertion": "the same Regenerate reads in the browser (visible, the last item and button, below the Cooldown, asks, nothing discarded)",
+        "reason": "As above."
+      },
+      {
+        "file": "src/app/Review.test.tsx",
+        "test": "all generated content renders > renders every structure type the database admits",
+        "assertion": "the briefing contains 'STANDARD'",
+        "reason": "Decision 6 of 2026-11-13: badges are format-only; Round 7 badges the scheme-bearing standard block LADDER and draws no STANDARD word (the base asserts none)."
+      }
+    ],
+    "forTask115": [
+      "TASK-119 / decision 4 (2026-11-18): with a recommended Focus and Recovery on, collapsing Change focus now keeps the pressed Recovery session chip in view, below its note. Turning Recovery off from that closed state removes the chip and its note together (focus falls back to the page, as the existing 'Use the recommended focus' action does). Check on a phone at 320/390 (captures screens-*-route-recovery-closed).",
+      "TASK-119: Round 7 names the Focus value 'Change focus' (its text is the value); the build named it 'Focus: <value>'. Tests read the new name plus the exact value text (round-07 S4). A screen reader hears 'Change focus, collapsed' with the 'Focus' term before it; confirm at UAT.",
+      "TASK-119 retirements for Eric to confirm (rules.retiredAssertions): the screens state's expanded-state, four-Anchor/Recovery-apart, Notes and first-workout reads; the preparation state's Regenerate reads; the build's 'STANDARD' word on Review. Each is proved on the real route or retired by decision 6.",
+      "TASK-119: Round 7's screens state lists Recovery as a fourth Focus choice (no Power) and names its Back 'Back to Home'; /generate keeps Recovery as its own session toggle apart from the four focuses (R10.1) and names Back 'Home' (R10.5). Gallery-only illustration; confirm it need not change.",
+      "TASK-119: Round 7's preparation state stops at the Cooldown; Review's Regenerate after it is route-only (C50). Parity `preparation` records a 16 px gap from the Cooldown card to Regenerate at 320 and 390.",
+      "TASK-119: Round 7 heads every Review block card with its section's name (decision 2 of 2026-11-13, already TASK-112's UAT item); the build's 'exactly one heading per section' reads are taken per card.",
+      "TASK-119 (found, not fixed here): carried e2e specs outside this task still read the build's `/^Focus:/` Focus name — e2e/ui-polish-b05-generate.spec.ts (lines 195, 388), e2e/ui-polish-home.spec.ts (298, 356), e2e/design-0143/entry-forms.spec.ts (1059, 1063), e2e/design-0143/task-040-entry-settings.spec.ts (569, 573) — and e2e/library-error-role.spec.ts names the build's owners. They are the pre-UAT cross-cutting suite (TASK-115's whole-e2e run)."
+    ],
+    "crossFile": "TASK-109's seven cross-file bodies (Review.test.tsx 6, review-screen.test.tsx 1) are kept: five unchanged; 'is the last control in the scrolling content, after every section' (TASK-023's primary case, same title as the build's) keeps every TASK-109 read and gains the build's; the three shape/tempo bodies equal the build's reads (TASK-109's comment only). Round 7's own titles the build renamed stay beside the build's restored ones (round-07 S5 precedent): Generate 'puts Goal and Focus first, said alike…', 'keeps Recovery a lone action…', Round 7's U28 block; Review 'keeps ordered sections…', 'uses static shared headers…', 'states the round count in the badge…', 'keeps Review sections visible…', 'offers a swap on every movement…'; review-screen 'states movement, then prescription, then equipment…', '%s: name row with Swap at its end…', '…, and says bodyweight once'.",
+    "selfCheck": {
+      "when": "2026-11-23, A3 TASK-119 attempt 1, before hand-back",
+      "method": "Mechanical: every test file and e2e spec touched since 41dc9aa7 (8: four owned files, Home.test.tsx, task-023/024 specs, the new parity spec) parsed with the TypeScript compiler API; full titles (describe > … > it/test, template titles as written) at the base, the build (181e580) and this tree; a body counts as changed when its text differs from the base; the outermost expect(…) chains of each changed body were printed canonically and compared, as sets, with the build's and the base's body of the same title; the same comparison over every expect(…) in the file (helpers included). The 65 groundwork-waiting tests were also compared with the build whether or not their body changed. Each read not present verbatim was read and classified (matchersWeakenedNote, entries, retiredAssertions).",
+      "counts": {
+        "files": 8,
+        "baseTitlesGone": 0,
+        "buildTitlesGone": 0,
+        "runtimeCaseNamesRenamed": 1,
+        "bodiesChanged": 64,
+        "buildReadsNotVerbatim": 97,
+        "baseReadsNotVerbatim": 24,
+        "fileLevelBuildReadsAbsent": 92,
+        "fileLevelBaseReadsAbsent": 20,
+        "waitingTests": 65,
+        "waitingIdenticalToBuild": 22,
+        "waitingRewritten": 32,
+        "waitingBaseBodyHoldsBuildReads": 11
+      },
+      "runtimeCaseNamesRenamed": [
+        "src/app/Generate.test.tsx: 'REQ-007 — a Focus for this workout only > restores the recommendation on dismissing the choices' (the base's it.each row) is 'restores the recommendation on dismissing the choices with the Focus control' (the build's row label; same press)."
+      ],
+      "perFile": [
+        {
+          "file": "src/app/Generate.test.tsx",
+          "titles": {
+            "base": 89,
+            "build": 98,
+            "head": 108
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 30,
+          "buildReadsNotVerbatim": 43,
+          "baseReadsNotVerbatim": 0
+        },
+        {
+          "file": "src/test/goal-focus-journeys.test.tsx",
+          "titles": {
+            "base": 7,
+            "build": 7,
+            "head": 7
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 3,
+          "buildReadsNotVerbatim": 0,
+          "baseReadsNotVerbatim": 0
+        },
+        {
+          "file": "src/app/Review.test.tsx",
+          "titles": {
+            "base": 68,
+            "build": 68,
+            "head": 73
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 10,
+          "buildReadsNotVerbatim": 7,
+          "baseReadsNotVerbatim": 0
+        },
+        {
+          "file": "src/app/review-screen.test.tsx",
+          "titles": {
+            "base": 27,
+            "build": 31,
+            "head": 34
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 13,
+          "buildReadsNotVerbatim": 23,
+          "baseReadsNotVerbatim": 0
+        },
+        {
+          "file": "src/app/Home.test.tsx",
+          "titles": {
+            "base": 40,
+            "build": 36,
+            "head": 40
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 1,
+          "buildReadsNotVerbatim": 0,
+          "baseReadsNotVerbatim": 0
+        },
+        {
+          "file": "e2e/refinement/task-023.spec.ts",
+          "titles": {
+            "base": 4,
+            "build": 4,
+            "head": 4
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 1,
+          "buildReadsNotVerbatim": 5,
+          "baseReadsNotVerbatim": 5
+        },
+        {
+          "file": "e2e/refinement/task-024.spec.ts",
+          "titles": {
+            "base": 3,
+            "build": 3,
+            "head": 3
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 1,
+          "buildReadsNotVerbatim": 19,
+          "baseReadsNotVerbatim": 19
+        },
+        {
+          "file": "e2e/refinement/task-119-parity.spec.ts",
+          "titles": {
+            "base": 0,
+            "build": 0,
+            "head": 5
+          },
+          "baseTitlesGone": 0,
+          "buildTitlesGone": 0,
+          "bodiesChanged": 5,
+          "buildReadsNotVerbatim": 0,
+          "baseReadsNotVerbatim": 0
+        }
+      ],
+      "restoredAfterComparison": [
+        "Generate: the Focus control's exact text ('Lower body' ×2, 'Full body') beside the anchored Focus lines",
+        "Review: one heading per block and guide card (count) beside the deduplicated five; 'Warm-up' once and 'Primary lift' once per block card as level-2 headings",
+        "review-screen: the headings' runs count the composed sections; the preparation state's Cooldown names read exactly (the state's sample)",
+        "task-024.spec: the Goal term beside its value",
+        "task-023.spec: the preparation state's Cooldown names exactly"
+      ]
+    },
+    "ownerDecisions": [
+      "Owner decisions of 2026-11-18, decision 4 (“P1. Recommendations fine.”, Q-005): the Recovery chip stays visible — implemented in src/app/Generate.tsx and proved by the two TASK-119 cases, task-024.spec.ts and parity `screens`.",
+      "Decision 3 and its addendum, R7-5: Home.test.tsx stays TASK-111's; TASK-119 runs it only by name filter (check-02).",
+      "Decisions 4 and 6 of 2026-11-13: look-only reads rewritten (see entries)."
+    ],
+    "planConflicts": "None. No inherited read needs behaviour or saved data Round 7 lacks, and none needs a later task's work.",
+    "productFilesChanged": [
+      "src/app/Generate.tsx (accepted gallery bec4454 owns it): owner decision 4 — `recoveryKept`; with the choices closed the Round 7 Focus area keeps the Recovery chip while Recovery is on."
+    ],
+    "galleryChanges": "No src/dev/** file changes. The screens and preparation states read identically to the base (41dc9aa7) at 320 and 390 — words, DOM hash and every element box (parity receipts, galleryAgainstBase). The screens state does not draw src/app/Generate.tsx (it composes its own Generate card, in which a chosen Recovery already stays in view as the Focus value), so it is not updated for decision 4.",
+    "forTask119": "n/a"
+  }
+}

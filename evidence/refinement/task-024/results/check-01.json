@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-024/required-cases.json",
-    "sha256": "2283c0b3455dd101aca40403df1755decc9c146ca8fcc169e479b863655a5b72"
+    "sha256": "8cb971bf9c6146aad07c218178c4279652593fb457d69e07ec63ee11201d0804"
   },
   "targets": [
     {
       "path": "src/app/Generate.test.tsx",
-      "sha256": "ca4102ee6b6b1ebc8bca49c76cf0a323582db731873df2e2bf7d6fef3fabbf63"
+      "sha256": "4ba745834d58697f98e341673b4b74076a7f7b6d5dfd67b6dbe9e8f1e0b13569"
     }
   ],
   "requiredCases": [
@@ -106,12 +106,12 @@
     }
   ],
   "totals": {
-    "total": 119,
-    "passed": 119,
+    "total": 129,
+    "passed": 129,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 119
+    "executed": 129
   },
   "problems": []
 }

@@ -1,0 +1,579 @@
+{
+  "schema": "clear-task-119-gallery-base/v1",
+  "base": "41dc9aa7b00c099a2dc06abe89305a5c24ff1cd6",
+  "state": "screens",
+  "width": 390,
+  "lines": [
+    "GENERATE, SETUP AND HISTORY",
+    "GENERATE",
+    "BUILD STRENGTH",
+    "UPPER BODY",
+    "TIME",
+    "MINUTES",
+    "GENERATE WORKOUT",
+    "SETUP",
+    "Step 1 of 5 · Equipment",
+    "EQUIPMENT",
+    "DUMBBELLS",
+    "KETTLEBELL",
+    "BENCH",
+    "HISTORY",
+    "FILTER",
+    "All workouts",
+    "Completed",
+    "Incomplete",
+    "UPPER-BODY STRENGTH",
+    "November 3 · Completed",
+    "CONDITIONING AND LONGER SESSION NAME",
+    "November 1 · Incomplete"
+  ],
+  "dom": "c71c2f608f591a1ae88b0fd8692e41719688024e378ddb9824a388a2d5960aaf",
+  "boxes": [
+    {
+      "key": "(part)#0",
+      "x": 0,
+      "y": 0,
+      "width": 358,
+      "height": 842.9
+    },
+    {
+      "key": "h|GENERATE, SETUP AND HISTORY#0",
+      "x": 0,
+      "y": 0,
+      "width": 358,
+      "height": 28
+    },
+    {
+      "key": "div.clr-accepted-example|GENERATE BUILD STRENGTH UPPER BODY TIME MINUTES GENERATE WORKOUT SETUP Step 1 of#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 814.9
+    },
+    {
+      "key": "div.clr-echo|GENERATE BUILD STRENGTH UPPER BODY TIME MINUTES GENERATE WORKOUT#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 305
+    },
+    {
+      "key": "svg.clr-echo__rear|#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 305
+    },
+    {
+      "key": "path.clr-echo__source|#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 305
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|GENERATE BUILD STRENGTH UPPER BODY TIME MINUTES GENERATE WORKOUT#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 305
+    },
+    {
+      "key": "div.clr-card|GENERATE BUILD STRENGTH UPPER BODY TIME MINUTES GENERATE WORKOUT#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 305
+    },
+    {
+      "key": "span.clr-card__bar|#0",
+      "x": 0,
+      "y": 28,
+      "width": 12,
+      "height": 305
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--lg|GENERATE BUILD STRENGTH UPPER BODY TIME MINUTES GENERATE WORKOUT#0",
+      "x": 10,
+      "y": 28,
+      "width": 348,
+      "height": 305
+    },
+    {
+      "key": "div.clr-accepted-example|GENERATE BUILD STRENGTH UPPER BODY TIME MINUTES GENERATE WORKOUT#0",
+      "x": 22,
+      "y": 40,
+      "width": 324,
+      "height": 264
+    },
+    {
+      "key": "div.clr-accepted-scene-head|GENERATE#0",
+      "x": 22,
+      "y": 40,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "span.clr-bleed|#0",
+      "x": 22,
+      "y": 40,
+      "width": 40,
+      "height": 40
+    },
+    {
+      "key": "button.clr-btn.clr-chamfer.clr-chamfer--md.clr-hit|#0",
+      "x": 22,
+      "y": 40,
+      "width": 40,
+      "height": 40
+    },
+    {
+      "key": "svg|#0",
+      "x": 30,
+      "y": 48,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "path|#0",
+      "x": 33,
+      "y": 52,
+      "width": 18,
+      "height": 16
+    },
+    {
+      "key": "p|GENERATE#0",
+      "x": 74,
+      "y": 52,
+      "width": 77.1,
+      "height": 16
+    },
+    {
+      "key": "p|BUILD STRENGTH#0",
+      "x": 22,
+      "y": 96,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "span.clr-bleed|UPPER BODY#0",
+      "x": 22,
+      "y": 128,
+      "width": 324,
+      "height": 42
+    },
+    {
+      "key": "button.clr-btn.clr-btn--quiet.clr-chamfer.clr-chamfer--md|UPPER BODY#0",
+      "x": 22,
+      "y": 128,
+      "width": 324,
+      "height": 42
+    },
+    {
+      "key": "div|TIME MINUTES#0",
+      "x": 22,
+      "y": 186,
+      "width": 324,
+      "height": 60
+    },
+    {
+      "key": "label|TIME#0",
+      "x": 22,
+      "y": 186,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "span.clr-bleed.clr-bleed--block|MINUTES#0",
+      "x": 22,
+      "y": 206,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "div.clr-chamfer.clr-chamfer--sm.clr-field|MINUTES#0",
+      "x": 22,
+      "y": 206,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "input.clr-input|#0",
+      "x": 22,
+      "y": 206,
+      "width": 232.4,
+      "height": 40
+    },
+    {
+      "key": "span.clr-field__unit|MINUTES#0",
+      "x": 254.4,
+      "y": 206,
+      "width": 91.6,
+      "height": 40
+    },
+    {
+      "key": "span.clr-bleed.clr-glow|GENERATE WORKOUT#0",
+      "x": 22,
+      "y": 262,
+      "width": 324,
+      "height": 42
+    },
+    {
+      "key": "button.clr-btn.clr-btn--primary.clr-chamfer.clr-chamfer--md|GENERATE WORKOUT#0",
+      "x": 22,
+      "y": 262,
+      "width": 324,
+      "height": 42
+    },
+    {
+      "key": "div.clr-echo|SETUP Step 1 of 5 · Equipment EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 0,
+      "y": 349,
+      "width": 358,
+      "height": 215
+    },
+    {
+      "key": "svg.clr-echo__rear|#1",
+      "x": 0,
+      "y": 349,
+      "width": 358,
+      "height": 215
+    },
+    {
+      "key": "path.clr-echo__source|#1",
+      "x": 0,
+      "y": 349,
+      "width": 358,
+      "height": 215
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|SETUP Step 1 of 5 · Equipment EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 0,
+      "y": 349,
+      "width": 358,
+      "height": 215
+    },
+    {
+      "key": "div.clr-card|SETUP Step 1 of 5 · Equipment EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 0,
+      "y": 349,
+      "width": 358,
+      "height": 215
+    },
+    {
+      "key": "span.clr-card__bar|#1",
+      "x": 0,
+      "y": 349,
+      "width": 12,
+      "height": 215
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--lg|SETUP Step 1 of 5 · Equipment EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 10,
+      "y": 349,
+      "width": 348,
+      "height": 215
+    },
+    {
+      "key": "div.clr-accepted-setup|SETUP Step 1 of 5 · Equipment EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 22,
+      "y": 361,
+      "width": 324,
+      "height": 174
+    },
+    {
+      "key": "header|SETUP Step 1 of 5 · Equipment#0",
+      "x": 22,
+      "y": 361,
+      "width": 324,
+      "height": 46
+    },
+    {
+      "key": "p|SETUP#0",
+      "x": 22,
+      "y": 361,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "p|Step 1 of 5 · Equipment#0",
+      "x": 22,
+      "y": 377,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "div|EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 22,
+      "y": 407,
+      "width": 324,
+      "height": 128
+    },
+    {
+      "key": "fieldset|EQUIPMENT DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 22,
+      "y": 419,
+      "width": 324,
+      "height": 104
+    },
+    {
+      "key": "legend|EQUIPMENT#0",
+      "x": 22,
+      "y": 419,
+      "width": 87.6,
+      "height": 16
+    },
+    {
+      "key": "div|DUMBBELLS KETTLEBELL BENCH#0",
+      "x": 22,
+      "y": 435,
+      "width": 324,
+      "height": 88
+    },
+    {
+      "key": "span.clr-bleed|DUMBBELLS#0",
+      "x": 22,
+      "y": 435,
+      "width": 138.5,
+      "height": 40
+    },
+    {
+      "key": "button.clr-chamfer.clr-chamfer--selected.clr-chamfer--sm.clr-chip|DUMBBELLS#0",
+      "x": 22,
+      "y": 435,
+      "width": 138.5,
+      "height": 40
+    },
+    {
+      "key": "svg|#1",
+      "x": 38,
+      "y": 450,
+      "width": 10,
+      "height": 10
+    },
+    {
+      "key": "path|#1",
+      "x": 39,
+      "y": 451.2,
+      "width": 8,
+      "height": 7.3
+    },
+    {
+      "key": "span.clr-bleed|KETTLEBELL#0",
+      "x": 168.5,
+      "y": 435,
+      "width": 123.1,
+      "height": 40
+    },
+    {
+      "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|KETTLEBELL#0",
+      "x": 168.5,
+      "y": 435,
+      "width": 123.1,
+      "height": 40
+    },
+    {
+      "key": "svg|#2",
+      "x": 184.5,
+      "y": 450,
+      "width": 0,
+      "height": 10
+    },
+    {
+      "key": "path|#2",
+      "x": 186.9,
+      "y": 453,
+      "width": 19.2,
+      "height": 17.4
+    },
+    {
+      "key": "span.clr-bleed|BENCH#0",
+      "x": 22,
+      "y": 483,
+      "width": 82.1,
+      "height": 40
+    },
+    {
+      "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|BENCH#0",
+      "x": 22,
+      "y": 483,
+      "width": 82.1,
+      "height": 40
+    },
+    {
+      "key": "svg|#3",
+      "x": 38,
+      "y": 498,
+      "width": 0,
+      "height": 10
+    },
+    {
+      "key": "path|#3",
+      "x": 40.4,
+      "y": 501,
+      "width": 19.2,
+      "height": 17.4
+    },
+    {
+      "key": "div.clr-echo|HISTORY FILTER All workouts Completed Incomplete UPPER-BODY STRENGTH November 3 #0",
+      "x": 0,
+      "y": 579.9,
+      "width": 358,
+      "height": 263
+    },
+    {
+      "key": "svg.clr-echo__rear|#2",
+      "x": 0,
+      "y": 579.9,
+      "width": 358,
+      "height": 263
+    },
+    {
+      "key": "path.clr-echo__source|#2",
+      "x": 0,
+      "y": 579.9,
+      "width": 358,
+      "height": 263
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|HISTORY FILTER All workouts Completed Incomplete UPPER-BODY STRENGTH November 3 #0",
+      "x": 0,
+      "y": 579.9,
+      "width": 358,
+      "height": 263
+    },
+    {
+      "key": "div.clr-card|HISTORY FILTER All workouts Completed Incomplete UPPER-BODY STRENGTH November 3 #0",
+      "x": 0,
+      "y": 579.9,
+      "width": 358,
+      "height": 263
+    },
+    {
+      "key": "span.clr-card__bar|#2",
+      "x": 0,
+      "y": 579.9,
+      "width": 12,
+      "height": 263
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--lg|HISTORY FILTER All workouts Completed Incomplete UPPER-BODY STRENGTH November 3 #0",
+      "x": 10,
+      "y": 579.9,
+      "width": 348,
+      "height": 263
+    },
+    {
+      "key": "div|HISTORY#0",
+      "x": 22,
+      "y": 591.9,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "h|HISTORY#0",
+      "x": 22,
+      "y": 591.9,
+      "width": 63.5,
+      "height": 16
+    },
+    {
+      "key": "div|FILTER All workouts Completed Incomplete#0",
+      "x": 22,
+      "y": 615.9,
+      "width": 324,
+      "height": 60
+    },
+    {
+      "key": "label|FILTER#0",
+      "x": 22,
+      "y": 615.9,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "span.clr-bleed.clr-bleed--block|All workouts Completed Incomplete#0",
+      "x": 22,
+      "y": 635.9,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "div.clr-chamfer.clr-chamfer--sm.clr-field|All workouts Completed Incomplete#0",
+      "x": 22,
+      "y": 635.9,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "select.clr-input|All workouts Completed Incomplete#0",
+      "x": 22,
+      "y": 635.9,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "span|#0",
+      "x": 318,
+      "y": 635.9,
+      "width": 16,
+      "height": 40
+    },
+    {
+      "key": "svg|#4",
+      "x": 318,
+      "y": 647.9,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#4",
+      "x": 320,
+      "y": 652.6,
+      "width": 12,
+      "height": 6.7
+    },
+    {
+      "key": "div.clr-accepted-history-row|UPPER-BODY STRENGTH November 3 · Completed#0",
+      "x": 22,
+      "y": 683.9,
+      "width": 324,
+      "height": 60
+    },
+    {
+      "key": "p|UPPER-BODY STRENGTH#0",
+      "x": 22,
+      "y": 695.9,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "p|November 3 · Completed#0",
+      "x": 22,
+      "y": 711.9,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "div.clr-accepted-history-row|CONDITIONING AND LONGER SESSION NAME November 1 · Incomplete#0",
+      "x": 22,
+      "y": 751.9,
+      "width": 324,
+      "height": 62
+    },
+    {
+      "key": "p|CONDITIONING AND LONGER SESSION NAME#0",
+      "x": 22,
+      "y": 765.9,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "p|November 1 · Incomplete#0",
+      "x": 22,
+      "y": 781.9,
+      "width": 324,
+      "height": 20
+    }
+  ]
+}

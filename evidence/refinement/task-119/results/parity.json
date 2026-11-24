@@ -1,0 +1,61 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-119",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-119-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-119/required-cases.json",
+    "sha256": "d2e8a05d5c779cf0b97a30d4501a050ae6c4ec654732dd49526e3a28331c31b8"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-119-parity.spec.ts",
+      "sha256": "32fb4f48a2d2374ba68bdcfa4cdb01c43be42edd22e01c41d100cd360d989070"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "name": "TASK-AC-807B9EE9EECD screens phone-320: /generate’s Back, title, Goal and Focus, the choices it opens, Recovery kept in view closed, the minutes field and Generate workout match the accepted screens state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "name": "TASK-AC-807B9EE9EECD screens phone-390: /generate’s Back, title, Goal and Focus, the choices it opens, Recovery kept in view closed, the minutes field and Generate workout match the accepted screens state",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "name": "TASK-AC-807B9EE9EECD preparation phone-320: /review draws the Warm-up and Cooldown guides as the accepted preparation state does, the work between them, and Regenerate after the Cooldown",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-119-parity.spec.ts",
+      "name": "TASK-AC-807B9EE9EECD preparation phone-390: /review draws the Warm-up and Cooldown guides as the accepted preparation state does, the work between them, and Regenerate after the Cooldown",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 4
+  },
+  "problems": []
+}
