@@ -1,0 +1,180 @@
+{
+  "schema": "clear-task-114-parity/v1",
+  "task": "TASK-114",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "rest-day",
+  "label": "Rest day / reason change",
+  "width": 320,
+  "height": 568,
+  "route": "/",
+  "drive": "Mark Rest Day — on the browser clock, held between steps and moved alike on both sides",
+  "captures": {
+    "gallery-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/rest-day-phone-320-gallery.png",
+      "sha256": "c493b795c4422a10d53ad845e0e41994f94c4b27594648786e1afaad6a0c6e76"
+    },
+    "route-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/rest-day-phone-320-route.png",
+      "sha256": "b467001c3aa5e774a27453940d9c615e6a6f00f711c32ea9097d4142cfc24aa1"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "LOG REST DAY",
+      "REASON",
+      "Rest day",
+      "Injured",
+      "Unwell",
+      "Away",
+      "Keeps your streak, up to 6 days in a row.",
+      "SAVE REST DAY",
+      "CANCEL"
+    ],
+    "route": [
+      "LOG REST DAY",
+      "REASON",
+      "Rest day",
+      "Injured",
+      "Unwell",
+      "Away",
+      "Keeps your streak, up to 6 days in a row.",
+      "SAVE REST DAY",
+      "CANCEL"
+    ]
+  },
+  "owner": {
+    "gallery": {
+      "frame": {
+        "top": 149.25,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 269.5
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 265.5,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 115.89,
+        "width": 164.11,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log rest day"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [],
+      "groups": [],
+      "ladder": null
+    },
+    "route": {
+      "frame": {
+        "top": 149.25,
+        "left": 12,
+        "right": 12,
+        "width": 296,
+        "height": 269.5
+      },
+      "dialogIsFrame": true,
+      "scroller": {
+        "top": 2,
+        "left": 2,
+        "right": 2,
+        "width": 292,
+        "height": 265.5,
+        "bottom": 2,
+        "padding": "14px 14px 0px",
+        "clip": "polygon(0px 0px, 100% 0px, 100% calc(100% - 23.172px), calc(100% - 23.172px) 100%, 0px 100%)",
+        "scrollbar": "none",
+        "gutter": 0,
+        "overflowY": "auto",
+        "sideways": 0,
+        "scrolls": false
+      },
+      "endGap": "14px",
+      "head": {
+        "top": 16,
+        "left": 16,
+        "right": 16,
+        "width": 264,
+        "height": 40
+      },
+      "title": {
+        "top": 16,
+        "left": 16,
+        "right": 115.89,
+        "width": 164.11,
+        "height": 24,
+        "size": "28px",
+        "lineHeight": "28px",
+        "trim": "trim-start",
+        "text": "Log rest day"
+      },
+      "x": {
+        "top": 16,
+        "left": 240,
+        "right": 16,
+        "width": 40,
+        "height": 40
+      },
+      "outlines": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+      "backdrop": {
+        "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+        "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)",
+        "filter": "blur(4px)"
+      },
+      "legends": [],
+      "groups": [],
+      "ladder": null
+    }
+  },
+  "differences": []
+}

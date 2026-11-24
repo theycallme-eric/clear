@@ -1,0 +1,157 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-114",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/logging-overlay.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-114/required-cases.json",
+    "sha256": "b94c7e0425fa652e88fb31e947c5e5c993e1429ccfe40bc7cf8791c0debbbaa6"
+  },
+  "targets": [
+    {
+      "path": "src/ui/logging-overlay.test.tsx",
+      "sha256": "be8b4465ad69e258133b37c7d64e2de8132323fe1f0cf7064e3a585e7d8b54c1"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame starts on the title’s visible top — the header aligns to its start and the title’s line box is trimmed to its capitals, so a wrapped title grows downwards beside the X",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 AC-R016-01 TASK-AC-F1CC1A37FB0E header: the dialog’s title is the simple form’s one title — the held TimedResultLog drops its own “Log results” heading and is named by the dialog, while inline it keeps its own",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 header: inline in a card the same log keeps its own “Log results” title and stays an unnamed form",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C43-01 AC-R016-01 TASK-AC-F1CC1A37FB0E backdrop: the selected A / Balanced dim, corner vignette and blur sit on the native backdrop only — the foreground stays sharp, nothing darkens further, and there is no rising sheet",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > TASK-AC-C0A657D4BABE JOURNEY-016 header: gallery ladder-long draws the selected header and backdrop on the shared frame — the contract consumers adopt; Escape closes it and focus returns to its opener",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 scroll: one stationary continuous frame holds the only scrolling region, and the long log’s Notes and Save are inside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C57-01 AC-R018-01 scroll: the scrolling region meets the inner lower border — no bottom inset, clipped on the inner chamfer, and no interior line crossing the form",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: opening and reopening never focus the frame or the scroller — the opening focus lands on the X control",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: the diagnosed owners — the browser’s default ring on a focused scroller or dialog, and Foundation’s fallback chamfer ring on the frame — never reach the containers, and the opening focus moves to the X in the same commit as showModal",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: intentional keyboard focus is kept — Tab moves from the X through the controls to Notes and Save, and no control loses its focus indicator",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C59-01 AC-R018-03 scroll: every scrollbar is hidden, overlay scrollbars included, while wheel, touch, keyboard and focus scrolling still work and nothing scrolls sideways",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: the frame’s height is the visible viewport less the gap and safe areas — it follows an on-screen keyboard and is never a half-height cap",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: a short form fits its content with Save in reach, and without a visual viewport the dynamic viewport is the fallback",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > JOURNEY-018 viewport: gallery ladder-long draws the shared frame around the actual TimedResultLog — opened, closed and reopened, scrolling inside, nothing saved",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 TASK-AC-9B1E8E32EE3B group: a timed log keeps each complete movement group together — its name, amount and load at the inner field gap — and sets two complete groups slightly further apart than any other section, inline and in the logging frame",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 group: the superset round’s complete movement-entry groups — name and prescription, Performed, weight/unit/reps and effort — each stay one group, and the second sits the shared movement gap further from the first",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the superset round no longer draws the “Tick each movement you performed. A blank field is saved as not recorded.” paragraph or any replacement prose, and Performed still decides what is logged — unticked logs nothing, ticked with a blank field logs it unmeasured",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the removed sentence is gone from every shipped source — no component, gallery state, register entry or spec draws or expects it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 TASK-AC-0C1431FDDA19 spacing: every choice legend — Work completed, Effort · optional, a superset movement’s Effort and Workout feedback’s feeling — takes the label gap, the same space the log’s labelled count field leaves between its label and control",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 spacing: the ladder log keeps its good Rounds completed heading gap and gives the dynamic count its own breathing room after the last row of tiles, for four and twelve rounds",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/logging-overlay.test.tsx",
+      "name": "TASK-017 movement groups and label/control rhythm > TASK-AC-582934B08D11 JOURNEY-017 group: gallery for_time draws the route’s own For Time logs with the shared contract — the capped race’s two movement groups apart and its legends at the label gap — while no route claims the logging frame yet",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 24
+  },
+  "problems": []
+}

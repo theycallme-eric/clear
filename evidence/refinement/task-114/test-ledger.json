@@ -1,0 +1,791 @@
+{
+ "schema": "clear-task-test-ledger/v1",
+ "task": "TASK-114",
+ "family": "A3 task 14a (shared logging dialog)",
+ "base": "cc65efd569f8966b9bcbc96cef5f2b15b664d959",
+ "build": "181e5808e5264ab3041a186ca16a8d9f845fe072",
+ "source": "Brief TASK-114-a1; TASK-106 ledger rules.deferred (9 TASK-018 and 7 TASK-017 build tests, task-041's 10 cases) and its blockedOnThisCandidate notes.",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "matchersWeakenedNote": "No matcher was replaced by a weaker one on the same read (no toHaveTextContent→toBeInTheDocument, no exact→regex, no queryBy for getBy, no removed `not`). Reads dropped or relaxed are listed in readsDroppedOrRelaxed, each with its reason; the compiler-API comparison is in selfCheck.",
+  "readsDroppedOrRelaxed": [
+   {
+    "file": "e2e/refinement/task-041.spec.ts",
+    "test": "JOURNEY-016 every /workout logging moment",
+    "read": "titleLines > 1 for the long note",
+    "now": "toBe(1) and the long name labels the field",
+    "why": "Owner decision 4, 2026-11-16 (fixed \"Movement note\" title)."
+   },
+   {
+    "file": "e2e/refinement/task-041.spec.ts",
+    "test": "JOURNEY-016 wrapped titles",
+    "read": "titleLines >= 3 at 320",
+    "now": "toBe(1) and the long name labels the field",
+    "why": "Owner decision 4, 2026-11-16."
+   },
+   {
+    "file": "e2e/refinement/task-041.spec.ts",
+    "test": "JOURNEY-016 every /workout logging moment",
+    "read": "the ladder's Log results opened while it runs",
+    "now": "no Log results while it runs; the clock read behind the ladder's movement note",
+    "why": "Owner decision 2026-11-16: the ladder log opens only after the attempt ends."
+   },
+   {
+    "file": "e2e/refinement/task-041.spec.ts",
+    "test": "JOURNEY-018 long logs",
+    "read": "anchor 320: kind long and its touch contained-scroll pass",
+    "now": "kind short, Log set 1 inside the frame",
+    "why": "Round 7's anchor log fits 320 × 568 (content height, a look difference); the long-form passes run on the superset round and the twelve-round ladder."
+   },
+   {
+    "file": "e2e/refinement/task-041.spec.ts",
+    "test": "JOURNEY-017 rhythm",
+    "read": "Review standard peers >= 2 × peer gap",
+    "now": ">= 1 × Round 7's group gap where no separator is drawn",
+    "why": "Round 7's Review standard rows have no separator (TASK-112 C04 retirement, for Eric at UAT); at the base this bound read 2 × 0 (absent token)."
+   },
+   {
+    "file": "e2e/refinement/task-041.spec.ts",
+    "test": "accepted gallery states",
+    "read": "urgency state 'Open log over the warning'",
+    "now": "not read",
+    "why": "Round 7's accepted urgency state has no log (look the gallery does not draw)."
+   },
+   {
+    "file": "src/ui/logging-overlay.test.tsx",
+    "test": "TASK-017 … TASK-AC-0C1431FDDA19 spacing",
+    "read": "inline legends at the label gap",
+    "now": "framed only",
+    "why": "Round 7 scopes the legend gap to the logging dialog; no route draws an inline timed log."
+   },
+   {
+    "file": "src/ui/logging-overlay.test.tsx",
+    "test": "TASK-017 … ladder log keeps its good … gap",
+    "read": "the partial-round line",
+    "now": "not read",
+    "why": "Round 7's ladder completion has no partial line."
+   },
+   {
+    "file": "src/ui/logging-overlay.test.tsx",
+    "test": "TASK-017 … TASK-AC-582934B08D11",
+    "read": "the gallery's finished race (one group, no extra gap)",
+    "now": "the same log answered Complete asks no amounts",
+    "why": "Round 7's for_time state is one flow, not two races."
+   },
+   {
+    "file": "src/ui/logging-overlay.test.tsx",
+    "test": "TASK-017 … TASK-AC-9B1E8E32EE3B",
+    "read": "--logging-movement-field-gap token",
+    "now": "the group's own declared gap (16)",
+    "why": "Round 7 has no such variable."
+   },
+   {
+    "file": "src/ui/logging-overlay.test.tsx",
+    "test": "TASK-018 … JOURNEY-018 viewport: gallery ladder-long",
+    "read": "form data-timed-format=ladder",
+    "now": "the log's Rounds completed group",
+    "why": "Round 7's form carries no data-timed-format."
+   }
+  ],
+  "retired": [],
+  "deferred": [],
+  "forTask115": [
+   "Every logging dialog's title moved 4 px up (trimmed to its capitals) so the X's frame starts on the letters' top (C41, R105).",
+   "Long logs now scroll to the frame's inner lower border and are cut on the inner chamfer mid-scroll; no scrollbar shows (C57, C59; P01, P03). At rest the form keeps Round 7's 16 px inset.",
+   "A timed log's complete movement groups (AMRAP, For Time, ladder; EMOM with two loaded movements) sit 36 px apart (was 24), as a superset round's do (C05).",
+   "The dialog follows an on-screen keyboard (visual viewport); checked with an emulated viewport change only — try it on a real phone (iOS Safari especially).",
+   "Round 7's anchor set log fits a 320 × 568 phone; Round 7's twelve-round ladder log with no rounds marked fits 390 × 844 (both content-height, no scroll).",
+   "Round 7's Review standard rows have no separator; the J017 peer check reads one gap there (TASK-112's C04 item).",
+   "Round 7's gallery coverage register quotes C47's criterion wording, which names the removed helper sentence (the gallery's requirement list, not the form).",
+   "Ladder: no Log results while it runs (owner decision 2026-11-16); the movement note keeps its fixed one-line title (owner decision 4)."
+  ],
+  "galleryChanges": [
+   {
+    "states": "all 16 logging contexts and ladder-long",
+    "widths": [
+     320,
+     390
+    ],
+    "change": "title 4 px higher (top trimmed to capitals); X unchanged",
+    "criterion": "AC-C41-01 / AC-R016-02 (R105)",
+    "measured": "task-041 base run: title visible top 4 px below the X frame's (e.g. 223.5 vs 219.5 at 390); after: equal (task-041 passes; parity title.top = x.top = 16 in every receipt)"
+   },
+   {
+    "states": "all 16 logging contexts and ladder-long",
+    "widths": [
+     320,
+     390
+    ],
+    "change": "scroller seated on the ring's inner edge (was 12 px inside); content cut at the inner border and chamfer while scrolling; frame size and form position at rest unchanged",
+    "criterion": "AC-C57-01 / AC-R018-01 (P01), AC-C44-01",
+    "measured": "parity receipts: scroller bottom 2 px (= border) from the frame's outer bottom on both sides"
+   },
+   {
+    "states": "long states (superset at 320; ladder-long through round 7 and the ladder at 320)",
+    "widths": [
+     320,
+     390
+    ],
+    "change": "no scrollbar",
+    "criterion": "AC-C59-01 / AC-R018-03 (P03)",
+    "measured": "scrollbar-width none, gutter 0"
+   },
+   {
+    "states": "amrap, for_time, ladder (and any timed log with two movement groups)",
+    "widths": [
+     320,
+     390
+    ],
+    "change": "complete movement groups +12 px apart",
+    "criterion": "AC-C05-01 / AC-R017-02",
+    "measured": "unit TASK-017 group case: 24 → 36"
+   },
+   {
+    "states": "all",
+    "widths": [
+     320,
+     390
+    ],
+    "change": "no automatic outline or frame focus ring (not visible in pointer-opened gallery captures)",
+    "criterion": "AC-C58-01 / AC-R018-02 (P02)",
+    "measured": "task-041 outlines none, frame ::after = --brd"
+   }
+  ],
+  "galleryChangesLimit": "Base-versus-tree gallery images were not captured side by side (no base capture run); the differences above are measured from the base task-041 run, the CSS change and the parity receipts.",
+  "selfCheck": {
+   "method": "TypeScript compiler API over every test file and e2e spec touched since the base (git diff cc65efd5 plus new files): (a) every it/test title present at the base and absent or renamed at HEAD; (b) each changed or ported body's expect(...) matcher chain compared with 181e580 and the base, by matcher name with `not.` kept.",
+   "counts": {
+    "files": 3,
+    "baseTitles": 15,
+    "headTitles": 32,
+    "absentOrRenamed": 0,
+    "changedBodies": 22,
+    "bodiesFewerReadsThanBase": 0,
+    "bodiesFewerReadsThanBuild": 4
+   },
+   "absentOrRenamedAtHead": [],
+   "bodiesWithMatchersNotFoundAtHead": [
+    {
+     "file": "e2e/refinement/task-041.spec.ts",
+     "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 every /workout logging moment phone-390 touch: anchor, o",
+     "reads": {
+      "build": 17,
+      "base": 17,
+      "head": 19
+     },
+     "lostVsBase": [
+      "toBeGreaterThan"
+     ],
+     "lostVsBuild": [
+      "toBeGreaterThan"
+     ]
+    },
+    {
+     "file": "e2e/refinement/task-041.spec.ts",
+     "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers > JOURNEY-016 wrapped titles, Workout feedback on /summary and the res",
+     "reads": {
+      "build": 10,
+      "base": 10,
+      "head": 11
+     },
+     "lostVsBase": [
+      "toBeGreaterThanOrEqual"
+     ],
+     "lostVsBuild": [
+      "toBeGreaterThanOrEqual"
+     ]
+    },
+    {
+     "file": "src/ui/logging-overlay.test.tsx",
+     "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame star",
+     "reads": {
+      "build": 14,
+      "base": 11,
+      "head": 12
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "toBe",
+      "toBe"
+     ]
+    },
+    {
+     "file": "src/ui/logging-overlay.test.tsx",
+     "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: intentional keyboard focus is kept — Tab mov",
+     "reads": {
+      "build": 7,
+      "base": null,
+      "head": 7
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "toMatch"
+     ]
+    },
+    {
+     "file": "src/ui/logging-overlay.test.tsx",
+     "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > JOURNEY-018 viewport: gallery ladder-long draws the shared frame around th",
+     "reads": {
+      "build": 10,
+      "base": null,
+      "head": 11
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "toBe",
+      "toBe",
+      "toBe"
+     ]
+    },
+    {
+     "file": "src/ui/logging-overlay.test.tsx",
+     "test": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 TASK-AC-9B1E8E32EE3B group: a timed log keeps each complete movemen",
+     "reads": {
+      "build": 16,
+      "base": null,
+      "head": 15
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "not.toHaveClass",
+      "toBe"
+     ]
+    },
+    {
+     "file": "src/ui/logging-overlay.test.tsx",
+     "test": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 spacing: the ladder log keeps its good Rounds completed heading gap",
+     "reads": {
+      "build": 12,
+      "base": null,
+      "head": 11
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "toBe"
+     ]
+    },
+    {
+     "file": "src/ui/logging-overlay.test.tsx",
+     "test": "TASK-017 movement groups and label/control rhythm > TASK-AC-582934B08D11 JOURNEY-017 group: gallery for_time draws the route’s own For Time ",
+     "reads": {
+      "build": 12,
+      "base": null,
+      "head": 8
+     },
+     "lostVsBase": [],
+     "lostVsBuild": [
+      "toHaveClass",
+      "toBeNull",
+      "toHaveLength",
+      "not.toBeNull",
+      "not.toBeNull"
+     ]
+    }
+   ],
+   "explanation": "Every lost matcher is accounted for in readsDroppedOrRelaxed or the entry's reason: the two titleLines reads (owner decision 4); TASK-016 header's text-transform/overflow-wrap reads (dropped by TASK-106 at the base; Round 7's recipe does not declare them); TASK-018 keyboard case's toMatch, now toBe(true) over the frame's Round 7 selector or a container; TASK-018 gallery ladder-long's open/dataset reads (Round 7 scene and markup); TASK-017's token, partial-line and finished-race reads."
+  }
+ },
+ "summary": {
+  "carried": 7,
+  "rewritten": 27,
+  "added": 34
+ },
+ "entries": [
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-F1CC1A37FB0E header: every title — one line, wrapped, a superset’s Log round 1 and Workout feedback — is followed by the framed icon-only X named “Close log”, with no visible Close word",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C41-01 AC-R016-02 TASK-AC-73CE385048B8 header: the X’s frame starts on the title’s visible top — the header aligns to its start and the title’s line box is trimmed to its capitals, so a wrapped title grows downwards beside the X",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Base body (TASK-106's Round 7 rewrite) with the build's text-box read restored: TASK-114's sweep fix trims Round 7's title line box to its capitals (logging-overlay.css), so `winning('clr-logging-overlay__title','text-box') === 'trim-start cap alphabetic'` is read again and TASK-106's note that Round 7 does not trim is removed. Every other base read unchanged. The build's text-transform and overflow-wrap reads stay out (TASK-106: Round 7's title recipe does not declare them; the title is set by Heading).",
+   "restored": [
+    "text-box: trim-start cap alphabetic"
+   ]
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 AC-R016-01 TASK-AC-F1CC1A37FB0E header: the dialog’s title is the simple form’s one title — the held TimedResultLog drops its own “Log results” heading and is named by the dialog, while inline it keeps its own",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C40-01 header: inline in a card the same log keeps its own “Log results” title and stays an unnamed form",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-C43-01 AC-R016-01 TASK-AC-F1CC1A37FB0E backdrop: the selected A / Balanced dim, corner vignette and blur sit on the native backdrop only — the foreground stays sharp, nothing darkens further, and there is no rising sheet",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 close: the X and Escape each close the log once through its consumer, focus returns to the control that opened it, and a typed draft is still there on reopen",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > AC-R016-03 TASK-AC-73CE385048B8 focus: while the modal is open the workout behind is a native modal’s inert background and its running clock keeps counting, as does the rest inside the log — the overlay neither pauses nor resets either",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-016 LoggingOverlay — selected dialog, header, backdrop and close > TASK-AC-C0A657D4BABE JOURNEY-016 header: gallery ladder-long draws the selected header and backdrop on the shared frame — the contract consumers adopt; Escape closes it and focus returns to its opener",
+   "disposition": "carried",
+   "task": "TASK-114",
+   "reason": "Base body unchanged (TASK-106 round 05 rewrite); passes on this candidate."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 scroll: one stationary continuous frame holds the only scrolling region, and the long log’s Notes and Save are inside it",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body on Round 7: the frame's single child is the shared Dialog's typography wrapper whose single child is the scroller (build: the scroller directly); the header is `.clr-logging-overlay__head` (build: a <header>); Save is Round 7's 'Save log'; Round 7's ladder log (no per-round movement entries without a stated prefix) still holds 12 tiles, Notes and Save inside the scroller. Every other read unchanged (overflow, no sticky/fixed, only the scroller scrolls)."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C57-01 AC-R018-01 scroll: the scrolling region meets the inner lower border — no bottom inset, clipped on the inner chamfer, and no interior line crossing the form",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body on Round 7's recipe (logging-overlay.css): frame padding var(--border-width) and overflow hidden as built; scroller padding is Round 7's 16 px inset less the border, 0 below (build: --logging-inline-padding, 18 px from the outer edge) — look value kept at Round 7's; body end gap calc(var(--spacing-400) - var(--border-width)) (build: --logging-section-gap) — Round 7's 16 px end inset kept; inner-chamfer clip equal to Foundation's lg ::before polygon, no bottom inset rule, no border/divider: unchanged reads."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: opening and reopening never focus the frame or the scroller — the opening focus lands on the X control",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body; a close is awaited (Round 7's dialog plays the shared Dialog's 200 ms exit before `open` goes, as in TASK-106's rewrites). Same reads."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: the diagnosed owners — the browser’s default ring on a focused scroller or dialog, and Foundation’s fallback chamfer ring on the frame — never reach the containers, and the opening focus moves to the X in the same commit as showModal",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body; selectors are Round 7's (`.clr-logging-overlay > .clr-bleed > .clr-chamfer` for the build's `__frame`, `.clr-logging-overlay__scroll/__body`), the same values (var(--brd), var(--bw), outline none) and the same specificity comparisons; order ['showModal','focus:Close log'] unchanged."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C58-01 AC-R018-02 outline: intentional keyboard focus is kept — Tab moves from the X through the controls to Notes and Save, and no control loses its focus indicator",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body; 'Save log'; the rule-subject check accepts the frame's Round 7 selector (`toBe(true)` over frame-or-container, build: one `toMatch` over `.clr-accepted-log(__frame|__scroll|__body)`), same strength."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C59-01 AC-R018-03 scroll: every scrollbar is hidden, overlay scrollbars included, while wheel, touch, keyboard and focus scrolling still work and nothing scrolls sideways",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body; Round 7's selectors and 'Save log'. Same reads (scrollbar-width none, ::-webkit-scrollbar none/0/0, min-width 0, overflow-y only, overscroll contain, no touch-action/pointer-events none, wheel/touch/keyboard not cancelled)."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: the frame’s height is the visible viewport less the gap and safe areas — it follows an on-screen keyboard and is never a half-height cap",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body; the visual-viewport variables are now set by Round 7's overlay (TASK-114 fix). Round 7's selected dialog's box carries the max-height (build: the frame), so the read is on `.clr-logging-overlay[data-overlay=dialog][open]` plus padding-block 0; neither box nor frame declares height/min-height; width is Round 7's min(calc(100% - var(--spacing-600)), 32rem) (build: spacing-400 and the token) — look value kept; close awaited through the exit. All listener and cap reads unchanged."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > AC-C44-01 AC-R018-04 viewport: a short form fits its content with Save in reach, and without a visual viewport the dynamic viewport is the fallback",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body unchanged in reads; consumer is Round 7's EMOM log in the frame."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-018 LoggingOverlay — contained viewport, scroll and chrome > JOURNEY-018 viewport: gallery ladder-long draws the shared frame around the actual TimedResultLog — opened, closed and reopened, scrolling inside, nothing saved",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-018 block",
+   "reason": "Build body on Round 7's gallery: the state's link is 'Long ladder results · final scrolling' (same read); 'no modal opens by itself' is read as no open logging dialog (build: the one dialog's `open` false; Round 7's scene mounts its other logs closed beside it); Round 7's scene runs the ladder past its cap and opens the log itself, the second opening is the card's Log results; the build's `data-timed-format=ladder` (absent in Round 7) is read as the log's 'Rounds completed' group; 12 'Round N:' tiles, frame/wrapper/scroller structure, focus on the X, no fetch unchanged."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 TASK-AC-9B1E8E32EE3B group: a timed log keeps each complete movement group together — its name, amount and load at the inner field gap — and sets two complete groups slightly further apart than any other section, inline and in the logging frame",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body on Round 7, inline and in the frame as built: groups are Round 7's titled `.clr-timed-log__group` (build `.clr-logging-movement`), answered Incomplete through Work completed (build: an Incomplete value prop). Group inner gap is Round 7's 16 px (build 12); between groups 24 and 36 as built (36 by TASK-114's shared movement-gap fix); field names exactly as built. Dropped: the build's `--logging-movement-field-gap` token read (Round 7 has no such variable; the group's own declared gap is read instead). `result not .clr-logging-movement` read as `not.toContain` among movement groups."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > AC-C05-01 AC-R017-02 group: the superset round’s complete movement-entry groups — name and prescription, Performed, weight/unit/reps and effort — each stay one group, and the second sits the shared movement gap further from the first",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body on Round 7: form 'Log round 1 of …', groups, identity lines, Performed, Weight/Reps, Effort, siblings in the form as built; class `.clr-round-movement` (build `.clr-logging-movement`); the partner's margin is Round 7's `var(--spacing-300)` (build `var(--logging-movement-gap)`, the same step: also read as equal to the token's px); space before = the form's gap + 12."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the superset round no longer draws the “Tick each movement you performed. A blank field is saved as not recorded.” paragraph or any replacement prose, and Performed still decides what is logged — unticked logs nothing, ticked with a blank field logs it unmeasured",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body on Round 7 (form named 'Log round 1 of …'; logSet answers true). Same reads: no helper sentences or replacement prose, only the two identity paragraphs, disabled submit, ticked-blank logs `{ setNumber: 1 }`, unticked logs nothing."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > AC-C47-01 AC-R017-03 helper: the removed sentence is gone from every shipped source — no component, gallery state, register entry or spec draws or expects it",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body; Round 7's accepted gallery register (src/dev/gallery-refinement-coverage.json) quotes C47's own criterion, which names the sentence it removes; only that exact criterion line is allowed. Any other line in src or e2e holding either sentence still fails."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 TASK-AC-0C1431FDDA19 spacing: every choice legend — Work completed, Effort · optional, a superset movement’s Effort and Workout feedback’s feeling — takes the label gap, the same space the log’s labelled count field leaves between its label and control",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body on Round 7: `.clr-timed-field`'s gap is read from its own (later) rule (Round 7 declares the field's gap twice); legends read in the frame, where Round 7 declares the legend gap (`var(--spacing-200)`, build `var(--logging-label-gap)`, same 8 px). The build's inline pass is dropped: Round 7 scopes the legend gap to the logging dialog and every route's timed log opens there (inline legends read null). Superset legends read in the frame; Workout feedback is Round 7's gallery moment."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > AC-C42-01 AC-R017-01 spacing: the ladder log keeps its good Rounds completed heading gap and gives the dynamic count its own breathing room after the last row of tiles, for four and twelve rounds",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body on Round 7 in the frame: 4 and 12 rounds, Incomplete with nothing marked (finished=false), round 7 marked through its tile; heading gap var(--spacing-200) = 8, count `var(--spacing-400)` = the count-gap token's 16 (build `var(--logging-count-gap)`), count text, previous sibling tiles, completion legend 8 unchanged. Dropped: the partial-round line reads (Round 7's ladder completion has no `.clr-ladder-completion__partial`; its partial work is the movement fields)."
+  },
+  {
+   "file": "src/ui/logging-overlay.test.tsx",
+   "test": "TASK-017 movement groups and label/control rhythm > TASK-AC-582934B08D11 JOURNEY-017 group: gallery for_time draws the route’s own For Time logs with the shared contract — the capped race’s two movement groups apart and its legends at the label gap — while no route claims the logging frame yet",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "source": "181e580 src/ui/logging-overlay.test.tsx TASK-017 block",
+   "reason": "Build body on Round 7's gallery for_time state: one real flow (build: two gallery races, cap and finish). Kept: nothing inline in the card, the log in the shared dialog, the capped race's two movement groups (wall ball, burpee) 36 apart and wider than the first, legends at 8, no fetch. The finished race's 'one group, no extra gap' and its second form are replaced by the same log answered Complete (no amounts asked); the build's two `closest(dialog)` reads become one."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-016 every /workout logging moment phone-390 touch: anchor, other lift, timed and distance movement, extra set, correction, superset round, circuit round and movement, movement notes, ladder, AMRAP, For Time and EMOM each open the selected dialog with the framed icon-only X on the visible title top, exactly the Balanced backdrop and a sharp stationary frame, over an inert workout whose rest and block clocks keep counting, with drafts and focus kept through X, Escape and reopen",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Owner decision (Eric, chat, 2026-11-16, 'Accept all five'): the ladder log opens only after the attempt ends — no Log results is offered while it runs (asserted), and the ladder clock is read running on 10–11 s behind the ladder's own movement note (Round 7's dialog over the running ladder), read with the note open. Owner decision 4: the long-named movement note keeps the fixed one-line 'Movement note' title (titleLines toBe 1; build: >1) and the long name labels its field (asserted). Everything else unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-016 wrapped titles, Workout feedback on /summary and the rest day on Home phone-320 keyboard reduced motion: a wrapped note title and Workout feedback keep the framed X on the first visible line, every moment opens and closes from the keyboard with visible keyboard focus inside, the rest day keeps its cancel meaning, and nothing is written",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Owner decision 4 (2026-11-16): the note's title is one line (toBe 1; build: >= 3 at 320) and the long name labels its field (asserted). Workout feedback, rest day, keyboard focus, brackets, drafts and no writes unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-017 rhythm on /review, /workout and the shared logs phone-390: grouped cards keep each movement together and whole movements further apart, the superset round, For Time and AMRAP logs separate complete movement groups by the movement gap only, every choice legend sits at the field gap, the ladder keeps its Rounds completed heading gap and stands its count apart, and the removed helper paragraph is nowhere while performed and unrecorded entries keep their meaning",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Review's standard card is Round 7's rows without a list (TASK-112's C04 note), read in their group; card peers are read against Round 7's own declared gaps (a movement's tier gap = its identity's row gap, 8; peers = the list's/group's row gap, 16) — a whole peer gap either side of a separator where Round 7 draws one (lists), one gap for Review's unseparated standard rows; complete movements further apart than tiers unchanged. Group inner gaps are bounded by each group's own declared gap (build: the absent --logging-movement-field-gap). All log, label, ladder and helper reads unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-018 long logs on /workout phone-320 touch and wheel reduced motion: the anchor set, superset round and twelve-round ladder scroll only inside one stationary frame that fills the visible viewport, a control is painted down to the inner lower border mid-scroll, touch and wheel reach Save and Notes, no scrollbar or sideways overflow shows, reopen draws no container outline, and a short note stays content-height without scrolling",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Round 7's anchor set log fits a 320 × 568 phone (497 px frame), so it is read as a short form (kind short, Log set 1 inside the frame above the end gap, reopened by touch: X focused with no ring, short-form frame contract) instead of a long one; its touch contained-scroll pass is dropped and the long-form passes run on the superset round (wheel) and the twelve-round ladder (touch) as built."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-018 keyboard and focus on /workout phone-390 and desktop-1280: opened by keyboard the X and every Tab stop show their focus brackets inside the log while no container is outlined, each stop is scrolled into the frame up to Save, opened by touch nothing is ringed, a shrinking visible viewport (on-screen keyboard) shrinks the frame with Save still reachable, and long and short forms use the available height at both sizes",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Body unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › accepted gallery states clear phone-390: all sixteen logging states, ladder-long with its provider specimen and the route’s own twelve-round ladder, and the urgency demonstration open the one selected dialog with the framed icon-only X on the title’s visible top, the Balanced backdrop and the contained frame, with nothing read or written over the network",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Round 7's twelve-round log with no rounds stated fits a 390 × 844 phone, so ladder-long is also read as the build's long specimen, Incomplete through round 7 (its 'Round 7:' tile), where the long-form checks run. The build's urgency reading ('Open log over the warning') is dropped: Round 7's accepted urgency state draws the live flows only and has no log."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-016 skin clear /workout phone-390: the superset round opens with the Balanced backdrop in the clear skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Body unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-016 skin vapour /workout phone-390: the superset round opens with the Balanced backdrop in the vapour skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Body unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-016 skin signal /workout phone-390: the superset round opens with the Balanced backdrop in the signal skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Body unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-041.spec.ts",
+   "test": "TASK-041 adopted dialog and form rhythm in the actual route consumers › JOURNEY-016 skin mono /workout phone-390: the superset round opens with the Balanced backdrop in the mono skin and every title, movement line, label and legend in view reads at AA contrast measured against what is painted behind it",
+   "disposition": "rewritten",
+   "task": "TASK-114",
+   "reason": "Shared helpers (every case): `inspect` waits for the shared Dialog's finite animations before reading paint (read mid-arrival, the frame's 200 ms phosphor flicker decided the 'visible top'); Tokens drop --logging-movement-field-gap, --movement-peer-gap and --movement-tier-gap, which Round 7 does not declare (they read 0); `expandCoaching` waits for the disclosure's motion to settle before the note's button is tapped (with motion not reduced, two guard runs tapped where the button had been and no note opened). Body unchanged."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 anchor phone-320: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 anchor phone-390: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 other-lift phone-320: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 other-lift phone-390: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 timed-movement phone-320: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 timed-movement phone-390: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 distance-movement phone-320: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 distance-movement phone-390: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 extra-set phone-320: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 extra-set phone-390: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 set-correction phone-320: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 set-correction phone-390: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 superset phone-320: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 superset phone-390: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 circuit-round phone-320: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 circuit-round phone-390: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 movement-note phone-320: /workout’s movement note opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 movement-note phone-390: /workout’s movement note opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 workout-feedback phone-320: /summary’s workout feedback opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 workout-feedback phone-390: /summary’s workout feedback opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 rest-day phone-320: /’s rest day / reason change opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 rest-day phone-390: /’s rest day / reason change opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 emom phone-320: /workout’s emom results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 emom phone-390: /workout’s emom results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 amrap phone-320: /workout’s amrap results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 amrap phone-390: /workout’s amrap results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 for_time phone-320: /workout’s for time results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 for_time phone-390: /workout’s for time results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 ladder phone-320: /workout’s ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 ladder phone-390: /workout’s ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 ladder-long phone-320: /workout’s long ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  },
+  {
+   "file": "e2e/refinement/task-114-parity.spec.ts",
+   "test": "TASK-AC-EFC60FF1F169 ladder-long phone-390: /workout’s long ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+   "disposition": "added",
+   "task": "TASK-114",
+   "reason": "Look check (TASK-AC-EFC60FF1F169): route and accepted gallery state with matched data; receipt in evidence/refinement/task-114/parity/."
+  }
+ ]
+}

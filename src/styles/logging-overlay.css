@@ -1,13 +1,30 @@
 /* R6 shared logging comparison. Geometry only; public Dialog owns focus,
    backdrop, closure and reduced motion; forms/writers retain their state. */
+/* A3 TASK-114: the frame reads the reviewed --logging-viewport-gap, so its variable file is loaded with it. */
+@import '../ui/refinements/tokens.css';
 .clr-logging-overlay { width: min(calc(100% - var(--spacing-600)), 32rem); overflow: visible; }
 /* The open box is capped to the screen it sits in; its frame shrinks to fit and
    only the content scrolls. [open] keeps the native closed state hidden. */
 .clr-logging-overlay[open] { display: flex; flex-direction: column; max-height: 100%; padding-block: var(--spacing-500); box-sizing: border-box; }
+/* A3 TASK-114 (C44, R16; AC-R018-04): the selected dialog's box is its frame.
+   It is centred in the visible viewport (the overlay keeps
+   --logging-visible-top/-height on the visual viewport while open, so an
+   on-screen keyboard shrinks the space instead of covering the form), and a
+   long form takes all of it less the accepted gap and the safe areas — never a
+   fraction of the screen. Without a visual viewport, the dynamic viewport. */
+.clr-logging-overlay[data-overlay=dialog][open] {
+  padding-block: 0;
+  inset-block-start: var(--logging-visible-top, var(--spacing-0));
+  inset-block-end: calc(100% - var(--logging-visible-top, var(--spacing-0)) - var(--logging-visible-height, 100%));
+  max-height: calc(min(100dvh, var(--logging-visible-height, 100dvh)) - var(--logging-viewport-gap) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
 .clr-logging-overlay > .clr-bleed { display: flex; flex-direction: column; min-height: 0; width: 100%; }
+/* A3 TASK-114 (C57, P01): the frame's only inset is its own border, so the
+   scroller sits on the ring's inner edge and whatever scrolls is cut exactly
+   there. The form keeps Round 7's 16 px inset from the frame's outer edge. */
 .clr-logging-overlay > .clr-bleed > .clr-chamfer {
   width: 100%; min-width: 0 !important; max-width: none !important;
-  padding: var(--spacing-400) !important;
+  padding: var(--border-width) !important;
   display: flex; flex-direction: column;
   overflow: hidden;
 }
@@ -15,11 +32,32 @@
 .clr-logging-overlay > .clr-bleed > .clr-chamfer > div {
   display: flex; flex-direction: column; min-height: 0;
 }
-/* The stationary chamfer owns the complete surface. Only its content scrolls. */
+/* The stationary chamfer owns the complete surface. Only its content scrolls.
+   A3 TASK-114 (C44, C57, C59; P01, P03): the one scrolling region has no
+   bottom inset — a partly visible control runs to the inner lower border — and
+   its own clip is the ring's inner chamfer (Foundation's large chamfer surface
+   polygon), so content is cut on the inner diagonal. Every scrollbar is hidden,
+   overlay scrollbars included; wheel, touch, keyboard and focus scrolling are
+   untouched. It and the body shrink to the frame, so nothing scrolls sideways. */
 .clr-logging-overlay__scroll {
-  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-  padding: var(--spacing-100); margin: calc(-1 * var(--spacing-100));
+  flex: 1 1 auto; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: calc(var(--spacing-400) - var(--border-width)) calc(var(--spacing-400) - var(--border-width)) 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - (var(--chamfer-lg) - var(--border-width) * 0.414)), calc(100% - (var(--chamfer-lg) - var(--border-width) * 0.414)) 100%, 0 100%);
 }
+.clr-logging-overlay__scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+/* P02: the containers are structure, not controls. Chromium focuses the
+   keyboard-focusable scroller (or the dialog itself, on a tap on blank space)
+   and paints its default blue ring round the whole container; no Foundation
+   rule covers either. Foundation's fallback chamfer ring (where FocusBrackets
+   is not mounted) would light the whole frame while any control inside is
+   focus-visible; the frame keeps its own border. Controls keep their own focus. */
+.clr-logging-overlay:is(:focus, :focus-visible),
+.clr-logging-overlay > .clr-bleed > .clr-chamfer:is(:focus, :focus-visible, :has(:focus-visible)),
+.clr-logging-overlay .clr-logging-overlay__scroll:is(:focus, :focus-visible),
+.clr-logging-overlay .clr-logging-overlay__body:is(:focus, :focus-visible) { outline: none; }
+.clr-logging-overlay > .clr-bleed > .clr-chamfer:is(:focus-visible, :has(:focus-visible))::after { background-color: var(--brd); }
+.clr-logging-overlay > .clr-bleed > .clr-chamfer:is(:focus-visible, :has(:focus-visible))::before { inset: var(--bw); }
 .clr-logging-overlay[data-overlay=sheet] {
   width: min(calc(100% - var(--spacing-400)), 44rem);
   margin-block: auto var(--spacing-200);
@@ -30,9 +68,20 @@
   animation: clr-shift-in-up var(--dur-mode) var(--step-4) both;
 }
 .clr-logging-overlay__head { display:flex; align-items:center; justify-content:space-between; gap:var(--spacing-300); margin-block-end:var(--spacing-400); }
-.clr-logging-overlay__title { margin:0; font-size:var(--heading-h2-size); line-height:var(--heading-h2-line-height); }
-.clr-logging-overlay__body { min-width:0; display:flex; flex-direction:column; gap:var(--spacing-400); }
+/* A3 TASK-114 (C41, R105): the title's line box is trimmed at the top to its
+   capitals (the title is set in capitals), so its box top is the letters'
+   visible top — the line the X's frame starts on, however many lines it wraps
+   to. A browser without text-box trimming keeps the tight line box. */
+.clr-logging-overlay__title { margin:0; font-size:var(--heading-h2-size); line-height:var(--heading-h2-line-height); text-box:trim-start cap alphabetic; }
+/* The end of the content: the rest of the 16 px inset, inside the scrolling
+   region, so it is reached only at the bottom of a long form (P01). */
+.clr-logging-overlay__body { min-width:0; display:flex; flex-direction:column; gap:var(--spacing-400); padding-block-end:calc(var(--spacing-400) - var(--border-width)); }
 .clr-logging-overlay .clr-timed-log { border:0; padding:0; }
+/* A3 TASK-114 (C05, R111; AC-C05-01, AC-R017-02): one shared movement rhythm.
+   Two complete movement groups in a timed log sit the reviewed movement gap
+   further apart than its other sections, as a superset round's groups do
+   (workout-r7.css); nothing inside a group moves. */
+.clr-timed-log[data-log-hierarchy=simple] > .clr-timed-log__group:has(> .clr-timed-log__group-title) + .clr-timed-log__group:has(> .clr-timed-log__group-title) { margin-block-start:var(--logging-movement-gap); }
 .clr-logging-overlay .clr-set-sheet__frame { padding:0; }
 .clr-logging-overlay .clr-set-effort { width:100%; }
 .clr-logging-context { margin:0; color:var(--text-secondary); font-family:var(--font-data); }

@@ -1,0 +1,241 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-114",
+  "check": "parity",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-114-parity.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-114/required-cases.json",
+    "sha256": "b94c7e0425fa652e88fb31e947c5e5c993e1429ccfe40bc7cf8791c0debbbaa6"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-114-parity.spec.ts",
+      "sha256": "27866f1f6e07f56b0b87a11d5437bd3390d16175539b074845648a219159d709"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 anchor phone-320: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 anchor phone-390: /workout’s anchor / primary lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 other-lift phone-320: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 other-lift phone-390: /workout’s other lift opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 timed-movement phone-320: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 timed-movement phone-390: /workout’s timed movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 distance-movement phone-320: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 distance-movement phone-390: /workout’s distance movement opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 extra-set phone-320: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 extra-set phone-390: /workout’s extra set opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 set-correction phone-320: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 set-correction phone-390: /workout’s saved-set correction opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 superset phone-320: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 superset phone-390: /workout’s superset round opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 circuit-round phone-320: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 circuit-round phone-390: /workout’s circuit round / take back opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 circuit-movement phone-320: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 circuit-movement phone-390: /workout’s circuit movement entry opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 movement-note phone-320: /workout’s movement note opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 movement-note phone-390: /workout’s movement note opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 workout-feedback phone-320: /summary’s workout feedback opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 workout-feedback phone-390: /summary’s workout feedback opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 rest-day phone-320: /’s rest day / reason change opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 rest-day phone-390: /’s rest day / reason change opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 emom phone-320: /workout’s emom results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 emom phone-390: /workout’s emom results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 amrap phone-320: /workout’s amrap results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 amrap phone-390: /workout’s amrap results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 for_time phone-320: /workout’s for time results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 for_time phone-390: /workout’s for time results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 ladder phone-320: /workout’s ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 ladder phone-390: /workout’s ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 ladder-long phone-320: /workout’s long ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-114-parity.spec.ts",
+      "name": "TASK-AC-EFC60FF1F169 ladder-long phone-390: /workout’s long ladder results opens in the same Round 7 dialog as the accepted gallery state — frame, header, rhythm and scrolling drawn alike",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 34,
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 34
+  },
+  "problems": []
+}

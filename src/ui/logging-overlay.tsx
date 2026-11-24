@@ -44,6 +44,12 @@
  *     reported as a dismissal. The X and Escape (the native `cancel`) ask the
  *     consumer to close in the same turn, so the dialog leaves through the
  *     shared exit as a controlled close.
+ *
+ * A3 TASK-114 (REQ-018; C44, R16, AC-R018-04) keeps the frame on the screen
+ * the athlete can see: while open, the dialog carries the visual viewport's
+ * top and height (`--logging-visible-top`, `--logging-visible-height`), which
+ * `logging-overlay.css` centres the frame in, so an on-screen keyboard shrinks
+ * the frame instead of covering the form. Geometry only; nothing else changes.
  */
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { IconButton, X } from '../design-system/index'
@@ -57,6 +63,9 @@ import '../styles/logging-overlay.css'
 
 /** The X's accessible name; the opening focus lands on it. */
 const CLOSE_LABEL = 'Close log'
+/** The visual viewport's top and height on the open dialog (A3 TASK-114). */
+const VISIBLE_TOP = '--logging-visible-top'
+const VISIBLE_HEIGHT = '--logging-visible-height'
 
 /**
  * The control that opened the log, if focus was on one: not the page itself,
@@ -115,6 +124,28 @@ export function LoggingOverlay({ open, title, onClose, onAfterClose, children, v
     if (open && dialog !== null && !dialog.open) {
       opener.current = openerOf(dialog)
       owed.current = true
+    }
+  }, [open])
+
+  // A3 TASK-114: while open, the dialog's box is the visual viewport — the
+  // part of the screen an on-screen keyboard leaves. Without a visual
+  // viewport the stylesheet falls back to the dynamic viewport.
+  useLayoutEffect(() => {
+    const dialog = dialogOf()
+    const viewport = typeof window === 'undefined' ? undefined : window.visualViewport
+    if (!open || dialog === null || viewport == null) return
+    const update = () => {
+      dialog.style.setProperty(VISIBLE_TOP, `${viewport.offsetTop}px`)
+      dialog.style.setProperty(VISIBLE_HEIGHT, `${viewport.height}px`)
+    }
+    update()
+    viewport.addEventListener('resize', update)
+    viewport.addEventListener('scroll', update)
+    return () => {
+      viewport.removeEventListener('resize', update)
+      viewport.removeEventListener('scroll', update)
+      dialog.style.removeProperty(VISIBLE_TOP)
+      dialog.style.removeProperty(VISIBLE_HEIGHT)
     }
   }, [open])
 
