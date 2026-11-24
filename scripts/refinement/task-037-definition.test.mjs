@@ -84,6 +84,14 @@ const ITEM = /^\*\*([A-Z]\d+|[A-Z]+(?:-[A-Z]+)+)\*\*\s+(.*)$/
  * the status the record must state. `removed` strings must be string literals of
  * the `before` source and of no string literal in the `now` source; `present`
  * strings must still be string literals of the `now` source.
+ *
+ * A3 TASK-121 (rehearsal findings of 2026-11-18, finding 6): on Round 7's
+ * routes the copy X2, X3, X4 and X6 name is drawn by other code than the old
+ * build's, so each `now` is the code that draws that copy on the route today.
+ * A `now` may name more than one file (the drawing component and the readings
+ * it draws); a removed string must be copy in none of them and a kept string in
+ * one. `drawn: 'product'` reads only what the file draws under the product
+ * presentation the app root mounts for every route (`productLiterals`).
  */
 const SELECTED = [
   { id: 'X1', note: 'R09', status: 'not applied', now: 'src/ui/session-detail.tsx', present: ['RPE'] },
@@ -92,7 +100,10 @@ const SELECTED = [
     note: 'R23',
     status: 'applied',
     before: 'src/app/Generate.tsx',
+    // Round 7's Generate keeps both helpers only for a screen without the product
+    // presentation (owner decision 4 of 2026-11-13); the route always has it.
     now: 'src/app/Generate.tsx',
+    drawn: 'product',
     removed: ['Uses this place’s equipment.', 'Optional, today only. Ongoing limits go in Settings.'],
   },
   {
@@ -100,16 +111,18 @@ const SELECTED = [
     note: 'R40',
     status: 'applied',
     before: 'src/ui/emom-block.tsx',
-    now: 'src/ui/emom-block.tsx',
+    // Round 7's /workout draws the EMOM through TimedWorkoutFlow, with its minute
+    // labels from state/emom.ts; EmomBlock is not drawn by any route.
+    now: ['src/ui/timed-workout-flow.tsx', 'src/state/emom.ts'],
     removed: ['NOT STARTED', 'WORK'],
-    present: ['MIN ${…} OF ${…}'],
+    present: ['Minute ${…} of ${…}${…}', 'Now', 'Next'],
   },
   {
     id: 'X4',
     note: 'R43',
     status: 'applied',
     before: 'src/ui/emom-block.tsx',
-    now: 'src/ui/emom-block.tsx',
+    now: ['src/ui/timed-workout-flow.tsx', 'src/state/emom.ts'],
     removed: ['The clock has run every prescribed minute. Continue when you are ready.'],
   },
   {
@@ -124,7 +137,9 @@ const SELECTED = [
     note: 'R70',
     status: 'applied',
     before: 'src/ui/ladder-block.tsx',
-    now: 'src/ui/refinements/ladder.tsx',
+    // The removed src/ui/refinements/ladder.tsx: Round 7's route draws the ladder's
+    // rounds with LadderPrescription from the ladder readings.
+    now: ['src/ui/ladder-rungs.tsx', 'src/state/ladder.ts'],
     removed: ['— same every round'],
   },
   {
@@ -253,6 +268,77 @@ function literalsOf(source, fileName) {
   }
   visit(file)
   return out
+}
+
+/** A source's module-level string constants: name -> the literal node. */
+function moduleConstants(file) {
+  const constants = new Map()
+  for (const statement of file.statements) {
+    if (!ts.isVariableStatement(statement)) continue
+    for (const declaration of statement.declarationList.declarations) {
+      const init = declaration.initializer
+      if (ts.isIdentifier(declaration.name) && init && (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init))) {
+        constants.set(declaration.name.text, init)
+      }
+    }
+  }
+  return constants
+}
+
+/**
+ * A3 TASK-121 (rehearsal findings of 2026-11-18, finding 6): the text a source
+ * draws under the product presentation, which the app root mounts for every
+ * route. As `literalsOf`, except that:
+ *   - in `presentation ? a : b`, where `presentation` is the file's own
+ *     `useWorkoutExperiencePresentation()`, only `a` is drawn;
+ *   - a module constant's words count where the file uses the constant, not
+ *     where it is declared.
+ * Every other branch is read whole, so a string reached any other way still
+ * counts as drawn. Returns the drawn text and the module constants by name.
+ */
+function productLiterals(source, fileName) {
+  const kind = fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+  const file = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, kind)
+  let bound = false
+  const binding = (node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === 'presentation' &&
+      node.initializer &&
+      ts.isCallExpression(node.initializer) &&
+      ts.isIdentifier(node.initializer.expression) &&
+      node.initializer.expression.text === 'useWorkoutExperiencePresentation'
+    ) {
+      bound = true
+    }
+    ts.forEachChild(node, binding)
+  }
+  binding(file)
+  assert.ok(bound, `${fileName} reads the product presentation as \`presentation = useWorkoutExperiencePresentation()\``)
+  const constants = moduleConstants(file)
+  const declared = new Set(constants.values())
+  const out = []
+  const visit = (node) => {
+    if (declared.has(node)) return
+    if (ts.isConditionalExpression(node) && ts.isIdentifier(node.condition) && node.condition.text === 'presentation') {
+      visit(node.whenTrue)
+      return
+    }
+    if (ts.isIdentifier(node) && constants.has(node.text) && !(ts.isVariableDeclaration(node.parent) && node.parent.name === node)) {
+      out.push(constants.get(node.text).text)
+    } else if (ts.isJsxText(node)) {
+      const value = node.text.replace(/\s+/g, ' ').trim()
+      if (value) out.push(value)
+    } else if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+      out.push(node.text)
+    } else if (ts.isTemplateExpression(node)) {
+      out.push(node.head.text + node.templateSpans.map((span) => `\${…}${span.literal.text}`).join(''))
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return { literals: out, constants: new Map([...constants].map(([name, node]) => [name, node.text])) }
 }
 
 function routerPaths() {
@@ -405,22 +491,56 @@ describe('TASK-037 platform language and terminology audit (G20)', () => {
       assert.ok(body.includes(change.note), `${change.id} names ${change.note}`)
       assert.match(body, new RegExp(`Status: ${change.status}\\b`), `${change.id} states "Status: ${change.status}"`)
       const ids = citations(body)
-      const cites = (kind) => ids.find((id) => sources.get(id)?.path === change.now && sources.get(id)?.kind === kind)
-      const nowId = cites('repo') ?? cites('base')
-      assert.ok(nowId, `${change.id} cites ${change.now} as it is now`)
-      if (change.removed) assert.equal(sources.get(nowId).kind, 'repo', `${change.id} reads ${change.now} at this revision, not at the base`)
-      const now = literalsOf(texts.get(nowId), change.now)
+      const nows = [change.now].flat().map((path) => {
+        const cites = (kind) => ids.find((id) => sources.get(id)?.path === path && sources.get(id)?.kind === kind)
+        const nowId = cites('repo') ?? cites('base')
+        assert.ok(nowId, `${change.id} cites ${path} as it is now`)
+        if (change.removed) assert.equal(sources.get(nowId).kind, 'repo', `${change.id} reads ${path} at this revision, not at the base`)
+        const drawn = change.drawn === 'product' ? productLiterals(texts.get(nowId), path) : null
+        return { path, literals: drawn?.literals ?? literalsOf(texts.get(nowId), path), constants: drawn?.constants ?? new Map() }
+      })
       for (const value of change.removed ?? []) {
         const beforeId = ids.find((id) => sources.get(id)?.path === change.before && sources.get(id)?.kind === 'base')
         assert.ok(beforeId, `${change.id} cites the base ${change.before} the string was removed from`)
         const before = literalsOf(texts.get(beforeId), change.before)
         assert.ok(before.some((literal) => literal.includes(value)), `${change.id}: "${value}" was copy at the base`)
-        assert.ok(!now.some((literal) => literal.includes(value)), `${change.id}: "${value}" is still copy in ${change.now}`)
+        for (const { path, literals } of nows) {
+          assert.ok(!literals.some((literal) => literal.includes(value)), `${change.id}: "${value}" is still copy in ${path}`)
+        }
       }
       for (const value of change.present ?? []) {
-        assert.ok(now.some((literal) => literal.includes(value)), `${change.id}: "${value}" is copy in ${change.now}`)
+        assert.ok(
+          nows.some(({ literals }) => literals.some((literal) => literal.includes(value))),
+          `${change.id}: "${value}" is copy in ${nows.map(({ path }) => path).join(' or ')}`,
+        )
+      }
+      if (change.drawn === 'product') {
+        // No other frontend file draws a removed string or uses a constant of `now` that holds one.
+        const holders = nows.flatMap(({ constants }) =>
+          [...constants].filter(([, words]) => change.removed.some((value) => words.includes(value))).map(([name]) => name))
+        for (const file of frontendFiles()) {
+          if (nows.some(({ path }) => path === file)) continue
+          const source = readFileSync(resolve(repo, file), 'utf8')
+          const literals = literalsOf(source, file)
+          for (const value of change.removed) assert.ok(!literals.some((literal) => literal.includes(value)), `${change.id}: "${value}" is copy in ${file}`)
+          for (const name of holders) assert.doesNotMatch(source, new RegExp(`\\b${name}\\b`), `${change.id}: ${file} draws ${name}`)
+        }
       }
     }
+    // A3 TASK-121 (finding 6): each re-pointed `now` is what the product route draws.
+    const file = (path) => readFileSync(resolve(repo, path), 'utf8')
+    assert.match(file('src/app/AppRuntime.tsx'), /<WorkoutExperiencePresentationProvider value=\{PRODUCT_PRESENTATION\}>/, 'the app root mounts the product presentation for every route')
+    assert.match(file('src/ui/product-presentation.ts'), /saveResult: saveLogThroughShell/, 'the product presentation carries the real timed save')
+    assert.match(file('src/app/Workout.tsx'), /<BlockSlot key=\{block\.blockId\} block=\{block\} \/>/, '/workout draws every block through BlockSlot')
+    assert.match(
+      file('src/ui/block-renderers.tsx'),
+      /if \(presentation\?\.timedWorkflows\?\.saveResult\) \{[\s\S]*?if \(format !== null\) return <TimedWorkoutFlow block=\{block\} format=\{format\} \/>/,
+      'BlockSlot hands every timed format to TimedWorkoutFlow under the product presentation',
+    )
+    const flow = file('src/ui/timed-workout-flow.tsx')
+    assert.match(flow, /import \{ emomShape, emomView, minuteAssignment, scheduledMinuteFor, targetForMinute \} from '\.\.\/state\/emom'/, 'TimedWorkoutFlow draws the EMOM minute from state/emom.ts')
+    assert.match(flow, /format === 'ladder' \? <LadderPrescription /, 'the route’s ladder rounds are LadderPrescription’s')
+    assert.match(file('src/ui/ladder-rungs.tsx'), /const readings = ladderRoundReadings\(exercises, rounds\)/, 'LadderPrescription draws the ladder readings')
     // R40 removed only the EMOM captions: the minute and Now/Next stay, and the ladder's caption is undecided.
     assert.match(items.get('X3'), /Now/)
     assert.match(sectionText('Undecided items'), /`NOT STARTED`/)
