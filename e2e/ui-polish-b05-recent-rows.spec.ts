@@ -275,32 +275,6 @@ async function recentRowGeometry(row: Locator) {
   })
 }
 
-/** The chronology row's own composition, recorded so a change to it is visible. */
-async function chronologyRowGeometry(row: Locator) {
-  return row.evaluate((element) => {
-    const title = element.querySelector<HTMLElement>('[data-part="title"]')
-    const statusDate = element.querySelector<HTMLElement>('[data-part="status-date"]')
-    const status = statusDate?.querySelector<HTMLElement>('[data-part="status"]') ?? null
-    const date = statusDate?.querySelector<HTMLElement>('[data-part="date"]') ?? null
-    const box = (node: Element | null) => {
-      if (node === null) return null
-      const rect = node.getBoundingClientRect()
-      return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right }
-    }
-    return {
-      layout: element.getAttribute('data-layout'),
-      hasHead: element.querySelector('[data-part="head"]') !== null,
-      hasStatusDate: statusDate !== null,
-      status: status?.textContent ?? null,
-      date: date?.textContent ?? null,
-      titleBox: box(title),
-      statusBox: box(status),
-      dateBox: box(date),
-      statusDateBox: box(statusDate),
-    }
-  })
-}
-
 /**
  * One capture per row: a whole card or list can be taller than the inner
  * scroll region, and an element screenshot clips to what that region shows.
@@ -413,39 +387,11 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
     }
 
-    test('History chronology puts the title on its own row with status and date beneath (TASK-026)', async ({ page, visit }, testInfo) => {
-      const app = await syntheticApp(page, [...PICTURED, ...STATUSES])
-      await visit('/history')
-      const link = page.getByRole('link', { name: PICTURED[0].title, exact: true })
-      await expect(link).toBeVisible()
-      const list = page.getByRole('list').filter({ has: link })
-      const measured = []
-      const sessionRows = []
-      for (const source of [...PICTURED, ...STATUSES]) {
-        const row = list.getByRole('listitem').filter({
-          has: page.getByRole('link', { name: source.title, exact: true }),
-        })
-        sessionRows.push(row)
-        const geometry = await chronologyRowGeometry(row)
-        measured.push(geometry)
-        // C53 / R19: the title alone, then the status with the date beside it.
-        expect(geometry.layout).toBe('chronology')
-        expect(geometry.hasHead).toBe(false)
-        expect(geometry.hasStatusDate).toBe(true)
-        const status = source.completed_at !== null ? 'completed'
-          : source.started_at !== null ? 'partial' : 'unstarted'
-        expect(geometry.status).toBe(STATUS_LABEL[status])
-        expect(geometry.date).toMatch(/^\w{3} \d{1,2} \w{3} \d{4}$/)
-        expect(geometry.statusDateBox!.top).toBeGreaterThanOrEqual(geometry.titleBox!.bottom - 1)
-        expect(geometry.dateBox!.left).toBeGreaterThan(geometry.statusBox!.right)
-      }
-      await record(page, sessionRows, testInfo, `history-chronology-${size}`, {
-        consumer: 'History chronology (HistoryList layout="chronology")',
-        layout: 'chronology', state: 'all six synthetic sessions with rest runs', viewport,
-        criteria: { 'AC-012': 'pass' },
-        measurements: measured,
-      })
-      app.assertReadOnly()
-    })
+    // TASK-115 (2026-11-24): the build's "History chronology puts the title on its own row with
+    // status and date beneath (TASK-026)" is retired. Owner decision 7 (2026-11-13) replaced
+    // TASK-026's chronology row with Round 7's History row order (title, context, status, then
+    // metrics), as the corrected task 2 ledger retired its unit twin ("U44, AC-C53-01: every row
+    // has its title on its own row…"); src/app/History.test.tsx's "U44: every row puts its title,
+    // then status with the context, then metrics" checks Round 7's order. On the UAT list.
   })
 }

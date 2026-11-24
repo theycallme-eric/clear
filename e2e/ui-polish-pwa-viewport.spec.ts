@@ -401,7 +401,9 @@ for (const { name, viewport, reducedHeight, insets } of CASES) {
       // TASK-045: the rest-day form is the shared "Log rest day" dialog, so
       // its controls scroll inside the dialog's own scroll owner.
       const restDialog = page.getByRole('dialog', { name: 'Log rest day', exact: true })
-      const restScroller = restDialog.locator('[data-logging-scroll]')
+      // Round 7's LoggingOverlay owns the scroll in .clr-logging-overlay__scroll (TASK-114;
+      // TASK-115, 2026-11-23 test-update rule: the build's frame marked it data-logging-scroll).
+      const restScroller = restDialog.locator('.clr-logging-overlay__scroll')
       await expect(restScroller).toHaveCount(1)
       await expect(reason).toBeFocused()
       await reason.selectOption('injury')
