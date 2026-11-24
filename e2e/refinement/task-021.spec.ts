@@ -703,12 +703,14 @@ test.describe('TASK-021 circuit round, Undo and measurement behaviour', () => {
     expect(await restLeft(page)).toBe(3)
     // The log's rest is Round 7's timer card (TASK-108): the shared urgency is
     // carried by its timer element — urgent (the shared breathe class) and,
-    // under reduced motion, still (TASK-115, 2026-11-23 test-update rule; the
-    // base read the old CountdownDisplay's micro pulse class on its wrapper).
+    // under reduced motion, still; the build's data-urgent read is restored
+    // (TASK-115, 2026-11-23 test-update rule; the base read the old
+    // CountdownDisplay's micro pulse class on its wrapper).
     const logTimer = openLog(page).locator('.clr-log-timer').filter({
       has: page.getByRole('timer', { name: 'Time remaining', exact: true }),
     })
     const urgentTimer = logTimer.getByRole('timer', { name: 'Time remaining', exact: true })
+    await expect(urgentTimer).toHaveAttribute('data-urgent', 'true')
     await expect(urgentTimer).toHaveClass(/\bclr-countdown-breathe\b/)
     await expect(urgentTimer).toHaveAttribute('data-loop', 'still')
     await expect(page.locator('[data-countdown-edge]')).toHaveCount(1)

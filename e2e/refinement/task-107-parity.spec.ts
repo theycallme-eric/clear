@@ -714,10 +714,12 @@ for (const state of Object.keys(STATES) as State[]) {
           expect(open, `${side} round time @${name}`).toContain('00:32 round time recorded')
           // TASK-108 draws the round rest as a Round 7 TimerFrame: its digits are one
           // decorative cell per character, read as drawn (TASK-115, 2026-11-23 test-update rule).
-          expect(open.join(' '), `${side} rest in the dialog @${name}`).toContain('0 0 : 4 5')
+          const drawn = (lines: readonly string[], clock: string) =>
+            lines.some((_, start) => clock.split('').every((cell, offset) => lines[start + offset] === cell))
+          expect(drawn(open, '00:45'), `${side} rest in the dialog @${name}`).toBe(true)
           expect(open, `${side} Take back this round @${name}`).toContain('take back this round')
           expect(closed, `${side} the round recorded @${name}`).toContain('1 of 3 rounds recorded')
-          expect(closed.join(' '), `${side} rest back beside the card @${name}`).toContain('0 0 : 4 4')
+          expect(drawn(closed, '00:44'), `${side} rest back beside the card @${name}`).toBe(true)
         }
       }
       for (const moment of moments) expectAllIntended(differences[moment], `${state} ${moment} @${name}`)

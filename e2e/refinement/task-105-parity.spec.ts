@@ -998,7 +998,9 @@ for (const { name, viewport } of VIEWPORTS) {
     has('running', /^ON THE CLOCK$/i)
     // TASK-108 draws the interval as a Round 7 TimerFrame: its digits are one decorative
     // cell per character, read as drawn (TASK-115, 2026-11-23 test-update rule).
-    expect(reading.running.lines.join(' '), `running @${name}: ${at(SCHEDULED_INTERVAL - 10)}`).toContain(at(SCHEDULED_INTERVAL - 10).split('').join(' '))
+    const cells = at(SCHEDULED_INTERVAL - 10).split('')
+    expect(reading.running.lines.some((_, start, lines) => cells.every((cell, offset) => lines[start + offset] === cell)),
+      `running @${name}: ${at(SCHEDULED_INTERVAL - 10)}, drawn cell by cell`).toBe(true)
     has('log', /^No rounds marked yet$/)
     has('ended', /^COMPLETE$/i)
     has('ended', /^The clock has run every scheduled round\./)
