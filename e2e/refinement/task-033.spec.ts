@@ -1055,6 +1055,12 @@ test.describe('TASK-033 final CRT and Phosphor Echo composition', () => {
     await tap(opener)
     await expect(page.getByRole('dialog', { name: NOTE_TITLE })).toBeVisible()
     await expect.poll(async () => (await compose(page)).edges[0]?.host).toBe('dialog:open')
+    // The log's cards arrive while this case holds the page clock; the app's Reduce
+    // motion collapses their entrance to 0.01 ms. Read the foreground once that
+    // arrival is through, as the device-setting step below does (timing only;
+    // TASK-115, D4(b), Eric 2026-11-24). The same reads follow unchanged.
+    await page.clock.runFor(20)
+    await expect.poll(async () => (await compose(page)).foregroundEffects).toEqual([])
     frame = await compose(page)
     expectOneGlass(frame, 'reduced warning', 'paused')
     expectBalancedBackdrop(frame, NOTE_TITLE, 'reduced warning', true)

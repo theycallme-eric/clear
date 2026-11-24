@@ -390,6 +390,9 @@ test('forced colours return focus geometry to the operating system', async (
 ) => {
   await stubSupabase(page)
   await visit('/login')
+  // /login has rendered (not the product chunk's loading screen) before tabbing
+  // (timing only; TASK-115, D4(b), Eric 2026-11-24).
+  await expect(page.locator('main').getByRole('button', { name: 'Send code', exact: true })).toBeVisible()
   await page.emulateMedia({ forcedColors: 'active' })
   await expect.poll(() => page.evaluate(() => matchMedia('(forced-colors: active)').matches)).toBe(true)
 
