@@ -1,0 +1,478 @@
+{
+ "schema": "clear-refinement-test-ledger/v1",
+ "task": "TASK-112",
+ "family": "F10 (A3 task 12a): Review’s movement hierarchy, actions and compact equipment",
+ "base": "66fb340ba0e851a27b9be4b164a507f755486dfd",
+ "build": "181e580 (source material only)",
+ "source": "Brief NB2/briefs/TASK-112-a1.md; running summary (TASK-118's notes); round-07 placement review; TASK-118's ledger (11 deferred TASK-002 titles); the build's src/ui/movement-list.test.tsx (TASK-001 block), src/ui/movement-identity.test.tsx (TASK-002 block), e2e/refinement/task-001.spec.ts and task-002.spec.ts.",
+ "rules": {
+  "skipOnlyTodoAdded": false,
+  "matchersWeakened": false,
+  "matchersWeakenedNote": "No matcher is loosened. The parser comparison lists every build read not present verbatim at HEAD (72, 50 distinct; the 16 base reads are the e2e reads, base = build there). Each is (a) the same read on Round 7's subject or locator — `.clr-movement-identity` for `[data-movement-identity]`, the name element for `.clr-movement-identity__title`, `.clr-movement-identity__equipment-inline` for `.clr-movement-identity__equipment`, Round 7's ordinal element or a live name's leading words for `[data-movement-ordinal]`, the words span for `[data-movement-name]`, the prescription's second reading for `[data-movement-load]`, `rows()`/`list()` for Review's standard block (no list in Round 7), the row for a `Rest for`/`Suggested` button Round 7 draws below the identity, the card's movement-group header for `[data-workout-card]`, the line under the header for `[data-structure-meta]`, the source declaration for a `flex` shorthand jsdom cannot cascade; (b) a Round 7 look or wording rewrite under the owner's 2026-11-23 rule (rules.retiredAssertions, rules.forTask115); (c) an owner decision Round 7 implements (2026-11-13 decision 2: the section heading on each card and the live header as a heading; decision 6: the size outside the badge); or (d) a read of a gallery scene Round 7's cards state does not draw, proved on the real routes instead. Four reads change polarity, each by Round 7's accepted placement and recorded: equipment inside the name element (R132 inline; TASK-118's helper keeps the words' `not.toContainElement`), the e2e 'name element holds only the name' (same), the live header as a heading (decision 2), and Review's standard rows unruled (look). No getBy became queryBy, no count was dropped (counts were added), no exact text became a regex (the one that had crept in was made exact), no toHaveTextContent became toBeInTheDocument, and every replaced base body (the 8 e2e titles) is listed here.",
+  "testUpdateRule": "Eric, chat, 2026-11-23: “Yes, approve” (standing test-update rule: update an old or base test to match Round 7’s look and wording, or drop only the look/wording part where Round 7 has no equivalent; keep everything else; list each change for UAT).",
+  "retiredAssertions": [
+   {
+    "file": "src/ui/movement-list.test.tsx",
+    "test": "(helper expectPeerSeparators) AC-C04-01, AC-R001-01",
+    "assertion": "a rule after Review's first standard lift (`var(--border-width) solid var(--border-region-rule)`)",
+    "reason": "Look: Round 7's Review draws a standard block's rows straight in its card's movement group, with no list and no rule between them (spaced by the group's gap); Workout's standard list keeps the rule. Read as no rule after any row, none after the last, no rail."
+   },
+   {
+    "file": "src/ui/movement-list.test.tsx",
+    "test": "(helper expectPeerSeparators)",
+    "assertion": "peer gap `var(--movement-peer-gap)`",
+    "reason": "Look/token: Round 7's list gap is `var(--spacing-400)`; the build's token does not exist in Round 7."
+   },
+   {
+    "file": "e2e/refinement/task-001.spec.ts",
+    "test": "(helper expectPeerOnlySeparators)",
+    "assertion": "Review's standard block: a solid rule after every peer but the last",
+    "reason": "Look: as above, measured in the browser at 320/390/768/1280."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "(helper expectCompactEquipment, TASK-118) AC-C03-01, JOURNEY-002 timed, gallery cards",
+    "assertion": "name column `flex-wrap: wrap`; equipment `max-width: 100%`; equipment not inside the name element",
+    "reason": "Look (R132 selected A, `equipmentPlacement: 'name'`): Round 7 draws the equipment as inline text inside the name element, after the words; read as `display: inline`, inside the name, after the words (TASK-118's rewrite, reused unchanged)."
+   },
+   {
+    "file": "e2e/refinement/task-002.spec.ts",
+    "test": "(helper expectEquipmentBesideName) AC-C03-01",
+    "assertion": "`equipmentLines` 1 and `wrappedAsUnit` (“wraps as one unit”); “the name element holds only the name”",
+    "reason": "Look (AC-C03-01 readable wrapping; R132 allows deliberate wrapping): Round 7's inline label flows with the name's words, so a two-word label can continue on the next line from the column's start. Readable wrap is read instead: every fragment inside the column, none clipped, none over the name's words, never under the slot, legible size. For Eric to confirm at UAT."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "AC-C07-01",
+    "assertion": "header title `font-size: var(--label-xs-size)`; title inherits the header's weight and line height",
+    "reason": "Look: Round 7's group header title is the shared `.label` face (label-sm, bold, label-sm line height, data font), set by the class, not inherited; the same face in Review and Workout is still read property by property."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "AC-R002-02; e2e JOURNEY-002 ${name}",
+    "assertion": "the section named once, on the first card's header (`[SECTION]`)",
+    "reason": "Owner decisions of 2026-11-13, decision 2 (the section name is each block's group heading): Round 7 names it on every card's header as a level-2 heading; still static, not a control, no tabindex."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "renders the shared owners …; gallery cards; e2e JOURNEY-002 ${name}",
+    "assertion": "the live card's header title is a SPAN / not a heading",
+    "reason": "Decision 2 of 2026-11-13: Round 7's live block header is the same heading (H2 on the route)."
+   },
+   {
+    "file": "src/ui/movement-identity.test.tsx",
+    "test": "AC-C07-01, AC-R002-03; e2e JOURNEY-002 ${name}",
+    "assertion": "`[data-structure-meta]` inside Review's header reads the rounds",
+    "reason": "Placement (decision 6, format-only badges): Round 7 reads a Review block's size on its `clr-timed-meta` line directly under the header; the standard card's line is empty."
+   },
+   {
+    "file": "src/ui/movement-list.test.tsx",
+    "test": "AC-R001-02; e2e AC-R001-02 ${name}",
+    "assertion": "a live group's ordinal as its own element (`[data-movement-ordinal]` `10.`)",
+    "reason": "Wording/look: Round 7 puts a live group's ordinal in the name's words (`A1 …`, `1. …`, `10. …`); read exactly from the words."
+   },
+   {
+    "file": "src/ui/movement-list.test.tsx, src/ui/movement-identity.test.tsx",
+    "test": "gallery cards (both files); e2e gallery cards (both specs)",
+    "assertion": "the state's Review and Workout scenes, its standard/superset/circuit and timed compositions, and the build's workout-card/review-block source reads",
+    "reason": "Round 7's cards state is the three live timed cards before Start; the Review consumer and the three structures are proved on the real routes."
+   }
+  ],
+  "forTask115": [
+   "TASK-112 / AC-C03-01 (R132): Round 7 draws each movement's equipment inline after the name's words; at 320 and 390 a two-word label (TASK-118 saw “cable / machine” on Review) can continue on the next line under the name instead of moving as one unit (the build's look). The task-002 suite reads it as readable: every part inside the name column, none clipped, none over the name, never under Swap or the counter. Eric to confirm the retired “wraps as one unit”.",
+   "TASK-112 / C04: Review's standard block (Round 7's Review.tsx) draws its lifts without a rule between them, where Workout's standard list and every grouped list draw one between peers. Eric to confirm the retired Review standard separator.",
+   "TASK-112 / decision 2 (2026-11-13): Review and Workout name the section on every block card's header as a level-2 heading (three “Accessory” headings for three blocks in one section); the build named it once on Review and drew the live title as a label. Screen-reader outline repeats the section name.",
+   "TASK-112: live group ordinals are part of the name's words (superset “A1”, “A2”; circuit “1.”, “2.”; “10.”), Review's are their own element (“01”, “02”, “10”).",
+   "TASK-112: Review's standard card draws an empty block-size line under its header (`clr-timed-meta`, Round 7's Review.tsx), which takes one group gap; glance at the spacing under the header at 320.",
+   "TASK-112 parity (AC-R002-03): on the same timed blocks Review states the planned sets × reps (“3 × 12 reps”, “1 × 10 reps”, “1 × 40 reps”) where the live card states the minute or pass (“Min 1 · 12 reps”, “10 reps”, “40 reps”); labelled in the receipts.",
+   "TASK-112: the group header title wears Round 7's label face (label-sm) in both contexts (the build's label-xs)."
+  ],
+  "selfCheck": {
+   "when": "2026-11-23, A3 TASK-112 attempt 1, before hand-back",
+   "method": "Mechanical: every test file and e2e spec touched since 66fb340b (5) parsed with the TypeScript compiler API; full titles (describe > … > it/test, template titles as written) at the base, the build (181e580) and this tree; a body counts as changed when its text or the text of any file-level helper it reaches (transitively) differs from the base; the outermost expect(…) chains of the body and those helpers were printed canonically and compared, as sets, with the build's and the base's body of the same title. Each read not present verbatim was read and classified (matchersWeakenedNote, entries). The fixture src/test/context-actions-fixture.ts holds no test.",
+   "counts": {
+    "files": 5,
+    "baseTitlesGone": 0,
+    "buildTitlesGone": 0,
+    "bodiesChanged": 27,
+    "withBuild": 26,
+    "withBase": 8,
+    "buildReadsNotVerbatim": 72,
+    "baseReadsNotVerbatim": 16
+   },
+   "titlesAtBaseAbsentAtHead": 0,
+   "buildTitlesNotCarried": 0,
+   "perFile": [
+    {
+     "file": "src/ui/movement-list.test.tsx",
+     "buildTitles": 7,
+     "baseTitles": 0,
+     "headTitles": 7,
+     "absentAtHead": 0,
+     "buildTitlesNotCarried": 0,
+     "bodiesChanged": 7,
+     "buildReadsNotVerbatim": 15,
+     "baseReadsNotVerbatim": 0
+    },
+    {
+     "file": "src/ui/movement-identity.test.tsx",
+     "buildTitles": 19,
+     "baseTitles": 8,
+     "headTitles": 19,
+     "absentAtHead": 0,
+     "buildTitlesNotCarried": 0,
+     "bodiesChanged": 11,
+     "buildReadsNotVerbatim": 41,
+     "baseReadsNotVerbatim": 0
+    },
+    {
+     "file": "e2e/refinement/task-001.spec.ts",
+     "buildTitles": 3,
+     "baseTitles": 3,
+     "headTitles": 3,
+     "absentAtHead": 0,
+     "buildTitlesNotCarried": 0,
+     "bodiesChanged": 3,
+     "buildReadsNotVerbatim": 3,
+     "baseReadsNotVerbatim": 3
+    },
+    {
+     "file": "e2e/refinement/task-002.spec.ts",
+     "buildTitles": 5,
+     "baseTitles": 5,
+     "headTitles": 5,
+     "absentAtHead": 0,
+     "buildTitlesNotCarried": 0,
+     "bodiesChanged": 5,
+     "buildReadsNotVerbatim": 13,
+     "baseReadsNotVerbatim": 13
+    },
+    {
+     "file": "e2e/refinement/task-112-parity.spec.ts",
+     "buildTitles": 0,
+     "baseTitles": 0,
+     "headTitles": 1,
+     "absentAtHead": 0,
+     "buildTitlesNotCarried": 0,
+     "bodiesChanged": 1,
+     "buildReadsNotVerbatim": 0,
+     "baseReadsNotVerbatim": 0
+    }
+   ],
+   "titleCountNote": "e2e titles are counted as written (a title in a viewport loop counts once); the runner executes 9 (task-001), 7 (task-002) and 2 (parity) cases. The 16 base reads not verbatim are the e2e reads (base = build in both specs).",
+   "restoredAfterComparison": [
+    "the build's three last-peer reads in `expectPeerSeparators` (`rule ''`, inline `borderBlockEnd`, `borderBottom`)",
+    "`list()`/`peers` names so the build's list reads are verbatim",
+    "the column flex read made exact (`1`, `1`, `0`) where a regex had crept in",
+    "the build's three `headings[0]` reads in AC-R002-02",
+    "`within(workout)` for the EMOM list",
+    "`equipment.right` never under the slot (task-002 spec)",
+    "`count > 0` and `expectSlot` (workout) in the task-002 gallery case"
+   ]
+  },
+  "ownerDecisions": [
+   "Owner decisions of 2026-11-13 (A3, “Accept recommendations”): (2) the section name is each block's group heading; (6) structure badges are format-only — cited for the heading and block-size rewrites.",
+   "Owner decisions of 2026-11-18, decision 3: one owner per test file — this task owns src/ui/movement-list.test.tsx and src/ui/movement-identity.test.tsx whole."
+  ],
+  "planConflicts": [],
+  "productFilesChanged": [],
+  "galleryChanges": [],
+  "galleryChangesNote": "No gallery-owned (or other product) file changes: `git diff 66fb340b -- src` outside tests and src/test is empty. The accepted cards state was read at 320 and 390 on this tree and diffed with the base's own cards receipts (A3 TASK-110's, evidence/refinement/task-110/parity/cards-phone-*.json): no line differs (parity receipts `galleryAgainstBase`).",
+  "forTask119": "Not touched: src/app/Review.test.tsx and src/app/review-screen.test.tsx (TASK-119's files); no Generate or Regenerate case added."
+ },
+ "summary": {
+  "rewritten": 27,
+  "carried": 8,
+  "added": 1
+ },
+ "entries": [
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > AC-C01-01 Review and Workout lead with the prominent name, readable prescription and load, quiet equipment and their own action or progress slot",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness (Round 7, bec4454): Round 7's stylesheets (text-roles.css, movement-presentation.css, workout-r7.css) where the build applied src/ui/refinements/tokens.css and presentation.css; identities are `.clr-movement-identity` (the build's `[data-movement-identity]`); `list()` reads Review's standard block from its card's movement group, which Round 7 draws without a list (every other scope is the build's named list); the name element `.clr-movement-identity__name` is the wrapping column (the build's `.clr-movement-identity__title`), the words span is the build's `[data-movement-name]`, the ordinal is `.clr-movement-identity__ordinal` on Review and the leading `A1 `/`1. ` of a live group's words (the build's `[data-movement-ordinal]`), the load is the prescription's second reading (the build's `[data-movement-load]`). Body: every face read verbatim (name h5 size, bold, ink; equipment label-xs in --text-secondary; column overflow-wrap anywhere, min-width 0; prescription label-md, after the name row; Review's one action slot with Swap, no set progress; Workout's one counter slot `Set 1/N`, no Swap). Rewritten: the column class is `clr-movement-identity__name` and the equipment class `clr-movement-identity__equipment-inline` (Round 7's names); Workout's counter className is exactly `clr-movement-identity__counter clr-text-data-xs` (Round 7 adds the data text role); a closed circuit row's `Rest for …` is read in its row (`li`), where Round 7 draws it below the identity (the build drew it inside).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > AC-C02-01 shows no Last-performance row in either context while the prescribed load stays visible",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness (Round 7, bec4454): Round 7's stylesheets (text-roles.css, movement-presentation.css, workout-r7.css) where the build applied src/ui/refinements/tokens.css and presentation.css; identities are `.clr-movement-identity` (the build's `[data-movement-identity]`); `list()` reads Review's standard block from its card's movement group, which Round 7 draws without a list (every other scope is the build's named list); the name element `.clr-movement-identity__name` is the wrapping column (the build's `.clr-movement-identity__title`), the words span is the build's `[data-movement-name]`, the ordinal is `.clr-movement-identity__ordinal` on Review and the leading `A1 `/`1. ` of a live group's words (the build's `[data-movement-ordinal]`), the load is the prescription's second reading (the build's `[data-movement-load]`). Body identical to the build's (the reads go through `list()`); a live group's ordinal is left out of the name, so both contexts read the same names.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > AC-C04-01 separates peers only between two movements, never after the last, with no inner grouping rail",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness (Round 7, bec4454): Round 7's stylesheets (text-roles.css, movement-presentation.css, workout-r7.css) where the build applied src/ui/refinements/tokens.css and presentation.css; identities are `.clr-movement-identity` (the build's `[data-movement-identity]`); `list()` reads Review's standard block from its card's movement group, which Round 7 draws without a list (every other scope is the build's named list); the name element `.clr-movement-identity__name` is the wrapping column (the build's `.clr-movement-identity__title`), the words span is the build's `[data-movement-name]`, the ordinal is `.clr-movement-identity__ordinal` on Review and the leading `A1 `/`1. ` of a live group's words (the build's `[data-movement-ordinal]`), the load is the prescription's second reading (the build's `[data-movement-load]`). `expectPeerSeparators` keeps the build's reads for every list (rule after each peer but the last, none after the last, no rail on items, list or group). Rewritten: the peer gap is Round 7's `var(--spacing-400)` (the build's `var(--movement-peer-gap)`, a token Round 7 does not have); Review's standard block, which Round 7 draws with no list, is read by `expectUnruledPeers`: no rule after any row (so none after the last), no rail, the group's gap — the build's rule between Review's two standard lifts is retired (look; rules.retiredAssertions, UAT). Review's group containers are Round 7's `.clr-movement-group` (the build's `[data-review-block]`), and at least one is read.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-01 standard, superset and circuit cards keep peer-only separators in both contexts and retain history data",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness (Round 7, bec4454): Round 7's stylesheets (text-roles.css, movement-presentation.css, workout-r7.css) where the build applied src/ui/refinements/tokens.css and presentation.css; identities are `.clr-movement-identity` (the build's `[data-movement-identity]`); `list()` reads Review's standard block from its card's movement group, which Round 7 draws without a list (every other scope is the build's named list); the name element `.clr-movement-identity__name` is the wrapping column (the build's `.clr-movement-identity__title`), the words span is the build's `[data-movement-name]`, the ordinal is `.clr-movement-identity__ordinal` on Review and the leading `A1 `/`1. ` of a live group's words (the build's `[data-movement-ordinal]`), the load is the prescription's second reading (the build's `[data-movement-load]`). Same separator reads as AC-C04-01. The anchored Review suggestion (`Suggested …`) is read in the back squat's row, where Round 7's `ReviewExerciseRow` draws it below the identity (the build drew it inside); `100 kg` is still read inside the identity; the persisted load (`toMatchObject`) and Workout's readings verbatim. Added: each context's ordinals as drawn (Review `01`, `02`; Workout `A1`, `A2` and `1.`–`3.`).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 long names and multi-digit ordinals wrap inside the name column without covering the action or progress slot",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness (Round 7, bec4454): Round 7's stylesheets (text-roles.css, movement-presentation.css, workout-r7.css) where the build applied src/ui/refinements/tokens.css and presentation.css; identities are `.clr-movement-identity` (the build's `[data-movement-identity]`); `list()` reads Review's standard block from its card's movement group, which Round 7 draws without a list (every other scope is the build's named list); the name element `.clr-movement-identity__name` is the wrapping column (the build's `.clr-movement-identity__title`), the words span is the build's `[data-movement-name]`, the ordinal is `.clr-movement-identity__ordinal` on Review and the leading `A1 `/`1. ` of a live group's words (the build's `[data-movement-ordinal]`), the load is the prescription's second reading (the build's `[data-movement-load]`). Kept: ten stations, ordinal `10` (`toHaveTextContent(/^10$/)` on Round 7's ordinal element, plus `ordinalOf` exactly `10`), ordinal and words inside the column, the action its sibling, name row flex, column overflow-wrap anywhere, action max-width 45%, no rail; Workout: ten stations, the counter outside the column with flex-grow and flex-shrink 0, no header rail. Rewritten: the column's grow and basis are read from Round 7's declaration (`flex: 1 1 0` in movement-presentation.css, exactly `1`, `1`, `0`) because jsdom's cascade drops a shorthand with a unitless zero basis (the browser measures it in task-001.spec.ts); the build's `flex-basis: 0%` is Round 7's `0`. The live tenth ordinal is the name's leading `10. ` (Round 7 puts a live group's ordinal in the words; read exactly as `10.` by `ordinalOf`).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 opens Review, starts that same workout and shows the same hierarchy on Workout",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Harness (Round 7, bec4454): Round 7's stylesheets (text-roles.css, movement-presentation.css, workout-r7.css) where the build applied src/ui/refinements/tokens.css and presentation.css; identities are `.clr-movement-identity` (the build's `[data-movement-identity]`); `list()` reads Review's standard block from its card's movement group, which Round 7 draws without a list (every other scope is the build's named list); the name element `.clr-movement-identity__name` is the wrapping column (the build's `.clr-movement-identity__title`), the words span is the build's `[data-movement-name]`, the ordinal is `.clr-movement-identity__ordinal` on Review and the leading `A1 `/`1. ` of a live group's words (the build's `[data-movement-ordinal]`), the load is the prescription's second reading (the build's `[data-movement-load]`). Body identical to the build's.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-list.test.tsx",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > renders the accepted gallery state cards through the Review and Workout consumers",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7's cards state (bec4454) draws the live consumer only: `LiveFlow`'s EMOM, AMRAP and For Time cards before Start (one movement each, the gallery's blocks in pounds). Kept on it: each list's peer separators (`expectPeerSeparators`, verbatim) and readings against the state's own blocks; the state's list count is read. Retired (no equivalent in Round 7's state): its Review and Workout context scenes and the standard/superset/circuit composition — Review's consumer and the three structures are proved on the real /review and /workout routes by this block's route cases and task-001.spec.ts.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 preserves the verified equipment inventory: the 75 shipped icons unchanged, Dumbbell and WeightPlate the only equipment glyphs, and Setup’s 16 equipment ids",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-C56-01 keeps the equipment wanted list in step with the inventory: every Setup id’s glyph status and next step, the medicine ball as a review label",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 preserves the approved round effort faces: only Frown, Meh, Smile and SmilePlus are round, and Effort still reuses Frown, Meh and Smile",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 reads the Wall ball’s medicine ball as composed equipment without inventing a medicine-ball setup id",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-01 Setup equipment offers exactly the 16 Setup equipment choices, each named in words, and no medicine ball",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > AC-R029-02 JOURNEY-029 reads every equipment kind as a readable label beside its name in Review and Workout, glyph or none, and Review’s Required equipment in words",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > JOURNEY-029 recovery: a failed Start keeps Review’s equipment labels and Required equipment as they were and records no work",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-029 equipment asset inventory and readable fallback > renders the accepted gallery state assets: the shared equipment inventory, then the routes’ own Review, Workout and Setup equipment as readable labels",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "carried",
+   "note": "TASK-118's carried block, unchanged at this task: its body and every helper it reaches are byte-identical to the base (the self-check finds no TASK-029 body changed); TASK-002's readings and its describe-scoped foundation faces are added after it. TASK-029 check-01 (`^TASK-029 `) re-run, receipt refreshed.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-C03-01 shows the compact equipment beside each movement name in Review and Workout, as readable wrapping text",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). `expectCompactEquipment` (TASK-118's Round 7 helper, unchanged) for the build's: the equipment follows the name's words (`words.nextElementSibling`, the build's `name.nextElementSibling`), is inside the name element (`toContainElement`, the build's `not.toContainElement` — R132's inline placement, `equipmentPlacement: 'name'`; the name's words still `not.toContainElement` it), `overflow-wrap`/`min-width` read on the name element (Round 7's column); the column's `flex-wrap: wrap` and the label's `max-width: 100%` are retired (look: inline text in the name's line box, read as `display: inline`). Review's standard rows are read through `rows()`. Added: each structure's row count in both contexts. The live heading named `back squat` verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-C06-01 offers Swap in Review’s movement slot and set progress, Rest and logging in Workout’s, never the other way round",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Kept verbatim: Review's one action slot with `Swap <name>` (`nameOf`), no live action or progress in Review; Workout's counter text, 4 `Rest` and 2 `Rest for` buttons, no Swap, no action slot anywhere, and Rest opening `Log set 1 of back squat`. Rewritten: Workout's counter className is exactly `clr-movement-identity__counter clr-text-data-xs` (Round 7's text role).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-C07-01 heads Review’s block cards with the live cards’ static header: the section identity and the badge, in the same face",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Kept verbatim: three Review cards, each title the section, no control in any header, `SUPERSET`/`CIRCUIT` badges, Review's first title an H2; three live cards, the section, `SUPERSET`, the same classes and the same eight face properties in both contexts, uppercase. Rewritten: the rounds (`3 ROUNDS`, `2 ROUNDS`) are read on Round 7's line directly under the header (`metaOf`), where the build read them inside it; the face is Round 7's label face `var(--label-sm-size)` (the build's `var(--label-xs-size)`; look); the build's 'keeps its header's inherited weight and line height' is Round 7's 'keeps the label face, not the heading element's display face': font-family `var(--font-data)`, line-height `var(--label-sm-line-height)`, letter-spacing `var(--tracking-data)` read exactly (Round 7 sets them by `.label`, not by inheritance).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-01 says a duplicate Bodyweight once, by the equipment, in both contexts and never hides an actual prescribed load",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Body's reads verbatim (`prescribedLoadReading` table, Review readings equal the fixture, at most one `bodyweight` per row, Workout readings equal Review's, the air squat's detail without bodyweight); Review's standard rows through `rows()`.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keeps Review’s sections open under static semantic headings, with no toggle, chevron or hit area, and keeps the separate disclosures",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Rewritten (owner decisions of 2026-11-13, decision 2: the section name is each block's group heading): Round 7 names the section on every Review card's header, so the level-2 headings are three `Accessory` (the build named it once, `[SECTION]`); the build's reads on `headings[0]` are kept verbatim (title class, not inside a button, no tabindex) and repeated for the other two. Kept: no button named by the section, a press changes nothing (no collapsible or `data-expanded` around any card's group — Round 7's cards for the build's `[data-review-block]`), the back squat visible (Review's standard rows through `rows()`), the Tempo disclosure and the live `Coaching and notes — back squat` disclosure verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-03 keeps planned sets, reps, rounds and rest in Review, keeps live counters and Rest or log controls out of it, and keeps Swap out of Workout",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Every planned string and every 'nothing live' read verbatim, 7 Swaps, Workout without Swap or Undo swap and with counters. Rewritten: the block size lines are Round 7's line under each card's header, read exactly as `['', '3 ROUNDS', '2 ROUNDS']` (the standard card's line states none; the build read `[data-structure-meta]` as `['3 ROUNDS', '2 ROUNDS']`).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 opens Review, uses Swap, starts that same workout and uses Rest on Workout without recording work",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Body verbatim (Swap opens the slot's alternatives, Keep returns with the same readings; one accept and one start; Workout's readings equal Review's; Rest opens `Log set 1 of back squat` with `Set 1/3`, no Swap); Review's standard rows through `rows()`.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed formats show the same equipment beside each name in Review and in the live EMOM, AMRAP and For Time blocks",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). `expectCompactEquipment` (TASK-118's Round 7 helper, unchanged) for the build's: the equipment follows the name's words (`words.nextElementSibling`, the build's `name.nextElementSibling`), is inside the name element (`toContainElement`, the build's `not.toContainElement` — R132's inline placement, `equipmentPlacement: 'name'`; the name's words still `not.toContainElement` it), `overflow-wrap`/`min-width` read on the name element (Round 7's column); the column's `flex-wrap: wrap` and the label's `max-width: 100%` are retired (look: inline text in the name's line box, read as `display: inline`). Body verbatim; the live For Time list is Round 7's `Movements in this FOR TIME` (the fixture's `TIMED_LISTS`, updated; the build's `Movements in this block`).",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read or a failed Start keeps Review as planned and records no work",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Reuses TASK-118's shared harness and `expectCompactEquipment` unchanged (`openReview`, `startWorkout`, `list`, `rows`, `identities`, `nameOf`); TASK-002's own readings sit beside them: `movementName` (`nameOf` without a live group's `A1 `/`1. `), `loadOf` (the prescription's second reading, the build's `[data-movement-load]`), `readings`, `cards`/`headerOf` (Round 7's card whose movement group opens with `MovementGroupHeader`, the build's `[data-workout-card]`), `metaOf` (Round 7's `clr-timed-meta` line under the header, the build's in-header `[data-structure-meta]`). The header face reads foundation.css's heading and label faces (added for this block only; the rest of foundation.css hides the scroll region until measured, which jsdom never does). Body verbatim (two failed alternatives reads, Keep, failed Start with the error, no start, the same readings, three cards, Swap still offered); Review's standard rows through `rows()`.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > renders the shared owners with each context’s own slot",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "The build's `WorkoutCard`/`ReviewMovement`/`LiveMovement` (src/ui/refinements/workout-card.tsx) are not Round 7's; rendered instead through Round 7's shared owners as each context composes them, under PRODUCT_PRESENTATION: Review's card is `MovementGroupHeader` over `MovementIdentity` with its action (`ReviewExerciseRow`'s own composition), Workout's is `MovementGroupHeader` over `BlockPanel.Movement` with its progress. Kept verbatim: Review's action `Swap kb swing` and no counter, its name a P; Workout's counter `Set 1/2` and no action, its movement a heading named `kb swing`; Review's header a heading named `Conditioning`. Rewritten (decision 2 of 2026-11-13): the live card's header is the same heading (`getByRole` … `toBeInTheDocument`, the build's `queryByRole` … `toBeNull`) — Round 7 draws the live block's group header as a heading on the route. Added: both rows' compact equipment.",
+   "result": "passed"
+  },
+  {
+   "file": "src/ui/movement-identity.test.tsx",
+   "test": "TASK-002 context-specific actions with compact equipment > renders the accepted gallery state cards through WorkoutCard with static headers and each context’s slot",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Round 7's cards state draws the live cards only (`TimedWorkoutFlow`/`BlockPanel`, EMOM, AMRAP and For Time before Start). Kept on it: each card opens with the static header, its title a heading (`/^H\\d$/`), no control or chevron in any header, each identity with no action and its compact equipment (TASK-118's helper), the `Movements in this EMOM` list. Added: three cards, the format-only badges, three identities. Rewritten: the source reads name Round 7's owners (the state's `LiveFlow` draws `<TimedWorkoutFlow block={block}`; block-renderers-frame, timed-workout-flow and review-exercise-row import `./movement-presentation`; Review imports `ReviewExerciseRow`, which draws `<MovementIdentity`) for the build's workout-card/review-block/`<ReviewMovement` reads. Retired (no equivalent in Round 7's state): the Review scene and its reads (H-titled review cards, Swap in each review identity, no review counter, `emom` review list, no glyph in the Review scene), the composition switch, and the live title as a SPAN (decision 2) — proved on the real routes by this block's route cases and task-002.spec.ts.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-001.spec.ts",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > JOURNEY-001 ${name}: Review then Workout show the same hierarchy, peer-only separators and no Last-performance row",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body (replaced). The case body is unchanged; `readList` reads Round 7's rows: `.clr-movement-identity` (the build's `[data-movement-identity]`), the name element as the column, the words span, Round 7's ordinal element, the prescription's second reading as the load, the slot's own `clr-movement-identity__*` class (Round 7's counter also wears a text role), and a live group's ordinal left out of the name; Review's standard block is its card's movement group (no list). `expectPeerOnlySeparators` keeps every list read and reads Review's standard rows as unruled (look retirement, UAT). Runs at 320, 390, 768 and 1280.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-001.spec.ts",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > AC-R001-02 ${name}: long names and multi-digit ordinals wrap without obscuring Swap or set progress",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body (replaced). Same reader as above. The multi-digit ordinal counts are read by `ordinalCount`: exactly one movement whose drawn ordinal is `10` on Review (Round 7's ordinal element) and `10.` on Workout (the leading words of the live name), for the build's `[data-movement-ordinal]` filters.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-001.spec.ts",
+   "test": "TASK-001 shared movement hierarchy and peer grouping > gallery cards: the accepted state renders the same peers through the Review and Workout consumers",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body (replaced). Round 7's cards state draws the live EMOM, AMRAP and For Time lists only; each is read for peer separators, the Workout hierarchy and its own readings (the gallery's blocks, in pounds), and the state's list count. Retired: the state's Review and Workout context scenes and the three-structure composition (proved on the routes above).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-002.spec.ts",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 ${name}: Review offers Swap under static headers, then Workout offers progress, Rest and logging with equipment beside each name",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body (replaced). `readIdentities` reads Round 7's rows (as task-001.spec.ts) plus the name's line fragments, the equipment's fragments and its inline gap. `expectEquipmentBesideName` (AC-C03-01, R132): kept — visible, text not a glyph, not truncated, readable (≥ 12 px), quieter than the name, inside the column, never under the slot (verbatim, and per fragment), nothing overflows; rewritten — the equipment is inside the name's own element directly after the words (the build's 'the name element holds only the name' is inverted by R132's inline placement), it starts beside the name's last line or at the start of the next line (after its own gap), and a long label continues on the next line from the column's start: the build's 'wraps as one unit' (`equipmentLines` 1, `wrappedAsUnit`) is retired (look; UAT); added — no equipment fragment is drawn over the name's words. Headers: Round 7's card headers (the build's `[data-workout-card] > [data-movement-group-header]`); the rounds lines read under each header as `['', '3 ROUNDS', '2 ROUNDS']`; three level-2 `Accessory` headings (decision 2), the first tapped; disclosures counted in `[data-review-section]`; the live title an H2 (decision 2; the build's SPAN). Every other read verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-002.spec.ts",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed ${name}: EMOM, AMRAP and For Time keep the same equipment beside each name in Review and Workout",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body (replaced). Same readers as above; the live For Time list is `Movements in this FOR TIME` (fixture). Body verbatim.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-002.spec.ts",
+   "test": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keyboard: Review section headers are not focus stops, Swap and the tempo detail are, and Coaching and notes stays a disclosure in Workout",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body; body verbatim, it runs on Round 7 through the shared readers (no read changed).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-002.spec.ts",
+   "test": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read and a failed Start keep Review as planned and record no work",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body; body verbatim, it runs on Round 7 through the shared readers (Round 7's Review standard group, card headers).",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-002.spec.ts",
+   "test": "TASK-002 context-specific actions with compact equipment > gallery cards: the accepted state draws Review and Workout through the same card, static header and context slots",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Base body = build body (replaced). Round 7's state draws three live cards; kept on it: every list's equipment beside the name and its live slot (`expectSlot` workout, no Swap), no control in any header, a header per card (three). Retired: the composition switch and the Review scene's reads (Review's Swap slot), proved on /review above.",
+   "result": "passed"
+  },
+  {
+   "file": "e2e/refinement/task-112-parity.spec.ts",
+   "test": "TASK-AC-1AFEF9A3EE07 cards ${name}: /review’s and /workout’s EMOM, AMRAP and For Time movement rows match the accepted cards state",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "added",
+   "note": "New (TASK-AC-1AFEF9A3EE07). Runs at 320 and 390; receipts in evidence/refinement/task-112/parity, captures in the evidence store.",
+   "result": "passed"
+  },
+  {
+   "file": "src/test/context-actions-fixture.ts",
+   "test": "(fixture) TIMED_LISTS.workout",
+   "ledger": "TASK-112 (brief; owner decisions of 2026-11-18, decision 3)",
+   "disposition": "rewritten",
+   "note": "Test fixture used only by this task's two files: the live For Time list name is Round 7's `Movements in this FOR TIME` (wording; TASK-118's note: no longer `Movements in this block`).",
+   "result": "n/a"
+  }
+ ]
+}

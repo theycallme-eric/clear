@@ -1,0 +1,318 @@
+{
+  "schema": "clear-task-112-parity/v1",
+  "task": "TASK-112",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "cards",
+  "width": 320,
+  "routes": [
+    "/review",
+    "/workout"
+  ],
+  "part": "each block’s movement rows (its MovementList): EMOM, AMRAP and For Time",
+  "captures": {
+    "gallery:emom": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-gallery-rows.png",
+      "sha256": "3962e593a0659ab32976bf7f20108faa2b49be2b8177c7fd7757f9cbace96c50"
+    },
+    "review:emom": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-review-rows.png",
+      "sha256": "8b400cb7fb4c818183fe81d0d17d194cf431f259ab3333bacbc4e583094d04c1"
+    },
+    "workout:emom": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-workout-rows.png",
+      "sha256": "12dbdea193efa07935f11091db92ebefb9920f46bcc38d4f80395b30162c5ae0"
+    },
+    "gallery:amrap": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-gallery-rows.png",
+      "sha256": "21b233596221bfa43a24c66f11f1e4f354e97489227f459cc436c7d93b3701e0"
+    },
+    "review:amrap": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-review-rows.png",
+      "sha256": "45ebab1b30869d75bef728f839f0560646bad68b5500c1e396884b229a7b9ef4"
+    },
+    "workout:amrap": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-workout-rows.png",
+      "sha256": "530b8c874e639f4f4389fc5ad93785f7ae35c85a14059767d7363dce5ad01183"
+    },
+    "gallery:for_time": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-gallery-rows.png",
+      "sha256": "716ded0a6a2c8bb1b2c38e9639dee3bcb892f50b375476b3213f685d034606d1"
+    },
+    "review:for_time": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-review-rows.png",
+      "sha256": "cd1273bdd96cad25ed57944c7bc47262260ba143153d31b2726ea4284e2fdb0c"
+    },
+    "workout:for_time": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-workout-rows.png",
+      "sha256": "fc0f0980dd9f7b68009b33175069c517b888c77f725b5350b413eeaff92a3ed6"
+    }
+  },
+  "lines": {
+    "gallery": {
+      "emom": [
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb"
+      ],
+      "amrap": [
+        "01 BURPEEbodyweight",
+        "10 reps"
+      ],
+      "for_time": [
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb"
+      ]
+    },
+    "review": {
+      "emom": [
+        "01 KB SWINGkettlebell",
+        "SWAP",
+        "3 × 12 reps",
+        "24 lb"
+      ],
+      "amrap": [
+        "01 BURPEEbodyweight",
+        "SWAP",
+        "1 × 10 reps"
+      ],
+      "for_time": [
+        "01 WALL BALLmedicine ball",
+        "SWAP",
+        "1 × 40 reps",
+        "9 lb"
+      ]
+    },
+    "workout": {
+      "emom": [
+        "01 KB SWINGkettlebell",
+        "Min 1 · 12 reps",
+        "24 lb"
+      ],
+      "amrap": [
+        "01 BURPEEbodyweight",
+        "10 reps"
+      ],
+      "for_time": [
+        "01 WALL BALLmedicine ball",
+        "40 reps",
+        "9 lb"
+      ]
+    }
+  },
+  "differences": {
+    "emom": {
+      "workout": [],
+      "review": [
+        {
+          "side": "gallery only",
+          "text": "Min 1 · 12 reps",
+          "criterion": "AC-R002-03",
+          "reason": "The live EMOM states each movement’s minute (its schedule); Review states the planned sets × reps."
+        },
+        {
+          "side": "route only",
+          "text": "SWAP",
+          "criterion": "AC-C06-01",
+          "reason": "Review supplies Swap in the movement’s own slot; the live card never does."
+        },
+        {
+          "side": "route only",
+          "text": "3 × 12 reps",
+          "criterion": "AC-R002-03",
+          "reason": "Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+        }
+      ]
+    },
+    "amrap": {
+      "workout": [],
+      "review": [
+        {
+          "side": "gallery only",
+          "text": "10 reps",
+          "criterion": "AC-R002-03",
+          "reason": "The live AMRAP and For Time state one round’s or one pass’s reps; Review states the planned sets × reps."
+        },
+        {
+          "side": "route only",
+          "text": "SWAP",
+          "criterion": "AC-C06-01",
+          "reason": "Review supplies Swap in the movement’s own slot; the live card never does."
+        },
+        {
+          "side": "route only",
+          "text": "1 × 10 reps",
+          "criterion": "AC-R002-03",
+          "reason": "Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+        }
+      ]
+    },
+    "for_time": {
+      "workout": [],
+      "review": [
+        {
+          "side": "gallery only",
+          "text": "40 reps",
+          "criterion": "AC-R002-03",
+          "reason": "The live AMRAP and For Time state one round’s or one pass’s reps; Review states the planned sets × reps."
+        },
+        {
+          "side": "route only",
+          "text": "SWAP",
+          "criterion": "AC-C06-01",
+          "reason": "Review supplies Swap in the movement’s own slot; the live card never does."
+        },
+        {
+          "side": "route only",
+          "text": "1 × 40 reps",
+          "criterion": "AC-R002-03",
+          "reason": "Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+        }
+      ]
+    }
+  },
+  "faces": {
+    "method": "computed face of each row’s name, ordinal, equipment, prescription and load, row by row",
+    "properties": [
+      "fontFamily",
+      "fontSize",
+      "fontWeight",
+      "lineHeight",
+      "color",
+      "textTransform",
+      "letterSpacing"
+    ],
+    "differences": {
+      "emom": {
+        "workout": [],
+        "review": []
+      },
+      "amrap": {
+        "workout": [],
+        "review": []
+      },
+      "for_time": {
+        "workout": [],
+        "review": []
+      }
+    }
+  },
+  "layout": {
+    "method": "element boxes (workout against the state); Review’s rows draw the action slot beside the name, so their boxes are recorded, not compared",
+    "tolerancePx": 2,
+    "parts": {
+      "emom": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 54
+        },
+        "review": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 80
+        },
+        "workout": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 54
+        }
+      },
+      "amrap": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 54
+        },
+        "review": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 80
+        },
+        "workout": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 54
+        }
+      },
+      "for_time": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 54
+        },
+        "review": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 80
+        },
+        "workout": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 54
+        }
+      }
+    },
+    "measured": {
+      "emom": {
+        "gallery": 11,
+        "review": 17,
+        "workout": 11
+      },
+      "amrap": {
+        "gallery": 10,
+        "review": 16,
+        "workout": 10
+      },
+      "for_time": {
+        "gallery": 11,
+        "review": 17,
+        "workout": 11
+      }
+    },
+    "differences": {
+      "emom": {
+        "workout": []
+      },
+      "amrap": {
+        "workout": []
+      },
+      "for_time": {
+        "workout": []
+      }
+    }
+  },
+  "galleryChanges": [],
+  "galleryAgainstBase": {
+    "emom:ready": {
+      "base": "evidence/refinement/task-110/parity/cards-phone-320.json#lines.gallery.emom:ready",
+      "differences": []
+    },
+    "amrap:ready": {
+      "base": "evidence/refinement/task-110/parity/cards-phone-320.json#lines.gallery.amrap:ready",
+      "differences": []
+    },
+    "for_time:ready": {
+      "base": "evidence/refinement/task-110/parity/cards-phone-320.json#lines.gallery.for_time:ready",
+      "differences": []
+    }
+  }
+}

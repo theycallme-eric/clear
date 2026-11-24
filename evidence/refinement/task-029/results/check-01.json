@@ -22,7 +22,7 @@
   "targets": [
     {
       "path": "src/ui/movement-identity.test.tsx",
-      "sha256": "a7759ba387977a520f2b86e99c7ef07994f05aa62f8010053b312c8c89a7a8be"
+      "sha256": "e6988f4779f0bdcf3684f928c9e0509d5465ca3a039359ac46f3139880122c30"
     }
   ],
   "requiredCases": [
@@ -68,10 +68,10 @@
     }
   ],
   "totals": {
-    "total": 8,
+    "total": 19,
     "passed": 8,
     "failed": 0,
-    "skipped": 0,
+    "skipped": 11,
     "todo": 0,
     "executed": 8
   },

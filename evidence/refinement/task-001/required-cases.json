@@ -1,7 +1,7 @@
 {
   "schema": "clear-refinement-required-cases/v1",
   "task": "TASK-001",
-  "description": "Shared movement hierarchy and peer grouping (REQ-001; C01, C02, C04) delivered through MovementIdentity / MovementList / MovementGroupHeader on the real /review and /workout routes (JOURNEY-001), with the accepted gallery state /gallery/refinements?state=cards (reference eded158cfd928d382c9a9409e2c372270312741d). Every declared case must execute and pass.",
+  "description": "Shared movement hierarchy and peer grouping (REQ-001; C01, C02, C04) on the real /review and /workout routes (JOURNEY-001). A3 update (TASK-112, 2026-11-23): delivered through Round 7's MovementIdentity / MovementList / MovementGroupHeader (src/ui/movement-presentation.tsx), drawn by ReviewExerciseRow on /review and BlockPanel.Movement / TimedWorkoutFlow on /workout, with the accepted gallery state /gallery/refinements?state=cards (gallery commit bec4454; the eded158 reference is historical). Every declared case must execute and pass.",
   "checks": {
     "check-01": {
       "runner": "vitest",
