@@ -1486,6 +1486,13 @@
    },
    {
     "scan": "every evidence/refinement/*/required-cases.json was scanned for checks whose targets TASK-115 changed: e2e/refinement/task-021.spec.ts (TASK-021 check-02), task-105-parity.spec.ts (TASK-105 parity), task-107-parity.spec.ts (TASK-107 parity). The root e2e specs updated here (ui-polish-home, uat-batch-01, ui-polish-pwa-viewport, ui-polish-b05-recent-rows) are no check’s target."
+   },
+   {
+    "task": "TASK-104",
+    "check": "parity",
+    "why": "e2e/refinement/task-104-parity.spec.ts changed (repair round 2, timing only, D4)",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-104 --check parity -- npx playwright test e2e/refinement/task-104-parity.spec.ts --project=mobile",
+    "result": "PASSED twice; parity receipts, guard receipt and the 100 store captures byte-identical across the two runs"
    }
   ],
   "definitionRecords": "TASK-121’s check-01 receipt and the TASK-035/037/038 check-01 receipts are consumed (current and passing; the closure test re-verifies them). TASK-115 changes no record, checker or definition test.",
@@ -1497,6 +1504,7 @@
     "e2e/focus-ownership.spec.ts",
     "e2e/refinement/task-021.spec.ts",
     "e2e/refinement/task-033.spec.ts",
+    "e2e/refinement/task-104-parity.spec.ts",
     "e2e/refinement/task-105-parity.spec.ts",
     "e2e/refinement/task-107-parity.spec.ts",
     "e2e/refinement/task-115-comparison.spec.ts (new)",
@@ -1520,16 +1528,21 @@
     "scripts/refinement/task-115-closure.test.mjs (new)"
    ],
    "counts": {
-    "files": 25,
-    "baseTitlesAbsentOrRenamedAtHead": 29,
-    "changedBodies": 8,
+    "files": 26,
+    "baseTitlesAbsentOrRenamedAtHead": 30,
+    "changedBodies": 9,
     "newBodies": 66,
     "bodiesFewerReadsThanBase": 0,
     "bodiesFewerReadsThanBuild": 0,
     "skipOnlyTodoFixmeAdded": 0,
-    "instancesDroppedFromLoops": 3
+    "instancesDroppedFromLoops": 1
    },
    "absentOrRenamedAtHead": [
+    {
+     "file": "e2e/contained-shell.spec.ts",
+     "test": "`the ${skin} skin keeps shipped fonts, ground and emission`",
+     "ledgerRow": "retired: signal and mono (D2, Eric, chat, 2026-11-24: \"Retire, list for UAT (Recommended)\"), clear and vapour (D6, Eric, chat, 2026-11-24: \"Yes, retire both (Recommended)\"); the whole loop is removed"
+    },
     {
      "file": "e2e/contained-shell.spec.ts",
      "test": "'REQ-001 phone shell — entry screens' > 'Welcome and OTP keep full-width rules, fixed chrome and coinciding action frames'",
@@ -1740,24 +1753,19 @@
      "base": "tabbing straight after visit()",
      "head": "waits for main’s Send code button first (timing only, D4 b); every read kept",
      "lost": []
+    },
+    {
+     "file": "e2e/refinement/task-104-parity.spec.ts",
+     "test": "TASK-AC-57108F133EA2 <state> <width>: /workout’s timed card matches the accepted gallery state … (all 10; driveLifecycle)",
+     "build": "(file absent at the build)",
+     "base": "before Start: const now = await page.evaluate(() => Date.now()); await page.clock.pauseAt(now + 1_000)",
+     "head": "before Start: await page.clock.pauseAt(holdAt), holdAt = HOLD_AT.gallery (ENTRY + 2 min) or HOLD_AT.route (ENTRY + 5 min); every read, receipt field, hash binding and the 2 px tolerance unchanged (timing only, D4)",
+     "lost": []
     }
    ],
    "matchersWeakened": false,
-   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher). Repair round 1: 73 cases retired whole under D2 (ledger rows, no skip); two timing-only waits under D4(b) add reads and drop none.",
+   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher). Repair round 1: 73 cases retired whole under D2 (ledger rows, no skip); two timing-only waits under D4(b) add reads and drop none. Repair round 2: the clear and vapour contained-shell cases retired whole under D6 (ledger rows, no skip; the loop is removed); TASK-104’s parity spec holds its clock at a fixed instant before Start (timing only, D4) and drops or loosens no read.",
    "instancesDropped": [
-    {
-     "file": "e2e/contained-shell.spec.ts",
-     "test": "the ${skin} skin keeps shipped fonts, ground and emission",
-     "dropped": [
-      "signal",
-      "mono"
-     ],
-     "kept": [
-      "clear",
-      "vapour"
-     ],
-     "how": "loop list reduced (D2); body unchanged"
-    },
     {
      "file": "e2e/ui-polish-b05-header-back.spec.ts",
      "test": "${entry.consumer}: framed icon-only Back, reached in-app, returns to …",
@@ -1897,15 +1905,60 @@
     "line": 57,
     "change": "repo:src/dev/gallery-refinement-scenes.tsx sha256 621ecdfb… → 91f26a57… (hash only, TASK-121’s editing rules; the S20 citation still holds: GalleryMovementCards is unchanged)",
     "why": "D3 changed that pinned source; TASK-038 check-01 was REJECTED until re-recorded, then PASSED; TASK-121 check-01 PASSED (receipt unchanged).",
-    "commit": "in the commit after the D3 change (6ca3dc5f), within the same repair candidate"
+    "commit": "in 7db407d6, the next commit to touch either file after the D3 change 6ca3dc5f (four commits later on the branch), within the same repair-1 candidate; TASK-AC-99A513AC101C asks for the same commit",
+    "ownerAcceptance": "Eric, chat, 2026-11-24: \"Accept as is (Recommended)\" (decision D7). Asked: \"TASK-115: the hash update for TASK-038's record landed one commit after the gallery change. Its criterion asks for the same commit. The final code passes every check, and there's no product effect. Accept it as is, listed for UAT?\" Accepted as is; listed for UAT (evidence/refinement/task-115/UAT-LIST.md, owner item 6)."
    },
    "tasks041": "task-041 passed in the one-worker run."
+  },
+  "repairRound2": {
+   "decisions": {
+    "D4": "Eric, chat, 2026-11-24: \"Allow both (Recommended)\" — test timing fixes that do not change what a test checks are allowed; stale parity may be retaken through its own guard.",
+    "D6": "Eric, chat, 2026-11-24: \"Yes, retire both (Recommended)\" — retire contained-shell’s clear and vapour skin cases on D2’s terms, listed for UAT. Asked: \"TASK-115: two more old look tests fail the same check you retired under D2. They are the clear and vapour skins on the create-account screen. They fail only when the test backend is set, so the first full run missed them. Retire them too, on the same terms as D2 (listed for UAT)?\"",
+    "D7": "Eric, chat, 2026-11-24: \"Accept as is (Recommended)\" — accept TASK-038’s re-record landing after the gallery change, listed for UAT. Asked: \"TASK-115: the hash update for TASK-038's record landed one commit after the gallery change. Its criterion asks for the same commit. The final code passes every check, and there's no product effect. Accept it as is, listed for UAT?\""
+   },
+   "failure": "Verification of repair 1 (runs d1ca1e0d and a88f1b23): every command passed in both, but the TASK-104 parity receipt ladder-12-phone-390 alternated between two renders of its route running/paused/ended captures (A 2a6de6c9/09465ba8/515a098f at d79e674b; B 6de22238/15f169df/e5a4e953 in run 1), so any verification run could change the candidate.",
+   "task104Timing": {
+    "file": "e2e/refinement/task-104-parity.spec.ts",
+    "lines": "63–74 (HOLD_AT and its comment); 500–503 (driveLifecycle doc and holdAt parameter); 511 (pauseAt(holdAt)); 564 and 573 (callers)",
+    "cause": "The captures taller than the viewport show /workout’s header over the card’s top edge, with the session clock (useElapsedSeconds(snapshot.session.started_at), src/app/Workout.tsx:304). The spec held the clock at now + 1 s, where now is the page’s clock, which runs in real time from the gallery side’s resume through the /workout load; so the clock read 03:06, 03:07 or 03:08 at “running”, by load time. Reproduced before the fix: 4 parallel repeats on the shared dev server gave 3 × A and 1 × a third render C (698f17df/f34fe104/f375a680); A and C differ only in a 20×25 px box at the card’s top right, the clock’s last digit (03:07 vs 03:08). B’s images were overwritten in the store; that B was another reading is inferred.",
+    "change": "Hold each side’s clock at a fixed instant before Start: gallery ENTRY + 2 min, route ENTRY + 5 min (89 s for the route to load; slower fails at pauseAt, “Cannot fast-forward to the past”). Timing only: no read, receipt field, hash binding or tolerance changed.",
+    "receiptsChanged": [
+     {
+      "receipt": "amrap-phone-320",
+      "routeRunningPausedEnded": "62575296 c24e224f b63752a6 → 7736c6e2 36faf00d 72d9be11"
+     },
+     {
+      "receipt": "for_time-phone-320",
+      "routeRunningPausedEnded": "43a0f170 41b6dfe7 647b9d0a → 5caec55d 2555838d 2e34eb31"
+     },
+     {
+      "receipt": "ladder-4-phone-320",
+      "routeRunningPausedEnded": "b3155add ae83b2b6 12ed83a1 → 6bbb080b fd8fe3fb 23abfc5e"
+     },
+     {
+      "receipt": "ladder-12-phone-320",
+      "routeRunningPausedEnded": "0d51e300 e5704a3f 96e37de8 → 8897cb5b 2d90888f 713b4678"
+     },
+     {
+      "receipt": "ladder-12-phone-390",
+      "routeRunningPausedEnded": "6de22238 15f169df e5a4e953 → a78a7b0b 5d4a2825 e2a154ae"
+     }
+    ],
+    "receiptsUnchanged": "emom-phone-320/390, amrap-phone-390, for_time-phone-390, ladder-4-phone-390 (their captures show no header clock)",
+    "stability": "Under load: npx playwright test e2e/refinement/task-104-parity.spec.ts e2e/refinement/task-006.spec.ts e2e/refinement/task-010.spec.ts e2e/refinement/task-011.spec.ts --project=mobile --repeat-each=3 --workers=6, on the shared 5173 dev server with placeholder Supabase URL/key (the verification lane’s server path), outside the guard so a hash reporter could record every repeat: 69 passed in 5.4 min; 30 TASK-104 cases, 300 captures under 100 names, every name byte-identical in all 3 repeats. Then the guard twice (below).",
+    "guardRuns": "node scripts/refinement/run-required-check.mjs --task TASK-104 --check parity -- npx playwright test e2e/refinement/task-104-parity.spec.ts --project=mobile: PASSED twice (10/10 each); the 10 parity receipts equal the load run’s, byte for byte, after each; guard receipt identical across the two runs; the 100 store captures identical across the two runs."
+   },
+   "d6": {
+    "file": "e2e/contained-shell.spec.ts",
+    "change": "the `for (const skin of ['clear', 'vapour'] as const)` loop (lines 401–482 at d79e674b) removed whole; its comment replaced by one naming all four retired skins with D2 and D6 quoted. No helper or import became unused (eslint clean).",
+    "cases": 2
+   }
   }
  },
  "summary": {
   "added": 67,
   "rewritten": 8,
-  "retired": 74
+  "retired": 76
  },
  "entries": [
   {
@@ -2517,6 +2570,32 @@
    "result": "retired (removed as a whole case; no skip)",
    "repair": 1,
    "oldLine": 400
+  },
+  {
+   "file": "e2e/contained-shell.spec.ts",
+   "test": "the clear skin keeps shipped fonts, ground and emission",
+   "ledger": "root rerun with a Supabase URL configured (repair round 1), reported in repair round 1",
+   "disposition": "retired",
+   "decision": "Eric, chat, 2026-11-24: \"Yes, retire both (Recommended)\" (decision D6, on D2's terms). Asked: \"TASK-115: two more old look tests fail the same check you retired under D2. They are the clear and vapour skins on the create-account screen. They fail only when the test backend is set, so the first full run missed them. Retire them too, on the same terms as D2 (listed for UAT)?\"",
+   "note": "Asserts the old build’s skin look on /login?mode=create (an emitting primary/quiet frame pair beside the h1), superseded by Round 7 (accepted gallery bec4454), the same read as the signal and mono cases retired under D2. It passed in the whole run without a Supabase URL; with one configured (as the verification lane has) it fails. Failing read: Error: page.evaluate: Error: the heading or an emitting frame is missing — read 421 (repair-1 HEAD d79e674b).",
+   "oldBuild": "fails at the old build 181e580 at an earlier line (410:const facesLoaded = await page.evaluate(() =>), NetworkError: A network error occurred (round-1 root run at the old build, same placeholder lane)",
+   "tryOnPhone": null,
+   "result": "retired (removed as a whole case: the skin loop is gone; no skip)",
+   "repair": 2,
+   "oldLine": 402
+  },
+  {
+   "file": "e2e/contained-shell.spec.ts",
+   "test": "the vapour skin keeps shipped fonts, ground and emission",
+   "ledger": "root rerun with a Supabase URL configured (repair round 1), reported in repair round 1",
+   "disposition": "retired",
+   "decision": "Eric, chat, 2026-11-24: \"Yes, retire both (Recommended)\" (decision D6, on D2's terms). Asked: \"TASK-115: two more old look tests fail the same check you retired under D2. They are the clear and vapour skins on the create-account screen. They fail only when the test backend is set, so the first full run missed them. Retire them too, on the same terms as D2 (listed for UAT)?\"",
+   "note": "Asserts the old build’s skin look on /login?mode=create (an emitting primary/quiet frame pair beside the h1), superseded by Round 7 (accepted gallery bec4454), the same read as the signal and mono cases retired under D2. It passed in the whole run without a Supabase URL; with one configured (as the verification lane has) it fails. Failing read: Error: page.evaluate: Error: the heading or an emitting frame is missing — read 421 (repair-1 HEAD d79e674b).",
+   "oldBuild": "fails at the old build 181e580 at an earlier line (410:const facesLoaded = await page.evaluate(() =>), NetworkError: A network error occurred (round-1 root run at the old build, same placeholder lane)",
+   "tryOnPhone": null,
+   "result": "retired (removed as a whole case: the skin loop is gone; no skip)",
+   "repair": 2,
+   "oldLine": 402
   },
   {
    "file": "e2e/contained-shell.spec.ts",

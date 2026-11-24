@@ -38,7 +38,16 @@ are read from the evidence store).
    - TASK-108: the "— finish now" words beside the For Time cap clock (four reads), and the three build bodies retired
      as superseded by Round 7's timer card;
    - TASK-114: three task-041 titles name reads their bodies no longer make (reasons in its ledger);
-   - TASK-115's own test updates under the 2026-11-23 rule (listed at the end).
+   - TASK-115's own test updates under the 2026-11-23 rule (listed at the end);
+   - the 73 old look cases retired under D2 and contained-shell's clear and vapour skin cases retired under D6 (listed
+     at the end).
+6. **TASK-038's re-record landed after the gallery change** (D7, accepted as is): TASK-038's definition record pins
+   `src/dev/gallery-refinement-scenes.tsx`; the D3 gallery change (6ca3dc5f) changed it, and the record's `repo:` hash
+   was re-recorded in 7db407d6, the next commit to touch either file (four commits later on the branch, same repair-1
+   candidate), where TASK-AC-99A513AC101C asks for the same commit. The final code passes every check; no product
+   effect. Eric, chat, 2026-11-24: "Accept as is (Recommended)". Asked: "TASK-115: the hash update for TASK-038's
+   record landed one commit after the gallery change. Its criterion asks for the same commit. The final code passes
+   every check, and there's no product effect. Accept it as is, listed for UAT?" Confirm at UAT.
 
 
 ## Look and wording to check on a phone (320 and 390)
@@ -228,7 +237,7 @@ Each case below asserted the old build's UI polish batch 05 look (or `contained-
 replaced; each is removed from its file as a whole case (no skip). Those marked **try on the phone** read behaviour,
 so check that behaviour by hand at UAT.
 
-- `e2e/contained-shell.spec.ts` (old line 400, 2 cases): “the signal skin … / the mono skin keeps shipped fonts, ground and emission” (the clear and vapour cases stay)
+- `e2e/contained-shell.spec.ts` (old line 400, 2 cases): “the signal skin … / the mono skin keeps shipped fonts, ground and emission” (the clear and vapour cases were retired later under D6; see repair round 2)
 - `e2e/contained-shell.spec.ts` (old line 859, 1 case): “REQ-001 phone shell — entry screens › Welcome and OTP keep full-width rules, fixed chrome and coinciding action frames” — **try on the phone:** Welcome and the OTP screen’s full-width action
 - `e2e/ui-polish-b05-active-hierarchy.spec.ts` (old line 920, 3 cases): “B05 active movement hierarchy @ narrow-320 › standard logger cards: selected hierarchy with long names; counter, Rest/Log, saved result, refusal, correction and countdown keep their roles (and 2 more instances)” — **try on the phone:** a standard card’s counter, Rest/Log, saved result, refused save and correction
 - `e2e/ui-polish-b05-active-hierarchy.spec.ts` (old line 1022, 3 cases): “B05 active movement hierarchy @ narrow-320 › superset logger cards: selected hierarchy, independent counters and countdown; one Rest and an explicit combined Log round (and 2 more instances)” — **try on the phone:** a superset’s independent counters, countdown, one Rest and the combined log
@@ -269,7 +278,9 @@ specimen". Gallery page composition only — `SectionHeader` and every route are
 - `src/dev/gallery-registry.tsx` line 132 (import) and line 2916 (the "full header with progress bar" specimen renders
   `GalleryFullSectionHeader`).
 `e2e/public-gallery.spec.ts:5` passes again. TASK-038's definition record pins `gallery-refinement-scenes.tsx`, so its
-`repo:` hash was re-recorded (line 57; hash only, TASK-121's editing rules).
+`repo:` hash was re-recorded (line 57; hash only, TASK-121's editing rules). The re-record landed in 7db407d6, after the
+D3 change 6ca3dc5f, not in the same commit as TASK-AC-99A513AC101C asks; Eric accepted that as is (D7, owner item 6:
+"Accept as is (Recommended)").
 
 ### D4 — "Allow both (Recommended)"
 
@@ -289,6 +300,26 @@ specimen". Gallery page composition only — `SectionHeader` and every route are
 
 - `e2e/design-0143/entry-forms.spec.ts` "generate-reads" (backend lane) still reads `/^Focus:/` and "Focus: Lower body";
   left as reported (Eric, 2026-11-24).
-- `e2e/contained-shell.spec.ts` "the clear skin / the vapour skin keeps shipped fonts, ground and emission" passed in the
-  whole run (no Supabase URL) and stays, as D2 said; with a Supabase URL configured (as the verification lane has) both
-  fail on the same read as the retired signal and mono cases ("the heading or an emitting frame is missing").
+- (Resolved in repair round 2.) `e2e/contained-shell.spec.ts` "the clear skin / the vapour skin keeps shipped fonts,
+  ground and emission" passed in the whole run (no Supabase URL); with a Supabase URL configured both failed on the same
+  read as the retired signal and mono cases. Retired under D6; see below.
+
+## Repair round 2 (Eric's decisions of 2026-11-24)
+
+### D6 — "Yes, retire both (Recommended)": contained-shell's clear and vapour skin cases retired
+
+Asked: "TASK-115: two more old look tests fail the same check you retired under D2. They are the clear and vapour skins
+on the create-account screen. They fail only when the test backend is set, so the first full run missed them. Retire
+them too, on the same terms as D2 (listed for UAT)?" Each asserted the old build's skin look on the create-account
+screen (an emitting primary and quiet frame beside the heading), which Round 7 replaced; the whole skin loop is removed
+(no skip). Both fail at the old build 181e580 too (an earlier line).
+
+- `e2e/contained-shell.spec.ts` (old line 402, 2 cases): “the clear skin … / the vapour skin keeps shipped fonts, ground and emission” — check the create-account screen's fonts and glow in the clear and vapour skins by eye
+
+### D4 — TASK-104's parity, retaken after a timing fix
+
+TASK-104's look check now holds the browser clock at a fixed time before Start (it followed the real page-load time,
+so /workout's header clock, drawn over the top of the tall cards' captures, read a different second from run to run).
+Five of its receipts changed only in their route running, paused and ended captures (the header clock reads a fixed
+time): amrap, For Time, ladder-4 and ladder-12 at 320, and ladder-12 at 390. Nothing the check reads changed. The
+captures are in the evidence store under `clear-gallery-adoption-v2-20261116/task-104/captures/`.

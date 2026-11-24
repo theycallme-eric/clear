@@ -235,6 +235,13 @@ describe('TASK-115 end-of-run comparison and recaptures', () => {
       assert.match(entry.oldBuild ?? '', /\S/, `${entry.file} :: ${entry.test} records its old-build result`)
       assert.ok(uat.includes(`\`${entry.file}\` (old line ${entry.oldLine}`), `${entry.file}:${entry.oldLine} is on the UAT list`)
     }
+    // Repair round 2 (D6): contained-shell's clear and vapour skin cases, retired on D2's terms.
+    const d6 = own.entries.filter((entry) => entry.disposition === 'retired' && /Yes, retire both \(Recommended\)/.test(entry.decision ?? ''))
+    assert.equal(d6.length, 2)
+    for (const entry of d6) {
+      assert.match(entry.oldBuild ?? '', /\S/, `${entry.file} :: ${entry.test} records its old-build result`)
+      assert.ok(uat.includes(`\`${entry.file}\` (old line ${entry.oldLine}`), `${entry.file}:${entry.oldLine} is on the UAT list`)
+    }
   })
 })
 

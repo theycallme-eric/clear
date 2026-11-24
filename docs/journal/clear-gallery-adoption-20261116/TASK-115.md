@@ -148,3 +148,68 @@ Eric's decisions (chat, 2026-11-24): D2 "Retire, list for UAT (Recommended)"; D3
 - **Daily drift (not changed).** TASK-103's screens receipts hold /history's rest-day range up to yesterday
   ("Wed 4 Nov 2026 – Mon 23 Nov 2026 · 20 rest days"), so a run on another day rewrites them. A fixed page clock in
   that spec would end it; it is another task's spec and timing outside D4(b), so it is reported, not changed.
+
+## Repair round 2 (2026-11-24)
+
+**What failed.** Verification of repair 1 (runs d1ca1e0d and a88f1b23) passed every command both times, including the
+whole `e2e/refinement` (399 passed, backend lane included). But TASK-104's parity receipt `ladder-12-phone-390`
+alternated between two renders of its route running, paused and ended captures (A 2a6de6c9/09465ba8/515a098f, as
+committed at d79e674b; B 6de22238/15f169df/e5a4e953 in run 1), so any verification run could change the candidate.
+Eric's decisions (chat, 2026-11-24): D4 "Allow both (Recommended)" (timing fixes that do not change what a test checks;
+stale parity retaken through its own guard); D6 "Yes, retire both (Recommended)"; D7 "Accept as is (Recommended)".
+
+**Root cause.** Captures taller than the viewport (ladder-12 at 320 and 390; ladder-4, AMRAP and For Time at 320)
+show /workout's header over the card's top edge, with the session clock (`useElapsedSeconds(started_at)`,
+`src/app/Workout.tsx:304`). `driveLifecycle` held the clock at `now + 1 s`, where `now` is the page clock, which runs
+in real time from the gallery side's `resume()` through the /workout load; the clock read 03:06, 03:07 or 03:08 at
+"running" by load time. Reproduced before the fix: 4 parallel repeats on the shared dev server (placeholder Supabase
+values) gave 3 × A and 1 × a third render C (698f17df…); A and C differ only in a 20×25 px box at the card's top
+right, the clock's last digit. B's images were overwritten in the store; that B was another reading is inferred.
+
+**What changed.**
+- `e2e/refinement/task-104-parity.spec.ts` (TASK-104's spec, timing only under D4): lines 63–74 `HOLD_AT` (gallery
+  ENTRY + 2 min, route ENTRY + 5 min) and its comment; 500–503 `driveLifecycle(…, holdAt)`; 511
+  `await page.clock.pauseAt(holdAt)`; 564 and 573 pass the side's instant. No read, receipt field, hash binding or
+  tolerance changed; a load slower than 89 s fails at `pauseAt` instead of drawing another time. Five TASK-104
+  receipts changed only in their route running/paused/ended hashes (amrap, for_time, ladder-4, ladder-12 at 320;
+  ladder-12 at 390); TASK-104's guard receipt re-recorded the spec hash.
+- D6: `e2e/contained-shell.spec.ts` — the clear/vapour skin loop (lines 401–482 at d79e674b) removed whole (no skip);
+  the comment above it now names all four retired skins with D2 and D6 quoted. Two ledger rows (D6 quoted, old-build
+  result: fails at 181e580 at line 410) and a UAT entry.
+- D7: recorded in `test-ledger.json` (`rules.repairRound1.definitionReRecord.ownerAcceptance`) and `UAT-LIST.md`
+  (owner item 6 and the D3 paragraph): the re-record landed in 7db407d6 after the D3 change 6ca3dc5f.
+- `scripts/refinement/task-115-closure.test.mjs`: the whole-run test also checks the two D6 rows (decision, old-build
+  result, UAT entry). `test-ledger.json`: `rules.repairRound2`, the D6 rows (retired 74 → 76), the TASK-104 refresh,
+  the self-check (26 files; 30 base titles absent, the contained-shell skin title added; 9 changed bodies; 1 loop
+  instance dropped; nothing weakened).
+- The first try of this round stopped on the disk limit (free space fell to 3.8 GiB during the load run); Eric freed
+  space (about 32 GiB) and the round resumed.
+
+**Exact verification.**
+- Load run, after the fix: `npx playwright test e2e/refinement/task-104-parity.spec.ts e2e/refinement/task-006.spec.ts
+  e2e/refinement/task-010.spec.ts e2e/refinement/task-011.spec.ts --project=mobile --repeat-each=3 --workers=6` on the
+  shared 5173 dev server with placeholder Supabase URL/key, outside the guard so a hash reporter could record every
+  repeat: 69 passed (5.4 min); 30 TASK-104 cases, 300 captures under 100 names, each byte-identical in all 3 repeats.
+- `run-required-check --task TASK-104 --check parity -- npx playwright test e2e/refinement/task-104-parity.spec.ts
+  --project=mobile`: PASSED twice, 10/10 each. After each, the 10 parity receipts equal the load run's byte for byte;
+  the guard receipt (08c0243f…) and the 100 store captures are identical across the two runs. ladder-12-phone-390
+  route running/paused/ended: a78a7b0b…/5d4a2825…/e2a154ae….
+- `run-required-check --task TASK-115 --check check-01 -- node --test scripts/refinement/task-115-closure.test.mjs`:
+  PASSED twice, 13/13; receipt identical (3531eeb9…).
+- `run-required-check --task TASK-115 --check parity -- npx playwright test e2e/refinement/task-115-comparison.spec.ts
+  --project=mobile`: PASSED twice, 53/53; the 56 files under `task-115/comparison` and `task-115/results` unchanged
+  from the committed ones after run 1, and run 2 byte-identical to run 1 (TASK-115 reads no TASK-104 receipt).
+- The brief's body-ledger `node -e`: exit 0 (not rerun: the A3 ledger tool reads no e2e file and no build test
+  changed). `git merge-base --is-ancestor a6cd01c9 HEAD`: exit 0.
+- `verify-delivery-evidence.mjs --body clear-gallery-adoption-20261113 --mode final --tasks <the 18>`: PASSED (18 tasks
+  with current passing receipts, TASK-104 included).
+- TASK-035, TASK-037, TASK-038 check-01 through the guard: PASSED; receipts unchanged.
+- `npm run typecheck`: exit 0. CI chain (typecheck, lint, lint:ds, gen-issues --check, gen:types --check, npm test,
+  build, console grep): exit 0; lint 0 errors, 175 warnings (as in round 1); 279 test files, 6,516 tests passed.
+- The whole `e2e/refinement` was not run here (V2's verification runs it next).
+
+**Open assumptions.** That verification run B was another header-clock reading is inferred (its images were
+overwritten). The route has 89 s to load before `pauseAt` would fail; the slowest route load seen is a few seconds.
+
+**Next action.** Controller verification; Eric's UAT with `evidence/refinement/task-115/UAT-LIST.md` (D6 and D7 are
+listed there).

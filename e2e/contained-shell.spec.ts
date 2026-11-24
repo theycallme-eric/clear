@@ -396,91 +396,12 @@ test('reduced motion holds the atmosphere still without removing its depth', asy
   }
 })
 
-// TASK-115 retired the signal and mono cases of this check: superseded by Round 7
-// (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name them.
-for (const skin of ['clear', 'vapour'] as const) {
-  test(`the ${skin} skin keeps shipped fonts, ground and emission`, async ({
-    page,
-    visit,
-  }) => {
-    await visit('/login?mode=create')
-    await page.evaluate((name) => {
-      document.documentElement.setAttribute('data-skin', name)
-    }, skin)
-    // Loading, not merely checking: a face the screen has not drawn yet is
-    // still one the skin must be able to fetch from the app's own origin.
-    const facesLoaded = await page.evaluate(() =>
-      Promise.all(
-        ['700 16px Rajdhani', '500 16px "Space Grotesk"', '600 16px Oxanium'].map(
-          async (font) => (await document.fonts.load(font)).length,
-        ),
-      ),
-    )
-    for (const faces of facesLoaded) expect(faces).toBeGreaterThan(0)
-
-    const rendered = await page.evaluate(() => {
-      const root = getComputedStyle(document.documentElement)
-      const token = (name: string) => root.getPropertyValue(name).trim()
-      const px = (name: string) => parseFloat(token(name))
-      const heading = document.querySelector<HTMLElement>('h1')
-      const primary = document.querySelector<HTMLElement>('.clr-bleed.clr-glow')
-      const quiet = document.querySelector<HTMLElement>('.clr-bleed:not(.clr-glow)')
-      if (!heading || !primary || !quiet) {
-        throw new Error('the heading or an emitting frame is missing')
-      }
-
-      return {
-        skin: document.documentElement.getAttribute('data-skin'),
-        atmosphereMarkers: document.querySelectorAll(
-          '[data-atmosphere]:not([data-atmosphere="full"])',
-        ).length,
-        // CSS minification may spell 0.7 as .7; the contract is numeric opacity.
-        cardGround: Number(token('--card-ground-alpha')),
-        emitNear: token('--emit-near'),
-        emitFar: token('--emit-far'),
-        glowSpread: token('--glow-spread'),
-        borderWidth: token('--border-width'),
-        bodyRatios: ['xs', 'sm', 'md'].map(
-          (step) => px(`--paragraph-${step}-line-height`) / px(`--paragraph-${step}-size`),
-        ),
-        smallLineHeights: [
-          token('--paragraph-xs-line-height'),
-          token('--paragraph-sm-line-height'),
-        ],
-        displayFont: getComputedStyle(heading).fontFamily,
-        bodyFont: getComputedStyle(document.body).fontFamily,
-        dataFont: getComputedStyle(primary.querySelector('button') ?? primary).fontFamily,
-        letterEmission: getComputedStyle(heading).textShadow,
-        primaryGlow: getComputedStyle(primary).filter,
-        quietGlow: getComputedStyle(quiet).filter,
-        strokeEmission: getComputedStyle(quiet, '::before').filter,
-      }
-    })
-
-    expect(rendered.skin).toBe(skin)
-    expect(rendered.atmosphereMarkers).toBe(0)
-    expect(rendered).toMatchObject({
-      cardGround: 0.7,
-      emitNear: '1.5px',
-      emitFar: '5px',
-      glowSpread: '6px',
-      borderWidth: '2px',
-      bodyRatios: [1.25, 1.25, 1.25],
-      smallLineHeights: ['15px', '17.5px'],
-      quietGlow: 'none',
-    })
-    expect(rendered.dataFont).toMatch(/^"?Oxanium"?,/)
-    expect(rendered.displayFont).toMatch(/^"?Rajdhani"?,/)
-    expect(rendered.bodyFont).toMatch(/^"?Space Grotesk"?,/)
-    // Every letter emits; only the primary action adds the 6px glow, and a
-    // stroke's light is the tight 80% halo inside the wide 35% one.
-    expect(rendered.letterEmission).not.toBe('none')
-    expect(rendered.primaryGlow).toMatch(/^drop-shadow\(.* 0px 0px 6px\)$/)
-    expect(rendered.strokeEmission).toMatch(
-      /^drop-shadow\(.*0\.8\) 0px 0px 1\.5px\) drop-shadow\(.*0\.35\) 0px 0px 5px\)$/,
-    )
-  })
-}
+// TASK-115 retired every skin case of this check ("the <skin> skin keeps shipped
+// fonts, ground and emission"), superseded by Round 7: signal and mono under D2
+// (Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"), clear and vapour
+// under D6 (Eric, chat, 2026-11-24: "Yes, retire both (Recommended)"); the last two
+// failed only with the test backend set. evidence/refinement/task-115/test-ledger.json
+// and UAT-LIST.md name all four.
 
 // ── REQ-001 / TASK-001 — the shared phone shell, measured ──────────────────
 //
