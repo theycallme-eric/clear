@@ -1,0 +1,236 @@
+{
+  "schema": "clear-task-120-parity/v1",
+  "task": "TASK-120",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "ladder-long",
+  "width": 320,
+  "height": 568,
+  "route": "/workout",
+  "drive": "Start ladder → past the cap (the log opens itself), on the held clock; every infinite loop held at its start",
+  "captures": {
+    "gallery-dialog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-320-gallery-dialog.png",
+      "sha256": "6cfb0e21ed2ce97d8833a530de0555c7805a3c64346ec197c9f9bb271acf0a62"
+    },
+    "gallery-viewport": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-320-gallery-viewport.png",
+      "sha256": "60c4552bb2d05009d23f2600b821aff21b99eaf6c117c634e1f7f4360b3ca483"
+    },
+    "route-dialog": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-320-route-dialog.png",
+      "sha256": "2ff6586bd8ec5c3741ab7bfc93e250e9dcf8b9a2cfc9943adf9eb15f131daf7c"
+    },
+    "route-viewport": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/ladder-long-phone-320-route-viewport.png",
+      "sha256": "791a126b6dbc1b70c28f61e0c45e85ba436795391ecb438ae844cf6ac108ae30"
+    }
+  },
+  "lines": {
+    "gallery": [
+      "LOG RESULTS",
+      "WORK COMPLETED",
+      "COMPLETE",
+      "INCOMPLETE",
+      "ROUNDS COMPLETED",
+      "R1",
+      "2",
+      "REPS",
+      "R2",
+      "4",
+      "REPS",
+      "R3",
+      "6",
+      "REPS",
+      "R4",
+      "8",
+      "REPS",
+      "R5",
+      "10",
+      "REPS",
+      "R6",
+      "12",
+      "REPS",
+      "R7",
+      "14",
+      "REPS",
+      "R8",
+      "16",
+      "REPS",
+      "R9",
+      "18",
+      "REPS",
+      "R10",
+      "20",
+      "REPS",
+      "R11",
+      "22",
+      "REPS",
+      "R12",
+      "24",
+      "REPS",
+      "No rounds marked yet",
+      "EFFORT · OPTIONAL",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "NOTES · OPTIONAL",
+      "SAVE LOG"
+    ],
+    "route": [
+      "LOG RESULTS",
+      "WORK COMPLETED",
+      "COMPLETE",
+      "INCOMPLETE",
+      "ROUNDS COMPLETED",
+      "R1",
+      "2",
+      "REPS",
+      "R2",
+      "4",
+      "REPS",
+      "R3",
+      "6",
+      "REPS",
+      "R4",
+      "8",
+      "REPS",
+      "R5",
+      "10",
+      "REPS",
+      "R6",
+      "12",
+      "REPS",
+      "R7",
+      "14",
+      "REPS",
+      "R8",
+      "16",
+      "REPS",
+      "R9",
+      "18",
+      "REPS",
+      "R10",
+      "20",
+      "REPS",
+      "R11",
+      "22",
+      "REPS",
+      "R12",
+      "24",
+      "REPS",
+      "No rounds marked yet",
+      "EFFORT · OPTIONAL",
+      "TOO HARD",
+      "ABOUT RIGHT",
+      "TOO EASY",
+      "NOTES · OPTIONAL",
+      "SAVE LOG"
+    ]
+  },
+  "composition": {
+    "gallery": {
+      "host": {
+        "effects": "on",
+        "motion": "allowed"
+      },
+      "glass": [
+        {
+          "open": true,
+          "config": "clr-crt-field/review-2026-11-03.1",
+          "ariaHidden": "true",
+          "pointerEvents": "none",
+          "motion": "running",
+          "rect": {
+            "top": 0,
+            "left": 0,
+            "width": 320,
+            "height": 568
+          },
+          "clocks": [
+            "clr-crt-grain-refresh",
+            "clr-crt-line-drift"
+          ]
+        }
+      ],
+      "echo": {
+        "filters": 1,
+        "inDialog": 0,
+        "beneath": true
+      },
+      "edges": [],
+      "urgentTimers": [],
+      "dialog": {
+        "name": "Log results",
+        "modal": true,
+        "backdrop": {
+          "filter": "blur(4px)",
+          "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+          "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)"
+        },
+        "frame": {
+          "top": 20,
+          "left": 12,
+          "width": 296,
+          "height": 528
+        },
+        "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)"
+      },
+      "openDialogs": 1,
+      "foregroundEffects": [],
+      "scanLayers": 0
+    },
+    "route": {
+      "host": {
+        "effects": "on",
+        "motion": "allowed"
+      },
+      "glass": [
+        {
+          "open": true,
+          "config": "clr-crt-field/review-2026-11-03.1",
+          "ariaHidden": "true",
+          "pointerEvents": "none",
+          "motion": "running",
+          "rect": {
+            "top": 0,
+            "left": 0,
+            "width": 320,
+            "height": 568
+          },
+          "clocks": [
+            "clr-crt-grain-refresh",
+            "clr-crt-line-drift"
+          ]
+        }
+      ],
+      "echo": {
+        "filters": 1,
+        "inDialog": 0,
+        "beneath": true
+      },
+      "edges": [],
+      "urgentTimers": [],
+      "dialog": {
+        "name": "Log results",
+        "modal": true,
+        "backdrop": {
+          "filter": "blur(4px)",
+          "image": "radial-gradient(rgba(0, 0, 0, 0) 35%, color(srgb 0.0901961 0.0901961 0.0901961 / 0.85) 100%), none",
+          "color": "color(srgb 0.0901961 0.0901961 0.0901961 / 0.55)"
+        },
+        "frame": {
+          "top": 20,
+          "left": 12,
+          "width": 296,
+          "height": 528
+        },
+        "ring": "color(srgb 0.972549 0.470588 0.137255 / 0.9)"
+      },
+      "openDialogs": 1,
+      "foregroundEffects": [],
+      "scanLayers": 0
+    }
+  },
+  "differences": [],
+  "galleryChanges": []
+}

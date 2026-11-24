@@ -40,6 +40,24 @@ import { expect, test as scanned } from '../fixtures'
  * writes are the ones the journey makes, answered here and never forwarded;
  * no model call, no real row. The accepted gallery states are memory-only and
  * read nothing over the network.
+ *
+ * A3 TASK-120 (REQ-019; owner decisions 2026-11-16 and the standing
+ * test-update rule of 2026-11-23): rewritten for Round 7's controls, every
+ * asserted route behaviour kept. Every entry's log is Round 7's
+ * `LoggingOverlay` (`src/ui/logging-overlay.tsx`: `dialog.clr-logging-overlay`,
+ * its header `.clr-logging-overlay__head`) in place of the build's
+ * `dialog.clr-accepted-log` and `[data-logging-head]`. Round 7 draws a log in
+ * place, inside the screen's markup, so the inert-behind check leaves out the
+ * open log's own controls (as TASK-106's task-019 rewrite does). The movement
+ * note's dialog keeps Round 7's fixed "Movement note" title and its field is
+ * named by the movement (owner decision 4, 2026-11-16: "Accept all five"),
+ * where the build titled it "Notes — <movement>". The accepted gallery states
+ * are Round 7's (gallery bec4454): one `[data-refinement-state]` per page,
+ * each composing one moment over memory, pressed by the route's own controls;
+ * where Round 7's state composes no second moment (the build's refused-write
+ * and stored-feedback scenes), that look is not read there — the route cases
+ * above prove those behaviours on the real writers. Each change is listed in
+ * `evidence/refinement/task-120/test-ledger.json`.
  */
 const OWNER = '00000000-0000-4000-8000-000000004501'
 const PLACE = '00000000-0000-4000-8000-000000004511'
@@ -51,6 +69,12 @@ const CORS = {
 }
 /** The back squat's prescribed rest, started by its Rest. */
 const SQUAT_REST = 90
+/**
+ * Round 7's movement-note dialog title (ExerciseCoaching); its field is named
+ * by the movement. Owner decision 4 (Eric, 2026-11-16, "Accept all five"): the
+ * note keeps Round 7's fixed title, where the build's read "Notes — <movement>".
+ */
+const NOTE_TITLE = 'Movement note'
 
 const e2e = readE2eEnv()
 const SYNTHETIC_ORIGIN_NEEDED = !e2e.usesExternalTarget && (e2e.url === null || e2e.anonKey === null)
@@ -306,8 +330,8 @@ async function syntheticApp(page: Page, options: AppOptions = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-/** The open focused logging dialog (any title). */
-const openLog = (page: Page) => page.locator('dialog.clr-accepted-log[open]')
+/** The open focused logging dialog (any title): Round 7's (A3 TASK-120). */
+const openLog = (page: Page) => page.locator('dialog.clr-logging-overlay[open]')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
 /** One movement's own section on the workout, by its heading. */
@@ -335,8 +359,8 @@ async function expectFocusedLog(page: Page, title: string) {
   await expect(dialog).toBeVisible()
   await expect(openLog(page)).toHaveCount(1)
   expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true)
-  // One title, then one X, in the header.
-  const head = dialog.locator('[data-logging-head]')
+  // One title, then one X, in the header (Round 7's header).
+  const head = dialog.locator('.clr-logging-overlay__head')
   await expect(head.getByRole('heading', { name: title, exact: true })).toBeVisible()
   const close = head.getByRole('button', { name: 'Close log', exact: true })
   await expect(close).toBeVisible()
@@ -355,9 +379,13 @@ async function expectFocusedLog(page: Page, title: string) {
   const backdrop = await dialog.evaluate((node) => getComputedStyle(node, '::backdrop').backdropFilter)
   expect(backdrop).toMatch(/blur\(/)
   // Inert behind: no control of the screen can take focus while it is open.
+  // (Round 7 draws a log in place, inside the screen's markup: its own
+  // controls are the log's, not the screen behind it.)
   const behind = await page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null
+    const open = document.querySelector('dialog.clr-logging-overlay[open]')!
     const controls = [...document.querySelectorAll<HTMLElement>('main#main button, main#main textarea, main#main select, .clr-workout-footer button')]
+      .filter((control) => !open.contains(control))
     const reachable = controls.filter((control) => {
       control.focus()
       return document.activeElement === control
@@ -406,12 +434,13 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
     await panel.tap()
     const opener = squat.getByRole('button', { name: 'Add note — back squat', exact: true })
     await expect(opener).toBeVisible()
-    await expect(squat.getByRole('textbox', { name: /^Notes — / })).toHaveCount(0)
+    // The note's field is not on the card: it opens in the log (Round 7 names it by the movement).
+    await expect(squat.getByRole('textbox', { name: 'back squat', exact: true })).toHaveCount(0)
     await opener.tap()
-    dialog = await expectFocusedLog(page, 'Notes — back squat')
+    dialog = await expectFocusedLog(page, NOTE_TITLE)
     await expect(dialog.getByRole('button', { name: 'Close log' })).toBeFocused()
     // Its one field and its own Save; no other family's fields.
-    const field = dialog.getByRole('textbox', { name: 'Notes — back squat' })
+    const field = dialog.getByRole('textbox', { name: 'back squat', exact: true })
     await expect(field).toHaveValue('')
     await expect(dialog.getByRole('button', { name: 'Save note — back squat', exact: true })).toBeVisible()
     await expect(dialog.getByRole('group', { name: 'Effort' })).toHaveCount(0)
@@ -432,8 +461,8 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
     const edit = squat.getByRole('button', { name: 'Edit note — back squat', exact: true })
     await expect(edit).toBeFocused()
     await edit.tap()
-    dialog = await expectFocusedLog(page, 'Notes — back squat')
-    await expect(dialog.getByRole('textbox', { name: 'Notes — back squat' })).toHaveValue('Brace before the descent')
+    dialog = await expectFocusedLog(page, NOTE_TITLE)
+    await expect(dialog.getByRole('textbox', { name: 'back squat', exact: true })).toHaveValue('Brace before the descent')
     await page.keyboard.press('Escape')
     await expect(openLog(page)).toHaveCount(0)
     await expect(edit).toBeFocused()
@@ -441,12 +470,12 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
 
     // ── A refused write keeps the text, marks the field and says so ──
     await edit.tap()
-    dialog = await expectFocusedLog(page, 'Notes — back squat')
+    dialog = await expectFocusedLog(page, NOTE_TITLE)
     app.refuseNext('workout_exercises')
     await dialog.getByRole('button', { name: 'Save note — back squat' }).tap()
     await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
-    await expect(dialog.getByRole('textbox', { name: /^Notes — back squat/ })).toHaveAttribute('aria-invalid', 'true')
-    await expect(dialog.getByRole('textbox', { name: /^Notes — back squat/ })).toHaveValue('Brace before the descent')
+    await expect(dialog.getByRole('textbox', { name: /^back squat/ })).toHaveAttribute('aria-invalid', 'true')
+    await expect(dialog.getByRole('textbox', { name: /^back squat/ })).toHaveValue('Brace before the descent')
     await expect(dialog.getByRole('status').filter({ hasText: 'Not saved' })).toHaveCount(1)
     await checkA11y()
     await attachScreen(page, 'movement-note-refused-phone-390')
@@ -454,8 +483,8 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
     await dialog.getByRole('button', { name: 'Close log' }).tap()
     await expect(squat.getByRole('status').filter({ hasText: 'Not saved' })).toHaveCount(1)
     await edit.tap()
-    dialog = await expectFocusedLog(page, 'Notes — back squat')
-    await expect(dialog.getByRole('textbox', { name: /^Notes — back squat/ })).toHaveValue('Brace before the descent')
+    dialog = await expectFocusedLog(page, NOTE_TITLE)
+    await expect(dialog.getByRole('textbox', { name: /^back squat/ })).toHaveValue('Brace before the descent')
 
     // ── Retry: the original writer stores it on the same prescription row ──
     await dialog.getByRole('button', { name: 'Save note — back squat' }).tap()
@@ -477,9 +506,9 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
     await group.tap()
     const pushUp = content(page).getByRole('group', { name: 'push up', exact: true })
     await pushUp.getByRole('button', { name: 'Add note — push up', exact: true }).tap()
-    dialog = await expectFocusedLog(page, 'Notes — push up')
-    await expect(dialog.getByRole('textbox', { name: 'Notes — push up' })).toHaveValue('')
-    await dialog.getByRole('textbox', { name: 'Notes — push up' }).fill('Hands under shoulders')
+    dialog = await expectFocusedLog(page, NOTE_TITLE)
+    await expect(dialog.getByRole('textbox', { name: 'push up', exact: true })).toHaveValue('')
+    await dialog.getByRole('textbox', { name: 'push up', exact: true }).fill('Hands under shoulders')
     await dialog.getByRole('button', { name: 'Save note — push up' }).tap()
     await expect(dialog.getByRole('status').filter({ hasText: 'Note saved' })).toHaveCount(1)
     expect(app.writes.at(-1)).toEqual({ table: 'workout_exercises', id: PUSH_UP, body: { exercise_notes: 'Hands under shoulders' }, stored: true })
@@ -639,37 +668,46 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
       })
 
       // ── movement-note: the route's Coaching and notes panel ──
+      // Round 7's state (gallery bec4454) is the superset's grouped panel over
+      // memory (the build's state also drew a standard lift's panel).
       await visit('/gallery/refinements?state=movement-note')
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
-      const standard = page.locator('[data-gallery-logging-moment="standard"]')
-      await standard.getByRole('button', { name: 'Coaching and notes — back squat', exact: true }).click()
-      await standard.getByRole('button', { name: 'Add note — back squat', exact: true }).click()
-      let dialog = await expectFocusedLog(page, 'Notes — back squat')
-      await dialog.getByRole('textbox', { name: 'Notes — back squat' }).fill('Brace first')
-      await dialog.getByRole('button', { name: 'Save note — back squat' }).click()
+      const noteState = page.locator('[data-refinement-state="movement-note"]')
+      await noteState.getByRole('button', { name: /^Coaching and notes/ }).first().click()
+      await noteState.getByRole('button', { name: 'Add note — one arm row', exact: true }).click()
+      let dialog = await expectFocusedLog(page, NOTE_TITLE)
+      await dialog.getByRole('textbox', { name: 'one arm row', exact: true }).fill('Brace first')
+      await dialog.getByRole('button', { name: 'Save note — one arm row' }).click()
       await expect(dialog.getByRole('status').filter({ hasText: 'Note saved' })).toHaveCount(1)
       await noHorizontalOverflow(page)
       await checkA11y()
       await attachScreen(page, `gallery-movement-note-${skin}-phone-390`)
       await dialog.getByRole('button', { name: 'Close log' }).click()
       await expect(openLog(page)).toHaveCount(0)
-      // The grouped section whose write is refused keeps its text and says so.
-      const superset = page.locator('[data-gallery-logging-moment="superset"]')
-      await superset.getByRole('button', { name: /^Coaching and notes/ }).click()
-      await superset.getByRole('button', { name: 'Add note — push up', exact: true }).click()
-      dialog = await expectFocusedLog(page, 'Notes — push up')
-      await dialog.getByRole('textbox', { name: 'Notes — push up' }).fill('Hands under shoulders')
-      await dialog.getByRole('button', { name: 'Save note — push up' }).click()
-      await expect(dialog.getByText('Your note didn’t save. It is still in the field — try again.')).toBeVisible()
-      await expect(dialog.getByRole('textbox', { name: /^Notes — push up/ })).toHaveValue('Hands under shoulders')
+      // The grouped section's other movement keeps its own note and its text.
+      // Round 7's state composes no refused save (the build's did): the route
+      // case above proves the refused write on the original writer.
+      await noteState.getByRole('button', { name: 'Add note — bicep curl', exact: true }).click()
+      dialog = await expectFocusedLog(page, NOTE_TITLE)
+      await expect(dialog.getByRole('textbox', { name: 'bicep curl', exact: true })).toHaveValue('')
+      await dialog.getByRole('textbox', { name: 'bicep curl', exact: true }).fill('Hands under shoulders')
+      await page.keyboard.press('Escape')
+      await expect(openLog(page)).toHaveCount(0)
+      await noteState.getByRole('button', { name: 'Edit note — bicep curl', exact: true }).click()
+      dialog = await expectFocusedLog(page, NOTE_TITLE)
+      await expect(dialog.getByRole('textbox', { name: /^bicep curl/ })).toHaveValue('Hands under shoulders')
       await checkA11y()
       await page.keyboard.press('Escape')
       await expect(openLog(page)).toHaveCount(0)
 
       // ── workout-feedback: Summary's own WorkoutFeedback ──
+      // Round 7's state composes one fresh debrief from Summary's parts (the
+      // build's also drew a stored one whose save was refused; the route case
+      // above proves the stored draft and the refused save).
       await visit('/gallery/refinements?state=workout-feedback')
-      const fresh = page.locator('[data-gallery-logging-moment="fresh"]')
-      await fresh.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+      const feedbackState = page.locator('[data-refinement-state="workout-feedback"]')
+      const feedback = feedbackState.getByRole('button', { name: 'Log workout feedback', exact: true })
+      await feedback.click()
       dialog = await expectFocusedLog(page, 'Workout feedback')
       await expect(dialog.getByRole('radio')).toHaveCount(5)
       await expect(dialog.getByRole('textbox', { name: /Notes · optional/ })).toBeVisible()
@@ -679,36 +717,34 @@ test.describe('TASK-045 notes, feedback and rest days in the shared focused dial
       await attachScreen(page, `gallery-workout-feedback-${skin}-phone-390`)
       await dialog.getByRole('button', { name: 'Save and close' }).click()
       await expect(openLog(page)).toHaveCount(0)
-      await expect(fresh.getByRole('status')).toContainText('feeling 3')
-      const stored = page.locator('[data-gallery-logging-moment="stored"]')
-      await stored.getByRole('button', { name: 'Log workout feedback', exact: true }).click()
+      await feedback.click()
       dialog = await expectFocusedLog(page, 'Workout feedback')
-      await expect(dialog.getByRole('radio', { name: '4, Ready' })).toBeChecked()
-      await dialog.getByRole('button', { name: 'Save and close' }).click()
-      await expect(dialog.getByRole('alert')).toBeVisible()
-      await expect(dialog.getByRole('textbox', { name: /Notes · optional/ })).toHaveValue('Overhead felt heavy today.')
+      await expect(dialog.getByRole('radio', { name: '3, Flat' })).toBeChecked()
       await checkA11y()
       await page.keyboard.press('Escape')
       await expect(openLog(page)).toHaveCount(0)
 
       // ── rest-day: Home's own RestDayControl ──
+      // Round 7's state composes Home's parts on one card; its dialog opens on
+      // the X (the route's opens on the Reason picker, U25: the case above).
       await visit('/gallery/refinements?state=rest-day')
-      const unmarked = page.locator('[data-gallery-logging-moment="unmarked"]')
-      await unmarked.getByRole('button', { name: 'Mark Rest Day', exact: true }).click()
+      const restState = page.locator('[data-refinement-state="rest-day"]')
+      await restState.getByRole('button', { name: 'Mark Rest Day', exact: true }).click()
       dialog = await expectFocusedLog(page, 'Log rest day')
-      await expect(dialog.getByRole('combobox', { name: 'Reason' })).toBeFocused()
+      await expect(dialog.getByRole('button', { name: 'Close log' })).toBeFocused()
+      await expect(dialog.getByRole('combobox', { name: 'Reason' })).toHaveValue('rest')
       await noHorizontalOverflow(page)
       await checkA11y()
       await attachScreen(page, `gallery-rest-day-${skin}-phone-390`)
       await dialog.getByRole('combobox', { name: 'Reason' }).selectOption('injury')
       await dialog.getByRole('button', { name: 'Save rest day' }).click()
       await expect(openLog(page)).toHaveCount(0)
-      await expect(unmarked.getByText('Today: Injured.')).toBeVisible()
-      const marked = page.locator('[data-gallery-logging-moment="marked"]')
-      await marked.getByRole('button', { name: 'Change reason', exact: true }).click()
+      await expect(restState.getByText('Today: Injured.')).toBeVisible()
+      // Change reason reopens at the saved reason; Round 7's state composes no
+      // refused mark (the route case above proves it on mark_rest_day).
+      await restState.getByRole('button', { name: 'Change reason', exact: true }).click()
       dialog = await expectFocusedLog(page, 'Log rest day')
-      await dialog.getByRole('button', { name: 'Save rest day' }).click()
-      await expect(dialog.getByRole('alert')).toHaveText('The rest day wasn’t saved. Try again.')
+      await expect(dialog.getByRole('combobox', { name: 'Reason' })).toHaveValue('injury')
       await dialog.getByRole('button', { name: 'Close log' }).click()
       await expect(openLog(page)).toHaveCount(0)
 

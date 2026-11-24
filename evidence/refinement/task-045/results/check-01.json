@@ -15,12 +15,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-045/required-cases.json",
-    "sha256": "fe496dae22cd7415f3c0e16e10640a3430545b34445caafdc6fdbe6c61c07af8"
+    "sha256": "a118a1244d6c292f38625dbbeecf608a3d748eafe8ceb7cec9434454350fbcb8"
   },
   "targets": [
     {
       "path": "e2e/refinement/task-045.spec.ts",
-      "sha256": "a355ead3ae4df24ad026e7ecf7e25861c9d35c7a8eee19b99d27401570c87465"
+      "sha256": "67c5400ca23b9465c2ea851974accaf1108ec13e5274472dcb2e2633a396485b"
     }
   ],
   "requiredCases": [
