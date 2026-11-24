@@ -1,0 +1,1297 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-119",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/Generate.test.tsx",
+    "src/test/goal-focus-journeys.test.tsx",
+    "src/app/Review.test.tsx",
+    "src/app/review-screen.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-119/required-cases.json",
+    "sha256": "d2e8a05d5c779cf0b97a30d4501a050ae6c4ec654732dd49526e3a28331c31b8"
+  },
+  "targets": [
+    {
+      "path": "src/app/Generate.test.tsx",
+      "sha256": "cb3942fabe14a8c9de4f612b55129b3cde0cba68cd9036fa313908c591d45735"
+    },
+    {
+      "path": "src/test/goal-focus-journeys.test.tsx",
+      "sha256": "7dd6a71165a7bfb0c85938705b874aa62388b5a9646d8223470b8a26e437b43d"
+    },
+    {
+      "path": "src/app/Review.test.tsx",
+      "sha256": "7b795cf0d60f5229beb57c17944649313974c93a52dd428ca771361835c222be"
+    },
+    {
+      "path": "src/app/review-screen.test.tsx",
+      "sha256": "0355f26ea94d07d934b6c9954cc6b00b2d0e5fd0cdcf31f1be9b6a63ad185db8"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > states the goal, then asks the anchor, the intensity, the place, the time and the notes",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > holds every group, label and field in one card and keeps the action in the footer",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > puts Goal and Focus first, said alike, with the Focus value as Change focus (B05-02.6/02.7)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > keeps Recovery a lone action when there is no Focus to change",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > puts Goal and Focus first on one row, the Focus value its change control, with no paired Recovery action (C51, superseding B05-02.6/02.7)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > keeps Recovery beside the Anchor choices when there is no Focus to change",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the screen’s composition (Form Screen template) > prefills the default place rather than the first one listed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the CTA > waits for an anchor and for nothing else — the Goal is already the profile’s",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers 1–10 for the standing goal and lands on its start",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for strength",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for hypertrophy",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for conditioning",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for balanced",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > offers the same 1–10 choice for active_recovery",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > sends strength’s chosen 1 unchanged and says how the goal reads it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > sends hypertrophy’s chosen 10 unchanged and says how the goal reads it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > sends conditioning’s chosen 2 unchanged and says how the goal reads it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → intensity (v3 delta §2.2, REQ-009 U27) > sends an in-range choice unchanged with no range explanation (B05-02.5)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → anchor (v3 delta §2.3) > offers Power to a standing strength goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → anchor (v3 delta §2.3) > offers Power to a standing hypertrophy goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → anchor (v3 delta §2.3) > offers Power to a standing conditioning goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "goal → anchor (v3 delta §2.3) > offers Power to a standing balanced goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-001 — the standing Goal is context, not a question > shows the profile’s Goal, no Goal choice and no Settings link (B05-02.3)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-001 — the standing Goal is context, not a question > sends the Goal a fresh visit finds on the profile, with no Goal interaction",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-001 — the profile read > shows the profile loading, with no Generate CTA",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-001 — the profile read > shows the failure with a Retry that reads again, and sends nothing",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-002 — the correction state > names Settings and sends nothing for a profile with no goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-002 — the correction state > names Settings and sends nothing for a profile with the legacy active_recovery goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > opens on the recommended Focus and the history intensity, ready to generate",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > requests a history averaging 10 unchanged; hypertrophy composes it at 9",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > requests a history averaging 2 unchanged; hypertrophy composes it at 3",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > starts a strength profile with no recommendation on the goal’s start",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > starts a hypertrophy profile with no recommendation on the goal’s start",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > starts a conditioning profile with no recommendation on the goal’s start",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > starts a balanced profile with no recommendation on the goal’s start",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the recommended Focus and its intensity > takes no Focus from the URL: the recommendation is today’s history",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-005 — a manual Focus before the first completed workout, or on stale history > asks for one of four with nothing selected, and says it is the first workout",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-005 — a manual Focus before the first completed workout, or on stale history > asks for a manual Focus on history 30 days old, with no history-backed reason",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-005 — a manual Focus before the first completed workout, or on stale history > stays in the first-workout state on unstarted and abandoned sessions alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-005 — a manual Focus before the first completed workout, or on stale history > recommends on the next visit once one of them is completed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-006 — a history read that fails or is still in flight > shows the Focus area loading, and no CTA to press on an unresolved Focus",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-006 — a history read that fails or is still in flight > says history could not be read, offers Retry, and is not the first-workout state",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-006 — a history read that fails or is still in flight > lets a Focus be chosen by hand and sends it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-006 — a history read that fails or is still in flight > reads again on Retry, and shows the recommendation when the read succeeds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-006 — a history read that fails or is still in flight > keeps a Focus already chosen by hand when Retry succeeds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "what is sent > sends the request the user composed, once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "what is sent > sends no note rather than an empty one",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "what is sent > blocks a payload the request schema refuses, and says which field",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "what is sent > sends once the refused field is fixed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > replaces the whole form with the Loading screen for the run, with no invented progress",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > starts one run however often the submit is pressed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > lands on Review with the validated workout when the run succeeds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > says the run is slow at the documented threshold, stating the fact only",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > fails into pattern 3: the loader says so and one negative toast offers one retry",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > cancels back to the form with the draft exactly as the user left it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > discards the abandoned run’s answer after cancel",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > discards a failure that arrives after cancel",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > discards the answer when the screen unmounts mid-run",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-004 — the Loading screen for a Generate run > keeps the Full atmosphere through generation and cancel",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the four states > shows its places loading before it shows a form",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the four states > shows the failure and a retry when the places do not load",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "the four states > offers the way to add a place when there is none to generate from",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > says nothing at all when the history shows no trend",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > states the specific trend it noticed, not that one may exist",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > changes nothing until Apply is pressed, and never sends a deload nobody asked for",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > clamps the intensity and carries the directive once the user applies it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > takes Not today for an answer, and remembers it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > stays dismissed when the screen is opened again",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > confirms a hard intensity once on a flagged day, then honours it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "OVR-04 — the deload suggestion > lets the user back out of a hard intensity without changing anything",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > reveals the four choices under Change focus, and says whether they are open",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > marks the chosen Focus as this workout only, writes it to the URL, and sends it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > restores the recommendation on cancelling",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > restores the recommendation on dismissing the choices with the Focus control",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > restores the override and its marker when the page is reloaded",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > does not read a bare Focus prefill as an override",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-007 — a Focus for this workout only > writes nothing to the profile when generating with an override",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-008 — a Recovery session for this workout only > sends active_recovery with the requested intensity unchanged and says it is composed at 1–3",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-008 — a Recovery session for this workout only > keeps Power visible and disabled, with the refusal in text",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-008 — a Recovery session for this workout only > clears a recommended Power rather than substituting it, and waits for another Focus",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-008 — a Recovery session for this workout only > keeps Recovery when Loading is cancelled, and restores it from that URL",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-008 — a Recovery session for this workout only > returns to the standing Goal when Recovery is switched off",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-008 — a Recovery session for this workout only > opens a fresh visit on the standing Goal, and never wrote the profile",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > sends from a Home handoff carrying the Focus history recommends what a direct visit sends",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > sends from a Home handoff carrying a Focus history no longer recommends what a direct visit sends",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > cancels from Loading back to the draft with Recovery, the override and the intensity kept",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > U20: opens from Home’s next-workout entry with its minutes and place, sending nothing",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > U20: a carried request with a place that is no longer the athlete’s opens on the default place",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > U20: a carried request with no place at all opens on the default place",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > U20: an unusable carried time is no time, so the standard one opens",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > keeps the handoff’s own parameters in the address through cancel",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > resolves the same request from a refresh of the cancelled draft’s address",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > resends the same Goal and Focus on Retry after a typed failure, once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "REQ-009 — the same Goal and Focus however the draft is reached > starts one run for a Recovery draft however often the submit is pressed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > states a standing strength goal as its label alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > states a standing hypertrophy goal as its label alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > states a standing conditioning goal as its label alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > states a standing balanced goal as its label alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > guides the first request until an anchor is chosen, and again if it is cleared",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > guides a first request under another goal the same way",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > guides again when Recovery clears a chosen Power on a first request",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > gives no first-workout guidance on recent history (a recommendation)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U26 — the goal, plainly, and first-workout guidance only when needed > gives no first-workout guidance on stale history",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out, short helper copy that keeps each field clear > says minutes in full beside the time, never min",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out, short helper copy that keeps each field clear > keeps every helper short and still says what each field is for",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out, short helper copy that keeps each field clear > shows the unit on an empty time and empty notes, with no error before submit",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out, short helper copy that keeps each field clear > says the time error on the field, with the unit still there",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out, short helper copy that keeps each field clear > sends a valid time as the minutes typed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out, short helper copy that keeps each field clear > takes a note at the length limit, and sends it whole",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > says minutes in full beside the time, never min",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > AC-R024-07 removes the Place and Notes helper lines and leaves no description wired to either field",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > shows no helpers on an empty time and empty notes, with no error before submit",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > says the time error on the field, with the unit still there and no helper returning",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > sends a valid time as the minutes typed, and the chosen place",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U28 — minutes spelled out; R23 — Place and Notes without helper lines > keeps the notes limit with a note at the length limit, and sends it whole",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > says it is lighter, and sends the recovery goal, requested intensity and focus unchanged",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > says the same on a suggested Recovery opened from its address",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "U29 — a recovery workout says briefly that it is lighter, and stays recovery > drops the note when Recovery is switched off",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 keeps Goal and Focus first with an interactive Focus value, Recovery inside its choices, the minutes unit, the Generate title and the icon-only Home back, and no Place or Notes helper",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-01 Recovery is its own session toggle inside the focus choices, never a fifth focus value, and no detached or paired change action remains",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-02 Goal and Focus share the summary’s larger type, and the Focus value is a keyboard disclosure with its name and expanded state",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-03 the minutes unit is the public Input unit end cap fitted by the shared contract, with nothing Generate-specific sizing it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-04 the page title is Generate, and the generation action keeps its name",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-05 Back is the shared framed icon-only control named Home, and it goes Home",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-06 a first workout opens as a normal session: Recovery is offered unselected and recommended nowhere, and can still be chosen",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-R024-08 #286 is kept: a first workout requires one of four Anchors; history shows its Focus collapsed with the choices behind it, a different one for this workout only; the stored Goal; Intensity 1–10",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-024 — Generate hierarchy, focus interaction and exact copy > AC-C51-01 the accepted gallery state ?state=screens draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, and sends nothing",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-119 — the Recovery chip stays in view (owner decision 4, 2026-11-18) > TASK-AC-8C58C464BAD0 with a recommended Focus, Recovery on and Change focus collapsed, the Recovery chip and its note stay visible",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Generate.test.tsx",
+      "name": "TASK-119 — the Recovery chip stays in view (owner decision 4, 2026-11-18) > TASK-AC-8C58C464BAD0 a Recovery restored from its address stays in view once Change focus is collapsed, and turning it off there leaves the plain summary",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-016 — the six Goal/Focus journeys > journey 1: a saved Goal and enough history generate on the recommended Focus, and the accepted session stores them",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-016 — the six Goal/Focus journeys > journey 2: Change focus overrides the request and the stored session, and leaves Settings alone",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-016 — the six Goal/Focus journeys > journey 3: a Goal changed in Settings is the Goal Generate uses, with no Goal question",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-016 — the six Goal/Focus journeys > journey 4: a first workout takes a manual Focus with no invented reason, and the next visit is recommended",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-016 — the six Goal/Focus journeys > journey 5: cancel, retry and regenerate keep the resolved Goal and Focus, one call per generation",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-016 — the six Goal/Focus journeys > journey 6: a Recovery session generates and regenerates as active_recovery without Power, and a fresh visit is the standing Goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/test/goal-focus-journeys.test.tsx",
+      "name": "REQ-015 — the recovery stayed inside its scope > added no migration: the newest of its time is the one the recovery inspected",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > heads the screen with the workout’s own title",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > heads the facts inside one overview card, as one compact row rather than frames",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > keeps ordered sections and gives each shared block one card, with no nested cards",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > gives every block its own card under its section’s static header, and nests no card anywhere",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > pins Start at the measured edge and closes the content with Regenerate",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > uses static shared headers in section order, with all content visible",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders every section, in the order it will be performed, under its type’s label",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > never shows or follows a generated section title (REQ-011)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > frames each superset and circuit as one numbered group, in prescribed order",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > states the round count in the badge, the one-round sequence, and the shared rest after it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > states the round count beside the badge, the one-round sequence, and the shared rest after it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > drops the STANDARD badge that says nothing, and keeps one that names a scheme",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders every structure type the database admits",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders every rep scheme that carries information",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > states each structure’s own number — its clock, its cap, its rounds",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders every movement, with its structured prescription",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders each target kind as its own shape",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders time and distance as themselves rather than as reps",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > renders the load guidance and the rest",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > moves tempo off the rows into an optional, collapsed detail that keeps it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > preserves execution notes in standard, timed and grouped blocks",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > keeps Review sections visible without a collapse control (R37)",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "all generated content renders > keeps every section open, with no toggle, chevron or hit area on its header",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "no generated overview or section introduction (REQ-010) > shows neither for a legacy workout that still carries both strings",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "no generated overview or section introduction (REQ-010) > keeps every label and all structured work, timers and prescriptions",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "no generated overview or section introduction (REQ-010) > renders a null-prose workout exactly as the legacy one, with nothing in their place",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "no generated overview or section introduction (REQ-010) > opens the overview card on its facts, with no paragraph above them",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "no generated overview or section introduction (REQ-010) > starts a legacy workout with its prose and structured work intact",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the intensity / anchor / goal header > states the four facts the workout was composed under",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the intensity / anchor / goal header > says why the session differs from what was asked for",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the duration shown is the effective target > shows the number generation was asked to hit",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the duration shown is the effective target > never surfaces the computed estimate or Claude’s diagnostic estimate",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the duration shown is the effective target > never surfaces the requested duration in place of the effective one",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > discards nothing until the confirm is answered",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > says what is lost, and that nothing is deleted",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > keeps the workout when the confirm is declined",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > discards once the confirm is taken",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > restates the accepted Goal and Focus for a standing Goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > restates the accepted Goal and Focus for a Recovery session",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Regenerate confirms before discarding > writes nothing on the way out — a discarded workout leaves no session",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > uses the actual retrieval adapter with the workout goal, not a different saved goal",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > reads current limitations and equipment for a subsequent Review sharing the same app cache",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > locks both swap and undo while Start persists the chosen composition",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > ignores a late answer from a disclosure that was closed and reopened",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > does not carry the previous movement’s manual load override into a swap",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > offers a swap on every movement, named for the movement",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > offers a swap on every prescribed movement, named for the movement",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > reads alternatives for this composition only when asked, and offers only what fits",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > swaps the movement and keeps the slot’s work, and Start persists the swap",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > undoes a swap back to the movement generation composed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > says so when nothing else fits the slot, and leaves the movement as it was",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "swapping a movement happens in Review, under the original constraints (U37) > shows a failed read in the dialog and retries it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > persists the composed workout as a session",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > starts the session acceptance created, and no other",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > arrives at the workout shell once the session is running",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > publishes the running snapshot before Workout reads the shared cache",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > does not start a session the write never created",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > says a failed write failed, rather than moving on quietly",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > says a refused transition failed, and stays on the briefing",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > leaves the workout on screen after a failure is dismissed",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > refuses a second start while the first is still in flight",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "Start hands off to SES-01 > does not offer to regenerate a workout that is being started",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > shows the rule table’s weight with its session-count confidence",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > offers the suggestion as a text action inside its section’s card",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > shows no suggestion, and no zero, where there is no anchor",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > renders nothing for a user with no anchors, rather than a state of zero",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > reads a one-session anchor as low confidence, before the number",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > opens a Dialog with last session’s sets, the RPE recorded and the rule",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > applies an override to this session’s prescription and never to the anchor",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > shows an existing rep increase before Start and accepts that same target once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > accepts exactly the composed workout when nothing was overridden",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > shows loading in the suggestion surface while the briefing renders and starts",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > shows a failed anchor read in the suggestion surface and keeps the briefing",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/Review.test.tsx",
+      "name": "the suggested load, its confidence, and why > shows a failed evidence read the same way, and recovers on retry",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-019: required equipment near the top, before Start, without prose > lists each piece of equipment once, in the overview, before the first section",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-019: required equipment near the top, before Start, without prose > restores neither the generated overview nor a section introduction",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-019: required equipment near the top, before Start, without prose > says an all-bodyweight workout needs nothing, rather than showing an empty list",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-020: Start stays in the pinned action area while the content scrolls > pins Start, alone, in the footer outside the scrolling region",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-020: Start stays in the pinned action area while the content scrolls > enters the active workout when Start is tapped",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > is the last control in the scrolling content, after every section",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 follows the whole workout — Warm-up, the work and the Cooldown guide down to its last movement — and nothing readable follows it",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > still asks before discarding, and regenerates through the existing flow",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 after the Cooldown its behaviour is unchanged: Keep it keeps the workout, Discard and regenerate runs the same flow once, and it is held while Start is in flight",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-021: Regenerate sits at the end of the scrolling content > AC-C50-01 the accepted gallery state ?state=preparation draws Review’s own Regenerate after the Cooldown, and it only asks",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-022: numbered one-round sequences under a heading with the round count > heads a superset with its structure glyph and rounds, and its one-round sequence",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-022: numbered one-round sequences under a heading with the round count > states movement, then prescription, then equipment on each numbered row",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-022: numbered one-round sequences under a heading with the round count > states movement with its equipment beside it, then the prescription, on each numbered row",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-022: numbered one-round sequences under a heading with the round count > follows the group’s own movement and round count rather than a fixed layout",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-023: grouped movements read as consecutive within each round > states one round’s target in a superset, and every set in a standard block",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-023: grouped movements read as consecutive within each round > gives a standard block no sequence line and no numbering",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-023: grouped movements read as consecutive within each round > keeps the whole prescription where a superset’s round count is unknown",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > rules between movements and never after the final one",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > keeps the blue rest reading, with its glyph, inside the group it follows",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > drops the redundant “after the full sequence, then repeat” description",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > keeps necessary superset execution instructions",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > keeps necessary circuit execution instructions",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > removes only the known repeat sentence from a combined note: After the full sequence, then repeat. Alternate sides each rep.",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > removes only the known repeat sentence from a combined note: Alternate sides each rep. After the full sequence, then repeat.",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > removes only the known repeat sentence from a combined note: Alternate sides each rep.\nAfter the full sequence, then repeat.\nUse the same load.",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "AC-024: no trailing divider, the rest beside its group, no repeat description > does not interpret or discard other freeform repeat instructions",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-008: the compact workout-facts row under the workout title > reads the real facts, in order, as one glyph-led row inside the overview card",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-008: the compact workout-facts row under the workout title > keeps the workout title as the page title, the facts first, then the equipment",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-008: the compact workout-facts row under the workout title > never renders the excluded bodyweight sentence, and leaves equipment as it was",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > superset, 4 rounds: name row with Swap at its end, then prescription, then equipment",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > circuit, 2 rounds: name row with Swap at its end, then prescription, then equipment",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > superset, 4 rounds: name row with equipment beside the name and Swap at its end, then prescription",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > circuit, 2 rounds: name row with equipment beside the name and Swap at its end, then prescription",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > states the round rest once, in the group, never on each movement",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > keeps a real load beside its equipment inside a group",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > keeps only Swap by the name and the full Undo after the readings following a real choice",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > leaves a standard movement’s own rest where it was, and says bodyweight once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > leaves a standard movement’s own rest where it was and says its Bodyweight once",
+      "status": "passed"
+    },
+    {
+      "file": "src/app/review-screen.test.tsx",
+      "name": "REQ-009: grouped Review movement hierarchy and one group rest > keeps an actual Bodyweight load beside other equipment",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 249,
+    "passed": 249,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 249
+  },
+  "problems": []
+}

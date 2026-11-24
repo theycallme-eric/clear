@@ -450,6 +450,9 @@ function GenerateForm({
   const focusChoices = useId()
   const [changing, setChanging] = useState(draft.anchor !== null || draft.recovery)
   const expanded = changing || override !== null
+  // Owner decision 4 (2026-11-18, Q-005): with the choices closed, Round 7
+  // keeps the Recovery chip, beside its note, in view while Recovery is on.
+  const recoveryKept = presentation !== null && draft.recovery
 
   // The draft's intent is written where a refresh will find it. Replaced rather
   // than pushed: an edit to a draft is not a place to go back to.
@@ -614,9 +617,10 @@ function GenerateForm({
           <LoadingView label={HISTORY_LOADING_LABEL} />
         ) : focused ? (
           // An override holds the choices open, so `expanded` covers both.
-          expanded && (
+          // Closed, only a Recovery that is on stays (decision 4, 2026-11-18).
+          (expanded || recoveryKept) && (
           <div className="clr-stack clr-stack--tight">
-            {override !== null && (
+            {expanded && override !== null && (
               <ActionGroup>
                 <Button variant="quiet" onClick={() => chooseOverride(null)}>
                   {OVERRIDE_CANCEL_LABEL}

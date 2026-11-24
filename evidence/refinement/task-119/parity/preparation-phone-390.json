@@ -1,0 +1,425 @@
+{
+  "schema": "clear-task-119-parity/v1",
+  "task": "TASK-119",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "galleryChanges": [
+    {
+      "file": "src/app/Generate.tsx",
+      "criteria": [
+        "TASK-AC-8C58C464BAD0"
+      ],
+      "states": [],
+      "change": "Owner decision 4 (2026-11-18, Q-005): with a recommended Focus and Recovery on, the Recovery chip (with its note above it) stays in view when Change focus is collapsed (`recoveryKept`). Round 7 only; no state draws the route: the screens state composes its own Generate card, where a chosen Recovery already stays in view as the Focus value, so it is not updated."
+    }
+  ],
+  "state": "preparation",
+  "width": 390,
+  "route": "/review",
+  "drive": "gallery state as loaded (the sample guides around the live For Time card); /review as handed off, read to the end of its content",
+  "matchedData": {
+    "gallery": {
+      "Warm-up": [
+        "Arm circles",
+        "Scapular push-ups",
+        "Bench press rehearsal"
+      ],
+      "Cooldown": [
+        "Chest stretch",
+        "Thoracic rotation",
+        "Child’s pose"
+      ]
+    },
+    "route": {
+      "Warm-up": {
+        "names": [
+          "arm circles",
+          "scapular push ups",
+          "bench press rehearsal"
+        ],
+        "time": "~4 minutes"
+      },
+      "Cooldown": {
+        "names": [
+          "chest stretch",
+          "thoracic rotation",
+          "childs pose"
+        ],
+        "time": "~4 minutes"
+      }
+    }
+  },
+  "parts": {
+    "warm-up": "the Warm-up guide’s own card: title, approximate time and names",
+    "cooldown": "the Cooldown guide’s own card",
+    "regenerate": "Review’s Regenerate row (route only)"
+  },
+  "order": {
+    "gallery": [
+      "Warm-up",
+      "work",
+      "Cooldown"
+    ],
+    "route": [
+      "Warm-up",
+      "work",
+      "Cooldown",
+      "Regenerate"
+    ],
+    "differences": [
+      {
+        "side": "route only",
+        "text": "Regenerate",
+        "criterion": "AC-C50-01",
+        "reason": "C50: Regenerate follows the whole workout, after the Cooldown."
+      }
+    ]
+  },
+  "placement": {
+    "lastButton": "Regenerate",
+    "gapBelowCooldownPx": 16,
+    "belowCooldownLastMovement": true
+  },
+  "galleryAgainstBase": {
+    "base": "evidence/refinement/task-119/parity/gallery-base-preparation-phone-390.json",
+    "lines": "unchanged",
+    "dom": "07baab3a4565474861827aed4296212f76f578c85e7df1697a2d121733d70263",
+    "boxes": 120,
+    "layout": "unchanged",
+    "differences": [],
+    "layoutDifferences": []
+  },
+  "captures": {
+    "gallery-warm-up": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-gallery-warm-up.png",
+      "sha256": "fd0406874269e408b5f4ae8d1c4e930cbaec740c3bba76f9030d6658b96ce7a5"
+    },
+    "route-warm-up": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-route-warm-up.png",
+      "sha256": "4706990222d341cdd296e07e87bdb0cf3a1e98ad3811ba530b7cd07970b101e2"
+    },
+    "gallery-cooldown": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-gallery-cooldown.png",
+      "sha256": "66376ef0852a35b06c800555e053fe0328b613ce91cd79237c400bcce14f3b60"
+    },
+    "route-cooldown": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-route-cooldown.png",
+      "sha256": "a054fe5e56b77ca701dcf17edc87c84625befc56530c682390a45d1ea438279b"
+    },
+    "route-regenerate": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-route-regenerate.png",
+      "sha256": "1c34aade041bbde51b01cf1372afde16c2311b07e958adf59bc4814907c423fb"
+    }
+  },
+  "lines": {
+    "warm-up": {
+      "gallery": [
+        "WARM-UP",
+        "~4 MINUTES",
+        "Arm circles",
+        "Scapular push-ups",
+        "Bench press rehearsal"
+      ],
+      "route": [
+        "WARM-UP",
+        "~4 MINUTES",
+        "arm circles",
+        "scapular push ups",
+        "bench press rehearsal"
+      ]
+    },
+    "cooldown": {
+      "gallery": [
+        "COOLDOWN",
+        "~3 MINUTES",
+        "Chest stretch",
+        "Thoracic rotation",
+        "Child’s pose"
+      ],
+      "route": [
+        "COOLDOWN",
+        "~4 MINUTES",
+        "chest stretch",
+        "thoracic rotation",
+        "childs pose"
+      ]
+    },
+    "regenerate": {
+      "gallery": null,
+      "route": [
+        "REGENERATE"
+      ]
+    }
+  },
+  "names": {},
+  "differences": {
+    "warm-up": [
+      {
+        "side": "gallery only",
+        "text": "Arm circles",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "gallery only",
+        "text": "Scapular push-ups",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "gallery only",
+        "text": "Bench press rehearsal",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "route only",
+        "text": "arm circles",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "route only",
+        "text": "scapular push ups",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "route only",
+        "text": "bench press rehearsal",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      }
+    ],
+    "cooldown": [
+      {
+        "side": "gallery only",
+        "text": "~3 MINUTES",
+        "criterion": "AC-R022-01",
+        "reason": "The approximate time is TASK-034’s estimate of the actual prescriptions (~4 minutes), never the state’s illustrated ~3."
+      },
+      {
+        "side": "gallery only",
+        "text": "Chest stretch",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "gallery only",
+        "text": "Thoracic rotation",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "gallery only",
+        "text": "Child’s pose",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "route only",
+        "text": "~4 MINUTES",
+        "criterion": "AC-R022-01",
+        "reason": "TASK-034’s estimate of the actual prescriptions."
+      },
+      {
+        "side": "route only",
+        "text": "chest stretch",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "route only",
+        "text": "thoracic rotation",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      },
+      {
+        "side": "route only",
+        "text": "childs pose",
+        "criterion": "AC-R034-01",
+        "reason": "Real data only (TASK-AC-0A3231160F1D): each route names its guide’s movements with the catalog reader (lower case, no apostrophe) from the same three movements the state’s illustrated sample lists in sentence case (TASK-109’s matched composition)."
+      }
+    ],
+    "regenerate": [
+      {
+        "side": "route only",
+        "text": "REGENERATE",
+        "criterion": "AC-C50-01",
+        "reason": "C50: Review’s Regenerate follows all workout content, the Cooldown guide included; the state draws the Review order’s guides and work only, with no Review screen."
+      }
+    ]
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words (data words that differ by intent read as placeholders)",
+    "tolerancePx": 2,
+    "measured": {
+      "warm-up": {
+        "gallery": 10,
+        "route": 10
+      },
+      "cooldown": {
+        "gallery": 10,
+        "route": 10
+      },
+      "regenerate": {
+        "gallery": 0,
+        "route": 8
+      }
+    },
+    "parts": {
+      "warm-up": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 129
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 129
+        }
+      },
+      "cooldown": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 129
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 129
+        }
+      },
+      "regenerate": {
+        "gallery": null,
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 358,
+          "height": 56
+        }
+      }
+    },
+    "differences": {
+      "warm-up": [],
+      "cooldown": [],
+      "regenerate": [
+        {
+          "key": "(part)#0",
+          "gallery": null,
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 358,
+            "height": 56
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "div.clr-echo|REGENERATE#0",
+          "gallery": null,
+          "route": {
+            "key": "div.clr-echo|REGENERATE#0",
+            "x": 0,
+            "y": 0,
+            "width": 358,
+            "height": 56
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "svg.clr-echo__rear|#0",
+          "gallery": null,
+          "route": {
+            "key": "svg.clr-echo__rear|#0",
+            "x": 0,
+            "y": 0,
+            "width": 358,
+            "height": 56
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "path.clr-echo__source|#0",
+          "gallery": null,
+          "route": {
+            "key": "path.clr-echo__source|#0",
+            "x": 0,
+            "y": 0,
+            "width": 358,
+            "height": 56
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "span.clr-bleed|REGENERATE#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-bleed|REGENERATE#0",
+            "x": 0,
+            "y": 0,
+            "width": 358,
+            "height": 56
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "button.clr-btn.clr-chamfer.clr-chamfer--lg|REGENERATE#0",
+          "gallery": null,
+          "route": {
+            "key": "button.clr-btn.clr-chamfer.clr-chamfer--lg|REGENERATE#0",
+            "x": 0,
+            "y": 0,
+            "width": 358,
+            "height": 56
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "svg|#0",
+          "gallery": null,
+          "route": {
+            "key": "svg|#0",
+            "x": 108.1,
+            "y": 16,
+            "width": 24,
+            "height": 24
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        },
+        {
+          "key": "path|#0",
+          "gallery": null,
+          "route": {
+            "key": "path|#0",
+            "x": 110.1,
+            "y": 19,
+            "width": 20,
+            "height": 18
+          },
+          "criterion": "AC-C50-01",
+          "reason": "C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+        }
+      ]
+    }
+  }
+}

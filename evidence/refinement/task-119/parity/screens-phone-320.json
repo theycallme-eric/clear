@@ -1,0 +1,1418 @@
+{
+  "schema": "clear-task-119-parity/v1",
+  "task": "TASK-119",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "galleryChanges": [
+    {
+      "file": "src/app/Generate.tsx",
+      "criteria": [
+        "TASK-AC-8C58C464BAD0"
+      ],
+      "states": [],
+      "change": "Owner decision 4 (2026-11-18, Q-005): with a recommended Focus and Recovery on, the Recovery chip (with its note above it) stays in view when Change focus is collapsed (`recoveryKept`). Round 7 only; no state draws the route: the screens state composes its own Generate card, where a chosen Recovery already stays in view as the Focus value, so it is not updated."
+    }
+  ],
+  "state": "screens",
+  "width": 320,
+  "route": "/generate",
+  "drive": "gallery state as loaded, then its Focus value pressed (the Focus dialog) and Recovery chosen; /generate for a returning athlete (Upper body recommended, strength, 45 minutes), then Change focus pressed (the choices), Recovery session pressed and Change focus pressed again (closed)",
+  "matchedData": {
+    "gallery": {
+      "goal": "Build strength",
+      "focus": "Upper body",
+      "minutes": "45"
+    },
+    "route": {
+      "goal": "strength (Strength)",
+      "focus": "Upper body (recommended from history)",
+      "minutes": "45"
+    }
+  },
+  "parts": {
+    "back": "the framed icon-only Back",
+    "title": "the Generate title",
+    "goal": "the goal reading",
+    "focus": "the Focus value (the route’s Focus summary item: its term and the Change focus control)",
+    "focus-open": "the choices the Focus value opens (the state’s Focus dialog; the route’s four focuses and Recovery in place)",
+    "recovery-closed": "Recovery with the choices closed (owner decision 4, 2026-11-18)",
+    "recovery-note": "the Recovery note kept with the chip (route only)",
+    "minutes": "the time field with its MINUTES end cap",
+    "action": "Generate workout"
+  },
+  "routeOnly": {
+    "intensity": {
+      "criterion": "AC-R024-08",
+      "reason": "#286 / decision of 2026-11-13 (kept): the 1–10 Intensity and its explanation line; the state’s composed card omits them."
+    },
+    "place": {
+      "criterion": "AC-R024-07",
+      "reason": "Place keeps its label and control with no helper line (R23); the state’s card omits it."
+    },
+    "notes": {
+      "criterion": "AC-R024-07",
+      "reason": "Notes keeps its label, control and placeholder with no helper line (R23); the state’s card omits it."
+    }
+  },
+  "galleryAgainstBase": {
+    "base": "evidence/refinement/task-119/parity/gallery-base-screens-phone-320.json",
+    "lines": "unchanged",
+    "dom": "c71c2f608f591a1ae88b0fd8692e41719688024e378ddb9824a388a2d5960aaf",
+    "boxes": 78,
+    "layout": "unchanged",
+    "differences": [],
+    "layoutDifferences": []
+  },
+  "captures": {
+    "gallery-back": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-back.png",
+      "sha256": "987c29f69794b325994ee5a7c6e53f6e05342bc0163f95d1d17c7a67271e488c"
+    },
+    "route-back": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-back.png",
+      "sha256": "0c3cf39ab01a8b60ec48cabc1829b0b0ccf9af3dcc77a9c19fc00f8da740df4b"
+    },
+    "gallery-title": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-title.png",
+      "sha256": "520b340f2d2f8a59ba41c63bfc1a5d820d0412d3b81fc8ea43fa3721bb4292da"
+    },
+    "route-title": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-title.png",
+      "sha256": "f17f89930abff71e6fb8b9c07a9c47dce53059499e0efa1865d4ea566369ff29"
+    },
+    "gallery-goal": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-goal.png",
+      "sha256": "f0346e953152bdcf2b29bd6ef296d5384d5e7996a7fbfec91cea1c131273a923"
+    },
+    "route-goal": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-goal.png",
+      "sha256": "7f4158aa999b65133263d5aebface47ed9da82fff64e46d69751dda5492c2465"
+    },
+    "gallery-focus": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus.png",
+      "sha256": "630bcec926469fd9577b8232e981c8d61211c6a014d6b0edd8bd4254aa9fbc3d"
+    },
+    "route-focus": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-focus.png",
+      "sha256": "4b9ce0a3bc5f01b3f87573566b5ddf6a95aef730aa10253e0c2a2a90c75323ab"
+    },
+    "gallery-focus-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus-open.png",
+      "sha256": "48b083d5a413ab102b1eeb2344ebe1dc4debfd4df9f7ce386f946b59b030c891"
+    },
+    "route-focus-open": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-focus-open.png",
+      "sha256": "e729dc61522a6854c2414d6edef520f6a914557aa9f612c7f6aac551c938498b"
+    },
+    "gallery-recovery-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-recovery-closed.png",
+      "sha256": "9127504d311fedbb4b0ba20b0fa3d0e83e84a0b80ad0ecfd9dae331ee3c5aee5"
+    },
+    "route-recovery-closed": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-recovery-closed.png",
+      "sha256": "699a74183ff3fd7322f1199be0fa44f76052ee4cd986ce21036a165512b276e3"
+    },
+    "route-recovery-note": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-recovery-note.png",
+      "sha256": "af0286be976d679371c7ba976580a72dd6b0c8beca470f46cd9906c7bc2684f3"
+    },
+    "gallery-minutes": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-minutes.png",
+      "sha256": "940b0787fad9c25a042698583846440fc80ace0af452cccfed810eec5141e385"
+    },
+    "route-minutes": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-minutes.png",
+      "sha256": "d1f66ebf1121baeaa1c6d1b22695f6a8775abbd0482cdeb0bc2698ce69860098"
+    },
+    "gallery-action": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-action.png",
+      "sha256": "ba2ad3009243c1154678058f6fc7a158f2bb49eb710af4c0e2530845a48f7324"
+    },
+    "route-action": {
+      "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-action.png",
+      "sha256": "dd04ff2a7eae30dc6c28d13ccb89e605d5949b28c483552bf66a35f780aca714"
+    }
+  },
+  "lines": {
+    "back": {
+      "gallery": [],
+      "route": []
+    },
+    "title": {
+      "gallery": [
+        "GENERATE"
+      ],
+      "route": [
+        "GENERATE"
+      ]
+    },
+    "goal": {
+      "gallery": [
+        "BUILD STRENGTH"
+      ],
+      "route": [
+        "GOAL",
+        "Strength"
+      ]
+    },
+    "focus": {
+      "gallery": [
+        "UPPER BODY"
+      ],
+      "route": [
+        "FOCUS",
+        "UPPER BODY"
+      ]
+    },
+    "focus-open": {
+      "gallery": [
+        "FOCUS",
+        "FOCUS",
+        "UPPER BODY",
+        "LOWER BODY",
+        "FULL BODY",
+        "RECOVERY"
+      ],
+      "route": [
+        "UPPER BODY",
+        "LOWER BODY",
+        "FULL BODY",
+        "POWER",
+        "RECOVERY SESSION"
+      ]
+    },
+    "recovery-closed": {
+      "gallery": [
+        "RECOVERY"
+      ],
+      "route": [
+        "RECOVERY SESSION"
+      ]
+    },
+    "recovery-note": {
+      "gallery": null,
+      "route": [
+        "A lighter workout, for today only. Power isn’t offered for recovery."
+      ]
+    },
+    "minutes": {
+      "gallery": [
+        "TIME",
+        "MINUTES"
+      ],
+      "route": [
+        "TIME AVAILABLE",
+        "MINUTES"
+      ]
+    },
+    "action": {
+      "gallery": [
+        "GENERATE WORKOUT"
+      ],
+      "route": [
+        "GENERATE WORKOUT"
+      ]
+    }
+  },
+  "names": {
+    "back": {
+      "gallery": "Back to Home",
+      "route": "Home",
+      "criterion": "AC-R024-05",
+      "reason": "R10.5 / #286: the route’s shared icon-only Back is named for its destination, “Home” (unchanged at the base); the state’s composed card names its Back “Back to Home”."
+    },
+    "focus": {
+      "gallery": "Upper body",
+      "route": "Change focus",
+      "criterion": "AC-R024-02",
+      "reason": "R10.2: the route’s Focus value is the disclosure named Change focus, with its expanded state (Round 7’s naming, round-07 S4); the state’s quiet button is named by the value it shows."
+    },
+    "recovery-closed": {
+      "gallery": "Recovery",
+      "route": "Recovery session",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "reason": "Owner decision 4 (2026-11-18): closed, the route keeps its Recovery chip (“Recovery session”, pressed) in view; the state, where Recovery is a Focus choice, shows it as the Focus value."
+    },
+    "action": {
+      "gallery": "Generate workout",
+      "route": "Generate workout",
+      "criterion": null,
+      "reason": null
+    }
+  },
+  "differences": {
+    "back": [],
+    "title": [],
+    "goal": [
+      {
+        "side": "gallery only",
+        "text": "BUILD STRENGTH",
+        "criterion": "AC-C51-01",
+        "reason": "C51: Goal/Focus lead the card. The state illustrates the standing goal as one label; the route’s Round 7 summary states the Goal term and the profile’s standing Goal value (Strength)."
+      },
+      {
+        "side": "route only",
+        "text": "GOAL",
+        "criterion": "AC-C51-01",
+        "reason": "C51 / R21: the route’s Goal/Focus summary (Round 7, decision 4 of 2026-11-13): the Goal term and the standing Goal’s label in the summary’s larger type."
+      },
+      {
+        "side": "route only",
+        "text": "Strength",
+        "criterion": "AC-C51-01",
+        "reason": "C51 / R21: the route’s Goal/Focus summary (Round 7, decision 4 of 2026-11-13): the Goal term and the standing Goal’s label in the summary’s larger type."
+      }
+    ],
+    "focus": [
+      {
+        "side": "route only",
+        "text": "FOCUS",
+        "criterion": "AC-C51-01",
+        "reason": "C51: the route’s summary keeps the Focus term above the interactive Focus value."
+      }
+    ],
+    "focus-open": [
+      {
+        "side": "gallery only",
+        "text": "FOCUS",
+        "criterion": "AC-R024-02",
+        "reason": "R10.2 / #286: the route opens the choices in place under the Focus value (a disclosure with its expanded state, one-workout override); the state opens a titled dialog with a legend."
+      },
+      {
+        "side": "gallery only",
+        "text": "FOCUS",
+        "criterion": "AC-R024-02",
+        "reason": "R10.2 / #286: the route opens the choices in place under the Focus value (a disclosure with its expanded state, one-workout override); the state opens a titled dialog with a legend."
+      },
+      {
+        "side": "gallery only",
+        "text": "RECOVERY",
+        "criterion": "AC-R024-01",
+        "reason": "R10.1: Recovery is never a fifth movement focus; the route keeps it as its own session toggle apart from the four. The state lists it as a Focus choice."
+      },
+      {
+        "side": "route only",
+        "text": "POWER",
+        "criterion": "AC-R024-08",
+        "reason": "#286: the route keeps all four Anchors (Power included) as the one-workout choices; the state’s illustration omits Power."
+      },
+      {
+        "side": "route only",
+        "text": "RECOVERY SESSION",
+        "criterion": "AC-R024-01",
+        "reason": "R10.1: the route’s one-workout Recovery toggle, inside the choices and apart from the four focuses."
+      }
+    ],
+    "recovery-closed": [
+      {
+        "side": "gallery only",
+        "text": "RECOVERY",
+        "criterion": "TASK-AC-8C58C464BAD0",
+        "reason": "Decision 4: a chosen Recovery stays in view once the choices close; the state shows it as the Focus value."
+      },
+      {
+        "side": "route only",
+        "text": "RECOVERY SESSION",
+        "criterion": "TASK-AC-8C58C464BAD0",
+        "reason": "Decision 4: the route’s pressed Recovery chip stays in view with the choices closed."
+      }
+    ],
+    "recovery-note": [
+      {
+        "side": "route only",
+        "text": "A lighter workout, for today only. Power isn’t offered for recovery.",
+        "criterion": "TASK-AC-8C58C464BAD0",
+        "reason": "Decision 4: “the chip stays visible with its note” — the route’s Recovery note (U29), above the chip; the state has no note."
+      }
+    ],
+    "minutes": [
+      {
+        "side": "gallery only",
+        "text": "TIME",
+        "criterion": "AC-R024-07",
+        "reason": "The route keeps its field’s own label, Time available (labels retained); the state’s illustration says Time."
+      },
+      {
+        "side": "route only",
+        "text": "TIME AVAILABLE",
+        "criterion": "AC-R024-07",
+        "reason": "The route’s retained field label."
+      }
+    ],
+    "action": []
+  },
+  "layout": {
+    "method": "element boxes",
+    "keys": "tag, clr- classes and words (data words that differ by intent read as placeholders)",
+    "tolerancePx": 2,
+    "measured": {
+      "back": {
+        "gallery": 3,
+        "route": 3
+      },
+      "title": {
+        "gallery": 1,
+        "route": 4
+      },
+      "goal": {
+        "gallery": 1,
+        "route": 3
+      },
+      "focus": {
+        "gallery": 1,
+        "route": 3
+      },
+      "focus-open": {
+        "gallery": 31,
+        "route": 23
+      },
+      "recovery-closed": {
+        "gallery": 1,
+        "route": 3
+      },
+      "recovery-note": {
+        "gallery": 0,
+        "route": 1
+      },
+      "minutes": {
+        "gallery": 6,
+        "route": 6
+      },
+      "action": {
+        "gallery": 1,
+        "route": 1
+      }
+    },
+    "parts": {
+      "back": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 40,
+          "height": 40
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 40,
+          "height": 40
+        }
+      },
+      "title": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 77.1,
+          "height": 16
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 136.8,
+          "height": 40
+        }
+      },
+      "goal": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 16
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 123,
+          "height": 50
+        }
+      },
+      "focus": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 42
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 123,
+          "height": 58
+        }
+      },
+      "focus-open": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 296,
+          "height": 288
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 184
+        }
+      },
+      "recovery-closed": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 42
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 193.8,
+          "height": 40
+        }
+      },
+      "recovery-note": {
+        "gallery": null,
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 60
+        }
+      },
+      "minutes": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 60
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 60
+        }
+      },
+      "action": {
+        "gallery": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 254,
+          "height": 42
+        },
+        "route": {
+          "key": "(part)#0",
+          "x": 0,
+          "y": 0,
+          "width": 288,
+          "height": 52
+        }
+      }
+    },
+    "differences": {
+      "back": [
+        {
+          "key": "svg|#0",
+          "gallery": {
+            "key": "svg|#0",
+            "x": 8,
+            "y": 8,
+            "width": 24,
+            "height": 24
+          },
+          "route": {
+            "key": "svg|#0",
+            "x": 10,
+            "y": 10,
+            "width": 20,
+            "height": 20
+          },
+          "criterion": "AC-R024-05",
+          "reason": "The route’s Back glyph is ArrowLeft at 20 px in the screen header (unchanged at the base); the state’s card draws ArrowLeft at its default size."
+        },
+        {
+          "key": "path|#0",
+          "gallery": {
+            "key": "path|#0",
+            "x": 11,
+            "y": 12,
+            "width": 18,
+            "height": 16
+          },
+          "route": {
+            "key": "path|#0",
+            "x": 12.5,
+            "y": 13.3,
+            "width": 15,
+            "height": 13.3
+          },
+          "criterion": "AC-R024-05",
+          "reason": "The route’s Back glyph is ArrowLeft at 20 px in the screen header (unchanged at the base); the state’s card draws ArrowLeft at its default size."
+        }
+      ],
+      "title": [
+        {
+          "key": "(part)#0",
+          "gallery": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 77.1,
+            "height": 16
+          },
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 136.8,
+            "height": 40
+          },
+          "criterion": "AC-R024-04",
+          "reason": "The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+        },
+        {
+          "key": "span.clr-echo-text|GENERATE#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-echo-text|GENERATE#0",
+            "x": 0,
+            "y": -1,
+            "width": 136.8,
+            "height": 41
+          },
+          "criterion": "AC-R024-04",
+          "reason": "The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+        },
+        {
+          "key": "span.clr-echo-text__rear.clr-echo__source|#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-echo-text__rear.clr-echo__source|#0",
+            "x": 0,
+            "y": -1,
+            "width": 136.8,
+            "height": 41
+          },
+          "criterion": "AC-R024-04",
+          "reason": "The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+        },
+        {
+          "key": "span.clr-echo-text__foreground|GENERATE#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-echo-text__foreground|GENERATE#0",
+            "x": 0,
+            "y": -1,
+            "width": 136.8,
+            "height": 41
+          },
+          "criterion": "AC-R024-04",
+          "reason": "The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+        }
+      ],
+      "goal": [
+        {
+          "key": "(part)#0",
+          "gallery": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 16
+          },
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 123,
+            "height": 50
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2: the route’s Goal and Focus share one two-column summary row in the larger summary type; the state’s card stacks a label over the Focus value."
+        },
+        {
+          "key": "span.clr-text-data-xs.clr-text-data-xs--upper|GOAL#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-text-data-xs.clr-text-data-xs--upper|GOAL#0",
+            "x": 0,
+            "y": 0,
+            "width": 123,
+            "height": 18
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2: the route’s Goal and Focus share one two-column summary row in the larger summary type; the state’s card stacks a label over the Focus value."
+        },
+        {
+          "key": "strong.clr-v4-program-value|Strength#0",
+          "gallery": null,
+          "route": {
+            "key": "strong.clr-v4-program-value|Strength#0",
+            "x": 0,
+            "y": 26,
+            "width": 123,
+            "height": 24
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2: the route’s Goal and Focus share one two-column summary row in the larger summary type; the state’s card stacks a label over the Focus value."
+        }
+      ],
+      "focus": [
+        {
+          "key": "(part)#0",
+          "gallery": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 42
+          },
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 123,
+            "height": 58
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / R25: the route’s Focus value is a secondary text action (no frame) under its term in the summary; the state draws a framed quiet button."
+        },
+        {
+          "key": "span.clr-text-data-xs.clr-text-data-xs--upper|FOCUS#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-text-data-xs.clr-text-data-xs--upper|FOCUS#0",
+            "x": 0,
+            "y": 0,
+            "width": 123,
+            "height": 18
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / R25: the route’s Focus value is a secondary text action (no frame) under its term in the summary; the state draws a framed quiet button."
+        },
+        {
+          "key": "button.clr-text-action.clr-v4-focus-value|UPPER BODY#0",
+          "gallery": null,
+          "route": {
+            "key": "button.clr-text-action.clr-v4-focus-value|UPPER BODY#0",
+            "x": 0,
+            "y": 18,
+            "width": 123,
+            "height": 48
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / R25: the route’s Focus value is a secondary text action (no frame) under its term in the summary; the state draws a framed quiet button."
+        }
+      ],
+      "focus-open": [
+        {
+          "key": "(part)#0",
+          "gallery": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 296,
+            "height": 288
+          },
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 184
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-bleed.clr-bleed--block|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "div.clr-bleed.clr-bleed--block|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 0,
+            "y": 20,
+            "width": 296,
+            "height": 248
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-chamfer.clr-chamfer--lg|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "div.clr-chamfer.clr-chamfer--lg|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 0,
+            "y": 20,
+            "width": 296,
+            "height": 248
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "div|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 16,
+            "y": 36,
+            "width": 264,
+            "height": 216
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-logging-overlay__scroll|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "div.clr-logging-overlay__scroll|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 12,
+            "y": 32,
+            "width": 272,
+            "height": 224
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-logging-overlay__head|FOCUS#0",
+          "gallery": {
+            "key": "div.clr-logging-overlay__head|FOCUS#0",
+            "x": 16,
+            "y": 36,
+            "width": 264,
+            "height": 40
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "h.clr-logging-overlay__title|FOCUS#0",
+          "gallery": {
+            "key": "h.clr-logging-overlay__title|FOCUS#0",
+            "x": 16,
+            "y": 36,
+            "width": 76.7,
+            "height": 28
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|#0",
+          "gallery": {
+            "key": "span.clr-bleed|#0",
+            "x": 240,
+            "y": 36,
+            "width": 40,
+            "height": 40
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-btn.clr-chamfer.clr-chamfer--md.clr-hit|#0",
+          "gallery": {
+            "key": "button.clr-btn.clr-chamfer.clr-chamfer--md.clr-hit|#0",
+            "x": 240,
+            "y": 36,
+            "width": 40,
+            "height": 40
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "svg|#0",
+          "gallery": {
+            "key": "svg|#0",
+            "x": 248,
+            "y": 44,
+            "width": 24,
+            "height": 24
+          },
+          "route": {
+            "key": "svg|#0",
+            "x": 16,
+            "y": 15,
+            "width": 10,
+            "height": 10
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "path|#0",
+          "gallery": {
+            "key": "path|#0",
+            "x": 251,
+            "y": 47,
+            "width": 18,
+            "height": 18
+          },
+          "route": {
+            "key": "path|#0",
+            "x": 17,
+            "y": 16.3,
+            "width": 8,
+            "height": 7.3
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-logging-overlay__body|FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "div.clr-logging-overlay__body|FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 16,
+            "y": 92,
+            "width": 264,
+            "height": 160
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "fieldset|FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "fieldset|FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 16,
+            "y": 92,
+            "width": 264,
+            "height": 160
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "legend|FOCUS#0",
+          "gallery": {
+            "key": "legend|FOCUS#0",
+            "x": 16,
+            "y": 92,
+            "width": 48.3,
+            "height": 16
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div|UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+          "gallery": {
+            "key": "div|UPPER BODY LOWER BODY FULL BODY RECOVERY#0",
+            "x": 16,
+            "y": 116,
+            "width": 264,
+            "height": 136
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|UPPER BODY#0",
+          "gallery": {
+            "key": "span.clr-bleed|UPPER BODY#0",
+            "x": 16,
+            "y": 116,
+            "width": 142.8,
+            "height": 40
+          },
+          "route": {
+            "key": "span.clr-bleed|UPPER BODY#0",
+            "x": 0,
+            "y": 0,
+            "width": 142.8,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-chamfer.clr-chamfer--selected.clr-chamfer--sm.clr-chip|UPPER BODY#0",
+          "gallery": {
+            "key": "button.clr-chamfer.clr-chamfer--selected.clr-chamfer--sm.clr-chip|UPPER BODY#0",
+            "x": 16,
+            "y": 116,
+            "width": 142.8,
+            "height": 40
+          },
+          "route": {
+            "key": "button.clr-chamfer.clr-chamfer--selected.clr-chamfer--sm.clr-chip|UPPER BODY#0",
+            "x": 0,
+            "y": 0,
+            "width": 142.8,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "svg|#1",
+          "gallery": {
+            "key": "svg|#1",
+            "x": 32,
+            "y": 131,
+            "width": 10,
+            "height": 10
+          },
+          "route": {
+            "key": "svg|#1",
+            "x": 16,
+            "y": 63,
+            "width": 0,
+            "height": 10
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "path|#1",
+          "gallery": {
+            "key": "path|#1",
+            "x": 33,
+            "y": 132.3,
+            "width": 8,
+            "height": 7.3
+          },
+          "route": {
+            "key": "path|#1",
+            "x": 18.4,
+            "y": 66,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|LOWER BODY#0",
+          "gallery": {
+            "key": "span.clr-bleed|LOWER BODY#0",
+            "x": 16,
+            "y": 164,
+            "width": 128.2,
+            "height": 40
+          },
+          "route": {
+            "key": "span.clr-bleed|LOWER BODY#0",
+            "x": 0,
+            "y": 48,
+            "width": 128.2,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|LOWER BODY#0",
+          "gallery": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|LOWER BODY#0",
+            "x": 16,
+            "y": 164,
+            "width": 128.2,
+            "height": 40
+          },
+          "route": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|LOWER BODY#0",
+            "x": 0,
+            "y": 48,
+            "width": 128.2,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "svg|#2",
+          "gallery": {
+            "key": "svg|#2",
+            "x": 32,
+            "y": 179,
+            "width": 0,
+            "height": 10
+          },
+          "route": {
+            "key": "svg|#2",
+            "x": 152.2,
+            "y": 63,
+            "width": 0,
+            "height": 10
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "path|#2",
+          "gallery": {
+            "key": "path|#2",
+            "x": 34.4,
+            "y": 182,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "route": {
+            "key": "path|#2",
+            "x": 154.6,
+            "y": 66,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|FULL BODY#0",
+          "gallery": {
+            "key": "span.clr-bleed|FULL BODY#0",
+            "x": 152.2,
+            "y": 164,
+            "width": 112.2,
+            "height": 40
+          },
+          "route": {
+            "key": "span.clr-bleed|FULL BODY#0",
+            "x": 136.2,
+            "y": 48,
+            "width": 112.2,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|FULL BODY#0",
+          "gallery": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|FULL BODY#0",
+            "x": 152.2,
+            "y": 164,
+            "width": 112.2,
+            "height": 40
+          },
+          "route": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|FULL BODY#0",
+            "x": 136.2,
+            "y": 48,
+            "width": 112.2,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "svg|#3",
+          "gallery": {
+            "key": "svg|#3",
+            "x": 168.2,
+            "y": 179,
+            "width": 0,
+            "height": 10
+          },
+          "route": {
+            "key": "svg|#3",
+            "x": 16,
+            "y": 111,
+            "width": 0,
+            "height": 10
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "path|#3",
+          "gallery": {
+            "key": "path|#3",
+            "x": 170.6,
+            "y": 182,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "route": {
+            "key": "path|#3",
+            "x": 18.4,
+            "y": 114,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|RECOVERY#0",
+          "gallery": {
+            "key": "span.clr-bleed|RECOVERY#0",
+            "x": 16,
+            "y": 212,
+            "width": 109.1,
+            "height": 40
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|RECOVERY#0",
+          "gallery": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|RECOVERY#0",
+            "x": 16,
+            "y": 212,
+            "width": 109.1,
+            "height": 40
+          },
+          "route": null,
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "svg|#4",
+          "gallery": {
+            "key": "svg|#4",
+            "x": 32,
+            "y": 227,
+            "width": 0,
+            "height": 10
+          },
+          "route": {
+            "key": "svg|#4",
+            "x": 16,
+            "y": 159,
+            "width": 0,
+            "height": 10
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "path|#4",
+          "gallery": {
+            "key": "path|#4",
+            "x": 34.4,
+            "y": 230,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "route": {
+            "key": "path|#4",
+            "x": 18.4,
+            "y": 162,
+            "width": 19.2,
+            "height": 17.4
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-row|UPPER BODY LOWER BODY FULL BODY POWER#0",
+          "gallery": null,
+          "route": {
+            "key": "div.clr-row|UPPER BODY LOWER BODY FULL BODY POWER#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 136
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|POWER#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-bleed|POWER#0",
+            "x": 0,
+            "y": 96,
+            "width": 85.3,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|POWER#0",
+          "gallery": null,
+          "route": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|POWER#0",
+            "x": 0,
+            "y": 96,
+            "width": 85.3,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "div.clr-row|RECOVERY SESSION#0",
+          "gallery": null,
+          "route": {
+            "key": "div.clr-row|RECOVERY SESSION#0",
+            "x": 0,
+            "y": 144,
+            "width": 254,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "span.clr-bleed|RECOVERY SESSION#0",
+          "gallery": null,
+          "route": {
+            "key": "span.clr-bleed|RECOVERY SESSION#0",
+            "x": 0,
+            "y": 144,
+            "width": 175.8,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        },
+        {
+          "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|RECOVERY SESSION#0",
+          "gallery": null,
+          "route": {
+            "key": "button.clr-chamfer.clr-chamfer--sm.clr-chip|RECOVERY SESSION#0",
+            "x": 0,
+            "y": 144,
+            "width": 175.8,
+            "height": 40
+          },
+          "criterion": "AC-R024-02",
+          "reason": "R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+        }
+      ],
+      "recovery-closed": [
+        {
+          "key": "(part)#0",
+          "gallery": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 42
+          },
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 193.8,
+            "height": 40
+          },
+          "criterion": "TASK-AC-8C58C464BAD0",
+          "reason": "Decision 4 / R10.1: the route’s Recovery is its own chip (pressed, with its tick), the state’s the Focus value’s quiet button."
+        },
+        {
+          "key": "svg|#0",
+          "gallery": null,
+          "route": {
+            "key": "svg|#0",
+            "x": 16,
+            "y": 15,
+            "width": 10,
+            "height": 10
+          },
+          "criterion": "TASK-AC-8C58C464BAD0",
+          "reason": "Decision 4 / R10.1: the route’s Recovery is its own chip (pressed, with its tick), the state’s the Focus value’s quiet button."
+        },
+        {
+          "key": "path|#0",
+          "gallery": null,
+          "route": {
+            "key": "path|#0",
+            "x": 17,
+            "y": 16.3,
+            "width": 8,
+            "height": 7.3
+          },
+          "criterion": "TASK-AC-8C58C464BAD0",
+          "reason": "Decision 4 / R10.1: the route’s Recovery is its own chip (pressed, with its tick), the state’s the Focus value’s quiet button."
+        }
+      ],
+      "recovery-note": [
+        {
+          "key": "(part)#0",
+          "gallery": null,
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 60
+          },
+          "criterion": "TASK-AC-8C58C464BAD0",
+          "reason": "Route only: the Recovery note (U29), kept with the chip (decision 4)."
+        }
+      ],
+      "minutes": [
+        {
+          "key": "label|TIME#0",
+          "gallery": {
+            "key": "label|TIME#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 16
+          },
+          "route": null,
+          "criterion": "AC-R024-07",
+          "reason": "The same public Input, field and MINUTES end cap drawn box for box (R10.3); only its label’s words differ (the route’s retained label, Time available)."
+        },
+        {
+          "key": "label|TIME AVAILABLE#0",
+          "gallery": null,
+          "route": {
+            "key": "label|TIME AVAILABLE#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 16
+          },
+          "criterion": "AC-R024-07",
+          "reason": "The same public Input, field and MINUTES end cap drawn box for box (R10.3); only its label’s words differ (the route’s retained label, Time available)."
+        }
+      ],
+      "action": [
+        {
+          "key": "(part)#0",
+          "gallery": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 254,
+            "height": 42
+          },
+          "route": {
+            "key": "(part)#0",
+            "x": 0,
+            "y": 0,
+            "width": 288,
+            "height": 52
+          },
+          "criterion": "AC-R024-04",
+          "reason": "The action keeps its name (R10.4); the route pins it, large and full width, in the measured footer (Form Screen template, unchanged at the base); the state’s card draws it at its default size inside the card. Its words and inner boxes match."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,882 @@
+{
+  "schema": "clear-task-119-gallery-base/v1",
+  "base": "41dc9aa7b00c099a2dc06abe89305a5c24ff1cd6",
+  "state": "preparation",
+  "width": 390,
+  "lines": [
+    "PREPARATION AND REVIEW ORDER",
+    "WARM-UP",
+    "~4 MINUTES",
+    "Arm circles",
+    "Scapular push-ups",
+    "Bench press rehearsal",
+    "WARM-UP",
+    "0",
+    "4",
+    ":",
+    "0",
+    "0",
+    "4 minutes 0 seconds left",
+    "START",
+    "ADD 30 SEC",
+    "CONDITIONING",
+    "FOR TIME",
+    "15 MIN CAP",
+    "01 WALL BALLmedicine ball",
+    "40 reps",
+    "9 lb",
+    "START FOR TIME",
+    "COACHING AND NOTES",
+    "— FOR TIME: WALL BALL",
+    "WALL BALL",
+    "ADD NOTE — WALL BALL",
+    "COOLDOWN",
+    "~3 MINUTES",
+    "Chest stretch",
+    "Thoracic rotation",
+    "Child’s pose"
+  ],
+  "dom": "07baab3a4565474861827aed4296212f76f578c85e7df1697a2d121733d70263",
+  "boxes": [
+    {
+      "key": "(part)#0",
+      "x": 0,
+      "y": 0,
+      "width": 358,
+      "height": 779.8
+    },
+    {
+      "key": "h|PREPARATION AND REVIEW ORDER#0",
+      "x": 0,
+      "y": 0,
+      "width": 358,
+      "height": 28
+    },
+    {
+      "key": "div.clr-stack|WARM-UP ~4 MINUTES Arm circles Scapular push-ups Bench press rehearsal WARM-UP 0#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 751.8
+    },
+    {
+      "key": "div.clr-stack|WARM-UP ~4 MINUTES Arm circles Scapular push-ups Bench press rehearsal WARM-UP 0#1",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 265.9
+    },
+    {
+      "key": "div.clr-echo|WARM-UP ~4 MINUTES Arm circles Scapular push-ups Bench press rehearsal#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "svg.clr-echo__rear|#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "path.clr-echo__source|#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|WARM-UP ~4 MINUTES Arm circles Scapular push-ups Bench press rehearsal#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "div.clr-card|WARM-UP ~4 MINUTES Arm circles Scapular push-ups Bench press rehearsal#0",
+      "x": 0,
+      "y": 28,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "span.clr-card__bar|#0",
+      "x": 0,
+      "y": 28,
+      "width": 12,
+      "height": 129
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--md|WARM-UP ~4 MINUTES Arm circles Scapular push-ups Bench press rehearsal#0",
+      "x": 10,
+      "y": 28,
+      "width": 348,
+      "height": 129
+    },
+    {
+      "key": "div|WARM-UP ~4 MINUTES#0",
+      "x": 22,
+      "y": 40,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "h|WARM-UP#0",
+      "x": 22,
+      "y": 40,
+      "width": 72.8,
+      "height": 16
+    },
+    {
+      "key": "span|~4 MINUTES#0",
+      "x": 257.3,
+      "y": 40,
+      "width": 88.7,
+      "height": 16
+    },
+    {
+      "key": "ul.clr-v4-guide-list|Arm circles Scapular push-ups Bench press rehearsal#0",
+      "x": 22,
+      "y": 64,
+      "width": 324,
+      "height": 76
+    },
+    {
+      "key": "li|Arm circles#0",
+      "x": 22,
+      "y": 64,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "li|Scapular push-ups#0",
+      "x": 22,
+      "y": 92,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "li|Bench press rehearsal#0",
+      "x": 22,
+      "y": 120,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "section.clr-rest-bar|WARM-UP 0 4 : 0 0 4 minutes 0 seconds left START ADD 30 SEC#0",
+      "x": 0,
+      "y": 173,
+      "width": 358,
+      "height": 121
+    },
+    {
+      "key": "div.clr-echo|WARM-UP 0 4 : 0 0 4 minutes 0 seconds left START ADD 30 SEC#0",
+      "x": 0,
+      "y": 173,
+      "width": 358,
+      "height": 121
+    },
+    {
+      "key": "svg.clr-echo__rear|#1",
+      "x": 0,
+      "y": 173,
+      "width": 358,
+      "height": 121
+    },
+    {
+      "key": "path.clr-echo__source|#1",
+      "x": 0,
+      "y": 173,
+      "width": 358,
+      "height": 121
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|WARM-UP 0 4 : 0 0 4 minutes 0 seconds left START ADD 30 SEC#0",
+      "x": 0,
+      "y": 173,
+      "width": 358,
+      "height": 121
+    },
+    {
+      "key": "div.clr-card|WARM-UP 0 4 : 0 0 4 minutes 0 seconds left START ADD 30 SEC#0",
+      "x": 0,
+      "y": 173,
+      "width": 358,
+      "height": 121
+    },
+    {
+      "key": "span.clr-card__bar|#1",
+      "x": 0,
+      "y": 173,
+      "width": 12,
+      "height": 121
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--md.clr-chamfer--timer|WARM-UP 0 4 : 0 0 4 minutes 0 seconds left START ADD 30 SEC#0",
+      "x": 10,
+      "y": 173,
+      "width": 348,
+      "height": 121
+    },
+    {
+      "key": "div.clr-row|WARM-UP 0 4 : 0 0 4 minutes 0 seconds left#0",
+      "x": 22,
+      "y": 185,
+      "width": 324,
+      "height": 24
+    },
+    {
+      "key": "p|WARM-UP#0",
+      "x": 22,
+      "y": 185,
+      "width": 99.3,
+      "height": 24
+    },
+    {
+      "key": "span|#0",
+      "x": 22,
+      "y": 185,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "svg|#0",
+      "x": 22,
+      "y": 185,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "path|#0",
+      "x": 24,
+      "y": 189,
+      "width": 20,
+      "height": 16
+    },
+    {
+      "key": "div|0 4 : 0 0 4 minutes 0 seconds left#0",
+      "x": 277.8,
+      "y": 185,
+      "width": 68.2,
+      "height": 24
+    },
+    {
+      "key": "span|0 4 : 0 0#0",
+      "x": 277.8,
+      "y": 185,
+      "width": 68.2,
+      "height": 24
+    },
+    {
+      "key": "span.clr-tumble|0#0",
+      "x": 277.8,
+      "y": 185,
+      "width": 15.1,
+      "height": 24
+    },
+    {
+      "key": "span.clr-tumble|4#0",
+      "x": 292.9,
+      "y": 185,
+      "width": 15.1,
+      "height": 24
+    },
+    {
+      "key": "span|:#0",
+      "x": 308,
+      "y": 185,
+      "width": 7.9,
+      "height": 24
+    },
+    {
+      "key": "span.clr-tumble|0#1",
+      "x": 315.8,
+      "y": 185,
+      "width": 15.1,
+      "height": 24
+    },
+    {
+      "key": "span.clr-tumble|0#2",
+      "x": 330.9,
+      "y": 185,
+      "width": 15.1,
+      "height": 24
+    },
+    {
+      "key": "span|4 minutes 0 seconds left#0",
+      "x": 276.8,
+      "y": 184,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "key": "div.clr-rest-bar__track|#0",
+      "x": 22,
+      "y": 217,
+      "width": 324,
+      "height": 4
+    },
+    {
+      "key": "div.clr-rest-bar__fill|#0",
+      "x": 22,
+      "y": 217,
+      "width": 324,
+      "height": 4
+    },
+    {
+      "key": "div.clr-row|START ADD 30 SEC#0",
+      "x": 22,
+      "y": 229,
+      "width": 324,
+      "height": 48
+    },
+    {
+      "key": "span.clr-bleed|START#0",
+      "x": 22,
+      "y": 229,
+      "width": 118.6,
+      "height": 48
+    },
+    {
+      "key": "button.clr-btn.clr-chamfer.clr-chamfer--md|START#0",
+      "x": 22,
+      "y": 229,
+      "width": 118.6,
+      "height": 48
+    },
+    {
+      "key": "svg|#1",
+      "x": 42,
+      "y": 241,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "path|#1",
+      "x": 47,
+      "y": 244,
+      "width": 15,
+      "height": 18
+    },
+    {
+      "key": "span.clr-bleed|ADD 30 SEC#0",
+      "x": 190.1,
+      "y": 229,
+      "width": 155.9,
+      "height": 48
+    },
+    {
+      "key": "button.clr-btn.clr-btn--quiet.clr-chamfer.clr-chamfer--md|ADD 30 SEC#0",
+      "x": 190.1,
+      "y": 229,
+      "width": 155.9,
+      "height": 48
+    },
+    {
+      "key": "svg|#2",
+      "x": 210.1,
+      "y": 241,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "path|#2",
+      "x": 213.1,
+      "y": 244,
+      "width": 18,
+      "height": 18
+    },
+    {
+      "key": "div|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "div.clr-timed-flow|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "div.clr-stack|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "div.clr-echo|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "svg.clr-echo__rear|#2",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "path.clr-echo__source|#2",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "div.clr-card|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 0,
+      "y": 309.9,
+      "width": 358,
+      "height": 325
+    },
+    {
+      "key": "span.clr-card__bar|#2",
+      "x": 0,
+      "y": 309.9,
+      "width": 12,
+      "height": 325
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--lg|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 10,
+      "y": 309.9,
+      "width": 348,
+      "height": 325
+    },
+    {
+      "key": "div.clr-movement-group|CONDITIONING FOR TIME 15 MIN CAP 01 WALL BALLmedicine ball 40 reps 9 lb START FO#0",
+      "x": 22,
+      "y": 321.9,
+      "width": 324,
+      "height": 284
+    },
+    {
+      "key": "div.clr-movement-group-header|CONDITIONING FOR TIME#0",
+      "x": 22,
+      "y": 321.9,
+      "width": 324,
+      "height": 58
+    },
+    {
+      "key": "h.clr-movement-group-header__title|CONDITIONING#0",
+      "x": 22,
+      "y": 321.9,
+      "width": 152.1,
+      "height": 28
+    },
+    {
+      "key": "div.clr-movement-group-header__badge|FOR TIME#0",
+      "x": 22,
+      "y": 357.9,
+      "width": 104.6,
+      "height": 22
+    },
+    {
+      "key": "span.clr-bleed|FOR TIME#0",
+      "x": 22,
+      "y": 357.9,
+      "width": 104.6,
+      "height": 22
+    },
+    {
+      "key": "span.clr-chamfer.clr-chamfer--sm.clr-chamfer--structure|FOR TIME#0",
+      "x": 22,
+      "y": 357.9,
+      "width": 104.6,
+      "height": 22
+    },
+    {
+      "key": "svg|#3",
+      "x": 30,
+      "y": 360.9,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "path|#3",
+      "x": 32,
+      "y": 361.6,
+      "width": 12,
+      "height": 14.7
+    },
+    {
+      "key": "p.clr-text-data-xs.clr-timed-meta|15 MIN CAP#0",
+      "x": 22,
+      "y": 395.9,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "ol.clr-movement-list|01 WALL BALLmedicine ball 40 reps 9 lb#0",
+      "x": 22,
+      "y": 431.9,
+      "width": 324,
+      "height": 54
+    },
+    {
+      "key": "li.clr-stack--tight|01 WALL BALLmedicine ball 40 reps 9 lb#0",
+      "x": 22,
+      "y": 431.9,
+      "width": 324,
+      "height": 54
+    },
+    {
+      "key": "div.clr-movement-identity|01 WALL BALLmedicine ball 40 reps 9 lb#0",
+      "x": 22,
+      "y": 431.9,
+      "width": 324,
+      "height": 54
+    },
+    {
+      "key": "div.clr-movement-identity__top|01 WALL BALLmedicine ball#0",
+      "x": 22,
+      "y": 431.9,
+      "width": 324,
+      "height": 26
+    },
+    {
+      "key": "p.clr-movement-identity__name|01 WALL BALLmedicine ball#0",
+      "x": 22,
+      "y": 431.9,
+      "width": 324,
+      "height": 26
+    },
+    {
+      "key": "span|01 WALL BALL#0",
+      "x": 22,
+      "y": 430.9,
+      "width": 115.5,
+      "height": 26
+    },
+    {
+      "key": "span.clr-movement-identity__ordinal.clr-text-data-xs|01#0",
+      "x": 22,
+      "y": 438.9,
+      "width": 21.7,
+      "height": 14
+    },
+    {
+      "key": "span.clr-movement-identity__equipment-inline|medicine ball#0",
+      "x": 145.5,
+      "y": 438.9,
+      "width": 86.2,
+      "height": 14
+    },
+    {
+      "key": "div.clr-movement-identity__prescription|40 reps 9 lb#0",
+      "x": 22,
+      "y": 465.9,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "span|40 reps#0",
+      "x": 22,
+      "y": 465.9,
+      "width": 60.6,
+      "height": 20
+    },
+    {
+      "key": "span|9 lb#0",
+      "x": 94.6,
+      "y": 465.9,
+      "width": 30,
+      "height": 20
+    },
+    {
+      "key": "div.clr-timed-actions|START FOR TIME#0",
+      "x": 22,
+      "y": 501.9,
+      "width": 324,
+      "height": 48
+    },
+    {
+      "key": "span.clr-bleed.clr-glow|START FOR TIME#0",
+      "x": 22,
+      "y": 501.9,
+      "width": 324,
+      "height": 48
+    },
+    {
+      "key": "button.clr-btn.clr-btn--primary.clr-chamfer.clr-chamfer--md|START FOR TIME#0",
+      "x": 22,
+      "y": 501.9,
+      "width": 324,
+      "height": 48
+    },
+    {
+      "key": "svg|#4",
+      "x": 107.7,
+      "y": 513.9,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "path|#4",
+      "x": 112.7,
+      "y": 516.9,
+      "width": 15,
+      "height": 18
+    },
+    {
+      "key": "div.clr-stack.clr-stack--tight|COACHING AND NOTES — FOR TIME: WALL BALL WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 565.9,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "div.clr-collapsible|COACHING AND NOTES — FOR TIME: WALL BALL WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 565.9,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "button.clr-collapsible__trigger.clr-hit|COACHING AND NOTES — FOR TIME: WALL BALL#0",
+      "x": 22,
+      "y": 565.9,
+      "width": 324,
+      "height": 40
+    },
+    {
+      "key": "span.clr-collapsible__glyph|#0",
+      "x": 22,
+      "y": 573.9,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "svg|#5",
+      "x": 22,
+      "y": 573.9,
+      "width": 24,
+      "height": 24
+    },
+    {
+      "key": "path|#5",
+      "x": 29,
+      "y": 576.9,
+      "width": 10,
+      "height": 18
+    },
+    {
+      "key": "span|— FOR TIME: WALL BALL#0",
+      "x": 21,
+      "y": 585.4,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "key": "div.clr-collapsible__region|WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 324,
+      "height": 0
+    },
+    {
+      "key": "div.clr-collapsible__content|WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 324,
+      "height": 0
+    },
+    {
+      "key": "section.clr-stack|WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 324,
+      "height": 80
+    },
+    {
+      "key": "div|WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 324,
+      "height": 80
+    },
+    {
+      "key": "div.clr-stack.clr-stack--tight|WALL BALL ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 324,
+      "height": 80
+    },
+    {
+      "key": "div|WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 324,
+      "height": 22
+    },
+    {
+      "key": "h|WALL BALL#0",
+      "x": 22,
+      "y": 605.9,
+      "width": 81.1,
+      "height": 16
+    },
+    {
+      "key": "span|WALL BALL#0",
+      "x": 22,
+      "y": 606.9,
+      "width": 81.1,
+      "height": 14
+    },
+    {
+      "key": "section.clr-stack.clr-stack--tight|ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 635.9,
+      "width": 324,
+      "height": 50
+    },
+    {
+      "key": "span.clr-bleed|ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 635.9,
+      "width": 324,
+      "height": 42
+    },
+    {
+      "key": "button.clr-btn.clr-chamfer.clr-chamfer--md|ADD NOTE — WALL BALL#0",
+      "x": 22,
+      "y": 635.9,
+      "width": 324,
+      "height": 42
+    },
+    {
+      "key": "p|#0",
+      "x": 22,
+      "y": 685.9,
+      "width": 324,
+      "height": 0
+    },
+    {
+      "key": "div|#0",
+      "x": 0,
+      "y": 634.9,
+      "width": 358,
+      "height": 0
+    },
+    {
+      "key": "div.clr-stack|COOLDOWN ~3 MINUTES Chest stretch Thoracic rotation Child’s pose#0",
+      "x": 0,
+      "y": 650.9,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "div.clr-echo|COOLDOWN ~3 MINUTES Chest stretch Thoracic rotation Child’s pose#0",
+      "x": 0,
+      "y": 650.9,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "svg.clr-echo__rear|#3",
+      "x": 0,
+      "y": 650.9,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "path.clr-echo__source|#3",
+      "x": 0,
+      "y": 650.9,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "div.clr-bleed.clr-bleed--block|COOLDOWN ~3 MINUTES Chest stretch Thoracic rotation Child’s pose#0",
+      "x": 0,
+      "y": 650.9,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "div.clr-card|COOLDOWN ~3 MINUTES Chest stretch Thoracic rotation Child’s pose#0",
+      "x": 0,
+      "y": 650.9,
+      "width": 358,
+      "height": 129
+    },
+    {
+      "key": "span.clr-card__bar|#3",
+      "x": 0,
+      "y": 650.9,
+      "width": 12,
+      "height": 129
+    },
+    {
+      "key": "div.clr-card__body.clr-chamfer.clr-chamfer--md|COOLDOWN ~3 MINUTES Chest stretch Thoracic rotation Child’s pose#0",
+      "x": 10,
+      "y": 650.9,
+      "width": 348,
+      "height": 129
+    },
+    {
+      "key": "div|COOLDOWN ~3 MINUTES#0",
+      "x": 22,
+      "y": 662.9,
+      "width": 324,
+      "height": 16
+    },
+    {
+      "key": "h|COOLDOWN#0",
+      "x": 22,
+      "y": 662.9,
+      "width": 85.1,
+      "height": 16
+    },
+    {
+      "key": "span|~3 MINUTES#0",
+      "x": 257.3,
+      "y": 662.9,
+      "width": 88.7,
+      "height": 16
+    },
+    {
+      "key": "ul.clr-v4-guide-list|Chest stretch Thoracic rotation Child’s pose#0",
+      "x": 22,
+      "y": 686.9,
+      "width": 324,
+      "height": 76
+    },
+    {
+      "key": "li|Chest stretch#0",
+      "x": 22,
+      "y": 686.9,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "li|Thoracic rotation#0",
+      "x": 22,
+      "y": 714.9,
+      "width": 324,
+      "height": 20
+    },
+    {
+      "key": "li|Child’s pose#0",
+      "x": 22,
+      "y": 742.9,
+      "width": 324,
+      "height": 20
+    }
+  ]
+}

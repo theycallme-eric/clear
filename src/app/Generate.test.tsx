@@ -10,12 +10,16 @@
  * profile read has its own loading and error states, and a missing or legacy
  * Goal is a correction state that sends nothing.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { RouterProvider } from 'react-router-dom'
+import { MemoryRouter, RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WorkoutClients } from '../data/workout'
+import { GalleryRefinements } from '../dev/gallery-refinements'
 import { DELOAD_DECISIONS_STORAGE_KEY } from '../state/deload-decisions'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import {
@@ -72,6 +76,7 @@ import {
   LEGACY_GOAL_MESSAGE,
   MISSING_GOAL_MESSAGE,
   NOTES_HELPER,
+  NOTES_PLACEHOLDER,
   OVERRIDE_CANCEL_LABEL,
   OVERRIDE_GROUP_LABEL,
   OVERRIDE_SCOPE,
@@ -84,6 +89,23 @@ import {
   fixtureLocation,
   onboardedProfile,
 } from '../test/user-data-double'
+
+/**
+ * A3 TASK-119 (decisions 4 and 6 of 2026-11-13): the old build's TASK-024
+ * constants, re-pointed to Round 7. Round 7's Generate exports none of them:
+ * every Screen it draws is titled with the literal `Generate`, the generation
+ * action keeps the words `Generate workout`, the shared icon-only Back is the
+ * `IconButton` labelled `Home`, and the summary labels the Focus value `Focus`
+ * above the control, which is named `Change focus` (CHANGE_FOCUS_LABEL) and
+ * shows the value as its text.
+ */
+const GENERATE_TITLE = 'Generate'
+const GENERATE_ACTION_LABEL = 'Generate workout'
+const HOME_BACK_LABEL = 'Home'
+const FOCUS_TERM = 'Focus'
+
+/** Route- or dialog-heavy cases (TASK-109's CI lesson): CI runs about 2x slower. */
+const HEAVY = 30_000
 
 const GYM = fixtureLocation({
   id: '00000000-0000-4000-8000-000000000011',
@@ -228,6 +250,39 @@ describe('the screen’s composition (Form Screen template)', () => {
     expect(recovery().closest('.clr-action-group')).toBeNull()
   })
 
+  // A3 TASK-119: the old build's TASK-024 body (C51), on Round 7's Goal/Focus
+  // summary (decision 4 of 2026-11-13): the Focus value is the Change focus
+  // control, so "no detached Change focus" reads as that one control only.
+  it('puts Goal and Focus first on one row, the Focus value its change control, with no paired Recovery action (C51, superseding B05-02.6/02.7)', () => {
+    renderGenerate({ history: lowerBodyDue(7) })
+
+    const goal = summaryItem('Goal')
+    const focus = focusLine()
+    expect(focus).toHaveTextContent(/^Focus\s*Lower body$/)
+    expect(focusControl().textContent).toBe('Lower body')
+    // Said alike, on one row, at the top of the card.
+    expect(focus.parentElement).toBe(goal.parentElement)
+    expect(focus.tagName).toBe(goal.tagName)
+    expect(goal.parentElement).toHaveClass('clr-v4-program-summary')
+    expect(focus).toContainElement(focusControl())
+    expect(formCard().querySelector('.clr-stack')!.firstElementChild).toBe(goal.parentElement)
+
+    // R10.1 / R25: no detached or paired change action, and Recovery waits inside the choices.
+    expect(formCard().querySelector('.clr-action-group--paired-labels')).toBeNull()
+    expect(screen.getAllByRole('button', { name: CHANGE_FOCUS_LABEL })).toEqual([focusControl()])
+    expect(screen.queryByRole('button', { name: RECOVERY_LABEL })).not.toBeInTheDocument()
+  })
+
+  it('keeps Recovery beside the Anchor choices when there is no Focus to change', () => {
+    renderGenerate()
+
+    expect(screen.queryByRole('button', { name: CHANGE_FOCUS_LABEL })).not.toBeInTheDocument()
+    expect(recovery().closest('.clr-action-group')).toBeNull()
+    // Round 7: the Anchor field holds its four choices and, apart from them, Recovery.
+    expect(group('Anchor').parentElement).toContainElement(recovery())
+    expect(group('Anchor')).not.toContainElement(recovery())
+  })
+
   it('prefills the default place rather than the first one listed', () => {
     renderGenerate({ locations: [GYM, fixtureLocation()] })
 
@@ -264,7 +319,11 @@ describe('goal → intensity (v3 delta §2.2, REQ-009 U27)', () => {
     async (goal) => {
       const recovering = goal === 'active_recovery'
       const { user } = renderGenerate({ goal: recovering ? 'strength' : goal })
-      if (recovering) await user.click(recovery())
+      if (recovering) {
+        // A first workout: no Focus control to open; Recovery sits in the Anchor field.
+        expect(screen.queryByRole('button', { name: CHANGE_FOCUS_LABEL })).not.toBeInTheDocument()
+        await chooseRecovery(user)
+      }
 
       expect(slider()).toHaveAttribute('min', '1')
       expect(slider()).toHaveAttribute('max', '10')
@@ -600,6 +659,7 @@ describe('REQ-005 — a manual Focus before the first completed workout, or on s
     expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
     expect(focusLine()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })).toBeInTheDocument()
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByText(/^No .+ in the sessions you’ve logged\.$/)).not.toBeInTheDocument()
     expect(cta()).toBeEnabled()
   })
@@ -1338,8 +1398,23 @@ const summaryLabel = (label: 'Goal' | 'Focus') =>
 const summaryItem = (label: 'Goal' | 'Focus') => summaryLabel(label).parentElement!
 
 const changeFocus = () => screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })
+/**
+ * A3 TASK-119: the old build's TASK-024 readers on Round 7. C51 / R25: the
+ * Focus value is the change control; Round 7 names it Change focus and shows
+ * the value as its text (the build named it `Focus: <value>`).
+ */
+const focusControl = changeFocus
 const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
 const focusLine = () => summaryItem('Focus')
+
+/** R10.1: Recovery is reached inside the focus choices; open them when closed. */
+async function openFocus(user: ReturnType<typeof userEvent.setup>) {
+  if (focusControl().getAttribute('aria-expanded') !== 'true') await user.click(focusControl())
+}
+async function chooseRecovery(user: ReturnType<typeof userEvent.setup>) {
+  if (screen.queryByRole('button', { name: CHANGE_FOCUS_LABEL }) !== null) await openFocus(user)
+  await user.click(recovery())
+}
 
 /** The other three this week and Power 16 days back: Power is stalest. */
 function powerDue(): WorkoutSessionRow[] {
@@ -1387,14 +1462,14 @@ describe('REQ-007 — a Focus for this workout only', () => {
   })
 
   it.each([
-    ['cancelling', OVERRIDE_CANCEL_LABEL],
-    ['dismissing the choices', CHANGE_FOCUS_LABEL],
-  ])('restores the recommendation on %s', async (_, label) => {
+    ['cancelling', () => screen.getByRole('button', { name: OVERRIDE_CANCEL_LABEL })],
+    ['dismissing the choices with the Focus control', focusControl],
+  ])('restores the recommendation on %s', async (_, control) => {
     const { user, generation, url } = renderDraft()
 
     await user.click(changeFocus())
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
-    await user.click(screen.getByRole('button', { name: label }))
+    await user.click(control())
 
     expect(focusLine()).toHaveTextContent('Lower body')
     expect(screen.queryByText(new RegExp(OVERRIDE_SCOPE))).not.toBeInTheDocument()
@@ -1448,9 +1523,9 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('sends active_recovery with the requested intensity unchanged and says it is composed at 1–3', async () => {
     const { user, generation, url } = renderDraft()
 
-    // Round 7 offers Recovery among the choices Change focus opens.
-    await user.click(changeFocus())
-    await user.click(recovery())
+    // Recovery is reached inside the choices, which open closed.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('Strength')).toBeInTheDocument()
@@ -1472,8 +1547,8 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('keeps Power visible and disabled, with the refusal in text', async () => {
     const { user } = renderDraft()
 
-    await user.click(changeFocus())
-    await user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
 
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
     expect(screen.getByText(new RegExp(POWER_REFUSAL))).toBeVisible()
@@ -1484,8 +1559,8 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
 
     expect(focusLine()).toHaveTextContent('Power')
 
-    await user.click(changeFocus())
-    await user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
 
     expect(cta()).toBeDisabled()
     expect(chipIn('Anchor', 'Power')).toBeDisabled()
@@ -1504,8 +1579,8 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('keeps Recovery when Loading is cancelled, and restores it from that URL', async () => {
     const first = renderDraft()
 
-    await first.user.click(changeFocus())
-    await first.user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(first.user)
     await first.user.click(cta())
     await first.user.click(screen.getByRole('button', { name: 'Cancel' }))
 
@@ -1527,9 +1602,11 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('returns to the standing Goal when Recovery is switched off', async () => {
     const { user, generation, url } = renderDraft()
 
-    await user.click(changeFocus())
-    await user.click(recovery())
-    await user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
+    // Turning Recovery on keeps the choices open, so the second press is Recovery's alone.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'true')
+    await chooseRecovery(user)
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByText(new RegExp(POWER_REFUSAL))).not.toBeInTheDocument()
@@ -1543,8 +1620,8 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
   it('opens a fresh visit on the standing Goal, and never wrote the profile', async () => {
     const first = renderDraft()
 
-    await first.user.click(changeFocus())
-    await first.user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(first.user)
     await first.user.click(cta())
     expect(first.generation.calls[0]).toMatchObject({ goal: 'active_recovery' })
     expect(first.userData.preferenceWrites).toEqual([])
@@ -1554,8 +1631,11 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
     const { user, generation } = renderDraft()
 
     expect(screen.getByText('Strength')).toBeInTheDocument()
-    await user.click(changeFocus())
+    // Closed on a fresh visit; inside the choices, Recovery is off.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await openFocus(user)
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
+    await user.click(focusControl())
 
     await user.click(cta())
     expect(generation.calls[0]).toMatchObject({ goal: 'strength' })
@@ -1573,9 +1653,9 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
 
   /** A Recovery session on an overridden Focus, at an intensity of the athlete's own. */
   async function composeRecoveryOverride(user: ReturnType<typeof userEvent.setup>) {
-    // Round 7 offers Recovery among the choices Change focus opens.
-    await user.click(changeFocus())
-    await user.click(recovery())
+    // Every caller starts on a fresh draft: the choices open closed.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
     fireEvent.change(slider(), { target: { value: '2' } })
   }
@@ -1873,12 +1953,113 @@ describe('U28 — minutes spelled out, short helper copy that keeps each field c
   })
 })
 
+// A3 TASK-119: the old build's TASK-024 migration of U28 (AC-R024-07, R23),
+// beside Round 7's own U28 block above. Round 7 draws neither helper line
+// (decision 4 of 2026-11-13), so every read of the build's block holds.
+describe('U28 — minutes spelled out; R23 — Place and Notes without helper lines', () => {
+  const minutes = () => screen.getByLabelText(new RegExp(DURATION_LABEL, 'i'))
+  const place = () => screen.getByLabelText(/place/i)
+  const notes = () => screen.getByLabelText(/notes/i)
+
+  /** R23 removed exactly these two lines; nothing replaces them. */
+  const REMOVED_HELPERS = [
+    'Uses this place’s equipment.',
+    'Optional, today only. Ongoing limits go in Settings.',
+  ]
+
+  /**
+   * TASK-024 (AC-R024-07) migrates U28's helper-retention checks to the
+   * approved removals: no helper line under Place or Notes, while each keeps
+   * its label, control, the Notes placeholder and the minutes unit.
+   */
+  function expectFieldsWithoutHelpers() {
+    for (const helper of REMOVED_HELPERS) {
+      expect(screen.queryByText(helper)).not.toBeInTheDocument()
+    }
+    expect(screen.getByRole('main')).not.toHaveTextContent(/this place’s equipment|Ongoing limits/)
+    expect(place()).toBeInTheDocument()
+    expect(notes()).toHaveAttribute('placeholder', NOTES_PLACEHOLDER)
+    expect(screen.getByText(DURATION_UNIT)).toBeInTheDocument()
+  }
+
+  it('says minutes in full beside the time, never min', () => {
+    renderGenerate()
+
+    const unit = screen.getByText(DURATION_UNIT)
+    expect(DURATION_UNIT).toBe('minutes')
+    expect(minutes().getAttribute('aria-describedby')).toContain(unit.id)
+    expect(screen.queryByText('min')).not.toBeInTheDocument()
+  })
+
+  it('AC-R024-07 removes the Place and Notes helper lines and leaves no description wired to either field', () => {
+    renderGenerate()
+
+    expectFieldsWithoutHelpers()
+    // The removed helpers took their description wiring with them (R23).
+    expect(place()).not.toHaveAttribute('aria-describedby')
+    expect(notes()).not.toHaveAttribute('aria-describedby')
+    expect(place()).toHaveAccessibleName(/^Place/)
+    expect(notes()).toHaveAccessibleName(/^Notes/)
+  })
+
+  it('shows no helpers on an empty time and empty notes, with no error before submit', async () => {
+    const { user } = renderGenerate()
+
+    await user.clear(minutes())
+    expect(minutes()).toHaveValue(null)
+    expect(notes()).toHaveValue('')
+    expectFieldsWithoutHelpers()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('says the time error on the field, with the unit still there and no helper returning', async () => {
+    const { user, generation } = renderGenerate()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    await user.clear(minutes())
+    await user.click(cta())
+
+    expect(generation.calls).toEqual([])
+    expect(minutes()).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByText(/whole number of minutes/i)).toBeInTheDocument()
+    expectFieldsWithoutHelpers()
+  })
+
+  it('sends a valid time as the minutes typed, and the chosen place', async () => {
+    const { user, generation } = renderGenerate()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    await user.clear(minutes())
+    await user.type(minutes(), '30')
+    await user.selectOptions(place(), GYM.id)
+    expectFieldsWithoutHelpers()
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({ requested_duration_mins: 30, location_id: GYM.id })
+  })
+
+  it('keeps the notes limit with a note at the length limit, and sends it whole', async () => {
+    const { user, generation } = renderGenerate()
+    const note = 'Tight hamstrings. '.repeat(200).slice(0, NOTES_MAX_LENGTH)
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    fireEvent.change(notes(), { target: { value: note } })
+
+    expect(notes()).toHaveValue(note)
+    expect(notes()).toHaveAttribute('maxlength', String(NOTES_MAX_LENGTH))
+    expectFieldsWithoutHelpers()
+    await user.click(cta())
+
+    expect(generation.calls[0]?.notes).toHaveLength(NOTES_MAX_LENGTH)
+  })
+})
+
 describe('U29 — a recovery workout says briefly that it is lighter, and stays recovery', () => {
   it('says it is lighter, and sends the recovery goal, requested intensity and focus unchanged', async () => {
     const { user, generation } = renderDraft()
 
-    await user.click(changeFocus())
-    await user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
 
     expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
     expect(RECOVERY_NOTE).toMatch(/lighter/i)
@@ -1909,10 +2090,340 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
   it('drops the note when Recovery is switched off', async () => {
     const { user } = renderDraft()
 
-    await user.click(changeFocus())
-    await user.click(recovery())
-    await user.click(recovery())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    await chooseRecovery(user)
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'true')
+    await chooseRecovery(user)
 
     expect(screen.queryByText(new RegExp(RECOVERY_NOTE))).not.toBeInTheDocument()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-024 (REQ-024; C51, G16; R06, R10, R11, R21, R23, R25; UAT #286) —
+// Generate hierarchy, focus interaction and exact copy, carried onto Round 7
+// by A3 TASK-119 (decisions 4 and 6 of 2026-11-13). Round 7's owners: the
+// route's own Goal/Focus summary (`.clr-v4-program-summary`), whose Focus
+// value is the Change focus disclosure, the Recovery chip apart from the four
+// focuses inside the choices it opens, and the public Input/IconButton.
+// Accepted gallery reference bec4454, ?state=screens.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('TASK-024 — Generate hierarchy, focus interaction and exact copy', () => {
+  const ROOT = resolve(import.meta.dirname, '../..')
+  const read = (file: string) => readFileSync(resolve(ROOT, file), 'utf8')
+  const ANCHOR_LABELS = ['Upper body', 'Lower body', 'Full body', 'Power']
+  const header = () => screen.getByRole('main').querySelector<HTMLElement>('header')!
+  const home = () => within(header()).getByRole('button', { name: HOME_BACK_LABEL })
+  const summary = () => summaryItem('Goal').closest<HTMLElement>('.clr-v4-program-summary')!
+  /** The region the Focus control names: Round 7's group of the four focuses. */
+  const choicesRegion = () => document.getElementById(focusControl().getAttribute('aria-controls')!)!
+  /** What the Focus control opens: the four focuses and, apart from them, Recovery. */
+  const choices = () => choicesRegion().parentElement!
+
+  it('AC-C51-01 keeps Goal and Focus first with an interactive Focus value, Recovery inside its choices, the minutes unit, the Generate title and the icon-only Home back, and no Place or Notes helper', async () => {
+    const { user } = renderDraft()
+
+    // Generate title, the framed icon-only Back to Home in the header.
+    expect(screen.getByRole('heading', { level: 1, name: GENERATE_TITLE })).toBeInTheDocument()
+    expect(home()).toHaveTextContent('')
+    // Goal and Focus lead the one card; the Focus value is the control.
+    const card = formCard()
+    expect(summary()).toBe(card.querySelector('.clr-stack')!.firstElementChild)
+    expect(summary()).toContainElement(focusControl())
+    expect(focusControl()).toHaveAccessibleName(CHANGE_FOCUS_LABEL)
+    expect(focusControl().textContent).toBe('Lower body')
+    expect(summaryLabel(FOCUS_TERM).nextElementSibling).toBe(focusControl())
+    // Recovery is reached inside the Focus choices.
+    expect(screen.queryByRole('button', { name: RECOVERY_LABEL })).not.toBeInTheDocument()
+    await user.click(focusControl())
+    expect(choices()).toContainElement(recovery())
+    // MINUTES in the Time available unit slot; no Place or Notes helper line.
+    expect(screen.getByText(DURATION_UNIT)).toHaveClass('clr-field__unit')
+    expect(screen.queryByText('Uses this place’s equipment.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Optional, today only. Ongoing limits go in Settings.')).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/notes/i)).toHaveAttribute('placeholder', NOTES_PLACEHOLDER)
+  })
+
+  it('AC-R024-01 Recovery is its own session toggle inside the focus choices, never a fifth focus value, and no detached or paired change action remains', async () => {
+    const { user, generation, url } = renderDraft()
+
+    expect(screen.getAllByRole('button', { name: CHANGE_FOCUS_LABEL })).toEqual([focusControl()])
+    expect(summaryItem('Focus')).toContainElement(focusControl())
+    expect(formCard().querySelector('.clr-action-group')).toBeNull()
+
+    await user.click(focusControl())
+    const focuses = within(group(OVERRIDE_GROUP_LABEL)).getAllByRole('button')
+    expect(focuses.map((chip) => chip.textContent)).toEqual(ANCHOR_LABELS)
+    // Inside the same disclosure, but apart from the four focuses.
+    expect(choices()).toContainElement(recovery())
+    expect(group(OVERRIDE_GROUP_LABEL)).not.toContainElement(recovery())
+
+    await user.click(recovery())
+
+    // Recovery on, and the movement focus is still the recommended one: two
+    // separate answers, neither replacing the other.
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Lower body')).toHaveAttribute('aria-pressed', 'true')
+    expect(focusLine()).toHaveTextContent(/^Focus\s*Lower body$/)
+    expect(focusControl().textContent).toBe('Lower body')
+    expect(intentFrom(url().slice(GENERATE_PATH.length))).toEqual({ override: null, recovery: true })
+
+    // Closing the choices keeps Recovery, and says so.
+    await user.click(focusControl())
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'active_recovery', focus: 'lower_body' })
+  })
+
+  it('AC-R024-02 Goal and Focus share the summary’s larger type, and the Focus value is a keyboard disclosure with its name and expanded state', async () => {
+    const { user, url } = renderDraft()
+
+    const goalValue = summaryItem('Goal').querySelector('strong')!
+    expect(goalValue).toHaveClass('clr-v4-program-value')
+    expect(focusControl()).toHaveClass('clr-v4-focus-value')
+    const css = read('src/ui/workout-experience-presentation.css')
+    expect(css).toMatch(/\.clr-v4-program-summary \{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\);/)
+    expect(css).toMatch(/\.clr-v4-program-value, \.clr-v4-program-summary \.clr-v4-focus-value \{[^}]*font-size:var\(--heading-h5-size\);/)
+    expect(css).toMatch(/\.clr-v4-program-value, \.clr-v4-program-summary \.clr-v4-focus-value \{[^}]*font-weight:var\(--font-weight-bold\);/)
+    // The change stays secondary: no frame, no button variant, a chevron cue.
+    const control = focusControl()
+    expect(control.tagName).toBe('BUTTON')
+    expect(control).toHaveAttribute('type', 'button')
+    expect(control).not.toHaveClass('clr-btn')
+    expect(control).toHaveClass('clr-text-action')
+    expect(read('src/design-system/css/foundation.css')).toMatch(/\.clr-text-action::after \{ content: '›';/)
+
+    // Keyboard: Tab reaches it, Enter opens, Space closes.
+    control.focus()
+    expect(control).toHaveFocus()
+    expect(control).toHaveAttribute('aria-expanded', 'false')
+    expect(control).not.toHaveAttribute('aria-controls')
+    await user.keyboard('{Enter}')
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'true')
+    expect(choicesRegion()).toBe(group(OVERRIDE_GROUP_LABEL))
+    expect(choices()).toContainElement(group(OVERRIDE_GROUP_LABEL))
+    await user.tab()
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body')).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(focusControl()).toHaveAccessibleName(CHANGE_FOCUS_LABEL)
+    expect(focusControl().textContent).toBe('Upper body')
+    expect(focusLine()).toHaveTextContent(OVERRIDE_SCOPE)
+    expect(url()).toBe('/generate?override=upper_body')
+    focusControl().focus()
+    await user.keyboard(' ')
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    expect(focusControl()).toHaveAccessibleName(CHANGE_FOCUS_LABEL)
+    expect(focusControl().textContent).toBe('Lower body')
+    expect(url()).toBe('/generate')
+  })
+
+  it('AC-R024-03 the minutes unit is the public Input unit end cap fitted by the shared contract, with nothing Generate-specific sizing it', () => {
+    renderGenerate()
+
+    const unit = screen.getByText(DURATION_UNIT)
+    expect(unit).toHaveClass('clr-field__unit')
+    expect(unit.parentElement).toHaveClass('clr-field')
+    expect(unit).not.toHaveAttribute('style')
+    expect(screen.getByLabelText(new RegExp(DURATION_LABEL, 'i')).getAttribute('aria-describedby')).toContain(unit.id)
+    // The shared correction owns the fit; Generate and its recipe add none.
+    expect(read('src/styles/fields.css')).toMatch(/\.clr-field > \.clr-field__unit \{\s*flex: 0 0 auto;\s*white-space: nowrap;\s*\}/)
+    expect(read('src/app/Generate.tsx')).not.toMatch(/clr-field__unit|minWidth|min-width/)
+    expect(read('src/ui/workout-experience-presentation.css')).not.toMatch(/clr-field/)
+  })
+
+  it('AC-R024-04 the page title is Generate, and the generation action keeps its name', () => {
+    renderGenerate()
+
+    // Every Screen the route draws carries the one title.
+    expect([...read('src/app/Generate.tsx').matchAll(/<Screen\s+title="([^"]*)"/g)].map((match) => match[1])).toEqual(
+      Array(5).fill(GENERATE_TITLE),
+    )
+    expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName('Generate')
+    expect(screen.queryByRole('heading', { name: /Generate Workout/i })).not.toBeInTheDocument()
+    expect(document.title).toMatch(/^Generate · /)
+    expect(cta()).toHaveAccessibleName(GENERATE_ACTION_LABEL)
+    expect(cta()).toHaveTextContent('Generate workout')
+  })
+
+  it('AC-R024-05 Back is the shared framed icon-only control named Home, and it goes Home', async () => {
+    const { user, url } = renderDraft()
+
+    const back = home()
+    // Framed (#286): the chamfered button frame, not the unframed quiet treatment.
+    expect(back).toHaveClass('clr-chamfer', 'clr-btn')
+    expect(back).not.toHaveClass('clr-btn--quiet')
+    expect(back).toHaveTextContent('')
+    expect(back.querySelector('svg')).not.toBeNull()
+    // No arrow-plus-HOME label, quiet or otherwise, anywhere in the header.
+    expect(within(header()).queryByText(/^home$/i)).not.toBeInTheDocument()
+
+    await user.click(back)
+    await waitFor(() => expect(url()).toBe('/'))
+  })
+
+  it('AC-R024-06 a first workout opens as a normal session: Recovery is offered unselected and recommended nowhere, and can still be chosen', async () => {
+    const first = renderGenerate({ history: [] })
+
+    expect(recovery()).toHaveAttribute('aria-pressed', 'false')
+    expect(recovery()).toBeEnabled()
+    expect(screen.queryByText(new RegExp(RECOVERY_NOTE))).not.toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(/recommended|suggested/i)
+    await first.user.click(chipIn('Anchor', 'Full body'))
+    await first.user.click(cta())
+    expect(first.generation.calls[0]).toMatchObject({ goal: 'strength', focus: 'full_body' })
+    first.unmount()
+
+    // Nothing bans it: the athlete may still choose a Recovery first workout.
+    const chosen = renderGenerate({ history: [] })
+    await chosen.user.click(recovery())
+    await chosen.user.click(chipIn('Anchor', 'Full body'))
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    await chosen.user.click(cta())
+    expect(chosen.generation.calls[0]).toMatchObject({ goal: 'active_recovery', focus: 'full_body' })
+  })
+
+  it('AC-R024-08 #286 is kept: a first workout requires one of four Anchors; history shows its Focus collapsed with the choices behind it, a different one for this workout only; the stored Goal; Intensity 1–10', async () => {
+    const first = renderGenerate({ goal: 'balanced', history: [] })
+    expect(within(group('Anchor')).getAllByRole('button').map((chip) => chip.textContent)).toEqual(ANCHOR_LABELS)
+    expect(cta()).toBeDisabled()
+    expect(summaryItem('Goal')).toHaveTextContent(/^Goal\s*Balanced$/)
+    expect(screen.queryByRole('link', { name: 'Change in Settings' })).not.toBeInTheDocument()
+    expect(slider()).toHaveAttribute('min', '1')
+    expect(slider()).toHaveAttribute('max', '10')
+    await first.user.click(chipIn('Anchor', 'Power'))
+    expect(cta()).toBeEnabled()
+    first.unmount()
+
+    const returning = renderDraft()
+    // Collapsed: the Focus and its control, no choices until asked.
+    expect(focusControl()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('group', { name: OVERRIDE_GROUP_LABEL })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
+    expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
+    expect(summaryItem('Goal')).toHaveTextContent(/^Goal\s*Strength$/)
+    await returning.user.click(focusControl())
+    await returning.user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Full body'))
+    expect(focusLine()).toHaveTextContent(new RegExp(`^Focus\\s*Full body\\s*${OVERRIDE_SCOPE}$`))
+    expect(focusControl().textContent).toBe('Full body')
+    expect(slider()).toHaveAttribute('max', '10')
+    await returning.user.click(cta())
+    expect(returning.generation.calls[0]).toMatchObject({ goal: 'strength', focus: 'full_body', requested_intensity: 7 })
+    expect(returning.userData.preferenceWrites).toEqual([])
+  })
+
+  it('AC-C51-01 the accepted gallery state ?state=screens draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, and sends nothing', { timeout: HEAVY }, async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/gallery/refinements?state=screens']}>
+        <GalleryRefinements />
+      </MemoryRouter>,
+    )
+    const state = document.querySelector<HTMLElement>('[data-refinement-state="screens"]')!
+    expect(state).not.toBeNull()
+    const scene = within(state)
+    // Round 7's screens state is composed from the same parts (bec4454): its
+    // Generate card is titled by a label, its Back is the framed icon-only
+    // IconButton (named “Back to Home” there), the goal is said above the
+    // Focus value, which is the control that opens the choices.
+    const card = scene.getByText(GENERATE_TITLE, { selector: '.label' }).closest<HTMLElement>('.clr-card')!
+    expect(within(card).getByRole('button', { name: `Back to ${HOME_BACK_LABEL}` })).toHaveClass('clr-chamfer', 'clr-btn')
+    expect(within(card).getByRole('button', { name: `Back to ${HOME_BACK_LABEL}` })).toHaveTextContent('')
+    const control = within(card).getByRole('button', { name: 'Upper body' })
+    const goal = within(card).getByText('Build strength')
+    expect(goal.parentElement).toContainElement(control)
+    expect(goal.compareDocumentPosition(control) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(scene.queryByRole('button', { name: RECOVERY_LABEL })).not.toBeInTheDocument()
+
+    await user.click(control)
+    const dialog = await screen.findByRole('dialog', { name: FOCUS_TERM })
+    const focuses = within(dialog).getByRole('group', { name: FOCUS_TERM })
+    // The state lists Recovery as a fourth Focus choice and no Power: the route
+    // keeps Recovery a session toggle apart from the four (R10.1, AC-R024-01).
+    expect(within(focuses).getAllByRole('radio')).toEqual(
+      ['Upper body', 'Lower body', 'Full body', 'Recovery'].map((label) => within(focuses).getByRole('radio', { name: label })),
+    )
+    expect(within(focuses).getByRole('radio', { name: 'Upper body' })).toBeChecked()
+
+    // Fields without helpers, the minutes unit through the public Input.
+    expect(scene.getByText('MINUTES')).toHaveClass('clr-field__unit')
+    expect(state).not.toHaveTextContent(/this place’s equipment|Ongoing limits/)
+    expect(scene.getByRole('button', { name: GENERATE_ACTION_LABEL })).toBeEnabled()
+
+    // Owner decision 4 (2026-11-18): once chosen and closed, Recovery stays in view.
+    await user.click(within(focuses).getByRole('radio', { name: 'Recovery' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: FOCUS_TERM })).not.toBeInTheDocument())
+    expect(within(card).getByRole('button', { name: 'Recovery' })).toBeVisible()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A3 TASK-119 — owner decision 4 of 2026-11-18 ("P1. Recommendations fine.",
+// answering Q-005): with a recommended Focus, closing Change focus keeps the
+// Recovery chip, with its note, in view while Recovery is on.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('TASK-119 — the Recovery chip stays in view (owner decision 4, 2026-11-18)', () => {
+  const note = () => screen.getByText(`${RECOVERY_NOTE} ${POWER_REFUSAL}`)
+  const follows = (first: Node, second: Node) =>
+    (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+
+  it('TASK-AC-8C58C464BAD0 with a recommended Focus, Recovery on and Change focus collapsed, the Recovery chip and its note stay visible', async () => {
+    const { user, generation, url } = renderDraft()
+
+    // A recommended Focus, closed: Recovery is off and waits inside the choices.
+    expect(focusLine()).toHaveTextContent(/^Focus\s*Lower body$/)
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('button', { name: RECOVERY_LABEL })).not.toBeInTheDocument()
+
+    await user.click(changeFocus())
+    await user.click(recovery())
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+
+    // Collapse Change focus: the four focuses go, the pressed chip and its note stay.
+    await user.click(changeFocus())
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'false')
+    expect(changeFocus()).not.toHaveAttribute('aria-controls')
+    expect(screen.queryByRole('group', { name: OVERRIDE_GROUP_LABEL })).not.toBeInTheDocument()
+    expect(recovery()).toBeVisible()
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getAllByRole('button', { name: RECOVERY_LABEL })).toHaveLength(1)
+    expect(formCard()).toContainElement(recovery())
+    expect(note()).toBeVisible()
+    expect(follows(summaryItem('Focus'), note())).toBe(true)
+    expect(follows(note(), recovery())).toBe(true)
+    // Still the recommended Focus, for this workout a Recovery session.
+    expect(focusLine()).toHaveTextContent(/^Focus\s*Lower body$/)
+    expect(screen.queryByText(OVERRIDE_SCOPE)).not.toBeInTheDocument()
+    expect(url()).toBe('/generate?recovery=1')
+
+    await user.click(cta())
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.calls[0]).toMatchObject({ goal: 'active_recovery', focus: 'lower_body', requested_intensity: 7 })
+  })
+
+  it('TASK-AC-8C58C464BAD0 a Recovery restored from its address stays in view once Change focus is collapsed, and turning it off there leaves the plain summary', async () => {
+    const { user, generation, url } = renderDraft({ entry: '/generate?recovery=1' })
+
+    // Opened from its address: the choices are open, Recovery on.
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'true')
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    await user.click(changeFocus())
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'false')
+    expect(recovery()).toBeVisible()
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(note()).toBeVisible()
+
+    // Off from the closed summary: the chip and its note go together, as Round 7's closed summary draws it.
+    await user.click(recovery())
+    expect(screen.queryByRole('button', { name: RECOVERY_LABEL })).not.toBeInTheDocument()
+    expect(screen.queryByText(new RegExp(RECOVERY_NOTE))).not.toBeInTheDocument()
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'false')
+    expect(url()).toBe('/generate')
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'strength', focus: 'lower_body' })
   })
 })

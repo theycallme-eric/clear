@@ -1,0 +1,44 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-119",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/app/Home.test.tsx",
+    "--testNamePattern",
+    "recovery: says the last one was Recovery",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-119/required-cases.json",
+    "sha256": "d2e8a05d5c779cf0b97a30d4501a050ae6c4ec654732dd49526e3a28331c31b8"
+  },
+  "targets": [
+    {
+      "path": "src/app/Home.test.tsx",
+      "sha256": "a68c0396e37c0d38b88cab839f89ee520da7bed746aad6b9666333a99e72c4cd"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/app/Home.test.tsx",
+      "name": "Home’s one next-workout entry (REQ-007, U20) > recovery: says the last one was Recovery, and the next opens as an ordinary day",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 43,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 42,
+    "todo": 0,
+    "executed": 1
+  },
+  "problems": []
+}

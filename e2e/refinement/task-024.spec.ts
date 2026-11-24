@@ -14,9 +14,13 @@ import { expect, test as scanned } from '../fixtures'
  * TASK-024 (REQ-024; C51, G16; R06, R10, R11, R21, R23, R25; V01/V02;
  * AC-C51-01, AC-R024-01…08; JOURNEY-024; reconciling UAT #286) — on the real
  * `/generate` route, Generate's accepted hierarchy, focus interaction and
- * copy. Accepted gallery reference eded158cfd928d382c9a9409e2c372270312741d,
- * `/gallery/refinements?state=screens`, which draws the route's own
- * `GenerateBack`, `GenerateIntent` and `GenerateContextFields`.
+ * copy. Carried onto Round 7 by A3 TASK-119 (decisions 4 and 6 of 2026-11-13;
+ * owner decision 4 of 2026-11-18): the route's own Goal/Focus summary
+ * (`.clr-v4-program-summary`), whose Focus value is the disclosure named
+ * Change focus, with the Recovery chip apart from the four focuses in the
+ * choices it opens and kept in view, closed, while Recovery is on. Accepted
+ * gallery reference bec4454, `/gallery/refinements?state=screens`, which
+ * composes its Generate card from the same Round 7 parts.
  *
  * Entry (ENTRY-024): a returning athlete whose history recommends a Focus, or
  * a first workout with nothing completed, reaches `/generate` behind the
@@ -267,7 +271,12 @@ async function noHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 }
 
-const focusControl = (scope: Page | Locator) => scope.getByRole('button', { name: /^Focus:/ })
+/** Round 7: the Focus value is the control, named Change focus (the build named it `Focus: <value>`). */
+const CHANGE_FOCUS = 'Change focus'
+const focusControl = (scope: Page | Locator) => scope.getByRole('button', { name: CHANGE_FOCUS, exact: true })
+/** Round 7's Goal/Focus summary items: a label, then the value (the Focus value is the control). */
+const summaryItem = (scope: Locator, label: 'Goal' | 'Focus') =>
+  scope.locator('.clr-v4-program-summary > div').filter({ has: scope.page().locator('span', { hasText: new RegExp(`^${label}$`) }) })
 const recoveryChip = (scope: Page | Locator) => scope.getByRole('button', { name: RECOVERY, exact: true })
 const generateButton = (page: Page) => page.getByRole('button', { name: GENERATE, exact: true })
 
@@ -303,8 +312,9 @@ async function readScreen(page: Page): Promise<Reading> {
     const lineHeight = parseFloat(getComputedStyle(h1).lineHeight) || h1.getBoundingClientRect().height
     const back = main.querySelector<HTMLButtonElement>('header button[aria-label="Home"]')
     const card = main.querySelector<HTMLElement>('.clr-card')!
-    const goal = card.querySelector<HTMLElement>('[data-intent-fact="goal"]')!
-    const summary = goal.closest<HTMLElement>('.clr-intent-summary')!
+    // Round 7: the Goal value (`.clr-v4-program-value`) in the Goal/Focus summary.
+    const goal = card.querySelector<HTMLElement>('.clr-v4-program-summary .clr-v4-program-value')!
+    const summary = goal.closest<HTMLElement>('.clr-v4-program-summary')!
     const fields = [...card.querySelectorAll<HTMLElement>('input, select, textarea, [role="slider"]')]
     const unit = card.querySelector<HTMLElement>('.clr-field__unit')!
     const field = unit.closest<HTMLElement>('.clr-field')!
@@ -326,7 +336,10 @@ async function readScreen(page: Page): Promise<Reading> {
       summaryFirst: fields.every((control) =>
         (summary.compareDocumentPosition(control) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0),
       pairedActions: main.querySelectorAll('.clr-action-group--paired-labels').length,
-      changeFocusButtons: [...main.querySelectorAll('button')].filter((button) => /change focus/i.test(button.textContent ?? '')).length,
+      // Round 7 names the Focus value itself Change focus; any other button so named is detached.
+      changeFocusButtons: [...main.querySelectorAll('button')]
+        .filter((button) => /change focus/i.test(`${button.getAttribute('aria-label') ?? ''} ${button.textContent ?? ''}`))
+        .filter((button) => !button.classList.contains('clr-v4-focus-value')).length,
       unit: {
         text: unit.textContent ?? '',
         transform: getComputedStyle(unit).textTransform,
@@ -358,10 +371,12 @@ function expectAcceptedScreen(reading: Reading, label: string) {
 
 /** The Focus choices region the Focus control names, and its parts. */
 async function readChoices(page: Page) {
-  return page.evaluate(({ focusGroup, recovery }) => {
+  return page.evaluate(({ focusGroup, recovery, name }) => {
     const control = [...document.querySelectorAll<HTMLButtonElement>('main button')]
-      .find((button) => button.textContent?.startsWith('Focus:'))!
-    const region = document.getElementById(control.getAttribute('aria-controls') ?? '')
+      .find((button) => button.getAttribute('aria-label') === name)!
+    // Round 7: the control names the group of the four focuses; Recovery sits
+    // beside that group in the choices it opens.
+    const region = document.getElementById(control.getAttribute('aria-controls') ?? '')?.parentElement ?? null
     const group = region?.querySelector(`[role="group"][aria-label="${focusGroup}"]`) ?? null
     const chip = [...(region?.querySelectorAll('button') ?? [])].find((button) => button.textContent?.trim() === recovery)
     return {
@@ -370,7 +385,7 @@ async function readChoices(page: Page) {
       recoveryInRegion: chip !== undefined,
       recoveryInFocusGroup: chip !== undefined && group !== null && group.contains(chip),
     }
-  }, { focusGroup: FOCUS_GROUP, recovery: RECOVERY })
+  }, { focusGroup: FOCUS_GROUP, recovery: RECOVERY, name: CHANGE_FOCUS })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -386,9 +401,12 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
       // Read: the accepted hierarchy and copy, against V02 and ?state=screens.
       expectAcceptedScreen(await readScreen(page), `returning @${name}`)
       const main = page.locator('main')
-      await expect(main.locator('[data-intent-fact="goal"]')).toHaveText('Goal: Balanced')
+      await expect(summaryItem(main, 'Goal').locator('span')).toHaveText('Goal')
+      await expect(summaryItem(main, 'Goal').locator('strong')).toHaveText('Balanced')
       const focus = focusControl(main)
-      await expect(focus).toHaveAccessibleName('Focus: Lower body')
+      await expect(focus).toHaveAccessibleName(CHANGE_FOCUS)
+      await expect(focus).toHaveText('Lower body')
+      await expect(summaryItem(main, 'Focus')).toContainText('Lower body')
       await expect(focus).toHaveAttribute('aria-expanded', 'false')
       await expect(recoveryChip(main)).toHaveCount(0)
       await noHorizontalOverflow(page)
@@ -406,10 +424,22 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
       await recoveryChip(main).tap()
       await expect(recoveryChip(main)).toHaveAttribute('aria-pressed', 'true')
       await expect(main.getByRole('group', { name: FOCUS_GROUP }).getByRole('button', { name: /Lower body/ })).toHaveAttribute('aria-pressed', 'true')
-      await expect(focus).toHaveAccessibleName('Focus: Lower body')
+      await expect(focus).toHaveAccessibleName(CHANGE_FOCUS)
+      await expect(focus).toHaveText('Lower body')
       await expect(page).toHaveURL(/\/generate\?recovery=1$/)
       await noHorizontalOverflow(page)
       await attachScreen(page, `generate-recovery-${name}`)
+
+      // Owner decision 4 (2026-11-18): closed, the pressed Recovery chip and its note stay in view.
+      await focus.tap()
+      await expect(focus).toHaveAttribute('aria-expanded', 'false')
+      await expect(main.getByRole('group', { name: FOCUS_GROUP })).toHaveCount(0)
+      await expect(recoveryChip(main)).toBeVisible()
+      await expect(recoveryChip(main)).toHaveAttribute('aria-pressed', 'true')
+      await expect(main.getByText(/^Recovery works at 1 to 3/).first()).toBeVisible()
+      await expect(page).toHaveURL(/\/generate\?recovery=1$/)
+      await noHorizontalOverflow(page)
+      await attachScreen(page, `generate-recovery-closed-${name}`)
 
       // Generate: the existing run, held here; the request carries both answers.
       await generateButton(page).tap()
@@ -441,7 +471,8 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
     await expect(focusControl(main)).toHaveCount(0)
     await expect(recoveryChip(main)).toHaveAttribute('aria-pressed', 'false')
     await expect(recoveryChip(main)).toBeEnabled()
-    expect(await anchor.evaluate((group) => group.contains(document.querySelector('[data-generate-recovery] button')))).toBe(false)
+    expect(await anchor.evaluate((group, label) => group.contains([...document.querySelectorAll('main button')]
+      .find((button) => button.textContent?.trim() === label) ?? null), RECOVERY)).toBe(false)
     await expect(main).not.toContainText(/recommended|suggested/i)
     await expect(generateButton(page)).toBeDisabled()
     await expect(page).toHaveURL(/\/generate$/)
@@ -480,8 +511,9 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
     const upper = main.getByRole('group', { name: FOCUS_GROUP }).getByRole('button', { name: /Upper body/ })
     await expect(upper).toBeFocused()
     await page.keyboard.press('Enter')
-    await expect(focus).toHaveAccessibleName('Focus: Upper body')
-    await expect(main.locator('[data-intent-fact="focus"]')).toContainText('this workout only')
+    await expect(focus).toHaveAccessibleName(CHANGE_FOCUS)
+    await expect(focus).toHaveText('Upper body')
+    await expect(summaryItem(main, 'Focus')).toContainText('this workout only')
     await expect(page).toHaveURL(/\/generate\?override=upper_body$/)
     await checkA11y()
 
@@ -489,7 +521,8 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Generate')
     await settle(page)
-    await expect(focus).toHaveAccessibleName('Focus: Upper body')
+    await expect(focus).toHaveAccessibleName(CHANGE_FOCUS)
+    await expect(focus).toHaveText('Upper body')
     await expect(focus).toHaveAttribute('aria-expanded', 'true')
     await expect(upper).toHaveAttribute('aria-pressed', 'true')
     expectAcceptedScreen(await readScreen(page), 'reopened')
@@ -498,7 +531,8 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
     await focus.focus()
     await page.keyboard.press('Space')
     await expect(focus).toHaveAttribute('aria-expanded', 'false')
-    await expect(focus).toHaveAccessibleName('Focus: Lower body')
+    await expect(focus).toHaveAccessibleName(CHANGE_FOCUS)
+    await expect(focus).toHaveText('Lower body')
     await expect(page).toHaveURL(/\/generate$/)
 
     // Back, from the keyboard, goes Home.
@@ -537,8 +571,9 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
 
     // Nothing was discarded: the same override, Recovery and note.
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Generate')
-    await expect(focus).toHaveAccessibleName('Focus: Upper body')
-    await expect(main.locator('[data-intent-fact="focus"]')).toContainText('this workout only')
+    await expect(focus).toHaveAccessibleName(CHANGE_FOCUS)
+    await expect(focus).toHaveText('Upper body')
+    await expect(summaryItem(main, 'Focus')).toContainText('this workout only')
     await expect(focus).toHaveAttribute('aria-expanded', 'true')
     await expect(recoveryChip(main)).toHaveAttribute('aria-pressed', 'true')
     await expect(main.getByLabel('Notes', { exact: true })).toHaveValue('Left shoulder is tight.')
@@ -551,6 +586,13 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
     app.assertContained({ generations: app.generations().length })
   })
 
+  // A3 TASK-119: Round 7's screens state (bec4454) composes its Generate card
+  // from the same parts the route uses — the framed icon-only Back (named
+  // “Back to Home” there), the title, the goal above the Focus value that opens
+  // the choices, the MINUTES unit and Generate workout — over memory only. It
+  // has no Notes field, no Recovery toggle apart from the focuses (it lists
+  // Recovery as a fourth choice) and no first-workout switch; those reads are
+  // proved on the real route above and retired here for Eric to confirm.
   test('gallery screens phone-320: the accepted state draws Generate’s own Back, Goal/Focus summary, focus choices with Recovery and fields, with nothing read or written', async ({ page, visit }) => {
     await page.setViewportSize({ width: 320, height: 568 })
     await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
@@ -560,32 +602,37 @@ test.describe('TASK-024 Generate hierarchy, focus interaction and exact copy', (
     })
     await visit('/gallery/refinements?state=screens')
     const state = page.locator('[data-refinement-state="screens"]')
-    await expect(state.getByRole('heading', { name: 'Generate', exact: true })).toBeVisible()
-    const back = state.getByRole('button', { name: 'Home', exact: true })
+    const card = state.locator('.clr-card').filter({ has: page.locator('p.label', { hasText: /^Generate$/ }) })
+    await expect(card.locator('p.label', { hasText: /^Generate$/ })).toBeVisible()
+    const back = card.getByRole('button', { name: 'Back to Home', exact: true })
     await expect(back).toHaveText('')
     await expect(back).toHaveClass(/clr-chamfer/)
-    const focus = focusControl(state)
-    await expect(focus).toHaveAccessibleName('Focus: Full body')
-    await expect(state.locator('[data-intent-fact="goal"]')).toHaveText('Goal: Balanced')
+    const focus = card.getByRole('button', { name: 'Upper body', exact: true })
+    await expect(card.locator('p.label', { hasText: /^Build strength$/ })).toBeVisible()
     for (const helper of REMOVED_HELPERS) await expect(state).not.toContainText(helper)
-    const unitWhole = await state.locator('.clr-field__unit').evaluate((unit) => unit.scrollWidth <= unit.clientWidth + 0.5)
+    const unit = card.locator('.clr-field__unit')
+    await expect(unit).toHaveText('MINUTES')
+    const unitWhole = await unit.evaluate((element) => element.scrollWidth <= element.clientWidth + 0.5)
     expect(unitWhole).toBe(true)
+    await expect(card.getByRole('button', { name: GENERATE, exact: true })).toBeEnabled()
     await noHorizontalOverflow(page)
     await test.info().attach('gallery-screens-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
 
     await focus.tap()
-    await expect(focus).toHaveAttribute('aria-expanded', 'true')
-    const focuses = state.getByRole('group', { name: FOCUS_GROUP })
-    await expect(focuses.getByRole('button')).toHaveText(ANCHORS)
-    await recoveryChip(state).tap()
-    await expect(recoveryChip(state)).toHaveAttribute('aria-pressed', 'true')
-    await expect(focuses.getByRole('button', { name: /Full body/ })).toHaveAttribute('aria-pressed', 'true')
-    await test.info().attach('gallery-screens-recovery-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
+    const dialog = page.getByRole('dialog', { name: 'Focus', exact: true })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('radio')).toHaveCount(4)
+    for (const choice of ['Upper body', 'Lower body', 'Full body', 'Recovery']) {
+      await expect(dialog.getByRole('radio', { name: choice, exact: true })).toBeVisible()
+    }
+    await expect(dialog.getByRole('radio', { name: 'Upper body', exact: true })).toBeChecked()
+    await test.info().attach('gallery-screens-focus-phone-320.png', { body: await page.screenshot({ caret: 'hide' }), contentType: 'image/png' })
 
-    await state.getByRole('radio', { name: 'First workout' }).check()
-    await expect(state.getByRole('group', { name: 'Anchor' }).getByRole('button')).toHaveText(ANCHORS)
-    await expect(recoveryChip(state)).toHaveAttribute('aria-pressed', 'false')
-    await expect(state.getByRole('button', { name: GENERATE, exact: true })).toBeDisabled()
+    // Owner decision 4 (2026-11-18): Recovery, once chosen and closed, stays in view.
+    await dialog.getByRole('radio', { name: 'Recovery', exact: true }).check()
+    await expect(dialog).toBeHidden()
+    await expect(card.getByRole('button', { name: 'Recovery', exact: true })).toBeVisible()
+    await test.info().attach('gallery-screens-recovery-phone-320.png', { body: await state.screenshot({ caret: 'hide' }), contentType: 'image/png' })
     await expect(page).toHaveURL(/\/gallery\/refinements\?state=screens$/)
     expect(requests, 'the gallery reads and writes nothing over the network').toEqual([])
   })
