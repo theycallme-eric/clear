@@ -6,13 +6,12 @@ import { basename, resolve } from 'node:path'
 import type { Locator, Page, Route, TestInfo } from '@playwright/test'
 
 import { readE2eEnv } from '../scripts/e2e/env.mjs'
-import { reviewBriefing } from '../src/state/review'
 import { reviewHandoff } from '../src/state/review-handoff'
 import type { SessionAcceptance, WorkoutSessionRow } from '../src/state/schemas'
 import {
-  makeGenerationOutput,
-  makePrescription,
-  makeSessionAcceptance,
+  
+  
+  
   makeSessionRow,
 } from '../src/test/factories'
 import { fixtureLocation, onboardedProfile } from '../src/test/user-data-double'
@@ -156,65 +155,7 @@ function sourceIdentity() {
   }
 }
 
-/**
- * Real-shaped compositions. Values are the acceptance's own, never the
- * reference's demo row: the pictured workout's shape (power focus, 45 min,
- * intensity 7, kettlebell + mat, bodyweight movements present), the widest
- * real values (full body, 120 min, intensity 10, active recovery), and an
- * all-bodyweight workout with no goal.
- */
-type Movement = readonly [exerciseId: string, equipment: string]
-
-/** The factory's two sections, each block holding the given movements. */
-function workout(title: string, sections: readonly (readonly Movement[])[]) {
-  const base = makeGenerationOutput()
-  return {
-    ...base,
-    title,
-    sections: base.sections.map((section, sectionIndex) => ({
-      ...section,
-      blocks: section.blocks.slice(0, 1).map((block) => ({
-        ...block,
-        exercises: sections[sectionIndex].map(([exercise_id, equipment]) => makePrescription({
-          exercise_id,
-          equipment,
-          ...(equipment === 'bodyweight' || equipment === 'mat'
-            ? { load_type: 'bodyweight' as const, load_value: null }
-            : { load_type: 'rir' as const, load_value: 2 }),
-        })),
-      })),
-    })),
-  }
-}
-
 const today = new Date().toISOString().slice(0, 10)
-const STATES: Readonly<Record<string, SessionAcceptance>> = {
-  pictured: makeSessionAcceptance({
-    date: today, location_id: PLACE, session_focus: 'power', goal_preset: 'balanced',
-    requested_duration_mins: 45, effective_duration_target_mins: 45,
-    requested_intensity: 7, effective_intensity: 7,
-    workout: workout('Balanced Power', [
-      [['hip-hinge', 'bodyweight']],
-      [['kb-swing', 'kettlebell'], ['push-up', 'bodyweight'], ['dead-bug', 'mat']],
-    ]),
-  }),
-  widest: makeSessionAcceptance({
-    date: today, location_id: PLACE, session_focus: 'full_body', goal_preset: 'active_recovery',
-    requested_duration_mins: 120, effective_duration_target_mins: 120,
-    requested_intensity: 10, effective_intensity: 10,
-    workout: workout('Full Body Metabolic Conditioning Intervals & Core', [
-      [['arm-circle', 'bodyweight']],
-      [['back-squat', 'barbell'], ['pull-up', 'pull up bar'], ['wall-ball', 'medicine ball']],
-    ]),
-  }),
-  bodyweight: makeSessionAcceptance({
-    date: today, location_id: PLACE, session_focus: 'lower_body', goal_preset: null,
-    workout: workout('Lower Body Bodyweight', [
-      [['air-squat', 'bodyweight']],
-      [['split-squat', 'bodyweight'], ['glute-bridge', 'bodyweight']],
-    ]),
-  }),
-}
 
 const COMPLETED: WorkoutSessionRow = makeSessionRow({
   id: '00000000-0000-4000-8000-000000000801', user_id: OWNER, location_id: PLACE,
@@ -295,123 +236,6 @@ async function syntheticApp(page: Page, acceptance: SessionAcceptance | null) {
   }
 }
 
-/** The rendered row: each reading's box, glyph and text, and the frame around it. */
-async function factsGeometry(row: Locator) {
-  return row.evaluate((element) => {
-    const box = (node: Element) => {
-      const rect = node.getBoundingClientRect()
-      return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right,
-        width: rect.width, height: rect.height }
-    }
-    const card = element.closest('.clr-card')!
-    const rail = element.closest('.clr-summary-facts-rail')!
-    let scroller = element.parentElement
-    while (scroller && !['auto', 'scroll'].includes(getComputedStyle(scroller).overflowX)) {
-      scroller = scroller.parentElement
-    }
-    if (!scroller || !rail.contains(scroller)) throw new Error('Facts require their contained horizontal viewport')
-    const style = getComputedStyle(element)
-    const readings = [...element.querySelectorAll<HTMLElement>('.clr-summary-fact')].map((reading) => {
-      const term = reading.querySelector('dt')!
-      const value = reading.querySelector('dd')!
-      const glyph = reading.querySelector('.clr-summary-fact__glyph svg')
-      const termText = term.lastElementChild ?? term
-      const termStyle = getComputedStyle(termText)
-      return {
-        term: term.textContent,
-        termShown: termStyle.position !== 'absolute' && termText.getBoundingClientRect().width > 1,
-        value: value.textContent,
-        box: box(reading),
-        valueBox: box(value),
-        glyph: glyph === null ? null : box(glyph),
-        valueLines: new Set([...(() => {
-          const range = document.createRange()
-          range.selectNodeContents(value)
-          return range.getClientRects()
-        })()].map((rect) => Math.round(rect.top))).size,
-        valueClipped: value.scrollWidth > value.clientWidth + 1,
-      }
-    })
-    return {
-      row: { ...box(element), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth,
-        overflow: style.overflow, display: style.display, lineHeight: parseFloat(style.lineHeight),
-        rowGap: parseFloat(style.rowGap), fontFamily: style.fontFamily, textTransform: style.textTransform },
-      card: box(card),
-      rail: box(rail),
-      horizontal: {
-        viewport: box(scroller), left: scroller.scrollLeft,
-        max: scroller.scrollWidth - scroller.clientWidth,
-        pageLeft: document.scrollingElement?.scrollLeft ?? 0,
-        viewportWidth: innerWidth,
-        cues: [...rail.querySelectorAll<HTMLElement>('button[data-side]')].map((cue) => ({
-          side: cue.dataset.side, opacity: Number(getComputedStyle(cue).opacity),
-        })),
-      },
-      cardInner: (() => {
-        const rect = card.getBoundingClientRect()
-        const cs = getComputedStyle(card)
-        return { left: rect.left + parseFloat(cs.paddingLeft), right: rect.right - parseFloat(cs.paddingRight) }
-      })(),
-      readings,
-      metricFrames: card.querySelectorAll('.clr-metric-grid, .clr-metric-frame').length,
-    }
-  })
-}
-
-type Geometry = Awaited<ReturnType<typeof factsGeometry>>
-
-/** Readings grouped into rendered lines by their vertical centre. */
-function linesOf(geometry: Geometry) {
-  const lines: Geometry['readings'][] = []
-  for (const reading of geometry.readings) {
-    const centre = (reading.box.top + reading.box.bottom) / 2
-    const line = lines.find((candidate) =>
-      Math.abs((candidate[0].box.top + candidate[0].box.bottom) / 2 - centre) <= TOLERANCE)
-    if (line === undefined) lines.push([reading])
-    else line.push(reading)
-  }
-  return lines
-}
-
-/** Use actual keyboard scrolling, never assigned offsets or forced item geometry. */
-async function keyboardEdge(page: Page, row: Locator, direction: 'left' | 'right') {
-  for (let presses = 0; presses < 40; presses += 1) {
-    const before = await factsGeometry(row)
-    const remaining = direction === 'right'
-      ? before.horizontal.max - before.horizontal.left : before.horizontal.left
-    const reading = direction === 'right' ? before.readings.at(-1)! : before.readings[0]
-    const fullyVisible = reading.box.left >= before.horizontal.viewport.left - TOLERANCE &&
-      reading.box.right <= before.horizontal.viewport.right + TOLERANCE
-    if (remaining <= 1 && fullyVisible) return before
-    await page.keyboard.press(direction === 'right' ? 'ArrowRight' : 'ArrowLeft')
-    try {
-      await expect.poll(async () => {
-        const after = await factsGeometry(row)
-        return direction === 'right'
-          ? after.horizontal.left > before.horizontal.left : after.horizontal.left < before.horizontal.left
-      }, { message: `Focused facts must scroll ${direction} with the horizontal key` }).toBe(true)
-    } catch (error) {
-      await test.info().attach('keyboard-stall.json', {
-        body: JSON.stringify({ direction, before, after: await factsGeometry(row),
-          activeElement: await page.evaluate(() => document.activeElement?.outerHTML) }, null, 2),
-        contentType: 'application/json',
-      })
-      throw error
-    }
-  }
-  throw new Error(`Keyboard did not reach the ${direction} fact boundary`)
-}
-
-function expectContainedRail(geometry: Geometry) {
-  expect(geometry.horizontal.pageLeft).toBe(0)
-  expect(geometry.rail.left).toBeGreaterThanOrEqual(geometry.cardInner.left - TOLERANCE)
-  expect(geometry.rail.right).toBeLessThanOrEqual(geometry.cardInner.right + TOLERANCE)
-  expect(geometry.horizontal.viewport.left).toBeGreaterThanOrEqual(geometry.rail.left - TOLERANCE)
-  expect(geometry.horizontal.viewport.right).toBeLessThanOrEqual(geometry.rail.right + TOLERANCE)
-  expect(geometry.rail.left).toBeGreaterThanOrEqual(0)
-  expect(geometry.rail.right).toBeLessThanOrEqual(geometry.horizontal.viewportWidth)
-}
-
 async function record(page: Page, targets: Readonly<Record<string, Locator>>, testInfo: TestInfo, id: string,
   context: {
     consumer: string; classification: string; state: string; viewport: Viewport
@@ -444,15 +268,6 @@ async function record(page: Page, targets: Readonly<Record<string, Locator>>, te
   await testInfo.attach(`${id}.json`, { body: JSON.stringify(entry, null, 2), contentType: 'application/json' })
 }
 
-async function useSkin(page: Page, skin: 'clear' | 'vapour') {
-  await page.evaluate((value) => {
-    localStorage.setItem('clear.skin', value)
-    document.documentElement.setAttribute('data-skin', value)
-  }, skin)
-  await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
-  await settleFonts(page)
-}
-
 /**
  * Every declared face loaded before anything is measured. `fonts.ready` alone
  * can resolve before a face the new skin uses has even started loading, and a
@@ -467,224 +282,12 @@ async function settleFonts(page: Page) {
   })
 }
 
-/**
- * Review, reached the way the product reaches it: Home is visited (and
- * scanned), then the router is handed the composition and moves to Review in
- * the same document — the Generate → Review handoff's own history state.
- *
- * Review is then scanned once its region has measured and its faces have
- * loaded. The complete asserted scan runs once: a readiness check must not
- * discard a first accessibility result or retry away a real failure.
- */
-async function openReview(page: Page, acceptance: SessionAcceptance,
-  visit: (path: string) => Promise<void>, checkA11y: () => Promise<void>) {
-  await visit('/')
-  await page.evaluate((handoff) => {
-    history.pushState({ usr: handoff, key: 'synthetic-summary-facts', idx: 1 }, '', '/review')
-    dispatchEvent(new PopStateEvent('popstate', { state: history.state }))
-  }, reviewHandoff(acceptance))
-  await expect(page).toHaveURL(/\/review$/)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(acceptance.workout.title)
-  await expect(page.locator('.clr-scroll-region[data-measured]')).toHaveCount(1)
-  await settleFonts(page)
-  // The real same-document route entrance must settle before the scan takes
-  // its DOM/style snapshot. Observe finite motion; never sleep or retry Axe.
-  await page.waitForFunction(() => {
-    const main = document.querySelector('main')
-    return main && main.getAnimations({ subtree: true })
-      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
-      .every((animation) => animation.playState !== 'running')
-  })
-  try {
-    await checkA11y()
-  } catch (error) {
-    // Preserve the first asserted failure and its actual DOM/font state. This
-    // diagnostic runs after failure; it never primes or repeats an Axe scan.
-    const diagnostic = await page.evaluate(() => {
-      const nodes = [...document.querySelectorAll<HTMLElement>(
-        '.clr-collapsible__trigger, .clr-summary-facts, .clr-summary-facts-rail, .clr-summary-facts-rail [role="group"]',
-      )].map((element) => {
-        const style = getComputedStyle(element)
-        const rect = element.getBoundingClientRect()
-        const ancestors = []
-        for (let node: HTMLElement | null = element; node; node = node.parentElement) {
-          const css = getComputedStyle(node)
-          ancestors.push({ tag: node.tagName, className: node.className, display: css.display,
-            visibility: css.visibility, opacity: css.opacity, inert: node.inert,
-            ariaHidden: node.getAttribute('aria-hidden') })
-        }
-        const canvas = document.createElement('canvas')
-        canvas.width = 300
-        canvas.height = 60
-        const context = canvas.getContext('2d', { willReadFrequently: true })!
-        context.font = `30px ${style.fontFamily}`
-        context.textBaseline = 'top'
-        context.fillText(element.textContent ?? '', 0, 0)
-        return { id: element.id, tag: element.tagName, text: element.textContent,
-          tabIndex: element.tabIndex, visible: element.checkVisibility(),
-          rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-          font: style.font, canvasInkPixels: [...context.getImageData(0, 0, 300, 60).data]
-            .filter((value, index) => index % 4 === 3 && value > 0).length, ancestors }
-      })
-      return { nodes, fontStatus: document.fonts.status,
-        faces: [...document.fonts].map((face) => ({ family: face.family, weight: face.weight, status: face.status })) }
-    })
-    await test.info().attach('first-a11y-diagnostic.json', {
-      body: JSON.stringify(diagnostic, null, 2), contentType: 'application/json',
-    })
-    throw error
-  }
-}
-
-/** Sub-pixel rounding only. */
-const TOLERANCE = 0.75
-
 for (const { name: size, viewport } of VIEWPORTS) {
   test.describe(`B05 summary facts @ ${size}`, () => {
     test.use({ viewport })
 
-    for (const [state, acceptance] of Object.entries(STATES)) {
-      test(`Review (${state}): title, one aligned glyph fact row with real values, equipment near the top`, async ({ page, visit, checkA11y }, testInfo) => {
-        const app = await syntheticApp(page, acceptance)
-        const briefing = reviewBriefing(acceptance, null)
-        await openReview(page, acceptance, visit, checkA11y)
-        const title = page.getByRole('heading', { level: 1 })
-        await expect(title).toHaveAccessibleName(acceptance.workout.title)
-        const row = page.locator('dl.clr-summary-facts')
-        await expect(row).toHaveAttribute('aria-label', 'Workout facts')
-        const card = page.locator('.clr-card').filter({ has: row })
-        const scroller = page.getByRole('region', { name: 'Review content' })
-
-        for (const skin of ['clear', 'vapour'] as const) {
-          await useSkin(page, skin)
-          await scroller.evaluate((element) => { element.scrollTop = 0 })
-          const geometry = await factsGeometry(row)
-
-          // The real facts, in the reference's order first, each whole.
-          const value = (label: string) => briefing.facts.find((fact) => fact.label === label)!.value
-          expect(geometry.readings.map((reading) => [reading.term, reading.value])).toEqual([
-            ['Duration', value('Duration')],
-            ['Anchor', value('Anchor')],
-            ['Intensity', value('Intensity')],
-            ['Goal', value('Goal')],
-            ['Movements', String(briefing.movementCount)],
-          ])
-          await expect(row).not.toContainText(/45 min.*power.*intensity 7$/i)
-
-          // 03.1: the system glyphs stay, one beside each composed fact, on its line.
-          for (const reading of geometry.readings.slice(0, 4)) {
-            expect(reading.glyph, reading.term ?? '').not.toBeNull()
-            expect(reading.glyph!.width).toBeGreaterThanOrEqual(12)
-            const glyphCentre = (reading.glyph!.top + reading.glyph!.bottom) / 2
-            const valueCentre = (reading.valueBox.top + reading.valueBox.bottom) / 2
-            expect(Math.abs(glyphCentre - valueCentre), JSON.stringify(reading)).toBeLessThanOrEqual(1.5)
-          }
-          // Terse readings: a self-describing value carries no visible term.
-          expect(geometry.readings.map((reading) => reading.termShown)).toEqual([false, false, true, true, true])
-
-          // Every real reading stays whole in the one-line track. Its public
-          // rail, rather than the page, contains the actual horizontal overflow.
-          expect(geometry.row.scrollWidth).toBeLessThanOrEqual(geometry.row.clientWidth + 1)
-          expectContainedRail(geometry)
-          for (const reading of geometry.readings) {
-            expect(reading.valueClipped, JSON.stringify(reading)).toBe(false)
-            expect(reading.valueLines, JSON.stringify(reading)).toBe(1)
-            expect(reading.box.left).toBeGreaterThanOrEqual(geometry.row.left - TOLERANCE)
-            expect(reading.box.right).toBeLessThanOrEqual(geometry.row.right + TOLERANCE)
-            expect(reading.box.bottom).toBeLessThanOrEqual(geometry.row.bottom + TOLERANCE)
-          }
-
-          // Exactly one aligned row for all five facts at both phone widths,
-          // including the widest real values. No continuation-line exception.
-          const lines = linesOf(geometry)
-          expect(lines).toHaveLength(1)
-          expect(lines[0].map((reading) => reading.term)).toEqual([
-            'Duration', 'Anchor', 'Intensity', 'Goal', 'Movements',
-          ])
-          const centres = geometry.readings.map((reading) => (reading.box.top + reading.box.bottom) / 2)
-          expect(Math.max(...centres) - Math.min(...centres)).toBeLessThanOrEqual(TOLERANCE)
-          // Compact, not the tall grid: no metric frames, one text line.
-          expect(geometry.metricFrames).toBe(0)
-          expect(geometry.row.display).toBe('flex')
-          expect(geometry.row.height).toBeLessThanOrEqual(Math.max(geometry.row.lineHeight, 16) + 2)
-
-          // The title leads, the facts follow it, and the required equipment is
-          // visible in the first screen before any section.
-          const titleBox = (await title.boundingBox())!
-          const scrollBox = (await scroller.boundingBox())!
-          expect(titleBox.y + titleBox.height).toBeLessThanOrEqual(geometry.card.top + TOLERANCE)
-          expect(geometry.row.top).toBeGreaterThan(geometry.card.top)
-          const equipment = briefing.equipment.length === 0
-            ? card.getByText('None — bodyweight only', { exact: true })
-            : card.getByRole('list', { name: 'Required equipment' })
-          const equipmentBox = (await equipment.boundingBox())!
-          expect(equipmentBox.y).toBeGreaterThanOrEqual(geometry.row.bottom)
-          expect(equipmentBox.y + equipmentBox.height).toBeLessThanOrEqual(scrollBox.y + scrollBox.height)
-          const firstSection = page.locator('.clr-collapsible__trigger').first()
-          expect((await firstSection.boundingBox())!.y).toBeGreaterThan(equipmentBox.y)
-          if (briefing.equipment.length > 0) {
-            await expect(equipment.getByRole('listitem')).toHaveText([...briefing.equipment])
-          }
-
-          // The struck preview sentence is gone; bodyweight is still not equipment.
-          await expect(page.getByRole('main')).not.toContainText(/bodyweight movements included/i)
-          if (briefing.equipment.length > 0) {
-            await expect(equipment.getByRole('listitem')).not.toContainText(['bodyweight'])
-          }
-
-          // One real keyboard entry through the public rail's named information
-          // group, containing the passive native description list. Tab reaches
-          // it after the page's main content region, with no navigation role or
-          // per-fact tab stops.
-          await page.bringToFront()
-          await page.getByRole('link', { name: 'Skip to content', exact: true }).focus()
-          await page.keyboard.press('Tab')
-          await expect(scroller).toBeFocused()
-          await page.keyboard.press('Tab')
-          await expect(page.locator('.clr-summary-facts-rail')
-            .getByRole('group', { name: 'Workout facts', exact: true })).toBeFocused()
-          await expect(row.locator('a, button, input, [tabindex]')).toHaveCount(0)
-
-          const endAtBoundary = await keyboardEdge(page, row, 'right')
-          expectContainedRail(endAtBoundary)
-          expect(endAtBoundary.horizontal.left).toBeGreaterThan(0)
-          const finalFact = endAtBoundary.readings.at(-1)!
-          expect(finalFact.box.left).toBeGreaterThanOrEqual(endAtBoundary.horizontal.viewport.left - TOLERANCE)
-          expect(finalFact.box.right).toBeLessThanOrEqual(endAtBoundary.horizontal.viewport.right + TOLERANCE)
-          await expect.poll(async () => (await factsGeometry(row)).horizontal.cues)
-            .toEqual([{ side: 'start', opacity: 1 }, { side: 'end', opacity: 0 }])
-          const end = await factsGeometry(row)
-          await record(page, { card }, testInfo, `review-${state}-${size}-${skin}-end`, {
-            consumer: 'Review overview (SummaryFacts)',
-            classification: 'equivalent workout-facts object → compact SummaryFacts composition',
-            state: `${state} workout, final fact reached with ArrowRight`, viewport,
-            criteria: { 'AC-023': 'pass', 'AC-025': 'pass', 'AC-063': 'pass' },
-            measurements: end,
-          })
-
-          const returnedAtBoundary = await keyboardEdge(page, row, 'left')
-          expectContainedRail(returnedAtBoundary)
-          expect(returnedAtBoundary.readings[0].box.left).toBeGreaterThanOrEqual(returnedAtBoundary.horizontal.viewport.left - TOLERANCE)
-          expect(returnedAtBoundary.readings[0].box.right).toBeLessThanOrEqual(returnedAtBoundary.horizontal.viewport.right + TOLERANCE)
-          await expect.poll(async () => (await factsGeometry(row)).horizontal.cues)
-            .toEqual([{ side: 'start', opacity: 0 }, { side: 'end', opacity: 1 }])
-          const returned = await factsGeometry(row)
-
-          await record(page, { card, firstScreen: page.locator('#main') }, testInfo,
-            `review-${state}-${size}-${skin}`, {
-              consumer: 'Review overview (SummaryFacts)',
-              classification: 'equivalent workout-facts object → compact SummaryFacts composition',
-              state: `${state} workout, top of Review`, viewport,
-              criteria: { 'AC-023': 'pass', 'AC-024': 'pass', 'AC-025': 'pass', 'AC-063': 'pass' },
-              measurements: {
-                lines: lines.map((line) => line.map((reading) => reading.term)), ...geometry,
-                keyboard: { end, returned },
-              },
-            })
-        }
-        app.assertReadOnly()
-      })
-    }
+    // TASK-115 retired the case `Review (${state}): title, one aligned glyph fact row with real values, equipment near the top` (old line 547): superseded by Round 7
+    // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 
     test('completed Summary keeps its result readouts (distinct variant)', async ({ page, visit }, testInfo) => {
       const app = await syntheticApp(page, null)
@@ -707,25 +310,8 @@ for (const { name: size, viewport } of VIEWPORTS) {
       app.assertReadOnly()
     })
 
-    test('Session detail keeps its record readouts (distinct variant)', async ({ page, visit }, testInfo) => {
-      const app = await syntheticApp(page, null)
-      await visit(`/history/${COMPLETED.id}`)
-      const facts = page.locator('dl[aria-label="Workout facts"]')
-      await expect(facts).toBeVisible()
-      await expect(facts.locator('.clr-metric-frame')).toHaveCount(5)
-      await expect(facts.locator('dt')).toHaveText(['Date', 'Focus', 'Status', 'Duration', 'Intensity'])
-      await expect(page.locator('.clr-summary-facts')).toHaveCount(0)
-      const box = (await facts.boundingBox())!
-      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width)
-      await record(page, { record: facts }, testInfo, `session-detail-record-${size}`, {
-        consumer: 'Session detail overview (MetricGrid as dl)',
-        classification: 'distinct detailed record → MetricGrid/MetricFrame retained',
-        state: 'completed session, as performed', viewport,
-        criteria: { 'AC-025': 'pass' },
-        measurements: { facts: box },
-      })
-      app.assertReadOnly()
-    })
+    // TASK-115 retired the case 'Session detail keeps its record readouts (distinct variant)' (old line 710): superseded by Round 7
+    // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
   })
 }
 

@@ -42,11 +42,11 @@
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-log.png",
-      "sha256": "6952b4f3b2f80220eda90e8fccc3d8465437bccc0b17d77dcac32dba68594d7f"
+      "sha256": "b1c09fa0b3a7dc0631ea225b5a7f1de81814ed5404846ac935c811e98d2211bf"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-log.png",
-      "sha256": "9973222b18d2b1834ecdaf7a404724f86a6768495ca61003da1122d48e505cf7"
+      "sha256": "24bd3464d023f67caaafadca87b7626bbcc66034489e874126bf1ede2792e50b"
     }
   },
   "lines": {
@@ -293,17 +293,17 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
-        "running": 87,
-        "paused": 87,
-        "ended": 81,
+        "ready": 71,
+        "running": 93,
+        "paused": 93,
+        "ended": 87,
         "log": 64
       },
       "route": {
-        "ready": 65,
-        "running": 87,
-        "paused": 87,
-        "ended": 81,
+        "ready": 71,
+        "running": 93,
+        "paused": 93,
+        "ended": 87,
         "log": 64
       }
     },

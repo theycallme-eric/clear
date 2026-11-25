@@ -14,7 +14,7 @@
     },
     "route-ready": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-ready.png",
-      "sha256": "a005385a9d84772c5a2387d331c4804faf590815fcdc28991c14de8ef799ec29"
+      "sha256": "5885bbdf8e1a60dcfec6488787541b05b2d39e9ce8e09c766aabf6f54ef98e34"
     },
     "gallery-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-running.png",
@@ -22,7 +22,7 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-running.png",
-      "sha256": "1b8067902085c478bb0d940f275c001a579a658069e5d55aabc508d80fb42a65"
+      "sha256": "7736c6e20a162c979ef30a07cfc862a47a74063610d386d61af10831127cd847"
     },
     "gallery-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-paused.png",
@@ -30,7 +30,7 @@
     },
     "route-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-paused.png",
-      "sha256": "be662c0013a618bffb07e0745249f9434f6d4a15186a608fb45960d844eefb86"
+      "sha256": "36faf00d55cf77ab890b33fe6a2ebccf9488b435d715146509e4d638664ef29e"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-ended.png",
@@ -38,15 +38,15 @@
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-ended.png",
-      "sha256": "c0a077ae18f6bb8a645cc80fd1f2687ab71d02586e7c1eb39f37db622db84210"
+      "sha256": "72d9be11bcef637ea9cef6f857dee79b06bc4f8c34298e4852e7985752e69e5d"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-log.png",
-      "sha256": "ed17150b9750b1235eab55fd39477006829069837f6e9758aa4cfc498bab8576"
+      "sha256": "26b1e67851b942f36672ccbda91995655d8a24a03372f0060a0acaef15305b1e"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-log.png",
-      "sha256": "ea67d01a47484349ad449e5556196efedee3c2510fac4ef14974226e341166d4"
+      "sha256": "18fa783e27f9f278cfd8666e4ac4a25f327a789bb9530ad2d9f3da0eae1cdc9e"
     }
   },
   "lines": {
@@ -148,12 +148,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -262,12 +257,7 @@
         "—",
         "REPS INTO THE NEXT ROUND",
         "—",
-        "BURPEE",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "KB SWING",
-        "COMPLETED IN NEXT ROUND",
-        "REPS",
         "WEIGHT USED",
         "LB",
         "EFFORT · OPTIONAL",
@@ -307,18 +297,18 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
-        "running": 88,
-        "paused": 87,
-        "ended": 81,
-        "log": 91
+        "ready": 71,
+        "running": 94,
+        "paused": 93,
+        "ended": 87,
+        "log": 77
       },
       "route": {
-        "ready": 65,
-        "running": 88,
-        "paused": 87,
-        "ended": 81,
-        "log": 91
+        "ready": 71,
+        "running": 94,
+        "paused": 93,
+        "ended": 87,
+        "log": 77
       }
     },
     "parts": {
@@ -356,7 +346,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 584.5
         }
       },
       "route": {
@@ -393,7 +383,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 788.5
+          "height": 584.5
         }
       }
     },

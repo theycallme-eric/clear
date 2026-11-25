@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "e2e/refinement/task-105-parity.spec.ts",
-      "sha256": "7147b3062570ff09a438108c6fca6b7d602002de82ca5afad3fe1242a64289b4"
+      "sha256": "9b8472d0811591c65f4d768de9bcaaf0e4ef3efe42d521d4900a1daee453dc54"
     }
   ],
   "requiredCases": [

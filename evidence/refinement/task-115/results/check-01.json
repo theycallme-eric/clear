@@ -1,0 +1,100 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-115",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "node-test",
+  "runnerVersion": null,
+  "command": [
+    "node",
+    "--test",
+    "scripts/refinement/task-115-closure.test.mjs"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-115/required-cases.json",
+    "sha256": "35ad95d094b446e82965a9be5f4ff49ed73d5b9fb85eb778e8b5e4d22a7c7ae3"
+  },
+  "targets": [
+    {
+      "path": "scripts/refinement/task-115-closure.test.mjs",
+      "sha256": "696feca635771a3bc45eda65ef92e339a016098c5ffeb744a55385bc5fe6a51d"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 A3 body record and aggregate evidence closure > TASK-AC-B1DAECFD68F1 the A3 body record names base a6cd01c9, gallery bec4454, Foundation 0.14.3, and main 03087f7, gallery eded158 and the old build 181e580 as history only",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 A3 body record and aggregate evidence closure > AC-GAL-07 TASK-AC-B1DAECFD68F1 the final evidence check consumes the receipts of TASK-103 to TASK-114 and TASK-116 to TASK-121",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 A3 body record and aggregate evidence closure > TASK-AC-8E85446CC848 AC-R040-01 the branch still descends from a6cd01c9; the old build 181e580 is not merged and main carries none of this body",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 consumes TASK-121’s definition-record receipts > TASK-AC-99A513AC101C TASK-121’s receipt and the three definition-record checks are current and passing at the end",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 consumes TASK-121’s definition-record receipts > TASK-AC-8E85988C2B58 the UAT list names Q-007, every record claim TASK-121 retired and every definition-test assertion it re-pointed",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 body-level ledger rerun > TASK-AC-B1417172F706 every build test on 181e580 is carried, rewritten, ported or retired, none pending, deferred or unplaced, at a recorded tip",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 body-level ledger rerun > TASK-AC-B1417172F706 each shared helper a carried test reaches that differs from the build’s is rechecked and recorded with its result",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 body-level ledger rerun > TASK-AC-B43450BD688A the eleven S6 bodies dropped nothing the later task owns",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 end-of-run comparison and recaptures > TASK-AC-495C349983AC the comparison page shows all 26 states at 320 and 390 beside their real routes, each capture re-hashed and every difference labelled or listed as unintended",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 end-of-run comparison and recaptures > AC-R039-02 the recaptured owners’ parity receipts are current and passing, and every capture they name is in the store with its hash",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 end-of-run comparison and recaptures > TASK-AC-C8FAD22523F1 the whole e2e run is recorded: every one of the 63 old-build e2e files and every failure has an outcome",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 UAT list for Eric > TASK-AC-5BC37E04FCFD the UAT list names every R7-2 and R7-3 retirement with what supersedes it, and the carried “does not call an early finish a cap” body",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/task-115-closure.test.mjs",
+      "name": "TASK-115 UAT list for Eric > TASK-AC-8E85988C2B58 the UAT list carries the owner items first: the Focus control’s name, the Echo inside dialogs, X5 and the retirements to confirm",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 13
+  },
+  "problems": []
+}

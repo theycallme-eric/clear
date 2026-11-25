@@ -1,0 +1,95 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "set-correction",
+  "title": "Saved-set correction",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/set-correction-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/set-correction-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/set-correction-phone-320.json",
+      "receiptSha256": "ab82bc07bb3dba8069f909dfbabace2164f35de4ed20ca0931305af401158eec",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/set-correction-phone-320-gallery.png",
+              "sha256": "ce784c7e4a2702e3bef91a9daf81ba017ad4d338244a384cb24ce14a794da88d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/set-correction-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/set-correction-phone-320-route.png",
+              "sha256": "2a70fcbff40f7262eabbc8f7eb20b7497c554156e39ac2f6108e136d0e0c1c26",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/set-correction-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/set-correction-phone-320.json",
+      "receiptSha256": "cc02704bcd010c279892c536ebff927f5554fe285b4345bd6cbf1c4f281d705a",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-card.png",
+              "sha256": "b745b35bcff2ae866d0332e0a3ebb31d4621d2cb9ee98ca651d6d7623b26424d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-card.png",
+              "sha256": "63ffee63be1642cbd5f3101a931c81e0d3496d8dd9730c8e9a8f93e4b57cf731",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-open.png",
+              "sha256": "4c8392ad5c31f92f7258ab6a51110af37bb2c168e4287cc9440d58c01883037e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-open.png",
+              "sha256": "6dc98541a5b2e721e2eddb7c9867ed35d7901a1fb4981136c36e96d025d2fc52",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

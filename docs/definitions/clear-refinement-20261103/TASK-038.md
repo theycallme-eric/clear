@@ -54,7 +54,7 @@ quote.
 - `repo:src/dev/gallery-refinement-cards-data.ts` sha256 `af11d792ca463da0bc92cbba9ece1bd3d3894638110d835a88f0eab2683974f1`. S17: the cards state's synthetic blocks and their movement slugs.
 - `repo:src/dev/gallery-refinement-coaching-data.ts` sha256 `7024eaa2eb94e1d57e1360cf7f3096d14daf1f14abdca655e0578df6b57e46a5`. S18: the gallery's in-memory library answers.
 - `repo:src/dev/gallery-refinement-runtime.tsx` sha256 `d5b91ed60b068a4c82c5ea0ae64d5f82e4f756ef8aab4924c1d28f8e7fe6b434`. S19: the gallery's memory-only clients (`GalleryRuntime`; the removed `src/dev/gallery-refinement-coaching.tsx` held them, with the register's states specimen, before).
-- `repo:src/dev/gallery-refinement-scenes.tsx` sha256 `621ecdfb33a7b76f22b2dbec5824346a64a276b730d5be74316b7c6addce0e78`. S20: the cards state (`GalleryMovementCards`) draws the real timed cards (the removed `src/dev/gallery-refinement-cards.tsx` drew the old cards state).
+- `repo:src/dev/gallery-refinement-scenes.tsx` sha256 `91f26a573832e735f95fa66fb85e782be36e4ba1419015db0499e31d431ee6a5`. S20: the cards state (`GalleryMovementCards`) draws the real timed cards (the removed `src/dev/gallery-refinement-cards.tsx` drew the old cards state).
 - `repo:src/test/grouped-coaching-fixture.ts` sha256 `49d4499d789d50e12bdd7b4b122e853c48dd87ae286bef5573c63aab37c458d9`. S21: the shared test fixture's per-slug library answers.
 - `repo:src/ui/group-exercise-coaching.test.tsx` sha256 `28c929c187071a0d7dc43fb4c630063e38ef8c94ba7778eab4bff49bfa2e826d`. S22: TASK-005's grouped-disclosure cases.
 - `repo:src/ui/exercise-coaching.test.tsx` sha256 `20a6fa9b0b819e0ae0964b956304b16a0e777237c84e6dc9fbe61873e09b2a65`. S23: the standalone panel's cases.

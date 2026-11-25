@@ -14,15 +14,15 @@
     },
     "route-card": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-route-card.png",
-      "sha256": "893387029dcbed2ceb6e30603aea34ae90d708898318e5c18bad2c69cee1172f"
+      "sha256": "347192ea97f90e5e0e7348c36efdc4bb1a057333788c17b77365c95c5cb45605"
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-gallery-open.png",
-      "sha256": "62a88964e3961986a2c1cf02bbbfb569ee970a82e7b14a315ae755b1ef61c1d7"
+      "sha256": "2bee0dab2a0d32faa8b0d520a701b4354d1040a87b759d65ccfc1814a2511a71"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-320-route-open.png",
-      "sha256": "47d6154a10eced448053692eca9b2dca0c92cb2510ba1bf575c4717f4c5fdbbc"
+      "sha256": "e72240308a8633b34876fd5b5c04804a2408d670757b41f1d4507603ddfde04a"
     }
   },
   "lines": {
@@ -139,7 +139,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 489
+          "height": 449
         }
       },
       "route": {
@@ -155,7 +155,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 489
+          "height": 449
         }
       }
     },

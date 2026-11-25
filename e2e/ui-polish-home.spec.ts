@@ -295,7 +295,9 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 320, height: 568 }
     await expect(duration).toHaveValue('37')
     await duration.fill('41')
     await expect(duration).toHaveValue('41')
-    await expect(page.getByRole('button', { name: /^Focus:/ })).toBeVisible()
+    // Round 7 names the Focus control "Change focus" (TASK-119, round-07 S4; its value is the
+    // control's text). TASK-115, 2026-11-23 test-update rule: the build read /^Focus:/.
+    await expect(page.getByRole('button', { name: 'Change focus', exact: true })).toBeVisible()
     await checkA11y()
 
     // A new synthetic read after an ordinary reload checks the existing

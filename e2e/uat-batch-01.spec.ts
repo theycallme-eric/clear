@@ -188,7 +188,9 @@ test('Generate and Settings follow the contained-form and measured-footer ruling
   // the screen title sits on the atmosphere.
   const formCard = page.locator('main .clr-card')
   await expect(formCard).toHaveCount(1)
-  await expect(formCard.getByText('Goal:')).toBeVisible()
+  // Round 7 states the Goal as a term over its value, with no colon (TASK-119; TASK-115,
+  // 2026-11-23 test-update rule: the build read 'Goal:').
+  await expect(formCard.getByText('Goal', { exact: true })).toBeVisible()
   await expect(formCard.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible()
   await expect(formCard.getByRole('slider')).toBeVisible()
   await expect(formCard.getByLabel('Place')).toHaveValue(LOCATION.id)

@@ -24,19 +24,19 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-open.png",
-      "sha256": "c1128ce5a7be753ee162a3988a1b5d46e76f90015131882bc1e07871fe1fcb76"
+      "sha256": "4c07c5c68ddfdf04022a754f5f1af019643a82a28f3eb87703f92bab338a7f11"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-open.png",
-      "sha256": "b3e4f91f0fb342a42801cda21e39d4569e8556b63807a8554c958807d57c5beb"
+      "sha256": "f0b54636d24b40c9eb75dec0a87a2462592d5026708712907eb8367debbfd7c9"
     },
     "gallery-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-gallery-reopened.png",
-      "sha256": "d7f576f7ebbb1511361419fd759cac6eea2095de205fd757a5cb25085ab654d2"
+      "sha256": "229fe5b96f1f1f3968a066143a32647fd59be177d18427281bc24d79014c4bc4"
     },
     "route-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/workout-feedback-phone-320-route-reopened.png",
-      "sha256": "2d402c712ee3e76f34eea8ff3444007d35b1a650140de643e331a27e0fe85b02"
+      "sha256": "b2cdfc5a2edf0063b2386141a09080725f361cff39335ee6d78ad919be9daacf"
     }
   },
   "lines": {
@@ -171,14 +171,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 370.5
+          "height": 326.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 426.5
+          "height": 382.5
         }
       },
       "route": {
@@ -194,14 +194,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 370.5
+          "height": 326.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 426.5
+          "height": 382.5
         }
       }
     },

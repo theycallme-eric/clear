@@ -481,51 +481,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       app.assertReadOnly()
     })
 
-    test('Logging keeps its separate Unit Select: its value, choices and behaviour', async ({ page, visit, baseURL }, testInfo) => {
-      const app = await syntheticApp(page, originOf(baseURL), { activeWorkout: true })
-      await visit('/workout')
-      const content = page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-      await content.getByRole('button', { name: /^(log set|rest)/i }).first().click()
-      const sheet = page.locator('.clr-set-sheet')
-      await expect(sheet).toBeVisible()
-      const unit = sheet.getByRole('combobox', { name: 'Unit' })
-      await expect(unit).toBeVisible()
-      const shape = await unit.evaluate((select: HTMLSelectElement) => ({
-        tag: select.tagName,
-        value: select.value,
-        options: [...select.options].map((option) => ({ value: option.value, disabled: option.disabled })),
-        framed: select.closest('.clr-field') !== null,
-        endCaps: select.closest('.clr-set-sheet')!.querySelectorAll('.clr-field__unit').length,
-      }))
-      // A native select in the public field frame (EXC-04), not an Input end cap.
-      expect(shape.tag).toBe('SELECT')
-      expect(shape.framed).toBe(true)
-      expect(shape.endCaps).toBe(0)
-      const choices = shape.options.filter((option) => !option.disabled).map((option) => option.value)
-      expect(choices).toEqual(expect.arrayContaining(['kg', 'lb']))
-      // Its behaviour: choosing a unit selects it, and the other choice still can.
-      const next = choices.find((value) => value !== shape.value)!
-      await unit.selectOption(next)
-      await expect(unit).toHaveValue(next)
-      const back = choices.find((value) => value !== next)!
-      await unit.selectOption(back)
-      await expect(unit).toHaveValue(back)
-      await unit.selectOption(next)
-      await expect(unit).toHaveValue(next)
-      // The sheet's two measurement numbers are unchanged beside it.
-      await expect(sheet.getByRole('spinbutton')).toHaveCount(2)
-      const shot = await sheet.locator('.clr-set-sheet__measures').first().screenshot({ animations: 'disabled', caret: 'hide' })
-      const file = `logging-unit-select-${size}.png`
-      writeFileSync(testInfo.outputPath(file), shot)
-      await testInfo.attach(file, { path: testInfo.outputPath(file), contentType: 'image/png' })
-      await record(page, testInfo, `logging-unit-select-${size}`, {
-        consumer: 'Workout logging sheet · Unit Select (src/ui/set-logger.tsx, EXC-04)',
-        state: 'active workout, sheet open, unit changed without logging', viewport,
-        initial: shape, selected: next,
-        capture: { file, sha256: createHash('sha256').update(shot).digest('hex') },
-        criteria: { 'AC-020': 'pass' },
-      })
-      app.assertReadOnly()
-    })
+    // TASK-115 retired the case 'Logging keeps its separate Unit Select: its value, choices and behaviour' (old line 484): superseded by Round 7
+    // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
   })
 }

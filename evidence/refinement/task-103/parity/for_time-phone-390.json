@@ -12,7 +12,7 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-gallery-log.png",
-      "sha256": "669948e0038eb31d3d1c11f93e08c41f8348e18048b5367849fd22f9abeceb0a"
+      "sha256": "5ea83f9e19acbd1f3e7cbc9690a51c24bc10db581e0920035a0bf8d727423875"
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-route-ready.png",
@@ -20,7 +20,7 @@
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-route-log.png",
-      "sha256": "0ee13e106efb7d38d74901eb640121ebaa969815b621757ca460deecd69c9035"
+      "sha256": "1153bfd1c6e74986e1005ddb9b037d9a742f573788b42255f185a5cb67679691"
     }
   },
   "lines": {
@@ -36,6 +36,7 @@
         "40 reps",
         "START FOR TIME",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -96,6 +97,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -114,6 +116,7 @@
         "40 reps",
         "START FOR TIME",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -174,6 +177,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -191,14 +195,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 64,
+        "ready": 71,
         "log": 78,
-        "ended": 80
+        "ended": 87
       },
       "route": {
-        "ready": 64,
+        "ready": 71,
         "log": 78,
-        "ended": 80
+        "ended": 87
       }
     },
     "parts": {
@@ -215,7 +219,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 654.5
+          "height": 666.5
         },
         "ended": {
           "key": "(part)#0",
@@ -238,7 +242,7 @@
           "x": 0,
           "y": 0,
           "width": 334,
-          "height": 654.5
+          "height": 666.5
         },
         "ended": {
           "key": "(part)#0",

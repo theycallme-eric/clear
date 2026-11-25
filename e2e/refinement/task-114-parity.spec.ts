@@ -346,6 +346,33 @@ async function settle(page: Page) {
     .every((animation) => animation.playState !== 'running'))
 }
 
+/**
+ * The route's page, settled (timing only; TASK-115 repair 4, owner decision D4
+ * of 2026-11-24). Held as soon as <main> showed, /summary's content could
+ * still be arriving: the control was then scrolled to while the page laid it
+ * out, so the scroll offset behind the dialog (seen through its edges and
+ * chamfer), the drawn scroll bar and the CRT lines differed by load time, and
+ * workout-feedback at 320 drew two or three ways. The case now waits for the
+ * control it presses first, then for fonts, entrance motion and every scroll
+ * height to hold still across two reads 250 ms apart, before and after the
+ * clock is held.
+ */
+async function settleRoute(page: Page) {
+  await settle(page)
+  const layout = () => page.evaluate(() => JSON.stringify([
+    document.querySelectorAll('*').length,
+    ...[...document.querySelectorAll('*')].filter((element) => element.scrollHeight > element.clientHeight + 1)
+      .map((element) => [element.scrollHeight, element.clientHeight]),
+  ]))
+  let previous = await layout()
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    await page.waitForTimeout(250)
+    const next = await layout()
+    if (next === previous) return
+    previous = next
+  }
+}
+
 /** The visible words of a part, line by line, read once they hold still. */
 async function linesOf(target: Locator): Promise<string[]> {
   const read = async () => (await target.evaluate((element) => (element as HTMLElement).innerText))
@@ -592,7 +619,16 @@ for (const context of Object.keys(CONTEXTS) as Context[]) {
       const app = await syntheticApp(page, snapshot, shape.route === '/workout' ? 'workout' : 'done')
       await visit(shape.route)
       const main = page.locator('main#main')
+      await expect(main).toBeVisible()
+      // The control this side presses first is drawn: the route's data has arrived.
+      await expect(shape.timed !== undefined ? main.getByRole('button', { name: /^Start /, exact: false }).first()
+        : context === 'circuit-round' ? main.getByRole('button', { name: 'Start round 1', exact: true })
+          : context === 'movement-note' ? main.getByRole('button', { name: /^Coaching and notes/ }).first()
+            : main.getByRole('button', { name: shape.drive, exact: true }).first()).toBeVisible()
+      await settleRoute(page)
       await page.clock.pauseAt(ENTRY + 600_000)
+      // What the jump to the held instant set off (timers due, a re-render) finishes before anything is pressed.
+      await settleRoute(page)
       if (shape.timed !== undefined) {
         const start = main.getByRole('button', { name: /^Start /, exact: false }).first()
         await start.evaluate((node) => node.scrollIntoView({ block: 'center' }))
@@ -606,6 +642,8 @@ for (const context of Object.keys(CONTEXTS) as Context[]) {
         await main.getByRole('button', { name: 'Finish round 1', exact: true }).click()
       } else if (context === 'movement-note') {
         await main.getByRole('button', { name: /^Coaching and notes/ }).first().click()
+        // The opened coaching laid out before Add note is scrolled to and pressed (timing only, D4).
+        await settleRoute(page)
         await main.getByRole('button', { name: /^Add note/ }).first().click()
       } else {
         const control = main.getByRole('button', { name: shape.drive, exact: true }).first()

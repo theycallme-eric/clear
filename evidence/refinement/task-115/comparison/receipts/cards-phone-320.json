@@ -1,0 +1,579 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "cards",
+  "title": "Movement cards and shared header",
+  "width": 320,
+  "primaryOwner": "TASK-110",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/cards-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/cards-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-110",
+      "primary": true,
+      "receipt": "evidence/refinement/task-110/parity/cards-phone-320.json",
+      "receiptSha256": "0a4f81b7198b034489166e9dd5fbe3cc7998c16689d1cac8601d800330b5feb1",
+      "provenance": "taken by TASK-110's own run; receipt bytes as committed at d7d0624d",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "emom:ready",
+          "gallery": [
+            {
+              "key": "gallery:emom:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/cards-emom-phone-320-gallery-ready.png",
+              "sha256": "59f0ec676a9991434edb26124ec3974d1f8d8f2a73b05010012e060bf7ab2a95",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/cards-emom-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:emom:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/cards-emom-phone-320-route-ready.png",
+              "sha256": "985d67bb7298bf5d156dec04665519a9279377b18ee26346a7752057458a296e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/cards-emom-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap:ready",
+          "gallery": [
+            {
+              "key": "gallery:amrap:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/cards-amrap-phone-320-gallery-ready.png",
+              "sha256": "79b4d3a3dce10220ac73297dfd79ad37c6886cdfe834cc860ce1caba93d54d06",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/cards-amrap-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:amrap:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/cards-amrap-phone-320-route-ready.png",
+              "sha256": "e45b28be65d39f54d5f9ee49b1932d11bfa7c66cf7c6f24bbabf39a15ed7ea89",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/cards-amrap-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "for_time:ready",
+          "gallery": [
+            {
+              "key": "gallery:for_time:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/cards-for_time-phone-320-gallery-ready.png",
+              "sha256": "707166f7663547aaa578d55c7697afbfd7bf9f8bee43102d989e2c516087e44d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/cards-for_time-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:for_time:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/cards-for_time-phone-320-route-ready.png",
+              "sha256": "e6b1ad49fd6e18ceac713fff8f30b19422cd05fe18829ebcf89433c260c9026a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/cards-for_time-phone-320-route-ready.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-108",
+      "primary": false,
+      "receipt": "evidence/refinement/task-108/parity/cards-phone-320.json",
+      "receiptSha256": "e441ef573f92b4732aacbac8ac6a47d18f57dd353c2cc4e4f2556925c1deb0ce",
+      "provenance": "taken by TASK-108's own run; receipt bytes as committed at c88c173b",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "emom:ready",
+          "gallery": [
+            {
+              "key": "gallery:emom:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-gallery-ready.png",
+              "sha256": "59f0ec676a9991434edb26124ec3974d1f8d8f2a73b05010012e060bf7ab2a95",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:emom:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-route-ready.png",
+              "sha256": "985d67bb7298bf5d156dec04665519a9279377b18ee26346a7752057458a296e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap:ready",
+          "gallery": [
+            {
+              "key": "gallery:amrap:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-gallery-ready.png",
+              "sha256": "79b4d3a3dce10220ac73297dfd79ad37c6886cdfe834cc860ce1caba93d54d06",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:amrap:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-route-ready.png",
+              "sha256": "e45b28be65d39f54d5f9ee49b1932d11bfa7c66cf7c6f24bbabf39a15ed7ea89",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "for_time:ready",
+          "gallery": [
+            {
+              "key": "gallery:for_time:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-gallery-ready.png",
+              "sha256": "707166f7663547aaa578d55c7697afbfd7bf9f8bee43102d989e2c516087e44d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:for_time:ready",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-route-ready.png",
+              "sha256": "e6b1ad49fd6e18ceac713fff8f30b19422cd05fe18829ebcf89433c260c9026a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "emom:running",
+          "gallery": [
+            {
+              "key": "gallery:emom:running",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-gallery-running.png",
+              "sha256": "508abcb5d470d76a5c14cca9d4afb82f4f40b6da692d37d25990fe52ff7f38d6",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:emom:running",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-route-running.png",
+              "sha256": "d2de5904061c007e0a433af39dc7183cad098a8a8bdd127c968d625bfd6b2a7d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-emom-phone-320-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap:running",
+          "gallery": [
+            {
+              "key": "gallery:amrap:running",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-gallery-running.png",
+              "sha256": "ed653887cc9505d8de209fcd2814e7489b4dab7acfd3aff1d2c7b75234cef3dd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:amrap:running",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-route-running.png",
+              "sha256": "057094ed62bd790455260c41c937079ce7d0a33f7e8019f4df10bf7a136362aa",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-amrap-phone-320-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "for_time:running",
+          "gallery": [
+            {
+              "key": "gallery:for_time:running",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-gallery-running.png",
+              "sha256": "e15f65d9bd048e250f87e2487318332bbd0c892bd7d747f602177f40ba3ad8ab",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:for_time:running",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-route-running.png",
+              "sha256": "ade060662bbd9ffc71124895ff132cd23820cbc58287056c90b3c96643d25352",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/cards-for_time-phone-320-route-running.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-109",
+      "primary": false,
+      "receipt": "evidence/refinement/task-109/parity/cards-phone-320.json",
+      "receiptSha256": "1bfa443a3b3211c79a6760a8ed6b16ec8b0dd6ec0e260e400111c9b623f919db",
+      "provenance": "taken by TASK-109's own run; receipt bytes as committed at 971c2623",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "emom-closed",
+          "gallery": [
+            {
+              "key": "gallery-emom-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-emom-closed.png",
+              "sha256": "ce0d053363de8cbc05d94338b75c597a2c62d5b126690aff5ebda36c502af1bd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-emom-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-emom-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-emom-closed.png",
+              "sha256": "6f3f1713bf0036f10e1e282e93dae80bc9e6a264ce2e778905818769890a7f18",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-emom-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "emom-open",
+          "gallery": [
+            {
+              "key": "gallery-emom-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-emom-open.png",
+              "sha256": "0f87228d65e767bc06bcb217e15ee5da99883e903e5db8fb8a5e4f78265c0550",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-emom-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-emom-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-emom-open.png",
+              "sha256": "8ac3be8282082f724f2d0e3cd86ba538370ff831a4e387e2c470d469bbe3cdb7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-emom-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap-closed",
+          "gallery": [
+            {
+              "key": "gallery-amrap-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-amrap-closed.png",
+              "sha256": "f46d22c90517c1408c6cd62e1b7b54483f51a61319ac1f5e1b357b79d02bc94f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-amrap-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-amrap-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-amrap-closed.png",
+              "sha256": "e742ca24a618e26dd3198c2773e2872b1eccf47e02ce6e5e35cf9f47b0d85ba7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-amrap-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap-open",
+          "gallery": [
+            {
+              "key": "gallery-amrap-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-amrap-open.png",
+              "sha256": "629142d4ae851d4e2aa102c5b318e8fd92da2171978e82d526609662eb2cd844",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-amrap-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-amrap-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-amrap-open.png",
+              "sha256": "6b0a2303f7e8e0a1fcc55e2f5dee5904487b75189ab8d7810ac50b0d9ef449d5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-amrap-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "for-time-closed",
+          "gallery": [
+            {
+              "key": "gallery-for-time-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-for-time-closed.png",
+              "sha256": "e0144ab3648bc84633d8b5f4e860b10c460b71c92f4a3497c28ad47788f0e39b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-for-time-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-for-time-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-for-time-closed.png",
+              "sha256": "46c5002589ad1b20f15eecff899693cbdff6026548f77badd04a2317e364ec5b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-for-time-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "for-time-open",
+          "gallery": [
+            {
+              "key": "gallery-for-time-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-for-time-open.png",
+              "sha256": "e313d259269c4226785409489c237e1c8bbd51e032448c9dee33ece8484e7b71",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-gallery-for-time-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-for-time-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-for-time-open.png",
+              "sha256": "8e9d51d7190fb1aabdc05a793ca7a02c1a81cb5df7fe7830b37594b209d47cde",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-320-route-for-time-open.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-112",
+      "primary": false,
+      "receipt": "evidence/refinement/task-112/parity/cards-phone-320.json",
+      "receiptSha256": "a322860e1c703c844f40f2e1f09d5ce68a8a502c70aee39d3701f01753bd2280",
+      "provenance": "taken by TASK-112's own run; receipt bytes as committed at e0da434e",
+      "route": "/review, /workout",
+      "moments": [
+        {
+          "moment": "emom",
+          "gallery": [
+            {
+              "key": "gallery:emom",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-gallery-rows.png",
+              "sha256": "3962e593a0659ab32976bf7f20108faa2b49be2b8177c7fd7757f9cbace96c50",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-gallery-rows.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:emom",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-review-rows.png",
+              "sha256": "8b400cb7fb4c818183fe81d0d17d194cf431f259ab3333bacbc4e583094d04c1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-review-rows.png"
+            },
+            {
+              "key": "workout:emom",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-workout-rows.png",
+              "sha256": "12dbdea193efa07935f11091db92ebefb9920f46bcc38d4f80395b30162c5ae0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-320-workout-rows.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap",
+          "gallery": [
+            {
+              "key": "gallery:amrap",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-gallery-rows.png",
+              "sha256": "21b233596221bfa43a24c66f11f1e4f354e97489227f459cc436c7d93b3701e0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-gallery-rows.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:amrap",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-review-rows.png",
+              "sha256": "45ebab1b30869d75bef728f839f0560646bad68b5500c1e396884b229a7b9ef4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-review-rows.png"
+            },
+            {
+              "key": "workout:amrap",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-workout-rows.png",
+              "sha256": "530b8c874e639f4f4389fc5ad93785f7ae35c85a14059767d7363dce5ad01183",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-320-workout-rows.png"
+            }
+          ]
+        },
+        {
+          "moment": "for_time",
+          "gallery": [
+            {
+              "key": "gallery:for_time",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-gallery-rows.png",
+              "sha256": "716ded0a6a2c8bb1b2c38e9639dee3bcb892f50b375476b3213f685d034606d1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-gallery-rows.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:for_time",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-review-rows.png",
+              "sha256": "cd1273bdd96cad25ed57944c7bc47262260ba143153d31b2726ea4284e2fdb0c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-review-rows.png"
+            },
+            {
+              "key": "workout:for_time",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-workout-rows.png",
+              "sha256": "fc0f0980dd9f7b68009b33175069c517b888c77f725b5350b413eeaff92a3ed6",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-320-workout-rows.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-9A47DF868BD4, TASK-AC-2E6734369AC5",
+      "text": "BlockPanel takes `detailLine`: the badge names the format alone and the block's size it leaves out (rounds, scheme) is read once, on a `clr-timed-meta` line directly under the header (the line Review and the timed flow already draw). Only the circuit asks for it."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-2E6734369AC5, TASK-AC-9A47DF868BD4",
+      "text": "The circuit's badge is format-only (`CIRCUIT`, was `CIRCUIT · 3 ROUNDS` outside the product presentation) and its prescribed rounds (`3 ROUNDS`) are read on the line under the header; under the product presentation Round 7 had dropped the rounds from the card before a round was recorded. The circuit-round state's card gains that one line."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-4BEA11242321, AC-R003-03, TASK-AC-9A47DF868BD4",
+      "text": "Each live row's name, compact equipment and prescribed load are `liveMovementReadings` (the load-guidance read model's target through `loadText`), drawn exactly as before. The prescription line carries `data-structure-meta` and, for an EMOM with a rest window, `Ns rest at the end of each minute` after its window; the cards state's EMOM prescribes no rest, so its line is unchanged."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-4BEA11242321",
+      "text": "The live ladder's summary line reads its name and load through `liveMovementReadings`, drawn exactly as before. Not in a state compared here."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-2E6734369AC5",
+      "text": "SectionHeader's full (non-compact) structure list names each block by its format alone (`StructureBadge formatOnly`). The route and the accepted gallery draw the compact navigator, which has no list; the registry's full-header specimen holds no blocks, so nothing drawn changes."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "AC-R008-02",
+      "text": "Every urgent timer and the one aura share one warning loop and one phase: each urgent clock claims the view's one urgent loop, every urgent timer breathes while any claim runs (bec4454 stilled a second urgent timer), the first draws the one edge, and each new breathe is pinned to the document timeline's epoch. Fed by each clock's deadline adapter."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "AC-R008-01",
+      "text": "The urgent timer breathes on the edge's own rule — the same keyframes, 1.5 s period and easing (.2/.8/.2), a steady .5 when still or under reduced motion — in place of the shipped four-second stepped micro-pulse on the timer. The urgency state's urgent clock breathes with its edge; under reduced motion both hold .5."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "TimerFrame carries the breathe on its `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, the warning loop) in place of `clr-pulse-micro` on its wrapper; CountdownBar and RestTimerBar read the rest's deadline (`restDeadline`): the low colour, the fill's colour and \"Final 10 seconds\" from ten seconds, the breathe on the rest's timer (not the card) and the edge from five."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-A5D62CC0272B",
+      "text": "The compact SectionHeader reads \"Section N / M · status\" to assistive technology, visually hidden, and its visible \"N / M\" is decoration of the trigger (`aria-hidden`), so the trigger's one name is \"All sections\". Nothing drawn changes."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "Each format clock's warning reads its adapter (EMOM minute, AMRAP window, race cap): held while paused, none once ended. The low colour at ten and the edge at five are as before; the breathe is the change above."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "text": "The circuit's round rest is one whole TimerFrame (the app's Card in the timer role) fed by `circuitRestDeadline`, in place of the package's TimerDisplay whose stepped micro-pulse ran through the last ten seconds. No state compared here draws a circuit; the circuit-round state shows it in the same commit."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "text": "A scheduled ladder's interval countdown is one whole TimerFrame fed by `scheduleIntervalDeadline`. No accepted state draws a schedule."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "The movement countdown reads `movementCountdownDeadline`; its warning is unchanged but for the breathe above."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "CountdownDisplay takes an optional deadline from its consumer; its drawing is unchanged (the route no longer draws it)."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "The adapters read only the fields of a view they need, so the route's flow feeds its attempt through them. Nothing drawn changes."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-DCFC4C79B85A",
+      "text": "Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading. Not a gallery state."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-8E1E91D4F4AA",
+      "text": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52, AC-R034-02, AC-R022-02",
+      "text": "PreparationGuide also draws TASK-034’s reading in its four states (loading, error with retry, missing, ready); the ready card names its list (“<title> movements”) and states the time with approximateDurationText (identical for the sample); its clock is the session’s (usePreparationClock: the PreparationClockProvider’s, the component’s own in the gallery) with the shared warning from its own deadline and “Final 10 seconds” in the final ten. The gallery’s guide prop is unchanged."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-82B8F7A4EF0B, TASK-AC-C4EE3D4EC8F0",
+      "text": "GroupExerciseCoaching: each movement’s section is a role=group labelled by its heading (aria-labelledby), the sections and their guidance/note under HeadingSection levels; constants for the accepted label and the note openers. No box moves (gallery states compared at base and at this task: same words, same boxes)."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn in place by PreparationGuide from composedPreparationGuide; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52",
+      "text": "PreparationClockProvider around the shell; a Warm-up or Cooldown section draws PreparationGuide over persistedPreparationReading with its clock; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn by PreparationGuide over persistedPreparationReading of the record’s rows, its retry re-reading the record; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-9165CD7E97CC",
+      "text": "Comment only: `guides` is the gallery’s sample; the routes read TASK-034’s guides directly."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "gallery only — Min 1 · 12 reps — The live EMOM states each movement’s minute (its schedule); Review states the planned sets × reps."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-C06-01",
+      "text": "route only — SWAP — Review supplies Swap in the movement’s own slot; the live card never does."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "route only — 3 × 12 reps — Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "gallery only — 10 reps — The live AMRAP and For Time state one round’s or one pass’s reps; Review states the planned sets × reps."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-C06-01",
+      "text": "route only — SWAP — Review supplies Swap in the movement’s own slot; the live card never does."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "route only — 1 × 10 reps — Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "gallery only — 40 reps — The live AMRAP and For Time state one round’s or one pass’s reps; Review states the planned sets × reps."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-C06-01",
+      "text": "route only — SWAP — Review supplies Swap in the movement’s own slot; the live card never does."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "route only — 1 × 40 reps — Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+    }
+  ],
+  "unintended": []
+}

@@ -16,19 +16,19 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-log.png",
-      "sha256": "3cbe1eaa789f371f2fcd1aa9cebd3dc28cd38c20cbe69abec115b2409752458d"
+      "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-log.png",
-      "sha256": "dfa58bdbe30ad04a5b902cb3b2f96c1c3de96959c520af6e7c367dbe3c95966a"
+      "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17"
     },
     "galleryEntered": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-entered.png",
-      "sha256": "5df7bca006ff15fe92611661397aa0aa7cd1bac0186a571ce211bef526518a13"
+      "sha256": "2a6c0b6ba358f87f2404775011519692a90f5fd850e40f0999f0edc2f0a0b2b5"
     },
     "routeEntered": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-entered.png",
-      "sha256": "b764929eb28b8935aebac0664c870ba40d04407b1de8a51e989c756aed518b8d"
+      "sha256": "5398d6b6f45b8f701a3b984b83246df098d17d62d1a4077d0110148d4f449b68"
     }
   },
   "lines": {
@@ -374,16 +374,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 96,
+        "ready": 102,
         "log": 84,
         "entered": 100,
-        "ended": 112
+        "ended": 118
       },
       "route": {
-        "ready": 96,
+        "ready": 102,
         "log": 84,
         "entered": 100,
-        "ended": 112
+        "ended": 118
       }
     },
     "parts": {
@@ -407,7 +407,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 738.5
+          "height": 750.5
         },
         "ended": {
           "key": "(part)#0",
@@ -437,7 +437,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 738.5
+          "height": 750.5
         },
         "ended": {
           "key": "(part)#0",

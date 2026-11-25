@@ -1,0 +1,376 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "ladder-12",
+  "title": "Live ladder · 12 rounds",
+  "width": 320,
+  "primaryOwner": "TASK-105",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/ladder-12-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/ladder-12-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-105",
+      "primary": true,
+      "receipt": "evidence/refinement/task-105/parity/ladder-12-phone-320.json",
+      "receiptSha256": "9997cf2de19fcca04b435e26e9b729e3c36ea11efdef6ced261000291f0bc0e6",
+      "provenance": "retaken by TASK-115 through TASK-105's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-ready.png",
+              "sha256": "f4a22e4151d93e704736f64a8da89d13ac179e448b63045214d9684a3c3fb73c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-ready.png",
+              "sha256": "09dec0da874c1f283416f1443ace2471b0603a27fd34d2a0467a6f0c60ae3f61",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "running",
+          "gallery": [
+            {
+              "key": "gallery-running",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-running.png",
+              "sha256": "2e4db1fd5fce917d73263e2e9d0cd1e93878a2c4cea3008d03f5a612b307b622",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-running",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-running.png",
+              "sha256": "cc174f90524910ddfe964bfd8cfa7d6613c248b4307b55710c55217d221efba0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "paused",
+          "gallery": [
+            {
+              "key": "gallery-paused",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-paused.png",
+              "sha256": "23f38f8687e84d0d4afaa4f78d9675e6762e547efb8f4dc58ebbf1f2b11c7806",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-paused.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-paused",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-paused.png",
+              "sha256": "4f8eed1bbbba8b4ded77b2f5d5e496029263f39779a9f95a592ee14d0100002f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-paused.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-log.png",
+              "sha256": "a9e52da34f4ea1d333ce0fcba624bded8f02947c4df1d6caddf3bc4b00160499",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-log.png",
+              "sha256": "912ca61c10376d6a369d906acb79daf96f09b66c979d46d7e2c2d0437450ada2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "undone",
+          "gallery": [
+            {
+              "key": "gallery-undone",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-undone.png",
+              "sha256": "fc1d818cecfb81d3d7fe72bf19fff56f4506b8a019811c8293ce22feae580e3a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-undone.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-undone",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-undone.png",
+              "sha256": "07003653e73c1797d59c2582b2eb803d3ef2a5efc5183efb7bbf2040a619647d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-undone.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-ended.png",
+              "sha256": "581edec3a6deea629962401633a1196125b034855b38657eab1e13829cbb4d6d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-ended.png",
+              "sha256": "65e4fcdb42456d4c61b81faa17b59b57177e0c57ea4120874a19ec21af51897f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-12-phone-320-route-ended.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-104",
+      "primary": false,
+      "receipt": "evidence/refinement/task-104/parity/ladder-12-phone-320.json",
+      "receiptSha256": "8da22a642fb2d8977a84119a33ff85125ee98a4e76983bf787b4402475ca59bb",
+      "provenance": "retaken by TASK-115 through TASK-104's own guard; receipt bytes as committed at 5cd48e2b",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-ready.png",
+              "sha256": "5a73d021e72d4df13eb3c104459ac2b8548eeeecc49cfa447c95c5b143debfd5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-ready.png",
+              "sha256": "09dec0da874c1f283416f1443ace2471b0603a27fd34d2a0467a6f0c60ae3f61",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "running",
+          "gallery": [
+            {
+              "key": "gallery-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-running.png",
+              "sha256": "13de201eaf0c39f10d85c5a8cd7d184c765cac7d96fb39580ac38d4bda188ce5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-running.png",
+              "sha256": "8897cb5b22507682afb290d94018bd7c86ba2d99464554f65fcf2067a2e61ff3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "paused",
+          "gallery": [
+            {
+              "key": "gallery-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-paused.png",
+              "sha256": "379718eda2cca5f71fd6f29a9ec965184150b7740a768b492f665482810ff5b9",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-paused.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-paused.png",
+              "sha256": "2d90888f867c60b4f5cfa8c6d791b63c529b1655ea8d20d7625128e29c7d4cf9",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-paused.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-ended.png",
+              "sha256": "581edec3a6deea629962401633a1196125b034855b38657eab1e13829cbb4d6d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-ended.png",
+              "sha256": "713b4678ce6f065bc2719d297091b788c5d88964735aced370fdbcce6c476927",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-ended.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-log.png",
+              "sha256": "9c6f67b09930f5ed14a807ac5f2bc87c47c43e0862f961820b163a621e07dd40",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-log.png",
+              "sha256": "57d1744cc7219d6bacdc3aab2f5ce86185e2e6e4ff3f87d3ed3cc748ac0ef304",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/ladder-12-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-105",
+      "primary": false,
+      "receipt": "evidence/refinement/task-105/parity/review-phone-320.json",
+      "receiptSha256": "b5a7bc86ac9bef1e9e65e6276c15ffd7083372728adfb9db47f80474e71d3e60",
+      "provenance": "taken by TASK-105's own run; receipt bytes as committed at 1e0d2827",
+      "route": "/review",
+      "moments": [
+        {
+          "moment": "ladder-4",
+          "gallery": [
+            {
+              "key": "gallery-ladder-4",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-gallery-ladder-4.png",
+              "sha256": "c17efb972dc16d693593e19093284953351e7d4a314034ea69252b81664e877e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-gallery-ladder-4.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ladder-4",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-route-ladder-4.png",
+              "sha256": "b3d62182d3e3332acc08da1a45e24bf23bf67bf39cd48c0fb84d8e7f00842368",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-route-ladder-4.png"
+            }
+          ]
+        },
+        {
+          "moment": "ladder-12",
+          "gallery": [
+            {
+              "key": "gallery-ladder-12",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-gallery-ladder-12.png",
+              "sha256": "c2380113ffb83fd681d0e69f53cc62c8660b4861071af4076d9dd90dc18d25b3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-gallery-ladder-12.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ladder-12",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-route-ladder-12.png",
+              "sha256": "91fc4388d133d098d20ad7c78d59eae14bbd9da8b6b9a527e89216266f51f0d1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/review-phone-320-route-ladder-12.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C34-01, TASK-AC-C021DADA60B8",
+      "text": "A ladder whose rounds nobody has marked yet reads \"No rounds marked yet\" (live count and the log's count), not \"0 of N rounds completed\": nothing stated is not zero; an explicit zero still reads \"0 of N\"."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
+      "text": "Undo finish · resume ladder keeps its quiet style, its control height and the small button's own inline padding (`var(--spacing-300)`, so its focus frame clears the first letter); its row gives that padding back outside the box with a negative inline margin (`calc(var(--spacing-300) * -1)`), so its text starts at the rounds-completed count's left edge."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01, AC-R013-03, TASK-AC-C021DADA60B8",
+      "text": "The ladder log asks each movement's next-round amount only once a round is stated (zero included): with nothing stated there is no \"Completed in round 1\" field."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01",
+      "text": "A tap inside the live check-off's selection leaves only the rounds before it (the log tiles' rule), where it used to select through it."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "JOURNEY-012 (readable wrapping), AC-R013-02",
+      "text": "A live round tile keeps the read-only tile's declared inset (`var(--spacing-200)`) instead of the Chip's wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "text": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C33-01, AC-R013-02",
+      "text": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
+      "text": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C34-01, TASK-AC-C021DADA60B8",
+      "text": "A ladder whose rounds nobody has marked yet reads \"No rounds marked yet\" (live count and the log's count), not \"0 of N rounds completed\": nothing stated is not zero; an explicit zero still reads \"0 of N\"."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
+      "text": "Undo finish · resume ladder keeps its quiet style, its control height and the small button's own inline padding (`var(--spacing-300)`, so its focus frame clears the first letter); its row gives that padding back outside the box with a negative inline margin (`calc(var(--spacing-300) * -1)`), so its text starts at the rounds-completed count's left edge."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01, AC-R013-03, TASK-AC-C021DADA60B8",
+      "text": "The ladder log asks each movement's next-round amount only once a round is stated (zero included): with nothing stated there is no \"Completed in round 1\" field."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01",
+      "text": "A tap inside the live check-off's selection leaves only the rounds before it (the log tiles' rule), where it used to select through it."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "JOURNEY-012 (readable wrapping), AC-R013-02",
+      "text": "A live round tile keeps the read-only tile's declared inset (`var(--spacing-200)`) instead of the Chip's wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "text": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C33-01, AC-R013-02",
+      "text": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
+      "text": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder."
+    }
+  ],
+  "unintended": []
+}

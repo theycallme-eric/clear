@@ -14,7 +14,7 @@
     },
     "route-ready": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-ready.png",
-      "sha256": "1c03506066ddfbc80f3c0ae743723ac81d481a4dc9d69bae93ec7a92e2204e14"
+      "sha256": "1407073fb2ee89956836709e864dabe6b1a40f6b2b48ddb62df7513ab211ff85"
     },
     "gallery-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-running.png",
@@ -22,7 +22,7 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-running.png",
-      "sha256": "8e60f1bfa093a45a5d8f23f9e9f57c1b81c4032c1dfcd1b033602163f2daecea"
+      "sha256": "5caec55d223cd59a92a69609f52b749b2a9d419e289b91994b1d37f46b1d832f"
     },
     "gallery-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-paused.png",
@@ -30,7 +30,7 @@
     },
     "route-paused": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-paused.png",
-      "sha256": "7d35874bc5c6ce2a93afa08d4d0cbe21e047609efef909d0b2b7a83fa77101ac"
+      "sha256": "2555838dd0bf428ab3a7657483eaa38963a176e7a1918f083adc6349d3e7f15e"
     },
     "gallery-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-ended.png",
@@ -38,15 +38,15 @@
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-ended.png",
-      "sha256": "16a309e6df776b3a86221a874b4e9406e77123cc7c012a0697293f855abbed89"
+      "sha256": "2e34eb315c42ed444d4c8b869ec912f4e5f1b2d37d9ce953cf7740e9a5890f27"
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-gallery-log.png",
-      "sha256": "3bde33cc84f221723b518b85c3993bcdaf3e660cb2a0464d8daec80c2b46a207"
+      "sha256": "0957c4e926353b228321db7b6738fac3e14ef5231c09f9bf77e121ac429163b6"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-320-route-log.png",
-      "sha256": "3ae78192e30bda8dd28b86ce153919f7642d4b7c5641e02ee4794b980caa1c6b"
+      "sha256": "978500d0720508ad919f47e78dfb232ec412c9ce0d59c4d7fb017ba77b47212f"
     }
   },
   "lines": {
@@ -293,17 +293,17 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 65,
-        "running": 87,
-        "paused": 87,
-        "ended": 81,
+        "ready": 71,
+        "running": 93,
+        "paused": 93,
+        "ended": 87,
         "log": 64
       },
       "route": {
-        "ready": 65,
-        "running": 87,
-        "paused": 87,
-        "ended": 81,
+        "ready": 71,
+        "running": 93,
+        "paused": 93,
+        "ended": 87,
         "log": 64
       }
     },

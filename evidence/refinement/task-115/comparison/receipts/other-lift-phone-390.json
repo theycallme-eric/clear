@@ -1,0 +1,111 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "other-lift",
+  "title": "Other lift",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/other-lift-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/other-lift-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/other-lift-phone-390.json",
+      "receiptSha256": "d32da13a29761d0d2849b32fdb8687d14f91a83ff60997602532d09f12b40861",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/other-lift-phone-390-gallery.png",
+              "sha256": "bf5400849bf38c5124237d7bdf5f5c3b95c3073fed03455c44696d2d525df2c8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/other-lift-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/other-lift-phone-390-route.png",
+              "sha256": "937536ea9bc159e633341a28d42ba74fd7509b9f8e5e14a1d27ed17128841a55",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/other-lift-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/other-lift-phone-390.json",
+      "receiptSha256": "44b948cb9facbc1620b5f418acf434736bbe253f34d027fe983d67a587646d24",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-gallery-card.png",
+              "sha256": "1f48e3e0ef77980f330a6e225863ed9f7ebd9c6ac8241e706157f46541bcc629",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-route-card.png",
+              "sha256": "11f29312e5f44836e3e25fe3abb169405349b26d2fd073df707c672123d9b523",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-gallery-open.png",
+              "sha256": "9949062b8c909e3db76bc6aa4502a6f1e97f206e8a66728bdcf02f175c485777",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-route-open.png",
+              "sha256": "937536ea9bc159e633341a28d42ba74fd7509b9f8e5e14a1d27ed17128841a55",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-390-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "gallery only — ACCESSORIES — The gallery scene labels its accessory sections with a sample string (“Accessories”); the product labels a section by its type (“Accessory”), from the session row (real data only)."
+    },
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "route only — ACCESSORY — The gallery scene labels its accessory sections with a sample string (“Accessories”); the product labels a section by its type (“Accessory”), from the session row (real data only)."
+    },
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "h.clr-movement-group-header__title|accessory#0 — The section label’s own box is as wide as its word: the gallery’s sample “Accessories” against the product’s “Accessory” (real data only)."
+    }
+  ],
+  "unintended": []
+}

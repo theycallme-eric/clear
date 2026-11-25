@@ -60,6 +60,18 @@ const REPO_ROOT = resolve(import.meta.dirname, '..', '..')
 const RECEIPTS = join(REPO_ROOT, 'evidence', 'refinement', 'task-104', 'parity')
 /** The browser's clock at the start of each case. */
 const ENTRY = Date.parse('2026-11-16T09:00:00.000Z')
+/**
+ * The fixed instant each side's clock is held at just before Start (timing
+ * only; TASK-115 repair 2, owner decision D4 of 2026-11-24). Held at "now plus
+ * one second", the route's Start moved with the real time /workout took to
+ * load, so its header's session clock (the session started a minute before
+ * ENTRY), drawn over the top of every capture taller than the viewport, read
+ * 03:06, 03:07 or 03:08: one capture, more than one render. A fixed instant
+ * draws the same clock on every run; a load slower than the margin fails at
+ * `pauseAt` ("Cannot fast-forward to the past") instead of drawing another time.
+ * The gallery's drive ends at 2 min + 91 s, so the route has 89 s to load.
+ */
+const HOLD_AT = { gallery: ENTRY + 2 * 60_000, route: ENTRY + 5 * 60_000 } as const
 const e2e = readE2eEnv()
 const SYNTHETIC_ORIGIN_NEEDED = !e2e.usesExternalTarget && (e2e.url === null || e2e.anonKey === null)
 
@@ -485,9 +497,10 @@ async function readoutOf(card: Locator): Promise<string | null> {
 /**
  * One side's lifecycle: the card before Start; 30 seconds after Start; 60
  * seconds into a Pause; just after the format's Finish or Finish early, with
- * its log. The browser's clock is held between steps and moved exactly.
+ * its log. The browser's clock is held at the side's fixed `holdAt` before
+ * Start, then between steps, and moved exactly.
  */
-async function driveLifecycle(page: Page, card: Locator, format: TimedFormat, side: string): Promise<Record<Moment, Reading>> {
+async function driveLifecycle(page: Page, card: Locator, format: TimedFormat, side: string, holdAt: number): Promise<Record<Moment, Reading>> {
   const read = async (target: Locator, name: string): Promise<Reading> => {
     await expect(target).toBeVisible()
     return { lines: await linesOf(target), boxes: await boxesOf(target), capture: await keep(target, name), readout: await readoutOf(target) }
@@ -495,8 +508,7 @@ async function driveLifecycle(page: Page, card: Locator, format: TimedFormat, si
   await settle(page)
   const ready = await read(card, `${side}-ready`)
 
-  const now = await page.evaluate(() => Date.now())
-  await page.clock.pauseAt(now + 1_000)
+  await page.clock.pauseAt(holdAt)
   await card.getByRole('button', { name: /^Start / }).click()
   await page.clock.runFor(30_000)
   await expect(card.locator('[data-timed-actions] button')).toHaveText(['Pause', FINISH[format]])
@@ -549,7 +561,7 @@ for (const state of STATES) {
       await visit(`/gallery/refinements?state=${state}`)
       const galleryCard = page.locator(`[data-refinement-state="${state}"] .clr-timed-flow`)
       await expect(galleryCard).toBeVisible()
-      const gallery = await driveLifecycle(page, galleryCard, format, `${state}-${name}-gallery`)
+      const gallery = await driveLifecycle(page, galleryCard, format, `${state}-${name}-gallery`, HOLD_AT.gallery)
       // Memory only: the gallery keeps nothing under any key.
       expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('clear.workout-')))).toEqual([])
 
@@ -558,7 +570,7 @@ for (const state of STATES) {
       await visit('/workout')
       const routeCard = page.locator(`.clr-timed-flow[data-timed-format="${format}"]`)
       await expect(routeCard).toBeVisible()
-      const route = await driveLifecycle(page, routeCard, format, `${state}-${name}-route`)
+      const route = await driveLifecycle(page, routeCard, format, `${state}-${name}-route`, HOLD_AT.route)
 
       const moments = ['ready', 'running', 'paused', 'ended', 'log'] as const
       const differences = Object.fromEntries(moments.map((moment) => [moment, compare(gallery[moment].lines, route[moment].lines, TIMED_INTENDED)]))

@@ -1,0 +1,114 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "anchor",
+  "title": "Anchor / primary lift",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/anchor-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/anchor-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/anchor-phone-390.json",
+      "receiptSha256": "f81ca621be1f2e79ab2fa08970a0e7da1d9d00ba414a573ec27c871afe9a32d6",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/anchor-phone-390-gallery.png",
+              "sha256": "387470441fa1780e840f50a9673b3c885330d868543f21eb308745d0a261256f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/anchor-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/anchor-phone-390-route.png",
+              "sha256": "565532b3cfed10e417bba947aef1c1e86a7966eacc7c5536946acc18844fe879",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/anchor-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/anchor-phone-390.json",
+      "receiptSha256": "8ac4df765aae2bba5f0e1d85ff7df3eaf40c0eb974dd17b0f54c71ed957c20a0",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-gallery-card.png",
+              "sha256": "ac4b07d926b55953c10af5b6c5c5412b273103ca8f57a015c751a548377b575f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-route-card.png",
+              "sha256": "67847eea300ee161e1abe9e68922f82ec176a8b6e6b7fcb39f0e61836166f89f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-gallery-open.png",
+              "sha256": "f2f3389afdffaed08b920754ecb1b33ae4eafb2341a79c2770df7d5fc4edb32a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-route-open.png",
+              "sha256": "565532b3cfed10e417bba947aef1c1e86a7966eacc7c5536946acc18844fe879",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "saved",
+          "gallery": [
+            {
+              "key": "gallery-saved",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-gallery-saved.png",
+              "sha256": "03732f0940fc07a95206c0df3701d461538e3cffe91babcf461aa7008ced5330",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-gallery-saved.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-saved",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-route-saved.png",
+              "sha256": "fed490749c731462d76d32bb63e17343f57a0b49b3048219e27e13ab0a0ae3cd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/anchor-phone-390-route-saved.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

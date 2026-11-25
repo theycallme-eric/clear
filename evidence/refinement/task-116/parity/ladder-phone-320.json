@@ -16,19 +16,19 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-log.png",
-      "sha256": "3cbe1eaa789f371f2fcd1aa9cebd3dc28cd38c20cbe69abec115b2409752458d"
+      "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-log.png",
-      "sha256": "dfa58bdbe30ad04a5b902cb3b2f96c1c3de96959c520af6e7c367dbe3c95966a"
+      "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17"
     },
     "galleryAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-answered.png",
-      "sha256": "a897e44ca11f95b318025d01b84f01a340756952bfcb8d9b6d264671548d46ab"
+      "sha256": "adaea3b1317c6b0d9f97e5b57cad14f39d700296bfa24a436336a08bba38b014"
     },
     "routeAnswered": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-answered.png",
-      "sha256": "667f072b0e20f4c9cfa930d8e47e624663dc86e08762ca71425aaf082d666d90"
+      "sha256": "abecca45520211d42e549843f85ec04441cca138e7b9905712c728c3744b93b6"
     }
   },
   "lines": {
@@ -364,16 +364,16 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 96,
+        "ready": 102,
         "log": 84,
         "answered": 87,
-        "ended": 112
+        "ended": 118
       },
       "route": {
-        "ready": 96,
+        "ready": 102,
         "log": 84,
         "answered": 87,
-        "ended": 112
+        "ended": 118
       }
     },
     "parts": {

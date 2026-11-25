@@ -1,0 +1,95 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "timed-movement",
+  "title": "Timed movement",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/timed-movement-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/timed-movement-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/timed-movement-phone-390.json",
+      "receiptSha256": "6915ae44dd8393f881c673f27917027e1aae579a97d25b04a2d1f0e91e4c6b37",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-390-gallery.png",
+              "sha256": "8f50949ed072644ea069bfee8b5d7aab977d927ef63337e4928e0ebed85e8e44",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-390-route.png",
+              "sha256": "6d908299366ec2c17506660c8cba499a2ef9a5daf4f16942075e5874eea5a01f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/timed-movement-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/timed-movement-phone-390.json",
+      "receiptSha256": "7b1d0e3966a0fcfc4a292372c1c3dd4ad2544a771e77b1c4b27b5e27d114fbf7",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-gallery-card.png",
+              "sha256": "276a41bbff138b5bfa1d237bf2bdc10a1eb811cd123411a70d105d286854cd0e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-route-card.png",
+              "sha256": "c128b4b362af1c0eaf35072e33e48bfdbea4ba5617d41a8e1649e1df4fbe8114",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-gallery-open.png",
+              "sha256": "a821966698b53a818364a213bff607de452e1b1315c1565f1444938860dfd05e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-route-open.png",
+              "sha256": "6d908299366ec2c17506660c8cba499a2ef9a5daf4f16942075e5874eea5a01f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/timed-movement-phone-390-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [],
+  "unintended": []
+}

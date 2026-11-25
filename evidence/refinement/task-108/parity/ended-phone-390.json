@@ -12,7 +12,7 @@
   "captures": {
     "gallery:emom": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/emom-phone-390-gallery-ended.png",
-      "sha256": "ec1e586a15aede183ff635a81c716db22ce55239b2a4376506310311d7057de7"
+      "sha256": "cc75abff047a3bcdd4fb213a6deb2ffaad3089c56455e599862dd16f1af1e32c"
     },
     "route:emom": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/emom-phone-390-route-ended.png",
@@ -24,15 +24,15 @@
     },
     "route:amrap": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/amrap-phone-390-route-ended.png",
-      "sha256": "23a59d2e78070ce86553d4542d3a0807c4bdef0d63167751de78fd5ae1f07727"
+      "sha256": "12545327aa5126bff4d0f67be1634d08f5ce6585b034552fcbce766f1b607f3c"
     },
     "gallery:for_time": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/for_time-phone-390-gallery-ended.png",
-      "sha256": "af740379a4520aef250d004690573fb1a59fffa13cd0bdeda09fc50ed63fd824"
+      "sha256": "9cda2a0cd802e657f20269248defef4e024b86869823e0dda3b8f76ef4f1d418"
     },
     "route:for_time": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/for_time-phone-390-route-ended.png",
-      "sha256": "7694c9a61f43b3e16bcfc906438454cc85a7cc7d9b3ef9281579d473d25af639"
+      "sha256": "80c70d2d62845865f50a6917bd31672f361dad0acc11261fcf0bc4d1435f5912"
     }
   },
   "lines": {

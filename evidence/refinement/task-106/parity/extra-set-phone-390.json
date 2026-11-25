@@ -18,11 +18,11 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-390-gallery-open.png",
-      "sha256": "64d9fba7a575ac7b98f8131e699406d38789f0cdb18d4b2befd853915f580040"
+      "sha256": "1a06ff7cd23667fdf18a4ec1ba4ce03681ea0190136b6fb938f7f24185c584ca"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/extra-set-phone-390-route-open.png",
-      "sha256": "ce049058c604bb1ca707594da939ed16f4d45d6af59bc67f311d2cee67331353"
+      "sha256": "104da554989a4a949669311ae8de9bb97b757515152f0cf535f1d6139d8abdd9"
     }
   },
   "lines": {
@@ -151,7 +151,7 @@
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 477
+          "height": 437
         }
       },
       "route": {
@@ -167,7 +167,7 @@
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 477
+          "height": 437
         }
       }
     },

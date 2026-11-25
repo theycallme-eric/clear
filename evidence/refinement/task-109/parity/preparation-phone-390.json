@@ -150,7 +150,7 @@
     },
     "route-history-warm-up": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-history-warm-up.png",
-      "sha256": "35d593a749908d70b257b502cada63f729fe81ea290c06578c395c342f079927"
+      "sha256": "7139717a7553abf24a5ebae181a42de2c891898fafd11c205cf9c5a953b0a524"
     },
     "gallery-history-cooldown": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png",
@@ -158,7 +158,7 @@
     },
     "route-history-cooldown": {
       "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-history-cooldown.png",
-      "sha256": "d75cd3fd4d8927805847d32f84ba75a9868217b76fb117d1662d5ec7f9c62333"
+      "sha256": "19f24b047b3677c3ee6fb7325d0db92d3f15ce7bce560a1e62cac4ef8123821d"
     }
   },
   "lines": {

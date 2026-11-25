@@ -563,65 +563,11 @@ for (const { name: size, viewport } of VIEWPORTS) {
   test.describe(`B05 structure badges @ ${size}`, () => {
     test.use({ viewport })
 
-    for (const skin of ['clear', 'vapour'] as const) {
-      test(`Review groups (${skin}): every badge hugs its label in its column parent`, async ({ page, visit }, testInfo) => {
-        const app = await syntheticApp(page, { review: REVIEW, skin })
-        await visit('/review')
-        await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(REVIEW.workout.title)
-        const main = page.locator('main')
-        const entries = await checkAll(page, main, testInfo, `review-${size}-${skin}`, async (badge) =>
-          (await badge.locator('xpath=..').getAttribute('style'))?.includes('border-inline-start')
-            ? 'Review grouped structure (ReviewBlockRows group)' : 'Review badged standard block (ReviewBlockRows stack)')
-        const labels = entries.map((entry) => entry.label)
-        expect(labels).toEqual(expect.arrayContaining([
-          'SUPERSET · 4 ROUNDS', 'CIRCUIT · 3 ROUNDS · PYRAMID', 'CIRCUIT · 2 ROUNDS', 'STANDARD · LADDER UP',
-          'FOR TIME · 10 MIN CAP · LADDER · FIXED INTERVAL',
-        ]))
-        expect(entries.every((entry) => entry.parent === 'column')).toBe(true)
-        // B05-04's own label: the group width beside it is unused, and stays dark.
-        const pictured = entries.find((entry) => entry.label === 'CIRCUIT · 2 ROUNDS')!
-        expect(pictured.badgeWidth).toBeLessThan(pictured.parentContentWidth - 60)
-        expect(pictured.unusedSpan.columns).toBeGreaterThan(50)
-        expect(pictured.unusedSpan.strokeColumns).toBe(0)
-        const actionFrames = await expectActionsFill(page)
-        await record(page, testInfo, `review-${size}-${skin}`, {
-          consumer: 'Review (grouped superset/circuit and badged standard)', state: 'pre-start review, structure spectrum + B05-04 circuit',
-          viewport, entries, actionFrames,
-        })
-        app.assertReadOnly()
-      })
-    }
+    // TASK-115 retired the case `Review groups (${skin}): every badge hugs its label in its column parent` (old line 567): superseded by Round 7
+    // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 
-    test('Workout section header, BlockPanel and AMRAP badges hug their labels in row parents', async ({ page, visit }, testInfo) => {
-      const app = await syntheticApp(page, { active: true })
-      await visit('/workout')
-      const content = page.locator('main#main > .clr-scroll-region > .clr-scroll-region__scroller')
-      const consumerOf = async (badge: Locator) => {
-        if (await badge.locator('xpath=ancestor::ul[@aria-label="Structures in this section"]').count()) return 'SectionHeader'
-        if (await badge.locator('xpath=ancestor::*[@data-block-top-row]').count()) return 'BlockPanel top row'
-        return 'AmrapBlock top row'
-      }
-      const entries: Entry[] = []
-      entries.push(...await checkAll(page, content, testInfo, `workout-circuit-${size}`, consumerOf))
-      await page.getByRole('button', { name: 'All sections', exact: true }).click()
-      await page.getByRole('button', { name: 'Conditioning, not started', exact: true }).click()
-      await expect(content.getByText('AMRAP · 8 MIN · INVERSE', { exact: true }).first()).toBeVisible()
-      entries.push(...await checkAll(page, content, testInfo, `workout-conditioning-${size}`, consumerOf))
-
-      const consumers = new Set(entries.map((entry) => entry.consumer))
-      // TASK-027 (C54; R35): the compact section navigator draws no badge, so SectionHeader is no longer a consumer here.
-      expect([...consumers].sort()).toEqual(['AmrapBlock top row', 'BlockPanel top row'])
-      expect(entries.every((entry) => entry.parent === 'row')).toBe(true)
-      expect(entries.map((entry) => entry.label)).toEqual(expect.arrayContaining([
-        'SUPERSET', 'CIRCUIT · 3 ROUNDS · PYRAMID', 'AMRAP · 8 MIN · INVERSE', 'FOR TIME · 15 MIN CAP · LADDER DOWN',
-      ]))
-      const actionFrames = await expectActionsFill(page)
-      await record(page, testInfo, `workout-${size}`, {
-        consumer: 'Active Workout (BlockPanel, AmrapBlock)', state: 'active session, both sections',
-        viewport, entries, actionFrames,
-      })
-      app.assertReadOnly()
-    })
+    // TASK-115 retired the case 'Workout section header, BlockPanel and AMRAP badges hug their labels in row parents' (old line 595): superseded by Round 7
+    // (D2, Eric, chat, 2026-11-24: "Retire, list for UAT (Recommended)"); evidence/refinement/task-115/test-ledger.json and UAT-LIST.md name it.
 
     test('read-only session detail structure results hug their labels beside the measurements', async ({ page, visit }, testInfo) => {
       const app = await syntheticApp(page)

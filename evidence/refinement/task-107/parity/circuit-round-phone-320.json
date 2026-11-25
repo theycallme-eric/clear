@@ -10,27 +10,27 @@
   "captures": {
     "gallery-card": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-gallery-card.png",
-      "sha256": "2f8dee0476ece6df69766e2a1f5776471d716aaa154d32eec187e83221bec66f"
+      "sha256": "3e75807e0a7eec808c6446578a43a60c5c5c192c387cc1528e873c264cefd55a"
     },
     "route-card": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-route-card.png",
-      "sha256": "47a23a6c4cea3571319e6d4d2c1393624c34534b787c446354e64a8186bde790"
+      "sha256": "7be68a47cafcbc67ffa6799e6d195f2642ac19276be91c030d5625344eb202a8"
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-gallery-open.png",
-      "sha256": "e6a11e34cf503622943283af461183d7c2683479d0cd00b66d16f3c1b6bf92b1"
+      "sha256": "3bd6b9982c99900dc36f41dfbcf941c690f7821a3fc92080d1ef2696216bb873"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-route-open.png",
-      "sha256": "9d5689e483bedcaeecc73fc754e8f9c1db195e45dda9883bcf3adbc91956f742"
+      "sha256": "8359070c3cf29adaef0d773ee8f81ebcdd94d372a411d76b5e5bcb86034238d7"
     },
     "gallery-closed": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-gallery-closed.png",
-      "sha256": "4e6d1301edf4d0028b10c633652fdc637374f6bda896d1eb4a3ad008a90a6475"
+      "sha256": "5c624a64725c54dfe3e5bfc5873238881f449cad1327f2f22715159b5f9344ab"
     },
     "route-closed": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-320-route-closed.png",
-      "sha256": "b8c89e5e275b084c4ffbf76da702f05130604dd3171253aa7690db2bcaae7ef9"
+      "sha256": "5780c093a833c1885c993e75acb45d5e46c395de114c767a2d8b815a0d2fb5ba"
     }
   },
   "lines": {
@@ -38,6 +38,7 @@
       "card": [
         "CONDITIONING",
         "CIRCUIT",
+        "3 ROUNDS",
         "NO ROUNDS RECORDED",
         "START ROUND 1",
         "EACH ROUND:",
@@ -64,7 +65,7 @@
         ":",
         "4",
         "5",
-        "00:45",
+        "45 seconds left",
         "TAKE BACK THIS ROUND"
       ],
       "closed": [
@@ -73,9 +74,10 @@
         ":",
         "4",
         "4",
-        "00:44",
+        "44 seconds left",
         "CONDITIONING",
         "CIRCUIT",
+        "3 ROUNDS",
         "1 OF 3 ROUNDS RECORDED",
         "REST BETWEEN ROUNDS",
         "START ROUND 2",
@@ -105,6 +107,7 @@
       "card": [
         "CONDITIONING",
         "CIRCUIT",
+        "3 ROUNDS",
         "NO ROUNDS RECORDED",
         "START ROUND 1",
         "EACH ROUND:",
@@ -131,7 +134,7 @@
         ":",
         "4",
         "5",
-        "00:45",
+        "45 seconds left",
         "TAKE BACK THIS ROUND"
       ],
       "closed": [
@@ -140,9 +143,10 @@
         ":",
         "4",
         "4",
-        "00:44",
+        "44 seconds left",
         "CONDITIONING",
         "CIRCUIT",
+        "3 ROUNDS",
         "1 OF 3 ROUNDS RECORDED",
         "REST BETWEEN ROUNDS",
         "START ROUND 2",
@@ -180,14 +184,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "card": 65,
-        "open": 28,
-        "closed": 93
+        "card": 72,
+        "open": 30,
+        "closed": 105
       },
       "route": {
-        "card": 65,
-        "open": 28,
-        "closed": 93
+        "card": 72,
+        "open": 30,
+        "closed": 105
       }
     },
     "parts": {
@@ -197,21 +201,21 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 577
+          "height": 613
         },
         "open": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 271.5
+          "height": 234
         },
         "closed": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 784
+          "height": 809
         }
       },
       "route": {
@@ -220,21 +224,21 @@
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 577
+          "height": 613
         },
         "open": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 271.5
+          "height": 234
         },
         "closed": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 288,
-          "height": 784
+          "height": 809
         }
       }
     },

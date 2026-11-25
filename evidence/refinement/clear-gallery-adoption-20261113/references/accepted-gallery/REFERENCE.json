@@ -1,0 +1,77 @@
+{
+  "schema": "clear-refinement-staged-reference/v1",
+  "id": "accepted-gallery",
+  "role": "accepted gallery reference bec4454 (A2, 2026-11-13): presentation authority only; not application adoption or backend proof",
+  "identity": {
+    "kind": "git-commit",
+    "commit": "bec44545eb982f6dc136a583400f7e314c306d1d",
+    "branch": "gallery/workout-refinement-2026-11-13",
+    "supersedes": "eded158cfd928d382c9a9409e2c372270312741d",
+    "availability": "an ancestor of the integration base; its guides are staged here by hash from the approved round-07 run"
+  },
+  "approvedSource": {
+    "inventorySha256": "b86b6eb8ef326403dee477d3232b9a67c03ae7c029c8744754b9fd73f00e011f"
+  },
+  "manifest": {
+    "format": "inline"
+  },
+  "guides": {
+    "stateMap": "src/dev/gallery-refinement-coverage.json",
+    "stateIds": "src/dev/gallery-refinement-states.ts",
+    "loggingContexts": "src/dev/gallery-refinement-data.ts",
+    "sharedOwners": "docs/design/library/refinements-2026-11-04/REUSE.md",
+    "fieldOwnership": "docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md",
+    "semanticTokens": "src/ui/refinements/tokens.css",
+    "sourceManifest": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json"
+  },
+  "files": [
+    {
+      "path": "PINNED-SOURCE.json",
+      "bytes": 288774,
+      "sha256": "86332bfc9e1ebdc564efee4720d680ad4bb4d8444461c9a37900fe43894fec05",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/PINNED-SOURCE.json"
+    },
+    {
+      "path": "src/dev/gallery-refinement-coverage.json",
+      "bytes": 119335,
+      "sha256": "6253aae08c731978308e700e32a32162e5299b1f74fe5a15d02239ac787e772a",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/src/dev/gallery-refinement-coverage.json"
+    },
+    {
+      "path": "src/dev/gallery-refinement-states.ts",
+      "bytes": 688,
+      "sha256": "084ffb292fad99de256bfc49f41e80902b715c123ebc9e226985b1c54e5cf546",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/src/dev/gallery-refinement-states.ts"
+    },
+    {
+      "path": "src/dev/gallery-refinement-data.ts",
+      "bytes": 2975,
+      "sha256": "754d30d34f420ac92e349910e07bf1e6b0b79483dc704872af484806ddeb87c0",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/src/dev/gallery-refinement-data.ts"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/REUSE.md",
+      "bytes": 6356,
+      "sha256": "9f6b702c6daa40626c2ca3c47740be1862b538c72b0edfec18834aac36f8ce46",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/docs/design/library/refinements-2026-11-04/REUSE.md"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md",
+      "bytes": 3253,
+      "sha256": "ab9d7ff1ccb10ec0dd6bb19c351369b0b06dde708c9f54246ae87a4a7a214a7f",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json",
+      "bytes": 9698,
+      "sha256": "6f8a5160a2edfcc581cb0c223135a7ff708f90c5da0f2ba5141e8c48f4386757",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json"
+    },
+    {
+      "path": "src/ui/refinements/tokens.css",
+      "bytes": 899,
+      "sha256": "c09e5f7c2f728eb6052eb4f1e83386e59d2d7abc50d3380d818e5e258427811d",
+      "approvedPath": "sources/source-08-adopted-gallery-reference/src/ui/refinements/tokens.css"
+    }
+  ]
+}

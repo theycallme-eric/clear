@@ -1,0 +1,303 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "emom",
+  "title": "EMOM results",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/emom-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/emom-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/emom-phone-320.json",
+      "receiptSha256": "9dbd6553909836127c757d9943c87f914d6ec28c71dd11c9da6f968c0fc7315b",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/emom-phone-320-gallery.png",
+              "sha256": "7ff57638ba7bc9462275806655d7cf068c713880b5428e167d9362a0263cf5b9",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/emom-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/emom-phone-320-route.png",
+              "sha256": "cfabbc3a59b74252ade4d2d481b17821a8489db81a741e1f8f53735712982945",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/emom-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/emom-phone-320.json",
+      "receiptSha256": "78dda419e189ba0944eaa3e79235178fcc559455397a277405d27a544c3a7b76",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-gallery-ready.png",
+              "sha256": "c21aa3a35fb75fa73165622498a5ecdab502479450feaf9911839538c94d8671",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-route-ready.png",
+              "sha256": "217b93ea4517e03b42f77559b18642e6074e788411b8df4ff20f2f2f4400c68f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-gallery-log.png",
+              "sha256": "c38537267ebe2295bb94823ecad8de97a56f84ec5c31f25ca5922cbcec4e74fe",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-route-log.png",
+              "sha256": "941e0248c45ccc3987755ecfe3ea32f01824aab050026c8e478d3a107e551a08",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-104",
+      "primary": false,
+      "receipt": "evidence/refinement/task-104/parity/emom-phone-320.json",
+      "receiptSha256": "3703122eb6e830273a596abdc26c14233fdbf225e373e868e52dcaae2a39057f",
+      "provenance": "retaken by TASK-115 through TASK-104's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ready.png",
+              "sha256": "c21aa3a35fb75fa73165622498a5ecdab502479450feaf9911839538c94d8671",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ready.png",
+              "sha256": "217b93ea4517e03b42f77559b18642e6074e788411b8df4ff20f2f2f4400c68f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "running",
+          "gallery": [
+            {
+              "key": "gallery-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-running.png",
+              "sha256": "0a55098bc507db8f20c658013b0ea9c3172c14b282f556e9096b14709490a714",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-running.png",
+              "sha256": "7a7ba644af2609b8d5bc63ced96ea496ba563e63e2bd7dd642809d580e039929",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "paused",
+          "gallery": [
+            {
+              "key": "gallery-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-paused.png",
+              "sha256": "f8111d829c25060a350ecf6ddfd052d0df36538fc64aab4f212f7e623c76307d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-paused.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-paused.png",
+              "sha256": "8e982febe98cd103df3d91018d78fd38678bfd199a87e5828b526ae4fe9b8b64",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-paused.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ended.png",
+              "sha256": "aa9d863963d19c61f08e239cb4fea93dea3762bf5ee83114756c9a91420e3a8c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ended.png",
+              "sha256": "7e2625fe301c78c1aaf18581604e9195f3873cf1083f936f559ead7b2df3e675",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-ended.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-log.png",
+              "sha256": "fc3c217f6c0a8f6a53fa7de4d3df16e5a7c23ef58c24f0c5ba245c853461ad6d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-log.png",
+              "sha256": "7ed15186b0d3fcdee82d6131cdceddf6e9ec342c52c2ef355486128c0f0bf51c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-117",
+      "primary": false,
+      "receipt": "evidence/refinement/task-117/parity/emom-phone-320.json",
+      "receiptSha256": "7466884724593ac41771ab7f5e655fa2714a9213c39dee58c72048f15218a5d4",
+      "provenance": "retaken by TASK-115 through TASK-117's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-ready.png",
+              "sha256": "c21aa3a35fb75fa73165622498a5ecdab502479450feaf9911839538c94d8671",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-ready.png",
+              "sha256": "12054b4a92a22d1e84b4d788a5f48254dbdfae914fb89c7eb3f7dd529bfcdf43",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-log.png",
+              "sha256": "c38537267ebe2295bb94823ecad8de97a56f84ec5c31f25ca5922cbcec4e74fe",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-log.png",
+              "sha256": "cfabbc3a59b74252ade4d2d481b17821a8489db81a741e1f8f53735712982945",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "entered",
+          "gallery": [
+            {
+              "key": "galleryEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-entered.png",
+              "sha256": "7ede0e6a8df24ff1ed4d875a09ad328729bb38cdf7528bf5a582461c3caf9e27",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-gallery-entered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-entered.png",
+              "sha256": "0f0b2df672663efc794edd4b7884dedb362d6d728e483c28ad74672032c9e7a7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/emom-phone-320-route-entered.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R015-01",
+      "text": "An AMRAP asks no per-movement amount until a rounds count is recorded (TASK-015, `partialRoundFor`), so the amrap state's log past its cap draws only the loaded kb swing's \"Weight used\" group (bec4454 drew \"Completed in next round\" for every movement); a recorded count draws each movement's next-round amount, and a changed count clears the amounts and keeps the loads. Labels stay Round 7's."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-C37-01",
+      "text": "A load field only where a load can attach (`loadApplies`, the set logger's rule the saved row also applies); a multi-round For Time asks loads only; a distance amount takes decimals; the row's own rule (`movementActualFromDraft`) says in the field what an entry is refused on. No accepted state draws a refusal, a distance or a multi-round race, and every accepted state's loaded movement keeps its load field."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-FB8AF4D9B641",
+      "text": "AC-C26-01's exact per-movement group list (a group only for the loaded movement before rounds are recorded) is the drawing above; the form keeps its accepted name \"Log section results\" (R7-3)."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R011-01",
+      "text": "An EMOM's clock caption says \"· Rest\" beside its minute while the block's own rest window runs. The accepted emom state prescribes no rest, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-8C147E2C148D",
+      "text": "The card's \"Log results\" action states whether its dialog is open (`aria-expanded`); nothing drawn changes."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-339D1096F660",
+      "text": "Each movement's typed amount and load are kept on the attempt's own record (EMOM, AMRAP, For Time) and restored after a reload; the gallery keeps nothing, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-D58939F8E091",
+      "text": "EMOM save authority, as the AMRAP's and For Time's: a refused save is kept on the EMOM's record and said after a reload; a known row whose richer save failed reopens the block. Nothing the gallery draws changes."
+    }
+  ],
+  "unintended": []
+}

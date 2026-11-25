@@ -1,0 +1,908 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "screens",
+  "title": "Generate, Setup and History",
+  "width": 320,
+  "primaryOwner": "TASK-119",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/screens-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/screens-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-119",
+      "primary": true,
+      "receipt": "evidence/refinement/task-119/parity/screens-phone-320.json",
+      "receiptSha256": "70f13788f58491e8fdaaedc15c7333551168b3bdb0f6270da818ff7b4ee29f92",
+      "provenance": "retaken by TASK-115 through TASK-119's own guard; receipt bytes as committed at cca35346",
+      "route": "/generate",
+      "moments": [
+        {
+          "moment": "back",
+          "gallery": [
+            {
+              "key": "gallery-back",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-back.png",
+              "sha256": "987c29f69794b325994ee5a7c6e53f6e05342bc0163f95d1d17c7a67271e488c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-back.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-back",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-back.png",
+              "sha256": "0c3cf39ab01a8b60ec48cabc1829b0b0ccf9af3dcc77a9c19fc00f8da740df4b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-back.png"
+            }
+          ]
+        },
+        {
+          "moment": "title",
+          "gallery": [
+            {
+              "key": "gallery-title",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-title.png",
+              "sha256": "520b340f2d2f8a59ba41c63bfc1a5d820d0412d3b81fc8ea43fa3721bb4292da",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-title.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-title",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-title.png",
+              "sha256": "f17f89930abff71e6fb8b9c07a9c47dce53059499e0efa1865d4ea566369ff29",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-title.png"
+            }
+          ]
+        },
+        {
+          "moment": "goal",
+          "gallery": [
+            {
+              "key": "gallery-goal",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-goal.png",
+              "sha256": "f0346e953152bdcf2b29bd6ef296d5384d5e7996a7fbfec91cea1c131273a923",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-goal.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-goal",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-goal.png",
+              "sha256": "7f4158aa999b65133263d5aebface47ed9da82fff64e46d69751dda5492c2465",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-goal.png"
+            }
+          ]
+        },
+        {
+          "moment": "focus",
+          "gallery": [
+            {
+              "key": "gallery-focus",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus.png",
+              "sha256": "630bcec926469fd9577b8232e981c8d61211c6a014d6b0edd8bd4254aa9fbc3d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-focus",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-focus.png",
+              "sha256": "4b9ce0a3bc5f01b3f87573566b5ddf6a95aef730aa10253e0c2a2a90c75323ab",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-focus.png"
+            }
+          ]
+        },
+        {
+          "moment": "focus-open",
+          "gallery": [
+            {
+              "key": "gallery-focus-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus-open.png",
+              "sha256": "47ba09571659ce00321ea2594d1c7150203a9f3656ddc0c289bd5245dbd0504e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-focus-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-focus-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-focus-open.png",
+              "sha256": "e729dc61522a6854c2414d6edef520f6a914557aa9f612c7f6aac551c938498b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-focus-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "recovery-closed",
+          "gallery": [
+            {
+              "key": "gallery-recovery-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-recovery-closed.png",
+              "sha256": "9127504d311fedbb4b0ba20b0fa3d0e83e84a0b80ad0ecfd9dae331ee3c5aee5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-recovery-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-recovery-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-recovery-closed.png",
+              "sha256": "699a74183ff3fd7322f1199be0fa44f76052ee4cd986ce21036a165512b276e3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-recovery-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "recovery-note",
+          "gallery": [],
+          "route": [
+            {
+              "key": "route-recovery-note",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-recovery-note.png",
+              "sha256": "af0286be976d679371c7ba976580a72dd6b0c8beca470f46cd9906c7bc2684f3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-recovery-note.png"
+            }
+          ]
+        },
+        {
+          "moment": "minutes",
+          "gallery": [
+            {
+              "key": "gallery-minutes",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-minutes.png",
+              "sha256": "940b0787fad9c25a042698583846440fc80ace0af452cccfed810eec5141e385",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-minutes.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-minutes",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-minutes.png",
+              "sha256": "d1f66ebf1121baeaa1c6d1b22695f6a8775abbd0482cdeb0bc2698ce69860098",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-minutes.png"
+            }
+          ]
+        },
+        {
+          "moment": "action",
+          "gallery": [
+            {
+              "key": "gallery-action",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-action.png",
+              "sha256": "ba2ad3009243c1154678058f6fc7a158f2bb49eb710af4c0e2530845a48f7324",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-gallery-action.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-action",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-action.png",
+              "sha256": "dd04ff2a7eae30dc6c28d13ccb89e605d5949b28c483552bf66a35f780aca714",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/screens-phone-320-route-action.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/screens-phone-320.json",
+      "receiptSha256": "417ffb147aeedc52b784a13b6e76548c579e66c5ef2fe1cc7ce0a48d7e9b26c0",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/history",
+      "moments": [
+        {
+          "moment": "state",
+          "gallery": [
+            {
+              "key": "gallery",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-320-gallery.png",
+              "sha256": "f72b865857d622d6b5099f491285b76e692e9e6f8b63d92bb2bc9531f22e5f91",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-320-route.png",
+              "sha256": "27df4a2c22eed7ad02c6e638f10c2799de0b594ebaf6d6759043a0c80890593d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/screens-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-113",
+      "primary": false,
+      "receipt": "evidence/refinement/task-113/parity/screens-phone-320.json",
+      "receiptSha256": "3c64aa38e6c7ee84006fb25b688ebecd7866bacd1b957953bd8dddb18048c777",
+      "provenance": "taken by TASK-113's own run; receipt bytes as committed at bd227743",
+      "route": "/onboarding",
+      "moments": [
+        {
+          "moment": "state",
+          "gallery": [
+            {
+              "key": "gallery",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-gallery.png",
+              "sha256": "6b5a235f8a0a27ec750af3a59e18d18dc325b84c075bcedff05f799c81c49ece",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-route.png",
+              "sha256": "b58175df245155aa20ff4421d092fae22aebd57d23347a37f26ea21218c38710",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-route.png"
+            }
+          ]
+        },
+        {
+          "moment": "scrolled",
+          "gallery": [],
+          "route": [
+            {
+              "key": "routeScrolled",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-route-scrolled.png",
+              "sha256": "8131f0ed3921a981ce42502effedc024563ff4c6de9d3356b0e7738949b95693",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-113/captures/screens-phone-320-route-scrolled.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "Owner decision 4 (2026-11-18, Q-005): with a recommended Focus and Recovery on, the Recovery chip (with its note above it) stays in view when Change focus is collapsed (`recoveryKept`). Round 7 only; no state draws the route: the screens state composes its own Generate card, where a chosen Recovery already stays in view as the Focus value, so it is not updated."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-08",
+      "text": "#286 / decision of 2026-11-13 (kept): the 1–10 Intensity and its explanation line; the state’s composed card omits them."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-07",
+      "text": "Place keeps its label and control with no helper line (R23); the state’s card omits it."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-07",
+      "text": "Notes keeps its label, control and placeholder with no helper line (R23); the state’s card omits it."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-05",
+      "text": "R10.5 / #286: the route’s shared icon-only Back is named for its destination, “Home” (unchanged at the base); the state’s composed card names its Back “Back to Home”."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "R10.2: the route’s Focus value is the disclosure named Change focus, with its expanded state (Round 7’s naming, round-07 S4); the state’s quiet button is named by the value it shows."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "Owner decision 4 (2026-11-18): closed, the route keeps its Recovery chip (“Recovery session”, pressed) in view; the state, where Recovery is a Focus choice, shows it as the Focus value."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-C51-01",
+      "text": "gallery only — BUILD STRENGTH — C51: Goal/Focus lead the card. The state illustrates the standing goal as one label; the route’s Round 7 summary states the Goal term and the profile’s standing Goal value (Strength)."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-C51-01",
+      "text": "route only — GOAL — C51 / R21: the route’s Goal/Focus summary (Round 7, decision 4 of 2026-11-13): the Goal term and the standing Goal’s label in the summary’s larger type."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-C51-01",
+      "text": "route only — Strength — C51 / R21: the route’s Goal/Focus summary (Round 7, decision 4 of 2026-11-13): the Goal term and the standing Goal’s label in the summary’s larger type."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-C51-01",
+      "text": "route only — FOCUS — C51: the route’s summary keeps the Focus term above the interactive Focus value."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "gallery only — FOCUS — R10.2 / #286: the route opens the choices in place under the Focus value (a disclosure with its expanded state, one-workout override); the state opens a titled dialog with a legend."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "gallery only — FOCUS — R10.2 / #286: the route opens the choices in place under the Focus value (a disclosure with its expanded state, one-workout override); the state opens a titled dialog with a legend."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-01",
+      "text": "gallery only — RECOVERY — R10.1: Recovery is never a fifth movement focus; the route keeps it as its own session toggle apart from the four. The state lists it as a Focus choice."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-08",
+      "text": "route only — POWER — #286: the route keeps all four Anchors (Power included) as the one-workout choices; the state’s illustration omits Power."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-01",
+      "text": "route only — RECOVERY SESSION — R10.1: the route’s one-workout Recovery toggle, inside the choices and apart from the four focuses."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "gallery only — RECOVERY — Decision 4: a chosen Recovery stays in view once the choices close; the state shows it as the Focus value."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "route only — RECOVERY SESSION — Decision 4: the route’s pressed Recovery chip stays in view with the choices closed."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "route only — A lighter workout, for today only. Power isn’t offered for recovery. — Decision 4: “the chip stays visible with its note” — the route’s Recovery note (U29), above the chip; the state has no note."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-07",
+      "text": "gallery only — TIME — The route keeps its field’s own label, Time available (labels retained); the state’s illustration says Time."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-07",
+      "text": "route only — TIME AVAILABLE — The route’s retained field label."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-05",
+      "text": "svg|#0 — The route’s Back glyph is ArrowLeft at 20 px in the screen header (unchanged at the base); the state’s card draws ArrowLeft at its default size."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-05",
+      "text": "path|#0 — The route’s Back glyph is ArrowLeft at 20 px in the screen header (unchanged at the base); the state’s card draws ArrowLeft at its default size."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-04",
+      "text": "(part)#0 — The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-04",
+      "text": "span.clr-echo-text|GENERATE#0 — The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-04",
+      "text": "span.clr-echo-text__rear.clr-echo__source|#0 — The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-04",
+      "text": "span.clr-echo-text__foreground|GENERATE#0 — The route’s title is the screen heading on the atmosphere (Form Screen template, unchanged at the base), drawn in the heading face through the shared foreground echo; the state’s card draws a label."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "(part)#0 — R10.2: the route’s Goal and Focus share one two-column summary row in the larger summary type; the state’s card stacks a label over the Focus value."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-text-data-xs.clr-text-data-xs--upper|GOAL#0 — R10.2: the route’s Goal and Focus share one two-column summary row in the larger summary type; the state’s card stacks a label over the Focus value."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "strong.clr-v4-program-value|Strength#0 — R10.2: the route’s Goal and Focus share one two-column summary row in the larger summary type; the state’s card stacks a label over the Focus value."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "(part)#0 — R10.2 / R25: the route’s Focus value is a secondary text action (no frame) under its term in the summary; the state draws a framed quiet button."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-text-data-xs.clr-text-data-xs--upper|FOCUS#0 — R10.2 / R25: the route’s Focus value is a secondary text action (no frame) under its term in the summary; the state draws a framed quiet button."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-text-action.clr-v4-focus-value|UPPER BODY#0 — R10.2 / R25: the route’s Focus value is a secondary text action (no frame) under its term in the summary; the state draws a framed quiet button."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "(part)#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-bleed.clr-bleed--block|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-chamfer.clr-chamfer--lg|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-logging-overlay__scroll|FOCUS FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-logging-overlay__head|FOCUS#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "h.clr-logging-overlay__title|FOCUS#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-btn.clr-chamfer.clr-chamfer--md.clr-hit|#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "svg|#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "path|#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-logging-overlay__body|FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "fieldset|FOCUS UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "legend|FOCUS#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div|UPPER BODY LOWER BODY FULL BODY RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|UPPER BODY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-chamfer.clr-chamfer--selected.clr-chamfer--sm.clr-chip|UPPER BODY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "svg|#1 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "path|#1 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|LOWER BODY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-chamfer.clr-chamfer--sm.clr-chip|LOWER BODY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "svg|#2 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "path|#2 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|FULL BODY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-chamfer.clr-chamfer--sm.clr-chip|FULL BODY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "svg|#3 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "path|#3 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-chamfer.clr-chamfer--sm.clr-chip|RECOVERY#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "svg|#4 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "path|#4 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-row|UPPER BODY LOWER BODY FULL BODY POWER#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|POWER#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-chamfer.clr-chamfer--sm.clr-chip|POWER#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "div.clr-row|RECOVERY SESSION#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "span.clr-bleed|RECOVERY SESSION#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-02",
+      "text": "button.clr-chamfer.clr-chamfer--sm.clr-chip|RECOVERY SESSION#0 — R10.2 / #286: the route’s choices open in place under the summary (chips, then Recovery apart); the state’s open in a centred dialog."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "(part)#0 — Decision 4 / R10.1: the route’s Recovery is its own chip (pressed, with its tick), the state’s the Focus value’s quiet button."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "svg|#0 — Decision 4 / R10.1: the route’s Recovery is its own chip (pressed, with its tick), the state’s the Focus value’s quiet button."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "path|#0 — Decision 4 / R10.1: the route’s Recovery is its own chip (pressed, with its tick), the state’s the Focus value’s quiet button."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "TASK-AC-8C58C464BAD0",
+      "text": "(part)#0 — Route only: the Recovery note (U29), kept with the chip (decision 4)."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-07",
+      "text": "label|TIME#0 — The same public Input, field and MINUTES end cap drawn box for box (R10.3); only its label’s words differ (the route’s retained label, Time available)."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-07",
+      "text": "label|TIME AVAILABLE#0 — The same public Input, field and MINUTES end cap drawn box for box (R10.3); only its label’s words differ (the route’s retained label, Time available)."
+    },
+    {
+      "task": "TASK-119",
+      "criterion": "AC-R024-04",
+      "text": "(part)#0 — The action keeps its name (R10.4); the route pins it, large and full width, in the measured footer (Form Screen template, unchanged at the base); the state’s card draws it at its default size inside the card. Its words and inner boxes match."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "gallery only — All workouts — The filter offers All entries, Completed and Partial (TASK-026); the sample words are the gallery’s."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "gallery only — Incomplete — The filter offers All entries, Completed and Partial (TASK-026); the sample words are the gallery’s."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — All entries — The filter offers All entries, Completed and Partial (TASK-026); a stopped workout reads Partial, as stored."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Partial — The filter offers All entries, Completed and Partial (TASK-026); a stopped workout reads Partial, as stored."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "gallery only — FILTER — The route keeps its carried TASK-026 filter, labelled Show (task 2: the app keeps its own words)."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "AC-C53-01",
+      "text": "gallery only — November 3 · Completed — Decision 7 / C53: the route reads the status, then the stored date in the app’s day format, on the line beneath the title; the gallery sample is “date · status” in its own words."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "AC-C53-01",
+      "text": "gallery only — November 1 · Incomplete — Decision 7 / C53: the route reads the status, then the stored date in the app’s day format, on the line beneath the title; the gallery sample is “date · status” in its own words."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "AC-R026-01",
+      "text": "route only — WORKOUT HISTORY — History’s own list card names the chronology it holds."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — SHOW — The carried TASK-026 filter control, labelled Show."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Wed 4 Nov 2026 – Mon 23 Nov 2026 · 20 rest days — Rest days are still listed under All entries (TASK-026); the gallery sample has none."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — REST — A rest run’s own row word, under All entries (TASK-026)."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "AC-C53-01",
+      "text": "route only — COMPLETED — Decision 7 / C53: the status, with its glyph, on the line beneath the title."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "AC-C53-01",
+      "text": "route only — Tue 3 Nov 2026 — Decision 7 / C53: the stored date beside the status, in the app’s day format (AC-R026-01: truthful stored dates)."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Upper body — Then the metrics (decision 7): focus, requested and actual minutes, intensity — the record’s own values."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Requested 45 min — The metrics row, wrapped at a narrow width."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Actual 47 min — The metrics row, wrapped at a narrow width."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Intensity 7/10 — The metrics row, wrapped at a narrow width."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Mon 2 Nov 2026 · 1 rest day — Rest days are still listed under All entries (TASK-026); the gallery sample has none."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — REST — A rest run’s own row word, under All entries (TASK-026)."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — PARTIAL — The filter offers All entries, Completed and Partial (TASK-026); a stopped workout reads Partial, as stored."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "AC-C53-01",
+      "text": "route only — Sun 1 Nov 2026 — Decision 7 / C53: the stored date beside the status, in the app’s day format (AC-R026-01: truthful stored dates)."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Full body — Then the metrics (decision 7): focus, requested and actual minutes, intensity — the record’s own values."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Requested 45 min — The metrics row, wrapped at a narrow width."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Actual 18 min — The metrics row, wrapped at a narrow width."
+    },
+    {
+      "task": "TASK-103",
+      "criterion": "TASK-AC-6BFF651DF237",
+      "text": "route only — Intensity 7/10 — The metrics row, wrapped at a narrow width."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "gallery only — Step 1 of 5 · Equipment — Every onboarding step stays with its own question: the route’s first step is the setup and its equipment, asked by the step card; the pinned step line is the progress’s own name (Step 1 of 5)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "gallery only — KETTLEBELL — Gallery sample options. The route lists the real Setup equipment catalogue (EQUIPMENT): Kettlebells, and no Bench, which is not a Setup equipment ID (the gallery’s own asset note says so)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "gallery only — BENCH — Gallery sample options. The route lists the real Setup equipment catalogue (EQUIPMENT): Kettlebells, and no Bench, which is not a Setup equipment ID (the gallery’s own asset note says so)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "route only — WHAT’S YOUR GYM SETUP? — The first onboarding step’s own question, its card heading (every onboarding step stays)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "route only — MINIMAL — The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "route only — HOME GYM — The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "route only — BUILDING GYM — The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "route only — FULL GYM — The first step’s setup choice and its description, which the equipment depends on (every onboarding step stays)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — BODYWEIGHT — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — RESISTANCE BANDS — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — FOAM ROLLER — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — KETTLEBELLS — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — PULL-UP BAR — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — BARBELL — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — PLYO BOX — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — CABLE MACHINE — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — ROWING MACHINE — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — ASSAULT BIKE — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — BATTLE ROPES — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — ASSISTED PULL-UP / DIP — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — LEG PRESS — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — LEG CURL / EXTENSION — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-7B8DC9E87617",
+      "text": "route only — HACK SQUAT — The real Setup equipment catalogue (EQUIPMENT), every choice the step offers; the gallery part shows a three-item sample."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-C52-01",
+      "text": "route only — SET UP CLEAR — The pinned title is the screen’s own h1, Set up CLEAR, in Round 7’s setup header (C52, R24); the gallery part is labelled Setup."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "AC-C52-01",
+      "text": "route only — STEP 1 OF 5 — The pinned step label, the named progressbar’s visible label (C52; AC-R025-01: no hidden progress)."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "route only — NEXT — The step control in the pinned footer: the onboarding steps stay reachable."
+    },
+    {
+      "task": "TASK-113",
+      "criterion": "TASK-AC-A76ECE156C75",
+      "text": "Every onboarding step stays with its own controls: Round 7’s Onboarding (gallery-owned) keeps the shipped CheckboxGroup for equipment (U09 checkbox activation); the accepted part composes its three-item sample from chips."
+    }
+  ],
+  "unintended": []
+}

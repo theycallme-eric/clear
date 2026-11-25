@@ -15,15 +15,15 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/scheduled-phone-320-route-running.png",
-      "sha256": "07289d57cc39b658a46e209998a5786f3498df2c9b690e9fb81862dda73643dc"
+      "sha256": "6f198ef8466a7af00eaeb3697bd523e3647a0650d83cd82893dcec6b533351ae"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/scheduled-phone-320-route-log.png",
-      "sha256": "f2bc5e86be1494bca7555807e73be4d72ea8029528ca8179668a0942782add1e"
+      "sha256": "bb5debb03faebf68648294629561fd1b6c271add05342fa20259c280a5a19f73"
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/scheduled-phone-320-route-ended.png",
-      "sha256": "f3d2b6599f4e141b2706f0537dc9b3f0807b27f75ae1bcc2d9067e98dc42ce4f"
+      "sha256": "b3ee814fad3afdddb7c718097afbcc6d9e8e62a6d57ec480ebe533b2c1de5bc9"
     }
   },
   "wholeCardCaptures": {
@@ -33,11 +33,11 @@
     },
     "route-running": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/scheduled-phone-320-route-running-whole.png",
-      "sha256": "6b1ff1c22ae4323aa691532ce5180fdfc8fb6ccb7b942672b725422ed1a1a0fd"
+      "sha256": "5a517b2ae3c34f876f6e6ade2a52cf928eac006b5f3a7e4094ba08458f4c9a47"
     },
     "route-ended": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/scheduled-phone-320-route-ended-whole.png",
-      "sha256": "0706fbcf43ae8bd79a6c2df867c676fd05724a4c599081ef7cf603e6eb41c1f9"
+      "sha256": "77cd6bae8e721111cd7e7e35d998f9c49070f2a820df601a62879eb5143b4d56"
     }
   },
   "lines": {
@@ -114,7 +114,7 @@
         ":",
         "0",
         "5",
-        "01:05",
+        "1 minute 5 seconds left",
         "CONDITIONING",
         "EMOM",
         "7 rounds · a new round every 01:15",
@@ -223,7 +223,7 @@
         ":",
         "0",
         "0",
-        "00:00",
+        "0 seconds left",
         "CONDITIONING",
         "EMOM",
         "7 rounds · a new round every 01:15",

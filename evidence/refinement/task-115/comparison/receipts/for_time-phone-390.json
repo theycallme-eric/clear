@@ -1,0 +1,385 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "for_time",
+  "title": "For Time results",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/for_time-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/for_time-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/for_time-phone-390.json",
+      "receiptSha256": "f5ac030fee7968fb1d60cee271ff39f611198c383d4050ce52ad38d8e987cace",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/for_time-phone-390-gallery.png",
+              "sha256": "7233a2dc15e98584f1475fe2ea21832c6da1ee0854601d724989eb27a1a2fa92",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/for_time-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/for_time-phone-390-route.png",
+              "sha256": "1153bfd1c6e74986e1005ddb9b037d9a742f573788b42255f185a5cb67679691",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/for_time-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/for_time-phone-390.json",
+      "receiptSha256": "e18e14566f23d82751eacd3bcdec8b17174dcba039d384a5a24726814a57d3e6",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-gallery-ready.png",
+              "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-route-ready.png",
+              "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-gallery-log.png",
+              "sha256": "5ea83f9e19acbd1f3e7cbc9690a51c24bc10db581e0920035a0bf8d727423875",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-route-log.png",
+              "sha256": "1153bfd1c6e74986e1005ddb9b037d9a742f573788b42255f185a5cb67679691",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-390-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-104",
+      "primary": false,
+      "receipt": "evidence/refinement/task-104/parity/for_time-phone-390.json",
+      "receiptSha256": "036ad8c7004a027d1be0487c27e41e7a9f30be4fdffcb97068bc46d14f72683f",
+      "provenance": "retaken by TASK-115 through TASK-104's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-ready.png",
+              "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-ready.png",
+              "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "running",
+          "gallery": [
+            {
+              "key": "gallery-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-running.png",
+              "sha256": "59357e6563e0bb711996f77cfacf57c770e18bd9bdab6488ea80ccaa1bc72495",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-running.png",
+              "sha256": "d08c19c4af679cc5b8949afe852eebcb0d675402642d6710c588332e5b5f1f72",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "paused",
+          "gallery": [
+            {
+              "key": "gallery-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-paused.png",
+              "sha256": "933eff7896d3a8018873806e287aeaa2793ebfe34921c10640626c23d5b9c04c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-paused.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-paused.png",
+              "sha256": "92ba0f9e364e6adfc45711fb2964e85a92b5805eefb9660c80ca002e12cad981",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-paused.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-ended.png",
+              "sha256": "297272ab2f0cb33111a8cc5e803f37af1a2ff1371487cf08d3bba8827193a4ac",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-ended.png",
+              "sha256": "19753ebca11323a1f5d993adfac81752e85a8885421958f45f840fb719f5cabd",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-ended.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-log.png",
+              "sha256": "b1c09fa0b3a7dc0631ea225b5a7f1de81814ed5404846ac935c811e98d2211bf",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-log.png",
+              "sha256": "24bd3464d023f67caaafadca87b7626bbcc66034489e874126bf1ede2792e50b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/for_time-phone-390-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-116",
+      "primary": false,
+      "receipt": "evidence/refinement/task-116/parity/for_time-phone-390.json",
+      "receiptSha256": "3faf1033664c436005c8f67e21ef6a77be295af9896c3ebed8895802df0454b5",
+      "provenance": "retaken by TASK-115 through TASK-116's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-ready.png",
+              "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-ready.png",
+              "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-log.png",
+              "sha256": "5ea83f9e19acbd1f3e7cbc9690a51c24bc10db581e0920035a0bf8d727423875",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-log.png",
+              "sha256": "1153bfd1c6e74986e1005ddb9b037d9a742f573788b42255f185a5cb67679691",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "answered",
+          "gallery": [
+            {
+              "key": "galleryAnswered",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-answered.png",
+              "sha256": "29fa7c211d68a48cfc29f28ffb209c3b738e0a01630718732bd707d681d5adee",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-gallery-answered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeAnswered",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-answered.png",
+              "sha256": "4dca3d75b85ec72e2ce5d4a4b0c6501506018951d00b9e965d104a600efb2466",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/for_time-phone-390-route-answered.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-117",
+      "primary": false,
+      "receipt": "evidence/refinement/task-117/parity/for_time-phone-390.json",
+      "receiptSha256": "2e1f336666a9683ab665a7c5219c458bf4ceef13f73b42513a1909f54ccb4a7d",
+      "provenance": "retaken by TASK-115 through TASK-117's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-ready.png",
+              "sha256": "400ffa62630e05e6a88bf3024784c15987733a9471defddc0334fc272eefa441",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-ready.png",
+              "sha256": "6d0f3ed5bf9659eaf86cc04c8dbb0bca4c52cc965b3a6b3b4ae482c821137f4d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-log.png",
+              "sha256": "5ea83f9e19acbd1f3e7cbc9690a51c24bc10db581e0920035a0bf8d727423875",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-log.png",
+              "sha256": "1153bfd1c6e74986e1005ddb9b037d9a742f573788b42255f185a5cb67679691",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "entered",
+          "gallery": [
+            {
+              "key": "galleryEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-entered.png",
+              "sha256": "1a6e5b61bf46fde07d6ef8966745681f0767901e761feced598169868c4328ed",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-gallery-entered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-entered.png",
+              "sha256": "fd1c59af8231a599a9bd07d2f1b704cec993cd4014a266f42d233d596e9a307d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/for_time-phone-390-route-entered.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-116",
+      "criterion": "TASK-AC-85F76FF493AB",
+      "text": "`askCompletion`: a For Time with no cap is not asked \"Work completed\"; a For Time's amounts belong to a race answered Incomplete, never to one nobody answered."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "AC-R010-01",
+      "text": "For Time starts where the race ended and keeps only the athlete's answer (`workCompleted`); with no cap nothing is asked or claimed."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "TASK-AC-8FF68F3F5241",
+      "text": "AMRAP and For Time save authority: a refused save is kept on the attempt's record and said after a reload; a known row whose richer save failed reopens the block."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R015-01",
+      "text": "An AMRAP asks no per-movement amount until a rounds count is recorded (TASK-015, `partialRoundFor`), so the amrap state's log past its cap draws only the loaded kb swing's \"Weight used\" group (bec4454 drew \"Completed in next round\" for every movement); a recorded count draws each movement's next-round amount, and a changed count clears the amounts and keeps the loads. Labels stay Round 7's."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-C37-01",
+      "text": "A load field only where a load can attach (`loadApplies`, the set logger's rule the saved row also applies); a multi-round For Time asks loads only; a distance amount takes decimals; the row's own rule (`movementActualFromDraft`) says in the field what an entry is refused on. No accepted state draws a refusal, a distance or a multi-round race, and every accepted state's loaded movement keeps its load field."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-FB8AF4D9B641",
+      "text": "AC-C26-01's exact per-movement group list (a group only for the loaded movement before rounds are recorded) is the drawing above; the form keeps its accepted name \"Log section results\" (R7-3)."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R011-01",
+      "text": "An EMOM's clock caption says \"· Rest\" beside its minute while the block's own rest window runs. The accepted emom state prescribes no rest, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-8C147E2C148D",
+      "text": "The card's \"Log results\" action states whether its dialog is open (`aria-expanded`); nothing drawn changes."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-339D1096F660",
+      "text": "Each movement's typed amount and load are kept on the attempt's own record (EMOM, AMRAP, For Time) and restored after a reload; the gallery keeps nothing, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-D58939F8E091",
+      "text": "EMOM save authority, as the AMRAP's and For Time's: a refused save is kept on the EMOM's record and said after a reload; a known row whose richer save failed reopens the block. Nothing the gallery draws changes."
+    }
+  ],
+  "unintended": []
+}

@@ -1,0 +1,169 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "circuit-round",
+  "title": "Circuit round / take back",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/circuit-round-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/circuit-round-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/circuit-round-phone-390.json",
+      "receiptSha256": "1d8d12461d16a0d4009ec0f13b147537ee06074d19ae133a74a134a42766a4cb",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/circuit-round-phone-390-gallery.png",
+              "sha256": "3f8e0f3c2f85d9d6a4ae9ac8c3caceded9ba013ad3997ef29fa10ab5fec5014d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/circuit-round-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/circuit-round-phone-390-route.png",
+              "sha256": "3f8e0f3c2f85d9d6a4ae9ac8c3caceded9ba013ad3997ef29fa10ab5fec5014d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/circuit-round-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-107",
+      "primary": false,
+      "receipt": "evidence/refinement/task-107/parity/circuit-round-phone-390.json",
+      "receiptSha256": "c05ab9c4f15ce269949df8a132b3aec3ee48df700c2e58feb08ced8c15469289",
+      "provenance": "retaken by TASK-115 through TASK-107's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-gallery-card.png",
+              "sha256": "f61f8996bda763520f05eb7fd0d4a6aa322a7de0ca3c8dad0307e68aa4bbb2bf",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-route-card.png",
+              "sha256": "634e0fef2937e24f23e7e5ff4f393902d0c9bec76f5411f3fba65b6c57ef191f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-gallery-open.png",
+              "sha256": "3f8e0f3c2f85d9d6a4ae9ac8c3caceded9ba013ad3997ef29fa10ab5fec5014d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-route-open.png",
+              "sha256": "3f8e0f3c2f85d9d6a4ae9ac8c3caceded9ba013ad3997ef29fa10ab5fec5014d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "closed",
+          "gallery": [
+            {
+              "key": "gallery-closed",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-gallery-closed.png",
+              "sha256": "ec2063221936976a0555bc3d068c86780ae9c10c26fa75db84fe5ad488712af8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-gallery-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-closed",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-route-closed.png",
+              "sha256": "b503c24fa51214e6d1322ce7bbe10f71193dcee3cca45a9ade03eae5b6eb44b5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-107/captures/circuit-round-phone-390-route-closed.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-110",
+      "primary": false,
+      "receipt": "evidence/refinement/task-110/parity/circuit-round-phone-390.json",
+      "receiptSha256": "f8e57a7d6b01a845a21199b6915962d6e351cb73d9a7ed88dd36539692e4013b",
+      "provenance": "retaken by TASK-115 through TASK-110's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery:card",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-390-gallery-card.png",
+              "sha256": "f61f8996bda763520f05eb7fd0d4a6aa322a7de0ca3c8dad0307e68aa4bbb2bf",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-390-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:card",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-390-route-card.png",
+              "sha256": "634e0fef2937e24f23e7e5ff4f393902d0c9bec76f5411f3fba65b6c57ef191f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-110/captures/circuit-round-phone-390-route-card.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-9A47DF868BD4, TASK-AC-2E6734369AC5",
+      "text": "BlockPanel takes `detailLine`: the badge names the format alone and the block's size it leaves out (rounds, scheme) is read once, on a `clr-timed-meta` line directly under the header (the line Review and the timed flow already draw). Only the circuit asks for it."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-2E6734369AC5, TASK-AC-9A47DF868BD4",
+      "text": "The circuit's badge is format-only (`CIRCUIT`, was `CIRCUIT · 3 ROUNDS` outside the product presentation) and its prescribed rounds (`3 ROUNDS`) are read on the line under the header; under the product presentation Round 7 had dropped the rounds from the card before a round was recorded. The circuit-round state's card gains that one line."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-4BEA11242321, AC-R003-03, TASK-AC-9A47DF868BD4",
+      "text": "Each live row's name, compact equipment and prescribed load are `liveMovementReadings` (the load-guidance read model's target through `loadText`), drawn exactly as before. The prescription line carries `data-structure-meta` and, for an EMOM with a rest window, `Ns rest at the end of each minute` after its window; the cards state's EMOM prescribes no rest, so its line is unchanged."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-4BEA11242321",
+      "text": "The live ladder's summary line reads its name and load through `liveMovementReadings`, drawn exactly as before. Not in a state compared here."
+    },
+    {
+      "task": "TASK-110",
+      "criterion": "TASK-AC-2E6734369AC5",
+      "text": "SectionHeader's full (non-compact) structure list names each block by its format alone (`StructureBadge formatOnly`). The route and the accepted gallery draw the compact navigator, which has no list; the registry's full-header specimen holds no blocks, so nothing drawn changes."
+    }
+  ],
+  "unintended": []
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
 import { ArrowLeft, Button, ChoiceGroup, IconButton, Input, Dumbbell, WeightPlate, Clock, Target, Gauge, Log } from '../design-system/index'
 import { MetricFrame, MetricGrid, SummaryFact, SummaryFacts } from '../ui/composition'
 import { Card } from '../ui/card'
@@ -91,4 +91,24 @@ export function GallerySectionHeader({ compact = true }: { compact?: boolean }) 
   const [active, setActive] = useState(1)
   return <SectionHeader compact={compact} section={SECTIONS.sections[active]} position={active + 1} total={3} progress={SECTIONS}
     bar={!compact} onSelect={setActive} />
+}
+
+/**
+ * The full-header specimen beside the compact one on the same catalogue page.
+ * Both draw SectionHeader's jump list as a region named by its "All sections"
+ * toggle, so the page would hold two regions of one name (axe landmark-unique).
+ * The gallery names this specimen's region for itself; SectionHeader and the
+ * route are unchanged (TASK-115, D3: "Yes, gallery page only (Recommended)",
+ * Eric, chat, 2026-11-24).
+ */
+export function GalleryFullSectionHeader() {
+  const host = useRef<HTMLDivElement>(null)
+  const label = useId()
+  useLayoutEffect(() => {
+    host.current?.querySelector('.clr-collapsible__region')?.setAttribute('aria-labelledby', label)
+  })
+  return <div ref={host} style={{ display: 'contents' }}>
+    <span id={label} hidden>All sections, full header specimen</span>
+    <GallerySectionHeader compact={false} />
+  </div>
 }

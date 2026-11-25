@@ -18,11 +18,11 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-320-gallery-open.png",
-      "sha256": "580c6625f84114dca28381da23778330d3b3eabb1cb46300333fa366eb5a193e"
+      "sha256": "ab797c3f8533555b539eb035b7e263a0dd1e30ae07b4711f4c253e7df82b5baf"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/other-lift-phone-320-route-open.png",
-      "sha256": "7c0abcd48466c31531822f77dd628d42a13be798ffef4af387e26023da75b5f7"
+      "sha256": "30f839fd661f110e995a6101907fae1ce642db4f0c096d25230aca443dd2bb61"
     }
   },
   "lines": {
@@ -146,7 +146,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 537
+          "height": 497
         }
       },
       "route": {
@@ -162,7 +162,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 537
+          "height": 497
         }
       }
     },

@@ -1,0 +1,149 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "rest-day",
+  "title": "Rest day / reason change",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/rest-day-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/rest-day-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/rest-day-phone-320.json",
+      "receiptSha256": "2d5f15a6b21c7a7f29ff6c7ea8cea303397e236e090cdb567fcab8ffa9ecb7dc",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/rest-day-phone-320-gallery.png",
+              "sha256": "c493b795c4422a10d53ad845e0e41994f94c4b27594648786e1afaad6a0c6e76",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/rest-day-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/rest-day-phone-320-route.png",
+              "sha256": "b467001c3aa5e774a27453940d9c615e6a6f00f711c32ea9097d4142cfc24aa1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/rest-day-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-111",
+      "primary": false,
+      "receipt": "evidence/refinement/task-111/parity/rest-day-phone-320.json",
+      "receiptSha256": "742bb75f61513e3da3d807c0f9a160af528f5849cc2f1947b6478060c86d8989",
+      "provenance": "retaken by TASK-115 through TASK-111's own guard; receipt bytes as committed at f1727b84",
+      "route": "/",
+      "moments": [
+        {
+          "moment": "context",
+          "gallery": [
+            {
+              "key": "gallery-context",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-context.png",
+              "sha256": "4ae1a8b77c9c95e64562d999ad6b45265b0dc540c13a7b37c87d6b91c8de95e5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-context.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-context",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-context.png",
+              "sha256": "6456322b36a31fbbe3ac6ce8b77e0f0783e6dc318c54da9bc08d77955f7194c5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-context.png"
+            }
+          ]
+        },
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-card.png",
+              "sha256": "a7d5ab750722b7cae68d85e90017c6955430fb08f11bec98d3c3f468ef700f62",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-card.png",
+              "sha256": "9da66d35d05038820ae2c2f5670bd1b25550d96a7779e07e40564bab134d76d5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-open.png",
+              "sha256": "1ab9e73b3c114b9e1cdab178c10afba456379f505bff758eac2ddc056d410ee7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-open.png",
+              "sha256": "0f9a26470f6dda432cef7bb0fca538a78023613d6b967b7befeca9771b8fbe73",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "reopened",
+          "gallery": [
+            {
+              "key": "gallery-reopened",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-reopened.png",
+              "sha256": "c493b795c4422a10d53ad845e0e41994f94c4b27594648786e1afaad6a0c6e76",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-reopened.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-reopened",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-reopened.png",
+              "sha256": "0f9a26470f6dda432cef7bb0fca538a78023613d6b967b7befeca9771b8fbe73",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-reopened.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-111",
+      "criterion": "AC-GAL-05",
+      "text": "The rest day keeps its own keyboard state: opening moves focus to its native Reason picker (U25, carried; the route’s own focus rule), where the gallery’s composed state, which has no such rule, opens on the X. The picker’s frame is drawn focused on the route."
+    },
+    {
+      "task": "TASK-111",
+      "criterion": "AC-GAL-05",
+      "text": "The rest day keeps its own keyboard state: opening moves focus to its native Reason picker (U25, carried; the route’s own focus rule), where the gallery’s composed state, which has no such rule, opens on the X. The picker’s frame is drawn focused on the route."
+    },
+    {
+      "task": "TASK-111",
+      "criterion": "TASK-AC-579280C10CDC",
+      "text": "Home’s rest day is wired in place: Home draws the control as the ruled “Rest day” sub-group of its This week card (Home’s existing hierarchy, REQ-018/REQ-009: a card never holds another card), while the gallery scene, which has no week card, draws the same control in a card of its own. The control’s own stack and the dialog are compared box by box; the surroundings by their words."
+    }
+  ],
+  "unintended": []
+}

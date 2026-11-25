@@ -1,0 +1,387 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "ladder",
+  "title": "Ladder results",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/ladder-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/ladder-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/ladder-phone-320.json",
+      "receiptSha256": "84b53fa3698c172ce44744debb45298135b571d9d56c0d5509602a268c139026",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/ladder-phone-320-gallery.png",
+              "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/ladder-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/ladder-phone-320-route.png",
+              "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/ladder-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/ladder-phone-320.json",
+      "receiptSha256": "935d9bce6197fdbddf5b6292c2c0074a3298fb46d9b5bcbd179751ab9f42d1ef",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-ready.png",
+              "sha256": "14a1538e8f7cf834739a5aceed2f0c08dc9d9523414cab6e6d89b74411214183",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-ready.png",
+              "sha256": "12876b4bdcdb14a38fbbc65f7a2c1bae6c3671be6a3ef82dbc0d9e8c1f40fc17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-log.png",
+              "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-log.png",
+              "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-105",
+      "primary": false,
+      "receipt": "evidence/refinement/task-105/parity/ladder-phone-320.json",
+      "receiptSha256": "afa21aa6a8f877b261a86e9e33c14625b3f18005aaa3c270d332daec13240386",
+      "provenance": "retaken by TASK-115 through TASK-105's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ready.png",
+              "sha256": "ad7c13a8752402108d456fd79c9e69832505f9c2c4e0f07f009b8524d6658854",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ready.png",
+              "sha256": "de0d12f1a7231b8a20678455e47f608c0aa9e9662c79c6aa75f752b0cc7d22e5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-log.png",
+              "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-log.png",
+              "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ended.png",
+              "sha256": "93cc015d149742885f7b1a6bb419d6d5e282f847339baeae389a7e4883a81a0f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ended.png",
+              "sha256": "8590ba6a15cc4bd024ddef9a144ec15fa9ad7f694a9c0857c9f2daec0a1ecdee",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-105/captures/ladder-phone-320-route-ended.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-116",
+      "primary": false,
+      "receipt": "evidence/refinement/task-116/parity/ladder-phone-320.json",
+      "receiptSha256": "036cdcb2ccf011f8c3538f8194f58dc577ee1daf711a13f752a36bb90fb7a41c",
+      "provenance": "retaken by TASK-115 through TASK-116's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-ready.png",
+              "sha256": "ad7c13a8752402108d456fd79c9e69832505f9c2c4e0f07f009b8524d6658854",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-ready.png",
+              "sha256": "bb6fe3dc6dd0fe00f57977f5625368bfd21108c22342ccf0d69f99704d8f8b1e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-log.png",
+              "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-log.png",
+              "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "answered",
+          "gallery": [
+            {
+              "key": "galleryAnswered",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-answered.png",
+              "sha256": "adaea3b1317c6b0d9f97e5b57cad14f39d700296bfa24a436336a08bba38b014",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-gallery-answered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeAnswered",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-answered.png",
+              "sha256": "abecca45520211d42e549843f85ec04441cca138e7b9905712c728c3744b93b6",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-116/captures/ladder-phone-320-route-answered.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-117",
+      "primary": false,
+      "receipt": "evidence/refinement/task-117/parity/ladder-phone-320.json",
+      "receiptSha256": "2d88e4d662f8ad16f7f79987ce8bb43da8f2c9c2c68558d7870820d26200d921",
+      "provenance": "retaken by TASK-115 through TASK-117's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-ready.png",
+              "sha256": "ad7c13a8752402108d456fd79c9e69832505f9c2c4e0f07f009b8524d6658854",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-ready.png",
+              "sha256": "bb6fe3dc6dd0fe00f57977f5625368bfd21108c22342ccf0d69f99704d8f8b1e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-log.png",
+              "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-log.png",
+              "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-log.png"
+            }
+          ]
+        },
+        {
+          "moment": "entered",
+          "gallery": [
+            {
+              "key": "galleryEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-entered.png",
+              "sha256": "2a6c0b6ba358f87f2404775011519692a90f5fd850e40f0999f0edc2f0a0b2b5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-gallery-entered.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeEntered",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-entered.png",
+              "sha256": "5398d6b6f45b8f701a3b984b83246df098d17d62d1a4077d0110148d4f449b68",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-117/captures/ladder-phone-320-route-entered.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C34-01, TASK-AC-C021DADA60B8",
+      "text": "A ladder whose rounds nobody has marked yet reads \"No rounds marked yet\" (live count and the log's count), not \"0 of N rounds completed\": nothing stated is not zero; an explicit zero still reads \"0 of N\"."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C60-01, AC-R014-01, AC-R014-02",
+      "text": "Undo finish · resume ladder keeps its quiet style, its control height and the small button's own inline padding (`var(--spacing-300)`, so its focus frame clears the first letter); its row gives that padding back outside the box with a negative inline margin (`calc(var(--spacing-300) * -1)`), so its text starts at the rounds-completed count's left edge."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01, AC-R013-03, TASK-AC-C021DADA60B8",
+      "text": "The ladder log asks each movement's next-round amount only once a round is stated (zero included): with nothing stated there is no \"Completed in round 1\" field."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-R013-01",
+      "text": "A tap inside the live check-off's selection leaves only the rounds before it (the log tiles' rule), where it used to select through it."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "JOURNEY-012 (readable wrapping), AC-R013-02",
+      "text": "A live round tile keeps the read-only tile's declared inset (`var(--spacing-200)`) instead of the Chip's wider inline inset, which broke BURPEE mid-word (BURPE/E) in the three-column grid at 390. Size, type, frame and selection are unchanged."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "TASK-AC-30138C4A2AFF (owner decision 2026-11-16, Decision 2)",
+      "text": "At a narrow phone width (22.5rem and below; here 320 px) a round tile's inset is tightened from `var(--spacing-200)` to `var(--spacing-100)`, so the twelve-round grid fits one 320×568 screen before Start (544 px, was 592). The column rule, gap, frame, the frame's own inset and type are unchanged; at 390 nothing changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C33-01, AC-R013-02",
+      "text": "A live round's toggle fills its grid cell and starts its words at its top, as a read-only round does, so a row's tiles and round labels stay level when one tile's words fit one line and its neighbour's wrap (a one- and a two-digit timed rung at 320 px). The accepted states' rows hold alike words, so nothing drawn changes."
+    },
+    {
+      "task": "TASK-105",
+      "criterion": "AC-C35-01, AC-R012-01, TASK-AC-F3CDA21AC50B",
+      "text": "The prescription reads the shared `state/ladder.ts` readings (Review's too): each round is also said in words to a screen reader (visually hidden), live toggles describe their round's work, and the summary line wraps a long word rather than overflowing. No drawn word or box changes for the accepted push up and burpee ladder."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "TASK-AC-85F76FF493AB",
+      "text": "`askCompletion`: a For Time with no cap is not asked \"Work completed\"; a For Time's amounts belong to a race answered Incomplete, never to one nobody answered."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "AC-R010-01",
+      "text": "For Time starts where the race ended and keeps only the athlete's answer (`workCompleted`); with no cap nothing is asked or claimed."
+    },
+    {
+      "task": "TASK-116",
+      "criterion": "TASK-AC-8FF68F3F5241",
+      "text": "AMRAP and For Time save authority: a refused save is kept on the attempt's record and said after a reload; a known row whose richer save failed reopens the block."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R015-01",
+      "text": "An AMRAP asks no per-movement amount until a rounds count is recorded (TASK-015, `partialRoundFor`), so the amrap state's log past its cap draws only the loaded kb swing's \"Weight used\" group (bec4454 drew \"Completed in next round\" for every movement); a recorded count draws each movement's next-round amount, and a changed count clears the amounts and keeps the loads. Labels stay Round 7's."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-C37-01",
+      "text": "A load field only where a load can attach (`loadApplies`, the set logger's rule the saved row also applies); a multi-round For Time asks loads only; a distance amount takes decimals; the row's own rule (`movementActualFromDraft`) says in the field what an entry is refused on. No accepted state draws a refusal, a distance or a multi-round race, and every accepted state's loaded movement keeps its load field."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-FB8AF4D9B641",
+      "text": "AC-C26-01's exact per-movement group list (a group only for the loaded movement before rounds are recorded) is the drawing above; the form keeps its accepted name \"Log section results\" (R7-3)."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "AC-R011-01",
+      "text": "An EMOM's clock caption says \"· Rest\" beside its minute while the block's own rest window runs. The accepted emom state prescribes no rest, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-8C147E2C148D",
+      "text": "The card's \"Log results\" action states whether its dialog is open (`aria-expanded`); nothing drawn changes."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-339D1096F660",
+      "text": "Each movement's typed amount and load are kept on the attempt's own record (EMOM, AMRAP, For Time) and restored after a reload; the gallery keeps nothing, so it draws no change."
+    },
+    {
+      "task": "TASK-117",
+      "criterion": "TASK-AC-D58939F8E091",
+      "text": "EMOM save authority, as the AMRAP's and For Time's: a refused save is kept on the EMOM's record and said after a reload; a known row whose richer save failed reopens the block. Nothing the gallery draws changes."
+    }
+  ],
+  "unintended": []
+}

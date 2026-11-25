@@ -1,0 +1,283 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "overview",
+  "title": "Overview and Summary frames",
+  "width": 390,
+  "primaryOwner": "TASK-118",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/overview-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/overview-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-118",
+      "primary": true,
+      "receipt": "evidence/refinement/task-118/parity/overview-phone-390.json",
+      "receiptSha256": "d871159d9aefb7a54c9a3c3a56911f4354f19aaacb81477c28e0d3bc56083c83",
+      "provenance": "taken by TASK-118's own run; receipt bytes as committed at 1ed15111",
+      "route": "/review, /history/:id, /summary",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery:card",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-gallery-card.png",
+              "sha256": "bc9a2913e1c04f4bbad0627ea128dd645d642f1164823be2e429304132dd0b57",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:card",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-review-card.png",
+              "sha256": "93991dc41ba8486f97be052d2afd9e30ca4f05149cb45cc60cd3c75071d4c0e8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-review-card.png"
+            },
+            {
+              "key": "history:card",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-history-card.png",
+              "sha256": "7906b21b79a8a116001a40cfecce15735f3aa8d65c044f91121713f3ec2c50d1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-history-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "equipment",
+          "gallery": [
+            {
+              "key": "gallery:equipment",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-gallery-equipment.png",
+              "sha256": "4b36e593dba6d7d786de20ae265422b14e555693607871f3601509b8026e241b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-gallery-equipment.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:equipment",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-review-equipment.png",
+              "sha256": "c5091e1c273248ba3367c20f5fc22adac0f4f2da769bb0cb5ae26d122b0dfde2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-review-equipment.png"
+            },
+            {
+              "key": "history:equipment",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-history-equipment.png",
+              "sha256": "c5091e1c273248ba3367c20f5fc22adac0f4f2da769bb0cb5ae26d122b0dfde2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-history-equipment.png"
+            }
+          ]
+        },
+        {
+          "moment": "metrics",
+          "gallery": [
+            {
+              "key": "gallery:metrics",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-gallery-metrics.png",
+              "sha256": "9cd90143234bc3f9095dd8b46bb0b044e79e84d9670fa4dd5f0a61c509b2405c",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-gallery-metrics.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "summary:metrics",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-summary-metrics.png",
+              "sha256": "0bafc16b241adbe21b8d25904eb7f23727cdf9bd33f9e8655933db9edf68a180",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/overview-phone-390-summary-metrics.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "gallery only — FOCUS — Each view keeps its own term: the state’s card and a saved record call the focus reading `Focus`, Review calls it `Anchor` (Round 7’s Review at bec4454). The kind (focus), not the word, picks its glyph, its place and that its term is kept for assistive technology only."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "route only — ANCHOR — Review’s own term for the focus reading, kept for assistive technology only; the same Target glyph and place as the state’s `Focus` (compared by kind)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C12-01",
+      "text": "route only — GOAL — Every useful actual fact: Round 7’s Review composes the workout’s goal (its own `Goal` reading, `src/app/Review.tsx` at bec4454), which the state’s composed card leaves out."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C12-01",
+      "text": "route only — STRENGTH — The goal’s recorded value (the matched workout is composed for strength)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "gallery only — FOCUS — Each view keeps its own term: the state’s card and a saved record call the focus reading `Focus`, Review calls it `Anchor` (Round 7’s Review at bec4454). The kind (focus), not the word, picks its glyph, its place and that its term is kept for assistive technology only."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "route only — ANCHOR — Review’s own term for the focus reading, kept for assistive technology only; the same Target glyph and place as the state’s `Focus` (compared by kind)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C12-01",
+      "text": "route only — GOAL — Every useful actual fact: Round 7’s Review composes the workout’s goal (its own `Goal` reading, `src/app/Review.tsx` at bec4454), which the state’s composed card leaves out."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C12-01",
+      "text": "route only — STRENGTH — The goal’s recorded value (the matched workout is composed for strength)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R004-03",
+      "text": "gallery only — MOVEMENTS — Saved views use recorded facts with recorded meanings: a saved record’s Overview reads its duration, focus and intensity, then its own date and status (C14’s shared order); it states no planned movement count."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R004-03",
+      "text": "gallery only — 9 — Saved views use recorded facts with recorded meanings: a saved record’s Overview reads its duration, focus and intensity, then its own date and status (C14’s shared order); it states no planned movement count."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C14-01",
+      "text": "route only — DATE — A saved record’s own date (glyph-led, its term kept for assistive technology) and status (named in words), after the readings it shares with the plan."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C14-01",
+      "text": "route only — SUN 15 NOV 2026 — A saved record’s own date (glyph-led, its term kept for assistive technology) and status (named in words), after the readings it shares with the plan."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C14-01",
+      "text": "route only — STATUS — A saved record’s own date (glyph-led, its term kept for assistive technology) and status (named in words), after the readings it shares with the plan."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C14-01",
+      "text": "route only — COMPLETED — A saved record’s own date (glyph-led, its term kept for assistive technology) and status (named in words), after the readings it shares with the plan."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "(part)#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-echo|DURATION 42 min#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "svg.clr-echo__rear|#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "path.clr-echo__source|#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-bleed.clr-bleed--block|DURATION 42 min#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-card|DURATION 42 min#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "span.clr-card__bar|#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-card__body.clr-chamfer.clr-chamfer--md|DURATION 42 min#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-metric-frame|42 min#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "p|42 min#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-echo|STREAK 2 days#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "svg.clr-echo__rear|#1 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "path.clr-echo__source|#1 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-bleed.clr-bleed--block|STREAK 2 days#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-card|STREAK 2 days#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "span.clr-card__bar|#1 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-card__body.clr-chamfer.clr-chamfer--md|STREAK 2 days#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "div.clr-metric-frame|2 days#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C15-01",
+      "text": "p|2 days#0 — Height only: Summary’s key number is drawn in Summary’s own face (unchanged since bec4454), a taller line than the state’s composed cell, so each cell, its card, accent bar, frame and Echo backdrop are taller alike; Duration and Streak still fill one equal-height row on both sides."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "{\"parts\":[\"review-card\",\"history-card\"],\"criterion\":\"TASK-AC-010B47E192B5\",\"difference\":\"The duration and focus readings (and a saved record’s date) show their glyph and value, their term kept for ass"
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5, AC-C14-01",
+      "text": "`SummaryFacts` takes `facts` that carry their `FactKind` and orders, glyphs and sets the term visibility of each by its kind (marked `data-overview-facts`); given children only, as the overview state passes them, it draws exactly as before."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "Review’s Overview hands its facts to `SummaryFacts` with their kinds (and the movement count as `movements`), in place of its label-keyed glyph, order and term tables; it draws the same readings."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-BF12C17FC7BF, AC-C14-01, AC-R004-02, AC-R004-03",
+      "text": "The saved Overview’s facts carry their kinds (Review’s glyphs, order and term visibility over the record’s own values) and the card gains Round 7’s `EquipmentSummary` built from the saved `equipment_used`. No state draws `/history/:id`."
+    }
+  ],
+  "unintended": []
+}

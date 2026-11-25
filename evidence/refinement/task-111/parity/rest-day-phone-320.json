@@ -32,19 +32,19 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-open.png",
-      "sha256": "96d1f2e97dcccb96c8d6fbfe6cdced08e96a69c8916f16046ec3c2567b7a5d70"
+      "sha256": "1ab9e73b3c114b9e1cdab178c10afba456379f505bff758eac2ddc056d410ee7"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-open.png",
-      "sha256": "bd0860174af179219363ad28e51478934cbf0ed430793cd6fafb6edaaa057bea"
+      "sha256": "0f9a26470f6dda432cef7bb0fca538a78023613d6b967b7befeca9771b8fbe73"
     },
     "gallery-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-gallery-reopened.png",
-      "sha256": "8fc24028b46285bc082b8935faa73f7605a858353620d7678a76e478bc70ca45"
+      "sha256": "c493b795c4422a10d53ad845e0e41994f94c4b27594648786e1afaad6a0c6e76"
     },
     "route-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-320-route-reopened.png",
-      "sha256": "bd0860174af179219363ad28e51478934cbf0ed430793cd6fafb6edaaa057bea"
+      "sha256": "0f9a26470f6dda432cef7bb0fca538a78023613d6b967b7befeca9771b8fbe73"
     }
   },
   "lines": {
@@ -169,14 +169,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 309.5
+          "height": 269.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 309.5
+          "height": 269.5
         }
       },
       "route": {
@@ -192,14 +192,14 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 309.5
+          "height": 269.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 309.5
+          "height": 269.5
         }
       }
     },

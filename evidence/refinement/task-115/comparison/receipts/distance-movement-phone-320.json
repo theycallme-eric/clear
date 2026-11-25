@@ -1,0 +1,111 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "distance-movement",
+  "title": "Distance movement",
+  "width": 320,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/distance-movement-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/distance-movement-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/distance-movement-phone-320.json",
+      "receiptSha256": "8730696573253ff058196804ca65d381e460be590c76a72ff26088abbe5ef359",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/distance-movement-phone-320-gallery.png",
+              "sha256": "f278c6e320c82c2905f3c51c6d6a11fb794c6d6aae11235bb7f0bd75e2ef5642",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/distance-movement-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/distance-movement-phone-320-route.png",
+              "sha256": "366354a92f75e7ee8447f2fb44bcd77a194a328807cadb57e9da55a1927ec8a0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/distance-movement-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-106",
+      "primary": false,
+      "receipt": "evidence/refinement/task-106/parity/distance-movement-phone-320.json",
+      "receiptSha256": "afa0e3282d1ec5c49bdc6aa719bb3afd59dd3e9f0200459b02b7c4bdf53aa847",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "card",
+          "gallery": [
+            {
+              "key": "gallery-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-card.png",
+              "sha256": "8093cd26125fad549d82d9647428f708af164c581b71ac6e15cdecf9281744ff",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-card.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-card",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-card.png",
+              "sha256": "05f702d5d229cf84dddf2b48419ec745068051ca85b91b734a7135ac948e038e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-card.png"
+            }
+          ]
+        },
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-open.png",
+              "sha256": "b7cdaf3853416ec5930fb1a74cc99f5c63b2f524ef6372650901f404c9a5bcb0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-open.png",
+              "sha256": "366354a92f75e7ee8447f2fb44bcd77a194a328807cadb57e9da55a1927ec8a0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261118/task-106/captures/distance-movement-phone-320-route-open.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "gallery only — 20–25 lb per hand — The gallery presentation carries a sample suggested load (“20–25 lb per hand”); the product has none, so the route states the prescription’s own load (real data only)."
+    },
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "route only — 25 lb — The gallery presentation carries a sample suggested load (“20–25 lb per hand”); the product has none, so the route states the prescription’s own load (real data only)."
+    },
+    {
+      "task": "TASK-106",
+      "criterion": "TASK-AC-EFB0DB480A73",
+      "text": "span|(load)#0 — The gallery presentation carries a sample suggested load (“20–25 lb per hand”); the product has none, so the route states the prescription’s own load (real data only)."
+    }
+  ],
+  "unintended": []
+}

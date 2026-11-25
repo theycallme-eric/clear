@@ -32,19 +32,19 @@
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-390-gallery-open.png",
-      "sha256": "426b3ed25dd46253f4dc592909808b8644f66e9586e56790cad54bed7f0edeb3"
+      "sha256": "d7692d870296560a6a88a2eed607cd9cb652c0983ede766f2bf0200527d64d51"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-390-route-open.png",
-      "sha256": "e82c9fee4622f8b5cf954b5e3fa70b021d1ef290247e677cf91087a4ab2dde7d"
+      "sha256": "f1a9e0bfbda2ce347e621f5f911a98c0f7fc22a977638ea09e65dee31ecd5c09"
     },
     "gallery-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-390-gallery-reopened.png",
-      "sha256": "426b3ed25dd46253f4dc592909808b8644f66e9586e56790cad54bed7f0edeb3"
+      "sha256": "d7692d870296560a6a88a2eed607cd9cb652c0983ede766f2bf0200527d64d51"
     },
     "route-reopened": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-111/captures/rest-day-phone-390-route-reopened.png",
-      "sha256": "e82c9fee4622f8b5cf954b5e3fa70b021d1ef290247e677cf91087a4ab2dde7d"
+      "sha256": "f1a9e0bfbda2ce347e621f5f911a98c0f7fc22a977638ea09e65dee31ecd5c09"
     }
   },
   "lines": {
@@ -169,14 +169,14 @@
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 259.5
+          "height": 219.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 259.5
+          "height": 219.5
         }
       },
       "route": {
@@ -192,14 +192,14 @@
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 259.5
+          "height": 219.5
         },
         "reopened": {
           "key": "(part)#0",
           "x": 0,
           "y": 0,
           "width": 366,
-          "height": 259.5
+          "height": 219.5
         }
       }
     },

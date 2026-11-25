@@ -1,0 +1,2520 @@
+[
+ {
+  "path": "PROJECT_MAP.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/definitions/clear-refinement-20261103/TASK-035.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/definitions/clear-refinement-20261103/TASK-037.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/definitions/clear-refinement-20261103/TASK-038.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md",
+  "disposition": "resolved-by-wire-task",
+  "task": "F6",
+  "reason": "The build's rows retire EXC-03 for its own timer frames and add EXC-07 for its own breathe CSS; both describe build presentation Round 7 replaced. F6 records any exception its wiring needs.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F6"
+ },
+ {
+  "path": "docs/effects/README.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-001.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-002.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-003.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-004.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-005.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-006.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-007.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-008.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-009.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-010.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-011.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-012.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-013.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-014.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-015.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-016.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-017.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-018.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-019.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-020.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-021.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-022.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-023.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-024.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-025.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-026.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-027.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-028.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-029.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-030.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-031.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-032.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-033.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-034.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-035.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-036.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-037.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-038.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-039.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-041.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-042.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-043.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-044.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-045.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-046.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-047.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/journal/clear-refinement-20261103/TASK-048.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/process/generation-reliability/configuration-dispositions.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/process/generation-reliability/legal-state-matrix.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/specs/DATA_MODEL.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/specs/EFFECTS_COMPOSITION_CONTRACT.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/specs/LOAD_GUIDANCE_CONTRACT.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/specs/LOGGING_FIELD_CONTRACT.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "docs/specs/PREPARATION_GUIDE_CONTRACT.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/contained-shell.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/core-loop.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/accessibility.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/entry-forms.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/optional-feedback.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/task-040-entry-settings.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/task-040-home-review.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/task-040-lifecycle-gaps.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/task-040-lifecycle.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/workout-amrap.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/workout-circuit.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/workout-emom.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/workout-formats.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/workout-ladder.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/design-0143/workout-lifecycle.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/history-detail.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-001.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-002.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-003.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-004.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-005.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-006.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-007.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-008.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-009.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-010.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-011.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-012.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-013.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-014.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-015.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-019.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-020.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-021.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-022.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-023.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-024.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-025.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-026.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-027.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-028.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-029.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-033.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-041.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-043.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-044.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-045.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-046.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-047.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/refinement/task-048.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/rls.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/support/task035-release-case.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-active-hierarchy.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-generate.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-movement-countdown.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-recent-rows.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-rest-log.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-scroll-boundaries.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-structure-badges.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-b05-swap.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-home.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-integrated.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "e2e/ui-polish-pwa-viewport.spec.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/README.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/clear-refinement-20261103/BODY.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/clear-refinement-20261103/references/accepted-gallery/REFERENCE.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/clear-refinement-20261103/references/historical-comparisons/REFERENCE.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/clear-refinement-20261103/references/phosphor-echo/REFERENCE.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-001/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-001/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-001/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-002/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-002/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-002/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-003/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-003/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-003/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-004/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-004/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-004/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-005/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-005/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-005/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-006/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-006/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-006/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-007/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-007/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-007/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-008/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-008/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-008/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-009/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-009/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-009/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-010/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-010/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-010/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-011/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-011/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-011/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-012/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-012/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-012/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-013/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-013/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-013/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-014/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-014/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-014/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-015/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-015/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-015/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-016/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-016/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-017/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-017/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-018/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-018/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-019/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-019/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-020/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-020/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-020/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-021/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-021/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-021/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-022/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-022/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-022/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-023/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-023/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-023/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-024/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-024/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-024/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-025/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-025/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-026/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-026/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-027/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-027/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-027/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-028/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-028/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-028/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-029/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-029/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-029/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-030/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-030/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-030/results/check-02.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-031/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-031/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-032/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-032/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-033/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-033/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-034/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-034/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-035/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-035/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-036/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-036/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-037/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-037/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-038/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-038/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-039/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-039/results/bootstrap.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-041/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-041/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-042/delivered-captures.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-042/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-042/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-042/source-map.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-043/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-043/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-044/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-044/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-045/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-045/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-046/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-046/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-047/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-047/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-048/required-cases.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "evidence/refinement/task-048/results/check-01.json",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/e2e/dispositions.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/e2e/lifecycle.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/e2e/namespace.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/node-test/empty.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/node-test/mixed.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/node-test/pass.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/playwright/mixed.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/playwright/not-collected.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/playwright/pass.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/playwright/playwright.config.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/vitest/mixed.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/vitest/not-collected.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/vitest/pass.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/vitest/skipped.case.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/fixtures/vitest/vitest.config.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/lib/native-results.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/lib/references.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/lib/required-check.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/required-check.test.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/run-required-check.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/stage-references.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/task-035-definition.test.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/task-037-definition.test.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/task-038-definition.test.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/task-042-evidence-closure.test.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/verify-definition-record.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "scripts/refinement/verify-delivery-evidence.mjs",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/app/FormatPreview.test.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/app/FormatPreview.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/app/Onboarding.test.tsx",
+  "disposition": "carried-adapted",
+  "task": null,
+  "reason": "Two TASK-025 tests read Round 7's setup head (clr-setup-progress, clr-setup-header) instead of the build's wrapper."
+ },
+ {
+  "path": "src/app/Screen.test.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "TASK-025's Screen tests of that wrapper and its shell.css rule; Round 7's setup head replaces both (category a). Onboarding's TASK-025 tests are kept and read Round 7's head."
+ },
+ {
+  "path": "src/app/Screen.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "TASK-025's pinned-head wrapper. Round 7's setup head (clr-setup-header and clr-setup-progress) already gives one head with one divider (inventory category a: presentation the gallery supersedes)."
+ },
+ {
+  "path": "src/app/action-glow.test.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/app/home-screen.test.tsx",
+  "disposition": "carried-adapted",
+  "task": null,
+  "reason": "The History chronology row test reads Round 7's row order (decision 7) instead of TASK-026's title/status-date layout."
+ },
+ {
+  "path": "src/data/README.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/data/database.types.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/data/refinement-logging-contract.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/data/refinement-logging-contract.ts",
+  "disposition": "carried-adapted",
+  "task": null,
+  "reason": "The timed-entry rows name Round 7's TimedResultLog (src/ui/timed-result-log.tsx) instead of the build's, which is not carried. F3 wires the entry into it."
+ },
+ {
+  "path": "src/data/refinement-logging-rules.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/data/refinement-timed-actuals.test.ts",
+  "disposition": "carried-adapted",
+  "task": null,
+  "reason": "One assertion follows the contract's new timed-entry module path."
+ },
+ {
+  "path": "src/data/workout.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/data/workout.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-assets-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-cards-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-cards.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "The build's gallery state preview, replaced by Round 7's gallery runtime (inventory F10). Dev-only; no product code imports it."
+ },
+ {
+  "path": "src/dev/gallery-refinement-circuit.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/dev/gallery-refinement-coaching-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-coaching.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/dev/gallery-refinement-errors.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/dev/gallery-refinement-flow-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-forms-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-group-logging.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/dev/gallery-refinement-notes-logging.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/dev/gallery-refinement-overview-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-preparation-data.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/dev/gallery-refinement-set-logging.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/dev/gallery-refinement-timers.tsx",
+  "disposition": "retired",
+  "task": null,
+  "reason": "Same: the build's gallery state preview (F10)."
+ },
+ {
+  "path": "src/state/README.md",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/amrap.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/block-completion-provider.test.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/block-completion.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/conditioning.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/countdown-urgency.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/emom.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/for-time.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/for-time.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/history.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/history.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/ladder-recovery.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/ladder-save-authority.test.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/ladder.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/load-suggestions.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/preparation-clock-provider.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/preparation-clock.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/preparation-guide.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/preparation-guide.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/prescription.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/refinement-ladder-recovery.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/refinement-load-guidance.test.ts",
+  "disposition": "carried-adapted",
+  "task": null,
+  "reason": "Two tests moved to F8 (they need the build gallery page and the build block-panel evidence). Their imports were removed."
+ },
+ {
+  "path": "src/state/refinement-load-guidance.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/schemas.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/schemas.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/session-detail.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/timed-clock.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/timed-clock.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/timed-lifecycle.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/timed-lifecycle.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/timed-results.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/workout-persistence.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/workout-persistence.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/state/workout-progress.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/styles/a11y.css",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/amrap-result-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/block-completion-ownership.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/compact-ladder-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/completion-effort-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/context-actions-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/e2e-lifecycle.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/emom-end-log-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/format-badges-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/generated-types.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/generation-persistence.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/generation-reliability/task035-release-case.test.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/grouped-coaching-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/ladder-handoff-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/ladder-recovery-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/logging-contract-double.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/peer-grouping-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/session-double.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/supabase-double.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/timed-actions-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/timed-actuals-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/timed-log-dialog.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/timed-readback-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/timer-frames-fixture.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/test/workout-double.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/block-completion-control.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/block-panel.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "The build's block cards and group labels (TASK-001/003); also TASK-003's receipt evidence.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/block-renderers.test.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/card.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/countdown-urgency.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F6",
+  "reason": "Pause-aware countdown warning on the real clocks (TASK-008).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F6"
+ },
+ {
+  "path": "src/ui/group-coaching-context.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/group-exercise-coaching.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F7",
+  "reason": "Grouped coaching disclosure accessibility (TASK-005).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F7"
+ },
+ {
+  "path": "src/ui/ladder-block.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "Durable attempt, live check-off, Undo finish and save authority on the ladder renderer (TASK-013/014/048); Pause (F2).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/ladder-rungs.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "Tests the build's ladder rendering.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/load-suggestion.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/logging-overlay-focus-brackets.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "Focus brackets in the build's LoggingOverlay (TASK-043).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/logging-overlay-focus-kept.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "Focus kept in the build's LoggingOverlay (TASK-043).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/logging-overlay-stale-close.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "Stale close handling in the build's LoggingOverlay (TASK-043).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/logging-overlay.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "The build's LoggingOverlay and its forms (TASK-043/045); F4/F9 port the behaviour to Round 7's overlay.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/motion.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/movement-identity.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "The build's movement hierarchy and equipment assets (TASK-001/002/003, TASK-029).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/movement-list.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "The build's movement list structure (TASK-001).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/preparation-guide.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F7",
+  "reason": "Data-driven Warm-up/Cooldown guide and its clock (TASK-022/034).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F7"
+ },
+ {
+  "path": "src/ui/refinements/countdown-warning.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/refinements/deadline-timer.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F6",
+  "reason": "The build's DeadlineTimer; Round 7 draws the warning with its own countdown owner.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F6"
+ },
+ {
+  "path": "src/ui/refinements/equipment-assets.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/refinements/ladder.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "The build's ladder rounds/prescription/completion; Round 7 has its own ladder rungs.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/refinements/logging-overlay-context.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/refinements/logging-overlay.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "The build's LoggingOverlay; Round 7 has its own LoggingOverlay (decision 1).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/refinements/movement-readings.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/refinements/movement.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "The build's MovementIdentity/List/GroupHeader; Round 7 has its own.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/refinements/overview.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "The build's Overview facts and equipment summary.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/refinements/quantity.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "The build's QuantitySelector for timed partial amounts.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/refinements/timed-result-dialog.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "The build's timed result dialog; Round 7 has its own log dialog.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/refinements/timed-result-log.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "The build's TimedResultLog; Round 7 has its own (src/ui/timed-result-log.tsx).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/refinements/workout-card.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "The build's WorkoutCard/ReviewMovement/LiveMovement.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/review-block.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "Review's ladder rounds (TASK-012) drawn by the build's ReviewSection.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/session-detail-timed-actuals.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F1",
+  "reason": "History detail effort face and movement actuals (TASK-047).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F1"
+ },
+ {
+  "path": "src/ui/set-logging-sheet-context.ts",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "TASK-043 per-entry focused placement; Round 7 draws every entry in its dialog (decision 1).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/set-save-confirmation.ts",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/standard-block.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F4",
+  "reason": "TASK-043 `focused` logger prop, which needs the F4 set-logger work.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F4"
+ },
+ {
+  "path": "src/ui/summary-facts.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F8",
+  "reason": "History detail required equipment and the build's Overview facts (TASK-004).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F8"
+ },
+ {
+  "path": "src/ui/timed-result-dialog.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "Tests the build's timed result dialog.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/timed-result-log.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F3",
+  "reason": "Timed results log on the real renderers, movement actuals and effort (TASK-009/010/015/046/047).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F3"
+ },
+ {
+  "path": "src/ui/timed-workout-flow.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F2",
+  "reason": "The build's timed actions on the real renderers: Pause/Resume/Finish (TASK-006).",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F2"
+ },
+ {
+  "path": "src/ui/timer-frame-layout.test.tsx",
+  "disposition": "resolved-by-wire-task",
+  "task": "F6",
+  "reason": "TASK-007 timer frame layout on the build's frames; F6 rewrites or retires it against Round 7.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F6"
+ },
+ {
+  "path": "src/ui/view-state.test.tsx",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "src/ui/workout-navigation.css",
+  "disposition": "resolved-by-wire-task",
+  "task": "F6",
+  "reason": "TASK-007's header change removes the wrap rule and relies on header rules in the build's refinements/presentation.css, which Round 7 replaced. Task 1's wrap rule stays until F6 carries TASK-007's header rules.",
+  "groundworkDisposition": "deferred",
+  "groundworkTask": "F6"
+ },
+ {
+  "path": "supabase/migrations/20261110000029_block_result_effort.sql",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ },
+ {
+  "path": "supabase/migrations/20261110000030_block_movement_results.sql",
+  "disposition": "carried",
+  "task": null,
+  "reason": null
+ }
+]

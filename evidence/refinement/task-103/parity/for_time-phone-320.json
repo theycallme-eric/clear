@@ -12,15 +12,15 @@
     },
     "galleryLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-320-gallery-log.png",
-      "sha256": "5304c75babd89b88d9103bdb13405ad65152da78efa432ff3cc9cd5e612cb9f5"
+      "sha256": "78a2b4e251d861a18fc102efef3c787e56be545e13c6e927a7afa2b3634566ec"
     },
     "routeReady": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-320-route-ready.png",
-      "sha256": "1c03506066ddfbc80f3c0ae743723ac81d481a4dc9d69bae93ec7a92e2204e14"
+      "sha256": "1407073fb2ee89956836709e864dabe6b1a40f6b2b48ddb62df7513ab211ff85"
     },
     "routeLog": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/for_time-phone-320-route-log.png",
-      "sha256": "9320a1974aba9fe9740477d69110d7e1114272c92587932e8fa837ca3d3cc006"
+      "sha256": "e586adf680c8b2620509c5317a1b4fc87ebba6b6229973b03859ac89a8f9fbb3"
     }
   },
   "lines": {
@@ -36,6 +36,7 @@
         "40 reps",
         "START FOR TIME",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -96,6 +97,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -114,6 +116,7 @@
         "40 reps",
         "START FOR TIME",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -174,6 +177,7 @@
         "NOTES · OPTIONAL",
         "SAVE LOG",
         "COACHING AND NOTES",
+        "— FOR TIME: WALL BALL, BURPEE",
         "WALL BALL",
         "ADD NOTE — WALL BALL",
         "BURPEE",
@@ -191,14 +195,14 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 64,
+        "ready": 71,
         "log": 78,
-        "ended": 80
+        "ended": 87
       },
       "route": {
-        "ready": 64,
+        "ready": 71,
         "log": 78,
-        "ended": 80
+        "ended": 87
       }
     },
     "parts": {
@@ -215,7 +219,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 654.5
+          "height": 666.5
         },
         "ended": {
           "key": "(part)#0",
@@ -238,7 +242,7 @@
           "x": 0,
           "y": 0,
           "width": 264,
-          "height": 654.5
+          "height": 666.5
         },
         "ended": {
           "key": "(part)#0",

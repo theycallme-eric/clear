@@ -1,0 +1,145 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "movement-note",
+  "title": "Movement note",
+  "width": 390,
+  "primaryOwner": "TASK-114",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/movement-note-phone-390-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/movement-note-phone-390-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-114",
+      "primary": true,
+      "receipt": "evidence/refinement/task-114/parity/movement-note-phone-390.json",
+      "receiptSha256": "c45d42a2152517439cd3850204e431f8326d4ba1c65899fb864962068865da8c",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "open",
+          "gallery": [
+            {
+              "key": "gallery-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-390-gallery.png",
+              "sha256": "d187899103d0b218e388d8467012c7a2c8187105601952180b1956807eceecda",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-390-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-390-route.png",
+              "sha256": "acbdd38bb5e76804e1df3ca337fe9b9ad74f23147f380d1a227cf0251faa0755",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/movement-note-phone-390-route.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-109",
+      "primary": false,
+      "receipt": "evidence/refinement/task-109/parity/movement-note-phone-390.json",
+      "receiptSha256": "67c329e0a12810e9bd415632c1cc3977cd009601d1ce1df85c97ade1aa1949d3",
+      "provenance": "retaken by TASK-115 through TASK-109's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "disclosure-closed",
+          "gallery": [
+            {
+              "key": "gallery-disclosure-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-closed.png",
+              "sha256": "4246d745d203b09cbf79b65ea163c07e43cfb5c2c29ec4f37d8124d826b9e840",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-disclosure-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-closed.png",
+              "sha256": "2c9c1ac760d1aa6b375bac6c9194c34cb5f15332cc3f5d0db35c9611bcd38074",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "disclosure-open",
+          "gallery": [
+            {
+              "key": "gallery-disclosure-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-open.png",
+              "sha256": "24bb726e1900fe45c5a56fca78b4925995d716c155d58df6f860cc7a032ea6c6",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-disclosure-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-open.png",
+              "sha256": "7d792c51607b006d5edbc7149aab7054da3943cf1351c93614f45a6b05839550",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "dialog",
+          "gallery": [
+            {
+              "key": "gallery-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-dialog.png",
+              "sha256": "30020c2893d3edf037ecb03b1ce6a091f8156a2d4e8b506eb7b6e0daacad5ba3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-gallery-dialog.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-dialog.png",
+              "sha256": "f1de7e68cc69e867ef5f24172e1a83528b9dae1640fd0b61c6560a8d95f6b23b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-390-route-dialog.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52, AC-R034-02, AC-R022-02",
+      "text": "PreparationGuide also draws TASK-034’s reading in its four states (loading, error with retry, missing, ready); the ready card names its list (“<title> movements”) and states the time with approximateDurationText (identical for the sample); its clock is the session’s (usePreparationClock: the PreparationClockProvider’s, the component’s own in the gallery) with the shared warning from its own deadline and “Final 10 seconds” in the final ten. The gallery’s guide prop is unchanged."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-82B8F7A4EF0B, TASK-AC-C4EE3D4EC8F0",
+      "text": "GroupExerciseCoaching: each movement’s section is a role=group labelled by its heading (aria-labelledby), the sections and their guidance/note under HeadingSection levels; constants for the accepted label and the note openers. No box moves (gallery states compared at base and at this task: same words, same boxes)."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn in place by PreparationGuide from composedPreparationGuide; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52",
+      "text": "PreparationClockProvider around the shell; a Warm-up or Cooldown section draws PreparationGuide over persistedPreparationReading with its clock; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn by PreparationGuide over persistedPreparationReading of the record’s rows, its retry re-reading the record; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-9165CD7E97CC",
+      "text": "Comment only: `guides` is the gallery’s sample; the routes read TASK-034’s guides directly."
+    }
+  ],
+  "unintended": []
+}

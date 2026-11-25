@@ -14,15 +14,15 @@
     },
     "route-card": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-card.png",
-      "sha256": "2a6f4b7d74c86748c5ad9b13109927af5a13bcdfee01cd1ad91da378e1ed211e"
+      "sha256": "63ffee63be1642cbd5f3101a931c81e0d3496d8dd9730c8e9a8f93e4b57cf731"
     },
     "gallery-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-gallery-open.png",
-      "sha256": "73d393fa7126ddad95d73cd9ff658197801d6a76aa3c3944b3ec57fe4b9d1d37"
+      "sha256": "4c8392ad5c31f92f7258ab6a51110af37bb2c168e4287cc9440d58c01883037e"
     },
     "route-open": {
       "file": "store:clear-gallery-adoption-v2-20261118/task-106/captures/set-correction-phone-320-route-open.png",
-      "sha256": "6c1f8f57a6f4d76d6d39169b490da2d4f088e09e35e3c660bb9cf06cb2600efd"
+      "sha256": "6dc98541a5b2e721e2eddb7c9867ed35d7901a1fb4981136c36e96d025d2fc52"
     }
   },
   "lines": {
@@ -127,7 +127,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 456
+          "height": 416
         }
       },
       "route": {
@@ -143,7 +143,7 @@
           "x": 0,
           "y": 0,
           "width": 296,
-          "height": 456
+          "height": 416
         }
       }
     },

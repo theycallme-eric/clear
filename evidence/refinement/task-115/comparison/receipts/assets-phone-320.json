@@ -1,0 +1,288 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "assets",
+  "title": "Equipment and icon inventory",
+  "width": 320,
+  "primaryOwner": "TASK-118",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/assets-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/assets-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-118",
+      "primary": true,
+      "receipt": "evidence/refinement/task-118/parity/assets-phone-320.json",
+      "receiptSha256": "746c8e737bd8d832bc9064076fcc2975a4e8ac46555bb348a11f9c8baa414b12",
+      "provenance": "taken by TASK-118's own run; receipt bytes as committed at 1ed15111",
+      "route": "/onboarding, /review, /workout",
+      "moments": [
+        {
+          "moment": "inventory",
+          "gallery": [
+            {
+              "key": "gallery:inventory",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-gallery-inventory.png",
+              "sha256": "8a2d0c4a526f0271c3c061cbb6e14ba55fa6253431d3aa18d2308f489beddb03",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-gallery-inventory.png"
+            }
+          ],
+          "route": []
+        },
+        {
+          "moment": "equipment",
+          "gallery": [],
+          "route": [
+            {
+              "key": "setup:equipment",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-setup-equipment.png",
+              "sha256": "8f763d12695f9af6c3eeef3ae2577585b52197843e06244b7ca314aead94bf73",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-setup-equipment.png"
+            }
+          ]
+        },
+        {
+          "moment": "required",
+          "gallery": [],
+          "route": [
+            {
+              "key": "review:required",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-review-required.png",
+              "sha256": "ef66ebec31c377797f01dc0815cedd0c4a17b2c2a9b481bab9e6cfbcad2ea6a7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-review-required.png"
+            }
+          ]
+        },
+        {
+          "moment": "standard",
+          "gallery": [],
+          "route": [
+            {
+              "key": "review:standard",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-review-standard.png",
+              "sha256": "ad320abd7beb10133f25339f86b06b9a5a8bc2d7149052c09952ce3e20d2eb3a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-review-standard.png"
+            },
+            {
+              "key": "workout:standard",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-workout-standard.png",
+              "sha256": "cf466eca3d47165b52f1cd22693af02dc6ecf5fa47676657da1044723c5f92ff",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-118/captures/assets-phone-320-workout-standard.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — EQUIPMENT ICON INVENTORY — The inventory card’s own heading: the verified inventory is a reference record, drawn by the state and recorded in the wanted list; no route draws it."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-02",
+      "text": "gallery only — Equipment names remain readable beside movement names. New glyphs are a wanted list; none are invented here. — The state states the selected placement and the explicit follow-up; the routes show it (labels beside names, read here and in task-029.spec.ts)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Dumbbell · shipped — The two shipped equipment glyphs, named; Review’s Required equipment draws the shipped Dumbbell (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — WeightPlate · shipped supplementary glyph — The two shipped equipment glyphs, named; Review’s Required equipment draws the shipped Dumbbell (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Bodyweight · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Resistance bands · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Foam roller · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Dumbbells · Dumbbell available — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Kettlebells · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Pull-up bar · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Barbell · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Plyo box · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Cable machine · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Rowing machine · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Assault bike · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Battle ropes · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Assisted pull-up / dip · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Leg press · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Leg curl / extension · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-C56-01",
+      "text": "gallery only — Hack squat · equipment glyph wanted / text fallback — Each Setup kind with its glyph status from the shared inventory; Setup draws the same kind as its choice, in the same words (compared above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "gallery only — Medicine ball is also wanted from the Wall ball review. It is not a current Setup equipment ID; resolve catalog coverage separately. — The wanted medicine ball, which is no Setup id: Setup offers no medicine ball."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — EQUIPMENT — Setup’s own step legend."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — BODYWEIGHT — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — RESISTANCE BANDS — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — FOAM ROLLER — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — DUMBBELLS — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — KETTLEBELLS — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — PULL-UP BAR — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — BARBELL — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — PLYO BOX — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — CABLE MACHINE — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — ROWING MACHINE — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — ASSAULT BIKE — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — BATTLE ROPES — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — ASSISTED PULL-UP / DIP — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — LEG PRESS — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — LEG CURL / EXTENSION — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "AC-R029-01",
+      "text": "route only — HACK SQUAT — Setup’s own choices, each named in words in Setup’s own uppercase face: the same kinds the inventory lists with its status (compared by their accessible names above)."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5, AC-C14-01",
+      "text": "`SummaryFacts` takes `facts` that carry their `FactKind` and orders, glyphs and sets the term visibility of each by its kind (marked `data-overview-facts`); given children only, as the overview state passes them, it draws exactly as before."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-010B47E192B5",
+      "text": "Review’s Overview hands its facts to `SummaryFacts` with their kinds (and the movement count as `movements`), in place of its label-keyed glyph, order and term tables; it draws the same readings."
+    },
+    {
+      "task": "TASK-118",
+      "criterion": "TASK-AC-BF12C17FC7BF, AC-C14-01, AC-R004-02, AC-R004-03",
+      "text": "The saved Overview’s facts carry their kinds (Review’s glyphs, order and term visibility over the record’s own values) and the card gains Round 7’s `EquipmentSummary` built from the saved `equipment_used`. No state draws `/history/:id`."
+    }
+  ],
+  "unintended": []
+}

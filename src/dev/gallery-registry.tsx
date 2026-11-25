@@ -129,7 +129,7 @@ import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
 import { GalleryUrgency, LiveFlow } from './gallery-refinement-flow'
-import { GallerySectionHeader } from './gallery-refinement-scenes'
+import { GalleryFullSectionHeader, GallerySectionHeader } from './gallery-refinement-scenes'
 import { CountdownDisplay } from '../ui/timer-display'
 import { GalleryQuantity, GalleryTimedLog, GalleryTimedFlow, GalleryLadderCompletion, GalleryLoggingOverlay, GalleryLadderPrescription, GalleryCountdownUrgency } from './gallery-timed-fixtures'
 
@@ -2913,5 +2913,5 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       },
     ],
   },
-  {component:'SectionHeader',requirement:'clear-visual-refinement-2026-11-03 / revision 6 / REQ-027',module:'src/ui/workout-chrome.tsx',summary:'Accepted compact section jump/navigation, opt-in only; actual route adoption remains pending.',specimens:[{state:'compact navigator',Render:()=> <GallerySectionHeader />},{state:'full header with progress bar',Render:()=> <GallerySectionHeader compact={false} />}]},
+  {component:'SectionHeader',requirement:'clear-visual-refinement-2026-11-03 / revision 6 / REQ-027',module:'src/ui/workout-chrome.tsx',summary:'Accepted compact section jump/navigation, opt-in only; actual route adoption remains pending.',specimens:[{state:'compact navigator',Render:()=> <GallerySectionHeader />},{state:'full header with progress bar',Render:()=> <GalleryFullSectionHeader />}]},
 ]

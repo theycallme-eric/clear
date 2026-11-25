@@ -1,0 +1,194 @@
+{
+  "schema": "clear-task-115-comparison/v1",
+  "task": "TASK-115",
+  "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
+  "state": "urgency",
+  "title": "Soft deadline warning · synchronized",
+  "width": 320,
+  "primaryOwner": "TASK-120",
+  "endOfRunGallery": {
+    "file": "store:clear-gallery-adoption-v2-20261120/task-115/captures/urgency-phone-320-gallery.png",
+    "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-115/captures/urgency-phone-320-gallery.png",
+    "hashBound": false
+  },
+  "owners": [
+    {
+      "task": "TASK-120",
+      "primary": true,
+      "receipt": "evidence/refinement/task-120/parity/urgency-phone-320.json",
+      "receiptSha256": "0c7f50729ac539d56333ce79cb4b59a5adf678054de84e15f922d14e2ea98f8b",
+      "provenance": "taken by TASK-120's own run; receipt bytes as committed at 710f7fae",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "dialog",
+          "gallery": [
+            {
+              "key": "gallery-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-gallery-dialog.png",
+              "sha256": "2a73314e17832e2393f598a50c3ccf6d191628766647428972abaa2d6e7ee2eb",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-gallery-dialog.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-route-dialog.png",
+              "sha256": "22e45e6b45b4d04df4211c24e0e0c33868cc94f180319eee494e04c20ed8950b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-route-dialog.png"
+            }
+          ]
+        },
+        {
+          "moment": "viewport",
+          "gallery": [
+            {
+              "key": "gallery-viewport",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-gallery-viewport.png",
+              "sha256": "59355eb3c21c22e13c0e689185f48828d1cce992cf623ebb5147c8eaaa5ab92f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-gallery-viewport.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-viewport",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-route-viewport.png",
+              "sha256": "ba230b8895656ef81ca7841cb67f8e98577ee682101917935f931bab70d2b17f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-120/captures/urgency-phone-320-route-viewport.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-108",
+      "primary": false,
+      "receipt": "evidence/refinement/task-108/parity/urgency-phone-320.json",
+      "receiptSha256": "ca7fff39bd9e089c9bd4b7f72748e338c7acd2e454e4d4c5a2dc074dc67c5a14",
+      "provenance": "taken by TASK-108's own run; receipt bytes as committed at c88c173b",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "emom-10",
+          "gallery": [
+            {
+              "key": "gallery:emom-10",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-10-phone-320-gallery.png",
+              "sha256": "980d79886ded36de0699df2567541abf233ec560e3f6cda0d7527598619743a3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-10-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:emom-10",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-10-phone-320-route.png",
+              "sha256": "993399810612f6f28c4469da03deb24560db142bd935ca3e4517cb975dc50d92",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-10-phone-320-route.png"
+            }
+          ]
+        },
+        {
+          "moment": "emom-5",
+          "gallery": [
+            {
+              "key": "gallery:emom-5",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-5-phone-320-gallery.png",
+              "sha256": "21dda2a2db027b39473eaa5e83caf8a9c50d6d24b3042f19177244f0064377ee",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-5-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:emom-5",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-5-phone-320-route.png",
+              "sha256": "693c0abc5f4339b64e1c40c267fff438bb0dab7a1a9380f8bebe58429da116a7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/urgency-emom-5-phone-320-route.png"
+            }
+          ]
+        },
+        {
+          "moment": "for-time-5",
+          "gallery": [
+            {
+              "key": "gallery:for-time-5",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-for-time-5-phone-320-gallery.png",
+              "sha256": "4359d151afa4cb56fd42cd48a0dec2a98ed99486fa714a71c30367978701bb39",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/urgency-for-time-5-phone-320-gallery.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route:for-time-5",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-108/captures/urgency-for-time-5-phone-320-route.png",
+              "sha256": "5305694599d2253e7da4c535b1312d6c1bd5f6e94ba2ac3531cc59a1357c0971",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-108/captures/urgency-for-time-5-phone-320-route.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "labelled": [
+    {
+      "task": "TASK-108",
+      "criterion": "AC-R008-02",
+      "text": "Every urgent timer and the one aura share one warning loop and one phase: each urgent clock claims the view's one urgent loop, every urgent timer breathes while any claim runs (bec4454 stilled a second urgent timer), the first draws the one edge, and each new breathe is pinned to the document timeline's epoch. Fed by each clock's deadline adapter."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "AC-R008-01",
+      "text": "The urgent timer breathes on the edge's own rule — the same keyframes, 1.5 s period and easing (.2/.8/.2), a steady .5 when still or under reduced motion — in place of the shipped four-second stepped micro-pulse on the timer. The urgency state's urgent clock breathes with its edge; under reduced motion both hold .5."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "TimerFrame carries the breathe on its `role=\"timer\"` element (`clr-countdown-breathe`, `data-urgent`, the warning loop) in place of `clr-pulse-micro` on its wrapper; CountdownBar and RestTimerBar read the rest's deadline (`restDeadline`): the low colour, the fill's colour and \"Final 10 seconds\" from ten seconds, the breathe on the rest's timer (not the card) and the edge from five."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-A5D62CC0272B",
+      "text": "The compact SectionHeader reads \"Section N / M · status\" to assistive technology, visually hidden, and its visible \"N / M\" is decoration of the trigger (`aria-hidden`), so the trigger's one name is \"All sections\". Nothing drawn changes."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "Each format clock's warning reads its adapter (EMOM minute, AMRAP window, race cap): held while paused, none once ended. The low colour at ten and the edge at five are as before; the breathe is the change above."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "text": "The circuit's round rest is one whole TimerFrame (the app's Card in the timer role) fed by `circuitRestDeadline`, in place of the package's TimerDisplay whose stepped micro-pulse ran through the last ten seconds. No state compared here draws a circuit; the circuit-round state shows it in the same commit."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-23D0ADE293F8",
+      "text": "A scheduled ladder's interval countdown is one whole TimerFrame fed by `scheduleIntervalDeadline`. No accepted state draws a schedule."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "The movement countdown reads `movementCountdownDeadline`; its warning is unchanged but for the breathe above."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "CountdownDisplay takes an optional deadline from its consumer; its drawing is unchanged (the route no longer draws it)."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-ED9D1944F3CE",
+      "text": "The adapters read only the fields of a view they need, so the route's flow feeds its attempt through them. Nothing drawn changes."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-DCFC4C79B85A",
+      "text": "Previous, Next and a jump move focus to the opened section's first card with a temporary tabindex, falling back to its heading. Not a gallery state."
+    },
+    {
+      "task": "TASK-108",
+      "criterion": "TASK-AC-8E1E91D4F4AA",
+      "text": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    }
+  ],
+  "unintended": []
+}

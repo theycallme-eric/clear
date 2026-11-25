@@ -42,11 +42,11 @@
     },
     "gallery-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-log.png",
-      "sha256": "8f834d840c83632fa882f581432fb1d647765e169e756a66e173b6329712241d"
+      "sha256": "b622eb77401c0a31720367798dbe4a9dc87eb6e37c20461c4e23f6dece4f5d47"
     },
     "route-log": {
       "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-log.png",
-      "sha256": "6fe4f05cba66ea7f0757fa49a651753d0a684a2b6caa1e85ebfa9aba629bfbcf"
+      "sha256": "5ebada08cb4cd99fdb34eae53c6d336f1286ed586e5135656d9f389b3e6b392a"
     }
   },
   "lines": {
@@ -261,17 +261,17 @@
     "tolerancePx": 2,
     "measured": {
       "gallery": {
-        "ready": 50,
-        "running": 73,
-        "paused": 73,
-        "ended": 67,
+        "ready": 53,
+        "running": 76,
+        "paused": 76,
+        "ended": 70,
         "log": 52
       },
       "route": {
-        "ready": 50,
-        "running": 73,
-        "paused": 73,
-        "ended": 67,
+        "ready": 53,
+        "running": 76,
+        "paused": 76,
+        "ended": 70,
         "log": 52
       }
     },
