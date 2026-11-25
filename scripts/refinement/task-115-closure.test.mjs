@@ -21,7 +21,7 @@ import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
@@ -41,7 +41,9 @@ const MAIN = '03087f7488bee8d7e927534b1b5e656378fe9cb3'
 const OLD_GALLERY = 'eded158cfd928d382c9a9409e2c372270312741d'
 const OLD_BUILD = '181e5808e5264ab3041a186ca16a8d9f845fe072'
 const FINAL_TASKS = ['TASK-103', 'TASK-104', 'TASK-105', 'TASK-116', 'TASK-117', 'TASK-106', 'TASK-107', 'TASK-108', 'TASK-109', 'TASK-110', 'TASK-118', 'TASK-111', 'TASK-112', 'TASK-119', 'TASK-113', 'TASK-114', 'TASK-120', 'TASK-121']
-const RECAPTURED = ['TASK-105', 'TASK-106', 'TASK-107', 'TASK-108', 'TASK-110', 'TASK-111', 'TASK-116', 'TASK-117']
+// Owners whose parity TASK-115 recaptured or retook through their own guards (the first eight; then D4(a) and the
+// timing fixes of repair rounds 1–4: TASK-103, 104, 109, 114 and 119).
+const RECAPTURED = ['TASK-105', 'TASK-106', 'TASK-107', 'TASK-108', 'TASK-110', 'TASK-111', 'TASK-116', 'TASK-117', 'TASK-103', 'TASK-104', 'TASK-109', 'TASK-114', 'TASK-119']
 const DEFINITION_TASKS = ['TASK-035', 'TASK-037', 'TASK-038']
 const DISPOSITIONS = new Set(['carried', 'rewritten', 'ported', 'retired'])
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
@@ -56,6 +58,11 @@ function receiptProblems(task, checkId) {
   assert.ok(check, `${task} declares ${checkId}`)
   return verifyReceipt({ cwd: repo, evidenceRoot: EVIDENCE_ROOT, task, checkId, check, manifestPath })
 }
+
+/** The gallery states a look-check receipt names (its `state`, one or several, each up to its first space). */
+const statesNamed = (state) => typeof state === 'string'
+  ? state.split(/,\s*/).map((part) => part.trim().split(/\s/)[0]).filter((part) => part !== '')
+  : []
 
 function storePath(identity) {
   const store = resolveObjectStore({ cwd: repo })
@@ -196,6 +203,25 @@ describe('TASK-115 end-of-run comparison and recaptures', () => {
       assert.ok(primary.some((owner) => owner.moments.some((moment) => moment.gallery.length > 0)), `${name}: gallery side`)
       assert.ok(primary.some((owner) => owner.moments.some((moment) => moment.route.length > 0)), `${name}: route side`)
       for (const difference of receipt.labelled) assert.match(difference.criterion, /\S/)
+      // Repair round 5: every current owner receipt with captures that names this state is on the page beside it,
+      // and each says who last wrote it.
+      const expected = []
+      for (const task of FINAL_TASKS) {
+        const dir = join(EVIDENCE_ROOT, task.toLowerCase(), 'parity')
+        if (!existsSync(dir)) continue
+        for (const file of readdirSync(dir).filter((entry) => entry.endsWith(`-phone-${receipt.width}.json`))) {
+          const owner = json(join(dir, file))
+          if (statesNamed(owner.state).includes(receipt.state) && Object.keys(owner.captures ?? {}).length > 0) {
+            expected.push(relative(repo, join(dir, file)))
+          }
+        }
+      }
+      assert.deepEqual(receipt.owners.map((owner) => owner.receipt).sort(), expected.sort(), `${name}: every current owner receipt for the state`)
+      for (const owner of receipt.owners) {
+        const subject = git(['log', '-1', '--format=%s', '--', owner.receipt])
+        const how = /^TASK-115\b/.test(subject) ? `retaken by TASK-115 through ${owner.task}'s own guard` : `taken by ${owner.task}'s own run`
+        assert.ok(owner.provenance.startsWith(`${how}; receipt bytes as committed at `), `${name}: ${owner.receipt} provenance`)
+      }
     }
   })
 

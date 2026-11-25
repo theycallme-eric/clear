@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/distance-movement-phone-320.json",
       "receiptSha256": "8730696573253ff058196804ca65d381e460be590c76a72ff26088abbe5ef359",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-106/parity/distance-movement-phone-320.json",
       "receiptSha256": "afa0e3282d1ec5c49bdc6aa719bb3afd59dd3e9f0200459b02b7c4bdf53aa847",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

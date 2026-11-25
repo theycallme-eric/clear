@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/timed-movement-phone-390.json",
       "receiptSha256": "6915ae44dd8393f881c673f27917027e1aae579a97d25b04a2d1f0e91e4c6b37",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-106/parity/timed-movement-phone-390.json",
       "receiptSha256": "7b1d0e3966a0fcfc4a292372c1c3dd4ad2544a771e77b1c4b27b5e27d114fbf7",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

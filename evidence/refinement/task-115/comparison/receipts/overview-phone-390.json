@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-118/parity/overview-phone-390.json",
       "receiptSha256": "d871159d9aefb7a54c9a3c3a56911f4354f19aaacb81477c28e0d3bc56083c83",
-      "provenance": "taken by its own task run; receipt bytes as committed at 1ed15111",
+      "provenance": "taken by TASK-118's own run; receipt bytes as committed at 1ed15111",
       "route": "/review, /history/:id, /summary",
       "moments": [
         {

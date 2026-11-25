@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "e2e/refinement/task-115-comparison.spec.ts",
-      "sha256": "dda1773ef6a4d33b25c101a1217d31d9e073746e6b810981f83ca22af8779e41"
+      "sha256": "338b2cb97fec76010eeef69972b41cbdbc661bb252e61c12a9060ebac5c83d1b"
     }
   ],
   "requiredCases": [

@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-110/parity/cards-phone-390.json",
       "receiptSha256": "2b130523f07e47cca939aee8547d5abe77e55869b0f0d904b26c9d0caa1653a6",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at d7d0624d",
+      "provenance": "taken by TASK-110's own run; receipt bytes as committed at d7d0624d",
       "route": "/workout",
       "moments": [
         {
@@ -84,7 +84,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-108/parity/cards-phone-390.json",
       "receiptSha256": "490d1fef4d20938a073fca4522ed457a32230961071c3805ef059b4fe139a725",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at c88c173b",
+      "provenance": "taken by TASK-108's own run; receipt bytes as committed at c88c173b",
       "route": "/workout",
       "moments": [
         {
@@ -202,6 +202,215 @@
           ]
         }
       ]
+    },
+    {
+      "task": "TASK-109",
+      "primary": false,
+      "receipt": "evidence/refinement/task-109/parity/cards-phone-390.json",
+      "receiptSha256": "b4664c132842365074a43a7ea2cce2776a4de763d12b98f1cde0015e4db72873",
+      "provenance": "taken by TASK-109's own run; receipt bytes as committed at 971c2623",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "emom-closed",
+          "gallery": [
+            {
+              "key": "gallery-emom-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-emom-closed.png",
+              "sha256": "deb63288c3ab93660ee04ea2a5481aba80c2821b98c875f595a4fcc67e326df4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-emom-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-emom-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-emom-closed.png",
+              "sha256": "8a2c7c914339c9ef5dd6b1af243c4db3190366b6b0fc0303cbe9bbba2ce3de0a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-emom-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "emom-open",
+          "gallery": [
+            {
+              "key": "gallery-emom-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-emom-open.png",
+              "sha256": "5b9e8de3b9f7c60ef55703b71db8f898fc3edbfce141cb01566cbf6082bd4ab3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-emom-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-emom-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-emom-open.png",
+              "sha256": "ed961b39dc3151e243f70942068d31c7fa0312db7ba9a4a93aa7cb7b37f128f3",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-emom-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap-closed",
+          "gallery": [
+            {
+              "key": "gallery-amrap-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-amrap-closed.png",
+              "sha256": "78d3dfc92dc43a3392c2106cc0f9b3c4636fd50fa6bc02e95e875990733a834f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-amrap-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-amrap-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-amrap-closed.png",
+              "sha256": "2292a94bab8a90f0ebc00a76e0fc1878f7ca474eb453a700d7d061a04403b5d7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-amrap-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap-open",
+          "gallery": [
+            {
+              "key": "gallery-amrap-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-amrap-open.png",
+              "sha256": "e027ef3086d7f800d4147bf1e1e13436e715e79a2ba8a78e5f0e324a10a669c5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-amrap-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-amrap-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-amrap-open.png",
+              "sha256": "77af0b19e50e8ee78fa13b0e094000bf29134d6af891eb74cfaaf68e96e02f28",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-amrap-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "for-time-closed",
+          "gallery": [
+            {
+              "key": "gallery-for-time-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-for-time-closed.png",
+              "sha256": "1a2cb0756504602061a7c93fea9732fb5c92449dfa2f481c0dcd1cce1f9febaf",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-for-time-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-for-time-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-for-time-closed.png",
+              "sha256": "2684e23e9c8a1ba11f2c68a0f7480c60bca49f5fe2f7234b2f3ccfe8a43c47d7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-for-time-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "for-time-open",
+          "gallery": [
+            {
+              "key": "gallery-for-time-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-for-time-open.png",
+              "sha256": "b5660951ce198c05880b0e894d1cb51d0791e6f1a93fdc82b7590ab9d1e600b1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-gallery-for-time-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-for-time-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-for-time-open.png",
+              "sha256": "77a5a9a04fafc6ef2eecaec61d5a543b98a318c6ca5b25fd7375a8e0e8fe1f67",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/cards-phone-390-route-for-time-open.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-112",
+      "primary": false,
+      "receipt": "evidence/refinement/task-112/parity/cards-phone-390.json",
+      "receiptSha256": "0eaa66266d5b9f848e44c4c9f083b58d7ffd9476a2846547861a5f5fdac81699",
+      "provenance": "taken by TASK-112's own run; receipt bytes as committed at e0da434e",
+      "route": "/review, /workout",
+      "moments": [
+        {
+          "moment": "emom",
+          "gallery": [
+            {
+              "key": "gallery:emom",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-390-gallery-rows.png",
+              "sha256": "c000f37f4e8f2b90491c3f080c2030f8787119a8bf1c3b358be8757c5a7a1df1",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-390-gallery-rows.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:emom",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-390-review-rows.png",
+              "sha256": "db551414fe3e9c8265199c9c8c355862b1a7ba84eba24a17e267fb79593b4ea0",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-390-review-rows.png"
+            },
+            {
+              "key": "workout:emom",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-390-workout-rows.png",
+              "sha256": "a4463578545d2711db424f213a9612ec122ad78f292d9694310a3a15409300f5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-emom-phone-390-workout-rows.png"
+            }
+          ]
+        },
+        {
+          "moment": "amrap",
+          "gallery": [
+            {
+              "key": "gallery:amrap",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-390-gallery-rows.png",
+              "sha256": "040fae5021e0d7e5a83e96625f2c06b91db3fc7df7f5c6ac6ba6460f4aaf3278",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-390-gallery-rows.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:amrap",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-390-review-rows.png",
+              "sha256": "9a280c8f8145e64af1c80fe46b53700b7998fd76ec0bd4c6dbaf62df613ca758",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-390-review-rows.png"
+            },
+            {
+              "key": "workout:amrap",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-390-workout-rows.png",
+              "sha256": "88d60526fd41a424224aa6542ff47342ff6c6a6a70eb1bc96261fbe16231547d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-amrap-phone-390-workout-rows.png"
+            }
+          ]
+        },
+        {
+          "moment": "for_time",
+          "gallery": [
+            {
+              "key": "gallery:for_time",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-390-gallery-rows.png",
+              "sha256": "2c9869f92587ebae84781003b95b7a2d6d52540bb7a5112d6d025668b7100db8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-390-gallery-rows.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "review:for_time",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-390-review-rows.png",
+              "sha256": "0859de8f20a7ba993e767f48e852b3e48ea887034105f3274451cad94b9283fc",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-390-review-rows.png"
+            },
+            {
+              "key": "workout:for_time",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-390-workout-rows.png",
+              "sha256": "2b09dc8397e28e25d519ea0db78b2e422f2b4b3a8cf4474d39a2e673da6c33f2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-112/captures/cards-for_time-phone-390-workout-rows.png"
+            }
+          ]
+        }
+      ]
     }
   ],
   "labelled": [
@@ -289,6 +498,81 @@
       "task": "TASK-108",
       "criterion": "TASK-AC-8E1E91D4F4AA",
       "text": "TASK-007's one-row header: the cluster never wraps to a second line; the title gives up width first and, at 23.75rem and below, takes the h3 size on the same line height. No accepted state draws the workout header."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52, AC-R034-02, AC-R022-02",
+      "text": "PreparationGuide also draws TASK-034’s reading in its four states (loading, error with retry, missing, ready); the ready card names its list (“<title> movements”) and states the time with approximateDurationText (identical for the sample); its clock is the session’s (usePreparationClock: the PreparationClockProvider’s, the component’s own in the gallery) with the shared warning from its own deadline and “Final 10 seconds” in the final ten. The gallery’s guide prop is unchanged."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-82B8F7A4EF0B, TASK-AC-C4EE3D4EC8F0",
+      "text": "GroupExerciseCoaching: each movement’s section is a role=group labelled by its heading (aria-labelledby), the sections and their guidance/note under HeadingSection levels; constants for the accepted label and the note openers. No box moves (gallery states compared at base and at this task: same words, same boxes)."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn in place by PreparationGuide from composedPreparationGuide; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52",
+      "text": "PreparationClockProvider around the shell; a Warm-up or Cooldown section draws PreparationGuide over persistedPreparationReading with its clock; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn by PreparationGuide over persistedPreparationReading of the record’s rows, its retry re-reading the record; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-9165CD7E97CC",
+      "text": "Comment only: `guides` is the gallery’s sample; the routes read TASK-034’s guides directly."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "gallery only — Min 1 · 12 reps — The live EMOM states each movement’s minute (its schedule); Review states the planned sets × reps."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-C06-01",
+      "text": "route only — SWAP — Review supplies Swap in the movement’s own slot; the live card never does."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "route only — 3 × 12 reps — Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "gallery only — 10 reps — The live AMRAP and For Time state one round’s or one pass’s reps; Review states the planned sets × reps."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-C06-01",
+      "text": "route only — SWAP — Review supplies Swap in the movement’s own slot; the live card never does."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "route only — 1 × 10 reps — Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "gallery only — 40 reps — The live AMRAP and For Time state one round’s or one pass’s reps; Review states the planned sets × reps."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-C06-01",
+      "text": "route only — SWAP — Review supplies Swap in the movement’s own slot; the live card never does."
+    },
+    {
+      "task": "TASK-112",
+      "criterion": "AC-R002-03",
+      "text": "route only — 1 × 40 reps — Review keeps the planned sets × reps; the live card states the work of the minute, round or pass it runs."
     }
   ],
   "unintended": []

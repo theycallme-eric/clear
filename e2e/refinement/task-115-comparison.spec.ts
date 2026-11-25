@@ -21,14 +21,18 @@ import { expect, test as scanned } from '../fixtures'
  *
  * Aggregate closure consumes task-owned proof (AC-GAL-07): the matched-data
  * pairs — the gallery state and the real route driven to the same moment over
- * the same data — are the owning tasks' look checks, each taken through that
- * task's own guard at the end of the run (TASK-105, 106, 107, 108, 110, 111,
- * 116 and 117 recaptured by TASK-115 after TASK-114's dialog change; TASK-114
- * and TASK-120 were taken after the last product change). Each state names one
- * primary owner, so no state is left without a pair. Every pair's capture is
- * read from the Runner's evidence store and its SHA-256 checked against the
- * owner's receipt, and every visible difference the owner recorded is carried
- * with its criterion ID; one with none is listed as unintended for UAT.
+ * the same data — are the owning tasks' look checks, each current at the end
+ * of the run (the final evidence check passes them all). Each state names one
+ * primary owner, so no state is left without a pair, and every other owner's
+ * current receipt for the same state is shown beside it: TASK-103 to TASK-114
+ * and TASK-116 to TASK-120, every receipt whose `state` names the state (for
+ * example the screens state's Setup on /onboarding, TASK-113, and History on
+ * /history, TASK-103, beside TASK-119's /generate). Each receipt's provenance
+ * says who last wrote it: the owner's own run, or TASK-115 through the owner's
+ * own guard. Every pair's capture is read from the Runner's evidence store and
+ * its SHA-256 checked against the owner's receipt, and every visible
+ * difference the owner recorded is carried with its criterion ID; one with
+ * none is listed as unintended for UAT.
  *
  * This spec also draws each state again at the delivered revision — the
  * gallery's own page, frozen (reduced motion, the page's fixed clock,
@@ -138,13 +142,23 @@ const PRIMARY: Record<string, { task: string; receipts: readonly string[] }> = {
 }
 
 /**
- * Owners whose pairs are current at the end of the run: recaptured here
- * through their own guards after TASK-114's dialog change, or taken after the
- * last product change (TASK-114, TASK-120). Their other receipts naming a
- * state are shown beside the primary pair.
+ * Every owner whose look-check receipts the final evidence check consumes
+ * (TASK-103 to TASK-114, TASK-116 to TASK-120): all current at the end of the
+ * run, whether taken by the owner's own run or retaken by TASK-115 through the
+ * owner's guard (TASK-115 repair 5: TASK-103, 104, 109, 112, 113, 118 and 119
+ * were left out before, so the screens state had no Setup or History side and
+ * the cards state no Review side). Each one's receipts that name a state are
+ * shown beside that state's primary pair.
  */
-const END_OF_RUN_OWNERS = ['TASK-105', 'TASK-106', 'TASK-107', 'TASK-108', 'TASK-110', 'TASK-111', 'TASK-114', 'TASK-116', 'TASK-117', 'TASK-120'] as const
-const RECAPTURED = new Set(['TASK-105', 'TASK-106', 'TASK-107', 'TASK-108', 'TASK-110', 'TASK-111', 'TASK-116', 'TASK-117'])
+const END_OF_RUN_OWNERS = [
+  'TASK-103', 'TASK-104', 'TASK-105', 'TASK-106', 'TASK-107', 'TASK-108', 'TASK-109', 'TASK-110', 'TASK-111',
+  'TASK-112', 'TASK-113', 'TASK-114', 'TASK-116', 'TASK-117', 'TASK-118', 'TASK-119', 'TASK-120',
+] as const
+
+/** The gallery states a receipt names: its `state`, one or several, each read up to its first space. */
+const statesNamed = (state: unknown): string[] => typeof state === 'string'
+  ? state.split(/,\s*/).map((part) => part.trim().split(/\s/)[0]).filter((part) => part !== '')
+  : []
 
 interface Capture { readonly file: string; readonly sha256: string }
 interface Moment { readonly moment: string; readonly gallery: readonly LabelledCapture[]; readonly route: readonly LabelledCapture[] }
@@ -167,13 +181,17 @@ function git(args: readonly string[]): string {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
 }
 
-/** Where an owner's receipt was taken: in this worktree (not yet committed) or at the commit that last wrote it. */
+/**
+ * Where an owner's receipt was taken: in this worktree (not yet committed), or
+ * by whoever made the commit that last wrote it — TASK-115 retaking it through
+ * the owner's own guard, or the owner's own run.
+ */
 function provenance(task: string, path: string): string {
   const rel = relative(REPO_ROOT, path)
   const dirty = git(['status', '--porcelain', '--', rel]) !== ''
   if (dirty) return `${task}'s guard, in this worktree (not yet committed)`
-  const commit = git(['log', '-1', '--format=%h', '--', rel])
-  const how = RECAPTURED.has(task) ? 'recaptured through its own guard by TASK-115' : 'taken by its own task run'
+  const [commit, subject = ''] = git(['log', '-1', '--format=%h%x09%s', '--', rel]).split('\t')
+  const how = /^TASK-115\b/.test(subject) ? `retaken by TASK-115 through ${task}'s own guard` : `taken by ${task}'s own run`
   return `${how}; receipt bytes as committed at ${commit}`
 }
 
@@ -251,19 +269,19 @@ function ownerPair(task: string, name: string, width: number, primary: boolean):
   }
 }
 
-/** The primary owner's pairs, then every end-of-run owner's other receipts for the same state. */
+/** The primary owner's pairs, then every end-of-run owner's other receipts that name the same state. */
 function pairsFor(id: string, width: number): OwnerPair[] {
   const primary = PRIMARY[id]
   const pairs = primary.receipts.map((name) => ownerPair(primary.task, name, width, true)).filter((pair) => pair !== null)
   for (const task of END_OF_RUN_OWNERS) {
-    if (task === primary.task) continue
     const dir = join(EVIDENCE, taskDir(task), 'parity')
     if (!existsSync(dir)) continue
     for (const file of readdirSync(dir).sort()) {
       const match = /^(.*)-phone-(\d+)\.json$/.exec(file)
       if (!match || Number(match[2]) !== width) continue
+      if (task === primary.task && primary.receipts.includes(match[1])) continue
       const receipt = JSON.parse(readFileSync(join(dir, file), 'utf8')) as { state?: string }
-      if (receipt.state !== id) continue
+      if (!statesNamed(receipt.state).includes(id)) continue
       const pair = ownerPair(task, match[1], width, false)
       if (pair && pair.moments.length > 0) pairs.push(pair)
     }

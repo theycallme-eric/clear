@@ -3,14 +3,14 @@
   "task": "TASK-115",
   "gallery": "bec44545eb982f6dc136a583400f7e314c306d1d",
   "page": "evidence/refinement/task-115/comparison/index.html",
-  "pageSha256": "2d3786c3e38cc20fd3bb1c78a17f90cc7a15a4b44b8a3160660c4f08bafdd515",
+  "pageSha256": "16aa63450cc1baa3acc616af2e3de0436936ba4736340c901ab216300a3c259f",
   "states": 26,
   "widths": [
     320,
     390
   ],
-  "images": 550,
-  "labelledDifferences": 622,
+  "images": 794,
+  "labelledDifferences": 902,
   "unintendedDifferences": [],
   "primaryOwners": {
     "cards": "TASK-110",

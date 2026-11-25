@@ -297,8 +297,11 @@ D3 change 6ca3dc5f, not in the same commit as TASK-AC-99A513AC101C asks; Eric ac
 - TASK-103 (10 receipts: /history's rest-day range is read from today's date, and later look changes), TASK-104 (10,
   after TASK-108's timer frames and TASK-114's dialog frame), TASK-109 (4: the movement note's dialog frame and the
   preparation parts) and TASK-119 (2: the Focus choices' open dialog boxes, TASK-114's frame) were retaken. Look at
-  them on the comparison page. TASK-112, 113 and 118 were current. TASK-105, 108, 110, 117 and 120 reproduced their
-  committed receipts through their guards.
+  them on the comparison page (since repair round 5): TASK-103 under emom, amrap, for_time, ladder and screens
+  (History); TASK-104 under emom, amrap, for_time, ladder-4 and ladder-12; TASK-109 under cards, preparation and
+  movement-note; TASK-119 under preparation and screens (Generate). Each pair says "retaken by TASK-115 through its
+  own guard" where TASK-115 last wrote it. TASK-112, 113 and 118 were current. TASK-105, 108, 110, 117 and 120
+  reproduced their committed receipts through their guards.
 
 ## Still reported
 
@@ -327,7 +330,8 @@ TASK-104's look check now holds the browser clock at a fixed time before Start (
 so /workout's header clock, drawn over the top of the tall cards' captures, read a different second from run to run).
 Five of its receipts changed only in their route running, paused and ended captures (the header clock reads a fixed
 time): amrap, For Time, ladder-4 and ladder-12 at 320, and ladder-12 at 390. Nothing the check reads changed. The
-captures are in the evidence store under `clear-gallery-adoption-v2-20261116/task-104/captures/`.
+captures are in the evidence store under `clear-gallery-adoption-v2-20261116/task-104/captures/`, and on the comparison
+page under emom, amrap, for_time, ladder-4 and ladder-12 (since repair round 5).
 
 ## Repair round 3 (Eric's decision of 2026-11-24)
 
@@ -400,3 +404,29 @@ repair 3's verification. The Workout feedback and Movement note dialogs on the c
 
 Every other look check was read and run three times under load: TASK-103, 105, 106, 107, 111, 116, 117 and 120 each
 gave the same capture every time and were left unchanged (details in the test ledger, `rules.repairRound4.scan`).
+
+## Repair round 5 (Eric, chat, 2026-11-24: "Yes, one more round (Recommended)")
+
+### The comparison page now shows every current owner
+
+The comparison page left out the look checks of TASK-103, 104, 109, 112 and TASK-113's Setup screen, so three states
+were only half compared. **Generate, Setup and History** (`?state=screens`) had only Generate beside it. **Movement
+cards** had no Review side. **Preparation** and **Movement note** lacked TASK-109's pairs. The page now shows, beside
+each state, every owner's current look check that names it:
+- **screens:** TASK-119's /generate (primary), TASK-103's /history and TASK-113's /onboarding. Their differences are
+  labelled. Examples: KETTLEBELL and BENCH are gallery-only sample equipment (TASK-AC-7B8DC9E87617); the route's filter
+  is labelled SHOW where the gallery says FILTER; and History reads the status, then the stored date, beneath the
+  title (AC-C53-01).
+- **cards:** TASK-110 (primary), TASK-108, TASK-109 and TASK-112's /review and /workout.
+- **preparation:** TASK-119 (primary) and TASK-109. **movement-note:** TASK-114 (primary) and TASK-109.
+- **emom:** TASK-114 (primary), TASK-103, 104 and 117. **amrap, for_time:** TASK-114, 103, 104, 116 and 117.
+  **ladder:** TASK-114, 103, 105, 116 and 117.
+- **ladder-4, ladder-12:** TASK-105 (primary), TASK-104 and TASK-105's Review grid. **ladder-long:** TASK-114, 105
+  and 120. **urgency:** TASK-120 and 108.
+- **overview, assets:** TASK-118. **errors:** TASK-113 in four skins. The logging contexts: TASK-114 with TASK-106,
+  107, 110 or 111 where they apply (unchanged).
+
+Each owner's line now says who last wrote its receipt: the owner's own run, or TASK-115 through the owner's own guard.
+Totals: 26 states at 320 and 390 (52 sections), 794 images, 902 differences each labelled with its criterion, none
+listed as unintended. Not on the page: TASK-105's scheduled ladder and TASK-108's ended card and SectionHeader
+navigator, which no accepted gallery state draws. The gallery-base views of TASK-118 and 119 record no images.

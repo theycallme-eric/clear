@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/ladder-phone-320.json",
       "receiptSha256": "84b53fa3698c172ce44744debb45298135b571d9d56c0d5509602a268c139026",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -42,11 +42,59 @@
       ]
     },
     {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/ladder-phone-320.json",
+      "receiptSha256": "935d9bce6197fdbddf5b6292c2c0074a3298fb46d9b5bcbd179751ab9f42d1ef",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-ready.png",
+              "sha256": "14a1538e8f7cf834739a5aceed2f0c08dc9d9523414cab6e6d89b74411214183",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-ready.png",
+              "sha256": "12876b4bdcdb14a38fbbc65f7a2c1bae6c3671be6a3ef82dbc0d9e8c1f40fc17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-log.png",
+              "sha256": "078e9f0de2e10a6750f66235df66b261b495fd4249b0a543c750c20df8e0cc04",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-log.png",
+              "sha256": "f377bc055049e8e14d63143ae4c2f40deaef70a155e208441a2eb88b74639a17",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/ladder-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "task": "TASK-105",
       "primary": false,
       "receipt": "evidence/refinement/task-105/parity/ladder-phone-320.json",
       "receiptSha256": "afa21aa6a8f877b261a86e9e33c14625b3f18005aaa3c270d332daec13240386",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-105's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {
@@ -113,7 +161,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-116/parity/ladder-phone-320.json",
       "receiptSha256": "036cdcb2ccf011f8c3538f8194f58dc577ee1daf711a13f752a36bb90fb7a41c",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-116's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {
@@ -180,7 +228,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-117/parity/ladder-phone-320.json",
       "receiptSha256": "2d88e4d662f8ad16f7f79987ce8bb43da8f2c9c2c68558d7870820d26200d921",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-117's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/workout-feedback-phone-320.json",
       "receiptSha256": "ca65d856afbb41e74b052f8d61127a4764d0f67c9b5b8fc2c96631a9d9420064",
-      "provenance": "taken by its own task run; receipt bytes as committed at 4fc7e489",
+      "provenance": "retaken by TASK-115 through TASK-114's own guard; receipt bytes as committed at 4fc7e489",
       "route": "/summary",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-111/parity/workout-feedback-phone-320.json",
       "receiptSha256": "2ce3eb76ddb1a664e4ea0decdfb17a0ddc903ad048404887cbd4b113dd688be4",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-111's own guard; receipt bytes as committed at f1727b84",
       "route": "/summary",
       "moments": [
         {

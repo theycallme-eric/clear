@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/set-correction-phone-320.json",
       "receiptSha256": "ab82bc07bb3dba8069f909dfbabace2164f35de4ed20ca0931305af401158eec",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-106/parity/set-correction-phone-320.json",
       "receiptSha256": "cc02704bcd010c279892c536ebff927f5554fe285b4345bd6cbf1c4f281d705a",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-119/parity/preparation-phone-390.json",
       "receiptSha256": "d8b6ae70e90a059f472dd68257f3c21013aa1cb0feeec2bbdfb3d02fb6387b13",
-      "provenance": "taken by its own task run; receipt bytes as committed at c1beb5eb",
+      "provenance": "taken by TASK-119's own run; receipt bytes as committed at c1beb5eb",
       "route": "/review",
       "moments": [
         {
@@ -67,6 +67,168 @@
               "file": "store:clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-route-regenerate.png",
               "sha256": "1c34aade041bbde51b01cf1372afde16c2311b07e958adf59bc4814907c423fb",
               "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-119/captures/preparation-phone-390-route-regenerate.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-109",
+      "primary": false,
+      "receipt": "evidence/refinement/task-109/parity/preparation-phone-390.json",
+      "receiptSha256": "7bc1a35afdcf6b3af034320c719ae34e648e670d30a838725fb5655a64fa1941",
+      "provenance": "retaken by TASK-115 through TASK-109's own guard; receipt bytes as committed at cca35346",
+      "route": "/review, /workout, /history/:id",
+      "moments": [
+        {
+          "moment": "review-warm-up",
+          "gallery": [
+            {
+              "key": "gallery-review-warm-up",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-warm-up.png",
+              "sha256": "fd0406874269e408b5f4ae8d1c4e930cbaec740c3bba76f9030d6658b96ce7a5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-warm-up.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-review-warm-up",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-review-warm-up.png",
+              "sha256": "8755d75f8dace93f42c98a8825eefad0b79d7a03228f61e07ae63f8513bb1c42",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-review-warm-up.png"
+            }
+          ]
+        },
+        {
+          "moment": "review-cooldown",
+          "gallery": [
+            {
+              "key": "gallery-review-cooldown",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png",
+              "sha256": "66376ef0852a35b06c800555e053fe0328b613ce91cd79237c400bcce14f3b60",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-review-cooldown",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-review-cooldown.png",
+              "sha256": "9c60bf4184b1faf20a3f97db361bcca2a41717b3b4250a7f6e399c0224a7b0dc",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-review-cooldown.png"
+            }
+          ]
+        },
+        {
+          "moment": "workout-warm-up",
+          "gallery": [
+            {
+              "key": "gallery-workout-warm-up",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-warm-up.png",
+              "sha256": "fd0406874269e408b5f4ae8d1c4e930cbaec740c3bba76f9030d6658b96ce7a5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-warm-up.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-workout-warm-up",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-warm-up.png",
+              "sha256": "3c187270647e79c4410cf13fdd3fcd58bf0eb946e764f436fed2717d0526cbcf",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-warm-up.png"
+            }
+          ]
+        },
+        {
+          "moment": "workout-warm-up-clock",
+          "gallery": [
+            {
+              "key": "gallery-workout-warm-up-clock",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-clock.png",
+              "sha256": "78894ae8f67f0a08d5ae435faf4db0e6d8536904b59d8c41a0c5bc45391a06f4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-clock.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-workout-warm-up-clock",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-warm-up-clock.png",
+              "sha256": "e4eaa48755cd7d0ec4795162a30718c10588798a5ab7ada1d97e962e512a488b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-warm-up-clock.png"
+            }
+          ]
+        },
+        {
+          "moment": "workout-cooldown",
+          "gallery": [
+            {
+              "key": "gallery-workout-cooldown",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png",
+              "sha256": "66376ef0852a35b06c800555e053fe0328b613ce91cd79237c400bcce14f3b60",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-workout-cooldown",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-cooldown.png",
+              "sha256": "3bcf68f318c448c1b35887a656145323efacdfbb1fc3c50ec881eac92f5b14ba",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-cooldown.png"
+            }
+          ]
+        },
+        {
+          "moment": "workout-cooldown-clock",
+          "gallery": [
+            {
+              "key": "gallery-workout-cooldown-clock",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-clock.png",
+              "sha256": "78894ae8f67f0a08d5ae435faf4db0e6d8536904b59d8c41a0c5bc45391a06f4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-clock.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-workout-cooldown-clock",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-cooldown-clock.png",
+              "sha256": "290b9ea33b1ff2b4166a1879f6450a132439490c8e94dd69b32b033a474dbd22",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-workout-cooldown-clock.png"
+            }
+          ]
+        },
+        {
+          "moment": "history-warm-up",
+          "gallery": [
+            {
+              "key": "gallery-history-warm-up",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-warm-up.png",
+              "sha256": "fd0406874269e408b5f4ae8d1c4e930cbaec740c3bba76f9030d6658b96ce7a5",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-warm-up.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-history-warm-up",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-history-warm-up.png",
+              "sha256": "7139717a7553abf24a5ebae181a42de2c891898fafd11c205cf9c5a953b0a524",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-history-warm-up.png"
+            }
+          ]
+        },
+        {
+          "moment": "history-cooldown",
+          "gallery": [
+            {
+              "key": "gallery-history-cooldown",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png",
+              "sha256": "66376ef0852a35b06c800555e053fe0328b613ce91cd79237c400bcce14f3b60",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-gallery-cooldown.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-history-cooldown",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-history-cooldown.png",
+              "sha256": "19f24b047b3677c3ee6fb7325d0db92d3f15ce7bce560a1e62cac4ef8123821d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/preparation-phone-390-history-cooldown.png"
             }
           ]
         }
@@ -198,6 +360,261 @@
       "task": "TASK-119",
       "criterion": "AC-C50-01",
       "text": "path|#0 — C50: the route’s Regenerate row, the last item of the content, after the Cooldown guide (route only)."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52, AC-R034-02, AC-R022-02",
+      "text": "PreparationGuide also draws TASK-034’s reading in its four states (loading, error with retry, missing, ready); the ready card names its list (“<title> movements”) and states the time with approximateDurationText (identical for the sample); its clock is the session’s (usePreparationClock: the PreparationClockProvider’s, the component’s own in the gallery) with the shared warning from its own deadline and “Final 10 seconds” in the final ten. The gallery’s guide prop is unchanged."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-82B8F7A4EF0B, TASK-AC-C4EE3D4EC8F0",
+      "text": "GroupExerciseCoaching: each movement’s section is a role=group labelled by its heading (aria-labelledby), the sections and their guidance/note under HeadingSection levels; constants for the accepted label and the note openers. No box moves (gallery states compared at base and at this task: same words, same boxes)."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn in place by PreparationGuide from composedPreparationGuide; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52",
+      "text": "PreparationClockProvider around the shell; a Warm-up or Cooldown section draws PreparationGuide over persistedPreparationReading with its clock; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn by PreparationGuide over persistedPreparationReading of the record’s rows, its retry re-reading the record; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-9165CD7E97CC",
+      "text": "Comment only: `guides` is the gallery’s sample; the routes read TASK-034’s guides directly."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Arm circles — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Scapular push-ups — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Bench press rehearsal — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — arm circles — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — scapular push ups — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — bench press rehearsal — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R022-01",
+      "text": "gallery only — ~3 MINUTES — The approximate time is TASK-034’s estimate of the actual prescriptions (three one-set movements, ~4 minutes), never the gallery’s illustrated ~3 minutes for the Cooldown."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Chest stretch — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Thoracic rotation — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Child’s pose — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R022-01",
+      "text": "route only — ~4 MINUTES — The approximate time is TASK-034’s estimate of the actual prescriptions (three one-set movements, ~4 minutes), never the gallery’s illustrated ~3 minutes for the Cooldown."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — chest stretch — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — thoracic rotation — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — childs pose — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Arm circles — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Scapular push-ups — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Bench press rehearsal — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — arm circles — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — scapular push ups — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — bench press rehearsal — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R022-01",
+      "text": "gallery only — ~3 MINUTES — The approximate time is TASK-034’s estimate of the actual prescriptions (three one-set movements, ~4 minutes), never the gallery’s illustrated ~3 minutes for the Cooldown."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Chest stretch — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Thoracic rotation — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Child’s pose — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R022-01",
+      "text": "route only — ~4 MINUTES — The approximate time is TASK-034’s estimate of the actual prescriptions (three one-set movements, ~4 minutes), never the gallery’s illustrated ~3 minutes for the Cooldown."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — chest stretch — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — thoracic rotation — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — childs pose — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-4BF91CC8AA52",
+      "text": "gallery only — WARM-UP — Each section has its own preparation clock: the live Cooldown’s clock is titled by its section, where the gallery state draws only the Warm-up’s clock."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-4BF91CC8AA52",
+      "text": "route only — COOLDOWN — Each section has its own preparation clock: the live Cooldown’s clock is titled by its section, where the gallery state draws only the Warm-up’s clock."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Arm circles — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Scapular push-ups — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Bench press rehearsal — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — arm circles — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — scapular push ups — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — bench press rehearsal — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R022-01",
+      "text": "gallery only — ~3 MINUTES — The approximate time is TASK-034’s estimate of the actual prescriptions (three one-set movements, ~4 minutes), never the gallery’s illustrated ~3 minutes for the Cooldown."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Chest stretch — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Thoracic rotation — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "gallery only — Child’s pose — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R022-01",
+      "text": "route only — ~4 MINUTES — The approximate time is TASK-034’s estimate of the actual prescriptions (three one-set movements, ~4 minutes), never the gallery’s illustrated ~3 minutes for the Cooldown."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — chest stretch — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — thoracic rotation — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "AC-R034-01",
+      "text": "route only — childs pose — Real data only (TASK-AC-9165CD7E97CC): each route names its guide’s movements with the catalog reader (`exerciseName` over the prescription’s slug, lower case, no apostrophe), from the same three movements the gallery’s illustrated sample lists in sentence case."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-4BF91CC8AA52",
+      "text": "p|TITLE#0 — Each section has its own preparation clock: the live Cooldown’s clock is titled by its section, where the gallery state draws only the Warm-up’s clock."
     }
   ],
   "unintended": []

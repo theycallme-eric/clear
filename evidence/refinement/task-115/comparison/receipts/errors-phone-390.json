@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-113/parity/errors-clear-phone-390.json",
       "receiptSha256": "3fa3140879679ef12dbcfb0891f42eac3e8c06f8f7d7b4e65ade1b03ef967b29",
-      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "provenance": "taken by TASK-113's own run; receipt bytes as committed at bd227743",
       "route": "/summary",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-113/parity/errors-vapour-phone-390.json",
       "receiptSha256": "b429783dbf94fb07a1b3959dd065f12e434b30c264f8a0b6c5f836271f6ce3c5",
-      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "provenance": "taken by TASK-113's own run; receipt bytes as committed at bd227743",
       "route": "/summary",
       "moments": [
         {
@@ -75,7 +75,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-113/parity/errors-signal-phone-390.json",
       "receiptSha256": "8b4eb433a7674b6458b5891cd13bd2cb1f75945b65569e5b58fd962638cef330",
-      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "provenance": "taken by TASK-113's own run; receipt bytes as committed at bd227743",
       "route": "/summary",
       "moments": [
         {
@@ -104,7 +104,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-113/parity/errors-mono-phone-390.json",
       "receiptSha256": "c14b50b220f4b9b4eccb0209e6281a1ac0367c32095ae162e67c60476621e826",
-      "provenance": "taken by its own task run; receipt bytes as committed at bd227743",
+      "provenance": "taken by TASK-113's own run; receipt bytes as committed at bd227743",
       "route": "/summary",
       "moments": [
         {

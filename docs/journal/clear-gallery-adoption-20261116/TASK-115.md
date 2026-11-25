@@ -341,3 +341,65 @@ a flip rarer than about 1 in 20.
 ruled out.
 
 **Next action.** Controller verification, then Eric's UAT.
+
+## Repair round 5 (2026-11-25)
+
+**Authorisation.** Eric, chat, 2026-11-24: "Yes, one more round (Recommended)". It is outside V2's count and recorded in
+the body ledger.
+
+**What failed.** V2 verification of repair 4 (6c8bc1bf) passed in one run: 19 commands, tree unchanged, so the
+TASK-114 settle fix held. The fresh review (`reviews/TASK-115-a1-9d006fc1ac12.json`) did not accept
+TASK-AC-495C349983AC. The comparison's `END_OF_RUN_OWNERS` still left out TASK-103, 104, 109 and 112 and TASK-113's
+screens receipts, a choice made in attempt 1 while some receipts were stale. As a result:
+- the screens state had only TASK-119's /generate beside it, with no Setup (/onboarding) or History (/history) side;
+- the cards state had no Review side (TASK-112);
+- preparation and movement-note lacked TASK-109's pairs;
+- UAT-LIST.md pointed at TASK-103/104/109 retakes the page did not show;
+- `RECAPTURED` named only the first eight owners, so TASK-119's and TASK-114's retakes read "taken by its own task
+  run".
+
+**What changed.**
+- `e2e/refinement/task-115-comparison.spec.ts`:
+  - `END_OF_RUN_OWNERS` now lists every owner the final evidence check consumes (TASK-103 to 114 and 116 to 120).
+  - A receipt joins a state when its `state` names it (`statesNamed`: one or several states). The primary owner's
+    other receipts join too (TASK-105's Review grid).
+  - `RECAPTURED` is gone. Provenance now comes from the commit that last wrote each receipt: "retaken by TASK-115
+    through <task>'s own guard" or "taken by <task>'s own run".
+  - The header comment is updated. Every existing read is kept.
+- `scripts/refinement/task-115-closure.test.mjs`:
+  - The comparison case checks that each state's owners equal every current owner receipt with captures that names
+    it, and that each provenance matches git.
+  - The store check's `RECAPTURED` adds TASK-103, 104, 109, 114 and 119.
+  - Negative checks pass: dropping TASK-113 from the screens receipt fails the case, and so does a wrong provenance.
+    Both files were restored byte for byte.
+- UAT-LIST.md:
+  - The round-1 D4(a) pointer now names where each retake sits on the page.
+  - The round-2 TASK-104 entry points at its states.
+  - A new round-5 section lists each state's owners and the totals.
+- Ledger: `rules.repairRound5`, two self-check bodies (13 changed bodies, nothing weakened).
+
+**New owners on the page:** TASK-103 (emom, amrap, for_time, ladder, screens), TASK-104 (emom, amrap, for_time,
+ladder-4, ladder-12), TASK-109 (cards, preparation, movement-note), TASK-112 (cards), TASK-113 (screens) and TASK-105's
+Review grid (ladder-4, ladder-12).
+
+**Totals.** Before: 26 states (52 sections), 550 images, 622 labelled, 0 unintended. After: 26 states (52 sections),
+794 images, 902 labelled, 0 unintended. Among the new labelled differences are the reviewer's examples: KETTLEBELL and
+BENCH (TASK-AC-7B8DC9E87617, TASK-113), FILTER against SHOW and the status/date order (TASK-103: AC-C53-01 and
+TASK-AC-6BFF651DF237).
+
+**Not shown, by design.** TASK-105's scheduled ladder and TASK-108's ended card and SectionHeader navigator are drawn
+by no accepted gallery state. TASK-118's and TASK-119's gallery-base receipts record no images.
+
+**Exact verification.**
+- `run-required-check --task TASK-115 --check parity -- npx playwright test e2e/refinement/task-115-comparison.spec.ts
+  --project=mobile`: PASSED twice, 53/53. All 55 files (52 receipts, receipt.json, index.html at 16aa6345…, and the
+  guard receipt at 8d7f902b…) are byte-identical across the two runs.
+- `run-required-check --task TASK-115 --check check-01 -- node --test scripts/refinement/task-115-closure.test.mjs`:
+  PASSED twice, 13/13; receipt identical (d8b528bc…).
+- `verify-delivery-evidence.mjs --mode final --tasks <the 18>`: PASSED, all 18 current.
+- TASK-035, TASK-037 and TASK-038 check-01: PASSED, receipts unchanged.
+- Body-ledger `node -e`: exit 0. `git merge-base --is-ancestor a6cd01c9 HEAD`: exit 0.
+- CI chain (typecheck first): exit 0. Lint shows 0 errors and 175 warnings, as before; 279 files and 6,516 tests pass.
+- The whole `e2e/refinement` was not run here.
+
+**Next action.** Controller verification, then Eric's UAT.

@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/circuit-round-phone-390.json",
       "receiptSha256": "1d8d12461d16a0d4009ec0f13b147537ee06074d19ae133a74a134a42766a4cb",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-107/parity/circuit-round-phone-390.json",
       "receiptSha256": "c05ab9c4f15ce269949df8a132b3aec3ee48df700c2e58feb08ced8c15469289",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-107's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {
@@ -113,7 +113,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-110/parity/circuit-round-phone-390.json",
       "receiptSha256": "f8e57a7d6b01a845a21199b6915962d6e351cb73d9a7ed88dd36539692e4013b",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-110's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

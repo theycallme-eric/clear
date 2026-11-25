@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/extra-set-phone-390.json",
       "receiptSha256": "d3ef1528b7fc6b53f7dbc3bf86e515e8f5eb3e21875339c4e0fddf91dc26b0a0",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-106/parity/extra-set-phone-390.json",
       "receiptSha256": "3fe2abeefece7b0b408db5398cfd04cd778b425ca8107373e311a496e6a2bffe",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/movement-note-phone-320.json",
       "receiptSha256": "436aa365ef260f1d90d03fdc794bece13a6db4779edb86b95dd83cb2204717d3",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -40,8 +40,106 @@
           ]
         }
       ]
+    },
+    {
+      "task": "TASK-109",
+      "primary": false,
+      "receipt": "evidence/refinement/task-109/parity/movement-note-phone-320.json",
+      "receiptSha256": "c4f19111d156a455841abed9148e0cbfed0561c981caa01c75b0e48b0283d3f0",
+      "provenance": "retaken by TASK-115 through TASK-109's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "disclosure-closed",
+          "gallery": [
+            {
+              "key": "gallery-disclosure-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-closed.png",
+              "sha256": "b0e8ac7a5f210e206c8b8f3548c240f6793a9679e5a4d53aaf1237cead4c051f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-closed.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-disclosure-closed",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-closed.png",
+              "sha256": "7826d5edcd4bbc22cd0e45340a9f426ab22f9fa7986e5b58bdd307b48d4fa80d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-closed.png"
+            }
+          ]
+        },
+        {
+          "moment": "disclosure-open",
+          "gallery": [
+            {
+              "key": "gallery-disclosure-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-open.png",
+              "sha256": "e7cf9f6d67933979688307fdbc36e01f4bf2ae76275d7fd9d4621b8ea513ba02",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-open.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-disclosure-open",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-open.png",
+              "sha256": "b7191d09f74879e4843d8ffa9c121a5db8eba9704aa81bcd5c54c2fddbfc1a32",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-open.png"
+            }
+          ]
+        },
+        {
+          "moment": "dialog",
+          "gallery": [
+            {
+              "key": "gallery-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-dialog.png",
+              "sha256": "48f056d17c0fee9ac6daeaca3ce113672e14f04dbd71be49d6975239ebbb317f",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-gallery-dialog.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-dialog",
+              "file": "store:clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-dialog.png",
+              "sha256": "06d369c5ba5c563084cda73b27f90a8620363148da874f6e9516283c20a0eb71",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-109/captures/movement-note-phone-320-route-dialog.png"
+            }
+          ]
+        }
+      ]
     }
   ],
-  "labelled": [],
+  "labelled": [
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52, AC-R034-02, AC-R022-02",
+      "text": "PreparationGuide also draws TASK-034’s reading in its four states (loading, error with retry, missing, ready); the ready card names its list (“<title> movements”) and states the time with approximateDurationText (identical for the sample); its clock is the session’s (usePreparationClock: the PreparationClockProvider’s, the component’s own in the gallery) with the shared warning from its own deadline and “Final 10 seconds” in the final ten. The gallery’s guide prop is unchanged."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-82B8F7A4EF0B, TASK-AC-C4EE3D4EC8F0",
+      "text": "GroupExerciseCoaching: each movement’s section is a role=group labelled by its heading (aria-labelledby), the sections and their guidance/note under HeadingSection levels; constants for the accepted label and the note openers. No box moves (gallery states compared at base and at this task: same words, same boxes)."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn in place by PreparationGuide from composedPreparationGuide; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF, TASK-AC-4BF91CC8AA52",
+      "text": "PreparationClockProvider around the shell; a Warm-up or Cooldown section draws PreparationGuide over persistedPreparationReading with its clock; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-2E1486B7B4BF",
+      "text": "Warm-up and Cooldown drawn by PreparationGuide over persistedPreparationReading of the record’s rows, its retry re-reading the record; the presentation’s sample guides are no longer read."
+    },
+    {
+      "task": "TASK-109",
+      "criterion": "TASK-AC-9165CD7E97CC",
+      "text": "Comment only: `guides` is the gallery’s sample; the routes read TASK-034’s guides directly."
+    }
+  ],
   "unintended": []
 }

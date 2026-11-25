@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/other-lift-phone-320.json",
       "receiptSha256": "dcd83ef7e069c32ff2c333256c5e2e2b5ba8af6e30af0a91d75d2ca70d9fa155",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-106/parity/other-lift-phone-320.json",
       "receiptSha256": "d4ed696e3dc15c0ce0228a5951ed49604846fe63cf351a3c066a853feda11a56",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

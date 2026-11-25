@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/amrap-phone-320.json",
       "receiptSha256": "52dc928a5a879f3172ac9fbc9541a9bafb9922e97987c9c716dcd86cd13e4c0c",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -42,11 +42,164 @@
       ]
     },
     {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/amrap-phone-320.json",
+      "receiptSha256": "265270fbd5d4d1b4c99084c6e1c66a7025aabebd4a8b4877e530e5c6a6d44685",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-gallery-ready.png",
+              "sha256": "805473de2d43e6d5b90adda1f7468bba666d6a5a100677fbb4247f46458675d2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-route-ready.png",
+              "sha256": "5885bbdf8e1a60dcfec6488787541b05b2d39e9ce8e09c766aabf6f54ef98e34",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-gallery-log.png",
+              "sha256": "997c2d2b4c1877f13a4080ce7c954e9317db28b3f7a1e0e5f544013b0e9d39d4",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-route-log.png",
+              "sha256": "18fa783e27f9f278cfd8666e4ac4a25f327a789bb9530ad2d9f3da0eae1cdc9e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/amrap-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-104",
+      "primary": false,
+      "receipt": "evidence/refinement/task-104/parity/amrap-phone-320.json",
+      "receiptSha256": "1b15570e2ce2d00505d0d04f1b46b8ee990bf896f6094548c16018b79c94e901",
+      "provenance": "retaken by TASK-115 through TASK-104's own guard; receipt bytes as committed at 5cd48e2b",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-ready.png",
+              "sha256": "805473de2d43e6d5b90adda1f7468bba666d6a5a100677fbb4247f46458675d2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-ready.png",
+              "sha256": "5885bbdf8e1a60dcfec6488787541b05b2d39e9ce8e09c766aabf6f54ef98e34",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "running",
+          "gallery": [
+            {
+              "key": "gallery-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-running.png",
+              "sha256": "75b3f032a187209020b3a515bfdd9012daac8dd19919e0decfb9012f2e1e4237",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-running.png",
+              "sha256": "7736c6e20a162c979ef30a07cfc862a47a74063610d386d61af10831127cd847",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "paused",
+          "gallery": [
+            {
+              "key": "gallery-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-paused.png",
+              "sha256": "b44d00a95ec0d0a9855ec1a6ce98d30a78dcf2cebb5e8d5c30a2360a0c34c931",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-paused.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-paused.png",
+              "sha256": "36faf00d55cf77ab890b33fe6a2ebccf9488b435d715146509e4d638664ef29e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-paused.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-ended.png",
+              "sha256": "bc6ed5fa51c71fa03021817d223fb2cc8d1e3447754ea7992575c2554f082cf2",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-ended.png",
+              "sha256": "72d9be11bcef637ea9cef6f857dee79b06bc4f8c34298e4852e7985752e69e5d",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-ended.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-log.png",
+              "sha256": "26b1e67851b942f36672ccbda91995655d8a24a03372f0060a0acaef15305b1e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-log.png",
+              "sha256": "18fa783e27f9f278cfd8666e4ac4a25f327a789bb9530ad2d9f3da0eae1cdc9e",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/amrap-phone-320-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "task": "TASK-116",
       "primary": false,
       "receipt": "evidence/refinement/task-116/parity/amrap-phone-320.json",
       "receiptSha256": "e6da51484e94206431c3c89f1e61950a43ada9cec87998b2955e79d69d1039aa",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-116's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {
@@ -113,7 +266,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-117/parity/amrap-phone-320.json",
       "receiptSha256": "1a2af55f756fc689514ab7cec0f361cb7da16fdcabc37a33c7f669ede14c42e9",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-117's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/rest-day-phone-390.json",
       "receiptSha256": "7fca0f079e0880e214619e9acae753d80c004c1f5070489f365a8fb1c7a8c718",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-111/parity/rest-day-phone-390.json",
       "receiptSha256": "40a41235d2f29a24ff11987326e80133b34a9c6416fb58833ba1d7e2b271178f",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-111's own guard; receipt bytes as committed at f1727b84",
       "route": "/",
       "moments": [
         {

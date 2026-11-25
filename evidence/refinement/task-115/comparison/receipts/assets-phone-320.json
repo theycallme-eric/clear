@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-118/parity/assets-phone-320.json",
       "receiptSha256": "746c8e737bd8d832bc9064076fcc2975a4e8ac46555bb348a11f9c8baa414b12",
-      "provenance": "taken by its own task run; receipt bytes as committed at 1ed15111",
+      "provenance": "taken by TASK-118's own run; receipt bytes as committed at 1ed15111",
       "route": "/onboarding, /review, /workout",
       "moments": [
         {

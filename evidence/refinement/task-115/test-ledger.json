@@ -3207,7 +3207,7 @@
    "counts": {
     "files": 28,
     "baseTitlesAbsentOrRenamedAtHead": 30,
-    "changedBodies": 11,
+    "changedBodies": 13,
     "newBodies": 66,
     "bodiesFewerReadsThanBase": 0,
     "bodiesFewerReadsThanBuild": 0,
@@ -3454,10 +3454,26 @@
      "base": "route side: visit; <main> visible; clock held at ENTRY + 600 s; the control pressed (movement note: Coaching and notes, then Add note at once)",
      "head": "route side: visit; <main> visible; the first control it presses visible; settleRoute (fonts, entrance motion, every scroll height still across two reads 250 ms apart); clock held at ENTRY + 600 s; settleRoute again; movement note: settleRoute between Coaching and notes and Add note. Every read, receipt field, hash binding and the held instants unchanged (timing only, D4(b))",
      "lost": []
+    },
+    {
+     "file": "e2e/refinement/task-115-comparison.spec.ts",
+     "test": "TASK-AC-495C349983AC <state> <width> … (all 52) and the comparison page case",
+     "build": "(file absent at the build)",
+     "base": "(file absent at the base; TASK-115’s own spec)",
+     "head": "END_OF_RUN_OWNERS lists every owner the final evidence check consumes (TASK-103 to 114, 116 to 120); a receipt joins a state when its `state` names it (one or several); the primary owner’s other receipts for the state join too; provenance comes from the commit that last wrote each receipt (TASK-115 through the owner’s guard, or the owner’s own run). Every existing read kept: primary present, every capture hash-checked, gallery and route sides, gallery identity, every difference labelled or listed.",
+     "lost": []
+    },
+    {
+     "file": "scripts/refinement/task-115-closure.test.mjs",
+     "test": "TASK-AC-495C349983AC the comparison page shows all 26 states …; AC-R039-02 the recaptured owners’ parity receipts …",
+     "build": "(file absent at the build)",
+     "base": "(file absent at the base; TASK-115’s own test)",
+     "head": "Added reads: each state’s owners equal every current owner receipt with captures that names it, and each owner’s provenance matches the commit that last wrote its receipt; RECAPTURED adds TASK-103, 104, 109, 114 and 119 (their receipts current and every capture in the store with its hash). Nothing removed.",
+     "lost": []
     }
    ],
    "matchersWeakened": false,
-   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher). Repair round 1: 73 cases retired whole under D2 (ledger rows, no skip); two timing-only waits under D4(b) add reads and drop none. Repair round 2: the clear and vapour contained-shell cases retired whole under D6 (ledger rows, no skip; the loop is removed); TASK-104’s parity spec holds its clock at a fixed instant before Start (timing only, D4) and drops or loosens no read. Repair round 3: TASK-103’s screens case holds a fixed page clock (timing only, D4); the closure test no longer accepts a bare “needs backend lane” and accepts D8’s outcome only on rows quoting D8 (stricter); no read dropped or loosened. Repair round 4: TASK-114’s route side waits for its first control and a settled layout before and after holding the clock, and between the movement note’s two presses (timing only, D4(b)); no read dropped or loosened.",
+   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher). Repair round 1: 73 cases retired whole under D2 (ledger rows, no skip); two timing-only waits under D4(b) add reads and drop none. Repair round 2: the clear and vapour contained-shell cases retired whole under D6 (ledger rows, no skip; the loop is removed); TASK-104’s parity spec holds its clock at a fixed instant before Start (timing only, D4) and drops or loosens no read. Repair round 3: TASK-103’s screens case holds a fixed page clock (timing only, D4); the closure test no longer accepts a bare “needs backend lane” and accepts D8’s outcome only on rows quoting D8 (stricter); no read dropped or loosened. Repair round 4: TASK-114’s route side waits for its first control and a settled layout before and after holding the clock, and between the movement note’s two presses (timing only, D4(b)); no read dropped or loosened. Repair round 5: the comparison consumes every current owner receipt and labels its provenance by the commit that last wrote it; the closure test adds coverage and provenance reads and five owners to its store check; nothing loosened.",
    "instancesDropped": [
     {
      "file": "e2e/ui-polish-b05-header-back.spec.ts",
@@ -3693,6 +3709,34 @@
    },
    "stability": "Under load: npx playwright test e2e/refinement/task-114-parity.spec.ts e2e/refinement/task-006.spec.ts e2e/refinement/task-010.spec.ts e2e/refinement/task-011.spec.ts --project=mobile --repeat-each=3 --workers=6, on the shared 5173 dev server with placeholder Supabase URL/key, a hash reporter keyed by spec and capture: 141 passed in 5.8 min; 102 TASK-114 runs (34 × 3), 204 captures under 68 names, every name byte-identical in all 3 repeats; the receipts it wrote equal the guard’s.",
    "guardRuns": "PASSED twice (34/34 each); the 34 parity receipts and guard receipt (992a802f…) byte-identical across the two runs, and the 68 store captures too; the parity receipts equal the ones committed at 2bd7513a (before V2’s run-1 commit 318994cb). Committed as 4fc7e489."
+  },
+  "repairRound5": {
+   "authorisation": "Eric, chat, 2026-11-24: \"Yes, one more round (Recommended)\". Granted outside V2’s count, recorded in the body ledger.",
+   "failure": "The review of repair 4 (6c8bc1bf; V2 verification passed, 19 commands, tree unchanged) did not accept TASK-AC-495C349983AC: END_OF_RUN_OWNERS (e2e/refinement/task-115-comparison.spec.ts) left out TASK-103, 104, 109, 112 and TASK-113’s screens receipts, so the screens state had no Setup (/onboarding) or History (/history) side, the cards state no Review side (TASK-112), and preparation and movement-note lacked TASK-109’s pairs; UAT-LIST.md pointed at TASK-103/104/109 retakes on the page that were not there; RECAPTURED named only the first eight, so TASK-119’s and TASK-114’s retakes read “taken by its own task run”.",
+   "change": {
+    "spec": "e2e/refinement/task-115-comparison.spec.ts: header comment; END_OF_RUN_OWNERS = TASK-103 to 114 and 116 to 120 (every owner the final evidence check consumes) with statesNamed (a receipt’s state, one or several); pairsFor adds every owner receipt with captures that names the state, the primary owner’s other receipts included; RECAPTURED removed: provenance reads the commit that last wrote each receipt (“retaken by TASK-115 through <task>’s own guard” or “taken by <task>’s own run”).",
+    "closureTest": "scripts/refinement/task-115-closure.test.mjs: the comparison case checks each state’s owners against every current owner receipt naming it and each provenance against git; RECAPTURED (the store check) adds TASK-103, 104, 109, 114, 119.",
+    "uat": "UAT-LIST.md: the round-1 D4(a) pointer now names where each retake is on the page; the round-2 TASK-104 entry points at its states; a round-5 section."
+   },
+   "totals": {
+    "before": {
+     "states": 26,
+     "sections": 52,
+     "images": 550,
+     "labelled": 622,
+     "unintended": 0
+    },
+    "after": {
+     "states": 26,
+     "sections": 52,
+     "images": 794,
+     "labelled": 902,
+     "unintended": 0
+    },
+    "ownersAdded": "TASK-103 (emom, amrap, for_time, ladder, screens), TASK-104 (emom, amrap, for_time, ladder-4, ladder-12), TASK-109 (cards, preparation, movement-note), TASK-112 (cards), TASK-113 (screens) and TASK-105’s Review grid (ladder-4, ladder-12, the primary owner’s other receipt). Every other state’s owners are unchanged.",
+    "notShown": "TASK-105 scheduled (no gallery state), TASK-108 ended (no state) and navigator (gallery/app SectionHeader, not a refinement state); TASK-118 and TASK-119 gallery-base receipts record no images."
+   },
+   "verification": "TASK-115 parity guard PASSED twice (53/53 each); the 52 comparison receipts, receipt.json, index.html (16aa6345…) and the guard receipt (8d7f902b…) byte-identical across the two runs. check-01, final evidence check, TASK-035/037/038 check-01, body-ledger check, typecheck and the CI chain: see the progress note."
   }
  },
  "summary": {

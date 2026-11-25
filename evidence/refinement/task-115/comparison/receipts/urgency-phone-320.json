@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-120/parity/urgency-phone-320.json",
       "receiptSha256": "0c7f50729ac539d56333ce79cb4b59a5adf678054de84e15f922d14e2ea98f8b",
-      "provenance": "taken by its own task run; receipt bytes as committed at 710f7fae",
+      "provenance": "taken by TASK-120's own run; receipt bytes as committed at 710f7fae",
       "route": "/workout",
       "moments": [
         {
@@ -65,7 +65,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-108/parity/urgency-phone-320.json",
       "receiptSha256": "ca7fff39bd9e089c9bd4b7f72748e338c7acd2e454e4d4c5a2dc074dc67c5a14",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at c88c173b",
+      "provenance": "taken by TASK-108's own run; receipt bytes as committed at c88c173b",
       "route": "/workout",
       "moments": [
         {

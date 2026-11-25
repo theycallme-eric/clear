@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/emom-phone-390.json",
       "receiptSha256": "ade1b091f60b0f690153f02e372565f2bb2acbf8a46e7ebf7118ff04ac0af3c2",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -42,11 +42,164 @@
       ]
     },
     {
+      "task": "TASK-103",
+      "primary": false,
+      "receipt": "evidence/refinement/task-103/parity/emom-phone-390.json",
+      "receiptSha256": "2d19eafdb978b6fe098c32f687079c55c4112c11e88b701e8f43938c912cf244",
+      "provenance": "retaken by TASK-115 through TASK-103's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "galleryReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-gallery-ready.png",
+              "sha256": "d712fa199e441f18362a808de8a8b99e3be6a9522c6738abba3f216713c9f281",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeReady",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-route-ready.png",
+              "sha256": "12c3e8fb3f73d120dfe1e5a253866fefba2cd10b1ba9d4d3cb29e2cefa5962ee",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "galleryLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-gallery-log.png",
+              "sha256": "6f9409f40d6807ec6e92b5e9a2a0b701a61965d0023ba3bbe48ac8e12cb6ac8b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "routeLog",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-route-log.png",
+              "sha256": "5ebada08cb4cd99fdb34eae53c6d336f1286ed586e5135656d9f389b3e6b392a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-103/captures/emom-phone-390-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TASK-104",
+      "primary": false,
+      "receipt": "evidence/refinement/task-104/parity/emom-phone-390.json",
+      "receiptSha256": "5cd8007eb7bfc0e697b7ab43ee4ff9ca34a5bcfc951e41982fc1c0bf4c35fff4",
+      "provenance": "retaken by TASK-115 through TASK-104's own guard; receipt bytes as committed at cca35346",
+      "route": "/workout",
+      "moments": [
+        {
+          "moment": "ready",
+          "gallery": [
+            {
+              "key": "gallery-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-ready.png",
+              "sha256": "d712fa199e441f18362a808de8a8b99e3be6a9522c6738abba3f216713c9f281",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-ready.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ready",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-ready.png",
+              "sha256": "12c3e8fb3f73d120dfe1e5a253866fefba2cd10b1ba9d4d3cb29e2cefa5962ee",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-ready.png"
+            }
+          ]
+        },
+        {
+          "moment": "running",
+          "gallery": [
+            {
+              "key": "gallery-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-running.png",
+              "sha256": "0b388a47ac5069d322076228ce77482143b98193ca7dcc8b376441eea8f308c6",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-running.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-running",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-running.png",
+              "sha256": "7bd38e977d759d4a14b5e7d293b6f6ad2c2237b19db73e0209bfd318349caee8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-running.png"
+            }
+          ]
+        },
+        {
+          "moment": "paused",
+          "gallery": [
+            {
+              "key": "gallery-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-paused.png",
+              "sha256": "429e3562d8566dbf1e9a72cdbb6fc13d4351dea57d810bddb10e4294cdea21f8",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-paused.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-paused",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-paused.png",
+              "sha256": "0eb16a3b044750c79850674e596e10737ac0ed694e096e81ea49b76d3af03568",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-paused.png"
+            }
+          ]
+        },
+        {
+          "moment": "ended",
+          "gallery": [
+            {
+              "key": "gallery-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-ended.png",
+              "sha256": "602efa89c1a9091161c672548c49224656eb6c9828c6dd7add276f77c358711b",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-ended.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-ended",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-ended.png",
+              "sha256": "8726fa9e0a75f2a5f96ec95cb3b0a245183a9807572ef04827adc21f5fa536e7",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-ended.png"
+            }
+          ]
+        },
+        {
+          "moment": "log",
+          "gallery": [
+            {
+              "key": "gallery-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-log.png",
+              "sha256": "b622eb77401c0a31720367798dbe4a9dc87eb6e37c20461c4e23f6dece4f5d47",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-gallery-log.png"
+            }
+          ],
+          "route": [
+            {
+              "key": "route-log",
+              "file": "store:clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-log.png",
+              "sha256": "5ebada08cb4cd99fdb34eae53c6d336f1286ed586e5135656d9f389b3e6b392a",
+              "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261116/task-104/captures/emom-phone-390-route-log.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "task": "TASK-117",
       "primary": false,
       "receipt": "evidence/refinement/task-117/parity/emom-phone-390.json",
       "receiptSha256": "8aed813494c8c094942407771b1cae85f6cbbe1ee1a7ebbdf679f613d95e011f",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-117's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {

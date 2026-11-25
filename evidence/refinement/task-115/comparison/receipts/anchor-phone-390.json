@@ -17,7 +17,7 @@
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/anchor-phone-390.json",
       "receiptSha256": "f81ca621be1f2e79ab2fa08970a0e7da1d9d00ba414a573ec27c871afe9a32d6",
-      "provenance": "taken by its own task run; receipt bytes as committed at 54d0a935",
+      "provenance": "taken by TASK-114's own run; receipt bytes as committed at 54d0a935",
       "route": "/workout",
       "moments": [
         {
@@ -46,7 +46,7 @@
       "primary": false,
       "receipt": "evidence/refinement/task-106/parity/anchor-phone-390.json",
       "receiptSha256": "8ac4df765aae2bba5f0e1d85ff7df3eaf40c0eb974dd17b0f54c71ed957c20a0",
-      "provenance": "recaptured through its own guard by TASK-115; receipt bytes as committed at f1727b84",
+      "provenance": "retaken by TASK-115 through TASK-106's own guard; receipt bytes as committed at f1727b84",
       "route": "/workout",
       "moments": [
         {
