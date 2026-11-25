@@ -16,8 +16,8 @@
       "task": "TASK-114",
       "primary": true,
       "receipt": "evidence/refinement/task-114/parity/workout-feedback-phone-320.json",
-      "receiptSha256": "b8ed244892071f75d2391d33db1aa894ffeb92b13c102761e057009cacccc5c4",
-      "provenance": "TASK-114's guard, in this worktree (not yet committed)",
+      "receiptSha256": "ca65d856afbb41e74b052f8d61127a4764d0f67c9b5b8fc2c96631a9d9420064",
+      "provenance": "taken by its own task run; receipt bytes as committed at 4fc7e489",
       "route": "/summary",
       "moments": [
         {
@@ -34,7 +34,7 @@
             {
               "key": "route-open",
               "file": "store:clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-route.png",
-              "sha256": "62c557becafc8eed87ff2c3583d32bc0a9066f8ed774de08521b60cdd3c27d53",
+              "sha256": "31d5cb33fa4564727b4c67f4996ca48120d09d48847e761ea72e4e3dcd17e013",
               "page": "../../../../../../../../evidence-store/clear-gallery-adoption-v2-20261120/task-114/captures/workout-feedback-phone-320-route.png"
             }
           ]

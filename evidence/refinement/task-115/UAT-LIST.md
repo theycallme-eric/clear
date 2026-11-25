@@ -386,3 +386,17 @@ URL, not for a backend; they passed on round 1's reruns with placeholder values)
 
 TASK-103's look check of /history now holds the browser clock at 24 Nov 2026 (it read the real date, so the rest-day
 range "… – Mon 23 Nov 2026" changed every day). Its receipts are unchanged.
+
+## Repair round 4 (Eric, chat, 2026-11-24: "One extra round, recorded (Recommended)")
+
+### D4 — TASK-114's dialog look check waits for a settled page
+
+TASK-114's check of the logging dialogs on their real routes could draw the page behind a dialog at two scroll offsets
+(12 px apart), because it pressed its control before the page had finished laying out. That page shows through the
+dialog's edges and its cut corner. Workout feedback at 320 alternated between two captures from run to run, and the
+movement note at 320 and 390 did so more rarely. The check now waits for the page to settle before it presses
+anything. Nothing it reads changed and nothing in the app changed. Its receipts are back to the ones taken before
+repair 3's verification. The Workout feedback and Movement note dialogs on the comparison page are the same as before.
+
+Every other look check was read and run three times under load: TASK-103, 105, 106, 107, 111, 116, 117 and 120 each
+gave the same capture every time and were left unchanged (details in the test ledger, `rules.repairRound4.scan`).

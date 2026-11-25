@@ -283,3 +283,61 @@ run, with your answer, listed for UAT; running them becomes a follow-up.
 
 **Next action.** Controller verification. Then Eric's UAT with `evidence/refinement/task-115/UAT-LIST.md` (owner items 6
 and 7). Running the D8 cases is a follow-up.
+
+## Repair round 4 (2026-11-24)
+
+**Authorisation.** V2's three repair rounds were used up. Eric, chat, 2026-11-24: "One extra round, recorded
+(Recommended)". The work is timing only, under D4(b): Eric, chat, 2026-11-24: "Allow both (Recommended)".
+
+**What failed.** V2 verification of repair 3 (2bd7513a) passed every command twice. But TASK-114's capture
+workout-feedback-phone-320 (route-open) alternated between 31d5cb33… and 62c557be…: V2 committed run 1's version as
+318994cb, together with TASK-115's comparison receipt and page, and run 2 flipped them back.
+
+**Root cause (measured; not the clock).** TASK-114 already holds both sides at fixed instants. The route side held its
+clock as soon as `<main>` showed, but /summary's content could still be arriving: in 4 of 80 diagnostic runs the page
+had 80 or 130 elements instead of 256 at that point. The case then scrolled "Log workout feedback" into view while
+the page laid that content out, so the scroller stopped at its maximum for a page 12 px shorter (scrollTop 133 of 613
+against 145 of 625). The page behind the dialog therefore sat 12 px lower. It shows through the dialog's edges and
+chamfered corner, and the drawn scroll bar and CRT lines move with it. The pixel diff of 62c557be against 31d5cb33
+covers only the top 19 and bottom 27 CSS px and the right edge. The movement note (320 and 390) flipped the same way:
+it pressed Add note straight after opening Coaching and notes, before that layout settled. That flip was 1 in 3 per
+width in the load probe, and 1 in 40 with the unchanged spec.
+
+**What changed.** In `e2e/refinement/task-114-parity.spec.ts`, waits only:
+- Lines 349–375: a new `settleRoute` (fonts, entrance motion, and every scroll height still across two reads 250 ms
+  apart).
+- Lines 622–628 and 630–631: the route side waits for the first control it presses and a settled layout, holds at
+  ENTRY + 600 s as before, then settles again.
+- Lines 645–646: the movement note settles between its two presses.
+
+No read, receipt field, hash binding, tolerance or held instant changed. A temporary diagnostic copy of the spec was
+used and deleted. TASK-114's receipts are back to the ones before 318994cb.
+
+**Scan.** I read every parity spec for the pattern, then ran task-103, 105, 106, 107, 111, 114, 116, 117 and 120
+parity under load (`--repeat-each=3 --workers=6`, shared 5173 server, placeholder Supabase values, a hash reporter
+keyed by spec and capture): 294 passed. Only TASK-114's movement note flipped, and that is now fixed. TASK-105 reads
+the page's own `now` before Start (TASK-104's old shape), but none of its captures depends on the absolute instant. A
+trial with fixed instants 3+ minutes later gave byte-identical receipts, so the trial was reverted and the spec is
+unchanged. The others are unchanged too (reasons in `rules.repairRound4.scan`). Limit: three repeats cannot rule out
+a flip rarer than about 1 in 20.
+
+**Exact verification.**
+- TASK-114 parity guard: PASSED twice, 34/34 each. Receipts, guard receipt (992a802f…) and the 68 store captures are
+  byte-identical across the two runs, and the receipts equal 2bd7513a's. Committed as 4fc7e489.
+- Load: TASK-114 parity with task-006, 010 and 011, `--repeat-each=3 --workers=6`: 141 passed. All 204 TASK-114
+  captures were byte-identical per name across the 3 repeats.
+- TASK-115 parity guard: PASSED twice, 53/53 each. Run 2 is byte-identical to run 1. Against 2bd7513a, only the
+  workout-feedback-phone-320 owner's provenance changed ("as committed at 4fc7e489", was 54d0a935), along with the
+  page and receipt hashes that follow from it.
+- TASK-115 check-01: PASSED twice, 13/13; receipt identical (3ad5a8ff…, unchanged).
+- `verify-delivery-evidence.mjs --mode final --tasks <the 18>`: PASSED, all 18 current and passing (TASK-114
+  included).
+- TASK-035, TASK-037 and TASK-038 check-01: PASSED, receipts unchanged.
+- Body-ledger `node -e`: exit 0. `git merge-base --is-ancestor a6cd01c9 HEAD`: exit 0.
+- `npm run typecheck`: exit 0. CI chain: exit 0 (lint 0 errors and 175 warnings, as before; 279 files, 6,516 tests).
+- The whole `e2e/refinement` was not run here (V2's verification runs it).
+
+**Open assumptions.** The specs left unchanged were stable in three repeats under load. A rarer flip there cannot be
+ruled out.
+
+**Next action.** Controller verification, then Eric's UAT.

@@ -3161,6 +3161,13 @@
     "why": "e2e/refinement/task-103-parity.spec.ts changed (repair round 3, timing only, D4)",
     "command": "node scripts/refinement/run-required-check.mjs --task TASK-103 --check parity -- npx playwright test e2e/refinement/task-103-parity.spec.ts --project=mobile",
     "result": "PASSED twice; the 10 parity receipts byte-identical to the committed ones and across the two runs; guard receipt and the 36 store captures identical across the two runs"
+   },
+   {
+    "task": "TASK-114",
+    "check": "parity",
+    "why": "e2e/refinement/task-114-parity.spec.ts changed (repair round 4, timing only, D4(b))",
+    "command": "node scripts/refinement/run-required-check.mjs --task TASK-114 --check parity -- npx playwright test e2e/refinement/task-114-parity.spec.ts --project=mobile",
+    "result": "PASSED twice (34/34 each); the 34 parity receipts and guard receipt (992a802f…) byte-identical across the two runs, and the 68 store captures too; the parity receipts equal the ones committed at 2bd7513a (before V2’s run-1 commit 318994cb). Committed as 4fc7e489."
    }
   ],
   "definitionRecords": "TASK-121’s check-01 receipt and the TASK-035/037/038 check-01 receipts are consumed (current and passing; the closure test re-verifies them). TASK-115 changes no record, checker or definition test.",
@@ -3176,6 +3183,7 @@
     "e2e/refinement/task-104-parity.spec.ts",
     "e2e/refinement/task-105-parity.spec.ts",
     "e2e/refinement/task-107-parity.spec.ts",
+    "e2e/refinement/task-114-parity.spec.ts",
     "e2e/refinement/task-115-comparison.spec.ts (new)",
     "e2e/uat-batch-01.spec.ts",
     "e2e/ui-polish-b05-active-hierarchy.spec.ts",
@@ -3197,9 +3205,9 @@
     "scripts/refinement/task-115-closure.test.mjs (new)"
    ],
    "counts": {
-    "files": 27,
+    "files": 28,
     "baseTitlesAbsentOrRenamedAtHead": 30,
-    "changedBodies": 10,
+    "changedBodies": 11,
     "newBodies": 66,
     "bodiesFewerReadsThanBase": 0,
     "bodiesFewerReadsThanBuild": 0,
@@ -3438,10 +3446,18 @@
      "base": "no page clock: /history read today from the real date",
      "head": "await page.clock.install({ time: SCREENS_TODAY }) (2026-11-24T12:00:00Z) before the first visit; every read, receipt field, hash binding and tolerance unchanged (timing only, D4)",
      "lost": []
+    },
+    {
+     "file": "e2e/refinement/task-114-parity.spec.ts",
+     "test": "TASK-AC-EFC60FF1F169 <context> <width>: … opens in the same Round 7 dialog as the accepted gallery state … (all 34; the route side)",
+     "build": "(file absent at the build)",
+     "base": "route side: visit; <main> visible; clock held at ENTRY + 600 s; the control pressed (movement note: Coaching and notes, then Add note at once)",
+     "head": "route side: visit; <main> visible; the first control it presses visible; settleRoute (fonts, entrance motion, every scroll height still across two reads 250 ms apart); clock held at ENTRY + 600 s; settleRoute again; movement note: settleRoute between Coaching and notes and Add note. Every read, receipt field, hash binding and the held instants unchanged (timing only, D4(b))",
+     "lost": []
     }
    ],
    "matchersWeakened": false,
-   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher). Repair round 1: 73 cases retired whole under D2 (ledger rows, no skip); two timing-only waits under D4(b) add reads and drop none. Repair round 2: the clear and vapour contained-shell cases retired whole under D6 (ledger rows, no skip; the loop is removed); TASK-104’s parity spec holds its clock at a fixed instant before Start (timing only, D4) and drops or loosens no read. Repair round 3: TASK-103’s screens case holds a fixed page clock (timing only, D4); the closure test no longer accepts a bare “needs backend lane” and accepts D8’s outcome only on rows quoting D8 (stricter); no read dropped or loosened.",
+   "matchersWeakenedNote": "No read was dropped or loosened: task-021 keeps the base’s loop read, restores the build’s data-urgent read and reads Round 7’s breathe class where the base read the old micro-pulse class; the two parity specs read the same clock values exactly, cell by cell, where the base read a whole-clock line or substring that Round 7’s TimerFrame no longer draws. No toHaveTextContent→toBeInTheDocument, no exact→regex, no dropped count, no queryBy for getBy, no removed `not`, no conditional helper. The root specs keep every read: the Focus control by its exact Round 7 name (the build’s regex named the value too, which Round 7 puts in the control’s text), the Goal term exactly, the dialog’s one scroll owner by Round 7’s class (count kept). One whole case is retired under owner decision 7 (listed, not a weakened matcher). Repair round 1: 73 cases retired whole under D2 (ledger rows, no skip); two timing-only waits under D4(b) add reads and drop none. Repair round 2: the clear and vapour contained-shell cases retired whole under D6 (ledger rows, no skip; the loop is removed); TASK-104’s parity spec holds its clock at a fixed instant before Start (timing only, D4) and drops or loosens no read. Repair round 3: TASK-103’s screens case holds a fixed page clock (timing only, D4); the closure test no longer accepts a bare “needs backend lane” and accepts D8’s outcome only on rows quoting D8 (stricter); no read dropped or loosened. Repair round 4: TASK-114’s route side waits for its first control and a settled layout before and after holding the clock, and between the movement note’s two presses (timing only, D4(b)); no read dropped or loosened.",
    "instancesDropped": [
     {
      "file": "e2e/ui-polish-b05-header-back.spec.ts",
@@ -3645,6 +3661,38 @@
     "change": "The screens case installs the page clock at 2026-11-24T12:00:00Z (the day the receipts were last taken), running from there. Timing only.",
     "receipts": "All 10 TASK-103 parity receipts byte-identical to the committed ones; the guard receipt re-records the spec hash. Dates left in the receipts: the fixture rows (1 and 3 Nov), the derived rest day (2 Nov) and the range to the fixed day before SCREENS_TODAY (4–23 Nov); none from the real clock."
    }
+  },
+  "repairRound4": {
+   "authorisation": "Eric, chat, 2026-11-24: \"One extra round, recorded (Recommended)\". V2’s three repair rounds were used; Eric authorised this one himself, recorded in the body ledger.",
+   "decisions": {
+    "D4b": "Eric, chat, 2026-11-24: \"Allow both (Recommended)\" — (b) test timing fixes that do not change what a test checks"
+   },
+   "failure": "V2 verification of repair 3 (2bd7513a) passed every command twice (logs TASK-115-a1-r3-b1be3a52…, r3-3d895487…), but TASK-114’s capture workout-feedback-phone-320 (route-open) alternated between 31d5cb33… (committed at 2bd7513a) and 62c557be…; V2 committed run 1’s version as 318994cb (with TASK-115’s comparison receipt and page), and run 2 flipped them back.",
+   "cause": {
+    "finding": "Not the clock. TASK-114 already holds both sides at fixed instants (ENTRY + 60 s and ENTRY + 600 s); the coordinator’s “clock resumed while a clock is on screen” was an inference and did not hold. The route side held its clock as soon as <main> showed. /summary’s content could arrive after that (in 4 of 80 diagnostic runs the page had 80 or 130 elements instead of 256 at that point); the case then scrolled the control into view while the page laid the content out, so the scroller stopped at its maximum for a 12 px shorter page (scrollTop 133 of 613, against 145 of 625). The page behind the dialog sat 12 px lower; it shows through the dialog’s edges and chamfered corner, and the drawn scroll bar and CRT lines differ with it. Pixel diff 62c557be vs 31d5cb33: only the top 19 and bottom 27 CSS px and the right edge, values up to 49.",
+    "sameFamily": "movement-note at 320 and 390 (route-open) flipped the same way in the load probe (1 in 3 each) and with the unchanged spec at HEAD (1 in 40): the case pressed Add note at once after opening Coaching and notes, before that layout settled; the page behind the dialog’s lower edge differed."
+   },
+   "fix": {
+    "file": "e2e/refinement/task-114-parity.spec.ts",
+    "lines": "349–375 (settleRoute and its comment); 622–628 and 630–631 (route side: wait for the first control it presses, settleRoute, hold at ENTRY + 600 s, settleRoute again); 645–646 (movement note: settleRoute between Coaching and notes and Add note)",
+    "change": "Waits only. No read, receipt field, hash binding, tolerance or held instant changed.",
+    "evidence": "Diagnostics (a temporary copy of the spec, deleted): with the waits, 80 of 80 runs of workout-feedback 320 drew 31d5cb33 with the full page in place (256 elements); without them 4 of 80 started from a partial page and 3 drew 62c557be and 1 a third render. With the movement-note wait, 30 of 30 per width for movement-note 320/390 and workout-feedback 320/390."
+   },
+   "scan": {
+    "method": "Every e2e/refinement parity spec read for the pattern (the real clock resumed or read while anything time-based is drawn in a hashed capture, or a hold taken before the route had settled); then 9 specs under load: npx playwright test task-103, 105, 106, 107, 111, 114, 116, 117 and 120 parity specs --project=mobile --repeat-each=3 --workers=6 on the shared 5173 server with placeholder Supabase URL/key, a hash reporter keyed by spec and capture: 294 passed, 1,266 captures under 422 names, every name byte-identical across its 3 repeats except TASK-114 movement-note 320 and 390 (route-open).",
+    "fixed": [
+     "TASK-114 (workout-feedback, movement-note; the route side’s readiness)"
+    ],
+    "checkedNotChanged": [
+     "TASK-105: reads the page’s own now before Start (TASK-104’s old shape), but nothing in its hashed captures depends on the absolute instant: run with the holds moved to fixed instants 3+ minutes later (a trial edit, reverted), all 12 receipts came out byte-identical to the committed ones. No pattern; not changed.",
+     "TASK-103, TASK-116, TASK-117: the clock installed at the real time, the session started a minute before it, so everything drawn is relative; no route capture is taller than the viewport (no header clock over a capture); stable in the probe. Not changed.",
+     "TASK-106, TASK-107, TASK-111, TASK-120: fixed held instants; the route side waits for the very card or region it drives before holding; stable in the probe. Not changed.",
+     "TASK-104 (fixed in round 2) and TASK-108, TASK-110, TASK-112, TASK-118 and TASK-115’s comparison (setFixedTime): no real clock. TASK-113: no clock and nothing time-based. TASK-109, TASK-119: real dates used only relative to today, no date drawn. Not changed."
+    ],
+    "limit": "Three repeats per case cannot rule out a flip rarer than about 1 in 20 in the specs not changed."
+   },
+   "stability": "Under load: npx playwright test e2e/refinement/task-114-parity.spec.ts e2e/refinement/task-006.spec.ts e2e/refinement/task-010.spec.ts e2e/refinement/task-011.spec.ts --project=mobile --repeat-each=3 --workers=6, on the shared 5173 dev server with placeholder Supabase URL/key, a hash reporter keyed by spec and capture: 141 passed in 5.8 min; 102 TASK-114 runs (34 × 3), 204 captures under 68 names, every name byte-identical in all 3 repeats; the receipts it wrote equal the guard’s.",
+   "guardRuns": "PASSED twice (34/34 each); the 34 parity receipts and guard receipt (992a802f…) byte-identical across the two runs, and the 68 store captures too; the parity receipts equal the ones committed at 2bd7513a (before V2’s run-1 commit 318994cb). Committed as 4fc7e489."
   }
  },
  "summary": {
